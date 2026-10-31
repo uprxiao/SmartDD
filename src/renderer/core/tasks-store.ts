@@ -24,6 +24,10 @@ class TasksStore {
   resuming = new Set<string>();
   /** Why the last auto-resume of a tab failed. */
   resumeErrors = new Map<string, string>();
+  /** A close is a transaction: its view remains available until every step succeeds. */
+  closing = new Set<string>();
+  private readonly resumeEpochs = new Map<string, number>();
+  private readonly opening = new Map<string, Promise<{ task: TaskView; ptyId: string }>>();
   /** Tabs already auto-resumed (or that must not be, until reopened): see shouldAutoResume. */
   private autoResumed = new Set<string>();
 
@@ -76,6 +80,7 @@ class TasksStore {
    * and the stopped panel also stays when there is a real profile choice to make.
    */
   show(taskId: string): void {
+    if (this.closing.has(taskId)) return;
     this.tabs = withTab(this.tabs, taskId, navigation.currentViewId === 'task' ? navigation.currentTaskId : null);
     navigation.openTask(taskId);
     const task = this.byId.get(taskId);
@@ -84,23 +89,35 @@ class TasksStore {
 
   /** Resume a stopped task on its original profile, once per opened tab. False: not tried. */
   async autoResume(task: TaskView): Promise<boolean> {
+    if (this.closing.has(task.id)) return false;
     if (!shouldAutoResume(task, this.autoResumed)) return false;
+    const epoch = this.resumeEpochs.get(task.id) ?? 0;
     this.autoResumed.add(task.id);
     this.resuming.add(task.id);
     this.resumeErrors.delete(task.id);
     try {
       await this.resume({ taskId: task.id });
     } catch (e) {
-      runInAction(() => this.resumeErrors.set(task.id, rpcErrorMessage(e)));
+      if ((this.resumeEpochs.get(task.id) ?? 0) === epoch) runInAction(() => this.resumeErrors.set(task.id, rpcErrorMessage(e)));
     } finally {
-      runInAction(() => this.resuming.delete(task.id));
+      if ((this.resumeEpochs.get(task.id) ?? 0) === epoch) runInAction(() => this.resuming.delete(task.id));
     }
     return true;
   }
 
   async resume(req: OpenTaskRequest): Promise<void> {
+    if (this.closing.has(req.taskId)) throw new Error('会话正在关闭，请稍后再打开');
+    if (this.opening.has(req.taskId)) throw new Error('会话正在恢复，请稍后再试');
+    const epoch = this.resumeEpochs.get(req.taskId) ?? 0;
     const hadTab = this.tabs.includes(req.taskId);
-    const res = await rpc.tasks.open({ ...terminalSize(), ...req });
+    const opening = rpc.tasks.open({ ...terminalSize(), ...req });
+    this.opening.set(req.taskId, opening);
+    let res: Awaited<typeof opening>;
+    try { res = await opening; }
+    finally { if (this.opening.get(req.taskId) === opening) this.opening.delete(req.taskId); }
+    // The closing transaction owns this launch now. It waits for this exact
+    // response before stopping, so an obsolete reply can never kill a reopened PTY.
+    if ((this.resumeEpochs.get(req.taskId) ?? 0) !== epoch || this.closing.has(req.taskId)) return;
     // The tab was closed while the CLI was starting: closing means ending, so end it now.
     if (hadTab && !this.tabs.includes(req.taskId)) {
       await rpc.tasks.kill(req.taskId);
@@ -117,6 +134,7 @@ class TasksStore {
 
   /** Archive only after main confirms success; preserve other sessions and terminal scrollback. */
   async setArchived(taskId: string, archived: boolean, stopRunning = false): Promise<void> {
+    if (this.closing.has(taskId)) throw new Error('会话正在关闭，请稍后再试');
     const result = archived && stopRunning
       ? await rpc.tasks.stopAndArchive(taskId)
       : await rpc.tasks.setArchived(taskId, archived);
@@ -141,21 +159,50 @@ class TasksStore {
   }
 
   /** Closing a tab ends its session; opening the task again resumes it. */
-  async closeTab(taskId: string): Promise<void> {
-    const task = this.byId.get(taskId);
-    const next = nextTabAfterClose(this.tabs, taskId, navigation.currentTaskId);
-    this.tabs = this.tabs.filter((id) => id !== taskId);
-    this.terminals.delete(taskId);
-    this.autoResumed.delete(taskId);
-    this.resumeErrors.delete(taskId);
-    if (navigation.currentTaskId === taskId) {
-      if (next && navigation.currentViewId === 'task') navigation.openTask(next);
-      else navigation.closeTask(taskId);
+  async closeTab(taskId: string, action: 'save' | 'discard' = 'save'): Promise<void> {
+    if (this.closing.has(taskId)) throw new Error('会话正在关闭，请稍后再试');
+    this.closing.add(taskId);
+    this.resumeEpochs.set(taskId, (this.resumeEpochs.get(taskId) ?? 0) + 1);
+    let preparation: Awaited<ReturnType<(typeof import('../features/files/workspace-store'))['prepareFileWorkspaceClose']>> | undefined;
+    let opened: { task: TaskView; ptyId: string } | undefined;
+    let closed = false;
+    try {
+      // Main opens synchronously, but the IPC reply may be late. Drain only
+      // this task's request; attempts to reopen it stay blocked until commit.
+      opened = await this.opening.get(taskId)?.catch(() => undefined);
+      const { prepareFileWorkspaceClose } = await import('../features/files/workspace-store');
+      preparation = await prepareFileWorkspaceClose({ kind: 'task', taskId }, action);
+      preparation.assertCurrent();
+      const result = await rpc.tasks.closeSession(taskId);
+      preparation.assertCurrent();
+      await preparation.commit();
+      runInAction(() => {
+        const next = nextTabAfterClose(this.tabs, taskId, navigation.currentTaskId);
+        this.tasks = this.tasks.map(task => task.id === taskId ? result : task);
+        this.tabs = this.tabs.filter(id => id !== taskId);
+        this.terminals.delete(taskId);
+        this.autoResumed.delete(taskId);
+        this.resumeErrors.delete(taskId);
+        if (navigation.currentTaskId === taskId) {
+          if (next && navigation.currentViewId === 'task') navigation.openTask(next);
+          else navigation.closeTask(taskId);
+        }
+      });
+      closed = true;
+    } finally {
+      preparation?.cancel();
+      runInAction(() => {
+        // Failed save/stop keeps the original view, including a launch whose
+        // reply was held by this transaction. Never reopen or kill it again.
+        if (!closed && opened && this.tabs.includes(taskId)) this.terminals.set(taskId, opened.ptyId);
+        this.resuming.delete(taskId);
+        this.closing.delete(taskId);
+      });
     }
-    if (task?.ptyId) await rpc.tasks.kill(taskId);
   }
 
   async remove(taskId: string): Promise<void> {
+    if (this.closing.has(taskId)) throw new Error('会话正在关闭，请稍后再试');
     await rpc.tasks.delete(taskId);
     runInAction(() => {
       this.terminals.delete(taskId);

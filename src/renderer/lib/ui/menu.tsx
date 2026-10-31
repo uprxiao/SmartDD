@@ -52,10 +52,10 @@ export function ContextMenuTrigger({ className, ...props }: ContextMenuPrimitive
   return <ContextMenuPrimitive.Trigger className={cn('select-none', className)} {...props} />;
 }
 
-export function ContextMenuContent({ className, ...props }: ContextMenuPrimitive.Popup.Props) {
+export function ContextMenuContent({ className, anchor, ...props }: ContextMenuPrimitive.Popup.Props & Pick<ContextMenuPrimitive.Positioner.Props, 'anchor'>) {
   return (
     <ContextMenuPrimitive.Portal>
-      <ContextMenuPrimitive.Positioner className="isolate z-50 outline-none" align="start" alignOffset={4} side="right">
+      <ContextMenuPrimitive.Positioner className="isolate z-50 outline-none" align="start" alignOffset={4} side="right" anchor={anchor}>
         <ContextMenuPrimitive.Popup className={cn(POPUP, className)} {...props} />
       </ContextMenuPrimitive.Positioner>
     </ContextMenuPrimitive.Portal>

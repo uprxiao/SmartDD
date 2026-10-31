@@ -4,8 +4,9 @@ import { EditorView, keymap } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { createSourceField } from '../../../src/renderer/features/files/editor-source.ts';
 import { markdownEditor } from '../../../src/renderer/features/files/markdown/editor.ts';
-import { safeImageSrc } from './file-markdown-model.mjs';
+import { resolveMarkdownPath, safeImageSrc } from './file-markdown-model.mjs';
 import { renderThemedMermaid } from './file-markdown-mermaid.mjs';
+import { guardEditorComposition } from '../../../src/shared/file-composition-shortcut.mjs';
 import '../../../src/renderer/features/files/markdown/style.css';
 
 /** Synthetic prototype host, actual shared CM/source/decorations/Workers.
@@ -19,7 +20,11 @@ export function FileMarkdownSource(props) {
     const host = {
       status: message => callbacks.current.onStatus?.(message),
       link: href => callbacks.current.onLink?.(href),
-      image: async (element, authored, signal) => { if (!signal.aborted) element.src = safeImageSrc(authored); },
+      image: async (element, authored, signal) => {
+        if (signal.aborted) return;
+        const current = callbacks.current, resolved = resolveMarkdownPath(current.path || '', authored);
+        element.src = current.resolveImageSource?.(resolved) || safeImageSrc(authored);
+      },
       diagram: (element, code, signal) => {
         const id = element.id, live = () => !disposed && !signal.aborted && element.isConnected;
         renderThemedMermaid({ id, source: code, theme: document.documentElement.dataset.theme || 'light', cancelled: () => !live() }).then(svg => { if (live()) { element.innerHTML = svg; view.requestMeasure(); } }).catch(error => { if (live()) { element.textContent = '图表无法渲染：' + String(error.message); view.requestMeasure(); } });
@@ -44,5 +49,7 @@ export function FileMarkdownSource(props) {
     const selected=view.state.selection.main;callbacks.current.onSelect?.(map.cmToRaw(selected.from),map.cmToRaw(selected.to));callbacks.current.onReadingSelection?.(selected.anchor,selected.head);
     return () => { disposed = true; view.destroy(); };
   }, []);
-  return <div ref={container} className="fw-md-source-core fw-markdown-editable" />;
+  return <div ref={container} className="fw-md-source-core fw-markdown-editable" onKeyDownCapture={event => {
+    guardEditorComposition(event);
+  }} />;
 }

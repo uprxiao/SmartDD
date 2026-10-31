@@ -1,0 +1,47 @@
+{
+  "schema": "m10-release-test-groups-v1",
+  "runId": "m10-v008-20261031T170451-4q23",
+  "basis": "用户 2026-11-01 授权六步整合发布；M10 R1.6+12.21+12.22；M9 R3.4-P1 的已发布 v0.0.7 行为",
+  "counting": "Release regression only; no additional milestone cases or changes to existing 69/72 authority. Story T09/T10 stay deferred.",
+  "groups": [
+    {
+      "id": "V008-G001",
+      "owner": "coordinator",
+      "scope": "14 conflicts, semantic integration, source/type/preparation",
+      "status": "in_progress",
+      "resources": [
+        "production-edits",
+        "build"
+      ]
+    },
+    {
+      "id": "V008-G002",
+      "owner": "test-executor-1",
+      "scope": "full pnpm test, including task/capability/file/application regressions; no real Claude launch",
+      "status": "waiting_for_frozen_baseline",
+      "resources": [
+        "heavy-native-tests"
+      ]
+    },
+    {
+      "id": "V008-G003",
+      "owner": "test-executor-2",
+      "scope": "release helper, checkout path, metadata and workflow checks on same frozen baseline",
+      "status": "waiting_for_frozen_baseline",
+      "resources": [
+        "light-software-tests"
+      ]
+    },
+    {
+      "id": "V008-G004",
+      "owner": "coordinator",
+      "scope": "one rebuilt packaged App, M9/M10 UI and Codex lifecycle, isolated upgrade data preservation",
+      "status": "waiting_for_software_and_CI",
+      "resources": [
+        "UI",
+        "heavy-native-tests"
+      ],
+      "acceptance": "M9 file edit/save/draft and terminal reference/close; M10 connection/Bug display/Skill-MCP/mail draft/cancel-resume; no Enter on reference; identity and old data preserved. Real-resource outcomes may be reused only with exact unchanged implementation/hash scope; current cross-layer flows must use new package."
+    }
+  ]
+}

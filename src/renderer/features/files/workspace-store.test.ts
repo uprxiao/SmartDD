@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument, FileRoot, FileScope } from '@shared/files';
 import type { SavedFileWorkspace, WorkspacePersistence } from '@shared/file-workspace';
-import { FileWorkspaceStore } from './workspace-store';
+import { FileWorkspaceStore, fileWorkspaceFor, prepareFileWorkspaceClose } from './workspace-store';
 import { FileBuffer, type FileClient } from './file-buffer';
+import { fileViewerChoice } from './viewer-choice';
 
 const scope = { kind: 'project' as const, projectId: 'fixture' };
 const root: FileRoot = { source: 'project-directory', sourceId: 'root', path: '/fixture', canonicalPath: '/fixture', lease: randomUUID(), generation: 1, label: 'Fixture', identity: { device: '1', inode: '2' } };
@@ -28,6 +29,173 @@ function setup(saved: SavedFileWorkspace | null = null, legacy: SavedFileWorkspa
   return { store, persistence, storage, api, documents, document, saved: () => persisted };
 }
 afterEach(() => { stores.splice(0).forEach(store => store.dispose()); vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+describe('session close preserves files until the terminal exit receipt', () => {
+  it('prepares and persists without removing a single tab, then closes only the captured scope', async () => {
+    const f = setup(state(['one.txt', 'two.txt'])); await f.store.initialize();
+    const tabs = [...f.store.tabs];
+    const preparation = await f.store.prepareSessionClose('save');
+    expect(f.store.tabs).toEqual(tabs); expect(f.api.closeScope).not.toHaveBeenCalled();
+    expect(f.api.closeDocument).not.toHaveBeenCalled(); expect(f.saved()?.routes).toHaveLength(2);
+    await preparation.commit();
+    expect(f.api.closeScope).toHaveBeenCalledExactlyOnceWith(scope);
+    expect(f.api.closeDocument).toHaveBeenCalledTimes(2);
+  });
+  it('keeps the same editor, draft and routes after an unsuccessful save', async () => {
+    const f = setup(state(['draft.txt'])); await f.store.initialize();
+    const tab = f.store.active!, buffer = tab.buffer!, before = buffer.draftId;
+    const transaction = buffer.editor!.update({ changes: { from: 0, to: 4, insert: 'UNSAVED' } });
+    buffer.acceptTransactions(transaction.state, [transaction]);
+    vi.spyOn(buffer, 'prepareClose').mockResolvedValueOnce(false);
+    await expect(f.store.prepareSessionClose('save')).rejects.toMatchObject({ canDiscard: true });
+    expect(f.store.active).toBe(tab); expect(tab.buffer).toBe(buffer); expect(buffer.raw).toBe('UNSAVED');
+    expect(buffer.draftId).toBe(before); expect(buffer.dirty).toBe(true);
+    expect(f.api.closeDocument).not.toHaveBeenCalled(); expect(f.api.closeScope).not.toHaveBeenCalled();
+  });
+  it('refuses a stale close after a replacement buffer or a new edit arrives', async () => {
+    const f = setup(state(['same.txt'])); await f.store.initialize();
+    const preparation = await f.store.prepareSessionClose('save');
+    const old = f.store.active!.buffer!, replacement = new FileBuffer(f.document('same.txt'), f.api as unknown as FileClient, () => undefined);
+    f.documents.set(replacement.file.ref.id, replacement.file);
+    f.store.active!.buffer = replacement;
+    await expect(preparation.commit()).rejects.toThrow('文件内容已改变');
+    expect(f.api.closeScope).not.toHaveBeenCalled(); old.dispose();
+    await replacement.load();
+    const second = await f.store.prepareSessionClose('save');
+    replacement.version++;
+    await expect(second.commit()).rejects.toThrow('文件内容已改变');
+    expect(f.api.closeScope).not.toHaveBeenCalled();
+  });
+  it('retains the whole workspace on persistence or scope-release failure', async () => {
+    const f = setup(state(['kept.txt'])); await f.store.initialize();
+    await f.store.flushPersistence(); f.store.setFilter('changed');
+    f.persistence.save.mockRejectedValueOnce(new Error('workspace disk full'));
+    await expect(f.store.prepareSessionClose('save')).rejects.toThrow('workspace disk full');
+    expect(f.api.closeScope).not.toHaveBeenCalled();
+    const preparation = await f.store.prepareSessionClose('save');
+    f.api.closeScope.mockRejectedValueOnce(new Error('release refused'));
+    await expect(preparation.commit()).rejects.toThrow('release refused');
+    expect(f.store.active?.route.relativePath).toBe('kept.txt');
+    expect(f.api.closeDocument).not.toHaveBeenCalled(); preparation.cancel();
+  });
+  it('passes only explicit discard to the buffer and does not remove recovery material itself', async () => {
+    const f = setup(state(['conflict.txt'])); await f.store.initialize();
+    const buffer = f.store.active!.buffer!, prepare = vi.spyOn(buffer, 'prepareClose').mockResolvedValue(true);
+    buffer.saveReceipt = { state: 'conflict', recoveryId: 'protected-material' } as unknown as NonNullable<typeof buffer.saveReceipt>;
+    const preparation = await f.store.prepareSessionClose('discard');
+    expect(prepare).toHaveBeenCalledExactlyOnceWith('discard');
+    expect(buffer.saveReceipt?.recoveryId).toBe('protected-material');
+    expect(f.api.closeScope).not.toHaveBeenCalled(); preparation.cancel();
+  });
+  it('evicts exactly the closed task cache and obtains a fresh store when reopened', async () => {
+    const invoke = vi.fn(async () => undefined);
+    vi.stubGlobal('window', { electronAPI: { invoke, eventOn: () => () => undefined } });
+    const own = { kind: 'task' as const, taskId: randomUUID() }, other = { kind: 'task' as const, taskId: randomUUID() };
+    const before = fileWorkspaceFor(own), unaffected = fileWorkspaceFor(other);
+    const preparation = await prepareFileWorkspaceClose(own, 'save');
+    expect(fileWorkspaceFor(own)).toBe(before); expect(fileWorkspaceFor(other)).toBe(unaffected);
+    await preparation.commit(); const reopened = fileWorkspaceFor(own);
+    expect(reopened).not.toBe(before); expect(fileWorkspaceFor(other)).toBe(unaffected);
+    expect(invoke).toHaveBeenCalledExactlyOnceWith('files.closeScope', own);
+    await (await prepareFileWorkspaceClose(own, 'save')).commit();
+    await (await prepareFileWorkspaceClose(other, 'save')).commit();
+  });
+  it('does not start a second save or recreate listeners when a committed view unmounts', async () => {
+    vi.stubGlobal('window', { electronAPI: { eventOn: vi.fn(() => () => undefined) } });
+    const f = setup(state(['once.txt'])); await f.store.initialize(); f.store.roots = { roots: [], unavailable: [] };
+    const detach = f.store.attach(), prepare = vi.spyOn(f.store.active!.buffer!, 'prepareClose');
+    const closing = await f.store.prepareSessionClose('save'); await closing.commit();
+    detach(); f.store.attach()(); await f.store.flushDetachedViews();
+    expect(prepare).toHaveBeenCalledOnce(); expect(f.api.closeScope).toHaveBeenCalledOnce();
+    expect(window.electronAPI.eventOn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('G071 one-based location intent', () => {
+  it('reuses the ordinary tab, ref and editor while locating a CRLF source point', async () => {
+    const f = setup(), raw = '# Original\r\n\r\n第二行🙂 column target\r\nTail\r\n';
+    f.api.read.mockImplementation(async ref => ({ document: f.documents.get(ref.id)!, base64: Buffer.from(raw).toString('base64') }));
+    await f.store.initialize(); await f.store.open(root, 'location.md', true);
+    const tab = f.store.active!, buffer = tab.buffer!, editor = buffer.editor, ref = buffer.file.ref;
+    await f.store.open(root, 'location.md', true, { line: 3, column: 3 });
+    expect(f.store.active).toBe(tab); expect(f.store.tabs).toHaveLength(1);
+    expect(buffer.editor).toBe(editor); expect(buffer.file.ref).toBe(ref); expect(f.api.open).toHaveBeenCalledTimes(1);
+    expect(buffer.reveal).toEqual({ from: 14, to: 14 }); expect(buffer.raw).toBe(raw); expect(buffer.dirty).toBe(false);
+    expect(f.api.checkpoint).not.toHaveBeenCalled();
+  });
+  it('uses UTF-16 columns and bounds source locations without changing CRLF text', async () => {
+    const f = setup(), raw = 'x\r\na🙂bc\r\nlast\r\n';
+    f.api.read.mockImplementation(async ref => ({ document: f.documents.get(ref.id)!, base64: Buffer.from(raw).toString('base64') }));
+    await f.store.initialize(); await f.store.open(root, 'location.csv', true, { line: 2, column: 4 });
+    const buffer = f.store.active!.buffer!;
+    expect(buffer.reveal).toEqual({ from: 5, to: 5 });
+    await f.store.open(root, 'location.csv', true, { line: 999, column: 999 });
+    expect(buffer.reveal).toEqual({ from: buffer.editor!.doc.length, to: buffer.editor!.doc.length });
+    expect(buffer.raw).toBe(raw); expect(buffer.dirty).toBe(false); expect(f.api.checkpoint).not.toHaveBeenCalled();
+  });
+  it('does not deliver an old open hint to a different tab selected during the read', async () => {
+    const f = setup(); await f.store.initialize();
+    let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
+    f.api.read.mockImplementation(async ref => { const document = f.documents.get(ref.id)!; if (document.name === 'slow.txt') await gate; return { document, base64: Buffer.from('first\r\nsecond\r\n').toString('base64') }; });
+    const opening = f.store.open(root, 'slow.txt', true, { line: 2, column: 3 });
+    await vi.waitFor(() => expect(f.api.read).toHaveBeenCalledTimes(1));
+    await f.store.open(root, 'current.txt', true); const current = f.store.active!;
+    release(); await opening;
+    expect(f.store.active).toBe(current); expect(current.buffer!.reveal).toBeNull();
+    expect(f.store.tabs.find(tab => tab.route.relativePath === 'slow.txt')!.buffer!.reveal).toBeNull();
+    expect(current.buffer!.raw).toBe('first\r\nsecond\r\n'); expect(f.api.checkpoint).not.toHaveBeenCalled();
+  });
+});
+
+describe('G074 explicit viewer intent ownership', () => {
+  const configuration = () => ({ adapters: [{ id: 'readonly-text', name: 'Readonly', enabled: true, suffixes: ['.md'], sources: ['project-directory'], provider: { kind: 'local-resource', writable: false } }], preferred: {} });
+  it('cancels a delayed choice when another tab becomes active', async () => {
+    const f = setup(); await f.store.initialize();
+    await f.store.open(root, 'A.md', true); const a = f.store.active!;
+    await f.store.open(root, 'B.md', true); const b = f.store.active!;
+    let release!: (value: ReturnType<typeof configuration>) => void;
+    const lookup = vi.fn(() => new Promise<ReturnType<typeof configuration>>(resolve => { release = resolve; }));
+    Object.assign(f.api, { viewerConfiguration: lookup });
+    const choosing = f.store.open(root, 'A.md', true, { fileViewer: 'readonly-text' });
+    await vi.waitFor(() => expect(lookup).toHaveBeenCalledOnce());
+    f.store.activate(b.id); release(configuration()); await choosing;
+    expect(f.store.active).toBe(b);
+    expect(fileViewerChoice(a.buffer!)).toBeUndefined(); expect(fileViewerChoice(b.buffer!)).toBeUndefined();
+    expect(f.api.open).toHaveBeenCalledTimes(2); expect(f.api.checkpoint).not.toHaveBeenCalled();
+  });
+  it('preserves editing started while the viewer configuration is in flight', async () => {
+    const f = setup(); await f.store.initialize(); await f.store.open(root, 'A.md', true);
+    const tab = f.store.active!, buffer = tab.buffer!, ref = buffer.file.ref;
+    let release!: (value: ReturnType<typeof configuration>) => void;
+    const lookup = vi.fn(() => new Promise<ReturnType<typeof configuration>>(resolve => { release = resolve; }));
+    Object.assign(f.api, { viewerConfiguration: lookup });
+    const choosing = f.store.open(root, 'A.md', true, { fileViewer: 'readonly-text' });
+    const outcome = choosing.then(() => null, error => error);
+    await vi.waitFor(() => expect(lookup).toHaveBeenCalledOnce());
+    const transaction = buffer.editor!.update({ changes: { from: 0, insert: 'UNSAVED ' } });
+    buffer.acceptTransactions(transaction.state, [transaction]); release(configuration());
+    expect(await outcome).toBeInstanceOf(Error);
+    expect(f.store.active).toBe(tab); expect(buffer.file.ref).toBe(ref); expect(buffer.raw).toBe('UNSAVED BASE');
+    expect(buffer.dirty).toBe(true); expect(fileViewerChoice(buffer)).toBeUndefined(); expect(f.api.open).toHaveBeenCalledTimes(1);
+  });
+  it('rejects an unavailable explicit target before opening or activating another document', async () => {
+    const f = setup(); Object.assign(f.api, { viewerConfiguration: vi.fn(async () => configuration()) });
+    await f.store.initialize(); await f.store.open(root, 'B.md', true); const b = f.store.active!;
+    await expect(f.store.open(root, 'A.md', true, { fileViewer: 'missing-viewer' })).rejects.toThrow();
+    expect(f.store.active).toBe(b); expect(f.store.tabs).toEqual([b]);
+    expect(f.api.open).toHaveBeenCalledTimes(1); expect(fileViewerChoice(b.buffer!)).toBeUndefined();
+  });
+  it('combines the existing default viewer hint with an exact CRLF source point', async () => {
+    const f = setup(), raw = 'first\r\n中文🙂 target\r\nlast\r\n';
+    f.api.read.mockImplementation(async ref => ({ document: f.documents.get(ref.id)!, base64: Buffer.from(raw).toString('base64') }));
+    await f.store.initialize(); await f.store.open(root, 'A.md', true);
+    const tab = f.store.active!, buffer = tab.buffer!, editor = buffer.editor, ref = buffer.file.ref;
+    await f.store.open(root, 'A.md', true, { fileViewer: 'default', line: 2, column: 5 });
+    expect(fileViewerChoice(buffer)).toBeNull(); expect(buffer.reveal).toEqual({ from: 10, to: 10 });
+    expect(f.store.active).toBe(tab); expect(f.store.tabs).toEqual([tab]); expect(buffer.editor).toBe(editor); expect(buffer.file.ref).toBe(ref);
+    expect(buffer.raw).toBe(raw); expect(buffer.dirty).toBe(false); expect(f.api.checkpoint).not.toHaveBeenCalled();
+  });
+});
 
 it.each([false, true])('D22 U: duplicate restore aliases merge canonically in either completion order, foreign host stays a placeholder (%s)', async reverse => {
   const inner = { ...root, sourceId: 'inner', path: '/fixture/nested', canonicalPath: '/fixture/nested', lease: randomUUID() }, a = route('nested/a.txt'), b = { ...route('a.txt'), sourceId: inner.sourceId, sourcePath: inner.path }, foreign = { ...a, hostId: 'foreign-host' };

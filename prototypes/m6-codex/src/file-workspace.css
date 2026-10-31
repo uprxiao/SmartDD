@@ -78,3 +78,11 @@
 .fw-ordinary-image { min-height:0; overflow:hidden; justify-content:center; }
 .fw-ordinary-image img { width:100%; height:100%; min-height:0; max-width:100%; max-height:100%; object-fit:contain; }
 .fw-svg-image img { background:#fff; padding:16px; }
+.file-workspace:not(.fw-production) .fw-editor .fw-code-overlay>textarea{-webkit-text-fill-color:currentColor}
+.file-workspace:not(.fw-production) .fw-editor .fw-code-overlay>textarea::selection{color:var(--fw-code-text)}
+
+/* h-80 belongs to the complete breadcrumb popup; only its directory scrolls. */
+.fw-menu.fw-breadcrumb-menu{display:flex;flex-direction:column;height:320px;max-height:min(320px,calc(100vh - 16px))}
+.fw-breadcrumb-menu>strong,.fw-breadcrumb-menu>button,.fw-breadcrumb-menu>hr{flex-shrink:0}
+.fw-breadcrumb-directory{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.fw-breadcrumb-directory>p{padding:6px 9px;color:var(--secondary);font-size:11px;line-height:17px}

@@ -1,5 +1,6 @@
 // 文件引用 → 终端输入 的纯模型（M9 GAP-07）。不依赖 DOM，原型与隔离实验共用同一份实现。
 // 约束：只“插入”文本，永不追加回车；不解析终端输出；不调用模型；来自文件的文本一律视为不可信。
+import { terminalPdfContextSchema, formatPdfReferenceLocation } from '../../../src/shared/pdf-comment-context.mjs';
 
 export const REF_LIMITS = { maxSelectedChars: 4000, maxTotalChars: 8000, maxLines: 200 };
 
@@ -26,13 +27,16 @@ export function pasteData(text, { bracketedPaste }) {
   return { data: clean.text.replace(/\n+/g, ' ').trimEnd(), mode: 'plain', collapsed, sanitized: clean };
 }
 
-export const REF_KINDS = ['file', 'range', 'comment'];
+export const REF_KINDS = ['file', 'range', 'comment', 'pdf-comment'];
 const posix = value => String(value || '').replace(/\\/g, '/').replace(/^\/+/, '');
 export function normalizeReference(ref) {
   if (!ref || !REF_KINDS.includes(ref.kind)) return { ok: false, error: 'invalid-kind' };
   const path = posix(ref.relativePath);
   if (!path || path.split('/').includes('..') || /^[a-z]:/i.test(path) || path.includes('\0')) return { ok: false, error: 'invalid-path' };
-  if (ref.kind !== 'file') {
+  if (ref.kind === 'pdf-comment') {
+    if (ref.range || !terminalPdfContextSchema.safeParse(ref.pdf).success || !ref.note?.trim()) return { ok: false, error: 'invalid-pdf-context' };
+  } else if (ref.pdf) return { ok: false, error: 'invalid-pdf-context' };
+  else if (ref.kind !== 'file') {
     const r = ref.range;
     if (!r || !Number.isInteger(r.startLine) || !Number.isInteger(r.endLine) || r.startLine < 1 || r.endLine < r.startLine) return { ok: false, error: 'invalid-range' };
   }
@@ -43,8 +47,8 @@ const lineLabel = r => r.startLine === r.endLine ? 'L' + r.startLine : 'L' + r.s
 // style: 'plain'（通用，不依赖任何 CLI 的专有语法）| 'at'（@路径 提及，行号放在括号里；具体 CLI 是否识别需单独验证）
 export function formatReference(ref, { style = 'plain', includeText = false, selectedText = '', note = '' } = {}) {
   const n = normalizeReference(ref); if (!n.ok) return { ok: false, error: n.error };
-  const r = n.ref; const where = r.range ? ' (' + lineLabel(r.range) + ')' : '';
-  const head = (style === 'at' ? '@' + r.relativePath : r.relativePath) + (style === 'at' ? where : r.range ? ':' + lineLabel(r.range) : '');
+  const r = n.ref, location = r.pdf ? formatPdfReferenceLocation(r.pdf) : r.range ? lineLabel(r.range) : '';
+  const head = (style === 'at' ? '@' + r.relativePath : r.relativePath) + (location ? style === 'at' ? ' (' + location + ')' : ':' + location : '');
   const parts = [head];
   const comment = String(note || r.note || '').trim();
   if (comment) parts.push(comment.split('\n').map(l => '> ' + l).join('\n'));

@@ -10,6 +10,7 @@ import { OFFICE_REL, STRICT_REL, OPC_REL, relationshipKind, relationshipPart } f
 import { OfficeXml, attribute, children, descendants, xmlEscape, type OfficeXmlNode, type XmlEdit } from './xml';
 import { EMU_PER_POINT, drawingNamespace, pptxDrawingNodes, pptxShapeId, pptxShapeTree } from './pptx-elements';
 import { validatePptxImageContainer } from './pptx-image-container';
+import { PPTX_PLACEHOLDER_DESCRIPTION } from '@shared/file-pptx-placeholder';
 
 // Internal main -> Worker receipt, never accepted by the renderer action schema.
 export const pptxImageReceiptSchema = z.object({
@@ -55,7 +56,9 @@ export function editPptxImage(model:OfficePagesModel, action:Extract<PptxAction,
     if (attribute(blip,'link',relNs) || descendants(blip,'extLst').length || descendants(target,'extLst',ns).length) throw new FileError('UNSUPPORTED','此图片包含外链或扩展替代图像，原图保留');
     const id = attribute(blip,'embed',relNs), relation = graph.forPart(part).find(row => row.id === id);
     if (!relation?.part || relation.external || !relationshipKind(relation.type,'image')) throw new FileError('INVALID_INPUT','图片嵌入关系无效，原图保留');
-    if (file.read(relation.part).equals(bytes) && graph.contentTypes.get(relation.part) === action.image.mime) return {packageData:file,plan:{changed:[],added:[],removed:[]} as OfficePartPlan};
+    const properties=descendants(target,'cNvPr',ns)[0],placeholder=properties&&attribute(properties,'descr')===PPTX_PLACEHOLDER_DESCRIPTION;
+    if (file.read(relation.part).equals(bytes) && graph.contentTypes.get(relation.part) === action.image.mime && !placeholder) return {packageData:file,plan:{changed:[],added:[],removed:[]} as OfficePartPlan};
+    if(placeholder){edits.push(doc.setAttribute(properties,'descr',''));if(attribute(properties,'name')===`Image placeholder ${action.elementId}`)edits.push(doc.setAttribute(properties,'name',`Picture ${action.elementId}`));}
   }
   const occupied = new Set(file.names().map(name => decodeURIComponent(name).toLowerCase()));
   let index = 1, media:string;

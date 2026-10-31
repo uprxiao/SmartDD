@@ -15,6 +15,7 @@ export function createTaskController(svc: TaskService, requireSender: (event: Ip
       rename: (e, id: string, title: string) => run(e, () => svc.rename(id, title)),
       setArchived: (e, id: string, archived: boolean) => run(e, () => svc.setArchived(id, archived)),
       stopAndArchive: (e, id: string) => run(e, () => svc.stopAndArchive(id)),
+      closeSession: (e, id: string) => run(e, () => svc.closeSession(id)),
       delete: (e, id: string) => run(e, () => svc.delete(id)),
       kill: (e, id: string) => run(e, () => svc.kill(id)),
     }),

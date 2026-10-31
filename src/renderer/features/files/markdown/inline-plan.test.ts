@@ -27,9 +27,10 @@ describe('DEV117 source-backed inline decoration plans', () => {
     const source = '  ## 标题 **粗** ##\r\n\r\nSetext\r\n===\r\n';
     const headings = plans(source).filter(node => node.kind === 'heading');
     expect(headings.map(node => node.level)).toEqual([2, 1]);
-    expect(headings[0].parts!.map(([from,to]) => source.slice(from,to))).toEqual(['## ', ' ##']);
+    // Exact archived HeaderMark ranges exclude preceding whitespace/newlines.
+    expect(headings[0].parts!.map(([from,to]) => source.slice(from,to))).toEqual(['## ', '##']);
     expect(headings[0].parts![0][0]).toBe(2);
-    expect(headings[1].parts!.map(([from,to]) => source.slice(from,to))).toEqual(['\r\n===']);
+    expect(headings[1].parts!.map(([from,to]) => source.slice(from,to))).toEqual(['===']);
   });
   it('keeps unresolved images literal and never creates a node outside its real parser range', () => {
     const source = '![unresolved][missing] &unknown; \\* &#x1f600; ` code `\n';

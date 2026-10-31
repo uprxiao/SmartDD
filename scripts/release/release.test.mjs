@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -11,6 +12,16 @@ import { releaseNotes, verifyTagCommit } from './metadata.mjs';
 import { nextTag, nextVersion, parseVersion } from './version.mjs';
 import { releasePolicy } from './policy.mjs';
 import cleanGeneratedMacBundle from './mac-bundle-metadata.cjs';
+import { windowsCheckoutIssue } from './check-checkout-paths.mjs';
+
+test('Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode', () => {
+  assert.match(windowsCheckoutIssue('evidence/B08-dark-replacement:delete.png'), /reserved character/);
+  assert.match(windowsCheckoutIssue('evidence/中文 空格🙂\".txt'), /reserved character/);
+  assert.match(windowsCheckoutIssue('evidence/' + '层级中文目录/'.repeat(40) + 'file.txt'), /MAX_PATH/);
+  for (const name of ['NUL.txt', 'COM¹.log', 'LPT9', 'name.', 'name ']) assert(windowsCheckoutIssue(`fixtures/${name}`));
+  assert.equal(windowsCheckoutIssue('docs/里程碑/M9/中文 空格🙂.md'), null);
+  assert.equal(windowsCheckoutIssue('docs/evidence/windows-checkout-evidence.tar.gz'), null);
+});
 
 test('Mac bundle cleanup removes signing-blocking metadata and preserves quarantine', { skip: process.platform !== 'darwin' }, async (t) => {
   const output = mkdtempSync(join(tmpdir(), 'smartdd-bundle-metadata-'));
@@ -101,10 +112,11 @@ test('native probe finishes after PTY exit even if a worker handle remains open'
   `);
   put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});");
   const result = spawnSync(process.execPath, ['--require', join(dir, 'preload.cjs'),
-    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 5000, env: { ...process.env, TEMP: dir, TMP: dir } });
+    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 12000, env: { ...process.env, TEMP: dir, TMP: dir } });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).pty, 'passed');
+  assert.equal(JSON.parse(result.stdout).fileWatcher, 'passed');
 });
 
 test('release tag must be annotated, checked out, sequential and already in main', (t) => {

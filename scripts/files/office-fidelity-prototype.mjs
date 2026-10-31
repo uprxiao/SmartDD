@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,readFile,writeFile}from 'node:fs/promises';
+import {join}from 'node:path';
+import {openFileAcceptanceApp}from './file-acceptance-ui.mjs';
+const executable=process.env.WILLYOU_FILES_APP,server=JSON.parse(await readFile(process.env.WILLYOU_FIDELITY_SERVER,'utf8'));assert(executable&&server.port);
+const scratch=await mkdtemp('/private/tmp/willyou-office-fidelity-P-'),project=join(scratch,'project');await mkdir(project);const r={at:new Date().toISOString(),caseId:'M9-T-Y13',layer:'P',scratch,status:'running',checks:[],boundary:'Dedicated explicitly labelled shared Office prototype; original FileOfficePreview and P/A shared fidelity details. JSON document/example receipt callbacks only, no OOXML/native IO/actual signed-file/physicalIME/AppA claim. Packaged App supplies an isolated Electron shell, then navigates to a loopback prototype. No CUA or explicit external window focus action. Cleanup is not a normal-quit test.'};let app,stage='setup';
+const count=()=>app.evaluate("Number(document.querySelector('[data-copy-count]').dataset.copyCount)"),choose=async(type,value)=>app.click(`[data-${type}-choice="${value}"]`);
+try{
+ app=await openFileAcceptanceApp({executable,projectPath:project,userData:join(scratch,'userdata'),name:'P Y13 synthetic Office failure'});r.pid=app.processId;
+ await app.cdp('Page.navigate',{url:`http://127.0.0.1:${server.port}/tests/office-fidelity-runtime.html`});await app.waitFor("!!document.querySelector('[data-copy-count]')");
+ for(const theme of ['light','dark']){await choose('theme',theme);for(const kind of ['xlsx','pptx','docx']){
+  stage=`${theme}/${kind}/signed`;await choose('kind',kind);await choose('mode','signed');await app.waitFor("document.body.textContent.includes('编辑会使签名失效')");assert(!await app.evaluate("!!document.querySelector('.fw-office-fidelity-strip')"));
+  if(kind==='xlsx')assert(await app.evaluate("document.querySelector('.fo-formula textarea').readOnly"));if(kind==='pptx')assert(await app.evaluate("[...document.querySelectorAll('.fo-header button')].find(e=>e.textContent==='编辑').disabled"));await app.screenshot(join(scratch,`${theme}-${kind}-signed.png`));r.checks.push({theme,kind,mode:'signed',warningBeforeEditing:true,lossyCopyAbsent:true});
+  await choose('mode','blocked');if(kind==='docx'){assert(!await app.evaluate("!!document.querySelector('.fw-office-fidelity-strip')"));r.checks.push({theme,kind,mode:'blocked-inapplicable',noDOCXEditingInvented:true});continue;}
+  stage=`${theme}/${kind}/cancel`;await app.waitFor("!!document.querySelector('.fw-office-fidelity-strip')");let before=await count();await app.click('.fw-office-fidelity-strip button');await app.click('[role=dialog] button','取消');assert.equal(await count(),before);await app.click('.fw-office-fidelity-strip button');await app.key('Escape','Escape');await app.waitFor("!document.querySelector('[role=dialog]')");assert.equal(await count(),before);r.checks.push({theme,kind,mode:'confirmation-cancel',noReceiptRequested:true});
+  for(const receipt of ['cancelled','saved','failed']){
+   stage=`${theme}/${kind}/${receipt}`;await choose('receipt',receipt);before=await count();await app.click('.fw-office-fidelity-strip button');await app.waitFor("!!document.querySelector('[role=dialog]')");assert.equal(await count(),before);await app.click('[role=dialog] button','另存有损副本');await app.waitFor(`Number(document.querySelector('[data-copy-count]').dataset.copyCount)===${before+1}`);await app.waitFor(`document.body.textContent.includes(${JSON.stringify(receipt==='failed'?'Synthetic copy unavailable':receipt==='saved'?'原件未保存，草稿仍保留':'已取消另存；原件与草稿仍保留')})`);assert(await app.evaluate("!!document.querySelector('.fw-office-fidelity-strip')"));r.checks.push({theme,kind,mode:'explicit-'+receipt,receiptCount:await count(),syntheticOnly:true});
+  }await app.screenshot(join(scratch,`${theme}-${kind}-blocked.png`));
+ }}
+ assert.deepEqual(app.rendererErrors,[]);r.status='passed';
+}catch(error){r.status='failed';r.failedStage=stage;r.error=String(error);r.stack=error.stack;process.exitCode=1;if(app)try{r.dom=await app.evaluate('document.body.innerText');await app.screenshot(join(scratch,'failure.png'));}catch{}}
+finally{if(app){await writeFile(join(scratch,'electron.log'),app.logs());await app.close();}r.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify({status:r.status,checks:r.checks.length,scratch,error:r.error,failedStage:r.failedStage}));}

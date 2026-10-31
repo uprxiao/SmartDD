@@ -7,7 +7,8 @@ import { setTimeout as realDelay } from 'node:timers/promises';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { deleteCharBackward, insertNewlineAndIndent, selectAll } from '@codemirror/commands';
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FileService } from '@main/core/files/file-service';
 import { FileRootsService } from '@main/core/files/roots';
@@ -50,11 +51,35 @@ afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) await f.c
 afterAll(() => { if (process.env.SMARTDD_READONLY_EVIDENCE) writeFileSync(process.env.SMARTDD_READONLY_EVIDENCE, JSON.stringify({ caseId: 'M9-T-H11', at: new Date().toISOString(), broker: process.env.SMARTDD_M9_FILE_BROKER, brokerSha256: sha(readFileSync(process.env.SMARTDD_M9_FILE_BROKER!)), boundary: 'Production EditorView/component and real service/native IO. DOM events are synthetic jsdom events, not App or physical keyboard evidence; syntax workers are isolated.', rows }, null, 2) + '\n'); });
 
 describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BROKER)('M9 H11 actual readonly text input and native save boundary', () => {
+  it('readonly content accepts keyboard focus and Find restores it without enabling writes', async () => {
+    const f = await fixture('permission'), before = disk(f.path);
+    const mounted = render(<><button>Before readonly editor</button><FileTextEditor buffer={f.buffer} wrap={false} /><button>After readonly editor</button></>);
+    const editor = EditorView.findFromDOM(mounted.container.querySelector('.cm-editor') as HTMLElement)!;
+    act(() => mounted.getByRole('button', { name: 'Before readonly editor' }).focus());
+    const user = userEvent.setup(), focusPath: string[] = [];
+    for (let i = 0; i < 12; i++) {
+      await user.tab();
+      focusPath.push(document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.textContent ?? '');
+      if (document.activeElement === editor.contentDOM || document.activeElement === mounted.getByRole('button', { name: 'After readonly editor' })) break;
+    }
+    expect(document.activeElement).toBe(editor.contentDOM);
+    fireEvent.keyDown(document.activeElement!, { key: 'f', code: 'KeyF', metaKey: true });
+    const find = mounted.getByRole('textbox', { name: '在文件中查找' });
+    expect(document.activeElement).toBe(find);
+    fireEvent.keyDown(find, { key: 'Escape' });
+    expect(mounted.queryByRole('textbox', { name: '在文件中查找' })).toBeNull();
+    expect(document.activeElement).toBe(editor.contentDOM);
+    expect(editor.state.facet(EditorState.readOnly)).toBe(true);
+    expect(editor.contentDOM.getAttribute('contenteditable')).toBe('false');
+    expect(f.buffer.dirty).toBe(false); expect(disk(f.path)).toEqual(before);
+    expect(f.api.save).not.toHaveBeenCalled(); expect(f.api.checkpoint).not.toHaveBeenCalled();
+    rows.push({ scenario: 'readonly Tab reachability / Find / Escape restore', focusPath, before, after: disk(f.path), readonly: true, writes: 0 });
+  });
   it.each(['permission', 'size'] as const)('%s readonly blocks input, paste, selection replacement and writes', async kind => {
     const f = await fixture(kind), before = disk(f.path); const mounted = render(<FileTextEditor buffer={f.buffer} wrap={false} />);
     const editor = EditorView.findFromDOM(mounted.container.querySelector('.cm-editor') as HTMLElement)!;
     expect(editor.state.facet(EditorState.readOnly)).toBe(true); expect(editor.contentDOM.getAttribute('contenteditable')).toBe('false'); expect(f.buffer.editable).toBe(false);
-    expect((mounted.getByRole('button', { name: '撤销' }) as HTMLButtonElement).disabled).toBe(true); expect((mounted.getByRole('button', { name: '重做' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(mounted.queryByRole('button', { name: '撤销' })).toBeNull(); expect(mounted.queryByRole('button', { name: '重做' })).toBeNull();
     const commands: boolean[] = []; act(() => { commands.push(insertNewlineAndIndent(editor)); selectAll(editor); commands.push(deleteCharBackward(editor)); });
     // These are the commands bound by the production defaultKeymap. Bare
     // insertNewline/insertTab helpers are not wired to this component and can

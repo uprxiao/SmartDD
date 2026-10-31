@@ -3,12 +3,14 @@ import { Compartment, EditorSelection, EditorState, type Extension } from '@code
 import { EditorView, drawSelection, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
 import { handleLargeTextInput } from './large-input';
 import { defaultKeymap, historyKeymap, redo, redoDepth, undo, undoDepth } from '@codemirror/commands';
-import { ChevronDown, ChevronUp, Redo2, Undo2, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { FileEditorStatus } from '@shared/file-editor-status';
 import { bytesFromBase64, type FileBuffer } from './file-buffer';
 import { decodeFileText } from '@shared/file-text';
 import { fileInlineDiffPolicy } from '@shared/file-inline-diff.mjs';
 import { fileConflictDiffGuard, syncFileConflictDiff } from './conflict-diff';
 import { fileFindCurrent, fileFindQuery, fileFindState } from './text-find-state';
+import { guardEditorComposition } from '@shared/file-composition-shortcut.mjs';
 import { GoToLineButton, GoToLinePanel } from './go-to-line';
 import { LinePreviewSession } from './line-navigation';
 import { hydratedEditorTarget, applyHydratedEditorReading, attachEditorReading, rememberEditorScroll, restoredEditorPosition, restoredEditorScroll, takeEditorModeFocus } from './editor-scroll';
@@ -54,13 +56,16 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
     ...(!richDocument ? [lineNumbers(), syntax, attribution] : []), drawSelection(), highlightSpecialChars(), rich,
     keymap.of([{ key: 'Mod-s', run: (editor) => { if (editor.composing) return false; void buffer.save(); return true; } }, ...historyKeymap, ...defaultKeymap]),
     EditorState.readOnly.of(!buffer.editable), EditorView.editable.of(buffer.editable), ...(wrap ? [EditorView.lineWrapping] : []),
-    EditorView.contentAttributes.of({ 'aria-label': `${buffer.file.name} 内容`, spellcheck: 'false' }),
+    EditorView.contentAttributes.of((editor) => {
+      const head = editor.state.selection.main.head, line = editor.state.doc.lineAt(head);
+      return { 'aria-label': `${buffer.file.name} 内容`, 'aria-description': `第 ${line.number} 行，第 ${head - line.from + 1} 列`, tabindex: '0', spellcheck: 'false' };
+    }),
     EditorView.theme({ '&': { height: '100%', backgroundColor: 'var(--bg)', color: 'var(--fw-code-text)' }, '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--fw-code-font)', fontSize: 'var(--fw-code-size)', lineHeight: 'var(--fw-code-line)' }, '.cm-content': { padding: '0 0 24px' }, '.cm-line': { padding: '0 12px' }, '.cm-gutters': { backgroundColor: 'var(--bg)', color: 'var(--fw-code-comment)', border: 'none' }, '.cm-lineNumbers .cm-gutterElement': { minWidth: '28px', boxSizing: 'border-box', padding: '0 4px 0 8px' }, '.cm-cursor': { borderLeftColor: 'var(--text)' }, '&.cm-focused': { outline: 'none' }, '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { backgroundColor: 'var(--selected)' } }),
   ];
   useLayoutEffect(() => {
     if (!host.current || !buffer.editor) return;
     const input = buffer.attachInputView();
-    const editor = new EditorView({ parent: host.current, state: buffer.editor, scrollTo: restoredEditorScroll(buffer, buffer.editor, scrollMode) ?? hydratedEditorTarget(buffer, buffer.editor, scrollMode), dispatchTransactions(transactions, current) { current.update(transactions); input.acceptTransactions(current.state, transactions); language?.observe(buffer, current); } });
+    const editor = new EditorView({ parent: host.current, state: buffer.editor, scrollTo: restoredEditorScroll(buffer, buffer.editor, scrollMode) ?? hydratedEditorTarget(buffer, buffer.editor, scrollMode), dispatchTransactions(transactions, current) { if (!buffer.editable && transactions.some(transaction => transaction.docChanged)) return; current.update(transactions); input.acceptTransactions(current.state, transactions); language?.observe(buffer, current); } });
     view.current = editor;
     pendingInput.current = [EditorView.domEventObservers({
       beforeinput: event => { if (/^(insert|delete|history)/.test(event.inputType)) { input.beforeInput(); language?.observe(buffer, editor); } },
@@ -90,7 +95,7 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
     if (!editor || !buffer.editor) return;
     if (editor.state !== buffer.editor) { const scroll = editor.scrollDOM.scrollTop; editor.setState(buffer.editor); editor.dispatch({ effects: buffer.viewConfiguration.reconfigure(extension()) }); editor.scrollDOM.scrollTop = scroll; language?.observe(buffer, editor); }
   }, [buffer, buffer.editor]);
-  useEffect(() => { setPreviewStatus(''); view.current?.dispatch({ effects: buffer.viewConfiguration.reconfigure(extension()) }); }, [buffer, wrap, buffer.editable, rich, attribution]);
+  useEffect(() => { setPreviewStatus(''); view.current?.dispatch({ effects: buffer.viewConfiguration.reconfigure(extension()) }); }, [buffer, buffer.file.name, wrap, buffer.editable, rich, attribution]);
   useEffect(() => { if (finding) findInput.current?.focus(); }, [finding]);
   useLayoutEffect(() => {
     if (lineNavigation && (lineNavigation.instance !== buffer.instance || !lineNavigation.session.isCurrent())) {
@@ -127,7 +132,8 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
   };
   return <FileSelectionActions buffer={buffer} editor={() => view.current}><div className={`fw-editor-host ${richDocument ? 'fw-markdown-editable' : ''}`} data-inline-diff-state={diffPolicy.state} onKeyDownCapture={(event) => {
     if ((event.target as Element).closest('.fw-gallery,.fw-embedded-image-menu')) return;
-    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    // CodeMirror receives keydown too; returning alone still runs its keymap.
+    if (guardEditorComposition(event, Boolean((event.target as Element).closest('.cm-content')))) return;
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') { event.preventDefault(); event.stopPropagation(); lineSession.current?.cancel(false); lineSession.current = null; setLineNavigation(null); setFinding(true); }
   }}>
     {lineNavigation?.instance === buffer.instance && <GoToLinePanel navigator={lineNavigation.session} onClose={() => { if (lineSession.current === lineNavigation.session) lineSession.current = null; setLineNavigation(null); }} />}
@@ -137,11 +143,10 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
       if (event.key === 'Enter') { event.preventDefault(); locate(match + (event.shiftKey ? -1 : 1)); }
     }} /><span role="status" aria-label="文件内匹配计数" title={query && !matches.length ? '未找到匹配' : search?.limited ? '仅显示前 999 个匹配，仍有更多结果' : `${matches.length} 个匹配`}>{matches.length ? `${match + 1}/${matches.length}${search?.limited ? '+' : ''}` : '0/0'}</span><button aria-label="上一个匹配" disabled={!matches.length} onClick={() => locate(match - 1)}><ChevronUp size={15} /></button><button aria-label="下一个匹配" disabled={!matches.length} onClick={() => locate(match + 1)}><ChevronDown size={15} /></button><button aria-label="关闭查找" onClick={() => { setFinding(false); view.current?.focus(); }}><X size={15} /></button></div>}
     <div className="fw-editor-tools" role="toolbar" aria-label="文本编辑">
-      <button type="button" className="fw-icon" title="撤销" aria-label="撤销" disabled={!buffer.editable || !buffer.editor || undoDepth(buffer.editor) === 0} onMouseDown={(event) => event.preventDefault()} onClick={() => history('undo')}><Undo2 size={17} strokeWidth={1.65} /></button>
-      <button type="button" className="fw-icon" title="重做" aria-label="重做" disabled={!buffer.editable || !buffer.editor || redoDepth(buffer.editor) === 0} onMouseDown={(event) => event.preventDefault()} onClick={() => history('redo')}><Redo2 size={17} strokeWidth={1.65} /></button>
       <GoToLineButton disabled={!buffer.editor || !buffer.inputSettled} onOpen={openLineNavigation} />
       {!markdown && <LanguageEditorTools />}
     </div>
+    <FileEditorStatus canUndo={Boolean(buffer.editor && undoDepth(buffer.editor))} canRedo={Boolean(buffer.editor && redoDepth(buffer.editor))} disabled={!buffer.editable} saving={buffer.saving} error={buffer.saveError} onUndo={() => history('undo')} onRedo={() => history('redo')} />
     {diffPolicy.state === 'enabled' && <div className="fw-save-strip" role="status">差异对比：磁盘版本 → 我的修改</div>}
     {diffPolicy.reason && <div className="fw-save-strip" role="status">{diffPolicy.reason}</div>}
     {diskText && diskText.kind !== 'text' && <div className="fw-save-strip" role="status">磁盘版本无法按无损文本比较；本地修改仍保留。</div>}

@@ -1,0 +1,102 @@
+{
+  "status": "user-approved-applied-and-T10-fully-verified",
+  "at": "2026-10-22T02:10:32.291122+00:00",
+  "basis": [
+    "需求.md:R06.17 / R3.4 PDF外部链接只提示不导航",
+    "验收/测试用例.md:M9-T-Y14 既定同边界",
+    "G074007 精确source/expected冲突图"
+  ],
+  "originalCase": {
+    "id": "M9-T-T10",
+    "group": "T",
+    "title": "PDF文本复制与表单边界",
+    "requirements": [
+      "M9-R06.5"
+    ],
+    "level": "组件／集成／安装端到端",
+    "environments": [
+      "R",
+      "P",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D06",
+      "D10"
+    ],
+    "steps": "artifact PDF选择跨行文本复制；点击合法内部/外部链接及表单字段。",
+    "expected": "文本层可复制；内部目的地定位；外部链接经批准外开；renderForms=false不提供可写表单，不把已有注释展示称PDF编辑。",
+    "source": "V D06",
+    "prototype": "PS-viewer-controls",
+    "basis": "宿主静态事实＋迁移设计；运行未执行",
+    "status": "未执行",
+    "evidence": [],
+    "actual_result": null,
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R06",
+      "M9-R05",
+      "M9-R09"
+    ],
+    "prototype_pages": [
+      "P11"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R06.5"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "originalContractSHA256": "8407370788baf534733ac4961819693aae93334d4375bcdc75d6595035f90e11",
+  "proposedChanges": {
+    "steps": "artifact PDF选择跨行文本复制；点击合法内部/外部链接及表单字段。",
+    "expected": "文本层可复制；内部目的地定位；外部链接只显示可识别提示，不执行导航、不调用外部浏览器打开；不自动获取远程资源；renderForms=false不提供可写表单，不把已有注释展示称PDF编辑。"
+  },
+  "unchanged": [
+    "id T10",
+    "原跨行复制/内部链接/表单字段操作",
+    "R/P/I/A各原层级",
+    "artifact来源和可信文件边界",
+    "419分母",
+    "保留原合同/执行事实，不批准即通过"
+  ],
+  "userDecision": {
+    "at": "2026-10-22T02:12:36.340290+00:00",
+    "source": "Current user reply to async question call_ce65e33fff5b4a4ca4bfe6eabb7f581c",
+    "answer": "同意按已确认需求修正这两条（推荐）",
+    "noAutomaticPass": true
+  },
+  "notExecuted": [
+    "本提案没有修改生产/P/权威账",
+    "没有因此打开浏览器或复制剪贴板"
+  ],
+  "appliedContract": {
+    "id": "M9-T-T10",
+    "steps": "artifact PDF选择跨行文本复制；点击合法内部/外部链接及表单字段。",
+    "expected": "文本层可复制；内部目的地定位；外部链接只显示可识别提示，不执行导航、不调用外部浏览器打开；不自动获取远程资源；renderForms=false不提供可写表单，不把已有注释展示称PDF编辑。",
+    "environments": [
+      "R",
+      "P",
+      "I",
+      "A"
+    ],
+    "scope": "m9-local"
+  },
+  "verification": {
+    "at": "2026-10-22T03:10:17.226056+00:00",
+    "evidence": "证据/m9-acceptance-t10-complete-r156-20261022-9de5.json",
+    "originalContractsAndOtherChecksPreserved": true,
+    "total419": true
+  }
+}

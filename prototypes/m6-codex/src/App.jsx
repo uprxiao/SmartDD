@@ -1,5 +1,6 @@
 import {previewTerminalCurrent} from './application-reference-preview.mjs';
 import { createPathPreviewDelivery } from './file-path-delivery.mjs';
+import { createImagePreviewDelivery } from './file-image-input-preview.mjs';
 import { FILE_DRAG_TYPE, resolveFileDrag, buildFilePathInsertion } from './file-drag-model.mjs';
 import { buildInsertion } from './file-reference-model.mjs';
 import { useEffect, useRef, useState } from 'react';
@@ -12,6 +13,7 @@ import { ReferenceHome } from './ReferenceHome';
 import { ProjectWorkspace, ProjectEditor } from './ProjectWorkspace';
 import { ProjectTransfer } from './ProjectTransfer';
 import { FileWorkspace } from './FileWorkspace';
+import { preparePrototypeTaskClose, serializeWorkspaceStore } from './file-workspace-model.mjs';
 import { IntegrationWorkspace } from './IntegrationWorkspace';
 import { useIntegrationPreview, ProjectApplications, SessionApplications } from './IntegrationPackageUI';
 import { APP_DEFINITIONS, integrationSnapshot, projectPackages, packageVersion, snapshotCurrent, sessionApplicationState } from './integration-model.mjs';
@@ -62,14 +64,15 @@ function SettingsGroup({ title, children }) {
 }
 const terminalSessions = new Map();
 // Read-only snapshot for isolated prototype acceptance; never exposes the live session.
-export function terminalPreviewSnapshot(taskId) { const value = terminalSessions.get(taskId); return value ? { input: value.input, output: value.output } : null; }
-export function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, voiceTarget, integrationReference, onIntegrationReferenceHandled, pathDelivery, integrationData }) {
+export function terminalPreviewSnapshot(taskId) { const value = terminalSessions.get(taskId); return value ? { input: value.input, output: value.output, images: (value.images || []).map(image => ({ ...image })) } : null; }
+export function TerminalPreview({ task, profile, project, dark, fontSize, fontFamily, voiceTarget, integrationReference, onIntegrationReferenceHandled, pathDelivery, imageDelivery, integrationData }) {
   const container = useRef(null), terminal = useRef(null), fitRef = useRef(null), running = useRef(task.status === 'running'), dropHandler = useRef(null);
   const [dropStatus, setDropStatus] = useState('');
   const pathTransport = useRef(pathDelivery), delivery = useRef(null); pathTransport.current = pathDelivery;
+  const imageTransport = useRef(imageDelivery), imageReceiver = useRef(null); imageTransport.current = imageDelivery;
   const applicationContext = useRef(null);
   applicationContext.current = { data: integrationData, snapshot: task.integrationSnapshot, projectId: task.project };
-  useEffect(() => { running.current = task.status === 'running'; delivery.current?.invalidate(); setDropStatus(''); }, [task.status]);
+  useEffect(() => { running.current = task.status === 'running'; delivery.current?.invalidate(); imageReceiver.current?.invalidate(); setDropStatus(''); }, [task.status]);
   useEffect(() => {
     let disposed = false;
     const t = new Terminal({ fontFamily: fontFamily || 'Menlo, monospace', fontSize, lineHeight: 1.45, cursorBlink: true, theme: terminalTheme(dark), convertEol: true, scrollback: 600 });
@@ -120,7 +123,34 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
       t.focus(); reply({ requestId: d.requestId, ok: true, mode: r.mode, collapsed: r.collapsed, sanitized: r.sanitized, removed: r.removed });
     };
     const pathSession = createPathPreviewDelivery({ available: () => !disposed && running.current, accept: data => { input += data; session.input = input; write(data); t.focus(); }, status: setDropStatus, transport: request => pathTransport.current ? pathTransport.current(request) : { state: request.accept() ? 'inserted' : 'failed', message: '任务未运行，文件路径未放入；请先恢复终端。' } }); delivery.current = pathSession; setDropStatus('');
-    const onFileContext = event => { if (event.detail?.taskId === task.id) { pathSession.invalidate(); setDropStatus(''); } };
+    const imageGates = new Map();
+    const releaseImages = () => { for (const release of [...imageGates.values()]) release(true); };
+    const imageSession = createImagePreviewDelivery({ available: () => !disposed && running.current && !!container.current?.isConnected,
+      accept: image => {
+        // A separate synthetic payload record is retained with the task draft.
+        // The visible token never substitutes for the image catalog identity.
+        session.images = [...(session.images || []), image];
+        const token = '[Image ' + session.images.length + ']'; input += token; session.input = input; write(token); t.focus();
+      }, transport: request => {
+        if (imageTransport.current) return imageTransport.current(request);
+        if (request.behavior === 'reject') return { state: 'failed', message: '图片准备被示例适配器拒绝，已有输入和图片保留。' };
+        if (request.behavior === 'pending') return new Promise(resolve => {
+          const release = failed => { imageGates.delete(request.requestId); request.signal?.removeEventListener('abort', abort); resolve(failed ? { state: 'failed' } : { state: request.accept() ? 'inserted' : 'failed' }); };
+          const abort = () => release(true); imageGates.set(request.requestId, release); request.signal?.addEventListener('abort', abort, { once: true });
+          if (request.signal?.aborted) release(true);
+        });
+        return { state: request.accept() ? 'inserted' : 'failed' };
+      } });
+    imageReceiver.current = { invalidate() { imageSession.invalidate(); releaseImages(); } };
+    const onImageInsert = event => {
+      const request = event.detail;
+      if (request?.taskId !== task.id || request.ptyId !== ptyId || request.handled) return;
+      request.handled = true; void imageSession.insert(request);
+    };
+    const onImageComplete = event => { if (!event.detail?.taskId || event.detail.taskId === task.id) imageGates.get(event.detail?.requestId)?.(!!event.detail.failed); };
+    window.addEventListener('m9:terminal-image-insert', onImageInsert);
+    window.addEventListener('m9:terminal-image-complete', onImageComplete);
+    const onFileContext = event => { if (event.detail?.taskId === task.id) { pathSession.invalidate(); imageReceiver.current?.invalidate(); setDropStatus(''); } };
     window.addEventListener('m9:file-context-invalidated', onFileContext);
     dropHandler.current = event => {
       event.preventDefault();
@@ -164,8 +194,11 @@ export function TerminalPreview({ task, profile, project, dark, fontSize, fontFa
         else if (ch === '\u0003') { input = ''; write('^C\r\n❯ '); }
         else if (ch >= ' ') { input += ch; write(ch); }
       }
+      // Keep the shared session model current for typed input as well as
+      // path/reference delivery and remount restoration.
+      session.input = input;
     });
-    return () => { window.removeEventListener('m10:terminal-preview-observe',observePreview); window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); disposed = true; window.removeEventListener('m9:file-context-invalidated', onFileContext); pathSession.dispose(); if (delivery.current === pathSession) delivery.current = null; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
+    return () => { window.removeEventListener('m10:terminal-preview-observe',observePreview); window.removeEventListener('m9:terminal-insert', onInsert); window.removeEventListener('m9:terminal-config', onConfig); window.removeEventListener('m9:terminal-image-insert', onImageInsert); window.removeEventListener('m9:terminal-image-complete', onImageComplete); disposed = true; imageSession.dispose(); releaseImages(); imageReceiver.current = null; window.removeEventListener('m9:file-context-invalidated', onFileContext); pathSession.dispose(); if (delivery.current === pathSession) delivery.current = null; dropHandler.current = null; session.input = input; clearTimeout(timer); observer.disconnect(); onData.dispose(); t.dispose(); voiceTarget.current = null; terminal.current = null; fitRef.current = null; };
   }, [task.id, task.ptyId]);
   useEffect(() => {
     if (integrationReference?.taskId !== task.id || integrationReference.ptyId && integrationReference.ptyId !== (task.ptyId ?? task.id)) return;
@@ -252,6 +285,23 @@ export function App() {
     if (!item.archived && item.status === 'running') setModal({ type: 'archive-task', task: item });
     else archiveTask(item, !item.archived);
   };
+  const closeSession = (item, action = 'save') => {
+    let outcome;
+    try {
+      window.dispatchEvent(new CustomEvent('m9:prepare-session-close', { detail: { taskId: item.id, action, reply: value => { outcome = value; } } }));
+      if (!outcome) {
+        const store = JSON.parse(localStorage.getItem('willyou-m9-prototype-v1') || '{}');
+        outcome = preparePrototypeTaskClose(store, item.id, action);
+        localStorage.setItem('willyou-m9-prototype-v1', JSON.stringify(serializeWorkspaceStore(outcome.store)));
+      }
+      if (!outcome.ready) { setModal({ type: 'close-task', task: item, error: outcome.message, canDiscard: outcome.canDiscard }); return; }
+      setTasks(old => old.map(t => t.id === item.id ? { ...t, status: 'stopped' } : t));
+      setModal(null);
+      if (taskId === item.id) { if (item.project) setProjectId(item.project); nav('home'); }
+    } catch {
+      setModal({ type: 'close-task', task: item, error: '示例文件状态未保存，原会话仍保留。' });
+    }
+  };
   useEffect(() => {
     const changed = () => setRoute(location.hash.slice(1) || 'home');
     const key = e => {
@@ -299,6 +349,7 @@ export function App() {
         <div className="picker-wrap"><IconButton icon={Ellipsis} label="更多" aria-expanded={popover === 'task-actions'} onClick={() => setPopover(popover === 'task-actions' ? null : 'task-actions')} />
           {popover === 'task-actions' && <div className="popover task-actions-menu">
             <button className="menu-item" disabled={task.archived} onClick={() => { setPopover(null); task.status === 'running' ? setTasks(old => old.map(t => t.id === task.id ? { ...t, status: 'stopped' } : t)) : setModal({ type: 'resume' }); }}>{task.status === 'running' ? <Square size={16} /> : <ArrowRight size={16} />}{task.status === 'running' ? '结束' : '恢复'}</button>
+            <button className="menu-item" onClick={() => { setPopover(null); setModal({ type: 'close-task', task }); }}><X size={16} />关闭会话</button>
             <button className="menu-item" onClick={() => { setTheme(dark ? 'light' : 'dark'); setPopover(null); }}>{dark ? <Sun size={16} /> : <Moon size={16} />}主题</button>
             <div className="menu-divider" /><button className="menu-item" onClick={() => { setPopover(null); voice.clear(); setModal({ type: 'voice-demo' }); }}>M7 · 语音预览</button>
             <button className="menu-item" disabled={task.status !== 'running' || voice.busy || !voice.settings.globalEnabled} onPointerDown={e => e.preventDefault()} onClick={() => { setPopover(null); voice.trigger(terminalVoiceTarget.current); }}>演示终端快捷键（模拟）</button>
@@ -322,7 +373,7 @@ export function App() {
       onSettings={() => nav('settings/general')} onInfo={() => setModal({ type: 'preview' })} />
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
-    <main ref={fileArea} className="workspace">
+    <main ref={fileArea} className="workspace" style={task && fileWorkspace ? { minWidth: 0 } : undefined}>
       {isApps && <IntegrationWorkspace currentTerminalTaskId={lastIntegrationTask.current} selectedProjectId={integrationProjectId} onSelectProject={setIntegrationProjectId} integration={integration} onUsePrompt={useApplicationPrompt} onNewProjectTask={newApplicationTask} route={route} nav={nav} projects={projects} tasks={tasks} onStopTasks={stopApplicationTasks} onSimulateConnectionReference={connection=>{const pid=Object.keys(integration.data.bindings).find(key=>integration.data.bindings[key].includes(connection.id))||integrationProjectId;setTasks(current=>[...current,{...(current.find(item=>item.project===pid)||current[0]),id:id(),title:'预检新增历史引用 · 合成示例',firstMessage:'仅用于连接预检引用变化，不运行Agent。',project:pid,status:'stopped',archived:true,time:'刚刚',integrationSnapshot:{projectId:pid,evidence:'prepared-demo',packages:[{id:connection.app,version:packageVersion(integration.data,connection.app),connections:[{id:connection.id,revision:connection.revision}],skills:[],tools:[]}]}}]);}} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onInsertReference={(text, selectedProject, target) => { if (!previewTerminalCurrent(target, tasks, selectedProject, lastIntegrationTask.current)) { notify('原目标任务或终端已变化，请重新查看对象后再插入。'); return false; } setFileWorkspace(false); setIntegrationReference({ taskId: target.taskId, ptyId: target.ptyId, text, requestId: id() }); nav('task/' + target.taskId); return true; }} />}
       {!task && <header className="topbar"><div className="breadcrumbs">{isSettings ? <><span>设置</span><ChevronRight size={12} /><span>{SETTINGS.find(s => s[0] === section)?.[2] || 'AI 配置'}</span></> : isProject ? <><Folder size={15} /><span>{activeProject.name}</span></> : <span className="quiet">工作台</span>}</div>
         <div className="topbar-actions"><button className="preview-badge" onClick={() => setModal({ type: 'preview' })}>界面预览</button><IconButton icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={() => setTheme(dark ? 'light' : 'dark')} /></div>
@@ -384,6 +435,7 @@ export function App() {
       setModal(null); setProjectId(key); nav('project/' + key);
     }} onStartTask={key => { setModal(null); setProjectId(key); nav('home'); }} />}
     {modal?.type === 'rename-task' && <Dialog title="重命名任务" onClose={() => setModal(null)}><form onSubmit={e => { e.preventDefault(); const title = String(new FormData(e.currentTarget).get('title')).trim(); if (!title) return; setTasks(old => old.map(t => t.id === modal.task.id ? { ...t, title } : t)); setModal(null); }}><label className="field">任务名称<input name="title" required autoFocus defaultValue={modal.task.title} onFocus={e => e.target.select()} /></label><div className="dialog-footer"><button type="button" className="button secondary" onClick={() => setModal(null)}>取消</button><button className="button primary">保存</button></div></form></Dialog>}
+    {modal?.type === 'close-task' && <Dialog title="关闭此会话？" onClose={() => setModal(null)}><p className="section-description">关闭“{modal.task.title}”前会保存文件并结束此会话的终端。任务历史、项目数据和已有恢复材料会保留。</p>{modal.error && <p role="alert">{modal.error}</p>}<div className="dialog-footer"><button className="button secondary" onClick={() => setModal(null)}>{modal.error ? '继续查看' : '取消'}</button>{modal.canDiscard && <button className="button secondary" onClick={() => closeSession(modal.task, 'discard')}>放弃修改并关闭</button>}<button className="button primary" onClick={() => closeSession(modal.task)}>保存并关闭</button></div></Dialog>}
     {modal?.type === 'archive-task' && <Dialog title="结束并归档此会话？" onClose={() => setModal(null)}><p className="section-description">“{modal.task.title}”正在运行。归档将结束该会话的终端，保留任务记录与 CLI 会话文件。之后可在已归档列表中查看或取消归档。</p><div className="dialog-footer"><button className="button secondary" onClick={() => setModal(null)}>取消</button><button className="button primary" onClick={() => archiveTask(modal.task, true)}>结束并归档</button></div></Dialog>}
     {modal?.type === 'session-apps' && task && <Dialog title={modal.summary ? "使用当前版本新建会话" : "会话应用"} subtitle={modal.summary ? undefined : taskProject.name + ' · ' + task.title} onClose={() => setModal(null)} className="parity-dialog"><SessionApplications task={task} integration={integration} onNewSessionMode={summary => setModal(current => ({ ...current, summary }))} onContinue={() => setModal(null)} nav={next => { setModal(null); nav(next); }} onNewTask={summary => { setModal(null); newApplicationTask(task.project, summary); }} onUse={text => { setIntegrationReference({ taskId: task.id, text, requestId: id() }); setModal(null); }} /></Dialog>}
     {modal?.type === 'task-info' && task && <Dialog title="任务信息" subtitle={task.title} onClose={() => setModal(null)} className="parity-dialog"><div className="info-list"><div><span>项目</span><strong>{taskProject.name}</strong></div><div><span>AI 配置</span><strong>{profiles.find(p => p.id === task.profile)?.name || task.profileName || '配置已删除'}</strong></div><div><span>模型</span><span>使用 CLI 配置的模型</span></div><div><span>工作目录</span><code>{task.cwd || taskProject.path}</code></div><div><span>注入环境变量</span><code>SMARTDD_PROJECT_ID · SMARTDD_CONFIG_PATH（示例，不显示值）</code></div><div><span>项目配置版本</span><span>v{task.configVersion || 1} / 当前 v{taskProject.configVersion || 1}</span></div><div><span>配置注入自检</span><span>未核验 · 演示任务</span></div><div><span>Skill / MCP 加载</span><span>未核验</span></div><div><span>任务状态</span><span>{task.status === 'running' ? '运行中' : '已停止，可恢复'}</span></div></div><details className="notice"><summary>运行快照与审计路径</summary><code>demo-config-hash · /preview/runtime/audit.json</code><p>数据库诊断 v1.0.0 · SSH v1.0.0 · WillYou MCP</p></details><div className="dialog-footer"><button className="button secondary" disabled={task.archived} onClick={() => { setTasks(old => old.map(t => t.id === task.id ? { ...t, status: 'stopped' } : t)); setModal({ type: 'resume' }); }}>切换 AI 配置恢复</button></div></Dialog>}

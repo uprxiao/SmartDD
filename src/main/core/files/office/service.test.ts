@@ -19,6 +19,57 @@ describe('Office production session lifecycle', () => {
   afterAll(() => rmSync(directory, { recursive: true, force: true }));
   const ref = (): FileRef => ({ id: randomUUID(), lease: randomUUID(), generation: 1 });
   const source = (extra: Partial<OfficeSource> = {}): OfficeSource => ({ name: 'real-fixture.xlsx', hash, size: bytes.length, signal: new AbortController().signal, assert() {}, read: async (offset, length) => bytes.subarray(offset, offset + length), ...extra });
+  it('runs drawing insertion through the real Worker transaction, owner/permission gates and complete undo/redo',async()=>{
+    let writable=true;const service=new FileOfficeService(()=>source({writable}),worker,new FileHeavyJobs()),id=randomUUID();
+    const range={firstRow:1,lastRow:1,firstColumn:1,lastColumn:1},action={type:'drawing-insert' as const,sheetId:'1',range,drawing:{kind:'shape' as const,shape:'diamond' as const}};
+    const view=()=>service.window('owner',{id,sheetId:'1',row:0,column:0,rows:6,columns:6});
+    try{
+      await service.open('owner',{id,ref:ref(),baseHash:hash});const before=await view();
+      await expect(service.rangeAction('foreign',{id,version:0,action})).rejects.toThrow('不属于');
+      writable=false;await expect(service.rangeAction('owner',{id,version:0,action})).rejects.toThrow('只读');writable=true;
+      const changed=await service.rangeAction('owner',{id,version:0,action});expect(changed.state.version).toBe(1);expect(changed.state.canUndo).toBe(true);
+      const after=await view();expect(after.objects?.filter(value=>value.kind==='shape')).toHaveLength((before.objects?.filter(value=>value.kind==='shape').length??0)+1);
+      expect(after.objects?.at(-1)).toMatchObject({kind:'shape',shape:{geometry:'diamond'}});expect(after.cells).toEqual(before.cells);
+      await expect(service.rangeAction('owner',{id,version:0,action})).rejects.toThrow('版本');
+      await service.history('owner',{id,version:1,direction:'undo'});expect((await view()).objects).toEqual(before.objects);
+      await service.history('owner',{id,version:2,direction:'redo'});expect((await view()).objects).toEqual(after.objects);
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(hash);
+    }finally{service.dispose();expect(service.activeDocuments).toBe(0);}
+  });
+  it('rejects forged renderer image receipts and missing decoder before changing the Worker version',async()=>{
+    const service=new FileOfficeService(()=>source(),worker,new FileHeavyJobs()),id=randomUUID();
+    const action={type:'drawing-insert' as const,sheetId:'1',range:{firstRow:0,lastRow:0,firstColumn:0,lastColumn:0},drawing:{kind:'image' as const,image:{mime:'image/png' as const,base64:'iVBORw0KGgo='}}};
+    try{
+      await service.open('owner',{id,ref:ref(),baseHash:hash});
+      await expect(service.rangeAction('owner',{id,version:0,action:{...action,imageReceipt:{hash:'0'.repeat(64),width:2,height:2}}} as never)).rejects.toThrow();
+      await expect(service.rangeAction('owner',{id,version:0,action})).rejects.toThrow('解码器不可用');
+      const applied=await service.rangeAction('owner',{id,version:0,action:{...action,drawing:{kind:'shape',shape:'rect'}}});expect(applied.state.version).toBe(1);
+    }finally{service.dispose();}
+  });
+  it('uses current source permissions without replacing the retained workbook model', async () => {
+    let writable = false;
+    const service = new FileOfficeService(() => source({ writable }), worker, new FileHeavyJobs()), id = randomUUID();
+    try {
+      await service.open('owner', { id, ref: ref(), baseHash: hash });
+      const edit = { sheetId: '1', row: 0, column: 0, text: 'restored permission' };
+      await expect(service.edit('owner', { id, version: 0, edit })).rejects.toMatchObject({ code: 'PERMISSION' });
+      writable = true;
+      const changed = await service.edit('owner', { id, version: 0, edit });
+      expect(changed.state.canUndo).toBe(true);
+      expect(changed.state.dirty).toBe(true);
+      writable = false;
+      await expect(service.edit('owner', { id, version: changed.state.version, edit: { ...edit, text: 'denied edit' } })).rejects.toMatchObject({ code: 'PERMISSION' });
+      await expect(service.history('owner', { id, version: changed.state.version, direction: 'undo' })).rejects.toMatchObject({ code: 'PERMISSION' });
+      await expect(service.save('owner', { id, version: changed.state.version, draftId: randomUUID(), bufferVersion: 1, opId: randomUUID() })).rejects.toMatchObject({ code: 'PERMISSION' });
+      expect((await service.cell('owner', { id, sheetId: '1', row: 0, column: 0, start: 0, length: 256 })).text).toBe(edit.text);
+      writable = true;
+      const restored = await service.history('owner', { id, version: changed.state.version, direction: 'undo' });
+      expect(restored.state.dirty).toBe(false);
+      expect((await service.cell('owner', { id, sheetId: '1', row: 0, column: 0, start: 0, length: 256 })).text).toBe('Label');
+      expect(service.activeDocuments).toBe(1);
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(hash);
+    } finally { service.dispose(); }
+  });
   it('serves real cells only to their owning session and keeps separate document generations until closed', async () => {
     const service = new FileOfficeService(() => source(), worker, new FileHeavyJobs()), id = randomUUID(), second = randomUUID();
     try {

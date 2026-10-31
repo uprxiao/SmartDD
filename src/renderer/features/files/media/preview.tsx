@@ -2,17 +2,36 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Check, Copy, Download, Loader2, Maximize2, Minimize2, MoreHorizontal, Pause, PictureInPicture2, Play, Volume2, VolumeX } from 'lucide-react';
 import { Menu } from '@base-ui/react/menu';
 import { mediaType } from '@shared/file-media';
+import { mediaCopyLink } from '@shared/media-source-policy.mjs';
 import { rpc } from '@renderer/lib/ipc';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 import type { FileBuffer } from '../file-buffer';
+import type { FileRef } from '@shared/files';
 import { saveFileCopy } from '../file-actions';
-import { openMediaResource } from './resource';
+import { openDataUriMediaResource, openMediaResource, saveDataUriMedia, type OwnedMediaResource } from './resource';
 import { clearMediaElement, MEDIA_RATES, mediaDuration, mediaFailure, MediaSeekDrag, mediaTime } from './model';
 import './style.css';
 
-export function FileMediaPreview({ buffer, presentation = 'below', allowFullscreen = true }: { buffer: FileBuffer; presentation?: 'below' | 'overlay'; allowFullscreen?: boolean }) {
-  const file = buffer.file, kind = mediaType(file.name)!.kind;
+export interface InlineMediaSource {
+  kind: 'data-uri'; name: string; uri: string;
+  /** Real containing-document authority for the default byte-save consumer. */
+  context?: FileRef;
+  /** A source host may override saving; it takes priority over default parsing. */
+  saveCopy?(): Promise<unknown>;
+}
+type MediaPreviewProps = { presentation?: 'below' | 'overlay'; allowFullscreen?: boolean; sourceUrl?: string } &
+  ({ buffer: FileBuffer; source?: never } | { source: InlineMediaSource; buffer?: never });
+
+export function FileMediaPreview({ buffer, source: inline, presentation = 'below', allowFullscreen = true, sourceUrl }: MediaPreviewProps) {
+  const file = buffer?.file, name = file?.name ?? inline!.name, kind = mediaType(name)!.kind;
+  const saveInline = async () => {
+    if (inline!.saveCopy) return inline!.saveCopy();
+    if (!inline!.context) throw new Error('媒体来源尚未提供保存权限');
+    return saveDataUriMedia({ ...inline!, context: inline!.context }, rpc.files, new AbortController().signal);
+  };
+  const documentId = file?.ref.id, documentHash = file?.revision.hash, inlineUri = inline?.uri;
   const overlay = kind === 'video' && presentation === 'overlay';
+  const copyLink = kind === 'video' ? mediaCopyLink(sourceUrl) : null;
   const media = useRef<HTMLMediaElement | null>(null), host = useRef<HTMLDivElement>(null), generation = useRef(0), drag = useRef(new MediaSeekDrag());
   const [attempt, setAttempt] = useState(0), [phase, setPhase] = useState<'loading' | 'ready' | 'buffering' | 'error'>('loading');
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [actionError, setActionError] = useState('');
@@ -27,10 +46,10 @@ export function FileMediaPreview({ buffer, presentation = 'below', allowFullscre
     if (!overlay || !playing) return;
     const timer = setTimeout(() => setControlsVisible(false), 2500);
     return () => clearTimeout(timer);
-  }, [overlay, playing, interaction, file.ref.id]);
+  }, [overlay, playing, interaction, documentId, inlineUri]);
   useEffect(() => {
     const element = media.current!, container = host.current!, abort = new AbortController();
-    let alive = true, failed = false, source: Awaited<ReturnType<typeof openMediaResource>> | null = null;
+    let alive = true, failed = false, source: OwnedMediaResource | null = null;
     generation.current++; drag.current.reset();
     setPhase('loading'); setError(''); setActionError(''); setNotice(''); setPlaying(false); setDuration(0); setPosition(0); setHasSource(false); setRate(1); setVolume(1); setMuted(false);
     element.volume = 1; element.muted = false; element.playbackRate = 1;
@@ -62,7 +81,8 @@ export function FileMediaPreview({ buffer, presentation = 'below', allowFullscre
     const events: Record<string, EventListener> = { loadedmetadata: sync, durationchange: sync, timeupdate: sync, play: sync, pause: sync, ended: sync, canplay: ready, playing: ready, waiting, stalled: waiting, error: problem, volumechange: volumeChanged, ratechange: rateChanged, enterpictureinpicture: pipChanged, leavepictureinpicture: pipChanged };
     Object.entries(events).forEach(([name, listener]) => element.addEventListener(name, listener)); document.addEventListener('fullscreenchange', fullChanged);
     deadline();
-    void openMediaResource(file, rpc.files, abort.signal).then((value) => {
+    const resource = file ? openMediaResource(file, rpc.files, abort.signal) : openDataUriMediaResource(inline!.uri, abort.signal);
+    void resource.then((value) => {
       if (!alive || abort.signal.aborted) { value.release(); return; }
       source = value; element.src = value.url; element.dataset.mediaTransport = value.transport; setHasSource(true); element.load();
     }).catch((failure) => { if (!abort.signal.aborted) fail(failure instanceof Error ? failure.message : String(failure)); });
@@ -73,7 +93,7 @@ export function FileMediaPreview({ buffer, presentation = 'below', allowFullscre
       if (document.fullscreenElement === container) void document.exitFullscreen().catch(() => undefined);
       clearMediaElement(element); abort.abort(); source?.release();
     };
-  }, [file.ref.id, file.revision.hash, attempt, kind, overlay, allowFullscreen]);
+  }, [documentId, documentHash, inlineUri, attempt, kind, overlay, allowFullscreen]);
   const action = (work: () => Promise<unknown>) => {
     const current = generation.current; setActionError(''); setNotice('');
     void work().then((result) => { if (generation.current === current && result && typeof result === 'object' && 'state' in result && result.state === 'saved' && 'path' in result) setNotice(`副本已保存到 ${result.path}`); }).catch((failure) => { if (generation.current === current) setActionError(failure instanceof Error ? failure.message : String(failure)); });
@@ -91,7 +111,7 @@ export function FileMediaPreview({ buffer, presentation = 'below', allowFullscre
       if (seekOverlay(event)) return;
       if (event.nativeEvent.isComposing || event.keyCode === 229 || ![' ', 'Enter'].includes(event.key)) return;
       event.preventDefault(); if (!event.repeat) toggle();
-    }} /> : <><audio ref={(node) => { media.current = node; }} hidden preload="metadata" /><strong className="fw-media-name" title={file.name}>{file.name}</strong></>}
+    }} /> : <><audio ref={(node) => { media.current = node; }} hidden preload="metadata" /><strong className="fw-media-name" title={name}>{name}</strong></>}
     <div className="fw-media-controls" data-visible={!overlay || controlsVisible}>
       <button type="button" className="fw-icon" aria-label={playing ? '暂停' : '播放'} disabled={!hasSource || phase === 'error' || phase === 'loading'} onClick={toggle}>{playing ? <Pause size={17} /> : <Play size={17} />}</button>
       <input className="fw-media-seek" aria-label="播放进度" type="range" min={0} max={duration || 0} step={.1} value={Math.min(position, duration)} disabled={!hasSource || !duration || phase === 'error'} onKeyDown={seekOverlay} onChange={(event) => seek(event.target.value)} onPointerDown={(event) => { if (event.button !== 0) return; drag.current.begin(event.pointerId, !media.current!.paused && !media.current!.ended); media.current!.pause(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerUp={(event) => endSeek(event.pointerId)} onPointerCancel={(event) => endSeek(event.pointerId)} onLostPointerCapture={(event) => endSeek(event.pointerId)} />
@@ -102,8 +122,9 @@ export function FileMediaPreview({ buffer, presentation = 'below', allowFullscre
         {canFullscreen && <button className="fw-icon" aria-label={fullscreen ? '退出全屏' : '全屏'} aria-pressed={fullscreen} onClick={() => action(async () => { if (document.fullscreenElement === host.current) await document.exitFullscreen(); else await host.current!.requestFullscreen(); })}>{fullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}</button>}
       </>}
       <DropdownMenu><DropdownMenuTrigger className="fw-icon" aria-label="媒体菜单"><MoreHorizontal size={17} /></DropdownMenuTrigger><DropdownMenuContent className="fw-file-menu" align="end">
-        {kind === 'audio' && !file.absolutePath.startsWith('data:') && <DropdownMenuItem onClick={() => action(() => navigator.clipboard.writeText(file.absolutePath))}><Copy />复制路径</DropdownMenuItem>}
-        {hasSource && <DropdownMenuItem onClick={() => action(() => saveFileCopy({ kind: 'document', ref: file.ref }))}><Download />{kind === 'video' ? '视频另存为…' : '另存副本…'}</DropdownMenuItem>}
+        {kind === 'audio' && file && !file.absolutePath.startsWith('data:') && <DropdownMenuItem onClick={() => action(() => navigator.clipboard.writeText(file.absolutePath))}><Copy />复制路径</DropdownMenuItem>}
+        {hasSource && <DropdownMenuItem onClick={() => action(() => file ? saveFileCopy({ kind: 'document', ref: file.ref }) : saveInline())}><Download />{kind === 'video' ? '视频另存为…' : '另存副本…'}</DropdownMenuItem>}
+        {copyLink && <DropdownMenuItem onClick={() => action(() => navigator.clipboard.writeText(copyLink))}><Copy />复制链接</DropdownMenuItem>}
         {kind === 'video' && <><DropdownMenuSeparator /><div className="fw-media-speed-label">播放速度</div><Menu.RadioGroup value={String(rate)} onValueChange={(value) => { media.current!.playbackRate = Number(value); }} aria-label="播放速度">{MEDIA_RATES.map((value) => <Menu.RadioItem key={value} value={String(value)} className="fw-media-speed"><span className="fw-media-check">{rate === value && <Check size={13} />}</span>{value}×</Menu.RadioItem>)}</Menu.RadioGroup></>}
       </DropdownMenuContent></DropdownMenu>
     </div>

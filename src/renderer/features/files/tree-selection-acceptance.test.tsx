@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useSyncExternalStore } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -44,6 +44,53 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
   const state = () => ({ selected: selected(), focused: document.activeElement?.textContent, active: store.active?.route.relativePath, opens: [...opens] });
   async function active(path: string) { await waitFor(() => expect(store.active?.route.relativePath).toBe(path)); await waitFor(() => expect(store.active?.buffer?.raw).toBe(source[path as keyof typeof source])); expect(store.tabs).toHaveLength(1); }
 
+  it('B17 keeps confirmed row identity and reversible Tab order through an actual pending native refresh', async () => {
+    const user=userEvent.setup();await user.click(screen.getByRole('treeitem',{name:'B.txt'}));await active('B.txt');
+    const original=screen.getByRole('treeitem',{name:'B.txt'}),beforeOpens=opens.length,outside=document.createElement('button');outside.textContent='After tree';document.body.append(outside);
+    let release!:()=>void;rootDelivery={entered:false,promise:new Promise<void>(done=>{release=done;}),release:()=>release()};let loading!:Promise<void>;
+    try{
+      act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));
+      expect(screen.getByRole('treeitem',{name:'B.txt'})).toBe(original);expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('true');
+      await user.tab();expect(document.activeElement).toBe(outside);await user.tab({shift:true});expect(document.activeElement).toBe(original);
+      await act(async()=>{rootDelivery!.release();await loading;});expect(screen.getByRole('treeitem',{name:'B.txt'})).toBe(original);expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('false');expect(document.activeElement).toBe(original);expect(opens).toHaveLength(beforeOpens);
+      observations.push({caseId:'M9-T-B17',scenario:'actual native refresh retains confirmed DOM row,explicit busy state and reversible Tab without extra open',confirmedRowIdentityPreserved:true,tabReturnSameNode:true,sourceUnchanged:fingerprint()});
+    }finally{rootDelivery?.release();outside.remove();}
+  });
+
+  it('B17 ArrowRight uses newly visible children rather than an older keyboard snapshot during native refresh', async () => {
+    const user=userEvent.setup();await user.click(screen.getByRole('treeitem',{name:'folder'}));await screen.findByRole('treeitem',{name:'child.txt'});
+    fireEvent.keyDown(screen.getByRole('treeitem',{name:'folder'}),{key:'ArrowLeft'});expect(screen.queryByRole('treeitem',{name:'child.txt'})).toBeNull();
+    let release!:()=>void;rootDelivery={entered:false,promise:new Promise<void>(done=>{release=done;}),release:()=>release()};let loading!:Promise<void>;
+    act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));
+    fireEvent.keyDown(screen.getByRole('treeitem',{name:'folder'}),{key:'ArrowRight'});await screen.findByRole('treeitem',{name:'child.txt'});
+    fireEvent.keyDown(screen.getByRole('treeitem',{name:'folder'}),{key:'ArrowRight'});await waitFor(()=>expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'child.txt'})));
+    await act(async()=>{rootDelivery!.release();await loading;});expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'child.txt'}));expect(opens).toHaveLength(0);
+    observations.push({caseId:'M9-T-B17',scenario:'actual root refresh plus directory expansion uses current confirmed child keyboard order',noUnexpectedOpen:true});
+  });
+  it('B17 never presents confirmed cached rows as successful after an actual native permission failure', async () => {
+    const user=userEvent.setup();await user.click(screen.getByRole('treeitem',{name:'B.txt'}));await active('B.txt');
+    const mode=statSync(project).mode&0o7777;
+    try{chmodSync(project,0);await act(async()=>{await store.list(store.treeRoot!,'',true);});
+      expect(screen.queryByRole('treeitem',{name:'B.txt'})).toBeNull();expect(screen.getByRole('alert').textContent).toContain('读取失败');expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('false');
+      observations.push({caseId:'M9-T-B17',scenario:'actual chmod000/native read failure replaces cached rows with explicit error,not stale success',error:screen.getByRole('alert').textContent});
+    }finally{chmodSync(project,mode);}
+    await user.click(screen.getByRole('button',{name:'重试'}));await screen.findByRole('treeitem',{name:'B.txt'});expect(store.active?.buffer?.raw).toBe(source['B.txt']);expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('B17 Enter pins the opened file once and Space keeps that file while opening a separate preview', async () => {
+    const user=userEvent.setup(),open=vi.spyOn(store,'open');
+    await user.click(screen.getByRole('treeitem',{name:'folder'}));await screen.findByRole('treeitem',{name:'child.txt'});
+    await user.keyboard('{ArrowLeft}');await waitFor(()=>expect(screen.queryByRole('treeitem',{name:'child.txt'})).toBeNull());
+    await user.keyboard('{ArrowDown}');await waitFor(()=>expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'A.txt'})));
+    await user.keyboard('{Enter}');await active('A.txt');expect(store.active!.pinned).toBe(true);
+    expect(open.mock.calls.map(c=>[c[1],c[2]])).toEqual([['A.txt',true]]);
+    await user.keyboard('{ArrowDown}');await waitFor(()=>expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'B.txt'})));
+    await user.keyboard(' ');await waitFor(()=>expect(store.active?.buffer?.raw).toBe(source['B.txt']));
+    expect(store.tabs.map(t=>[t.route.relativePath,t.pinned])).toEqual([['A.txt',true],['B.txt',false]]);
+    expect(open.mock.calls.map(c=>[c[1],c[2]])).toEqual([['A.txt',true],['B.txt',false]]);
+    observations.push({caseId:'M9-T-B17',scenario:'Enter pins once; Space opens one independent preview without replacing pinned file',tabs:store.tabs.map(t=>({path:t.route.relativePath,pinned:t.pinned})),opens:open.mock.calls.map(c=>[c[1],c[2]]),sourceUnchanged:fingerprint()});
+  });
+
   it('range/toggle selection opens only its first file and preserves the focused row and selected range', async () => {
     const user = userEvent.setup(); await user.click(screen.getByRole('treeitem', { name: 'C.txt' })); await active('C.txt');
     const beforeRange = opens.length; await user.keyboard('{Shift>}'); await user.click(screen.getByRole('treeitem', { name: 'A.txt' })); await user.keyboard('{/Shift}');
@@ -75,7 +122,7 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
     observations.push({ scenario: 'Shift arrow, visible select-all, native Space activation', range, final: state(), sourceUnchanged: fingerprint() });
   });
 
-  it('keeps the latest keyboard focus target when native refresh removes the old focused row before its animation frame', async () => {
+  it('keeps the latest keyboard focus target and original rows when native refresh crosses a pending animation frame', async () => {
     const user = userEvent.setup(); await user.click(screen.getByRole('treeitem', { name: 'B.txt' })); await active('B.txt');
     const callbacks: FrameRequestCallback[] = []; vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation(callback => { callbacks.push(callback); return callbacks.length; });
     fireEvent.keyDown(screen.getByRole('treeitem', { name: 'B.txt' }), { key: 'ArrowUp', shiftKey: true });
@@ -83,22 +130,22 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
     expect(callbacks).toHaveLength(1); let release!: () => void;
     rootDelivery = { entered: false, promise: new Promise<void>(done => { release = done; }), release: () => release() };
     let loading!: Promise<void>; act(() => { loading = store.list(store.treeRoot!, '', true); }); await waitFor(() => expect(rootDelivery!.entered).toBe(true));
-    expect(screen.queryByRole('treeitem', { name: 'A.txt' })).toBeNull(); act(() => callbacks[0](0));
+    const originalA=screen.getByRole('treeitem',{name:'A.txt'});expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('true');act(() => callbacks[0](0));
     await act(async () => { rootDelivery!.release(); await loading; }); await active('A.txt');
-    expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'A.txt' })); expect(selected()).toEqual(['A.txt', 'B.txt']);
-    observations.push({ scenario: 'native refresh crosses pending keyboard focus', frameDeliveredWhileRowsUnavailable: true, originalNativeListResultHeldOnlyAfterIO: true, final: state(), sourceUnchanged: fingerprint() });
+    expect(document.activeElement).toBe(originalA);expect(screen.getByRole('treeitem',{name:'A.txt'})).toBe(originalA);expect(selected()).toEqual(['A.txt', 'B.txt']);
+    observations.push({ scenario: 'native refresh crosses pending keyboard focus', frameDeliveredDuringOriginalRefresh: true,confirmedRowIdentityRetained:true,originalNativeListResultHeldOnlyAfterIO: true, final: state(), sourceUnchanged: fingerprint() });
   });
 
-  it('Y20 keeps keyboard ownership on the persistent tree while native refresh temporarily removes its rows', async () => {
+  it('Y20 keeps keyboard ownership on the same confirmed row throughout native refresh', async () => {
     vi.spyOn(HTMLElement.prototype,'clientHeight','get').mockReturnValue(400);
     const user=userEvent.setup();await user.click(screen.getByRole('treeitem',{name:'B.txt'}));await active('B.txt');
     let release!:()=>void;rootDelivery={entered:false,promise:new Promise<void>(done=>{release=done;}),release:()=>release()};
     let loading!:Promise<void>;act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));
-    expect(screen.queryByRole('treeitem',{name:'B.txt'})).toBeNull();expect(document.activeElement).toBe(screen.getByRole('tree'));
+    const originalB=screen.getByRole('treeitem',{name:'B.txt'});expect(document.activeElement).toBe(originalB);expect(screen.getByRole('tree').getAttribute('aria-busy')).toBe('true');
     await user.keyboard('{Shift>}{ArrowUp}{/Shift}');expect(store.treeViews.get(store.treeRoot!.lease)?.focused).toBe('A.txt');
     await act(async()=>{rootDelivery!.release();await loading;});await active('A.txt');
     await waitFor(()=>expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'A.txt'})));expect(selected()).toEqual(['A.txt','B.txt']);
-    observations.push({scenario:'Y20 real native refresh retains owned tree focus and accepts next Shift arrow before original IO reply release',final:state()});
+    observations.push({scenario:'Y20 real native refresh retains the original focused row and accepts next Shift arrow before original IO reply release',confirmedRowIdentityRetained:screen.getByRole('treeitem',{name:'B.txt'})===originalB,final:state()});
   });
   it('Y20 does not restore a refreshed row over the user moving focus outside the tree', async () => {
     vi.spyOn(HTMLElement.prototype,'clientHeight','get').mockReturnValue(400);
@@ -117,17 +164,17 @@ describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BR
     fireEvent.keyDown(screen.getByRole('treeitem',{name:'B.txt'}),{key:'ArrowUp',shiftKey:true});expect(callbacks).toHaveLength(1);
     let release!:()=>void;rootDelivery={entered:false,promise:new Promise<void>(done=>{release=done;}),release:()=>release()};let loading!:Promise<void>;
     act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));
-    fireEvent.keyDown(screen.getByRole('tree'),{key:'ArrowDown',shiftKey:true});expect(store.treeViews.get(store.treeRoot!.lease)?.focused).toBe('B.txt');
+    fireEvent.keyDown(screen.getByRole('treeitem',{name:'B.txt'}),{key:'ArrowDown',shiftKey:true});expect(store.treeViews.get(store.treeRoot!.lease)?.focused).toBe('B.txt');
     await act(async()=>{rootDelivery!.release();await loading;});act(()=>callbacks[0](0));
     expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'B.txt'}));expect(selected()).toEqual(['B.txt']);
     observations.push({scenario:'Y20 deliberately late prior focus frame cannot supersede a newer key received by the owned loading tree'});
   });
-  it('Y20 reveals a distant keyboard target selected while native directory rows are temporarily absent',async()=>{
+  it('Y20 reveals a distant confirmed keyboard target while native directory refresh is pending',async()=>{
     vi.spyOn(HTMLElement.prototype,'clientHeight','get').mockReturnValue(84);
     for(let i=0;i<20;i++)writeFileSync(join(project,`Z${String(i).padStart(2,'0')}.txt`),'Distant target\n');
     await act(async()=>{await store.list(store.treeRoot!,'',true);});const user=userEvent.setup();await user.click(screen.getByRole('treeitem',{name:'B.txt'}));await active('B.txt');
     let release!:()=>void;rootDelivery={entered:false,promise:new Promise<void>(done=>{release=done;}),release:()=>release()};let loading!:Promise<void>;
-    act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));fireEvent.keyDown(screen.getByRole('tree'),{key:'End'});
+    act(()=>{loading=store.list(store.treeRoot!,'',true);});await waitFor(()=>expect(rootDelivery!.entered).toBe(true));fireEvent.keyDown(screen.getByRole('treeitem',{name:'B.txt'}),{key:'End'});
     await act(async()=>{rootDelivery!.release();await loading;});await waitFor(()=>expect(document.activeElement).toBe(screen.getByRole('treeitem',{name:'Z19.txt'})));
     expect(screen.getByRole('tree').scrollTop).toBe(24*28-84);observations.push({scenario:'Y20 End received during actual native refresh reveals and focuses distant fresh row',scrollTop:screen.getByRole('tree').scrollTop});
   });

@@ -13,8 +13,9 @@ const clampPage = (page, total) => Math.max(1, Math.min(total, Number.isFinite(p
 const clampZoom = value => Math.max(30, Math.min(800, value));
 const pageTitles = ['文件浏览工作区', '交互与状态', '验收与交付'];
 
-export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, initialZoom, onPageChange, onReadingChange, path = 'synthetic.pdf', hostOptions = {}, onStateChange, onInsertContext }) {
+export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, initialZoom, onPageChange, onReadingChange, path = 'synthetic.pdf', hostOptions = {}, onStateChange, onInsertContext, onAddComments }) {
   const review = kind === 'pdf-review';
+  const [reviewWidth, setReviewWidth] = useState(0);
   const [source, setSource] = useState(hostOptions.pdfSource || (kind === 'tex' ? 'synthetic' : 'normal')), real = source !== 'synthetic';
   const [pdf, setPdf] = useState({ status: 'loading' }), [reloadKey, setReloadKey] = useState(0), [passwordPrompt, setPasswordPrompt] = useState(null), [password, setPassword] = useState(''), [downscaled, setDownscaled] = useState(() => new Set());
   const task = useRef(null), passwordCancelled = useRef(false);
@@ -30,6 +31,7 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
   const [syntheticLoadState, setLoadState] = useState(hostOptions.pdfStatus || 'ready'), [failureNext, setFailureNext] = useState(false), [retryKey, setRetryKey] = useState(0);
   const [comments, setComments] = useState(() => initialPdfComments(path)), [draft, setDraft] = useState(null), [body, setBody] = useState(''), [drawing, setDrawing] = useState(null);
   const [notice, setNotice] = useState(''), [cardPosition, setCardPosition] = useState({ top: 80, left: 30 });
+  const [addingToTray, setAddingToTray] = useState(false), addingRef = useRef(false);
   const root = useRef(null), scroll = useRef(null), pages = useRef([]), drag = useRef(null), zoomValue = useRef(initialZoom ?? 100), timer = useRef(null), editor = useRef(null), currentComments = useRef(comments);
   currentComments.current = comments;
   const [viewport, setViewport] = useState({ top: 0, height: 800 });
@@ -90,6 +92,16 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
   useEffect(() => { if (loadState === 'ready' && (!real || readingReady.current)) onReadingChange?.({ page, zoom }); }, [page, zoom, loadState, real, onReadingChange]);
   useEffect(() => { onStateChange?.({ route: review ? 'review-pdf' : 'artifact-pdf', page, zoom, annotation, batching, loadState, comments, draftActive: !!draft }); }, [review, page, zoom, annotation, batching, loadState, comments, draft, onStateChange]);
   useEffect(() => {
+    const node = scroll.current;
+    if (!review || loadState !== 'ready' || !node) return;
+    const measure = () => {
+      const style = getComputedStyle(node), padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+      if (node.clientWidth > 0) setReviewWidth(Math.max(1, node.clientWidth - padding));
+    };
+    const observer = new ResizeObserver(measure); observer.observe(node); measure();
+    return () => observer.disconnect();
+  }, [review, loadState, source, path, reloadKey]);
+  useEffect(() => {
     setZooming(false);
     if (review || loadState !== 'ready' || !scroll.current) return;
     return bindPdfWheel(scroll.current, { getZoom: () => zoomValue.current, setZoom: zoomTo, onZooming: setZooming });
@@ -115,8 +127,9 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
       setCardPosition({ left: Math.max(8, Math.min(hostRect.width - 292, pageRect.left - hostRect.left + anchor.x / size.width * pageRect.width + 8)),
         top: Math.max(48, Math.min(hostRect.height - 230, pageRect.top - hostRect.top + anchor.y / size.height * pageRect.height)) });
     };
-    place(); editor.current?.focus(); scroll.current?.addEventListener('scroll', place, { passive: true }); window.addEventListener('resize', place);
-    return () => { scroll.current?.removeEventListener('scroll', place); window.removeEventListener('resize', place); };
+    const draftScroll = scroll.current;
+    place(); editor.current?.focus(); draftScroll?.addEventListener('scroll', place, { passive: true }); window.addEventListener('resize', place);
+    return () => { draftScroll?.removeEventListener('scroll', place); window.removeEventListener('resize', place); };
   }, [draft, zoom]);
 
   useEffect(() => { clearTimeout(timer.current); setComments(initialPdfComments(path + ':' + source)); setDraft(null); setBody(''); setNotice(''); return () => { currentComments.current = stopPdfDelivery(currentComments.current); }; }, [path, source]);
@@ -166,6 +179,18 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
     startDraft({ page: number, pageSize: sizeOf(number), anchor: { kind: 'region', rect, selectionKind: 'text', selectedText: selection.toString(), selectionRects: boxes } });
   }
   async function send(state = currentComments.current) {
+    if (onAddComments) {
+      if (addingRef.current || !state.requests.length) return;
+      addingRef.current = true; setAddingToTray(true);
+      try {
+        const result = await onAddComments(state.requests);
+        if (!result?.ok) { setComments(value => ({ ...value, phase: 'failed', error: '未能加入终端引用，评论已保留。' })); setNotice('未能加入终端引用，评论已保留。'); return; }
+        const next = initialPdfComments(state.scope); currentComments.current = next; setComments(next); setNotice('评论已加入终端引用；预览后可插入，不会自动回车。');
+      } catch {
+        setComments(value => ({ ...value, phase: 'failed', error: '未能加入终端引用，评论已保留。' })); setNotice('未能加入终端引用，评论已保留。');
+      } finally { addingRef.current = false; setAddingToTray(false); }
+      return;
+    }
     const pending = beginPdfDelivery(state);
     if (pending === state) return;
     currentComments.current = pending; setComments(pending);
@@ -196,7 +221,7 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
   const boxStyle = (rect, number) => { const size = sizeOf(number); return { left: rect.x / size.width * 100 + '%', top: rect.y / size.height * 100 + '%', width: rect.width / size.width * 100 + '%', height: rect.height / size.height * 100 + '%' }; };
   const annotationRect = item => item.anchor.kind === 'region' ? item.anchor.rect : { ...item.anchor.point, width: 1, height: 1 };
   const visibleComments = comments.requests;
-  const locked = comments.phase === 'inserting';
+  const locked = comments.phase === 'inserting' || addingToTray;
 
   function submitPassword() {
     if (!password || !passwordPrompt) return;
@@ -216,7 +241,7 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
     </div>}
     {loadState !== 'ready' ? <div className="fw-empty" role={loadState === 'error' ? 'alert' : 'status'}>{loadState === 'loading' ? <><span className="fw-loading" />{real ? '正在载入 PDF' : '正在载入 PDF 示例'}</> : <><h3>PDF 页面渲染失败</h3><p>{real ? pdf.message : '原型模拟失败，原始文件没有被修改。'}原始文件没有被修改。</p><button onClick={() => { if (real) setReloadKey(x => x + 1); else { setLoadState('ready'); setRetryKey(x => x + 1); } }}>重试</button></>}</div> : <div className="fw-artifact-main">
       {!review && total > 1 && <nav className={'fw-thumbnails ' + (docked ? 'docked' : 'undocked')} data-expanded={railExpanded} aria-label="PDF 页面缩略图" onMouseEnter={()=>setRailHover(true)} onMouseLeave={()=>setRailHover(false)} onFocusCapture={()=>setRailFocus(true)} onBlurCapture={event=>{if(!(event.relatedTarget instanceof Node)||!event.currentTarget.contains(event.relatedTarget))setRailFocus(false);}}><button className="fw-dock-thumbnails" aria-label={docked ? '取消停靠缩略图' : '停靠缩略图'} aria-pressed={docked} aria-expanded={railExpanded} aria-controls={railId} onClick={() => setDocked(!docked)}><List size={12} /><span className="fw-thumbnail-dock-label">{docked ? '取消停靠' : '停靠缩略图'}</span></button><div id={railId} className="fw-pdf-thumb-panel" aria-label="PDF 缩略页列表" aria-hidden={!railExpanded} inert={!railExpanded} hidden={!railExpanded}>{Array.from({ length: total }, (_, i) => i + 1).map(number => <button key={number} aria-label={'第 ' + number + ' 页'} title={real && pdf.titles?.[number] ? '第 ' + number + ' 页 · ' + pdf.titles[number] : undefined} aria-current={number === page ? 'page' : undefined} onClick={() => goto(number)}>{real && (!virtual || Math.abs(number - page) <= 4) ? <PdfCanvasPage engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={100} thumbWidth={52} review className="fa-pdf-thumb" /> : null}<span>{real ? (pdf.titles?.[number] || '') : pageTitles[number - 1]}</span><small>{number}</small></button>)}</div>{!railExpanded&&<div className="fw-pdf-thumb-rail" aria-hidden="true">{Array.from({length:total},(_,i)=>i+1).map(number=><div key={number} className={'fw-pdf-rail-page '+(number===page?'current':'')}><small>{number}</small></div>)}</div>}</nav>}
-      <div className="fw-artifact-scroll fa-pdf-scroll" ref={scroll} onScroll={event => { if (virtual) setViewport({ top: event.currentTarget.scrollTop, height: event.currentTarget.clientHeight }); }}>{virtual && <div aria-hidden="true" style={{ height: windowed.before, flexShrink: 0 }} />}{renderedNumbers.map(number => real ? <PdfCanvasPage key={source + number} engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={review ? 100 : zoom} review={review} articleRef={node => { pages.current[number - 1] = node; }} className={'fw-paper fw-pdf-page ' + (annotation && !review ? 'fa-annotation-mode' : '')} onInternalLink={goto} onExternalLink={url => setNotice('外部链接入口（原型不导航）：' + url)} onPlan={(n, flag) => setDownscaled(previous => { if (previous.has(n) === flag) return previous; const next = new Set(previous); flag ? next.add(n) : next.delete(n); return next; })} onPointerDown={event => pointerDown(event, number)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { drag.current = null; setDrawing(null); }} onMouseUp={event => captureText(event, number)}>
+      <div className="fw-artifact-scroll fa-pdf-scroll" ref={scroll} onScroll={event => { if (virtual) setViewport({ top: event.currentTarget.scrollTop, height: event.currentTarget.clientHeight }); }}>{virtual && <div aria-hidden="true" style={{ height: windowed.before, flexShrink: 0 }} />}{renderedNumbers.map(number => real ? <PdfCanvasPage key={source + number} engine={pdf.engine} doc={pdf.doc} run={pdf.run} number={number} size={sizeOf(number)} zoom={review && reviewWidth > 0 ? reviewWidth / (sizeOf(number).width * (96 / 72)) * 100 : review ? 100 : zoom} review={review} articleRef={node => { pages.current[number - 1] = node; }} className={'fw-paper fw-pdf-page ' + (annotation && !review ? 'fa-annotation-mode' : '')} onInternalLink={goto} onExternalLink={url => setNotice('外部链接入口（原型不导航）：' + url)} onPlan={(n, flag) => setDownscaled(previous => { if (previous.has(n) === flag) return previous; const next = new Set(previous); flag ? next.add(n) : next.delete(n); return next; })} onPointerDown={event => pointerDown(event, number)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { drag.current = null; setDrawing(null); }} onMouseUp={event => captureText(event, number)}>
         {!review && visibleComments.filter(item => item.page === number).map(item => <button key={item.id} className="fa-pdf-marker" style={{ left: annotationRect(item).x / sizeOf(number).width * 100 + '%', top: annotationRect(item).y / sizeOf(number).height * 100 + '%' }} aria-label={'PDF 评论 ' + (visibleComments.indexOf(item) + 1)} onClick={() => startDraft(item)}>{visibleComments.indexOf(item) + 1}</button>)}
         {!review && draft?.page === number && draft.anchor.kind === 'region' && <span className="fa-pdf-region" style={boxStyle(draft.anchor.rect, number)} />}{drawing?.page === number && <span className="fa-pdf-region" style={boxStyle(drawing.rect, number)} />}
       </PdfCanvasPage> : <article key={number} data-page={number} ref={node => { pages.current[number - 1] = node; }} className={'fw-paper fw-pdf-page ' + (annotation && !review ? 'fa-annotation-mode' : '')} style={{ zoom: review ? 1 : zoom / 100, userSelect: review ? 'none' : 'text' }} onPointerDown={event => pointerDown(event, number)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { drag.current = null; setDrawing(null); }} onMouseUp={event => captureText(event, number)}>
@@ -226,13 +251,13 @@ export function FilePdfPreview({ kind, onDownload = () => {}, initialPage = 1, i
         {!review && draft?.page === number && draft.anchor.kind === 'region' && <span className="fa-pdf-region" style={boxStyle(draft.anchor.rect, number)} />}{drawing?.page === number && <span className="fa-pdf-region" style={boxStyle(drawing.rect, number)} />}
       </article>)}{virtual && <div aria-hidden="true" style={{ height: windowed.after, flexShrink: 0 }} />}</div>
     </div>}
-    {!review && draft && <section className="fa-pdf-editor" style={cardPosition} aria-label="PDF 评论编辑器"><header><strong>第 {draft.page} 页 · {draft.anchor.selectionKind === 'text' ? '所选文字' : draft.anchor.kind === 'region' ? '所选区域' : '所选位置'}</strong><button className="fw-icon" aria-label="取消 PDF 评论草稿" onClick={() => { setDraft(null); setBody(''); }}><X size={14} /></button></header>{draft.anchor.selectedText && <blockquote>{draft.anchor.selectedText}</blockquote>}<textarea ref={editor} aria-label="PDF 评论内容" placeholder="添加评论…" value={body} onChange={event => setBody(event.target.value)} /><div className="fa-pdf-editor-actions">{draft.id && <button aria-label="删除 PDF 评论" onClick={() => { setComments(value => removePdfComment(value, draft.id)); setDraft(null); setBody(''); }}><Trash2 size={14} /></button>}<button onClick={() => { setDraft(null); setBody(''); }}>取消</button><button disabled={!body.trim() || locked} onClick={submit}>{draft.id ? '保存' : batching ? '添加' : '插入上下文'}{!onInsertContext && '（模拟）'}</button></div></section>}
+    {!review && draft && <section className="fa-pdf-editor" style={cardPosition} aria-label="PDF 评论编辑器"><header><strong>第 {draft.page} 页 · {draft.anchor.selectionKind === 'text' ? '所选文字' : draft.anchor.kind === 'region' ? '所选区域' : '所选位置'}</strong><button className="fw-icon" aria-label="取消 PDF 评论草稿" onClick={() => { setDraft(null); setBody(''); }}><X size={14} /></button></header>{draft.anchor.selectedText && <blockquote>{draft.anchor.selectedText}</blockquote>}<textarea ref={editor} aria-label="PDF 评论内容" placeholder="添加评论…" value={body} onChange={event => setBody(event.target.value)} /><div className="fa-pdf-editor-actions">{draft.id && <button aria-label="删除 PDF 评论" onClick={() => { setComments(value => removePdfComment(value, draft.id)); setDraft(null); setBody(''); }}><Trash2 size={14} /></button>}<button onClick={() => { setDraft(null); setBody(''); }}>取消</button><button disabled={!body.trim() || locked} onClick={submit}>{draft.id ? '保存' : batching ? '添加' : onAddComments ? '加入终端引用' : '插入上下文'}{!onInsertContext && !onAddComments && '（模拟）'}</button></div></section>}
     {!review && loadState === 'ready' && enabled && batching && (annotation || comments.requests.length || comments.phase === 'inserted') && <div className="fa-pdf-batch" role="region" aria-label="PDF 评论批处理">
       <span>{locked ? '正在插入上下文' : comments.requests.length ? comments.requests.length + ' 条评论' : comments.phase === 'inserted' ? '评论上下文已插入' : '选择内容并提出修改'}</span>
       {comments.requests.length > 0 && !locked && <><button aria-label="上一个 PDF 评论" onClick={() => { const current = comments.requests.findIndex(item => item.id === draft?.id); const item = comments.requests[(current - 1 + comments.requests.length) % comments.requests.length]; goto(item.page); startDraft(item); }}><ArrowLeft size={14} /></button><button aria-label="下一个 PDF 评论" onClick={() => { const current = comments.requests.findIndex(item => item.id === draft?.id); const item = comments.requests[(current + 1) % comments.requests.length]; goto(item.page); startDraft(item); }}><ArrowRight size={14} /></button></>}
-      {locked ? <button onClick={() => { clearTimeout(timer.current); currentComments.current = stopPdfDelivery(currentComments.current); setComments(currentComments.current); setNotice('已停止等待，结果未知；不会停止或撤回 CLI。'); }}>停止等待</button> : <><button disabled={!!draft && !!body.trim()} onClick={() => { setComments(value => ({ ...stopPdfDelivery(value), requests: [], phase: 'idle' })); setAnnotation(false); setDraft(null); }}>取消</button><button disabled={!comments.requests.some(item => !['inserted', 'unknown'].includes(item.delivery)) || !!draft} onClick={() => send()}>{comments.phase === 'failed' ? '重试插入' : '插入上下文'}{!onInsertContext && '（模拟）'}</button></>}
+      {locked ? <button onClick={() => { clearTimeout(timer.current); currentComments.current = stopPdfDelivery(currentComments.current); setComments(currentComments.current); setNotice('已停止等待，结果未知；不会停止或撤回 CLI。'); }}>停止等待</button> : <><button disabled={!!draft && !!body.trim()} onClick={() => { setComments(value => ({ ...stopPdfDelivery(value), requests: [], phase: 'idle' })); setAnnotation(false); setDraft(null); }}>取消</button><button disabled={!comments.requests.some(item => !['inserted', 'unknown'].includes(item.delivery)) || !!draft} onClick={() => send()}>{onAddComments ? '加入终端引用' : comments.phase === 'failed' ? '重试插入' : '插入上下文'}{!onInsertContext && !onAddComments && '（模拟）'}</button></>}
     </div>}
-    {loadState === 'ready' && comments.phase === 'failed' && !batching && <div className="fa-pdf-batch"><span>{comments.error}</span><button onClick={() => send()}>重试插入上下文</button></div>}
+    {loadState === 'ready' && comments.phase === 'failed' && !batching && <div className="fa-pdf-batch"><span>{comments.error}</span><button onClick={() => send()}>{onAddComments ? '重试加入终端引用' : '重试插入上下文'}</button></div>}
     {passwordPrompt && <section className="fa-pdf-password" role="dialog" aria-label="PDF 密码" onKeyDown={event => { if (event.key === 'Enter' && password) { event.preventDefault(); submitPassword(); } }}>
       <strong>{passwordPrompt.wrong ? '密码错误，请重试' : '此 PDF 需要密码'}</strong><input type="password" autoFocus aria-label="PDF 密码" value={password} onChange={event => setPassword(event.target.value)} /><small>演示样本的密码是 m9-user（不是真实凭据）。</small>
       <div><button onClick={() => { passwordCancelled.current = true; task.current?.destroy(); task.current = null; setPasswordPrompt(null); setPdf({ status: 'error', kind: 'password', message: '需要密码才能打开此 PDF。' }); }}>取消</button><button disabled={!password} onClick={submitPassword}>打开</button></div>

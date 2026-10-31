@@ -1,6 +1,7 @@
 import { McpViewerMenu, McpViewerSlot, McpViewerSettings } from './mcp/viewer';
 import { FileLanguageProvider, LanguageSettingsMenu, LanguageResults } from './lsp/components';
 import { FileOfficePagesPreview } from './office/pages-preview';
+import { TaskDocxPreview } from './office/docx-preview';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { AlertCircle, Check, ChevronDown, Code2, Copy, Download, File, FileSearch, FolderOpen, GitBranch, Loader2, Maximize2, Minimize2, MoreHorizontal, PanelRight, Pin, Plus, RotateCcw, Save, Undo2, WrapText, X } from 'lucide-react';
 import type { FileScope } from '@shared/files';
@@ -14,6 +15,7 @@ import { ATTACHMENT_SESSION_NOTICE, fileScopeKey, fileWorkspaceFor } from './wor
 import { WorkspaceTree } from './workspace-tree';
 import { FileBreadcrumb } from './breadcrumb';
 import { FileOfficePreview } from './office/preview';
+import { OfficeFidelityNotice } from './office/fidelity-notice';
 import { FileOpenButton, saveFileCopy } from './file-actions';
 import { FileTreeIcon } from './file-icon';
 import { FileChanges, useGitStatus } from './git-metadata';
@@ -21,12 +23,14 @@ import { FileTextEditor } from './text-editor';
 import { FileSourceView } from './source-view';
 import { openPreviewResource } from './preview-resource';
 import { FileContentSearch, FileNameFilter } from './search-panel';
+import { canSearchFileContents } from './search-protocol';
 import { FilePdfPreview } from './pdf/preview';
 import { FileNotebookPreview } from './notebook/preview';
 import { FileMediaPreview } from './media/preview';
 import { FileCsvPreview } from './csv/preview';
 import { FileHtmlPreview } from './html/preview';
 import { FileTexPreview } from './tex/preview';
+import { FileReviewText } from './review-text/preview';
 import { FileRecoveryDialog } from './recovery-dialog';
 import { FileTerminalContextProvider, TerminalReferenceTray, useFileTerminalContext } from './terminal-context/context';
 import { FILE_TERMINAL_DRAG_TYPE, endFileDrag } from './terminal-context/store';
@@ -70,6 +74,8 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
     window.addEventListener('focus', refresh); return () => window.removeEventListener('focus', refresh);
   }, [store]);
   const active = store.active, buffer = active?.buffer, file = buffer?.file;
+  const searchAvailable = canSearchFileContents(store.treeRoot, store.openSearchRow, rpc.files);
+  useEffect(() => { if (!searchAvailable) setSearchOpen(false); }, [searchAvailable]);
   useEffect(() => () => { searchFocus.current?.dispose(); searchFocus.current = null; }, []);
   useEffect(() => {
     const pending = searchFocus.current; if (!pending || searchOpen) return;
@@ -128,8 +134,8 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
       </div>)}
       <Tool label="查找并打开文件" onClick={() => { setTreeVisible(true); requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus()); }}><Plus size={16} /></Tool><span className="fw-push" /><Tool label={full ? '退出文件全屏' : '文件全屏'} onClick={() => setFull((value) => !value)}>{full ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</Tool><Tool label="隐藏文件区域" onClick={onClose}><PanelRight size={16} /></Tool>
     </div>
-    <div className="fw-toolbar"><FileBreadcrumb store={store} run={action} repository={fileGit.data?.state === 'ready' ? fileGit.data.repository : undefined} /><div className="fw-tools">
-      <Tool preserveEditorFocus label="在文件中搜索" active={searchOpen} disabled={!store.treeRoot} onClick={() => setSearchOpen(true)}><FileSearch size={16} /></Tool>
+    <div className="fw-toolbar">{buffer?.previewTitle != null ? <span className="fw-breadcrumb">{buffer.previewTitle}</span> : <FileBreadcrumb store={store} run={action} repository={fileGit.data?.state === 'ready' ? fileGit.data.repository : undefined} />}<div className="fw-tools">
+      {searchAvailable && <Tool preserveEditorFocus label="在文件中搜索" active={searchOpen} onClick={() => setSearchOpen(true)}><FileSearch size={16} /></Tool>}
       {buffer?.editor && buffer.textPresentation !== 'source' && <Tool preserveEditorFocus label={buffer.mode === 'document' ? '查看源码' : buffer.textPresentation === 'csv' ? '查看表格' : buffer.textPresentation === 'tex' ? '编译并查看 PDF' : '查看文档'} active={buffer.mode === 'source'} onClick={() => action(() => store.setMode(buffer, buffer.mode === 'document' ? 'source' : 'document'))}><Code2 size={16} /></Tool>}
       {buffer?.content.mime === 'image/svg+xml' && <Tool preserveEditorFocus label={buffer.mode === 'document' ? '查看源码' : '查看图像'} active={buffer.mode === 'source'} onClick={() => action(() => store.setMode(buffer, buffer.mode === 'document' ? 'source' : 'document'))}><Code2 size={16} /></Tool>}
       <DropdownMenu><DropdownMenuTrigger className="fw-icon" aria-label="文件菜单"><MoreHorizontal size={17} /></DropdownMenuTrigger><DropdownMenuContent align="end" className="fw-file-menu">
@@ -147,7 +153,11 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
         <DropdownMenuItem disabled={!file} onClick={() => file && action(() => navigator.clipboard.writeText(file.absolutePath))}><Copy />复制完整路径</DropdownMenuItem>
         <DropdownMenuItem disabled={!file} onClick={() => file && action(() => navigator.clipboard.writeText(file.relativePath))}><Copy />复制相对路径</DropdownMenuItem>
         <DropdownMenuItem disabled={!active || active.pinned} onClick={() => active && store.pin(active.id)}><Pin />固定标签</DropdownMenuItem>
-        <LanguageSettingsMenu /><McpViewerMenu buffer={buffer ?? undefined} source={active?.route.source} /><DropdownMenuSeparator /><DropdownMenuItem disabled={!store.canRestoreClosed} onClick={() => void store.restoreClosed()}><Undo2 />重新打开关闭的文件</DropdownMenuItem>
+        <LanguageSettingsMenu /><McpViewerMenu buffer={buffer ?? undefined} source={active?.route.source} onChoose={active && !active.attachment ? id => action(async () => {
+          const root = store.activeRoot;
+          if (store.active !== active || active.buffer !== buffer || !root) throw new Error('当前文件来源已改变，请重新选择查看器');
+          await store.open(root, active.route.relativePath, active.pinned, { fileViewer: id === null ? 'default' : id ?? null, reveal: false });
+        }) : undefined} /><DropdownMenuSeparator /><DropdownMenuItem disabled={!store.canRestoreClosed} onClick={() => void store.restoreClosed()}><Undo2 />重新打开关闭的文件</DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTreeVisible((value) => !value)}><PanelRight />{treeVisible ? '隐藏目录树' : '显示目录树'}</DropdownMenuItem>
       </DropdownMenuContent></DropdownMenu>
       <Tool label={treeVisible ? '隐藏目录树' : '显示目录树'} active={treeVisible} onClick={() => setTreeVisible((value) => !value)}><FolderOpen size={16} /></Tool>
@@ -162,8 +172,11 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
       <LanguageResults />
       {buffer && <>
         {active?.attachment && <div className="fw-save-strip" role="status">{ATTACHMENT_SESSION_NOTICE}</div>}
+        {buffer.navigationError && <div className="fw-save-strip" role="alert">{buffer.navigationError}</div>}
         {buffer.draftOptions.length > 0 && <div className="fw-save-strip" role="status"><span>有未解决的本机草稿</span>{buffer.draftOptions.map((draft) => <button key={draft.id} onClick={() => action(() => buffer.restoreDraft(draft.id))}>恢复草稿</button>)}</div>}
         {(buffer.saveError || buffer.draftError || buffer.loadError) && <div className="fw-save-strip" role="alert"><AlertCircle size={15} /><span>{buffer.saveError || buffer.draftError || buffer.loadError}</span></div>}
+        {(buffer.office||buffer.pptx)&&<OfficeFidelityNotice model={(buffer.office||buffer.pptx)!}/>}
+        {buffer.draftError&&(buffer.office?.fidelity||buffer.pptx?.fidelity)&&<div className="fw-save-strip" role="alert">{buffer.draftError}</div>}
         {buffer.conflict && <div className="fw-conflict-strip"><span>{buffer.recoveryBlocked ? '保存结果需要核对，恢复材料已保留。' : '磁盘版本和我的修改均已保留。'}</span>{buffer.recoveryBlocked && <button onClick={() => setRecoveryOpen(true)}>查看恢复材料</button>}<button disabled={buffer.recoveryBlocked || buffer.inputInterrupted} onClick={() => void buffer.keepLocal()}>保留我的修改</button><button onClick={() => void buffer.useDisk()}>使用磁盘版本</button><button disabled={buffer.recoveryBlocked || !buffer.inputSettled} onClick={() => { const instance = buffer.instance; void (buffer.office || buffer.pptx ? Promise.resolve(true) : buffer.continueEditing()).then(ready => { if (ready && store.active?.buffer?.instance === instance) panel.current?.querySelector<HTMLElement>('.cm-content, textarea[aria-label="公式栏"]')?.focus(); }); }}>继续编辑</button></div>}
         {buffer.disk && <DiskPreview base64={buffer.disk.base64} />}
         <McpViewerSlot buffer={buffer} source={active!.route.source}><FileContent key={buffer.instance} buffer={buffer} wrap={wrap} blame={blame} onDownload={download} imageContext={store.scope.kind === 'task'} onOpenImage={href => store.openRelated(buffer, href, { readOnlyImage: true })} metadataRevision={store.metadataRevisions.get(buffer.file.ref.lease) ?? 0} onLink={(href) => action(async () => {
@@ -192,7 +205,7 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
     <footer className="fw-footer"><span>{file ? `${(file.revision.size / 1024).toFixed(1)} KiB` : '本机文件'}</span><span>{buffer?.decoded?.kind === 'text' ? `UTF-8${buffer.bom ? ' BOM' : ''}` : ''}</span><span className="fw-push" /><span role="status">{buffer?.saving ? '正在保存…' : buffer?.dirty ? '有未保存修改' : buffer?.saveReceipt?.state === 'saved' ? '已保存' : ''}</span>{buffer?.saveReceipt?.state === 'saved' && !buffer.dirty && <Check size={13} />}</footer>
     <McpViewerSettings />
     <Dialog open={closePrompt !== null} onOpenChange={(open) => { if (!open) setClosePrompt(null); }}><DialogContent><DialogHeader><DialogTitle>文件尚未保存</DialogTitle></DialogHeader><DialogDescription className="px-6 pb-6">可以继续查看并处理保存问题，或放弃当前编辑。已有保存冲突的恢复材料会继续保留。</DialogDescription><DialogFooter><Button variant="outline" onClick={() => setClosePrompt(null)}>继续查看</Button><Button onClick={() => void discard()}>放弃修改并关闭</Button></DialogFooter></DialogContent></Dialog>
-    {searchOpen && <FileContentSearch store={store} onClose={(opened) => {
+    {searchOpen && searchAvailable && <FileContentSearch store={store} onClose={(opened) => {
       searchFocus.current?.dispose(); searchFocus.current = null;
       if (opened) {
         let pending: { buffer: FileBuffer; dispose(): void };
@@ -212,18 +225,20 @@ function WorkspaceContents({ store, onClose }: { store: ReturnType<typeof fileWo
 
 function FileContent({ buffer, wrap, onLink, onOpenImage, imageContext, onDownload, blame, metadataRevision }: { buffer: FileBuffer; wrap: boolean; onLink: (href: string) => void; onOpenImage: (href: string) => Promise<void>; imageContext: boolean; onDownload?: () => Promise<void>; blame: boolean; metadataRevision: number }) {
   const content = buffer.content;
-  if (content.kind === 'pdf') return <FilePdfPreview buffer={buffer} onDownload={onDownload} />;
+  if (content.kind === 'pdf') return <FilePdfPreview buffer={buffer} review={Boolean(buffer.navigationView)} onDownload={onDownload} />;
   if (content.kind === 'notebook') return <FileNotebookPreview buffer={buffer} onDownload={onDownload} />;
   if (content.kind === 'audio' || content.kind === 'video') return <FileMediaPreview buffer={buffer} />;
-  if (content.kind === 'office' && ['docx','pptx'].includes(content.format ?? '')) return <FileOfficePagesPreview buffer={buffer} />;
+  if (content.kind === 'office' && content.format === 'docx') return <TaskDocxPreview buffer={buffer} />;
+  if (content.kind === 'office' && content.format === 'pptx') return <FileOfficePagesPreview buffer={buffer} />;
   if (content.kind === 'office' && ['xlsx', 'xlsm'].includes(content.format ?? '')) return <FileOfficePreview buffer={buffer} />;
   if (content.kind === 'image' && !(content.mime === 'image/svg+xml' && buffer.mode === 'source')) return <FileImage buffer={buffer} />;
   if (['archive', 'unsupported', 'binary', 'office'].includes(content.kind)) return <div className="fw-empty fw-unsupported" role="status"><File size={26} /><strong>{buffer.file.name}</strong><p>{content.reason ?? (content.kind === 'archive' ? '归档文件暂不提供内置预览；可使用外部应用打开或另存副本。' : content.kind === 'office' ? `当前无法预览此 ${content.format?.toUpperCase() ?? 'Office'} 文件；可使用外部应用打开或另存副本。` : '二进制文件不支持文本编辑；可使用外部应用打开或另存副本。')}</p><span>{buffer.file.revision.size.toLocaleString()} 字节</span><span className="fw-unsupported-path" title={buffer.file.absolutePath}>{buffer.file.absolutePath}</span></div>;
+  if (buffer.largeTextReview) return <FileReviewText key={`${buffer.file.ref.id}:${buffer.file.revision.hash}`} file={buffer.file} />;
   if (buffer.loadState === 'loading') return <div className="fw-empty" role="status"><Loader2 size={20} className="animate-spin" />正在读取文件…</div>;
-  if (buffer.editor && buffer.mode === 'document' && buffer.textPresentation === 'csv') return <FileCsvPreview buffer={buffer} />;
-  if (buffer.editor && buffer.mode === 'document' && buffer.textPresentation === 'html') return <FileHtmlPreview buffer={buffer} />;
-  if (buffer.editor && buffer.mode === 'document' && buffer.textPresentation === 'tex') return <FileTexPreview buffer={buffer} />;
-  if (buffer.editor) return <>{!buffer.editable && <div className="fw-save-strip">{buffer.decoded?.kind === 'text' ? buffer.decoded.reason ?? '此文件为只读' : '只读文件'}</div>}<FileTextEditor key={buffer.mode} buffer={buffer} wrap={wrap} blame={blame} metadataRevision={metadataRevision} markdown={buffer.mode === 'document' && buffer.textPresentation === 'markdown'} onLink={onLink} onOpenImage={onOpenImage} imageContext={imageContext} /></>;
+  if (buffer.editor && !buffer.navigationView && buffer.mode === 'document' && buffer.textPresentation === 'csv') return <FileCsvPreview buffer={buffer} />;
+  if (buffer.editor && !buffer.navigationView && buffer.mode === 'document' && buffer.textPresentation === 'html') return <FileHtmlPreview buffer={buffer} />;
+  if (buffer.editor && !buffer.navigationView && buffer.mode === 'document' && buffer.textPresentation === 'tex') return <FileTexPreview buffer={buffer} />;
+  if (buffer.editor) return <>{!buffer.editable && <div className="fw-save-strip">{buffer.navigationView === 'review' ? '行范围只读预览' : buffer.decoded?.kind === 'text' ? buffer.decoded.reason ?? '此文件为只读' : '只读文件'}</div>}<FileTextEditor key={buffer.mode} buffer={buffer} wrap={wrap} blame={blame} metadataRevision={metadataRevision} markdown={!buffer.navigationView && buffer.mode === 'document' && buffer.textPresentation === 'markdown'} onLink={onLink} onOpenImage={onOpenImage} imageContext={imageContext} /></>;
   return <div className="fw-empty" role="status"><File size={26} /><p>{buffer.decoded?.kind !== 'text' ? buffer.decoded?.reason ?? buffer.loadError : buffer.loadError}</p><button onClick={() => void buffer.load()}>重新读取</button></div>;
 }
 function DiskPreview({ base64 }: { base64: string }) {

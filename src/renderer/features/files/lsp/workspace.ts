@@ -94,12 +94,16 @@ export class LanguageWorkspace {
     try {
       const root = this.workspace.roots.roots.find(root => root.lease === destination.root.lease && root.generation === destination.root.generation);
       if (!root) throw new Error('语言服务导航的目录授权已失效');
-      await this.workspace.open(root, destination.path, true);
+      const { start, end } = destination.range, point = start.line === end.line && start.character === end.character;
+      await this.workspace.open(root, destination.path, true, point ? { line: start.line + 1, column: start.character + 1 } : undefined);
       const buffer = this.workspace.active?.buffer;
       if (sequence !== this.sequence || !buffer || buffer.file.ref.lease !== root.lease || buffer.file.relativePath !== destination.path) return false;
       if (!buffer.editor) throw new Error('此位置无法在源码编辑器中打开');
-      const from = languageOffset(buffer.raw, destination.range.start), to = languageOffset(buffer.raw, destination.range.end);
-      buffer.revealSourceRange(from, to); this.results = null; this.message = ''; return true;
+      if (!point) {
+        const from = languageOffset(buffer.raw, start), to = languageOffset(buffer.raw, end);
+        buffer.revealSourceRange(from, to);
+      }
+      this.results = null; this.message = ''; return true;
     } catch (error) { if (sequence === this.sequence) this.message = String(error instanceof Error ? error.message : error); return false; }
   }
   closeResults(): void { this.results = null; this.message = ''; this.emit(); }

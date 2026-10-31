@@ -56,7 +56,9 @@ function ready(svc: ProjectTransferService, preview: TransferPreview, name: stri
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-m8-')); clock = Date.now(); });
 afterEach(() => { services.splice(0).forEach(s => s.disposeAll()); clients.splice(0).forEach(c => c.close()); rmSync(root, { recursive: true, force: true }); });
 
-describe('M8 real SQLite transfer services', () => {
+// These integration cases retain the production scrypt cost. A fault/retry
+// round trip can derive five keys, so allow for the hosted runner's CPU budget.
+describe('M8 real SQLite transfer services', { timeout: 20_000 }, () => {
   it('M10-UG-01 keeps disabled v1 capabilities disabled in the receiving runtime', async () => {
     const a = setup('disabled-runtime'), fixture = transferFixture();
     fixture.capabilities = fixture.capabilities.map(c => ({ ...c, enabled: false }));

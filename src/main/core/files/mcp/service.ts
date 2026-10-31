@@ -13,7 +13,7 @@ interface Session {
   owner: string; input: ViewerOpenInput; adapter: ViewerManifest; source: LocalResourceSource;
   client: Client; server?: Server; abort: AbortController; uri: string; result?: ViewerSession;
   tools: Map<string, { definition: Tool; arguments: Record<string, unknown>; bounds: Record<string, { min: number; max: number; integer: boolean }>; appOnly: boolean }>; cleanup?: () => Promise<void>;
-  invalidated: boolean; budget: ViewerNotificationBudget; error?: string; release(): void;
+  invalidated: boolean; budget: ViewerNotificationBudget; error?: string; failure?: FileError; release(): void;
 }
 const toolsPageSchema = z.object({ tools: z.array(z.object({ name: z.string(), inputSchema: z.record(z.string(), z.unknown()), annotations: z.record(z.string(), z.unknown()).optional(), _meta: z.record(z.string(), z.unknown()).optional() }).passthrough()), nextCursor: z.string().optional() });
 
@@ -42,7 +42,9 @@ export class FileViewerService {
   }
   private key(owner: string, id: string) { return `${owner}/${id}`; }
   private active(session: Session): void {
-    if (this.sessions.get(this.key(session.owner, session.input.id)) !== session || session.abort.signal.aborted) throw new FileError('CANCELLED', '扩展会话已关闭');
+    if (this.sessions.get(this.key(session.owner, session.input.id)) !== session) throw new FileError('CANCELLED', '扩展会话已关闭');
+    if (session.failure) throw session.failure;
+    if (session.abort.signal.aborted) throw new FileError('CANCELLED', '扩展会话已关闭');
     session.source.assert(); session.source.signal.throwIfAborted();
     if (session.error) throw new FileError('IO', session.error);
   }
@@ -65,7 +67,13 @@ export class FileViewerService {
     const client = new Client({ name: 'WillYou 文件查看宿主', version: '1.0.0' }, { capabilities: {}, listMaxPages: VIEWER_LIMITS.toolPages, enforceStrictCapabilities: true });
     const session: Session = { owner, input, adapter, source, client, abort, uri: `willyou-file://${input.id}/content`, tools: new Map(), invalidated: false, budget: new ViewerNotificationBudget(), release: () => this.close(owner, input.id) };
     this.sessions.set(key, session); source.signal.addEventListener('abort', session.release, { once: true });
-    const fail = (error: Error) => { if (!abort.signal.aborted) { session.error = `扩展连接失败：${error.message}`; abort.abort(); void client.close().catch(() => undefined); } };
+    const fail = (error: Error) => { if (!abort.signal.aborted) {
+      // The SDK aborts pending requests during transport cleanup. Retain the
+      // first actual failure so that AbortError cannot hide its cause in the UI.
+      const failure = error instanceof FileError ? error : new FileError('IO', `扩展连接失败：${error.message.slice(0, 4096)}`);
+      session.failure = failure; session.error = failure.message;
+      abort.abort(failure); void client.close().catch(() => undefined);
+    } };
     client.onerror = fail; client.onclose = () => { if (!abort.signal.aborted) fail(new Error('服务已断开')); };
     client.setNotificationHandler('notifications/resources/updated', notification => {
       if (abort.signal.aborted || !session.budget.accept()) return;
@@ -73,7 +81,7 @@ export class FileViewerService {
     });
     // Count unknown notifications as well; none grant access or invoke a tool.
     client.fallbackNotificationHandler = async () => { if (!abort.signal.aborted) session.budget.accept(); };
-    const deadline = setTimeout(() => fail(new Error('初始化超过 15 秒')), VIEWER_LIMITS.timeoutMs);
+    const deadline = setTimeout(() => fail(new FileError('TIMEOUT', '扩展初始化超过 15 秒')), VIEWER_LIMITS.timeoutMs);
     try {
       const initial = await source.read(abort.signal); this.active(session);
       if (initial.document.revision.hash !== input.baseHash) throw new FileError('CHANGED', '文件版本已改变，请重新读取');
@@ -107,7 +115,7 @@ export class FileViewerService {
       }
       if (client.getServerCapabilities()?.resources?.subscribe) { await client.subscribeResource({ uri: session.uri }, this.options(session)); result.subscribed = true; }
       this.active(session); session.result = result; return result;
-    } catch (error) { this.close(owner, input.id); await session.cleanup?.(); throw error; }
+    } catch (error) { const failure = session.failure; this.close(owner, input.id); await session.cleanup?.(); throw failure ?? error; }
     finally { clearTimeout(deadline); }
   }
   private async discoverTools(session: Session, uiUri: string, expand: (value: unknown) => unknown): Promise<void> {

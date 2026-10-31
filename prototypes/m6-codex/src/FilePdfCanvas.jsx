@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { pdfRenderPlan, resolveDestinationPage, MAX_CANVAS_PIXELS } from './file-pdf-model.mjs';
+import { attachPdfTextSelection } from '../../../src/renderer/features/files/pdf/text-selection';
 
 // 单页真实渲染：画布 + 文本层 + 链接层。只在接近视口时渲染，离开后释放画布；缩放/卸载取消在途任务。
 // 画布面积与边长受 file-pdf-model 的上限保护；超限降采样并通过 onPlan 通知。
@@ -17,7 +18,7 @@ export function PdfCanvasPage({ engine, doc, run, number, size, zoom, review = f
   useEffect(() => {
     const node = canvas.current;
     if (!near) { node.width = 1; node.height = 1; node.dataset.rendered = 'false'; textHost.current?.replaceChildren(); setLinks([]); setFailure(''); return; }
-    let cancelled = false, task = null, textLayer = null;
+    let cancelled = false, task = null, textLayer = null, releaseSelection = null;
     const guarded = promise => run ? run(promise) : promise;
     (async () => {
       try {
@@ -36,6 +37,7 @@ export function PdfCanvasPage({ engine, doc, run, number, size, zoom, review = f
           textHost.current.style.setProperty('--total-scale-factor', String(plan.display * page.userUnit));
           textLayer = new engine.TextLayer({ textContentSource: page.streamTextContent(), container: textHost.current, viewport: css });
           await guarded(textLayer.render()); if (cancelled) return;
+          releaseSelection = attachPdfTextSelection(textHost.current);
           const found = [];
           for (const a of await guarded(page.getAnnotations())) {
             if (a.subtype !== 'Link') continue;
@@ -50,7 +52,7 @@ export function PdfCanvasPage({ engine, doc, run, number, size, zoom, review = f
         node.dataset.rendered = 'error'; setFailure('此页渲染失败');
       }
     })();
-    return () => { cancelled = true; task?.cancel(); textLayer?.cancel(); textHost.current?.replaceChildren(); node.width = 1; node.height = 1; node.dataset.rendered = 'false'; };
+    return () => { cancelled = true; releaseSelection?.(); task?.cancel(); textLayer?.cancel(); textHost.current?.replaceChildren(); node.width = 1; node.height = 1; node.dataset.rendered = 'false'; };
   }, [near, doc, run, number, plan.canvasWidth, plan.canvasHeight, plan.display, review, thumbWidth]);
   return <article ref={node => { box.current = node; articleRef?.(node); }} data-page={number} className={className + ' fa-pdf-real'} style={{ width: plan.cssWidth, height: plan.cssHeight }} {...rest}>
     <canvas ref={canvas} className="fa-pdf-canvas" style={{ width: plan.cssWidth, height: plan.cssHeight }} aria-label={'第 ' + number + ' 页'} />

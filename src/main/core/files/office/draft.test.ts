@@ -1,6 +1,11 @@
 import { describe,expect,it } from 'vitest';
 import { encodeOfficeDraft,decodeOfficeDraft } from './draft';
 describe('Office private recovery envelope',()=>{
+  it('retains uncommitted text-box identity and Unicode text without putting it into the source bytes',()=>{
+    const bytes=Buffer.from('retained OOXML'),pendingDrawing={sheetId:'1',objectId:'a'.repeat(64),text:'未提交\n_x000A_ & <hello> 😀\ud800'};
+    expect(decodeOfficeDraft(encodeOfficeDraft(bytes,undefined,pendingDrawing))).toEqual({bytes,pendingDrawing});
+    expect(()=>encodeOfficeDraft(bytes,undefined,{...pendingDrawing,objectId:'/arbitrary/path'})).toThrow();
+  });
   it('retains exact package bytes and incomplete, Unicode and escape-looking formula input',()=>{
     const bytes=Buffer.from([0,255,1,13,10]), pending={sheetId:'1',row:0,column:0,text:'=SUM(中文😀\ud800'};
     expect(decodeOfficeDraft(encodeOfficeDraft(bytes,pending))).toEqual({bytes,pending});

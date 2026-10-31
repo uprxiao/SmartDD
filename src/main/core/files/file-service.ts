@@ -36,11 +36,13 @@ import { FileHtmlService } from './html/service';
 import type { HtmlSource } from './html/resources';
 import { FileTexService, type TexConfiguration, type TexDocumentSource, type TexNativeResult } from './tex/service';
 import { TEX_LIMITS } from '@shared/file-tex';
-import { OFFICE_LIMITS } from '@shared/file-office';
+import { OFFICE_LIMITS, officeReconnectSchema, type OfficeReconnectInput } from '@shared/file-office';
 import { fileActionTargetSchema, type FileActionTarget, type FileIdentity } from '@shared/files';
 import type { TerminalFileSource } from './terminal-context';
 import { FileOfficeService } from './office/service';
 import { OfficeCalculationEngine, type OfficeEngineConfiguration } from './office/engine';
+import { TERMINAL_IMAGE_LIMITS } from '@shared/terminal-image';
+import { validatePptxImageContainer } from './office/pptx-image-container';
 
 interface DocumentRecord { owner: string; scopeKey: string; lease: string; issuedRoot: RootLease; generation: number; relativePath: string; documentKey: string; revision: FileRevision; content: FileDocument['content']; writable:boolean; readOnly:boolean; attachment?: FileDocument['attachment']; abort: AbortController; missingIdentity?: FileIdentity }
 interface Operation { fingerprint: string; filePath: string; result: Promise<FileSaveReceipt> }
@@ -92,12 +94,12 @@ export class FileService {
     };
     const layout=pages ? new LibreOfficeEngine(broker,pages) : undefined;
     const persistence:OfficePersistence={
-      checkpoint:(owner,input)=>this.checkpoint(owner,input), save:(owner,input)=>this.save(owner,input),
+      checkpoint:(owner,input)=>this.checkpointDocument(owner,input), save:(owner,input)=>this.saveDocument(owner,input),
       readDraft:(owner,ref,id)=>this.readDraft(owner,ref,id), resolveDraft:(owner,input)=>this.resolveDraft(owner,input), refresh:(owner,ref)=>this.refresh(owner,ref),
     };
     this.officePages = new FileOfficePagesService((owner,ref)=>officeSource(owner,ref,true),layout,pagesWorkerPath);
     this.pptx=new FilePptxService(officeSource,persistence,layout,pptxWorkerPath,undefined,(image,signal)=>broker.request({operation:'raster-inspect',...image},{signal}));
-    this.office = new FileOfficeService(officeSource, officeWorkerPath, undefined, office ? new OfficeCalculationEngine(broker, office) : undefined,persistence);
+    this.office = new FileOfficeService(officeSource, officeWorkerPath, undefined, office ? new OfficeCalculationEngine(broker, office) : undefined,persistence,(image,signal)=>broker.request({operation:'raster-inspect',...image},{signal}));
     const resourceSource = (owner: string, ref: FileRef, media: boolean) => {
       const { record, lease } = this.requireDocument(owner, ref), revision = { ...record.revision };
       const content = record.content, resourceLimit = media ? MEDIA_LIMIT : content?.kind === 'pdf' ? FILE_LIMITS.asset : FILE_IMAGE_LIMIT;
@@ -118,6 +120,18 @@ export class FileService {
       if (target.kind === 'document') { const { record, lease } = this.requireDocument(owner, target.ref); return { lease, relativePath: record.relativePath, directory: false, identity: { device: record.revision.device, inode: record.revision.inode }, signal: AbortSignal.any([lease.abort.signal, record.abort.signal]) }; }
       const lease = roots.require(owner, target.path); return { lease, relativePath: target.path.relativePath, directory: target.directory, signal: lease.abort.signal };
     }, roots, broker, recovery, preferences);
+  }
+
+  /** Renew a retained workbook only within its original authorized source and
+   * physical file. This does not rebase, reopen, or discard model/history. */
+  reconnectOffice(owner:string,raw:OfficeReconnectInput) {
+    const input=officeReconnectSchema.parse(raw);
+    return this.office.reconnect(owner,input,async oldRef=>{
+      const document=await this.refresh(owner,input.ref);
+      const old=this.requireIssuedDocument(owner,oldRef),next=this.requireDocument(owner,input.ref);
+      if(old.record.scopeKey!==next.record.scopeKey || old.lease.source!==next.lease.source || old.lease.sourceId!==next.lease.sourceId || old.lease.projectId!==next.lease.projectId || identityKey(old.lease.identity)!==identityKey(next.lease.identity) || old.record.relativePath!==next.record.relativePath || identityKey(old.record.revision)!==identityKey(next.record.revision) || old.record.readOnly && !next.record.readOnly)throw new FileError('UNTRUSTED','重新关联的来源或物理文件已改变；原工作簿与草稿仍保留');
+      return document;
+    });
   }
 
   viewerSource(owner: string, ref: FileRef) {
@@ -188,6 +202,37 @@ export class FileService {
       const current = await this.readRequest<NativeFileResult>('stat', lease, result.relativePath, {}, signal); assert();
       if (current.revision.device !== revision.device || current.revision.inode !== revision.inode) throw new FileError('CHANGED', '引用文件已被替换，请重新选择');
       return current.revision;
+    } };
+  }
+
+  async terminalImageSource(owner: string, ref: FileRef, baseHash: string) {
+    const { record, lease } = this.requireDocument(owner, ref);
+    if (record.content?.kind !== 'image' || record.content.mime !== 'image/png') throw new FileError('UNSUPPORTED', '当前图片输入适配器仅验证过静态 PNG，请选择 PNG 原图');
+    if (record.revision.hash !== baseHash) throw new FileError('CHANGED', '预览的图片已改变，请重新打开后再附加');
+    const source = await this.terminalSource(owner, { kind: 'document', ref }, record.revision);
+    if (source.revision.hash !== baseHash) throw new FileError('CHANGED', '图片原件已改变，未附加');
+    if (source.revision.size < 1 || source.revision.size > TERMINAL_IMAGE_LIMITS.bytes) throw new FileError('TOO_LARGE', '当前图片输入最多支持 20 MiB 的静态 PNG');
+    return { ...source, name: basename(record.relativePath), mime: 'image/png' as const, read: async () => {
+      const chunks: Buffer[] = [];
+      for (let offset = 0; offset < source.revision.size; offset += FILE_LIMITS.chunk) {
+        source.assert(); const length = Math.min(FILE_LIMITS.chunk, source.revision.size - offset);
+        const chunk = await this.readRequest<NativeFileResult>('chunk', lease, record.relativePath, { offset, length, expectedHash: baseHash, expectedRevision: source.revision, resourceLimit: TERMINAL_IMAGE_LIMITS.bytes }, source.signal);
+        source.assert(); const bytes = Buffer.from(chunk.base64!, 'base64');
+        if (bytes.length !== length) throw new FileError('CHANGED', '图片原件读取不完整，未附加');
+        chunks.push(bytes);
+      }
+      const bytes = Buffer.concat(chunks);
+      if (hash(bytes) !== baseHash) throw new FileError('CHANGED', '图片原件校验失败，未附加');
+      // ImageIO may recover a truncated PNG and report it complete. Reuse the
+      // bounded container/CRC/scanline check before native decode or PTY input.
+      validatePptxImageContainer(bytes, 'image/png');
+      // Decode only for admission; retain and deliver the exact original bytes.
+      // This existing native path bounds static PNG to 20 MiB/16 megapixels.
+      try { await this.broker.request({ operation: 'raster-inspect', mime: 'image/png', base64: bytes.toString('base64') }, { signal: source.signal }); }
+      catch { source.assert(); throw new FileError('UNSUPPORTED', '图片不是完整静态 PNG，或超过 1600 万像素／单边 8192 像素的输入上限'); }
+      source.assert(); const current = await source.inspect();
+      if (current.hash !== baseHash) throw new FileError('CHANGED', '图片在准备时已改变，未附加');
+      return bytes;
     } };
   }
 
@@ -298,7 +343,23 @@ export class FileService {
   }
   async open(owner: string, input: FileOpenRequest): Promise<FileDocument> {
     const request = fileOpenSchema.parse(input); await this.recovery.ready(); const lease = this.roots.require(owner, request);
-    const result = await this.readRequest<NativeFileResult>('stat', lease, request.relativePath);
+    let result: NativeFileResult;
+    try { result = await this.readRequest<NativeFileResult>('stat', lease, request.relativePath); }
+    catch (error) {
+      if (!(error instanceof FileError) || error.code !== 'TOO_LARGE') throw error;
+      // stat correctly refuses to hash bodies above the asset ceiling. Ask
+      // the same trusted broker for metadata only, without inventing a hash
+      // or issuing a capability for an unread body. Canonical filename type
+      // still takes precedence over size for explicitly unsupported formats.
+      const metadata = await this.readRequest<{ relativePath: string; size: number }>('metadata', lease, request.relativePath);
+      this.roots.require(owner, request);
+      const content = classifyFile(basename(metadata.relativePath), new Uint8Array());
+      if (content.kind === 'unsupported') throw new FileError('UNSUPPORTED', content.reason ?? '此文件类型不支持预览');
+      if (metadata.size > FILE_LIMITS.asset) throw new FileError('TOO_LARGE', '文件超过 256 MiB 只读预览上限；可使用外部应用打开');
+      // An external replacement may have shrunk the file between requests.
+      // Obtain a real revision once; never promote metadata into a document.
+      result = await this.readRequest<NativeFileResult>('stat', lease, request.relativePath);
+    }
     this.roots.require(owner, request);
     return this.document(owner, lease, result, undefined, request.readOnly, request.attachment);
   }
@@ -380,6 +441,11 @@ export class FileService {
     for (const id of this.cancelledReads.keys()) if (id.startsWith(owner + '/')) this.cancelledReads.delete(id);
   }
   async checkpoint(owner: string, raw: FileCheckpointInput): Promise<FileCheckpointReceipt> {
+    const input=fileCheckpointSchema.parse(raw),{record}=this.requireIssuedDocument(owner,input.ref);
+    if(record.content?.kind==='office')throw new FileError('UNTRUSTED','Office 草稿必须通过文档保真校验');
+    return this.checkpointDocument(owner,input);
+  }
+  private async checkpointDocument(owner: string, raw: FileCheckpointInput): Promise<FileCheckpointReceipt> {
     const input = fileCheckpointSchema.parse(raw);
     // A previously opened buffer may persist private recovery bytes after its
     // source is disconnected/reconfigured. This does not authorize source IO.
@@ -444,6 +510,11 @@ export class FileService {
   }
 
   async save(owner: string, raw: FileSaveInput): Promise<FileSaveReceipt> {
+    const input=fileSaveSchema.parse(raw),{record}=this.requireDocument(owner,input.ref);
+    if(record.content?.kind==='office')throw new FileError('UNTRUSTED','Office 原件必须通过文档保真校验后保存');
+    return this.saveDocument(owner,input);
+  }
+  private async saveDocument(owner: string, raw: FileSaveInput): Promise<FileSaveReceipt> {
     const input = fileSaveSchema.parse(raw); await this.recovery.ready();
     const { record, lease } = this.requireDocument(owner, input.ref);
     if (record.readOnly) throw new FileError('PERMISSION', '此来源为只读，不能保存原文件');
@@ -509,7 +580,7 @@ export class FileService {
     const content = classifyFile(name, Buffer.from(sample, 'base64')), hint = previous?.attachment ?? attachmentHint;
     const attachment = readOnly && hint ? { ...(hint.mimeType !== undefined ? { mimeType: hint.mimeType } : {}), textKind: content.kind === 'text' ? attachmentTextKind(name, hint.mimeType) : null } : undefined;
     this.documents.set(id, { owner, scopeKey: scopeKey(lease.scope), lease: lease.lease, issuedRoot: lease, generation: lease.generation, relativePath: result.relativePath, documentKey, revision: result.revision, content, writable, readOnly, ...(attachment ? { attachment } : {}), abort: previous?.abort ?? new AbortController() });
-    return { ref: { id, lease: lease.lease, generation: lease.generation }, documentKey, name, relativePath: result.relativePath, absolutePath: join(lease.canonicalPath, result.relativePath), revision: result.revision, writable, content, ...(attachment ? { attachment } : {}) };
+    return { ref: { id, lease: lease.lease, generation: lease.generation }, documentKey, name, relativePath: result.relativePath, absolutePath: join(lease.canonicalPath, result.relativePath), revision: result.revision, writable, sourceReadOnly: readOnly, content, ...(attachment ? { attachment } : {}) };
   }
   /** A missing capability remains bound to its former physical file. Reading a
    * new occupant at the same path must not silently redirect an old draft.

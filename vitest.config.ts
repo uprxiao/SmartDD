@@ -6,7 +6,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   esbuild: { jsx: 'automatic' },
   resolve: {
-    // Shared prototype components must use the same React instance as the test renderer.
+    // Tests also mount shared prototype components. Use the renderer's React
+    // instance even when the isolated prototype has its own node_modules.
     dedupe: ['react', 'react-dom'],
     alias: {
       '@root': resolve('.'),
@@ -15,5 +16,11 @@ export default defineConfig({
       '@renderer': resolve('src/renderer'),
     },
   },
-  test: { include: ['src/**/*.test.{ts,tsx}'], environment: 'node' },
+  test: {
+    include: ['src/**/*.test.{ts,tsx}'],
+    environment: 'node',
+    // Native fixtures launch helpers and competing writers. Keep CI resource
+    // contention from consuming their bounded transaction-gate waits.
+    maxWorkers: 2,
+  },
 });

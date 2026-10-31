@@ -28,6 +28,7 @@ import { claudeSessionFile, codexRolloutFile, recentCodexRollouts, stateRootFor 
 import { ApplicationError } from '@shared/applications';
 import { SessionTail } from './session-health';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
+import { imageInputCapability, type TerminalImageCapability } from '@shared/terminal-image';
 
 type TaskRow = typeof tasks.$inferSelect;
 
@@ -38,6 +39,7 @@ export interface PtyHost {
   kill(id: string): void;
   on(event: 'exit', listener: (id: string, code: number) => void): unknown;
   off(event: 'exit', listener: (id: string, code: number) => void): unknown;
+  processId?(id: string): number | null;
 }
 
 export interface TaskServiceDeps {
@@ -69,6 +71,7 @@ const CODEX_EXIT_GRACE_MS = 3000;
 
 interface CodexWatch {
   timer: NodeJS.Timeout;
+  exitTimer?: NodeJS.Timeout;
   root: string;
   waiter: CodexWaiter;
   busy: boolean;
@@ -105,7 +108,8 @@ export class TaskService {
   private readonly follows = new Map<string, Follow>(); // taskId → session file follower
   private readonly killedPtys = new Set<string>();
   private readonly archiving = new Set<string>();
-  private readonly pendingArchiveStops = new Set<(error: Error) => void>();
+  private readonly closing = new Set<string>();
+  private readonly pendingArchiveStops = new Map<(error: Error) => void, string>();
   private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
   private readonly now: () => number;
   private readonly creations = new Map<string,{taskId:string;senderId:number|null}>();
@@ -222,6 +226,7 @@ export class TaskService {
   /** Resume / reopen a task that is not running; a running task just returns its terminal. */
   open(req: OpenTaskRequest): Promise<OpenResult> {
     if(this.closed)return Promise.reject(new Error('应用正在退出，不能恢复任务'));
+    if(this.closing.has(req.taskId))return Promise.reject(new Error('会话正在关闭，请稍后再打开'));
     const current=this.opening.get(req.taskId);
     if(current){if(req.aiProfileId&&req.aiProfileId!==current.profileId)return Promise.reject(new Error('任务正在准备启动，完成后才能换 AI 配置'));return current.promise;}
     const row=this.d.db.select({profileId:tasks.aiProfileId,projectId:tasks.projectId}).from(tasks).where(eq(tasks.id,req.taskId)).get();
@@ -236,6 +241,7 @@ export class TaskService {
     if(this.closed)throw new Error('应用正在退出，不能恢复任务');
     if(signal.aborted)throw new Error('任务启动已取消');
     const row = this.require(req.taskId);
+    if (this.closing.has(row.id)) throw new Error('会话正在关闭，请稍后再打开');
     if (this.archiving.has(row.id)) throw new Error('任务正在结束并归档，请稍后再试');
     if (row.archivedAt !== null) throw new Error('任务已归档，请先取消归档再启动');
     const live = this.running.get(row.id);
@@ -296,6 +302,7 @@ export class TaskService {
 
   setArchived(id: string, archived: boolean): TaskView {
     const row = this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
     if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
     if (archived && (this.running.has(id)||this.launching.has(id)||this.opening.has(id))) throw new Error('任务正在运行，请先结束再归档');
     if ((row.archivedAt !== null) === archived) return this.get(id);
@@ -311,26 +318,13 @@ export class TaskService {
   /** Explicit user confirmation: wait for this PTY to exit before hiding its task. */
   async stopAndArchive(id: string): Promise<TaskView> {
     this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
     if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
     const ptyId = this.running.get(id);
     if (!ptyId) return this.setArchived(id, true);
     this.archiving.add(id);
     try {
-      await new Promise<void>((resolve, reject) => {
-        const finish = (error?: Error) => {
-          clearTimeout(timer);
-          this.d.ptys.off('exit', onExit);
-          this.pendingArchiveStops.delete(finish);
-          if (error) reject(error);
-          else resolve();
-        };
-        const onExit = (exitedId: string) => { if (exitedId === ptyId) finish(); };
-        const timer = setTimeout(() => finish(new Error('终端尚未确认结束，未归档。请稍后重试。')), ARCHIVE_STOP_TIMEOUT_MS);
-        this.pendingArchiveStops.add(finish);
-        this.d.ptys.on('exit', onExit);
-        try { this.kill(id); }
-        catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
-      });
+      await this.waitForPtyExit(id, ptyId, '终端尚未确认结束，未归档。请稍后重试。');
       // No await between releasing the guard and saving the archived flag.
       this.archiving.delete(id);
       return this.setArchived(id, true);
@@ -339,9 +333,61 @@ export class TaskService {
     }
   }
 
+  /** End only this session, with an exit receipt; keep its record and CLI files. */
+  async closeSession(id: string): Promise<TaskView> {
+    this.require(id);
+    if (this.closing.has(id) || this.archiving.has(id)) throw new Error('会话正在结束，请稍后再试');
+    this.closing.add(id);
+    try {
+      // M10 startup can still be preparing before it owns a PTY. Closing must
+      // settle that exact opening, otherwise it could spawn after close returns.
+      const opening=this.opening.get(id);
+      if(opening){
+        opening.abort.abort();this.launching.get(id)?.abort.abort();
+        await new Promise<void>((resolve,reject)=>{
+          let settled=false;
+          const finish=(error?:Error)=>{if(settled)return;settled=true;clearTimeout(timer);this.pendingArchiveStops.delete(finish);if(error)reject(error);else resolve();};
+          const timer=setTimeout(()=>finish(new Error('任务启动尚未确认结束，会话仍保留。请稍后重试。')),ARCHIVE_STOP_TIMEOUT_MS);
+          this.pendingArchiveStops.set(finish,'应用正在退出，会话关闭未完成');
+          void opening.promise.then(()=>finish(),()=>finish());
+        });
+      }
+      const ptyId = this.running.get(id);
+      if (ptyId) await this.waitForPtyExit(id, ptyId, '终端尚未确认结束，会话仍保留。请稍后重试。', '应用正在退出，会话关闭未完成');
+      this.stopWatch(id);
+      this.unfollow(id);
+      for (const [ptyId, taskId] of this.watchedPty) if (taskId === id) this.watchedPty.delete(ptyId);
+      return this.get(id);
+    } finally {
+      this.closing.delete(id);
+    }
+  }
+
+  private waitForPtyExit(id: string, ptyId: string, timeoutMessage: string, cancelledMessage = '应用正在退出，归档未完成'): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.d.ptys.off('exit', onExit);
+        this.pendingArchiveStops.delete(finish);
+        if (error) reject(error);
+        else resolve();
+      };
+      const onExit = (exitedId: string) => { if (exitedId === ptyId) finish(); };
+      const timer = setTimeout(() => finish(new Error(timeoutMessage)), ARCHIVE_STOP_TIMEOUT_MS);
+      this.pendingArchiveStops.set(finish, cancelledMessage);
+      this.d.ptys.on('exit', onExit);
+      try { this.kill(id); }
+      catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
+    });
+  }
+
   /** Only SmartDD's record goes; the CLI's own session files stay (PRD F05 step 5). */
   delete(id: string): void {
     this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
     if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
     this.kill(id);
     this.stopWatch(id);
@@ -385,6 +431,15 @@ export class TaskService {
     return id && !this.killedPtys.has(id) && !this.archiving.has(taskId) ? id : null;
   }
 
+  /** Capability belongs to this live launch, not the profile's runner label. */
+  imageInput(taskId: string, ptyId: string): { capability: TerminalImageCapability; launchId: string | null } {
+    const run = this.runtimes.get(ptyId);
+    if (this.activePty(taskId) !== ptyId || run?.taskId !== taskId || run.runtime.check()?.status !== 'passed') return { capability: imageInputCapability(null), launchId: null };
+    const launch = run.runtime.imageInputLaunch?.() ?? null;
+    if (!launch || this.d.ptys.processId?.(ptyId) !== launch.pid) return { capability: imageInputCapability(null), launchId: null };
+    return { capability: imageInputCapability(launch), launchId: `${launch.runId}/${launch.pid}/${launch.sha256}` };
+  }
+
   /** How many of the project's tasks have a live CLI (a project with any cannot be deleted). */
   private projectActiveTaskIds(projectId:string):Set<string>{
     const stored=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
@@ -401,14 +456,13 @@ export class TaskService {
   dispose(): void {
     this.closed=true;for(const opening of this.opening.values())opening.abort.abort();for(const launch of this.launching.values())launch.abort.abort();
     for(const run of this.managed.values())if(!run.exited)void run.launch.stop('host-shutdown').catch(()=>undefined);
-    for (const cancel of this.pendingArchiveStops) cancel(new Error('应用正在退出，归档未完成'));
+    for (const [cancel, message] of this.pendingArchiveStops) cancel(new Error(message));
     for (const [ptyId,run] of this.runtimes) {
       clearInterval(run.timer);
       if(!this.managed.has(ptyId))run.runtime.release();
     }
     this.runtimes.clear();
-    for (const w of this.codexWatchers.values()) clearInterval(w.timer);
-    this.codexWatchers.clear();
+    for (const id of this.codexWatchers.keys()) this.stopWatch(id);
     for (const f of this.follows.values()) clearInterval(f.timer);
     this.follows.clear();
     if(![...this.managed.values()].some(run=>!run.exited))this.d.ptys.off('exit', this.onPtyExit);
@@ -697,7 +751,7 @@ export class TaskService {
 
   private stopWatch(taskId: string): void {
     const w = this.codexWatchers.get(taskId);
-    if (w) clearInterval(w.timer);
+    if (w) { clearInterval(w.timer); clearTimeout(w.exitTimer); }
     this.codexWatchers.delete(taskId);
   }
 
@@ -809,7 +863,7 @@ export class TaskService {
       // Give Codex a moment to flush the rollout after the last message before giving up —
       // but only on this run's watcher: a reopened task has a new one by then.
       const w = this.codexWatchers.get(watched);
-      if (w) setTimeout(() => this.codexWatchers.get(watched) === w && this.stopWatch(watched), CODEX_EXIT_GRACE_MS);
+      if (w) w.exitTimer = setTimeout(() => this.codexWatchers.get(watched) === w && this.stopWatch(watched), CODEX_EXIT_GRACE_MS);
     }
   };
 

@@ -37,6 +37,22 @@ function untrusted(message:string):never {throw new FileError('UNTRUSTED',messag
 const identity=(stat:{dev:bigint;ino:bigint}):FileIdentity=>({device:String(stat.dev),inode:String(stat.ino)});
 const within=(root:string,path:string)=>{const name=relative(root,path);return name!=='' && name!=='..' && !name.startsWith(`..${sep}`) && !isAbsolute(name);};
 
+/** Preserve result order and drain every started read before propagating the
+ * first error. No new items are claimed after failure/cancellation. */
+async function checkResources<T,R>(items:readonly T[],check:(item:T)=>Promise<R>,signal?:AbortSignal):Promise<R[]> {
+  const results=new Array<R>(items.length);let next=0,failed=false,firstError:unknown;
+  const worker=async()=>{
+    while(!failed) {
+      const index=next++;if(index>=items.length)return;
+      try {signal?.throwIfAborted();results[index]=await check(items[index]);}
+      catch(error){if(!failed){failed=true;firstError=error;}}
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(8,items.length)},worker));
+  if(failed)throw firstError;
+  signal?.throwIfAborted();return results;
+}
+
 /** Build-time-only resources. No ambient Office installation or runtime download.
  * Every file and contained symlink is verified before the native broker receives
  * identities and hashes; the broker must recheck them before execution. */
@@ -83,12 +99,12 @@ export async function libreOfficeResources(directory:string,packagePath?:string,
   await walk('',0);
   if(actual.length!==entries.size+1 || actual.some(path=>path!=='resources.json' && (!path.startsWith('LibreOffice.app/') || !entries.has(path.slice('LibreOffice.app/'.length)))))untrusted('Office 文档引擎含有缺失或未登记的资源');
   // Reject escaping links before codesign recursively inspects the bundle.
-  for(const entry of manifest.files) {
+  await checkResources(manifest.files,async entry=>{
     signal?.throwIfAborted();const path=join(app,entry.path),stat=await lstat(path);
     if('link' in entry) {
       if(!stat.isSymbolicLink() || await readlink(path)!==entry.link || !within(app,await realpath(path)))untrusted('Office 文档引擎链接超出完整资源包');
     } else if(!stat.isFile() || stat.isSymbolicLink() || (stat.mode&0o022))untrusted('Office 文档引擎资源权限或类型异常');
-  }
+  },signal);
   if(packagePath) {
     const enclosing=await realpath(packagePath);
     if(!within(enclosing,root))untrusted('Office 文档引擎不在当前安装包内');
@@ -97,13 +113,13 @@ export async function libreOfficeResources(directory:string,packagePath?:string,
   // Keep the vendor signature even inside a WillYou bundle. codesign treats
   // -R as a filename unless the requirement starts with '='.
   await exec('/usr/bin/codesign',['--verify','--deep','--strict','-R','=anchor apple generic and identifier "org.libreoffice.script" and certificate leaf[subject.OU] = "7P5S3ZLCN7"',app],{timeout:30_000,maxBuffer:65536,env:{PATH:'/usr/bin:/bin'},signal});
-  const files=[manifestRecord],links:LibreOfficeResources['links']=[];let total=0;
-  for(const entry of manifest.files) {
+  let total=0;
+  const verified=await checkResources(manifest.files,async entry=>{
     signal?.throwIfAborted();const name=`LibreOffice.app/${entry.path}`,path=join(root,name);
     if('link' in entry) {
       const stat=await lstat(path);
       if(!stat.isSymbolicLink() || await readlink(path)!==entry.link || !within(app,await realpath(path)))untrusted('Office 文档引擎链接超出完整资源包');
-      links.push({path:name,target:entry.link});continue;
+      return {file:null,link:{path:name,target:entry.link}};
     }
     const handle=await open(path,constants.O_RDONLY|constants.O_NOFOLLOW);
     try {
@@ -114,9 +130,11 @@ export async function libreOfficeResources(directory:string,packagePath?:string,
       const checksum=digest.digest('hex'),after=await handle.stat({bigint:true}),current=await lstat(path,{bigint:true});
       if(current.isSymbolicLink() || current.dev!==stat.dev || current.ino!==stat.ino || after.size!==stat.size || after.mtimeNs!==stat.mtimeNs || after.ctimeNs!==stat.ctimeNs)throw new FileError('CHANGED','Office 文档引擎资源在校验时改变');
       if(stat.size!==BigInt(entry.bytes) || checksum!==entry.sha256)untrusted(`Office 文档引擎资源校验失败：${entry.path}`);
-      files.push({path:name,identity:identity(stat),hash:checksum});
+      return {file:{path:name,identity:identity(stat),hash:checksum},link:null};
     } finally {await handle.close();}
-  }
+  },signal);
+  const files=[manifestRecord],links:LibreOfficeResources['links']=[];
+  for(const item of verified){if(item.file)files.push(item.file);else if(item.link)links.push(item.link);}
   for(const [path,expected] of directories) {
     const stat=await lstat(join(root,path),{bigint:true});
     if(!stat.isDirectory() || stat.isSymbolicLink() || (stat.mode&0o022n) || String(stat.dev)!==expected.device || String(stat.ino)!==expected.inode)throw new FileError('CHANGED','Office 文档引擎目录在校验时改变');

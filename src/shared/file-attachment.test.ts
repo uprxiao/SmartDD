@@ -8,7 +8,8 @@ describe('Source-aware readonly text presentation',()=>{
   expect(fileTextPresentation('file.mdx')).toBe('markdown');expect(attachmentTextKind('file.mdx','text/markdown')).toBeNull();expect(fileTextPresentation('file.mdx',{textKind:null,mimeType:'text/markdown'})).toBe('source');
  });
  it('uses explicitly supported MIME aliases only when no extension is present',()=>{
-  for(const [mime,kind] of [['text/html','html'],['text/markdown','markdown'],['text/x-markdown','markdown'],['text/plain','text']] as const){expect(attachmentTextKind('parent.with-dot/file',mime)).toBe(kind);expect(attachmentTextKind('file.unknown',mime)).toBeNull()}
+  for(const [mime,kind] of [['text/html','html'],['application/markdown','markdown'],['application/x-markdown','markdown'],['text/markdown','markdown'],['text/x-markdown','markdown'],['text/plain','text']] as const){expect(attachmentTextKind('parent.with-dot/file',mime)).toBe(kind);expect(attachmentTextKind('file.unknown',mime)).toBeNull()}
+  for(const mime of [' Application/Markdown; charset=UTF-8 ',' APPLICATION/X-MARKDOWN; charset=utf-8 '])expect(attachmentTextKind('file',mime)).toBe('markdown');
   expect(attachmentTextKind('file',' Text/Markdown; charset=utf-8 ')).toBe('markdown');expect(attachmentTextKind('file','application/octet-stream')).toBeNull();expect(attachmentTextKind('file')).toBeNull();expect(attachmentTextKind('file.txt','text/html')).toBe('text');
  });
  it('preserves explicit CSV/TeX presentation and keeps ordinary unknown text source',()=>{

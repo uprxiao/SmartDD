@@ -8,9 +8,10 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { setTimeout as delay } from 'node:timers/promises';
 const exec=promisify(execFile),sha=x=>createHash('sha256').update(x).digest('hex');
-export async function createSaveFailureFixture(broker){
+export async function createSaveFailureFixture(broker,{faultOperations=['save']}={}){
+ assert(faultOperations.length&&faultOperations.every(x=>['save','copy'].includes(x)));
  const base=await mkdtemp('/private/tmp/willyou-native-save-failure-'),volume=join(base,'volume'),project=join(volume,'project'),image=join(base,'fault-volume.dmg'),control=join(base,'fault-mode'),trace=join(base,'native-relay.jsonl'),original=join(base,'original-willyou-files'),wrapper=join(base,'willyou-files-relay');
- const evidence={at:new Date().toISOString(),base,volume,project,image,commands:[],boundary:'Own64MiB APFS image only; actual parent permission removal, actual native ENOSPC/capacity guard, actual native EFBIG from4096-byte RLIMIT_FSIZE on save only. Relay forwards original requests and newline frames byte-identically, never fabricates responses. userData/drafts remain outside full volume.'};let device,mountedDevice,closed=false,pressure=null;
+ const evidence={at:new Date().toISOString(),base,volume,project,image,commands:[],faultOperations,boundary:'Own64MiB APFS image only; actual parent permission removal, actual native ENOSPC/capacity guard, actual native EFBIG from4096-byte RLIMIT_FSIZE on explicitly selected save/copy operations only. Relay forwards original requests and newline frames byte-identically, never fabricates responses. userData/drafts remain outside full volume.'};let device,mountedDevice,closed=false,pressure=null;
  async function command(args,options={}){try{const r=await exec(args[0],args.slice(1),{timeout:45000,maxBuffer:8*1024*1024,...options});evidence.commands.push({args,code:0,stderr:r.stderr});return r.stdout;}catch(error){evidence.commands.push({args,code:error.code,stderr:error.stderr});throw error;}}
  async function stopPressure(){if(!pressure)return;const current=pressure;current.active=false;await current.pump;closeSync(current.fd);pressure=null;}
  async function close(){if(closed)return;await stopPressure();await chmod(project,0o700).catch(()=>{});if(device){assert.equal((await stat(volume)).dev,mountedDevice,'Own volume identity changed');await command(['hdiutil','detach',device]);evidence.detached=true;}closed=true;evidence.finishedAt=new Date().toISOString();await writeFile(join(base,'environment.json'),JSON.stringify(evidence,null,2)+'\n');}
@@ -24,7 +25,7 @@ export async function createSaveFailureFixture(broker){
 import hashlib,json,os,resource,signal,subprocess,sys,time
 payload=sys.stdin.buffer.read()
 request=json.loads(payload)
-fault=open(${JSON.stringify(control)}).read().strip()=='generic' and request.get('operation')=='save'
+fault=open(${JSON.stringify(control)}).read().strip()=='generic' and request.get('operation') in ${JSON.stringify(faultOperations)}
 def limit():
  signal.signal(signal.SIGXFSZ,signal.SIG_IGN)
  resource.setrlimit(resource.RLIMIT_FSIZE,(4096,4096))

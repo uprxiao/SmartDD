@@ -1,7 +1,8 @@
 import { FileError, type FileCheckpointReceipt, type FileSaveReceipt } from '@shared/files';
 import type { OfficeSaveInput } from '@shared/file-office';
+import type { OfficeFidelityFailure } from '@shared/file-office-fidelity';
 
-interface SavedOutcome { receipt: FileSaveReceipt; checkpoint: FileCheckpointReceipt; draftError?: string }
+interface SavedOutcome { receipt: FileSaveReceipt; checkpoint?: FileCheckpointReceipt; draftError?: string; fidelity?: OfficeFidelityFailure }
 /** Short, per-document replay window. Keep receipts, never large model states
  * or source bytes. Older/version-stale requests still face Worker/native guards. */
 export class OfficeSaveReplay {

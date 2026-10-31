@@ -1,12 +1,13 @@
 import { useEffect,useRef,useState } from 'react';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { PPTX_IMAGE_LIMIT } from '@shared/file-pptx-image';
 import { bytesToBase64,fileErrorMessage } from '../file-buffer';
 import type { PptxBuffer } from './pptx-buffer';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 
 /** The native file chooser grants only the selected bytes. No filesystem path
  * or URL is accepted by the Office image action. */
-export function PptxImagePicker({pptx,slideId,elementId,onApplied}:{pptx:PptxBuffer;slideId:string;elementId?:string;onApplied?():void}){
+export function PptxImagePicker({pptx,slideId,elementId,onApplied,onGenerate,generationDisabled=false}:{pptx:PptxBuffer;slideId:string;elementId?:string;onApplied?():void;onGenerate?():void;generationDisabled?:boolean}){
   const input=useRef<HTMLInputElement>(null),reader=useRef<FileReader|null>(null),request=useRef(0);
   const captured=useRef<{id:string;version:number}|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const label=elementId?'替换图片':'插入图片',identity=`${pptx.id}/${slideId}/${elementId??'new'}`;
@@ -32,5 +33,6 @@ export function PptxImagePicker({pptx,slideId,elementId,onApplied}:{pptx:PptxBuf
     }catch(failure){if(token===request.current)setError(fileErrorMessage(failure));}
     finally{if(token===request.current){reader.current=null;captured.current=null;setBusy(false);}}
   };
-  return <><button aria-label={label} title="PNG / JPEG，最多 20 MiB、1600 万像素" disabled={busy||!pptx.editable||pptx.controlsBusy||pptx.composing} onClick={choose}>{!elementId&&<ImageIcon size={14}/>} {busy?'正在读取图片…':elementId?'替换图片':'图片'}</button><input ref={input} hidden type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" aria-label={`${label}文件`} onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';if(file)void load(file);}}/>{error&&<span role="alert" className="fw-office-notice">{error}</span>}</>;
+  const disabled=busy||!pptx.editable||pptx.controlsBusy||pptx.composing;
+  return <>{onGenerate&&!elementId?<DropdownMenu><DropdownMenuTrigger aria-label={label} disabled={disabled}><ImageIcon size={14}/>图片<ChevronDown size={12}/></DropdownMenuTrigger><DropdownMenuContent align="start" className="fw-file-menu"><DropdownMenuItem disabled={generationDisabled} onClick={onGenerate}>生成图片</DropdownMenuItem><DropdownMenuItem onClick={choose}>从文件上传</DropdownMenuItem></DropdownMenuContent></DropdownMenu>:<button aria-label={label} title="PNG / JPEG，最多 20 MiB、1600 万像素" disabled={disabled} onClick={choose}>{!elementId&&<ImageIcon size={14}/>} {busy?'正在读取图片…':elementId?'替换图片':'图片'}</button>}<input ref={input} hidden type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" aria-label={`${label}文件`} onChange={event=>{const file=event.currentTarget.files?.[0];event.currentTarget.value='';if(file)void load(file);}}/>{error&&<span role="alert" className="fw-office-notice">{error}</span>}</>;
 }

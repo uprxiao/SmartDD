@@ -8,7 +8,7 @@ import { fileFindState } from '../text-find-state';
 import { markdownFindKey, paintMarkdownFind, type RenderedFileFind } from './find-highlights';
 import { createMarkdownMathBudget, createMarkdownMathSession, hydrateMarkdownMath, type MarkdownMathBudget, type MarkdownMathSession } from '@shared/markdown-math-session.mjs';
 import { createMarkdownMathFragments } from '@shared/markdown-math-fragments.mjs';
-import { markdownNodeRevealed } from '@shared/markdown-inline-plan.mjs';
+import { markdownMarkerRevealed, markdownNodeRevealed } from '@shared/markdown-inline-plan.mjs';
 
 interface Item extends MarkdownItem { cmFrom: number; cmTo: number; revision: number; mathBudget?: MarkdownMathBudget; fragmentMath?: MarkdownMathSession; inlineWidget?: boolean; ownerFrom?: number; ownerTo?: number }
 export interface MarkdownHost {
@@ -149,18 +149,23 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
     for (const item of items) {
       if (item.cmTo <= item.cmFrom || item.sourceOnly || item.metadata?.error || item.type === 'blank' || item.type === 'definition' || item.type === 'mermaid' && typeof host.diagram !== 'function') continue;
       const intersects = (from: number, to: number) => selection.ranges.some(range => range.from <= to && range.to >= from);
-      if (!intersects(item.cmFrom, item.cmTo)) replace(item.cmFrom, item.cmTo, new Block(item, markdownFindKey(item.cmFrom, item.cmTo, find), item.type === 'mermaid' ? diagramRecord(item) : undefined), true);
+      const retainsSource = item.inline?.some(node => node.sourceOnly);
+      if (!intersects(item.cmFrom, item.cmTo) && !retainsSource) replace(item.cmFrom, item.cmTo, new Block(item, markdownFindKey(item.cmFrom, item.cmTo, find), item.type === 'mermaid' ? diagramRecord(item) : undefined), true);
       else {
       for (const node of item.inline ?? []) {
         const revealed = markdownNodeRevealed(node, rawRanges, focused);
         if (node.kind === 'heading') ranges.push(Decoration.line({ class: `fw-md-heading-line fw-md-heading-${node.level}` }).range(map.rawToCm(node.line!)));
         if (node.kind === 'format' && node.contentFrom! < node.contentTo!) ranges.push(Decoration.mark({ class: `fw-md-${node.style}` }).range(map.rawToCm(node.contentFrom!), map.rawToCm(node.contentTo!)));
-        if (node.kind === 'link' && node.contentFrom! < node.contentTo!) ranges.push(Decoration.mark({ class: 'fw-md-link', ...(revealed ? {} : { tagName: 'a', attributes: { href: '#', 'data-md-href': node.href ?? '' } }) }).range(map.rawToCm(node.contentFrom!), map.rawToCm(node.contentTo!)));
-        for (const [from, to] of node.parts ?? []) if (to > from) {
-          if (revealed) ranges.push(Decoration.mark({ class: 'fw-md-delimiter' }).range(map.rawToCm(from), map.rawToCm(to)));
+        if (node.kind === 'code' && node.parts?.length && node.contentFrom! < node.contentTo!) ranges.push(Decoration.mark({ tagName: 'code', class: 'fw-md-code', attributes: { 'data-md-from': String(node.from), 'data-md-to': String(node.to) } }).range(map.rawToCm(node.contentFrom!), map.rawToCm(node.contentTo!)));
+        if (node.kind === 'link' && node.contentFrom! < node.contentTo!) {
+          const editing = focused && rawRanges.some(range => range.from < node.to && range.to > node.from);
+          ranges.push(Decoration.mark({ class: 'fw-md-link', ...(editing ? {} : { tagName: 'a', attributes: { href: '#', 'data-md-href': node.href ?? '' } }) }).range(map.rawToCm(node.contentFrom!), map.rawToCm(node.contentTo!)));
+        }
+        for (const [index, [from, to]] of (node.parts ?? []).entries()) if (to > from) {
+          if (markdownMarkerRevealed(node, index, rawRanges, focused)) ranges.push(Decoration.mark({ class: 'fw-md-delimiter' }).range(map.rawToCm(from), map.rawToCm(to)));
           else replace(map.rawToCm(from), map.rawToCm(to));
         }
-        if (node.html && !revealed) {
+        if (node.html && !revealed && !(node.kind === 'code' && node.parts?.length)) {
           const cmFrom = map.rawToCm(node.from), cmTo = map.rawToCm(node.to);
           const child: Item = { from: node.from, to: node.to, line: item.line, type: node.kind, html: node.html, cmFrom, cmTo, revision: item.revision, inlineWidget: true, ownerFrom: item.from, ownerTo: item.to };
           replace(cmFrom, cmTo, new Block(child, markdownFindKey(cmFrom, cmTo, find)));
@@ -203,6 +208,14 @@ export function markdownEditor(buffer: Pick<FileBuffer, 'source' | 'editable'>, 
       const anchor = (event.target as Element).closest<HTMLElement>('a[data-md-href]'); if (!anchor || !view.contentDOM.contains(anchor)) return false;
       event.preventDefault(); const blocked = event.detail > 0 && linkDown.get(view); linkDown.delete(view);
       if (!blocked && markdownLinkAllowed(event, { editorEmpty: view.state.selection.main.empty, nativeSelected: markdownNativeSelection(view.contentDOM) })) host.link(anchor.dataset.mdHref ?? ''); return true;
+    },
+    dblclick(event, view) {
+      const position = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+      if (position === null || view.state.wordAt(position) !== null) return false;
+      const line = view.state.doc.lineAt(position), offset = position - line.from;
+      if (!/[\t ]/.test(line.text.slice(Math.max(0, offset - 1), offset + 1))) return false;
+      view.dispatch({ selection: EditorSelection.cursor(position) });
+      return true;
     },
   }), ViewPlugin.fromClass(class {
     worker: Worker | null = null;

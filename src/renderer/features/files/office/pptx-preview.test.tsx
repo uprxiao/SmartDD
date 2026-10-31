@@ -28,6 +28,78 @@ beforeEach(async()=>{
 });
 afterEach(()=>{cleanup();buffer.dispose();vi.unstubAllGlobals();vi.useRealTimers();});
 describe('PPTX production edit controls (RPC and PDF layout mocked)',()=>{
+  it('W09 keeps slide and grid navigation independent from the disabled header pager without editing data',async()=>{
+    render(<Host/>);await screen.findByTestId('page-1');
+    const header=document.querySelector('.fw-office-header')!;
+    expect(header.querySelector('input')).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'幻灯片 2'}));await screen.findByTestId('page-2');
+    expect(screen.getByRole('button',{name:'幻灯片 2'}).getAttribute('aria-current')).toBe('page');
+    fireEvent.click(screen.getByRole('button',{name:'切换幻灯片缩略图'}));expect(document.querySelector('.fw-office-slide-rail')).toBeNull();
+    expect(screen.getByTestId('page-2')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'切换幻灯片缩略图'}));
+    expect(screen.getByRole('button',{name:'幻灯片 2'}).getAttribute('aria-current')).toBe('page');
+    fireEvent.click(screen.getByRole('button',{name:'网格视图'}));expect(document.querySelector('.fw-office-slide-rail')).toBeNull();
+    fireEvent.doubleClick(screen.getByRole('button',{name:'网格幻灯片 1'}));await screen.findByTestId('page-1');
+    expect(document.querySelector('.fw-office-slide-grid')).toBeNull();
+    expect(screen.getByRole('button',{name:'幻灯片 1'}).getAttribute('aria-current')).toBe('page');
+    expect(buffer.dirty).toBe(false);expect(api.editPptx).not.toHaveBeenCalled();expect(api.savePptx).not.toHaveBeenCalled();
+  });
+  it('W13 exposes no mutating slide menu on ordinary or hidden read-only slides',async()=>{
+    current.info.slides[1].hidden=true;buffer.file={...buffer.file,writable:false};render(<Host/>);await screen.findByTestId('page-1');
+    for(const name of ['幻灯片 1','幻灯片 2']){
+      fireEvent.contextMenu(screen.getByRole('button',{name}),{button:2,clientX:20,clientY:20});
+      expect(screen.queryByRole('menuitem',{name:'复制幻灯片'})).toBeNull();expect(screen.queryByRole('menuitem',{name:'显示'})).toBeNull();expect(screen.queryByRole('menuitem',{name:'隐藏'})).toBeNull();expect(screen.queryByRole('menuitem',{name:'删除'})).toBeNull();
+    }
+    expect(api.editPptx).not.toHaveBeenCalled();expect(buffer.dirty).toBe(false);expect(current.info.slides.map(s=>[s.id,s.hidden])).toEqual([['256',false],['257',true]]);
+  });
+  it('W11 protects every editable attribute spelling and embedded target subtree',async()=>{
+    buffer.pdfPosition={page:1,zoom:100,initialized:true};render(<Host/>);await screen.findByTestId('page-1');
+    const view=screen.getByRole('region',{name:'PPTX 文档预览'});
+    for(const [tag,editable] of [['input',null],['textarea',null],['select',null],['div',''],['div','plaintext-only'],['div','TRUE'],['iframe',null],['object',null],['embed',null]] as const){
+      const target=document.createElement(tag);if(editable!==null)target.setAttribute('contenteditable',editable);view.append(target);
+      fireEvent.keyDown(target,{key:'+',metaKey:true});fireEvent.keyDown(target,{key:'1',code:'Digit1',ctrlKey:true,altKey:true});
+      expect(buffer.pdfPosition.zoom,`${tag} contenteditable=${editable}`).toBe(100);expect(screen.queryByRole('button',{name:'网格幻灯片 1'})).toBeNull();target.remove();
+    }
+    const plain=document.createElement('div');plain.setAttribute('contenteditable','false');view.append(plain);
+    fireEvent.keyDown(plain,{key:'+',metaKey:true});expect(buffer.pdfPosition.zoom).toBe(110);expect(api.editPptx).not.toHaveBeenCalled();expect(buffer.dirty).toBe(false);
+  });
+  it.each(['metaKey','ctrlKey'] as const)('W11 applies viewport fit, actual size and bounded 10-point zoom via %s',async(modifier)=>{
+    buffer.pdfPosition={page:1,zoom:100,initialized:true};render(<Host/>);await screen.findByTestId('page-1');const view=screen.getByRole('region',{name:'PPTX 文档预览'});
+    Object.defineProperties(document.querySelector('.fw-office-page-scroll')!,{clientWidth:{value:456,configurable:true},clientHeight:{value:340,configurable:true}});
+    fireEvent.keyDown(view,{key:'!',code:'Digit1',shiftKey:true});expect(buffer.pdfPosition.zoom).toBeCloseTo(45);
+    fireEvent.keyDown(view,{key:'0',[modifier]:true});expect(buffer.pdfPosition.zoom).toBe(100);
+    fireEvent.keyDown(view,{key:'=',[modifier]:true});expect(buffer.pdfPosition.zoom).toBe(110);
+    fireEvent.keyDown(view,{key:'-',[modifier]:true});expect(buffer.pdfPosition.zoom).toBe(100);
+    for(let i=0;i<45;i++)fireEvent.keyDown(view,{key:'+',shiftKey:true,[modifier]:true});expect(buffer.pdfPosition.zoom).toBe(500);
+    for(let i=0;i<55;i++)fireEvent.keyDown(view,{key:'-',[modifier]:true});expect(buffer.pdfPosition.zoom).toBe(25);
+    expect(buffer.dirty).toBe(false);expect(api.editPptx).not.toHaveBeenCalled();expect(api.savePptx).not.toHaveBeenCalled();
+  });
+  it.each(['readonly','editable'] as const)('W12 returns focus after replacing a focused slide/grid button in %s mode',async(mode)=>{
+    if(mode==='readonly')buffer.file={...buffer.file,writable:false};render(<Host/>);await screen.findByTestId('page-1');const view=screen.getByRole('region',{name:'PPTX 文档预览'});
+    for(const modifier of ['metaKey','ctrlKey']){
+      const slide=screen.getByRole('button',{name:'幻灯片 2'});slide.focus();fireEvent.keyDown(slide,{key:'1',code:'Digit1',altKey:true,[modifier]:true});
+      const tile=await screen.findByRole('button',{name:'网格幻灯片 2'});expect(document.activeElement).toBe(view);
+      tile.focus();fireEvent.keyDown(tile,{key:'1',code:'Digit1',altKey:true,[modifier]:true});
+      await waitFor(()=>expect(screen.queryByRole('button',{name:'网格幻灯片 2'})).toBeNull());expect(document.activeElement).toBe(view);
+    }
+    expect(buffer.dirty).toBe(false);expect(api.editPptx).not.toHaveBeenCalled();
+  });
+  it.each([['readonly',''],['readonly','原备注😀'],['editable',''],['editable','原备注😀']] as const)('W10 %s note visibility for %j',async(mode,text)=>{
+    current.info.slides[0].notes=text;
+    if(mode==='readonly')buffer.file={...buffer.file,writable:false};
+    render(<Host/>);await screen.findByTestId('page-1');
+    const before=screen.queryByRole('textbox',{name:'演讲者备注'}) as HTMLTextAreaElement|null;
+    expect(Boolean(before)).toBe(Boolean(text));if(before){expect(before.value).toBe(text);expect(before.readOnly).toBe(true);}
+    const toggle=screen.getByRole('button',{name:'编辑'}) as HTMLButtonElement;
+    expect(toggle.disabled).toBe(mode==='readonly');
+    if(mode==='editable'){
+      fireEvent.click(toggle);const input=screen.getByRole('textbox',{name:'演讲者备注'}) as HTMLTextAreaElement;expect(input.readOnly).toBe(false);expect(input.value).toBe(text);
+      fireEvent.change(input,{target:{value:'W10 edited 中文🙂'}});expect(buffer.dirty).toBe(true);
+      fireEvent.click(screen.getByRole('button',{name:'完成编辑'}));
+      await waitFor(()=>expect((screen.getByRole('textbox',{name:'演讲者备注'}) as HTMLTextAreaElement).readOnly).toBe(true));
+      expect((screen.getByRole('textbox',{name:'演讲者备注'}) as HTMLTextAreaElement).value).toBe('W10 edited 中文🙂');expect(buffer.dirty).toBe(true);expect(api.savePptx).not.toHaveBeenCalled();
+    }else expect(api.editPptx).not.toHaveBeenCalled();
+  });
   it.each([['object','metaKey'],['object','ctrlKey'],['notes','metaKey'],['notes','ctrlKey']] as const)('DEV155 saves a focused %s via %s without blur or repeat writes',async(target,modifier)=>{
     render(<Host/>);await screen.findByTestId('page-1');fireEvent.click(screen.getByRole('button',{name:'编辑'}));
     if(target==='object')fireEvent.doubleClick(screen.getByRole('button',{name:'text 对象 Title object'}));
@@ -144,11 +216,11 @@ describe('PPTX production edit controls (RPC and PDF layout mocked)',()=>{
     for(const modifiers of [{repeat:true},{metaKey:true},{ctrlKey:true},{altKey:true},{shiftKey:true},{isComposing:true},{keyCode:229}])fireEvent.keyDown(root,{key:'Delete',...modifiers});expect(api.editPptx).not.toHaveBeenCalled();
     fireEvent.keyDown(root,{key:'Backspace'});await waitFor(()=>expect(screen.queryByRole('button',{name:'text 对象 Title object'})).toBeNull());expect(api.editPptx).toHaveBeenCalledTimes(1);expect(api.editPptx.mock.calls[0][0].action).toEqual({type:'element-delete',slideId:'256',elementId:'2'});expect(document.activeElement).toBe(root);
   });
-  it('keeps an object and its selection after a refused delete from the context menu',async()=>{
+  it('keeps an object and its selection after a refused delete from the approved keyboard entry',async()=>{
     api.editPptx.mockRejectedValueOnce(new Error('动画引用尚未适配'));
     render(<Host/>);await screen.findByTestId('page-1');fireEvent.click(screen.getByRole('button',{name:'编辑'}));
-    const object=screen.getByRole('button',{name:'text 对象 Title object'});fireEvent.contextMenu(object,{clientX:150,clientY:120});
-    fireEvent.click(await screen.findByRole('menuitem',{name:/删除/}));await waitFor(()=>expect(buffer.saveError).toContain('动画引用尚未适配')); // Workspace shell renders the error strip.
+    const object=screen.getByRole('button',{name:'text 对象 Title object'});fireEvent.click(object);
+    await waitFor(()=>expect(buffer.pptx!.selection?.elementId).toBe('2'));fireEvent.keyDown(object,{key:'Delete'});await waitFor(()=>expect(buffer.saveError).toContain('动画引用尚未适配')); // Workspace shell renders the error strip.
     expect(screen.getByRole('button',{name:'text 对象 Title object'}).getAttribute('aria-pressed')).toBe('true');expect(current.info.slides[0].elements).toHaveLength(1);
   });
   it('keeps the clicked format control available while textarea blur is committing its previous input',async()=>{

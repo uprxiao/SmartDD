@@ -15,6 +15,7 @@ const schema=z.discriminatedUnion('method',[
   z.object({id,method:z.literal('edit'),version,action:pptxActionSchema,image:pptxImageReceiptSchema.optional()}).strict(),
   z.object({id,method:z.literal('history'),version,direction:z.enum(['undo','redo'])}).strict(),
   z.object({id,method:z.literal('materialize'),version}).strict(),
+  z.object({id,method:z.literal('verify'),version,bytes,hash}).strict(),
   z.object({id,method:z.literal('preview-source'),version}).strict(),
   z.object({id,method:z.literal('acknowledge'),version,hash}).strict(),
   z.object({id,method:z.literal('restore'),version,bytes}).strict(),
@@ -39,6 +40,7 @@ parentPort!.on('message',(raw:unknown)=>{
           case 'edit':result=input.action.type==='chart-values'||input.action.type==='chart-insert'||input.action.type==='chart-type'?await document.editChartValues(input.version,input.action):document.edit(input.version,input.action,input.image);break;
           case 'history':result=document.history(input.version,input.direction);break;
           case 'materialize':result=await document.materialize(input.version);break;
+          case 'verify':result=await document.verify(input.version,input.bytes,input.hash);break;
           case 'preview-source':result=await document.previewSource(input.version);break;
           case 'acknowledge':result=document.acknowledge(input.version,input.hash);break;
           case 'restore':result=document.restore(input.version,await OfficePackage.read(input.bytes));break;

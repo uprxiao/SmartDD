@@ -18,6 +18,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check tracked paths for Windows checkout
+        run: node scripts/release/check-checkout-paths.mjs
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'

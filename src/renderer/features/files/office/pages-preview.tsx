@@ -1,6 +1,6 @@
 import { PPTX_STATIC_PREVIEW_NOTICE } from '@shared/office-preview-notices.mjs';
 import { useCallback,useEffect,useMemo,useRef,useState } from 'react';
-import { Check,ChevronDown,Grid2X2,List,Loader2,Plus,Undo2,Redo2,SlidersHorizontal,Shapes,Table2,Type,X,ChartNoAxesColumn } from 'lucide-react';
+import { Check,ChevronDown,Grid2X2,List,Loader2,Plus,Undo2,Redo2,SlidersHorizontal,Shapes,Table2,Type,X,ChartNoAxesColumn,MessageSquarePlus } from 'lucide-react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { OfficePagesResult } from '@shared/file-office-pages';
 import type { PptxRenderResult } from '@shared/file-pptx';
@@ -13,6 +13,7 @@ import { CSS_UNITS,PdfCanvasBudget,pdfOffsets,pdfPageWindow,pageAtOffset,type Pd
 import '../pdf/style.css';
 import './style.css';
 import './pages-style.css';
+import { OFFICE_SIGNED_EDIT_WARNING } from './fidelity-details';
 import { presentationShortcut } from './pages-shortcuts';
 import { ColorField } from './format-panel';
 import { PptxSlideMenu } from './pptx-menu';
@@ -21,6 +22,9 @@ import { PptxObjects,PptxObjectProperties } from './pptx-objects';
 import { PptxImagePicker } from './pptx-image-picker';
 import { PptxChartValues } from './pptx-chart-values';
 import { PptxChartOptions,PptxChartType } from './pptx-chart-options';
+import { usePptxRequests } from './pptx-context';
+import { usePptxGeneration } from './pptx-generation';
+import { PptxImagePlacement } from '@shared/pptx-image-placement';
 
 interface Ready {identity:string;result:OfficePagesResult|PptxRenderResult;session:PdfSession;doc:PDFDocumentProxy;sizes:PdfPageSize[]}
 const clamp=(value:number)=>Math.max(25,Math.min(500,Number.isFinite(value)?value:100));
@@ -36,6 +40,8 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
   const info=model?.info??pdf?.result.info,total=info?.slides.length||pdf?.result.pages||1,slide=info?.slides[Math.max(0,Math.min(page,total)-1)];
   const editing=Boolean(pptx?.editable&&pptx.editing);
   const selected=pptx?.selection?.slideId===slide?.id?slide?.elements?.find(element=>element.id===pptx?.selection?.elementId):undefined;
+  const requests=usePptxRequests(buffer,page,slide,Boolean(presentation&&pdf&&!pptx?.controlsBusy&&!pptx?.composing));
+  const imageGeneration=usePptxGeneration(buffer,page,slide,Boolean(presentation&&pdf&&!pptx?.controlsBusy&&!pptx?.composing));
   useEffect(()=>{if(pptx?.pending?.chartValues)setFormatOpen(true);},[pptx?.pending]);
   const budget=useMemo(()=>new PdfCanvasBudget(),[buffer,generation,attempt]);
   const offsets=useMemo(()=>pdfOffsets(pdf?.sizes??[],zoom),[pdf?.sizes,zoom]);
@@ -112,7 +118,10 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
     if(pptx&&event.metaKey!==event.ctrlKey&&!event.altKey&&!event.shiftKey&&event.key.toLowerCase()==='s'&&!target.closest('[role=menu],[role=dialog],iframe,object,embed')){
       event.preventDefault();event.stopPropagation();void buffer.save();return;
     }
-    if(target.closest('input,textarea,select,[contenteditable=true],[role=menu],iframe,object,embed'))return;
+    const editable=target.closest<HTMLElement>('[contenteditable]');
+    if(target.closest('input,textarea,select,[role=menu],iframe,object,embed')||editable&&(
+      ['', 'true', 'plaintext-only'].includes(editable.getAttribute('contenteditable')!.trim().toLowerCase())||editable.isContentEditable
+    ))return;
     if(editing&&(event.metaKey!==event.ctrlKey)&&!event.altKey&&event.key.toLowerCase()==='z'){
       event.preventDefault();event.stopPropagation();void pptx!.history(event.shiftKey?'redo':'undo');return;
     }
@@ -150,12 +159,13 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
         if(editing)void pptx.finishInput().then(ok=>{if(ok){pptx.editing=false;setFormatOpen(false);buffer.notify();}});else{pptx.editing=true;buffer.notify();}
       }}>{editing?'完成编辑':'编辑'}</button>}
       {editing&&<button aria-label="格式" aria-pressed={formatOpen} onClick={()=>setFormatOpen(value=>!value)}><SlidersHorizontal size={14}/></button>}
+      {presentation&&requests.onRequestEdits&&<button aria-label="添加评论" onClick={requests.onRequestEdits}><MessageSquarePlus size={14}/></button>}
       <DropdownMenu><DropdownMenuTrigger className="fw-office-page-zoom" aria-label="文档缩放" disabled={!pdf}>{Math.round(zoom)}% <ChevronDown size={12}/></DropdownMenuTrigger><DropdownMenuContent align="end" className="fw-file-menu">{[25,50,100,150,200].map(value=><DropdownMenuItem key={value} onClick={()=>zoomTo(value)}>{zoom===value&&<Check size={12}/>}<span>{value}%</span></DropdownMenuItem>)}<DropdownMenuItem onClick={fit}>适合视图</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
     </div>
       {editing&&slide&&<div className="fw-office-insert"><button aria-label="添加幻灯片" disabled={pptx!.controlsBusy||pptx!.composing||total>=2000} onClick={()=>void pptx!.action({type:'add',slideId:slide.id}).then(ok=>{if(ok){setGrid(false);root.current?.focus({preventScroll:true});}})}><Plus size={14}/>幻灯片</button>
         <button aria-label="插入文本框" disabled={pptx!.controlsBusy||pptx!.composing} onClick={()=>void pptx!.action({type:'insert-element',slideId:slide.id,kind:'text'}).then(ok=>{if(ok){setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}})}><Type size={14}/>文本</button>
-        <PptxImagePicker key={`insert-image-${slide.id}`} pptx={pptx!} slideId={slide.id} onApplied={()=>{setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}}/>
-        <button aria-label="插入图表" disabled={pptx!.controlsBusy||pptx!.composing} onClick={()=>void pptx!.action({type:'chart-insert',slideId:slide.id,chartType:'bar'}).then(ok=>{if(ok){setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}})}><ChartNoAxesColumn size={14}/>图表</button>
+        <PptxImagePicker key={`insert-image-${slide.id}`} pptx={pptx!} slideId={slide.id} onGenerate={imageGeneration.hasProvider?()=>{setGrid(false);if(imageGeneration.placing)imageGeneration.cancelPlacement();else void imageGeneration.start();}:undefined} generationDisabled={!imageGeneration.enabled} onApplied={()=>{setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}}/>
+        <button aria-label="插入图表" disabled={pptx!.controlsBusy||pptx!.composing} onClick={()=>void imageGeneration.insertChart('bar').then(()=>{setGrid(false);setFormatOpen(true);})}><ChartNoAxesColumn size={14}/>图表</button>
         <button aria-label="插入表格" disabled={pptx!.controlsBusy||pptx!.composing} onClick={()=>void pptx!.action({type:'insert-element',slideId:slide.id,kind:'table'}).then(ok=>{if(ok){setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}})}><Table2 size={14}/>表格</button>
         <DropdownMenu><DropdownMenuTrigger aria-label="插入形状" disabled={pptx!.controlsBusy||pptx!.composing}><Shapes size={14}/>形状<ChevronDown size={12}/></DropdownMenuTrigger><DropdownMenuContent align="start" className="fw-file-menu">{PPTX_SHAPES.map(shape=><DropdownMenuItem key={shape} onClick={()=>void pptx!.action({type:'insert-element',slideId:slide.id,kind:'shape',shape}).then(ok=>{if(ok){setGrid(false);setFormatOpen(true);root.current?.focus({preventScroll:true});}})}>{shape}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>
       </div>}
@@ -170,6 +180,7 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
             {presentation&&slide&&info?<div className="fw-office-page-item fw-pptx-stage" key={slide.id} onPointerDown={event=>{if(editing&&event.button===0&&!(event.target as Element).closest('.fw-pptx-object,.fw-pptx-table,button'))void pptx!.finishInput().then(ok=>{if(ok)pptx!.selectElement(slide.id);});}} style={{width:(info.width??680)*CSS_UNITS*zoom/100,height:(info.height??450)*CSS_UNITS*zoom/100}}>
               <div className={`fw-pptx-projection${editing?' is-editing':''}`}>{pdf?paint(page):<div key="loading" className="fw-empty fw-office-page-loading" role={error?'alert':'status'} style={presentation&&info?{height:(info.height??450)*CSS_UNITS*zoom/100,width:(info.width??680)*CSS_UNITS*zoom/100}:undefined}>{!error&&!cancelled&&<Loader2 size={20} className="animate-spin"/>}<p>{error?'文档预览失败':cancelled?'已取消预览':'正在排版文档…'}</p>{error&&<pre>{error}</pre>}{error||cancelled?<button onClick={retry}>重新预览</button>:<button onClick={()=>{active.current?.();setCancelled(true);}}>取消</button>}</div>}</div>
               {editing&&pptx&&<PptxObjects pptx={pptx} slide={slide} zoom={zoom} enabled={editing} container={root} tableLayout={pdf&&'tableLayout' in pdf.result?pdf.result.tableLayout:undefined}/>}
+              {pdf&&imageGeneration.placing&&info&&<PptxImagePlacement key={`${pptx?.id}/${slide.id}`} width={info.width??680} height={info.height??450} onCommit={frame=>void imageGeneration.place(frame)} onCancel={()=>{imageGeneration.cancelPlacement();root.current?.focus({preventScroll:true});}}/>}
             </div>:!pdf?<div key="loading" className="fw-empty fw-office-page-loading" role={error?'alert':'status'} style={presentation&&info?{height:(info.height??450)*CSS_UNITS*zoom/100,width:(info.width??680)*CSS_UNITS*zoom/100}:undefined}>{!error&&!cancelled&&<Loader2 size={20} className="animate-spin"/>}<p>{error?'文档预览失败':cancelled?'已取消预览':'正在排版文档…'}</p>{error&&<pre>{error}</pre>}{error||cancelled?<button onClick={retry}>重新预览</button>:<button onClick={()=>{active.current?.();setCancelled(true);}}>取消</button>}</div>:<>
               <div aria-hidden style={{height:windowed.before}}/>{numbers.map(number=><div className="fw-office-page-item" key={number}>{paint(number)}</div>)}<div aria-hidden style={{height:windowed.after}}/>
             </>}
@@ -180,8 +191,11 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
           </div>}
         </div>
         {editing&&formatOpen&&slide&&<aside className="fw-office-inspector" aria-label="演示文稿格式"><div><strong>格式</strong><button aria-label="关闭格式面板" onClick={()=>setFormatOpen(false)}><X size={14}/></button></div>{selected?.kind==='chart'&&<><PptxChartType pptx={pptx!} slideId={slide.id} element={selected}/><PptxChartValues key={`chart-values-${slide.id}/${selected.id}`} pptx={pptx!} slideId={slide.id} element={selected}/></>}<fieldset disabled={pptx!.controlsBusy||pptx!.composing}>{selected?<>{selected.kind==='chart'&&<PptxChartOptions pptx={pptx!} slideId={slide.id} element={selected}/>}{selected.kind==='image'&&<PptxImagePicker key={`replace-image-${slide.id}/${selected.id}`} pptx={pptx!} slideId={slide.id} elementId={selected.id}/>}<PptxObjectProperties key={`${slide.id}/${selected.id}`} element={selected} tableLayout={pdf&&'tableLayout' in pdf.result?pdf.result.tableLayout?.find(layout=>layout.slideId===slide.id&&layout.elementId===selected.id):undefined} onAction={action=>pptx!.action({...action,slideId:slide.id,elementId:selected.id})}/></>:<ColorField key={slide.id} label={slide.background?'幻灯片背景':'设置纯色背景'} name="幻灯片背景" value={slide.background??'#ffffff'} onValue={color=>pptx!.action({type:'background',slideId:slide.id,color})}/>}</fieldset></aside>}
+        {presentation&&requests.panel}
+        {presentation&&imageGeneration.panel}
       </div>
       <div className="fw-office-page-status" role="status">第 {page} / {total} 页{downscaled?' · 页面已降低渲染分辨率':''}</div>
+      {info?.signed&&<div className="fw-office-notice" role="status">{OFFICE_SIGNED_EDIT_WARNING}</div>}
       {presentation&&<div className="fw-office-notice" role="note">{PPTX_STATIC_PREVIEW_NOTICE}</div>}
       {pdf?.result.warnings.map(message=><div className="fw-office-notice" key={message}>{message}</div>)}{notice&&<div className="fw-office-notice" role="status">{notice}</div>}
   </section>;

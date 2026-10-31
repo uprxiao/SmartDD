@@ -11,6 +11,7 @@ import { editPptxSlides } from './pptx-slides';
 import { deletePptxElement } from './pptx-delete-element';
 import { editPptxElement } from './pptx-element-edit';
 import { editPptxImage,type PptxImageReceipt } from './pptx-image';
+import { insertPptxPlaceholder } from './pptx-placeholder';
 import { editPptxChartOptions,changePptxChartType } from './pptx-chart';
 
 const prefix=(node:OfficeXmlNode)=>node.name.includes(':')?node.name.slice(0,node.name.indexOf(':')+1):'';
@@ -24,6 +25,7 @@ export function editPptx(file:OfficePackage,raw:PptxAction,measuredRows?:readonl
   if(action.type==='add'||action.type==='duplicate'||action.type==='delete')return editPptxSlides(model,action);
   if(action.type==='element-delete')return deletePptxElement(model,action);
   if(action.type==='image-insert'||action.type==='image-replace')return editPptxImage(model,action,image);
+  if(action.type==='image-placeholder')return insertPptxPlaceholder(model,action,image);
   if(action.type==='chart-values'||action.type==='chart-insert')throw new FileError('INVALID_INPUT','图表数据必须经内嵌工作簿异步验证后应用');
   if(action.type==='chart-options')return editPptxChartOptions(model,action.slideId,action.elementId,action.patch);
   if(action.type==='chart-type')return changePptxChartType(model,action.slideId,action.elementId,action.chartType);

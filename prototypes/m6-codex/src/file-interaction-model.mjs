@@ -30,16 +30,17 @@ export function loadedTreeRows(cache, expanded) {
   const rows = [], open = new Set(expanded);
   const visit = (path, depth) => {
     const result = cache[path];
-    if (result?.state !== 'ready') return;
+    if (result?.state !== 'ready' && !(result?.state === 'loading' && Array.isArray(result.entries))) return;
     for (const entry of result.entries) {
       rows.push({ ...entry, depth });
       if (!entry.folder || !open.has(entry.path)) continue;
       const child = cache[entry.path];
-      if (child?.state === 'ready') {
-        if (child.entries.length) visit(entry.path, depth + 1);
+      if (child?.state === 'ready' || child?.state === 'loading' && Array.isArray(child.entries)) {
+        if (child.entries.length || child.state === 'loading') visit(entry.path, depth + 1);
         else rows.push({ path: entry.path + '/:empty', parent: entry.path, depth: depth + 1, status: 'empty', name: '此目录为空' });
       } else rows.push({ path: entry.path + '/:status', parent: entry.path, depth: depth + 1, status: child?.state === 'error' ? 'error' : 'loading', name: child?.state === 'error' ? '无法读取目录' : '正在读取目录…' });
     }
+    if (result.state === 'loading') rows.push({path:path+'/:status',parent:path,depth,status:'loading',name:'正在读取目录…'});
   };
   visit('', 0);
   return rows;

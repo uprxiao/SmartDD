@@ -2,10 +2,11 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { openFileAcceptanceApp } from '../files/file-acceptance-ui.mjs';
 import { pause } from './electron-harness.mjs';
-export async function openTaskFileFixture({ executable, scratch, root, extraRoot, name, receiverScript = 'scripts/files/terminal-coexistence-receiver.py', taskRoots = {}, taskPrograms = {} }) {
+export async function openTaskFileFixture({ executable, scratch, root, extraRoot, name, receiverScript = 'scripts/files/terminal-coexistence-receiver.py', taskRoots = {}, taskPrograms = {}, beforeTasks }) {
   const tasks = {}, labels = ['T1', 'T2']; for (const label of labels) await mkdir(join(scratch, label));
   const app = await openFileAcceptanceApp({ executable, projectPath: root, userData: join(scratch, 'userdata'), name, inspectMain: true, prepare: async ({ app, project }) => {
     await app.invoke('projectDirs.update', project.dirs[0].id, { label: 'Root A', path: root }); const secondary = extraRoot ? await app.invoke('projectDirs.add', project.id, { label: 'Root B', path: extraRoot }) : null;
+    await beforeTasks?.({ app, project });
     for (const label of labels) {
       const program = taskPrograms[label] ?? {};
       const profile = await app.invoke('aiProfiles.create', { name: name + ' ' + label, runner: 'claude', executable: program.executable ?? '/usr/bin/python3', args: [resolve(program.receiverScript ?? receiverScript), join(scratch, label), label], env: [{ name: 'CLAUDE_CONFIG_DIR', value: join(scratch, 'isolated-cli-' + label), secret: false }], color: null, isDefault: false });

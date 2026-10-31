@@ -285,7 +285,7 @@ static NSDictionary *readOperation(NSDictionary *request) {
   if (operation == "metadata") {
     struct stat s = info(item.fd.value); require(S_ISREG(s.st_mode), "NOT_REGULAR", "Expected a regular file");
     verifyPath(root, item);
-    return @{ @"identity": identity(s), @"size": @(s.st_size), @"modifiedNs": ns(std::to_string((int64_t)s.st_mtimespec.tv_sec * 1000000000ll + s.st_mtimespec.tv_nsec)), @"changedNs": ns(std::to_string((int64_t)s.st_ctimespec.tv_sec * 1000000000ll + s.st_ctimespec.tv_nsec)) };
+    return @{ @"identity": identity(s), @"relativePath": ns(item.relative), @"size": @(s.st_size), @"modifiedNs": ns(std::to_string((int64_t)s.st_mtimespec.tv_sec * 1000000000ll + s.st_mtimespec.tv_nsec)), @"changedNs": ns(std::to_string((int64_t)s.st_ctimespec.tv_sec * 1000000000ll + s.st_ctimespec.tv_nsec)) };
   }
   if (operation == "read") regular(info(item.fd.value), request[@"byteLimit"] ? [request[@"byteLimit"] unsignedLongLongValue] : 20ull * 1024 * 1024);
   bool cachedChunk = operation == "chunk" && [request[@"expectedRevision"] isKindOfClass:NSDictionary.class];

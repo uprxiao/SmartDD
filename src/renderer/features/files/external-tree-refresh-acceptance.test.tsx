@@ -31,7 +31,7 @@ class ObservedBroker extends NativeFileBroker {
   override request<T>(input: Record<string, unknown>, options: BrokerOptions = {}): Promise<T> { this.operations.push(String(input.operation)); return super.request<T>(input, options); }
 }
 const rows: unknown[] = [], fixtures: { cleanup(): Promise<void> }[] = [];
-const output: Record<string, unknown> = { startedAt: new Date().toISOString(), caseIds: ['M9-T-B08', 'M9-T-L06', 'M9-T-L07', 'M9-T-L18'], layer: 'I: native packaged broker/watcher + production FileService/store/buffer + React tree in jsdom. Not prototype P or installed App A.', rows };
+const output: Record<string, unknown> = { startedAt: new Date().toISOString(), caseIds: ['M9-T-B08', 'M9-T-L06', 'M9-T-L07', 'M9-T-L18', 'M9-T-Y28'], layer: 'I: native packaged broker/watcher + production FileService/store/buffer + React tree in jsdom. Not prototype P or installed App A.', rows };
 function Tree({ store }: { store: FileWorkspaceStore }) { useSyncExternalStore(store.subscribe, store.snapshot); return <WorkspaceTree store={store} run={work => { void work(); }} />; }
 function edit(buffer: FileBuffer, text: string) { const transaction = buffer.editor!.update({ changes: { from: 0, to: buffer.editor!.doc.length, insert: text } }); buffer.acceptTransactions(transaction.state, [transaction]); }
 function external(project: string, operation: 'batch' | 'delete' | 'write', cli: boolean, text = '') {
@@ -83,6 +83,32 @@ afterAll(() => { if (process.env.SMARTDD_TREE_REFRESH_EVIDENCE) writeFileSync(pr
 const matrix = ['ordinary writer', 'CLI process'].flatMap(writer => ['native watch', 'explicit refresh', 'resume scan'].map(trigger => ({ writer, trigger })));
 const missingMatrix = ['ordinary writer', 'CLI process'].flatMap(writer => ['refresh', 'read', 'save'].map(missingCheck => ({ writer, missingCheck })));
 describe.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_TREE_REFRESH_APP)('External filesystem refresh acceptance', () => {
+  it.each(['ordinary writer', 'CLI process'])('Y28 $0 clean inactive file, unopened file and directory batch are independent of a terminal lifecycle', async writer => {
+    const f = await fixture(true); render(<Tree store={f.store} />);
+    const path = join(f.project, 'a.txt'), next = 'Y28 clean external 中文🙂\n';
+    expect(f.store.active?.buffer).toBe(f.b);
+    external(f.project, 'write', writer === 'CLI process', next);
+    await act(async () => { await until(() => f.a.raw === next); });
+    expect(f.a.dirty).toBe(false); expect(f.a.conflict).toBe(false);
+    await act(async () => { await f.store.open(f.root, 'a.txt', true); await f.store.refresh(); });
+    expect(f.store.active?.buffer?.raw).toBe(next); expect(disk(path).text).toBe(next);
+    external(f.project, 'batch', writer === 'CLI process');
+    await act(async () => { await until(() => !!screen.queryByRole('treeitem', { name: 'new.txt' }) && !!screen.queryByRole('treeitem', { name: 'c.txt' }) && !screen.queryByRole('treeitem', { name: 'a.txt' }) && !screen.queryByRole('treeitem', { name: 'b.txt' })); });
+    await act(async () => { await f.store.open(f.root, 'new.txt', true); });
+    expect(f.store.active?.buffer?.raw).toBe('new external'); expect(f.api.save).not.toHaveBeenCalled(); expect(f.broker.operations).not.toContain('save');
+    rows.push({ caseId: 'M9-T-Y28', writer, scenario: 'clean inactive/activate/refresh then unseen file and real directory batch', next, newFile: disk(join(f.project, 'new.txt')), nativeEvents: f.nativeEvents, updates: f.updates, applicationWrites: 0, terminalDependency: 'No terminal state or handoff record is provided to the actual store/service. Actual PTY and typed instruction are separate A evidence.' });
+  }, 20_000);
+  it.each(['ordinary writer', 'CLI process'])('Y28 $0 preserves a durable local draft and actual external disk version without approving or reverting the writer', async writer => {
+    const f = await fixture(true), path = join(f.project, 'a.txt'), local = 'Y28 unsaved local 手工🙂\n', changed = 'Y28 independent disk 外改🙂\n';
+    edit(f.a, local); expect(await f.a.checkpoint()).not.toBeNull();
+    external(f.project, 'write', writer === 'CLI process', changed);
+    await until(() => f.a.conflict);
+    expect(f.a.raw).toBe(local); expect(f.a.dirty).toBe(true); expect(disk(path).text).toBe(changed);
+    const read = await f.api.read(f.a.file.ref), draft = await f.api.readDraft(f.a.file.ref, f.a.draftId!);
+    expect(Buffer.from(read.base64, 'base64').toString()).toBe(changed); expect(Buffer.from(draft.base64, 'base64').toString()).toBe(local);
+    expect(f.api.save).not.toHaveBeenCalled(); expect(f.broker.operations).not.toContain('save');
+    rows.push({ caseId: 'M9-T-Y28', writer, scenario: 'unsaved local precedes real independent write; ordinary conflict, no automatic write/revert', local, disk: disk(path), durableDraftHash: sha(Buffer.from(draft.base64, 'base64')), currentNativeReadHash: sha(Buffer.from(read.base64, 'base64')), applicationWrites: 0, updates: f.updates });
+  }, 15_000);
   it.each(matrix)('B08 $writer / $trigger updates create/delete/rename and marks the old document missing', async ({ writer, trigger }) => {
     const f = await fixture(true); render(<Tree store={f.store} />); const before = disk(join(f.project, 'b.txt'));
     if (trigger !== 'native watch') await act(async () => { await f.hide(); });

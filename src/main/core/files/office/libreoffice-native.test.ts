@@ -28,6 +28,9 @@ import { pptxTableLayoutSource,readPptxTableLayout } from './pptx-table-layout';
 import { drawingNamespace,EMU_PER_POINT,pptxShapeTree,pptxDrawingNodes } from './pptx-elements';
 
 const enabled=process.env.SMARTDD_M9_LIBREOFFICE_NATIVE==='1' && process.platform==='darwin';
+// A verified package may supply the unchanged vendor resources when the live
+// worktree has no generated out/ cache. The actual broker is still built here.
+const preparedRuntime=resolve(process.env.SMARTDD_M9_LIBREOFFICE_RUNTIME??'out/native/libreoffice');
 const checksum=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
 async function docxFixture():Promise<Buffer>{
   const zip=new ZipFile(),parts={
@@ -41,7 +44,7 @@ async function docxFixture():Promise<Buffer>{
 
 describe.skipIf(!enabled)('full pinned LibreOffice resources (real vendor signature, no UI acceptance)',()=>{
   it('verifies the prepared official bundle and returns a bounded native manifest',async()=>{
-    const result=await libreOfficeResources(resolve('out/native/libreoffice'));
+    const result=await libreOfficeResources(preparedRuntime);
     expect(result.bytes).toBeGreaterThan(500*1024*1024);expect(result.bytes).toBeLessThanOrEqual(1024*1024*1024);
     expect(result.files.length+result.links.length).toBeGreaterThan(10000);
     expect(result.files.some(file=>file.path==='LibreOffice.app/Contents/MacOS/soffice')).toBe(true);
@@ -52,7 +55,7 @@ describe.skipIf(!enabled)('full pinned LibreOffice resources (real vendor signat
 
 describe.skipIf(!enabled)('fixed LibreOffice through the real native rendering boundary',()=>{
   let build:string,fixture:string,userData:string,broker:NativeFileBroker,engine:LibreOfficeEngine,workspaces:FileEngineWorkspaces,resources:LibreOfficeResources;
-  const runtime=resolve('out/native/libreoffice');
+  const runtime=preparedRuntime;
   beforeAll(async()=>{
     build=realpathSync(mkdtempSync(join(tmpdir(),'willyou-lo-native-build-')));
     const executable=join(build,'willyou-files-test');

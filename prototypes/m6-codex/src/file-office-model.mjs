@@ -29,12 +29,13 @@ export function officeCapabilities(kind, host = {}) {
   const session = host.sourceState || 'live';
   const sourceWritable = host.sourceBytes !== false && host.canRead !== false && host.canWrite !== false && !host.libraryFile;
   const workbook = ['xlsx', 'xlsm', 'csv', 'tsv'].includes(kind);
-  const editable = !locked && (workbook ? session === 'live' && sourceWritable : kind === 'pptx' && !!host.manualEditing && sourceWritable);
+  const requested = host.sourceKind === 'static' ? host.isEditing === true : host.sourceKind==='local' ? session==='live' && host.isEditing===true : session === 'live' && host.hasLiveController !== false;
+  const editable = !locked && (workbook ? requested && sourceWritable : kind === 'pptx' && !host.template && !!host.manualEditing && sourceWritable);
   return { editable, format: editable && (workbook ? !!host.manualEditUiEnabled : true),
-    annotate: !locked && !host.template && !!host.annotationsEnabled && (kind === 'pptx' || kind === 'docx' && host.docxRoute === 'legacy'),
+    annotate: !host.interactionsDisabled && !!host.annotationsEnabled && (kind === 'docx' && host.docxRoute === 'legacy' || kind === 'pptx' && !locked && !host.template && !host.disableAnnotations),
     redlines: kind === 'docx' && host.docxRoute === 'legacy' && host.hasRedlines !== false && host.redlinesEnabled !== false,
     pageRail: kind === 'pptx' || kind === 'docx' && host.docxRoute === 'legacy',
-    headerPager: false, search: false, sourceWritable, session };
+    headerPager: false, search: host.artifactSearchEnabled === true, sourceWritable, session };
 }
 const sampleCells = () => [
   ['阶段', '名称', '数量', '单价', '金额', '状态'],
@@ -75,7 +76,7 @@ export function markOfficeSaved(state, value) {
 const fail = (state, error) => ({ ...state, error });
 const nextId = (prefix, items) => { let n = 1; const ids = new Set(items.map(x => x.id)); while (ids.has(`${prefix}-${n}`)) n++; return `${prefix}-${n}`; };
 const within = (sheet, row, col) => Number.isInteger(row) && Number.isInteger(col) && row >= 0 && row < sheet.cells.length && col >= 0 && col < sheet.cells[row].length;
-const formatTypes = new Set(['format', 'merge', 'unmerge', 'fill', 'clear-format', 'fit-column', 'fit-row', 'insert-sheet-object', 'validation', 'checkbox', 'conditional']);
+const formatTypes = new Set(['format', 'merge', 'unmerge', 'fill', 'clear-format', 'fit-column', 'fit-row', 'insert-sheet-object','sheet-object-text', 'validation', 'checkbox', 'conditional']);
 export function editOffice(state, action, caps) {
   if (!caps?.editable) return fail(state, '此来源当前为只读，未修改示例数据。');
   if ((formatTypes.has(action.type) || action.type === 'clear' && ['format', 'all'].includes(action.mode)) && !caps.format) return fail(state, '手动格式工具尚未启用。');
@@ -91,6 +92,11 @@ export function editOffice(state, action, caps) {
       if (!sheet || !within(sheet, action.row, action.col)) return fail(state, '单元格范围无效。');
       if (sheet.formats[cellAddress(action.row, action.col)]?.validation === 'number' && action.value !== '' && !String(action.value).startsWith('=') && !Number.isFinite(Number(action.value))) return fail(state, '此单元格仅接受数字或公式。');
       sheet.cells[action.row][action.col] = String(action.value); break;
+    case 'input-range':
+      if (!cells.length || cells.every(c => sheet.cells[c.row][c.col] === String(action.value))) return state;
+      for (const c of cells) if (sheet.formats[c.address]?.validation === 'number' && action.value !== '' && !String(action.value).startsWith('=') && !Number.isFinite(Number(action.value))) return fail(state, '此单元格仅接受数字或公式。');
+      for (const c of cells) sheet.cells[c.row][c.col] = String(action.value);
+      break;
     case 'format': case 'validation': case 'checkbox': case 'conditional':
       if (!cells.length) return state;
       for (const c of cells) {
@@ -132,9 +138,24 @@ export function editOffice(state, action, caps) {
       const index = doc.sheets.findIndex(s => s.id === action.sheetId); if (index < 0) return state;
       const [item] = doc.sheets.splice(index, 1); doc.sheets.splice(bounded(action.index, 0, doc.sheets.length), 0, item); break;
     }
-    case 'insert-sheet-object':
-      if (!sheet) return state;
-      sheet.objects.push({ id: nextId('object', sheet.objects), kind: action.kind, title: action.kind === 'chart' ? '数量示例' : action.kind === 'image' ? '本地合成图片' : '示例形状' }); break;
+    case 'insert-sheet-object': {
+      if(!sheet)return state;
+      if(!['chart','image','shape','text'].includes(action.kind))return fail(state,'插入对象类型无效。');
+      const selected=action.range;if(!selected||!rangeCells(selected,sheet).length)return fail(state,'请选择有效的单元格或区域。');
+      const frame=action.frame||{x:sheet.widths.slice(0,selected.c1).reduce((a,b)=>a+b,0),y:Array.from({length:selected.r1},(_,i)=>sheet.heights[i]||32).reduce((a,b)=>a+b,0),width:action.kind==='image'?96:320,height:action.kind==='image'?96:180};
+      if(!Object.values(frame).every(Number.isFinite)||frame.x<0||frame.y<0||frame.width<1||frame.height<1||frame.width>100000||frame.height>100000)return fail(state,'对象范围无效。');
+      if(action.kind==='chart'&&!['bar','line','pie','area','scatter'].includes(action.chartType))return fail(state,'图表类型尚未启用。');
+      if(action.kind==='shape'&&!['ellipse','rect','triangle','diamond','star5','rightArrow','leftArrow','plus','chevron','wedgeRoundRectCallout','line','lineInv'].includes(action.shape))return fail(state,'形状类型无效。');
+      const object={id:nextId('object',sheet.objects),kind:action.kind,title:action.kind==='chart'?'图表':action.kind==='image'?'本地合成图片':action.kind==='text'?'文本框':'形状',frame:copy(frame),sourceRange:copy(selected),...(action.kind==='chart'?{chartType:action.chartType}:{}),...(action.kind==='shape'?{shape:action.shape}:{}),...(action.kind==='text'?{text:'',autoSize:action.autoSize===true}:{})};
+      if(action.kind==='chart'){
+        const first=selected.c1===selected.c2?selected.c1:selected.c1+1,value=cellValue(sheet,selected.r1,first);object.sourceHeader=value!==''&&!Number.isFinite(Number(value))&&!String(value).startsWith('#')&&selected.r1<selected.r2;
+        const data=workbookDrawingModel(object,sheet)?.chart;if(!data||data.series.some(series=>series.values.some(value=>value===null))||action.chartType==='scatter'&&data.x.some(value=>value===null)||action.chartType==='pie'&&data.series.some(series=>series.values.some(value=>value<0)||!series.values.some(value=>value>0)))return fail(state,'图表需要有效的数值选区。');
+      }
+      sheet.objects.push(object);break;
+    }
+    case 'sheet-object-text': {
+      const object=sheet?.objects.find(value=>value.id===action.objectId&&value.kind==='text');if(!object)return fail(state,'文本框已不存在。');if(typeof action.text!=='string'||action.text.length>32767)return fail(state,'文本框文字超过预算。');object.text=action.text;break;
+    }
     case 'slide-add': {
       if (doc.slides.length >= 40) return fail(state, '原型最多演示 40 张幻灯片。');
       const id = nextId('slide', doc.slides); doc.slides.push({ id, title: '新幻灯片', notes: '', hidden: false, background: '#ffffff', elements: sampleElements(3) }); break;
@@ -148,6 +169,12 @@ export function editOffice(state, action, caps) {
     case 'slide-hidden': if (slide) slide.hidden = !slide.hidden; break;
     case 'slide-notes': if (slide) slide.notes = String(action.value); break;
     case 'slide-background': if (slide) slide.background = action.value; break;
+    case 'image-placeholder': {
+      const frame = action.frame;
+      if (!slide || !frame || !['x','y','width','height'].every(key => Number.isFinite(frame[key])) || frame.x < 0 || frame.y < 0 || frame.width <= 0 || frame.height <= 0 || frame.x + frame.width > 680 || frame.y + frame.height > 450) return fail(state, '图片占位范围无效。');
+      slide.elements.push({ id: nextId('element', slide.elements), kind: 'image', isPlaceholder: true, text: '', ...frame, rotation: 0 });
+      break;
+    }
     case 'element-insert': {
       if (!slide) return state;
       const kind = action.kind, element = { id: nextId('element', slide.elements), kind, text: kind === 'text' ? '双击编辑文本' : kind === 'shape' ? '形状' : '', x: 90 + slide.elements.length * 12 % 150, y: 95 + slide.elements.length * 18 % 130, width: kind === 'text' ? 280 : 200, height: kind === 'text' ? 70 : 140, color: '#284341', fill: kind === 'shape' ? '#d6ebe4' : 'transparent', fontSize: 22, shape: action.shape || 'rect' };
@@ -157,6 +184,7 @@ export function editOffice(state, action, caps) {
     }
     case 'element-update': {
       const element = slide?.elements.find(e => e.id === action.elementId); if (!element) return state;
+      if (element.kind === 'image' && 'imageVariant' in action.patch) delete element.isPlaceholder;
       Object.assign(element, action.patch);
       for (const [field, min, max] of [['x', 0, 600], ['y', 0, 420], ['width', 30, 640], ['height', 24, 450], ['fontSize', 8, 96], ['opacity', 0, 1], ['rotation', -180, 180]]) if (field in action.patch) element[field] = bounded(action.patch[field], min, max);
       if (element.kind === 'text' && slide.elements[0]?.id === element.id && action.patch.text !== undefined) slide.title = String(action.patch.text).split('\n')[0]; break;
@@ -178,6 +206,19 @@ export function editOffice(state, action, caps) {
 }
 
 // Restricted, deterministic formula fixture. It never calls eval or Function.
+/** Pure synthetic view data. References remain bound to the original selection;
+ * these values are never Office bytes, file permissions or native evidence. */
+export function workbookDrawingModel(object,sheet){
+  const base={id:object.id,kind:object.kind==='chart'?'chart':'shape',name:object.title,source:{part:'synthetic-sheet',id:object.id},anchor:{kind:'absoluteAnchor',position:{x:object.frame?.x||0,y:object.frame?.y||0},extent:{width:object.frame?.width||320,height:object.frame?.height||180}}};
+  if(object.kind==='text')return {...base,shape:{geometry:'rect',arrow:false,fill:'transparent',stroke:'transparent',text:object.text||'',textBox:true}};
+  if(object.kind==='shape')return {...base,shape:{geometry:object.shape==='lineInv'?'line':object.shape||'rect',arrow:object.shape==='lineInv',fill:'#14806e',stroke:'#106c61',text:''}};
+  if(object.kind!=='chart'||!object.sourceRange)return null;
+  const r=object.sourceRange,first=r.c1===r.c2?r.c1:r.c1+1;if(r.r2-r.r1>=1000||r.c2-first>=16)return null;
+  const initial=cellValue(sheet,r.r1,first),header=object.sourceHeader??(initial!==''&&!Number.isFinite(Number(initial))&&!String(initial).startsWith('=')&&!String(initial).startsWith('#')&&r.r1<r.r2),start=r.r1+(header?1:0),rows=Array.from({length:r.r2-start+1},(_,i)=>start+i);
+  const numeric=(row,col)=>{const value=cellValue(sheet,row,col);return value!==''&&Number.isFinite(Number(value))?Number(value):null;};
+  const categories=rows.map(row=>r.c1===r.c2?String(row+1):String(cellValue(sheet,row,r.c1))),series=Array.from({length:r.c2-first+1},(_,i)=>({name:header?String(cellValue(sheet,r.r1,first+i)):cellAddress(0,first+i).replace(/1$/,''),values:rows.map(row=>numeric(row,first+i))}));
+  return {...base,chart:{type:object.chartType,categories,series,...(object.chartType==='scatter'?{x:rows.map((row,i)=>r.c1===r.c2?i+1:numeric(row,r.c1))}:{})}};
+}
 export function cellValue(sheet, row, col, seen = new Set(), depth = 0) {
   if (!within(sheet, row, col)) return '#REF!';
   const raw = sheet.cells[row][col];

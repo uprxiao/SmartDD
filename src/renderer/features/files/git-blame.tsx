@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { RangeSet, StateEffect, StateField } from '@codemirror/state';
 import { EditorView, GutterMarker, ViewPlugin, gutter, type ViewUpdate } from '@codemirror/view';
 import type { GitBlameLine, GitRepositoryInfo } from '@shared/file-git';
+import { gitAuthorLink, gitBlameDetailsSchema, gitCommitLink, gitPullRequestLink } from '@shared/file-git';
 import { rpc } from '@renderer/lib/ipc';
 import type { FileBuffer } from './file-buffer';
 
@@ -63,25 +64,37 @@ export function gitBlameExtension(buffer: FileBuffer, status: (text: string) => 
 
 export function BlameCard({ selection, onClose }: { selection: BlameSelection | null; onClose: () => void }) {
   const [error, setError] = useState('');
-  useEffect(() => {
+  useLayoutEffect(() => {
     setError(''); if (!selection) return;
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    const close = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') onClose();
+    };
     const moved = () => onClose();
-    window.addEventListener('keydown', close); window.addEventListener('resize', moved);
+    // Editor and menu handlers can consume Escape before it reaches window's
+    // bubble phase. Observe dismissal without cancelling their own handling.
+    window.addEventListener('keydown', close, true); window.addEventListener('resize', moved);
     // Small scrolls can stay inside CodeMirror's cached viewport. The stored
     // author-button rectangle is stale even when viewportChanged stays false.
     window.addEventListener('scroll', moved, true);
     return () => {
-      window.removeEventListener('keydown', close); window.removeEventListener('resize', moved);
+      window.removeEventListener('keydown', close, true); window.removeEventListener('resize', moved);
       window.removeEventListener('scroll', moved, true);
     };
   }, [selection]);
   if (!selection) return null;
   const { line, repository, anchor, pinned } = selection;
-  const link = repository.webBase ? `${repository.webBase}/commit/${line.commitId}` : null;
+  const link = gitCommitLink(repository.webBase, line.commitId);
+  const parsed = gitBlameDetailsSchema.safeParse({ authorLogin: line.authorLogin, pullRequest: line.pullRequest });
+  const details = parsed.success ? parsed.data : undefined;
+  const authorLink = gitAuthorLink(details?.authorLogin), prLink = gitPullRequestLink(repository.webBase, details?.pullRequest);
+  const openLink = (href: string) => void rpc.files.openWebLink(href).catch((failure) => setError(failure instanceof Error ? failure.message : String(failure)));
   return createPortal(<div className="fw-blame-card" role={pinned ? 'dialog' : 'tooltip'} aria-label="行归属详情" style={{ left: Math.max(8, Math.min(anchor.left, window.innerWidth - Math.min(340, window.innerWidth * .42) - 8)), top: Math.max(8, Math.min(anchor.bottom + 4, window.innerHeight - 160)) }} onMouseLeave={() => { if (!pinned) onClose(); }}>
-    <div><strong>{line.author || '未知作者'}</strong><button aria-label="关闭行归属详情" onClick={onClose}>×</button></div><p>{line.summary || '无提交说明'}</p>
+    <div><strong>{line.author || '未知作者'}</strong><button aria-label="关闭行归属详情" onClick={onClose}>×</button></div>
+    {authorLink && <button className="fw-blame-link" onClick={() => openLink(authorLink)}>@{details!.authorLogin}</button>}
+    <p>{line.summary || '无提交说明'}</p>
     <small>{line.at === null ? '日期不可用' : new Date(line.at * 1000).toLocaleString()} · {line.commitId.slice(0, 7)}</small>
-    {link && <button className="fw-blame-link" onClick={() => void rpc.files.openWebLink(link).catch((failure) => setError(failure instanceof Error ? failure.message : String(failure)))}>在 GitHub 查看提交</button>}{error && <p role="alert">{error}</p>}
+    {prLink && <button className="fw-blame-link" onClick={() => openLink(prLink)}>PR #{details!.pullRequest!.number}{details!.pullRequest!.title ? ` · ${details!.pullRequest!.title}` : ''}</button>}
+    {link && <button className="fw-blame-link" onClick={() => openLink(link)}>在 GitHub 查看提交</button>}{error && <p role="alert">{error}</p>}
   </div>, document.body);
 }

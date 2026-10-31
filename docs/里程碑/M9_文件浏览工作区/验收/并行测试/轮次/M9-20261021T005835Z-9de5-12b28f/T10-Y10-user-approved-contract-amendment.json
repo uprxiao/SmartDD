@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-22T02:12:36.340290+00:00",
+  "source": "explicit current user reply",
+  "authorityBeforeSHA256": "a0abab58380e36a97f98a4c8ce83233591336b5be671a8a13932429a8e156c9f",
+  "authorityAfterSHA256": "a5b81ecf32fdba3f199ffbc5260cead89364bd556664a6322929818e520f94a6",
+  "changes": [
+    {
+      "proposal": "验收/T10_PDF外链与原用例冲突待确认_20261022.json",
+      "before": {
+        "id": "M9-T-T10",
+        "steps": "artifact PDF选择跨行文本复制；点击合法内部/外部链接及表单字段。",
+        "expected": "文本层可复制；内部目的地定位；外部链接经批准外开；renderForms=false不提供可写表单，不把已有注释展示称PDF编辑。",
+        "environments": [
+          "R",
+          "P",
+          "I",
+          "A"
+        ],
+        "scope": "m9-local"
+      },
+      "after": {
+        "id": "M9-T-T10",
+        "steps": "artifact PDF选择跨行文本复制；点击合法内部/外部链接及表单字段。",
+        "expected": "文本层可复制；内部目的地定位；外部链接只显示可识别提示，不执行导航、不调用外部浏览器打开；不自动获取远程资源；renderForms=false不提供可写表单，不把已有注释展示称PDF编辑。",
+        "environments": [
+          "R",
+          "P",
+          "I",
+          "A"
+        ],
+        "scope": "m9-local"
+      }
+    },
+    {
+      "proposal": "验收/Y10_只读DOCX与原用例冲突待确认_20261021.json",
+      "before": {
+        "id": "M9-T-Y10",
+        "steps": "对含批注、修订、未知部件、占位宏部件的 DOCX/XLSX/PPTX 各做一次文本编辑并保存；比较保存前后每个 ZIP 部件的解压 SHA-256、条目顺序与名称；用不同读取器读回。",
+        "expected": "除被编辑部件外全部部件逐字节一致、条目顺序与名称不变；批注锚点、修订作者/时间、未知部件、宏部件保留且宏不被执行；独立读取器读到新文本；编辑后文件能被 LibreOffice 打开并渲染出新文本。",
+        "environments": [
+          "U",
+          "I",
+          "A"
+        ],
+        "scope": "m9-local"
+      },
+      "after": {
+        "id": "M9-T-Y10",
+        "steps": "对已允许编辑的XLSX/PPTX各做一次可见文本编辑并保存；按本次动作声明的允许部件/语义变化比较所有ZIP部件的解压SHA-256、顺序和名称，并用独立读取器及LibreOffice打开渲染新文本。DOCX按R06.9验证只读预览/禁止手工保存、真实批注锚点与修订作者/时间、未知及宏占位部件在打开/关闭/渲染后保持原字节；不新增DOCX编辑能力。",
+        "expected": "XLSX/PPTX除被编辑部件及R07.18规定的合法公式缓存/计算属性变化外，全部未编辑部件字节、条目顺序与名称不变，批注/关系/样式/未知及宏占位保留；独立读取器读到新文本，LibreOffice能打开并渲染新文本。DOCX保持已批准的只读边界，批注锚点、修订作者/时间及全部源字节/stat保持；不因该用例引入手工DOCX编辑。惰性宏占位不执行，不以此宣称真实VBA宏安全认证。",
+        "environments": [
+          "U",
+          "I",
+          "A"
+        ],
+        "scope": "m9-local"
+      }
+    }
+  ],
+  "formalIncrement": 0,
+  "denominator": 419,
+  "preservedOriginalContracts": true,
+  "generatorSync": "write/check PASS",
+  "generatorCheckedAt": "2026-10-22T02:13:12.761410+00:00",
+  "authorityAfterGeneratorSHA256": "a5b81ecf32fdba3f199ffbc5260cead89364bd556664a6322929818e520f94a6"
+}

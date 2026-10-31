@@ -4,6 +4,7 @@ import { bytesFromBase64, bytesToBase64 } from '../file-buffer';
 import { readFileResource } from '../resource';
 import type { NotebookAsset } from './model';
 import { notebookImageSlots, type NotebookClient } from './client';
+import { notebookImageData } from './image-data';
 
 export async function notebookAssetUrl(buffer: FileBuffer, load: () => Promise<NotebookAsset>, signal: AbortSignal, presentation: 'host' | 'opaque-frame' = 'host'): Promise<{ url: string; downscaled: boolean }> {
   const release = await notebookImageSlots.acquire(signal); let url = '', id = '';
@@ -25,6 +26,13 @@ export async function notebookAssetUrl(buffer: FileBuffer, load: () => Promise<N
   } catch (error) { signal.removeEventListener('abort', close); close(); throw error; }
 }
 export async function notebookRelatedImage(buffer: FileBuffer, client: NotebookClient, href: string, signal: AbortSignal): Promise<NotebookAsset> {
+  signal.throwIfAborted();
+  if (/^data:/i.test(href)) {
+    const asset = notebookImageData(href);
+    if (asset.mime !== 'image/svg+xml') return asset;
+    const data = await client.svg(asset.data); signal.throwIfAborted();
+    return { mime: asset.mime, data };
+  }
   const file = await rpc.files.related(buffer.file.ref, href);
   try {
     signal.throwIfAborted();

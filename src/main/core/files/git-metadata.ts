@@ -1,24 +1,13 @@
 import { createHash } from 'node:crypto';
 import { FileError, filePathSchema, type FileIdentity, type FileRef, type FileRevision } from '@shared/files';
-import { gitBlameSchema, gitStatusSchema, type GitBlame, type GitBlameInput, type GitBlameLine, type GitEntry, type GitRepositoryInfo, type GitStatus, type GitStatusInput } from '@shared/file-git';
+import { githubRepository, gitBlameSchema, gitStatusSchema, type GitBlame, type GitBlameInput, type GitBlameLine, type GitEntry, type GitRepositoryInfo, type GitStatus, type GitStatusInput } from '@shared/file-git';
+export { githubRepository } from '@shared/file-git';
 import type { NativeFileBroker } from './native-broker';
 import type { FileRootsService, RootLease } from './roots';
 import type { FileRecoveryStore } from './recovery-store';
+import { addGitBlameDetails, type GitBlameDetailsAdapter } from './git-blame-details';
 
 interface NativeGit { state: 'ready' | 'unavailable'; reason?: string; repository: FileIdentity; metadata: FileIdentity; head: string; prefix: string; remote: string; statusBase64?: string; attributesBase64?: string; attributesAvailable?: boolean; truncated?: boolean; blameBase64?: string; baseHash?: string }
-export function githubRepository(value: string): string | null {
-  const ssh = /^git@github\.com:([^/\s]+)\/([^/\s]+?)(?:\.git)?$/.exec(value);
-  let owner: string, name: string;
-  if (ssh) [, owner, name] = ssh;
-  else {
-    let url: URL; try { url = new URL(value); } catch { return null; }
-    if (url.protocol !== 'https:' || url.hostname !== 'github.com' || url.username || url.password || url.port || url.search || url.hash) return null;
-    const match = /^\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/.exec(url.pathname); if (!match) return null;
-    [, owner, name] = match;
-  }
-  if (!/^[a-z\d][a-z\d-]*$/i.test(owner) || !/^[a-z\d_.-]+$/i.test(name) || name === '.' || name === '..') return null;
-  return `https://github.com/${owner}/${name}`;
-}
 function repository(raw: NativeGit): GitRepositoryInfo {
   const id = createHash('sha256').update(JSON.stringify([raw.repository, raw.metadata])).digest('hex');
   return { id, head: /^[a-f0-9]{40,64}$/.test(raw.head) ? raw.head : null, webBase: githubRepository(raw.remote), prefix: raw.prefix };
@@ -58,7 +47,7 @@ export function parseGitBlame(base64: string, start: number, end: number): GitBl
 export class FileGitMetadata {
   private readonly pending = new Map<string, AbortController>();
   private readonly cancelled = new Map<string, number>();
-  constructor(private readonly roots: FileRootsService, private readonly broker: NativeFileBroker, private readonly recovery: FileRecoveryStore, private readonly document: (owner: string, ref: FileRef) => { lease: RootLease; relativePath: string; revision: FileRevision; signal: AbortSignal }) {}
+  constructor(private readonly roots: FileRootsService, private readonly broker: NativeFileBroker, private readonly recovery: FileRecoveryStore, private readonly document: (owner: string, ref: FileRef) => { lease: RootLease; relativePath: string; revision: FileRevision; signal: AbortSignal }, private readonly detailsAdapter?: GitBlameDetailsAdapter) {}
   private async request(owner: string, id: string, lease: RootLease, signal: AbortSignal, payload: Record<string, unknown>): Promise<NativeGit> {
     const key = `${owner}/${id}`, now = Date.now(); for (const [key, until] of this.cancelled) if (until < now) this.cancelled.delete(key);
     if (signal.aborted || this.cancelled.has(key)) throw new FileError('CANCELLED', 'Git 信息请求已取消');
@@ -81,7 +70,13 @@ export class FileGitMetadata {
     if (context.revision.hash !== input.baseHash) throw new FileError('CHANGED', '当前文件版本已更新');
     const result = await this.request(owner, input.id, context.lease, context.signal, { operation: 'git-blame', relativePath: context.relativePath, expectedIdentity: { device: context.revision.device, inode: context.revision.inode }, baseHash: input.baseHash, lineStart: input.lineStart, lineEnd: input.lineEnd });
     if (this.document(owner, input.ref).revision.hash !== input.baseHash) throw new FileError('CHANGED', '当前文件版本已更新');
-    return result.state === 'unavailable' ? { state: 'unavailable', reason: result.reason ?? 'Git 行归属不可用' } : { state: 'ready', repository: repository(result), baseHash: result.baseHash!, lines: parseGitBlame(result.blameBase64!, input.lineStart, input.lineEnd) };
+    if (result.state === 'unavailable') return { state: 'unavailable', reason: result.reason ?? 'Git 行归属不可用' };
+    const repo = repository(result), lines = addGitBlameDetails(parseGitBlame(result.blameBase64!, input.lineStart, input.lineEnd), repo, this.detailsAdapter);
+    // An optional adapter is synchronous, but it still cannot replace the
+    // native document/root authority or widen a revoked source.
+    this.roots.require(owner, context.lease);
+    if (this.document(owner, input.ref).revision.hash !== input.baseHash) throw new FileError('CHANGED', '当前文件版本已更新');
+    return { state: 'ready', repository: repo, baseHash: result.baseHash!, lines };
   }
   cancel(owner: string, id: string): void { if (!/^[a-f0-9-]{36}$/.test(id)) throw new FileError('INVALID_INPUT', 'Git 请求编号无效'); const key = `${owner}/${id}`; this.pending.get(key)?.abort(); this.cancelled.set(key, Date.now() + 60_000); while (this.cancelled.size > 2048) this.cancelled.delete(this.cancelled.keys().next().value!); }
   closeOwner(owner: string): void { for (const [key, abort] of this.pending) if (key.startsWith(owner + '/')) abort.abort(); }

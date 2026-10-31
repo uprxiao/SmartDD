@@ -7,7 +7,7 @@ import {TaskHeader} from './task-chrome';
 const api=vi.hoisted(()=>({projects:{get:vi.fn()},aiProfiles:{list:vi.fn(async()=>[])},tasks:{kill:vi.fn()}}));
 const resume=vi.hoisted(()=>vi.fn());
 vi.mock('@renderer/lib/ipc',()=>({rpc:api,events:{on:()=>()=>undefined}}));
-vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{terminals:new Map(),resuming:new Set(),resume}}));
+vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{terminals:new Map(),resuming:new Set(),closing:new Set(),resume}}));
 vi.mock('@renderer/core/navigation',()=>({navigation:{filePanelOpen:false,toggleFilePanel:vi.fn(),newTask:vi.fn()}}));
 vi.mock('@renderer/lib/theme',()=>({useTheme:()=>({effectiveTheme:'ydark',setTheme:vi.fn()})}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string,value?:{from:number;to:number})=>key==='task.configChanged'?`Project changed ${value!.from} -> ${value!.to}`:key})}));

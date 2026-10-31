@@ -117,7 +117,12 @@ int main(int argc, char **argv) { @autoreleasepool {
   CFRelease(checked);
   // Allocate the complete paired sequence before posting anything. No async cancellation inside a pair.
   CGEventRef sequence[10] = {0}; CGEventFlags flags = 0; NSUInteger count = codes.count;
-  CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStatePrivate);
+  // Both clicks belong to the current login session. A private table gets a
+  // different identity on each short-lived bridge invocation; do not split a
+  // Typeless start/stop sequence across those independent source states.
+  // https://developer.apple.com/documentation/coregraphics/cgeventsourcestateid
+  CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+  if (!source) { fail(@"TRIGGER_FAILED"); return 0; }
   for (NSUInteger i = 0; i < count * 2; ++i) {
     BOOL down = i < count; CGKeyCode code = [codes[down ? i : count * 2 - 1 - i] unsignedShortValue];
     CGEventFlags keyFlag = flag(code); flags = down ? flags | keyFlag : flags & ~keyFlag;

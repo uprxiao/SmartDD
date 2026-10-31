@@ -13,8 +13,10 @@ function fixture(running = true) {
   if (running) disposers.push(registerFileTerminal(target));
   const api = {
     open: vi.fn(async () => ({ ...file, ref: { ...file.ref, id: randomUUID() } })), refresh: vi.fn(async () => file), closeDocument: vi.fn(async () => undefined),
+    related: vi.fn(async (): Promise<FileDocument> => ({ ...file, ref: { ...file.ref, id: randomUUID() } })),
     terminalBind: vi.fn(async () => ({ id: randomUUID(), taskId: target.taskId, ptyId: target.ptyId, lease: root.lease, generation: root.generation })), terminalRelease: vi.fn(async () => undefined),
     terminalPrepare: vi.fn(async () => ({ id: randomUUID(), relativePath: file.relativePath, revision: file.revision, identity: { device: '1', inode: '3' } })),
+    terminalImageCapability: vi.fn(async () => ({ state: 'supported' as 'supported' | 'unsupported' | 'unknown', reason: 'known PNG adapter', acceptedMimeTypes: ['image/png'] })),
     terminalInsert: vi.fn(async (input: { operationId: string }): Promise<TerminalInsertionReceipt> => ({ operationId: input.operationId, state: 'inserted' as const, characters: 4, removed: 0, replaced: 0, truncated: 0, stale: [], bracketed: false })),
   };
   const store = new FileTerminalContextStore(api as never); store.setRoot(root); disposers.push(store.attach());
@@ -23,6 +25,92 @@ function fixture(running = true) {
 }
 afterEach(() => { for (const dispose of disposers.splice(0).reverse()) dispose(); endFileDrag(); vi.useRealTimers(); });
 describe('terminal context lifecycle without model execution', () => {
+  const imageFixture = async () => {
+    const f = fixture(); await f.store.add(f.path);
+    const image: FileDocument = { ...f.file, name: 'picture.png', relativePath: 'picture.png', content: { kind: 'image', mime: 'image/png', basis: 'signature' } };
+    return { ...f, image };
+  };
+  it('hands off an exact image capability without removing existing references or claiming CLI acceptance', async () => {
+    const f = await imageFixture(), notices: string[] = [];
+    f.api.terminalInsert.mockImplementationOnce(async input => ({ operationId: input.operationId, state: 'inserted', characters: 80, removed: 0, replaced: 0, truncated: 0, stale: [], bracketed: true, confirmation: 'pty-write', image: { name: 'picture.png', mime: 'image/png', bytes: 78, sha256: f.image.revision.hash } }));
+    await f.store.imageInput(new AbortController().signal)(f.image, f.image.revision.hash, text => notices.push(text));
+    expect(f.api.terminalInsert).toHaveBeenCalledWith(expect.objectContaining({ kind: 'image', ref: f.image.ref, baseHash: f.image.revision.hash }));
+    expect(f.api.terminalPrepare).not.toHaveBeenCalled(); expect(f.store.references).toHaveLength(1);
+    expect(notices.at(-1)).toContain('请在终端检查图片草稿'); expect(f.target.focus).toHaveBeenCalledOnce();
+  });
+  it.each(['unsupported', 'unknown'] as const)('explains %s image input and preserves prior references with no insertion', async state => {
+    const f = await imageFixture(); f.api.terminalImageCapability.mockResolvedValueOnce({ state, reason: 'fixture-specific unavailable reason', acceptedMimeTypes: [] });
+    await f.store.imageInput(new AbortController().signal)(f.image, f.image.revision.hash, () => undefined);
+    expect(f.store.notice).toBe('fixture-specific unavailable reason'); expect(f.store.state).toBe('failed'); expect(f.api.terminalInsert).not.toHaveBeenCalled(); expect(f.store.references).toHaveLength(1);
+  });
+  it('does not let a delayed source lookup reach a newly selected task', async () => {
+    const f = await imageFixture(), insert = f.store.imageInput(new AbortController().signal);
+    disposers.push(registerFileTerminal({ taskId: 'other-task', ptyId: 'other-pty', focus: vi.fn() }));
+    await expect(insert(f.image, f.image.revision.hash, () => undefined)).rejects.toThrow('已切换');
+    expect(f.api.terminalInsert).not.toHaveBeenCalled(); expect(f.store.references).toHaveLength(1);
+  });
+  it('revokes only the pending binding on source disposal and never resends a late image result', async () => {
+    const f = await imageFixture(), reply = deferred<TerminalInsertionReceipt>(), owner = new AbortController();
+    f.api.terminalInsert.mockImplementationOnce(() => reply.promise);
+    const operation = f.store.imageInput(owner.signal)(f.image, f.image.revision.hash, () => undefined);
+    await vi.waitFor(() => expect(f.api.terminalInsert).toHaveBeenCalledOnce()); owner.abort();
+    reply.resolve({ operationId: f.api.terminalInsert.mock.calls[0][0].operationId, state: 'failed', message: 'cancelled before write' }); await operation;
+    expect(f.api.terminalRelease).toHaveBeenCalledOnce(); expect(f.api.terminalInsert).toHaveBeenCalledOnce(); expect(f.store.references).toHaveLength(1); expect(f.target.focus).not.toHaveBeenCalled();
+  });
+  const docxFixture = () => {
+    const f = fixture(); Object.assign(f.file, { name: '说明 #?.docx', relativePath: '资料/说明 #?.docx', writable: false, attachment: { textKind: null }, content: { kind: 'office', format: 'docx' } });
+    const selection = { docx: { page: 2 }, text: '原文段落🙂', comment: '请核对段落', version: 0, instance: 'docx', selectedTextHash: textFingerprint('原文段落🙂'), current: () => true };
+    return { ...f, selection };
+  };
+  it('captures DOCX through its original grant and preserves readonly attachment/quote without text lines', async () => {
+    const f = docxFixture(); expect(await f.store.addDocx(f.file, f.selection)).toBe(true);
+    expect(f.api.open).not.toHaveBeenCalled(); expect(f.api.related).toHaveBeenCalledWith(f.file.ref, encodeURIComponent(f.file.name));
+    expect(f.store.references[0].file.attachment).toEqual(f.file.attachment); expect(f.store.references[0].file.writable).toBe(false);
+    expect(f.store.preview.text).toBe('资料/说明 #?.docx:第 2 页\n> 请核对段落\n    原文段落🙂'); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+    const ref = f.store.references[0].file.ref;
+    await f.store.insert(); expect(f.api.terminalInsert).toHaveBeenCalledOnce();
+    expect(f.api.terminalPrepare).toHaveBeenCalledWith(expect.objectContaining({ target: { kind: 'document', ref } }));
+    expect(f.api.terminalInsert.mock.calls[0][0]).toMatchObject({ kind: 'context', includeText: true, references: [{ kind: 'docx-comment', docx: { page: 2 }, text: f.selection.text, comment: f.selection.comment }] });
+  });
+  it('closes a captured DOCX grant if its actual source hash changed during preparation', async () => {
+    const f = docxFixture(), changed = { ...f.file, ref: { ...f.file.ref, id: randomUUID() }, revision: { ...f.file.revision, hash: 'b'.repeat(64) } };
+    f.api.related.mockResolvedValueOnce(changed); expect(await f.store.addDocx(f.file, f.selection)).toBe(false);
+    expect(f.store.references).toEqual([]); expect(f.api.closeDocument).toHaveBeenCalledWith(changed.ref); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+  });
+  it('rejects late DOCX capture across root change and releases the returned private reference', async () => {
+    const f = docxFixture(), gate = deferred<FileDocument>(); f.api.related.mockImplementationOnce(() => gate.promise);
+    const work = f.store.addDocx(f.file, f.selection); await vi.waitFor(() => expect(f.api.related).toHaveBeenCalledOnce());
+    f.store.setRoot({ ...f.root, lease: randomUUID(), generation: 2 }); gate.resolve(f.file);
+    expect(await work).toBe(false); expect(f.store.references).toEqual([]); expect(f.api.closeDocument).toHaveBeenCalledWith(f.file.ref); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+  });
+  it('rejects missing/ambiguous paragraph context before capturing or dispatching', async () => {
+    const f = docxFixture();
+    for (const change of [{ text: ' ' }, { comment: ' ' }, { docx: { page: 0 } }, { range: { startLine: 1, endLine: 1 } }]) expect(await f.store.addDocx(f.file, { ...f.selection, ...change })).toBe(false);
+    expect(f.api.open).not.toHaveBeenCalled(); expect(f.api.related).not.toHaveBeenCalled(); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+  });
+  const pptxFixture = () => {
+    const f = fixture(); Object.assign(f.file, { name: '演示 #?.pptx', relativePath: '资料/演示 #?.pptx', absolutePath: '/tmp/project/资料/演示 #?.pptx', writable: false, sourceReadOnly: false, content: { kind: 'office', format: 'pptx' } });
+    const selection = { pptx: { slideId: '256', page: 1 }, text: '', comment: '请调整版面', version: 3, instance: 'pptx', selectedTextHash: textFingerprint(''), current: () => true };
+    return { ...f, selection };
+  };
+  it('captures the original PPTX grant and copies its slide locator before asynchronous queueing; insertion stays explicit', async () => {
+    const f = pptxFixture(), operation = f.store.addPptx(f.file, f.selection); f.selection.pptx.page = 2;
+    expect(await operation).toBe(true); expect(f.api.open).not.toHaveBeenCalled(); expect(f.api.related).toHaveBeenCalledWith(f.file.ref, encodeURIComponent(f.file.name));
+    expect(f.store.references[0].selection?.pptx).toEqual({ slideId: '256', page: 1 }); expect(f.store.preview.text).toBe('资料/演示 #?.pptx:第 1 张幻灯片\n> 请调整版面');
+    const capturedRef = f.store.references[0].file.ref;
+    expect(f.api.terminalInsert).not.toHaveBeenCalled(); await f.store.insert();
+    expect(f.api.terminalPrepare).toHaveBeenCalledWith(expect.objectContaining({ target: { kind: 'document', ref: capturedRef } }));
+    expect(f.api.terminalInsert.mock.calls[0][0]).toMatchObject({ kind: 'context', references: [{ kind: 'pptx-comment', pptx: { slideId: '256', page: 1 }, comment: '请调整版面', text: '' }] });
+  });
+  it('keeps strong readonly PPTX and mixed location input out of the capture path', async () => {
+    const f = pptxFixture(); f.file.sourceReadOnly = true; expect(await f.store.addPptx(f.file, f.selection)).toBe(false);
+    f.file.sourceReadOnly = false; expect(await f.store.addPptx(f.file, { ...f.selection, range: { startLine: 1, endLine: 1 } })).toBe(false);
+    expect(f.api.related).not.toHaveBeenCalled(); expect(f.store.references).toEqual([]); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+  });
+  it('releases a related PPTX source if the actual newly issued grant became strong readonly', async () => {
+    const f = pptxFixture(), captured = { ...f.file, sourceReadOnly: true, ref: { ...f.file.ref, id: randomUUID() } }; f.api.related.mockResolvedValueOnce(captured);
+    expect(await f.store.addPptx(f.file, f.selection)).toBe(false); expect(f.store.references).toEqual([]); expect(f.api.closeDocument).toHaveBeenCalledWith(captured.ref); expect(f.api.terminalInsert).not.toHaveBeenCalled();
+  });
   it('collects and previews references while stopped, then removes/clears without insertion', async () => {
     const f = fixture(false); await f.store.add(f.path); expect(f.store.references).toHaveLength(1); expect(f.store.canInsert).toBe(false); expect(f.store.preview.text).toBe('a.ts');
     f.store.options(false, 'at'); expect(f.store.preview.text).toBe('@a.ts'); f.store.remove(f.store.references[0].id); expect(f.store.references).toEqual([]); expect(f.api.terminalInsert).not.toHaveBeenCalled();

@@ -1,4 +1,5 @@
 import {durablePrototypeReadings} from './file-reading-model.mjs';
+import {pptxGroupExample} from './file-pptx-group-example.mjs';
 // Original interaction model. Synthetic data only; no native filesystem access.
 import { rankFileCandidates } from './file-fuzzy-model.mjs';
 export const REFERENCE_REV = 'M9-R2-20261017';
@@ -28,6 +29,10 @@ export const FILES = [['AGENTS.md', 'markdown', SAMPLE_MD], ['CLAUDE.md', 'markd
   kind,
   text
 }));
+FILES.push({path:'docs/组合对象示例（合成）.pptx',kind:'pptx',text:pptxGroupExample});
+FILES.push({path:'docs/绘图能力提示（合成）.xlsx',kind:'xlsx',text:JSON.stringify({sheets:[{id:'drawing-warning',name:'Drawing',cells:[['Drawing notice fixture','42']],objects:[{id:'retained-drawing',kind:'unsupported-drawing',title:'原件内保留的绘图对象'}]}]})});
+export const LONG_ENGLISH_PATH = 'docs/LongEnglishFilenameWithoutWhitespaceLongEnglishFilenameWithoutWhitespaceLongEnglishFilenameWithoutWhitespaceLongEnglishFilen.txt';
+FILES.push({path:LONG_ENGLISH_PATH,kind:'code',text:'Synthetic long English filename.\nThis known text belongs only to this prototype file.\n'});
 FILES.push({path:'docs/Markdown完整交互.md',kind:'markdown',text:`---
 title: 文件工作区
 status: 设计中
@@ -230,12 +235,12 @@ export function serializeWorkspaceStore(store) {
   return {
     ...store,
     ...Object.fromEntries(Object.entries(store).filter(([k]) => k !== 'saved' && k !== 'fileOpener').map(([key, s]) => {
-      const tabs = s.tabs.filter(t => !t.preview && !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) }));
+      const tabs = s.tabs.filter(t => !t.preview && !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, ...(['source','review'].includes(t.navigationView) ? { navigationView: t.navigationView } : {}), ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) }));
       return [key, {
         ...s,
         tabs,
         ...(s.readings?{readings:durablePrototypeReadings(s,tabs,(s.closed||[]).filter(t=>!t.attachment))}:{}),
-        closed: (s.closed || []).filter(t => !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, index: t.index, ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) })),
+        closed: (s.closed || []).filter(t => !t.attachment).map(t => ({ root: t.root, path: t.path, preview: false, index: t.index, ...(['source','review'].includes(t.navigationView) ? { navigationView: t.navigationView } : {}), ...(pdfReadingHint(t.pdf) ? { pdf: pdfReadingHint(t.pdf) } : {}) })),
         active: tabs.some(t => fileKey(t.root, t.path) === s.active) ? s.active : tabs[0] ? fileKey(tabs[0].root, tabs[0].path) : null
       }];
     }))
@@ -246,6 +251,25 @@ export function fileKey(root, path) {
 }
 export function workspaceScope(taskId, roots) {
   return JSON.stringify([taskId, roots.map(r => [r.id, r.hostId || 'local', r.path.replace(/\\/g, '/').replace(/\/+$/, '') || '/'])]);
+}
+/** Synthetic close preparation only; preserve routes, other tasks and recovery data. */
+export function preparePrototypeTaskClose(store, taskId, action = 'save') {
+  let next = store;
+  for (const scope of Object.keys(store)) {
+    let identity;
+    try { identity = JSON.parse(scope); } catch { continue; }
+    if (!Array.isArray(identity) || identity[0] !== taskId || !Array.isArray(identity[1])) continue;
+    const state = next[scope];
+    if (!state?.drafts) continue;
+    const roots = identity[1].map(([id, hostId, path]) => ({ id, hostId, path }));
+    if (action === 'discard') { next = { ...next, [scope]: { ...state, drafts: {} } }; continue; }
+    for (const key of Object.keys(state.drafts)) {
+      const outcome = commitDraft(next, scope, roots, key);
+      next = outcome.store;
+      if (!['saved', 'clean'].includes(outcome.result)) return { store: next, ready: false, message: '示例文件尚未保存，原会话与恢复材料仍保留。', canDiscard: true };
+    }
+  }
+  return { store: next, ready: true };
 }
 // Tab route keys are task-local aliases. Saved identity is host + absolute path;
 // overlapping roots are navigation contexts, not distinct copies of a document.

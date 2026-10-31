@@ -64,7 +64,12 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       if (message.method === 'Runtime.exceptionThrown') rendererErrors.push(message.params.exceptionDetails.text);
       for (const listener of cdpListeners.get(message.method) ?? []) listener(message.params);
     });
+    ws.addEventListener('close', () => {
+      for (const request of pending.values()) { clearTimeout(request.timer); request.reject(new Error('Isolated Electron target closed')); }
+      pending.clear();
+    });
     const cdp = (method, params = {}, timeoutMs = 25_000) => new Promise((resolve, reject) => {
+      if (ws.readyState !== WebSocket.OPEN) { reject(new Error('Isolated Electron target is closed')); return; }
       const id = ++seq;
       const timer = setTimeout(() => { pending.delete(id); reject(new Error(`Electron ${method} timed out`)); }, timeoutMs);
       pending.set(id, { resolve, reject, timer, method }); ws.send(JSON.stringify({ id, method, params }));
@@ -131,7 +136,8 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       const enabled=await call('Runtime.enable');if(enabled.error){socket.close();throw mainFailure(enabled,'main-runtime-enable');}
       return{call,nextGroup:()=>`main-eval-${++groups}`,close:()=>{stop();socket.close();}};
     };
-    const mainEvaluate = async (expression,{label,timeoutMs}={}) => {
+    const mainEvaluate = async (expression,{label,timeoutMs,synchronous=false}={}) => {
+      assert(typeof synchronous==='boolean','Main inspection mode must be explicit');
       assert(timeoutMs===undefined||Number.isInteger(timeoutMs)&&timeoutMs>0&&timeoutMs<=300000,'Explicit main inspection timeout must be bounded to300s');
       const deadline=timeoutMs===undefined?undefined:Date.now()+timeoutMs;
       assert(label===undefined||/^[a-z0-9-]{1,64}$/.test(label),'Inspection label must be a fixed safe operation name');
@@ -142,18 +148,27 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       mainSession??=connectMainInspection();const session=await mainSession;
       const objectGroup=session.nextGroup();let failed=false;
       const request=(method,params)=>session.call(method,params,deadline===undefined?25000:Math.max(1,deadline-Date.now()));
+      // Root async evaluations in this owned main until their response is read.
+      // M9 synchronous observers must never start or await an async operation.
+      const rootedExpression=synchronous?expression:`(() => { const key=Symbol.for('willyou.test.main-evaluation'),pending=globalThis[key]??=new Map(),promise=Promise.resolve((0,eval)(${JSON.stringify(expression)}));pending.set(${JSON.stringify(objectGroup)},promise);return promise; })()`;
       try{
         // Retain the original remote result while converting/awaiting it. The
         // implicit awaitPromise path can lose an otherwise unreferenced promise.
-        let response=await request('Runtime.evaluate',{expression,awaitPromise:false,returnByValue:false,objectGroup});
+        let response=await request('Runtime.evaluate',{expression:rootedExpression,awaitPromise:false,returnByValue:false,objectGroup});
         if(response.error||response.result.exceptionDetails)throw mainFailure(response,label);
         const remote=response.result.result;
+        if(synchronous&&remote.subtype==='promise')throw new Error('Synchronous main inspection returned a promise');
         if(remote.subtype==='promise')response=await request('Runtime.awaitPromise',{promiseObjectId:remote.objectId,returnByValue:true});
         else if(remote.objectId)response=await request('Runtime.callFunctionOn',{objectId:remote.objectId,functionDeclaration:'function(){return this}',returnByValue:true,objectGroup});
         if(response.error||response.result.exceptionDetails)throw mainFailure(response,label);
         return response.result.result.value;
       }catch(error){failed=true;throw error;}
-      finally{try{const released=await session.call('Runtime.releaseObjectGroup',{objectGroup});if(released.error)throw mainFailure(released,label);}catch(error){if(!failed)throw error;}}
+      finally{
+        try{
+          if(!synchronous){const cleared=await session.call('Runtime.evaluate',{expression:`(() => { const key=Symbol.for('willyou.test.main-evaluation'),pending=globalThis[key];pending?.delete(${JSON.stringify(objectGroup)});if(pending?.size===0)delete globalThis[key];return true; })()`,returnByValue:true},1000);if(cleared.error||cleared.result.exceptionDetails)throw mainFailure(cleared,label);}
+        }catch(error){if(!failed)throw error;}
+        finally{try{const released=await session.call('Runtime.releaseObjectGroup',{objectGroup});if(released.error)throw mainFailure(released,label);}catch(error){if(!failed)throw error;}}
+      }
     };
     return {
       cdp, evaluate, mainEvaluate, waitFor, invoke, rendererErrors, navigationWaits,

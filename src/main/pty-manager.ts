@@ -84,4 +84,5 @@ export class PtyManager extends EventEmitter {
   get count(): number {
     return this.ptys.size;
   }
+  processId(id: string): number | null { return this.ptys.get(id)?.pid ?? null; }
 }

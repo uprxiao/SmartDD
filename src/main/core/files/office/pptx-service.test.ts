@@ -15,6 +15,7 @@ import { OfficePagesModel } from './pages-model';
 import { FileHeavyJobs } from '../heavy-jobs';
 import { pptxTestImage } from './pptx-image-fixtures';
 import { modernChartFixture } from './pptx-chart-fixtures';
+import { pptxPlaceholderImage } from './pptx-placeholder';
 
 const hash=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
 const ref=()=>({id:randomUUID(),lease:randomUUID(),generation:1});
@@ -40,6 +41,27 @@ describe('PPTX retained Worker, persistence and candidate preview',()=>{
     };return {api,saved:()=>saved,checkpoint:()=>checkpoint};
   }
   const renderer=()=>({render:vi.fn(async(_bytes:Uint8Array=Buffer.alloc(0))=>{const pdf=Buffer.from('%PDF-synthetic');return {bytes:pdf,hash:hash(pdf),pages:2,elapsedMs:1,peakRssBytes:1,diagnostic:''};})});
+  it('uses current source permissions without replacing the retained presentation model',async()=>{
+    let writable=false;
+    const storage=store(),service=new FilePptxService(()=>source({writable}),storage.api,undefined,worker,new FileHeavyJobs()),id=randomUUID();
+    try{
+      const opened=await service.open('owner',{id,ref:ref(),baseHash:base}),slide=opened.state.info.slides[0];
+      const action={type:'notes' as const,slideId:slide.id,text:'restored permission'};
+      await expect(service.edit('owner',{id,version:0,action})).rejects.toMatchObject({code:'PERMISSION'});
+      writable=true;
+      const changed=await service.edit('owner',{id,version:0,action});
+      expect(changed.info.slides[0].notes).toBe(action.text);expect(changed.canUndo).toBe(true);
+      writable=false;
+      await expect(service.edit('owner',{id,version:changed.version,action:{...action,text:'denied edit'}})).rejects.toMatchObject({code:'PERMISSION'});
+      await expect(service.history('owner',{id,version:changed.version,direction:'undo'})).rejects.toMatchObject({code:'PERMISSION'});
+      await expect(service.save('owner',{id,version:changed.version,draftId:randomUUID(),bufferVersion:1,opId:randomUUID()})).rejects.toMatchObject({code:'PERMISSION'});
+      expect(storage.api.save).not.toHaveBeenCalled();
+      writable=true;
+      const restored=await service.history('owner',{id,version:changed.version,direction:'undo'});
+      expect(restored.info.slides[0].notes).toBe(slide.notes);expect(restored.dirty).toBe(false);
+      expect(service.activeDocuments).toBe(1);expect(hash(storage.saved())).toBe(base);
+    }finally{service.dispose();}
+  });
   it.each(['treemap','area'] as const)('resizes %s chart data through the real Worker and recovers the new model with unfinished count input',async chartType=>{
     const storage=store(),service=new FilePptxService(()=>source(),storage.api,renderer(),worker,new FileHeavyJobs()),id=randomUUID(),draftId=randomUUID();
     try{
@@ -111,6 +133,31 @@ describe('PPTX retained Worker, persistence and candidate preview',()=>{
       await vi.waitFor(()=>expect(decode).toHaveBeenCalledOnce());service.close('owner',id);finish({width:120,height:80});await rejection;expect(storage.api.save).not.toHaveBeenCalled();expect(service.activeDocuments).toBe(0);
     }finally{service.dispose();}
   });
+  it('passes only the authored placeholder through the decoder and retained Worker, saving a real reopenable picture',async()=>{
+    const storage=store(),decode=vi.fn(async(_image:ReturnType<typeof pptxPlaceholderImage>)=>({width:320,height:200})),service=new FilePptxService(()=>source(),storage.api,undefined,worker,new FileHeavyJobs(),decode),id=randomUUID();
+    const frame={x:31.25,y:42.5,width:200,height:125};
+    try{
+      await service.open('owner',{id,ref:ref(),baseHash:base});
+      const state=await service.edit('owner',{id,version:0,action:{type:'image-placeholder',slideId:'256',frame}});
+      expect(decode).toHaveBeenCalledOnce();expect(decode.mock.calls[0][0]).toEqual(pptxPlaceholderImage());
+      expect(state.info.slides[0].elements!.at(-1)).toMatchObject({kind:'image',isPlaceholder:true,box:frame});
+      await service.save('owner',{id,version:1,draftId:randomUUID(),bufferVersion:1,opId:randomUUID()});
+      const saved=await OfficePackage.read(storage.saved());expect(new OfficePagesModel(saved).info.slides[0].elements!.at(-1)).toMatchObject({kind:'image',isPlaceholder:true,box:frame});
+      expect(saved.read('ppt/media/willyou-image-1.png')).toEqual(Buffer.from(pptxPlaceholderImage().base64,'base64'));
+    }finally{service.dispose();}
+  });
+  it.each(['image-placeholder','image-insert'] as const)('rechecks current permission after %s decoding, retaining an unchanged model on revocation',async type=>{
+    let writable=true;
+    const storage=store(),decode=vi.fn(async()=>{writable=false;return type==='image-placeholder'?{width:320,height:200}:{width:120,height:80};});
+    const service=new FilePptxService(()=>source({writable}),storage.api,undefined,worker,new FileHeavyJobs(),decode),id=randomUUID();
+    try{
+      await service.open('owner',{id,ref:ref(),baseHash:base});
+      const action=type==='image-placeholder'?{type,slideId:'256',frame:{x:20,y:20,width:200,height:125}}:{type,slideId:'256',image:pptxTestImage().image};
+      await expect(service.edit('owner',{id,version:0,action})).rejects.toMatchObject({code:'PERMISSION'});
+      expect(storage.api.save).not.toHaveBeenCalled();expect(storage.saved()).toEqual(bytes);
+      writable=true;expect(await service.history('owner',{id,version:0,direction:'undo'})).toMatchObject({version:0,dirty:false,canUndo:false});
+    }finally{service.dispose();}
+  });
   it.each(['source','decode'] as const)('preserves the dirty Worker when a preview is cancelled during table %s processing',async phase=>{
     const storage=store(),engine={...renderer(),renderTableLayout:vi.fn(async()=>vector())},service=new FilePptxService(()=>source(),storage.api,engine,worker,new FileHeavyJobs()),id=randomUUID(),requestId=randomUUID();
     const originalSource=PptxParser.prototype.tableLayoutSource,originalDecode=PptxParser.prototype.tableLayout;
@@ -154,8 +201,9 @@ describe('PPTX retained Worker, persistence and candidate preview',()=>{
       await expect(service.edit('owner',{id,version:0,action:{type:'hidden',slideId:'256',hidden:true}})).rejects.toThrow('版本');
       const result=await service.save('owner',{id,version:1,draftId,bufferVersion:3,opId:randomUUID()});
       expect(result.state.dirty).toBe(false);expect(result.receipt.state).toBe('saved');
+      expect(result.checkpoint).toBeDefined();
       expect(new OfficePagesModel(await OfficePackage.read(storage.saved())).info.slides[0].notes).toBe('saved😀');
-      expect(storage.api.resolveDraft).toHaveBeenCalledWith('owner',expect.objectContaining({hash:result.checkpoint.hash,savedHash:hash(storage.saved()),action:'saved'}));
+      expect(storage.api.resolveDraft).toHaveBeenCalledWith('owner',expect.objectContaining({hash:result.checkpoint!.hash,savedHash:hash(storage.saved()),action:'saved'}));
       expect((await service.history('owner',{id,version:1,direction:'undo'})).dirty).toBe(true);
       expect((await service.history('owner',{id,version:2,direction:'redo'})).dirty).toBe(false);
     }finally{service.dispose();}

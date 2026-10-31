@@ -154,6 +154,8 @@ export class FileRootsService {
   }
   private revoke(id: string, reason?: FileError): void { this.leases.get(id)?.abort.abort(reason); this.leases.delete(id); }
   private publicRoot({ lease, generation, source, sourceId, label, path, canonicalPath, identity }: RootLease): FileRoot {
-    return { lease, generation, source, sourceId, label, path, canonicalPath, identity };
+    // This service only grants inspected local roots. The bundled file host
+    // provides content search; untrusted renderer host hints never grant it.
+    return { lease, generation, source, sourceId, label, path, canonicalPath, identity, hostId: 'local', capabilities: { searchContent: true, pdfAnnotations: true, pdfAnnotationBatching: false } };
   }
 }

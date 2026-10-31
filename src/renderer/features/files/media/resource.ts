@@ -1,8 +1,73 @@
 import { FILE_LIMITS, type FileDocument } from '@shared/files';
 import { MEDIA_LIMIT } from '@shared/file-media';
-import { bytesFromBase64, type FileClient } from '../file-buffer';
+import { bytesFromBase64, bytesToBase64, type FileClient } from '../file-buffer';
+import type { FileRef } from '@shared/files';
 
-export async function openMediaResource(file: FileDocument, api: Pick<FileClient, 'openMedia' | 'mediaChunk' | 'releaseMedia'>, signal: AbortSignal) {
+export interface OwnedMediaResource {
+  url: string;
+  transport: 'protocol' | 'binary' | 'data-uri';
+  release(): void;
+}
+
+/** An explicit inline source, separate from a document capability or copy-link metadata. */
+export function decodeDataUriMedia(uri: string, signal: AbortSignal): { bytes: Uint8Array<ArrayBuffer>; mime: string; fragment: string } {
+  signal.throwIfAborted();
+  const comma = uri.indexOf(','), fragment = uri.indexOf('#');
+  if (!/^data:/i.test(uri) || comma < 5 || fragment >= 0 && fragment < comma) throw new Error('媒体 data URI 无效');
+  const header = uri.slice(5, comma), payload = uri.slice(comma + 1, fragment < 0 ? undefined : fragment);
+  // The reference Stl first UTF-8 encodes non-base64 input, then replaces valid
+  // %HH byte pairs in place. Invalid percent sequences stay literal; '+' stays '+'.
+  const base64 = /;base64/i.test(header);
+  if (payload.length > MEDIA_LIMIT * (base64 ? 4 : 3)) throw new Error('媒体超过 128 MiB 读取上限');
+  let value = payload, bytes: Uint8Array<ArrayBuffer>;
+  if (!base64 || payload.includes('%')) {
+    const encoded = new TextEncoder().encode(payload); let end = 0;
+    for (let offset = 0; offset < encoded.length; offset++) {
+      if (offset % 4096 === 0) signal.throwIfAborted();
+      if (encoded[offset] === 37) {
+        const pair = String.fromCharCode(encoded[offset + 1] ?? 0, encoded[offset + 2] ?? 0);
+        if (/^[\da-f]{2}$/i.test(pair)) { encoded[end++] = Number.parseInt(pair, 16); offset += 2; continue; }
+      }
+      encoded[end++] = encoded[offset];
+    }
+    bytes = encoded.slice(0, end);
+    if (base64) value = new TextDecoder().decode(bytes);
+  } else bytes = new Uint8Array(0);
+  if (base64) {
+    let digits = 0, padding = 0;
+    for (let offset = 0; offset < value.length; offset++) {
+      if (offset % 4096 === 0) signal.throwIfAborted();
+      const char = value[offset];
+      if (/[\t\n\f\r ]/.test(char)) continue;
+      digits++; padding = char === '=' ? padding + 1 : 0;
+    }
+    if (Math.floor(digits * 3 / 4) - padding > MEDIA_LIMIT) throw new Error('媒体超过 128 MiB 读取上限');
+    try { bytes = bytesFromBase64(value); }
+    catch { throw new Error('媒体 data URI 的 base64 内容无效'); }
+  }
+  if (bytes.byteLength > MEDIA_LIMIT) throw new Error('媒体超过 128 MiB 读取上限');
+  signal.throwIfAborted();
+  const mime = uri.match(/^data:([^;,]+)/i)?.[1]?.toLowerCase() ?? '';
+  return { bytes, mime, fragment: fragment < 0 ? '' : uri.slice(fragment) };
+}
+
+export async function saveDataUriMedia(source: { uri: string; name: string; context: FileRef }, api: Pick<FileClient, 'saveContent'>, signal: AbortSignal) {
+  const { bytes } = decodeDataUriMedia(source.uri, signal);
+  signal.throwIfAborted();
+  return api.saveContent({ context: source.context, name: source.name, base64: bytesToBase64(bytes) });
+}
+
+export async function openDataUriMediaResource(uri: string, signal: AbortSignal): Promise<OwnedMediaResource> {
+  const { bytes, mime, fragment } = decodeDataUriMedia(uri, signal);
+  const base = URL.createObjectURL(new Blob([bytes], { type: mime })); let released = false;
+  const release = () => { if (released) return; released = true; signal.removeEventListener('abort', release); URL.revokeObjectURL(base); };
+  signal.addEventListener('abort', release, { once: true });
+  // Conversion is synchronous; the asynchronous return still lets a caller
+  // abort/unmount before assignment. That caller releases the owned result.
+  return { url: base + fragment, transport: 'data-uri', release };
+}
+
+export async function openMediaResource(file: FileDocument, api: Pick<FileClient, 'openMedia' | 'mediaChunk' | 'releaseMedia'>, signal: AbortSignal): Promise<OwnedMediaResource> {
   if (file.revision.size > MEDIA_LIMIT) throw new Error('媒体超过 128 MiB 读取上限');
   signal.throwIfAborted();
   const id = crypto.randomUUID(); let released = false, blob = '';

@@ -1,5 +1,5 @@
 // Presentation hints never replace byte classification or file authority.
-// These are WillYou's explicit aliases, not unverified private-runtime parity.
+// MIME aliases match archived Oon/Non; runtime and source UI are verified separately.
 export function attachmentTextKind(name, mimeType) {
   const leaf = name.split('/').at(-1).toLowerCase();
   const extension = leaf.includes('.') ? leaf.split('.').at(-1) : '';
@@ -9,7 +9,7 @@ export function attachmentTextKind(name, mimeType) {
   if (extension) return null;
   const mime = typeof mimeType === 'string' ? mimeType.split(';', 1)[0].trim().toLowerCase() : '';
   if (mime === 'text/html') return 'html';
-  if (['text/markdown', 'text/x-markdown'].includes(mime)) return 'markdown';
+  if (['application/markdown', 'application/x-markdown', 'text/markdown', 'text/x-markdown'].includes(mime)) return 'markdown';
   if (mime === 'text/plain') return 'text';
   return null;
 }

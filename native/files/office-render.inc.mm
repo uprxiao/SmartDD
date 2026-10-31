@@ -139,7 +139,12 @@ static NSDictionary *officeRenderOperation(NSDictionary *request) {
   bool tableLayout = [request[@"tableLayout"] boolValue];
   require(!tableLayout || format == "pptx", "INVALID_INPUT", "Table layout requires PPTX");
   std::string filter = tableLayout ? "svg:impress_svg_Export" : format == "docx" ? "pdf:writer_pdf_Export" : R"(pdf:impress_pdf_Export:{"ExportHiddenSlides":{"type":"boolean","value":"true"},"ExportNotesPages":{"type":"boolean","value":"false"}})";
-  std::vector<std::string> values = {"/usr/bin/sandbox-exec", "-p", profile, executable, "-env:UserInstallation=" + userProfile, "-env:OSL_SOCKET_PATH=ipc", "--headless", "--invisible", "--norestore", "--nodefault", "--nolockcheck", "--nologo", "--nofirststartwizard", "--convert-to", filter, "--outdir", job.path + "/out", job.path + "/input/" + sourceName};
+  // --norestore controls LibreOffice, while Cocoa has its own state persistence.
+  // IgnoreState skips old state but still permits new state to be written.
+  // A disposable renderer needs neither: disable persistence in this process's
+  // NSArgumentDomain without changing host preferences or sandbox permissions.
+  // The pinned 26.2.4.2 parser consumes two operands for each --protector pair.
+  std::vector<std::string> values = {"/usr/bin/sandbox-exec", "-p", profile, executable, "-env:UserInstallation=" + userProfile, "-env:OSL_SOCKET_PATH=ipc", "--headless", "--invisible", "--norestore", "--protector", "-ApplePersistenceIgnoreState", "YES", "--protector", "-ApplePersistence", "NO", "--nodefault", "--nolockcheck", "--nologo", "--nofirststartwizard", "--convert-to", filter, "--outdir", job.path + "/out", job.path + "/input/" + sourceName};
   std::vector<char *> argv; for (auto &value : values) argv.push_back(value.data()); argv.push_back(nullptr);
   std::vector<std::string> environments = {"PATH=/usr/bin:/bin", "HOME=" + job.path + "/home", "TMPDIR=" + job.path + "/tmp", "XDG_CACHE_HOME=" + job.path + "/home/cache", "XDG_CONFIG_HOME=" + job.path + "/home", "LANG=en_US.UTF-8", "PYTHONDONTWRITEBYTECODE=1"};
   std::vector<char *> env; for (auto &value : environments) env.push_back(value.data()); env.push_back(nullptr);

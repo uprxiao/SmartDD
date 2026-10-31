@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { webcrypto, createHash } from 'node:crypto';
 import { useEffect, useRef } from 'react';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument } from '@shared/files';
 import type { FileBuffer } from '../file-buffer';
@@ -32,15 +32,35 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 const ready = async () => waitFor(() => expect(api.closeDocument).toHaveBeenCalledTimes(2));
 describe('Embedded image host: source lifecycle and shared P gallery, decoder isolated', () => {
+  it('keeps a native download refusal inside the open gallery and clears it on a cancelled retry', async () => {
+    render(<Harness />); await ready();
+    api.saveCopy.mockRejectedValueOnce(new Error('请选择其它文件名；另存副本不能覆盖源文件'));
+    fireEvent.click(screen.getByRole('button', { name: '预览图片 a.svg' }));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: '下载' }));
+    await waitFor(() => expect(within(dialog).getByRole('alert').textContent).toContain('另存副本不能覆盖源文件'));
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(api.closeDocument).toHaveBeenCalledTimes(3);
+    fireEvent.click(within(dialog).getByRole('button', { name: '下载' }));
+    await waitFor(() => expect(api.saveCopy).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(within(dialog).queryByRole('alert')).toBeNull());
+    expect(screen.getByRole('dialog')).toBe(dialog);
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(api.closeDocument).toHaveBeenCalledTimes(4);
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '预览图片 a.svg' }));
+  });
+
   it('uses connected DOM order, bounded navigation and resets zoom without giving ordinary images a gallery', async () => {
     const view = render(<Harness />); await ready();
     fireEvent.click(screen.getByRole('button', { name: '预览图片 a.svg' }));
     expect(screen.getByRole('dialog').querySelector('header')?.textContent).toContain('a.svg');
-    expect(screen.getByRole('button', { name: '上一张图片' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.queryByRole('button', { name: '上一张图片' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: '放大图片' }));
     fireEvent.click(screen.getByRole('button', { name: '下一张图片' }));
     expect(screen.getByRole('dialog').querySelector('header')?.textContent).toContain('b.svg');
-    expect(screen.getByRole('button', { name: '下一张图片' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.queryByRole('button', { name: '下一张图片' })).toBeNull();
     const viewport = view.baseElement.querySelector<HTMLElement>('.fw-gallery-viewport')!;
     fireEvent.keyDown(viewport, { key: 'ArrowLeft', isComposing: true });
     expect(screen.getByRole('dialog').querySelector('header')?.textContent).toContain('b.svg');
@@ -58,7 +78,7 @@ describe('Embedded image host: source lifecycle and shared P gallery, decoder is
     view.rerender(<Harness context open={open} />); expect(fireEvent.contextMenu(image)).toBe(false);
     expect(screen.getAllByRole('menuitem').map(x => x.textContent)).toEqual(['在新标签打开图片', '添加到当前任务', '复制图片', '在文件管理器中显示', '下载副本']);
     fireEvent.click(screen.getByRole('menuitem', { name: '添加到当前任务' }));
-    expect(screen.getByRole('status').textContent).toContain('尚未接入图片输入 provider'); expect(api.saveCopy).not.toHaveBeenCalled(); expect(navigator.clipboard.write).not.toHaveBeenCalled();
+    expect(screen.getByRole('status').textContent).toContain('当前没有可用的任务终端'); expect(api.saveCopy).not.toHaveBeenCalled(); expect(navigator.clipboard.write).not.toHaveBeenCalled();
     fireEvent.contextMenu(image); fireEvent.click(screen.getByRole('menuitem', { name: '在新标签打开图片' }));
     await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith('a.svg'));
     expect(api.closeDocument).toHaveBeenCalledTimes(3);

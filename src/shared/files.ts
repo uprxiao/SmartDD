@@ -62,6 +62,10 @@ export const fileExternalOpenSchema = z.object({ listId: z.string().uuid(), appI
 export type FileExternalOpen = z.infer<typeof fileExternalOpenSchema>;
 export const fileCopySchema = z.object({ target: fileActionTargetSchema, draftBase64: z.string().max(Math.ceil(FILE_LIMITS.readableText / 3) * 4).optional(), baseHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export type FileCopyInput = z.infer<typeof fileCopySchema>;
+/** Inline bytes retain the real embedding document's authority. The renderer
+ * supplies a suggested name, never a destination or an invented document ref. */
+export const fileContentCopySchema = z.object({ context: fileRefSchema, name: z.string().min(1).max(1024).refine(value => !/[\u0000-\u001f\u007f]/.test(value)), base64: z.string().max(Math.ceil(FILE_LIMITS.asset / 3) * 4) }).strict();
+export type FileContentCopyInput = z.infer<typeof fileContentCopySchema>;
 export interface FileCopyReceipt { state: 'saved' | 'cancelled'; path?: string; hash?: string }
 
 export interface FileIdentity { device: string; inode: string }
@@ -72,6 +76,11 @@ export interface FileRevision extends FileIdentity {
   hash: string;
 }
 export interface FileRoot extends RootRequest {
+  /** Main-issued local host/capability metadata controls UI availability only.
+   * Every IO request still requires its owner-bound opaque lease. Missing
+   * metadata is an unknown host, never an implicit search permission. */
+  hostId?: string;
+  capabilities?: { searchContent: boolean; pdfAnnotations?: boolean; pdfAnnotationBatching?: boolean };
   source: 'project-directory' | 'task-cwd';
   sourceId: string;
   label: string;
@@ -98,6 +107,9 @@ export interface FileDocument {
   absolutePath: string;
   revision: FileRevision;
   writable: boolean;
+  /** Issued by main: source policy, independent of current OS permissions.
+   * Optional only for metadata retained by older renderer clients. */
+  sourceReadOnly?: boolean;
   /** Main-process classification of the authorized file's initial bytes. */
   content?: FileClassification;
   /** Main-derived readonly presentation, never a replacement for content bytes. */

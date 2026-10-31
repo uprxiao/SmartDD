@@ -1,7 +1,7 @@
 import { Compartment, EditorState, type Transaction } from '@codemirror/state';
 import { history } from '@codemirror/commands';
 import { decodeFileText, encodeFileText, textOffsetMap, type DecodedFileText } from '@shared/file-text';
-import type { FileCheckpointReceipt, FileDocument, FileRead, FileSaveReceipt } from '@shared/files';
+import { FILE_LIMITS, type FileCheckpointReceipt, type FileDocument, type FileRead, type FileSaveReceipt } from '@shared/files';
 import type { rpc } from '@renderer/lib/ipc';
 import { createSourceField } from './editor-source';
 import { classifyFile } from '@shared/file-classification';
@@ -10,6 +10,8 @@ import { OfficeBuffer } from './office/buffer';
 import { PptxBuffer } from './office/pptx-buffer';
 import { hydrateEditorReading, mapEditorScroll, serializeEditorReading } from './editor-scroll';
 import type { TextReading } from '@shared/file-workspace';
+import { chooseFileViewer } from './viewer-choice';
+import type { ArtifactNavigationRequest, ArtifactNavigationTarget } from '@shared/file-navigation';
 
 export type FileClient = typeof rpc.files;
 type TextFileClient = Pick<FileClient, 'read' | 'refresh' | 'save' | 'checkpoint' | 'drafts' | 'readDraft' | 'resolveDraft' | 'closeDocument'>;
@@ -35,6 +37,24 @@ export class FileBuffer {
   readonly viewConfiguration = new Compartment();
   file: FileDocument;
   editor: EditorState | null = null;
+  navigationView: 'source' | 'review' | null = null;
+  /** Window-local display intent. None of these fields grants file access. */
+  artifactView = false;
+  artifactNavigation: ArtifactNavigationRequest | null = null;
+  previewTitle: string | null = null;
+  navigationError = '';
+  clearDisplayIntent(): void {
+    this.artifactView = false; this.artifactNavigation = null; this.previewTitle = null; this.navigationError = '';
+  }
+  requestArtifactNavigation(target: ArtifactNavigationTarget): void {
+    this.artifactView = true;
+    this.artifactNavigation = { id: crypto.randomUUID(), documentId: this.file.ref.id, sourceHash: this.baseHash, target };
+    this.navigationError = ''; this.changed();
+  }
+  finishArtifactNavigation(id: string, error = ''): void {
+    if (this.disposed || this.artifactNavigation?.id !== id) return;
+    this.artifactNavigation = null; this.navigationError = error; this.changed();
+  }
   office: OfficeBuffer | null = null;
   pptx:PptxBuffer|null=null;
   source: ReturnType<typeof createSourceField> | null = null;
@@ -71,6 +91,7 @@ export class FileBuffer {
   private refreshSequence = 0;
   private restoreSequence = 0;
   private refreshAfterLoad = false;
+  private reviewTextLoaded = false;
   private refreshAfterSave = false;
   private checkpointTimer: ReturnType<typeof setTimeout> | undefined;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -86,7 +107,7 @@ export class FileBuffer {
   get raw(): string { return this.editor && this.source ? this.editor.field(this.source.field).raw : ''; }
   get dirty(): boolean { return this.pptx?.dirty ?? this.office?.dirty ?? (this.editor !== null && (this.inputInterrupted || this.inputPending || this.writeRequired || this.raw !== this.baseRaw || this.bom !== this.baseBom || this.disk !== null)); }
   get saving(): boolean { return this.inFlight !== null || Boolean(this.office?.saving||this.pptx?.saving); }
-  get editable(): boolean { return this.pptx?.editable ?? this.office?.editable ?? (this.decoded?.kind === 'text' && this.decoded.editable && this.file.writable); }
+  get editable(): boolean { return this.navigationView !== 'review' && (this.pptx?.editable ?? this.office?.editable ?? (this.decoded?.kind === 'text' && this.decoded.editable && this.file.writable)); }
   get content() {
     const extension = classifyFile(this.file.name, new Uint8Array());
     // A lower-layer image/content hint cannot enable a format whose viewer is
@@ -106,6 +127,9 @@ export class FileBuffer {
   private readsText(file = this.file): boolean {
     const content = file.content ?? classifyFile(file.name, new Uint8Array());
     return content.kind === 'text' || content.kind === 'image' && content.mime === 'image/svg+xml' && this.mode === 'source';
+  }
+  get largeTextReview(): boolean {
+    return this.navigationView === 'review' && this.content.kind === 'text' && this.file.revision.size > FILE_LIMITS.readableText;
   }
   get recoveryBlocked(): boolean { return Boolean(this.saveReceipt?.recoveryId && this.saveReceipt.state !== 'saved'); }
   get conflict(): boolean { return this.disk !== null || Boolean(this.office?.disk||this.pptx?.disk) || this.saveReceipt?.state === 'conflict' || this.saveReceipt?.state === 'unknown'; }
@@ -180,12 +204,14 @@ export class FileBuffer {
       },
     };
   }
-  getOffice():OfficeBuffer { return this.office ??= new OfficeBuffer(this); }
+  getOffice():OfficeBuffer { return this.office ??= OfficeBuffer.forFile(this); }
   getPptx():PptxBuffer{return this.pptx??=new PptxBuffer(this);}
-  revealSourceRange(from: number, to: number): void {
+  revealSourceRange(from: number, to: number, { keepViewerChoice = false } = {}): void {
     if (!this.editor) return;
     const map = textOffsetMap(this.raw);
-    this.reveal = { from: map.rawToCm(from), to: map.rawToCm(to) }; this.changed();
+    this.reveal = { from: map.rawToCm(from), to: map.rawToCm(to) };
+    if (!keepViewerChoice) chooseFileViewer(this, null);
+    this.changed();
   }
 
   private install(read: FileRead, preserveSelection = false): void {
@@ -206,8 +232,34 @@ export class FileBuffer {
     this.source = createSourceField(raw);
     this.editor = EditorState.create({ doc: this.source.normalized, selection: { anchor: Math.min(selection ?? 0, this.source.normalized.length) }, extensions: [this.source.extensions, history(), this.viewConfiguration.of([])] });
   }
+  private async reloadInvalidated(sequence: number): Promise<void> {
+    if (this.disposed || sequence !== this.loadSequence) return;
+    this.refreshAfterLoad = false;
+    const own = ++this.loadSequence; this.refreshSequence++;
+    this.loadState = 'loading'; this.loadError = '';
+    try {
+      // A watcher can invalidate a small read before it finishes. Its old
+      // metadata cannot decide which reader to retry after the file grew.
+      const stat = await this.api.refresh(this.file.ref);
+      if (this.disposed || own !== this.loadSequence) return;
+      this.loadState = 'ready';
+      if (this.dirty || this.saving || this.recoveryBlocked || !this.inputSettled) { await this.refresh(); return; }
+      this.file = stat; this.baseHash = stat.revision.hash;
+      await this.load();
+    } catch (error) {
+      if (!this.disposed && own === this.loadSequence) { this.loadState = 'error'; this.loadError = message(error); this.changed(); }
+    }
+  }
   async load(): Promise<void> {
     if (this.dirty) { await this.refresh(); return; }
+    if (this.largeTextReview) {
+      // The independent bounded reader owns its own bytes/Worker. Do not put
+      // a256MiB source into20MiB read(), CodeMirror, history or draft snapshots.
+      this.loadSequence++; this.refreshSequence++; this.reviewTextLoaded = true;
+      this.editor = null; this.source = null; this.decoded = null;
+      this.loadState = 'ready'; this.loadError = ''; this.changed(); return;
+    }
+    this.reviewTextLoaded = false;
     if(this.content.kind==='office'&&this.content.format==='pptx'){await this.getPptx().load();return;}
     if (this.content.kind === 'office' && ['xlsx','xlsm'].includes(this.content.format ?? '')) { await this.getOffice().load(); return; }
     if (!this.readsText()) { this.loadState = 'ready'; this.changed(); return; }
@@ -219,7 +271,7 @@ export class FileBuffer {
       if (this.disposed || sequence !== this.loadSequence) return;
       // A watch/refresh may arrive after this read captured its bytes but before
       // delivery. Do not install that stale base; re-read within this instance.
-      if (this.refreshAfterLoad) { this.refreshAfterLoad = false; await this.load(); return; }
+      if (this.refreshAfterLoad) { await this.reloadInvalidated(sequence); return; }
       this.install(read);
       const drafts = await this.api.drafts(this.file.ref);
       if (this.disposed || sequence !== this.loadSequence) return;
@@ -227,7 +279,7 @@ export class FileBuffer {
     } catch (error) { if (!this.disposed && sequence === this.loadSequence) { this.loadState = 'error'; this.loadError = message(error); } }
     if (!this.disposed && sequence === this.loadSequence) {
       // A delayed read error cannot consume a newer disk invalidation either.
-      if (this.refreshAfterLoad) { this.refreshAfterLoad = false; await this.load(); return; }
+      if (this.refreshAfterLoad) { await this.reloadInvalidated(sequence); return; }
       this.changed();
     }
   }
@@ -302,7 +354,7 @@ export class FileBuffer {
     const operation = async () => {
       try {
         await this.checkpointSnapshot(snapshot);
-        if (this.disposed) return false;
+        if (this.disposed || this.sourceUnavailable) return false;
         // Editing can grow an initially editable document past its save limit.
         // Preserve its independent checkpoint before refusing the disk write.
         encodeFileText(snapshot.raw, snapshot.bom);
@@ -349,6 +401,7 @@ export class FileBuffer {
     if (this.office) return this.office.refresh();
     if (this.disposed) return;
     if (this.saving) { this.refreshAfterSave = true; return; }
+    if (this.largeTextReview !== this.reviewTextLoaded) { await this.load(); return; }
     if (this.loadState === 'loading') { this.refreshAfterLoad = true; return; }
     if (this.loadState !== 'ready' && !this.editor) { await this.load(); return; }
     const sequence = ++this.refreshSequence;
@@ -362,6 +415,12 @@ export class FileBuffer {
       }
       const stat = await this.api.refresh(this.file.ref);
       if (this.disposed || sequence !== this.refreshSequence) return;
+      const newlyLargeReview = this.navigationView === 'review' && stat.content?.kind === 'text' && stat.revision.size > FILE_LIMITS.readableText;
+      if (this.reviewTextLoaded || newlyLargeReview && !this.dirty && !this.recoveryBlocked && this.inputSettled) {
+        this.file = stat; this.baseHash = stat.revision.hash; this.loadError = '';
+        if (!this.reviewTextLoaded || !this.largeTextReview) { await this.load(); return; }
+        this.changed(); return;
+      }
       const sameIdentity = stat.revision.device === this.file.revision.device && stat.revision.inode === this.file.revision.inode;
       if (stat.revision.hash === this.baseHash && (!this.dirty || sameIdentity)) { this.file = stat; this.loadError = ''; this.changed(); return; }
       if (!this.dirty && !this.recoveryBlocked && !this.readsText(stat)) { this.file = stat; this.baseHash = stat.revision.hash; this.editor = null; this.source = null; this.decoded = null; this.loadError = ''; this.changed(); return; }
@@ -389,7 +448,7 @@ export class FileBuffer {
   async keepLocal(): Promise<boolean> {
     if(this.pptx)return this.pptx.keepLocal();
     if (this.office) return this.office.keepLocal();
-    if (this.recoveryBlocked || this.disposed || this.saving || this.inputInterrupted || this.inputPending) return false;
+    if (this.recoveryBlocked || this.disposed || this.saving || this.inputInterrupted || this.inputPending || !this.editable) return false;
     // Always obtain a fresh revision. The broker will compare it again; this
     // action never opts out of compare-before-save protection.
     try {
@@ -397,6 +456,11 @@ export class FileBuffer {
       // Input may begin while the fresh disk revision is being read. Refusing
       // that save must also preserve the conflict and original save baseline.
       if (this.recoveryBlocked || this.disposed || this.saving || this.inputInterrupted || this.inputPending) return false;
+      // Validate the current candidate before consuming the conflict choice.
+      // It may have grown past the edit limit while the original read was in
+      // flight. No reviewed read-only resolution capability bypasses that
+      // limit; refusal must retain the disk/base/draft relationship for retry.
+      encodeFileText(this.raw, this.bom);
       this.baseHash = latest.document.revision.hash; this.disk = null; this.saveReceipt = null; this.writeRequired = true;
       this.version++; this.lastCheckpoint = null;
       return await this.save();
@@ -427,13 +491,20 @@ export class FileBuffer {
   async useDisk(): Promise<boolean> {
     if(this.pptx)return this.pptx.useDisk();
     if (this.office) return this.office.useDisk();
+    if (this.disposed || this.sourceUnavailable || this.saving || this.inputPending) return false;
+    const editor = this.editor, version = this.version, file = this.file, disk = this.disk, receipt = this.saveReceipt;
+    const draftId = this.draftId, interrupted = this.inputInterrupted, refreshSequence = this.refreshSequence;
+    const current = () => !this.disposed && !this.sourceUnavailable && !this.saving && !this.inputPending
+      && this.editor === editor && this.version === version && this.file === file && this.disk === disk
+      && this.saveReceipt === receipt && this.draftId === draftId && this.inputInterrupted === interrupted;
     try {
-      const read = await this.api.read(this.file.ref);
-      if (this.disposed) return false;
-      await this.discardDraft();
-      if (this.disposed) return false;
+      const read = await this.api.read(file.ref);
+      if (!current() || !await this.discardTextDraft(current) || !current()) return false;
+      // Cancel reads older than this choice. A watch started while it waited
+      // may carry newer disk bytes and must still update the clean document.
+      if (this.refreshSequence === refreshSequence) this.refreshSequence++;
       this.install(read); this.version++; this.savedVersion = this.version; this.saveReceipt = null; this.saveError = ''; this.changed(); return true;
-    } catch (error) { if (!this.disposed) { this.loadError = message(error); this.changed(); } return false; }
+    } catch (error) { if (current()) { this.loadError = message(error); this.changed(); } return false; }
   }
   async restoreDraft(id: string): Promise<void> {
     if (this.disposed) return;
@@ -490,8 +561,15 @@ export class FileBuffer {
   async discardDraft(): Promise<void> {
     if(this.pptx)return this.pptx.discardDraft();
     if (this.office) return this.office.discardDraft();
+    await this.discardTextDraft();
+  }
+  private async discardTextDraft(current: () => boolean = () => true): Promise<boolean> {
+    if (!current()) return false;
     clearTimeout(this.checkpointTimer); clearTimeout(this.saveTimer);
     if (this.lastCheckpoint) await this.lastCheckpoint.promise.catch(() => undefined);
+    // An explicit disk choice only owns the input present when it was made.
+    // A checkpoint reply must not let it discard a newer edit's recovery data.
+    if (!current()) return false;
     if (this.lastDurableCheckpoint) {
       const receipt = this.lastDurableCheckpoint;
       const result = await this.api.resolveDraft({ ref: this.file.ref, draftId: this.draftId, bufferVersion: receipt.bufferVersion, hash: receipt.hash, action: 'discard' });
@@ -499,6 +577,7 @@ export class FileBuffer {
     }
     // Deliberately retain any save operation's displaced/current recovery
     // material. Discard here only resolves this editor checkpoint.
+    return current();
   }
   async prepareClose(action: 'save' | 'discard'): Promise<boolean> {
     if(this.pptx)return this.pptx.prepareClose(action);
@@ -518,11 +597,13 @@ export class FileBuffer {
   invalidateSource(reason: string): void {
     if (this.disposed) return;
     this.sourceUnavailable = reason; this.saveError = reason;
+    this.office?.invalidateSource();this.pptx?.invalidateSource();
     clearTimeout(this.saveTimer); this.changed();
   }
   /** The workspace has verified the original physical root before calling.
    * Renew authority without replacing manual text/history with disk content. */
   async reconnectSource(file: FileDocument, newDraft = false): Promise<void> {
+    if(this.office){await this.office.reconnectSource(file,newDraft);return;}
     let accepted = false;
     try {
       if (this.disposed || this.saving || this.inputPending || this.inputInterrupted || this.recoveryBlocked || !this.editor) throw new Error('当前文档仍有输入、保存或恢复状态待处理；原草稿保持独立');

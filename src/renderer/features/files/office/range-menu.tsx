@@ -2,7 +2,8 @@ import { useEffect,useRef,useState,type ReactElement,type RefObject } from 'reac
 import { ContextMenu } from '@base-ui/react/context-menu';
 import type { OfficeRangeAction } from '@shared/file-office';
 
-export type RangeCommand=OfficeRangeAction extends infer T ? T extends OfficeRangeAction ? Omit<T,'sheetId'|'range'> : never : never;
+type RangedAction=Exclude<OfficeRangeAction,{type:'drawing-text'}>;
+export type RangeCommand=RangedAction extends infer T ? T extends RangedAction ? Omit<T,'sheetId'|'range'> : never : never;
 export function OfficeRangeMenu({children,enabled,canEdit,container,beforeOpen,onAction}:{children:ReactElement;enabled:boolean;canEdit:boolean;container:RefObject<HTMLElement|null>;beforeOpen(target:EventTarget|null):Promise<boolean>;onAction(action:RangeCommand):void}) {
   const [open,setOpen]=useState(false),generation=useRef(0);
   useEffect(()=>()=>{generation.current++;},[]);
@@ -15,8 +16,8 @@ export function OfficeRangeMenu({children,enabled,canEdit,container,beforeOpen,o
     void beforeOpen(details.event.target).then(ok=>{if(ok && generation.current === request)setOpen(true);});
   }}>
     <ContextMenu.Trigger render={children} onKeyDown={event=>{
-      if(!enabled || event.nativeEvent.isComposing || event.keyCode === 229 || (event.target as HTMLElement).closest('input,textarea'))return;
-      if(event.key === 'ContextMenu' || event.key === 'F10' && event.shiftKey) {
+      if(!enabled || event.nativeEvent.isComposing || event.keyCode === 229 || event.metaKey || event.ctrlKey || event.altKey || (event.target as HTMLElement).closest('input,textarea'))return;
+      if(event.key === '/' || event.key === 'ContextMenu' || event.key === 'F10' && event.shiftKey) {
         event.preventDefault();event.stopPropagation();
         const active=event.currentTarget.querySelector('[data-active=true]') ?? event.currentTarget,box=active.getBoundingClientRect();
         active.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,clientX:box.left+box.width/2,clientY:box.bottom}));

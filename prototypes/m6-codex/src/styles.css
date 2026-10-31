@@ -16,6 +16,8 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 640px; height: 100dvh; overflow: hidden; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--text); }
+/* Match the App: native minimum sizes are measured before user UI zoom. */
+body:has(.m9-active) { min-width: 0; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
 button:disabled { cursor: default; opacity: .45; }

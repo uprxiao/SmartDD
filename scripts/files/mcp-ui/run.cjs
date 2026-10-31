@@ -17,6 +17,32 @@ async function test(name,fn){if(process.env.SMARTDD_MCP_UI_CASE&&!name.includes(
 async function windowFixture(){const parent=new BrowserWindow({show:false,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});await parent.loadURL('about:blank');return parent}
 function fixtureHost(html){const abort=new AbortController();return{abort,ui:new FileMcpUiService(()=>({html,signal:abort.signal,assert:()=>abort.signal.throwIfAborted()}))}}
 app.whenReady().then(async()=>{
+ await test('S07 real SDK stays responsive through native heartbeat without inspector',async()=>{
+  const parent=await windowFixture(),html=readFileSync(process.env.SMARTDD_MCP_S07_HTML,'utf8'),{ui}=fixtureHost(html),events=[],failures=[];
+  const diagnostics={events,metrics:[],stacks:[],console:[]};let interval;const x=input(),session={...x,presentation:'mcp-app',initialArguments:{uri:x.uri,rootUri:'file:///s07-root',foreignUri:'file:///s07-foreign'},initialResult:{content:[{type:'text',text:'synthetic heartbeat I only'}],structuredContent:{probe:{credentialEnvPresent:false,configReadable:false}}}};
+  const bridge=createViewerAppBridge(session,{readViewer:async()=>{throw Error('No resource read expected')},viewerTool:async()=>{throw Error('No tool expected')}},'light',error=>failures.push(String(error)));
+  const transport={start:async()=>{},close:async()=>transport.onclose?.(),send:async payload=>ui.send('owner',x,payload)};
+  try{
+   interval=setInterval(()=>diagnostics.metrics.push({at:Date.now(),processes:app.getAppMetrics().map(m=>({pid:m.pid,type:m.type,cpu:m.cpu}))}),200);parent.setTitle('I · S07 heartbeat · isolated');parent.show();await bridge.connect(transport);await ui.open('owner',x,parent,event=>{events.push(event);if(event.error)failures.push(event.error);else transport.onmessage?.(event.payload)});ui.bounds('owner',{id:x.id,x:0,y:0,width:700,height:500,visible:true});
+   const nativeView=parent.contentView.children[0];nativeView.webContents.on('console-message',(_event,...args)=>diagnostics.console.push({at:Date.now(),args}));
+   await wait(()=>events.some(e=>e.payload?.method==='ui/notifications/initialized')||failures.length,12000);for(const f of nativeView.webContents.mainFrame.framesInSubtree)try{void f.collectJavaScriptCallStack().then(stack=>diagnostics.stacks.push({url:f.url,stack:String(stack)}),error=>diagnostics.stacks.push({error:String(error)}));}catch{}assert.deepEqual(failures,[]);
+   const view=parent.contentView.children[0],metrics=[],report=()=>events.filter(e=>e.payload?.params?.data?.phase==='S07-fixture-report').at(-1)?.payload.params.data;
+   const init=Date.now();await wait(()=>report()?.state==='Ready'||failures.length,12000);assert.deepEqual(failures,[]);assert.equal(report()?.state,'Ready');
+   const start=Date.now();while(Date.now()-start<8200){metrics.push({elapsed:Date.now()-start,processes:app.getAppMetrics().map(m=>({pid:m.pid,type:m.type,cpu:m.cpu,memory:m.memory}))});if(failures.length)break;await pause(200)}
+   const observed={readyMs:Date.now()-init,aliveMs:Date.now()-start,report:report(),failures,methods:events.map(e=>e.payload?.method),metrics,boundary:'I: actual native WebContentsView, public App SDK and production bridge with explicit synthetic session; no inspector, no external child executeJavaScript, no packaged App A claim, no UI interactions or capability requests.'};writeFileSync(join(base,'heartbeat-observed.json'),JSON.stringify(observed,null,2)+'\n');assert.deepEqual(failures,[]);return observed;
+  }finally{clearInterval(interval);diagnostics.failures=failures;writeFileSync(join(base,'diagnostics.json'),JSON.stringify(diagnostics,null,2)+'\n');await bridge.close();ui.closeOwner('owner');parent.destroy()}
+ });
+ await test('S07 actual native outer source/origin filters reject controlled forged message events',async()=>{
+  const parent=await windowFixture(),events=[],{ui}=fixtureHost(probeHtml(initialized+"parent.postMessage({jsonrpc:'2.0',method:'s07/actual-child'},'*');"));
+  try{
+   const x=input();await ui.open('owner',x,parent,event=>events.push(event));await wait(()=>events.some(e=>e.payload?.method==='s07/actual-child'));
+   const view=parent.contentView.children[0],contents=view.webContents,before=events.length;
+   const injected=await contents.executeJavaScript(`(()=>{const child=document.querySelector('iframe');const send=(source,origin,method,jsonrpc='2.0')=>dispatchEvent(new MessageEvent('message',{source,origin,data:{jsonrpc,method}}));send(window,'null','s07/wrong-source');send(child.contentWindow,'https://foreign.invalid','s07/wrong-origin');send(child.contentWindow,'null','s07/wrong-jsonrpc','1.0');return{sandbox:child.getAttribute('sandbox'),referrer:child.referrerPolicy}})()`);
+   const child=contents.mainFrame.framesInSubtree.find(frame=>frame.url.startsWith('blob:'));assert.ok(child);await child.executeJavaScript("parent.postMessage({jsonrpc:'2.0',method:'s07/actual-barrier'},'*')");await wait(()=>events.some(e=>e.payload?.method==='s07/actual-barrier'));
+   assert.ok(!events.some(e=>/^s07\/wrong-/.test(e.payload?.method||'')));assert.equal(injected.sandbox,'allow-scripts');assert.equal(injected.referrer,'no-referrer');assert.equal(events.length,before+1);ui.close('owner',x.id);assert.equal(parent.contentView.children.length,0);
+   return{injected,forwarded:events.map(e=>e.payload?.method),childrenAfterClose:0,boundary:'I: actual production native WebContentsView and outer document. Forged MessageEvents are explicit synthetic transport fault inputs, never claimed trusted UI or normal A. Positive/barrier messages originate in actual opaque child.'};
+  }finally{ui.closeOwner('owner');parent.destroy()}
+ });
  await test('Actual registered MCP SDK handshake, input-before-result, native byte read, bounded tool and forbidden capabilities',async()=>{
   const project=join(base,'project'),userdata=join(base,'files-userdata');mkdirSync(project);mkdirSync(userdata);const path=join(project,'中文.foo');writeFileSync(path,'Native source 中文🙂\r\n');const before={sha256:digest(path),ino:statSync(path).ino,mtime:statSync(path).mtimeMs};
   const brokerPath=process.env.SMARTDD_FILES_NATIVE_PATH;if(!brokerPath)throw Error('SMARTDD_FILES_NATIVE_PATH must select an already verified broker');report.broker={path:brokerPath,sha256:digest(brokerPath)};

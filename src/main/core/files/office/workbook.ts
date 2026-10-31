@@ -1,5 +1,5 @@
 import { FileError } from '@shared/files';
-import { OFFICE_LIMITS, type OfficeCell, type OfficeCellText, type OfficeRange, type OfficeSheet, type OfficeSheetWindow, type OfficeWorkbookInfo } from '@shared/file-office';
+import { OFFICE_LIMITS, type OfficeCell, type OfficeCellText, type OfficeRange, type OfficeSheet, type OfficeSheetWindow, type OfficeWorkbookInfo, type OfficeDrawingImageData } from '@shared/file-office';
 import type { OfficePackage } from './package';
 import { OfficeRelationships, OFFICE_REL, STRICT_REL, relationshipKind } from './relationships';
 import { OfficeXml, type OfficeXmlNode, attribute, children } from './xml';
@@ -10,6 +10,11 @@ import { officeColumnPixels } from '@shared/office-measure';
 import {OfficeValidations} from './validation';
 import {OfficeConditionals} from './conditional';
 import {OfficeFormCheckboxes} from './checkbox';
+import {hasUnavailableOfficeDrawing} from './drawing-preview';
+import {officeDrawingImages} from './drawing-images';
+import {officeDrawingVectors} from './drawing-vectors';
+import {validatePptxImageContainer} from './pptx-image-container';
+import {XLSX_DRAWING_PREVIEW_NOTICE} from '@shared/office-preview-notices.mjs';
 
 const SHEET_NS = new Set(['http://schemas.openxmlformats.org/spreadsheetml/2006/main', 'http://purl.oclc.org/ooxml/spreadsheetml/main']);
 function invalid(message: string): never { throw new FileError('INVALID_INPUT', message); }
@@ -51,7 +56,7 @@ function richRuns(node:OfficeXmlNode,styles:OfficeStyles):OfficeCell['runs'] {
     const font=children(child,'rPr')[0];return [{text:children(child,'t').map(t=>decodeOfficeString(t.text)).join(''),...(font ? {font:styles.richFont(font)} : {})}];
   });
 }
-interface SheetIndex { info: OfficeSheet; part: string; xml: OfficeXml; cells: Map<string, OfficeCell>; nodes: Map<string, OfficeXmlNode>; merges: OfficeRange[];rowStyles:Map<number,number>;columnStyles:Map<number,number>;validations:OfficeValidations;conditionals:OfficeConditionals;checkboxes:OfficeFormCheckboxes }
+interface SheetIndex { info: OfficeSheet; part: string; xml: OfficeXml; cells: Map<string, OfficeCell>; nodes: Map<string, OfficeXmlNode>; merges: OfficeRange[];rowStyles:Map<number,number>;columnStyles:Map<number,number>;validations:OfficeValidations;conditionals:OfficeConditionals;checkboxes:OfficeFormCheckboxes;objects:NonNullable<OfficeSheetWindow['objects']>;drawingWarning?:string }
 
 /** A projection of real original OOXML, never a simplified package replacement.
  * This object stays in the Worker; only a bounded viewport crosses IPC. */
@@ -154,14 +159,45 @@ export class OfficeWorkbook {
       const dimension = children(xml.root, 'dimension')[0];
       if (dimension && attribute(dimension, 'ref')) { const range = officeRange(attribute(dimension, 'ref')!); rows = Math.max(rows, range.lastRow + 1); columns = Math.max(columns, range.lastColumn + 1); }
       const checkboxes=new OfficeFormCheckboxes(packageData,this.graph,relation.part,xml,name!,cells);
+      const objects=[...officeDrawingImages(packageData,this.graph,relation.part,xml),...officeDrawingVectors(packageData,this.graph,relation.part,xml)];
+      // Drawings may extend beyond the last stored cell. Keep those positions
+      // reachable without altering the worksheet's original used-range XML.
+      const rowMinimum=rowSizes.reduce((minimum,value)=>value.pixels>0 ? Math.min(minimum,value.pixels) : minimum,defaultRowHeight);
+      const columnMinimum=columnSizes.reduce((minimum,value)=>value.pixels>0 ? Math.min(minimum,value.pixels) : minimum,defaultColumnWidth);
+      for(const {anchor} of objects){
+        if(anchor.kind==='twoCellAnchor'){rows=Math.max(rows,anchor.to.row+1);columns=Math.max(columns,anchor.to.column+1);}
+        else {
+          const r=anchor.kind==='oneCellAnchor' ? anchor.from.row : 0,c=anchor.kind==='oneCellAnchor' ? anchor.from.column : 0;
+          const x=anchor.kind==='oneCellAnchor' ? anchor.from.x : anchor.position.x,y=anchor.kind==='oneCellAnchor' ? anchor.from.y : anchor.position.y;
+          rows=Math.max(rows,Math.min(1048576,r+Math.ceil((y+anchor.extent.height)/Math.max(.1,rowMinimum))+1));
+          columns=Math.max(columns,Math.min(16384,c+Math.ceil((x+anchor.extent.width)/Math.max(.1,columnMinimum))+1));
+        }
+      }
+      const drawingWarning=hasUnavailableOfficeDrawing(packageData,this.graph,relation.part,xml,checkboxes,objects) ? XLSX_DRAWING_PREVIEW_NOTICE : undefined;
       for(const {value:control} of checkboxes.controls){rows=Math.max(rows,control.to.row+1);columns=Math.max(columns,control.to.column+1);}
       const info: OfficeSheet = { id: id!, name: name!, hidden: hidden as OfficeSheet['hidden'], rows, columns, protected: children(xml.root, 'sheetProtection').some((node) => bool(attribute(node, 'sheet') ?? '1')), defaultRowHeight, defaultColumnWidth, rowSizes, columnSizes };
-      this.sheets.set(id!, { info, xml, part: relation.part, cells, nodes, merges,rowStyles,columnStyles,validations:new OfficeValidations(xml),conditionals:new OfficeConditionals(xml,this.styles),checkboxes });
+      this.sheets.set(id!, { info, xml, part: relation.part, cells, nodes, merges,rowStyles,columnStyles,validations:new OfficeValidations(xml),conditionals:new OfficeConditionals(xml,this.styles),checkboxes,objects,drawingWarning });
     }
     if (!this.sheets.size || ![...this.sheets.values()].some((sheet) => sheet.info.hidden === 'visible')) invalid('工作簿没有可显示的工作表');
     this.info = { kind: this.graph.kind, sheets: [...this.sheets.values()].map((sheet) => ({ ...sheet.info })), date1904: bool(attribute(children(workbook.root, 'workbookPr')[0] ?? workbook.root, 'date1904')), signed: this.graph.signed, externalLinks: [...this.graph.bySource.values()].flat().filter((row) => row.external).length, protected: children(workbook.root, 'workbookProtection').some(node=>bool(attribute(node,'lockStructure'))),normalFont:this.styles.normalFont,fontMetric };
   }
   private sheet(id: string): SheetIndex { return this.sheets.get(id) ?? invalid('工作表已不存在'); }
+  drawingImage(sheetId:string,objectId:string,mediaHash:string):OfficeDrawingImageData {
+    // Select only an image already projected from this sheet's own DrawingML.
+    // Caller-supplied package paths and external media are never accepted.
+    const image=this.sheet(sheetId).objects.find(value=>value.id===objectId);
+    if(!image||image.kind!=='image')throw new FileError('CHANGED','绘图图片已不存在或不属于此工作表');
+    if(image.media.sha256!==mediaHash)throw new FileError('CHANGED','绘图图片内容已改变');
+    if(image.previewUnavailable)throw new FileError('UNSUPPORTED',image.previewUnavailable);
+    const mime=this.graph.contentTypes.get(image.media.part);
+    if(mime!=='image/png' && mime!=='image/jpeg')throw new FileError('UNSUPPORTED','此绘图图片格式暂不可预览，原对象保留');
+    const bytes=this.packageData.read(image.media.part);
+    if(!bytes.length || bytes.length>OFFICE_LIMITS.drawingImageBytes)throw new FileError('TOO_LARGE','绘图图片超过 20 MiB 预览预算，原对象保留');
+    const signature=mime==='image/png' ? bytes.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')) : bytes[0]===255 && bytes[1]===216 && bytes[2]===255;
+    if(!signature)throw new FileError('INVALID_INPUT','绘图图片内容与声明格式不一致，原对象保留');
+    const size=validatePptxImageContainer(bytes,mime);
+    return {id:image.id,sha256:image.media.sha256,mime,...size,bytes:new Uint8Array(bytes)};
+  }
   *storedCells(id:string) {for(const cell of this.sheet(id).cells.values())yield cell;}
   validateCell(id:string,row:number,column:number,input:{type:string;value:string}) {this.sheet(id).validations.assert(row,column,input);}
   synchronizeCheckboxes(changes:Map<string,Uint8Array|null>) {for(const sheet of this.sheets.values())sheet.checkboxes.synchronize(changes);}
@@ -210,6 +246,6 @@ export class OfficeWorkbook {
     for (const row of rowIndices) for (const column of columnIndices) append(row, column);
     for (const merge of merges) if (!rowIndices.includes(merge.firstRow) || !columnIndices.includes(merge.firstColumn)) append(merge.firstRow, merge.firstColumn);
     const checkboxes=sheet.checkboxes.window(rowIndices,columnIndices),controlsWarning=sheet.checkboxes.warnings.length ? '部分表单控件暂未显示，原控件与绑定保留。' : undefined;
-    return { sheetId, startRow, startColumn, rows: rowIndices.length, columns: columnIndices.length, rowIndices, columnIndices, cells, styles, merges: merges.map((merge) => ({ ...merge })),...(checkboxes.length ? {checkboxes} : {}),...(controlsWarning ? {controlsWarning} : {}) };
+    return { sheetId, startRow, startColumn, rows: rowIndices.length, columns: columnIndices.length, rowIndices, columnIndices, cells, styles, merges: merges.map((merge) => ({ ...merge })),...(checkboxes.length ? {checkboxes} : {}),...(sheet.objects.length ? {objects:structuredClone(sheet.objects)} : {}),...(controlsWarning ? {controlsWarning} : {}),...(sheet.drawingWarning ? {drawingWarning:sheet.drawingWarning} : {}) };
   }
 }

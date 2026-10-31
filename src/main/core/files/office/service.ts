@@ -1,4 +1,6 @@
 import { join } from 'node:path';
+import {createHash} from 'node:crypto';
+import {pptxImageBytes,pptxImageReceiptSchema,type PptxImageReceipt,type PptxImageDecoder} from './pptx-image';
 import { z } from 'zod';
 import { FileError, type FileRef, type FileDocument, type FileCheckpointInput, type FileCheckpointReceipt, type FileSaveInput, type FileSaveReceipt, type FileDraftResolution } from '@shared/files';
 import { OFFICE_LIMITS, officeOpenSchema, officeWindowSchema, officeCellSchema, type OfficeOpenInput, type OfficeWindowInput, type OfficeCellInput, type OfficeOpenResult } from '@shared/file-office';
@@ -12,6 +14,9 @@ import { officeSheetSchema, type OfficeSheetInput, type OfficeSheetResult } from
 import { officeRangeInputSchema,officeRangeReadSchema,type OfficeRangeInput,type OfficeRangeReadInput } from '@shared/file-office';
 import type {OfficeMeasureResult} from '@shared/office-measure';
 import { OfficeSaveReplay } from './save-replay';
+import { OfficeBlockedCandidate } from './blocked-candidate';
+import { officeReconnectSchema,type OfficeReconnectInput,type OfficeReconnectResult } from '@shared/file-office';
+import {officeDrawingImageSchema,type OfficeDrawingImageInput} from '@shared/file-office';
 
 export interface OfficeSource {
   name: string; hash: string; size: number; signal: AbortSignal;
@@ -27,13 +32,14 @@ export interface OfficePersistence {
   readDraft(owner:string, ref:FileRef, id:string):Promise<{base64:string; baseHash:string; bufferVersion:number; hash:string; encoding?:string}>;
   refresh(owner:string, ref:FileRef):Promise<FileDocument>;
 }
-interface Document { owner: string; id: string; ref:FileRef; baseHash:string; source: OfficeSource; abort: AbortController; parser?: OfficeParser; releaseSource(): void; ready: boolean; queue:Promise<unknown>; calculation?:OfficeCalculationState; saves:OfficeSaveReplay }
-/** Window + document identity scoped. No renderer bytes, disk path or executable
- * crosses this interface. Views can unmount without losing edits or history. */
+interface Document { owner: string; id: string; ref:FileRef; baseHash:string; source: OfficeSource; abort: AbortController; parser?: OfficeParser; releaseSource(): void; ready: boolean; queue:Promise<unknown>; calculation?:OfficeCalculationState; saves:OfficeSaveReplay;blocked:OfficeBlockedCandidate }
+/** Window + document identity scoped. Renderer image content requires a native
+ * decode receipt; no renderer path grants file authority. Views can unmount
+ * without losing edits or history. */
 export class FileOfficeService {
   private readonly documents = new Map<string, Document>();
   private readonly cancelled = new Map<string, number>();
-  constructor(private readonly resolve: (owner: string, ref: FileRef) => OfficeSource, private readonly workerPath = join(__dirname, 'm9-office-document.js'), private readonly jobs: FileHeavyJobs = fileHeavyJobs, private readonly engine?: Pick<OfficeCalculationEngine, 'calculate' | 'recover' | 'dispose'> & Partial<Pick<OfficeCalculationEngine,'validateFormulas'|'measure'>>, private readonly persistence?:OfficePersistence) {}
+  constructor(private readonly resolve: (owner: string, ref: FileRef) => OfficeSource, private readonly workerPath = join(__dirname, 'm9-office-document.js'), private readonly jobs: FileHeavyJobs = fileHeavyJobs, private readonly engine?: Pick<OfficeCalculationEngine, 'calculate' | 'recover' | 'dispose'> & Partial<Pick<OfficeCalculationEngine,'validateFormulas'|'measure'>>, private readonly persistence?:OfficePersistence,private readonly decodeImage?:PptxImageDecoder) {}
   recover(): Promise<void> { return this.engine?.recover() ?? Promise.resolve(); }
   get activeDocuments(): number { return this.documents.size; }
   async open(owner: string, raw: OfficeOpenInput): Promise<OfficeOpenResult> {
@@ -48,7 +54,7 @@ export class FileOfficeService {
     if (this.documents.size >= OFFICE_LIMITS.sessions) throw new FileError('TOO_LARGE', 'Office 活动文档数量已达上限');
     const abort = new AbortController();
     const closed=()=>this.drop(record);
-    const record: Document = { owner, id: input.id, ref:input.ref, baseHash:source.hash, source, abort, releaseSource: () => {source.signal.removeEventListener('abort', invalidated);source.lifetime?.removeEventListener('abort',closed);}, ready: false, queue:Promise.resolve(), saves:new OfficeSaveReplay() };
+    const record: Document = { owner, id: input.id, ref:input.ref, baseHash:source.hash, source, abort, releaseSource: () => {source.signal.removeEventListener('abort', invalidated);source.lifetime?.removeEventListener('abort',closed);}, ready: false, queue:Promise.resolve(), saves:new OfficeSaveReplay(),blocked:new OfficeBlockedCandidate() };
     // Ready local models must survive a disconnected source so they can still
     // checkpoint. Opening and native calculation use the source cancellation.
     const invalidated = () => { if (!record.ready) this.drop(record); }; source.signal.addEventListener('abort', invalidated, { once: true });
@@ -119,14 +125,26 @@ export class FileOfficeService {
       this.require(owner, input.id); return result;
     } catch (error) { this.failedRequest(record, error); throw error; }
   }
+  async drawingImage(owner:string,raw:OfficeDrawingImageInput) {
+    const input=officeDrawingImageSchema.parse(raw),record=this.require(owner,input.id);
+    try {
+      const result=await this.jobs.run(record.abort.signal,()=>record.parser!.drawingImage(input.sheetId,input.objectId,input.mediaHash,record.abort.signal));
+      this.require(owner,input.id);return result;
+    }catch(error){this.failedRequest(record,error);throw error;}
+  }
   private serialize<T>(record:Document, run:()=>Promise<T>):Promise<T> {
     const result = record.queue.catch(()=>undefined).then(()=>{ this.require(record.owner,record.id); return run(); });
     record.queue = result; return result;
   }
+  private assertWritable(record:Document):void {
+    // Permission metadata is refreshed independently of the retained model.
+    // Resolve the current issued ref without replacing its parser or base hash.
+    if(this.resolve(record.owner,record.ref).writable===false)throw new FileError('PERMISSION','此文件为只读');
+  }
   async edit(owner:string, raw:OfficeEditInput):Promise<OfficeMutationResult> {
     const input=officeEditSchema.parse(raw), record=this.require(owner,input.id);
     return this.serialize(record,async()=>{
-      if (record.source.writable === false) throw new FileError('PERMISSION','此文件为只读');
+      this.assertWritable(record);
       const before=await record.parser!.state(record.abort.signal);
       if (before.version !== input.version) throw new FileError('CHANGED','工作簿编辑版本已改变');
       const parsed=parseOfficeCellInput(input.edit.text);
@@ -147,6 +165,7 @@ export class FileOfficeService {
   async history(owner:string, raw:OfficeHistoryInput):Promise<OfficeMutationResult> {
     const input=officeHistorySchema.parse(raw), record=this.require(owner,input.id);
     return this.serialize(record,async()=>{
+      this.assertWritable(record);
       const state=await this.jobs.run(record.abort.signal,()=>record.parser!.history(input.version,input.direction,record.abort.signal));
       this.require(owner,input.id); record.calculation={state:'cached',message:'已恢复编辑历史；公式结果可重新计算。'};
       return {state,calculation:record.calculation};
@@ -155,7 +174,7 @@ export class FileOfficeService {
   async sheetAction(owner:string,raw:OfficeSheetInput):Promise<OfficeSheetResult> {
     const input=officeSheetSchema.parse(raw),record=this.require(owner,input.id);
     return this.serialize(record,async()=>{
-      if (record.source.writable === false) throw new FileError('PERMISSION','此文件为只读');
+      this.assertWritable(record);
       const before=await record.parser!.state(record.abort.signal);
       const result=await this.jobs.run(record.abort.signal,()=>record.parser!.sheetAction(input.version,input.action,record.abort.signal));
       this.require(owner,input.id);
@@ -170,8 +189,16 @@ export class FileOfficeService {
   async rangeAction(owner:string,raw:OfficeRangeInput):Promise<OfficeMutationResult> {
     const input=officeRangeInputSchema.parse(raw),record=this.require(owner,input.id);
     return this.serialize(record,async()=>{
-      if(record.source.writable === false)throw new FileError('PERMISSION','此文件为只读');
+      this.assertWritable(record);
       let measured:OfficeMeasureResult|undefined;
+      let imageReceipt:PptxImageReceipt|undefined;
+      if(input.action.type==='drawing-insert' && input.action.drawing.kind==='image'){
+        if(!this.decodeImage)throw new FileError('UNSUPPORTED','本机图片解码器不可用，未改变工作簿');
+        const image=input.action.drawing.image,bytes=pptxImageBytes(image);
+        const dimensions=await this.jobs.run(record.abort.signal,()=>this.decodeImage!(image,AbortSignal.any([record.abort.signal,record.source.signal])));
+        this.require(owner,input.id);this.assertWritable(record);
+        imageReceipt=pptxImageReceiptSchema.parse({hash:createHash('sha256').update(bytes).digest('hex'),...dimensions});
+      }
       if(input.action.type==='fit') {
         if(!this.engine?.measure)throw new FileError('UNSUPPORTED','字体测量暂不可用，原尺寸保留');
         const state=await record.parser!.state(record.abort.signal);
@@ -183,14 +210,14 @@ export class FileOfficeService {
         measured=await this.engine.measure(request,record.abort.signal);this.require(owner,input.id);
         if(measured.digitWidth!==metric.digitWidth)throw new FileError('CHANGED','测量期间字体发生变化，请重试');
       }
-      const candidate=await this.jobs.run(record.abort.signal,()=>record.parser!.prepareRange(input.version,input.action,record.abort.signal,measured));
+      const candidate=await this.jobs.run(record.abort.signal,()=>record.parser!.prepareRange(input.version,input.action,record.abort.signal,measured,imageReceipt));
       try {
         if(candidate.formulas.length) {
           if(!this.engine?.validateFormulas || !candidate.bytes)throw new FileError('UNSUPPORTED','公式校验暂不可用，选区修改尚未应用');
           await this.engine.validateFormulas(candidate.bytes,candidate.formulas,record.abort.signal);this.require(owner,input.id);
         }
         const state=await this.jobs.run(record.abort.signal,()=>record.parser!.commitRange(input.version,candidate.token,record.abort.signal));this.require(owner,input.id);
-        if(state.version !== input.version && !(input.action.type === 'conditional' || input.action.type === 'validation' || input.action.type === 'fit' || input.action.type === 'format' || input.action.type === 'merge' || input.action.type === 'unmerge' || input.action.type === 'clear' && input.action.mode === 'format'))record.calculation={state:'cached',message:'选区内容已修改，公式结果等待重新计算。'};
+        if(state.version !== input.version && !(input.action.type === 'drawing-text' || input.action.type === 'drawing-insert' || input.action.type === 'conditional' || input.action.type === 'validation' || input.action.type === 'fit' || input.action.type === 'format' || input.action.type === 'merge' || input.action.type === 'unmerge' || input.action.type === 'clear' && input.action.mode === 'format'))record.calculation={state:'cached',message:'选区内容已修改，公式结果等待重新计算。'};
         return {state,calculation:record.calculation};
       } finally {await record.parser!.cancelRange(candidate.token,record.abort.signal).catch(()=>undefined);}
     });
@@ -223,8 +250,11 @@ export class FileOfficeService {
   }
   private storage():OfficePersistence { if (!this.persistence) throw new FileError('UNSUPPORTED','Office 持久化服务不可用'); return this.persistence; }
   private async checkpointRecord(record:Document,input:OfficeCheckpointInput,bytes?:Uint8Array):Promise<FileCheckpointReceipt> {
-    const snapshot=bytes ?? (await record.parser!.materialize(input.version,record.abort.signal)).bytes;
-    return this.storage().checkpoint(record.owner,{ref:record.ref,draftId:input.draftId,bufferVersion:input.bufferVersion,baseHash:record.baseHash,base64:encodeOfficeDraft(snapshot,input.pending).toString('base64'),encoding:'ooxml-draft',bom:false});
+    const materialized=await this.jobs.run(record.abort.signal,()=>record.parser!.materialize(input.version,record.abort.signal));
+    const snapshot=bytes ?? materialized.bytes;
+    const report=await this.jobs.run(record.abort.signal,()=>record.parser!.verify(input.version,snapshot,materialized.hash,record.abort.signal));
+    if(report.total)throw new FileError('IO','草稿保真校验失败，当前修改仍保留在内存；原件未改变');
+    return this.storage().checkpoint(record.owner,{ref:record.ref,draftId:input.draftId,bufferVersion:input.bufferVersion,baseHash:record.baseHash,base64:encodeOfficeDraft(snapshot,input.pending,input.pendingDrawing).toString('base64'),encoding:'ooxml-draft',bom:false});
   }
   async checkpoint(owner:string, raw:OfficeCheckpointInput):Promise<FileCheckpointReceipt> {
     const input=officeCheckpointSchema.parse(raw),record=this.require(owner,input.id);
@@ -235,8 +265,24 @@ export class FileOfficeService {
     return this.serialize(record,async()=>{
       const replay=record.saves.get(input);
       if (replay) return {state:await record.parser!.state(record.abort.signal),calculation:record.calculation,...replay};
-      if (record.source.writable === false) throw new FileError('PERMISSION','此文件为只读');
+      this.assertWritable(record);
+      const model=await record.parser!.state(record.abort.signal);
+      if(model.workbook.signed)throw new FileError('UNSUPPORTED','此文件包含数字签名，当前只读；编辑会使签名失效');
+      if(model.workbook.kind!=='xlsx')throw new FileError('UNSUPPORTED','此工作簿类型只读');
       const snapshot=await this.jobs.run(record.abort.signal,()=>record.parser!.materialize(input.version,record.abort.signal));
+      const fidelity=await this.jobs.run(record.abort.signal,()=>record.parser!.verify(input.version,snapshot.bytes,snapshot.hash,record.abort.signal));
+      this.require(owner,input.id);
+      if(fidelity.total){
+        const failure=record.blocked.block(input.version,snapshot.bytes,fidelity);
+        let checkpoint:FileCheckpointReceipt|undefined,draftError:string|undefined;
+        try{checkpoint=await this.checkpointRecord(record,input);}
+        catch(error){draftError=`当前修改仍保留在内存，草稿未确认写入磁盘：${error instanceof Error?error.message:String(error)}`;}
+        this.require(owner,input.id);
+        const receipt={opId:input.opId,bufferVersion:input.bufferVersion,state:'failed' as const,message:'保真校验失败，已阻止覆盖原文件；请核对差异。'};
+        const outcome={receipt,checkpoint,draftError,fidelity:failure};record.saves.remember(input,outcome);
+        return {state:await record.parser!.state(record.abort.signal),calculation:record.calculation,...outcome};
+      }
+      record.blocked.clear();
       const checkpoint=await this.checkpointRecord(record,input,snapshot.bytes);
       this.require(owner,input.id); record.source.assert();
       // A restored draft can predate input validation. Independently validate
@@ -265,6 +311,13 @@ export class FileOfficeService {
       return {state:await record.parser!.state(record.abort.signal),calculation:record.calculation,...outcome};
     });
   }
+  async lossyCandidate(owner:string,id:string,token:string){
+    const record=this.require(owner,id);
+    return this.serialize(record,async()=>{
+      const state=await record.parser!.state(record.abort.signal);this.require(owner,id);record.source.assert();
+      return {ref:record.ref,baseHash:record.baseHash,bytes:record.blocked.select(token,state.version)};
+    });
+  }
   async restore(owner:string, raw:OfficeRestoreInput) {
     const input=officeRestoreSchema.parse(raw),record=this.require(owner,input.id);
     return this.serialize(record,async()=>{
@@ -273,7 +326,24 @@ export class FileOfficeService {
       const draft=decodeOfficeDraft(Buffer.from(recovered.base64,'base64'));
       const state=await this.jobs.run(record.abort.signal,()=>record.parser!.restore(input.version,draft.bytes,record.abort.signal));
       this.require(owner,input.id); record.baseHash=recovered.baseHash; record.calculation={state:'cached',message:'已恢复草稿，公式结果可重新计算。'};
-      return {state,calculation:record.calculation,baseHash:recovered.baseHash,bufferVersion:recovered.bufferVersion,hash:recovered.hash,pending:draft.pending};
+      return {state,calculation:record.calculation,baseHash:recovered.baseHash,bufferVersion:recovered.bufferVersion,hash:recovered.hash,pending:draft.pending,pendingDrawing:draft.pendingDrawing};
+    });
+  }
+  async reconnect(owner:string,raw:OfficeReconnectInput,authorize:(old:FileRef)=>Promise<FileDocument>):Promise<OfficeReconnectResult> {
+    const input=officeReconnectSchema.parse(raw),record=this.require(owner,input.id);
+    return this.serialize(record,async()=>{
+      const state=await record.parser!.state(record.abort.signal);this.require(owner,input.id);
+      if(state.version!==input.version)throw new FileError('CHANGED','工作簿编辑版本已改变');
+      const previous=record.ref,document=await authorize(previous);this.require(owner,input.id);
+      const source=this.resolve(owner,input.ref);source.assert();
+      if(source.signal.aborted || source.lifetime?.aborted)throw new FileError('STALE_ROOT','工作簿的新来源已失效');
+      if(document.ref.id!==input.ref.id || document.ref.lease!==input.ref.lease || document.ref.generation!==input.ref.generation || document.revision.hash!==source.hash)throw new FileError('CHANGED','重新关联期间来源已改变');
+      record.releaseSource();record.ref={...input.ref};record.source=source;
+      const invalidated=()=>{if(!record.ready)this.drop(record);},closed=()=>this.drop(record);
+      source.signal.addEventListener('abort',invalidated,{once:true});source.lifetime?.addEventListener('abort',closed,{once:true});
+      record.releaseSource=()=>{source.signal.removeEventListener('abort',invalidated);source.lifetime?.removeEventListener('abort',closed);};
+      record.blocked.clear();
+      return {document,state,calculation:record.calculation,baseHash:record.baseHash};
     });
   }
   async rebase(owner:string,raw:OfficeRecalculateInput):Promise<FileDocument> {
@@ -281,7 +351,7 @@ export class FileOfficeService {
     return this.serialize(record,async()=>{
       if ((await record.parser!.state(record.abort.signal)).version !== input.version) throw new FileError('CHANGED','工作簿编辑版本已改变');
       const document=await this.storage().refresh(owner,record.ref); this.require(owner,input.id);
-      record.baseHash=document.revision.hash; record.source.writable=document.writable; return document;
+      record.baseHash=document.revision.hash; record.source.writable=document.writable;record.blocked.clear(); return document;
     });
   }
   close(owner: string, id: string): void {

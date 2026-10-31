@@ -28,6 +28,7 @@ import { createFileController } from './core/files/controller';
 import type { FileService } from './core/files/file-service';
 import { FileWorkspacePersistence } from './core/files/workspace-persistence';
 import { FileTerminalService } from './core/files/terminal-context';
+import { TerminalImageCache } from './core/files/terminal-image-cache';
 
 export interface RpcDeps {
   files: FileService;
@@ -51,11 +52,14 @@ export interface RpcDeps {
 }
 
 export function createRpcRouter(d: RpcDeps) {
+  const imageCache = new TerminalImageCache();
+  d.ptys.on('exit', (ptyId: string) => imageCache.releasePty(ptyId));
   return createRPCRouter({
     files: createFileController(d.files, d.trustedRenderer, new FileWorkspacePersistence(d.client.db), new FileTerminalService({
       access: d.ptyAccess, roots: d.files.roots, taskProject: (taskId) => d.tasks.get(taskId).projectId,
       source: (owner, target, identity) => d.files.terminalSource(owner, target, identity),
       bracketedPaste: (ptyId) => d.ptys.bracketedPaste(ptyId), write: (ptyId, data) => d.ptys.writeControlled(ptyId, data),
+      images: { capability: (taskId, ptyId) => d.tasks.imageInput(taskId, ptyId), source: (owner, ref, baseHash) => d.files.terminalImageSource(owner, ref, baseHash), cache: imageCache },
     })),
     app: createRPCController({
       getInfo: () => ({

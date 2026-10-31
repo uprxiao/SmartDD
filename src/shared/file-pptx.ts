@@ -1,5 +1,6 @@
 import { pptxAppearanceSchema } from './file-pptx-appearance';
 import { z } from 'zod';
+import type { OfficeFidelityFailure } from './file-office-fidelity';
 import type { OfficePagesInfo } from './file-office-pages';
 import type { OfficePagesResult } from './file-office-pages';
 import { officeRecalculateSchema, officeHistorySchema, officeSaveSchema, officeRestoreSchema } from './file-office';
@@ -22,6 +23,7 @@ export const pptxActionSchema=z.discriminatedUnion('type',[
   z.object({type:z.literal('background'),slideId,color:z.string().regex(/^#[a-f0-9]{6}$/i)}).strict(),
   z.object({type:z.literal('insert-element'),slideId,kind:z.enum(['text','shape','table']),shape:z.enum(PPTX_SHAPES).optional()}).strict(),
   z.object({type:z.literal('image-insert'),slideId,image:pptxImageSchema}).strict(),
+  z.object({type:z.literal('image-placeholder'),slideId,frame:z.object({x:coordinate.min(0),y:coordinate.min(0),width:extent,height:extent}).strict()}).strict(),
   z.object({type:z.literal('image-replace'),slideId,elementId,image:pptxImageSchema}).strict(),
   z.object({type:z.literal('chart-values'),slideId,elementId,values:pptxChartValuesSchema}).strict(),
   z.object({type:z.literal('chart-options'),slideId,elementId,patch:pptxChartOptionsSchema}).strict(),
@@ -67,5 +69,5 @@ export type PptxSaveInput=z.infer<typeof pptxSaveSchema>;
 export type PptxRestoreInput=z.infer<typeof pptxRestoreSchema>;
 export type PptxRenderInput=z.infer<typeof pptxRenderSchema>;
 export interface PptxOpenResult {id:string;sourceHash:string;state:PptxEditState}
-export interface PptxSaveResult {state:PptxEditState;receipt:FileSaveReceipt;checkpoint:FileCheckpointReceipt;draftError?:string}
+export interface PptxSaveResult {state:PptxEditState;receipt:FileSaveReceipt;checkpoint?:FileCheckpointReceipt; draftError?:string; fidelity?:OfficeFidelityFailure}
 export interface PptxRenderResult extends OfficePagesResult {version:number;tableLayout?:PptxTableLayout[];tableLayoutError?:string}
