@@ -27,6 +27,7 @@ static NSDictionary *desktopOperation(NSDictionary *request) {
   require(directory ? S_ISDIR(item.initial.st_mode) : S_ISREG(item.initial.st_mode), "NOT_REGULAR", "The selected item is not a regular file or directory");
   if (request[@"expectedIdentity"]) require(matches(item.initial, request[@"expectedIdentity"]), "CHANGED", "The selected file was replaced; refresh before opening it");
   verifyPath(root, item, directory);
+  if (request[@"expectedRevision"]) require(!directory && [revision(item.fd.value, 40ULL * 1024 * 1024) isEqual:request[@"expectedRevision"]], "CHANGED", "The attachment copy changed before desktop dispatch");
   NSURL *url = [NSURL fileURLWithPath:absoluteItemPath(root, item) isDirectory:directory];
   NSURL *reference = url.fileReferenceURL;
   require(reference != nil, "MISSING", "The selected file is unavailable");
@@ -66,6 +67,7 @@ static NSDictionary *desktopOperation(NSDictionary *request) {
   require([NSBundle bundleWithURL:appURL] != nil, "UNSUPPORTED", "The selected application is unavailable");
   verifyPath(root, item, directory);
   NSWorkspaceOpenConfiguration *configuration = NSWorkspaceOpenConfiguration.configuration;
+  if (request[@"expectedRevision"]) require([revision(item.fd.value, 40ULL * 1024 * 1024) isEqual:request[@"expectedRevision"]], "CHANGED", "The attachment copy changed before opening");
   configuration.promptsUserIfNeeded = NO; configuration.allowsRunningApplicationSubstitution = NO;
   __block BOOL done = NO; __block NSError *failure = nil;
   [workspace openURLs:@[reference] withApplicationAtURL:appURL configuration:configuration completionHandler:^(NSRunningApplication *running, NSError *error) { failure = error; done = YES; }];
@@ -96,8 +98,8 @@ static NSDictionary *inspectCopyTarget(NSDictionary *request) {
 static NSDictionary *copyOperation(NSDictionary *request) {
   constexpr uint64_t limit = 256ull * 1024 * 1024;
   Root source(request[@"root"]); std::string relative = str(request[@"relativePath"]);
-  checkProtected(source, relative, request[@"protected"] ?: @[]); Opened input = openPath(source, relative);
-  checkProtected(source, input.relative, request[@"protected"] ?: @[]);
+  checkProtected(source, relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]); Opened input = openPath(source, relative);
+  checkProtected(source, input.relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]);
   NSDictionary *sourceRevision = revision(input.fd.value, limit);
   require([sourceRevision isEqual:request[@"expectedRevision"]], "CHANGED", "The source changed while the save dialog was open");
   NSData *bytes = request[@"draftBase64"] ? [[NSData alloc] initWithBase64EncodedString:request[@"draftBase64"] options:0] : readBytes(input.fd.value, 0, [sourceRevision[@"size"] unsignedLongLongValue], limit);
@@ -160,4 +162,76 @@ static NSDictionary *copyOperation(NSDictionary *request) {
     receipt = @{ @"opId": ns(opId), @"bufferVersion": @0, @"state": state, @"message": ns(e.message), @"recoveryId": ns(opId) }; record[@"state"] = state;
   }
   record[@"receipt"] = receipt; record[@"exchanged"] = @(installed); writeJournal(recordDir.value, record); return receipt;
+}
+
+// Release only an acknowledged copy's private aliases and recovery draft.
+// The final output and source are never unlinked or written by this operation.
+static std::vector<std::pair<std::string, struct stat>> checkedCopyCleanupEntries(int directory, NSDictionary *allowed) {
+  int copy = dup(directory); checked(copy, "dup copy cleanup directory"); DIR *stream = fdopendir(copy);
+  if (!stream) { close(copy); checked(-1, "open copy cleanup directory"); }
+  std::vector<std::pair<std::string, struct stat>> entries;
+  try {
+    for (;;) {
+      errno = 0; dirent *entry = readdir(stream); if (!entry) { checked(errno ? -1 : 0, "read cleanup directory"); break; }
+      std::string name(entry->d_name); if (name == "." || name == "..") continue;
+      NSDictionary *expected = allowed[ns(name)]; require([expected isKindOfClass:NSDictionary.class], "UNTRUSTED", "An unrecognized copy material was retained");
+      struct stat current; checked(fstatat(directory, name.c_str(), &current, AT_SYMLINK_NOFOLLOW), "inspect copy material");
+      require(S_ISREG(current.st_mode) && matches(current, expected), "UNTRUSTED", "A copy material identity changed; nothing was released");
+      entries.emplace_back(name, current);
+    }
+  } catch (...) { closedir(stream); throw; }
+  closedir(stream); return entries;
+}
+static void unlinkCopyCleanupEntries(int directory, const std::vector<std::pair<std::string, struct stat>> &entries) {
+  for (const auto &entry : entries) {
+    struct stat current; checked(fstatat(directory, entry.first.c_str(), &current, AT_SYMLINK_NOFOLLOW), "recheck copy cleanup entry");
+    require(sameIdentity(current, entry.second) && S_ISREG(current.st_mode), "CHANGED", "Copy cleanup entry moved");
+    checked(unlinkat(directory, entry.first.c_str(), 0), "release copy material");
+  }
+  checked(fsync(directory), "sync released copy materials");
+}
+static NSDictionary *finishCopyOperation(NSDictionary *request) {
+  Root target(request[@"root"]), recovery(request[@"recoveryRoot"]); recovery.privateObjects = true;
+  std::string project = str(request[@"projectKey"]), op = str(request[@"opId"]);
+  require(internalId(project) && internalId(op), "INVALID_INPUT", "Invalid copy cleanup identity");
+  NSDictionary *fallback = request[@"savedRecord"], *record = nil;
+  require([fallback isKindOfClass:NSDictionary.class], "UNTRUSTED", "A verified saved-copy receipt is required");
+  try { record = loadJournal(recovery, project, op); require([record isEqual:fallback], "UNTRUSTED", "Saved copy journal changed"); }
+  catch (const Failure &e) { if (e.code != "MISSING") throw; record = fallback; }
+  require([record[@"kind"] isEqual:@"copy"] && [record[@"state"] isEqual:@"saved"] && [record[@"receipt"][@"state"] isEqual:@"saved"] && [record[@"opId"] isEqual:ns(op)] && [record[@"projectKey"] isEqual:ns(project)] && [record[@"fingerprint"] isEqual:request[@"fingerprint"]], "UNTRUSTED", "Only the original acknowledged saved copy can be released");
+  require([record[@"root"] isEqual:request[@"root"]] && [record[@"receipt"][@"opId"] isEqual:ns(op)] && [record[@"receipt"][@"revision"][@"hash"] isEqual:record[@"draftHash"]], "UNTRUSTED", "Saved copy destination or content receipt differs");
+  checkProtected(target, "", request[@"protected"] ?: @[]);
+  const std::string transaction = str(record[@"transactionLeaf"]);
+  require(transaction == ".willyou-recovery-" + str(request[@"installationId"]) + "-" + op, "UNTRUSTED", "Copy transaction does not belong to this operation");
+  std::optional<Opened> volume, journalDirectory;
+  std::vector<std::pair<std::string, struct stat>> volumeEntries, journalEntries;
+  try {
+    volume.emplace(openPath(target, transaction, true, false));
+    require(matches(info(volume->fd.value), record[@"transactionIdentity"]), "CHANGED", "Copy transaction directory was replaced");
+    NSDictionary *candidate = record[@"displacedIdentity"] ?: record[@"candidateIdentity"];
+    require(candidate && record[@"candidateIdentity"], "UNTRUSTED", "Saved copy material identities are missing");
+    volumeEntries = checkedCopyCleanupEntries(volume->fd.value, @{ @"candidate": candidate, @"materialized": record[@"candidateIdentity"] });
+  } catch (const Failure &e) { if (e.code != "MISSING") throw; }
+  try {
+    journalDirectory.emplace(openPath(recovery, project + '/' + op, true, false));
+    require(matches(info(journalDirectory->fd.value), record[@"recordIdentity"]), "CHANGED", "Copy recovery directory was replaced");
+    NSMutableDictionary *allowed = [NSMutableDictionary dictionary];
+    if (record[@"draftIdentity"]) allowed[@"draft"] = record[@"draftIdentity"];
+    try { Opened journal = openPath(recovery, project + '/' + op + "/journal.json", false, false); allowed[@"journal.json"] = identity(info(journal.fd.value)); }
+    catch (const Failure &e) { if (e.code != "MISSING") throw; }
+    journalEntries = checkedCopyCleanupEntries(journalDirectory->fd.value, allowed);
+  } catch (const Failure &e) { if (e.code != "MISSING") throw; }
+  // Validate both areas before the first deletion; missing areas are a prior
+  // cleanup's progress, not authority to adopt another directory or material.
+  target.verify(); recovery.verify(); testPoint(@"copy-cleanup-checked", request);
+  if (volume) {
+    verifyPath(target, *volume, true); unlinkCopyCleanupEntries(volume->fd.value, volumeEntries); verifyPath(target, *volume, true);
+    checked(unlinkat(volume->parent.value, volume->leaf.c_str(), AT_REMOVEDIR), "release copy transaction directory"); checked(fsync(volume->parent.value), "sync released copy transaction");
+  }
+  testPoint(@"copy-cleanup-target-removed", request);
+  if (journalDirectory) {
+    verifyPath(recovery, *journalDirectory, true); unlinkCopyCleanupEntries(journalDirectory->fd.value, journalEntries); verifyPath(recovery, *journalDirectory, true);
+    checked(unlinkat(journalDirectory->parent.value, journalDirectory->leaf.c_str(), AT_REMOVEDIR), "release saved copy record"); checked(fsync(journalDirectory->parent.value), "sync released saved copy record");
+  }
+  return @{ @"state": @"cleaned" };
 }

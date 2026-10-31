@@ -1,0 +1,95 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-source-files-aj-20261021/targeted-report.json
+
+[1021/150342.876314:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/150344.200542:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (52 tests) 36748ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  1087ms
+     ✓ publishes exact original codex selection, refs, names and task pointer in one transaction  798ms
+     ✓ pins the retained plugin source hash and detects losing its long-term reference  750ms
+     ✓ requires plugin source retention before first conversion and catches late archive changes before commit  780ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  771ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  678ms
+     ✓ retains disabled original source refs while publishing only the originally enabled standard Skill  562ms
+     ✓ retains the original runtime when the original task did not select context MCP  583ms
+     ✓ binds a previously null native ID in the same source/snapshot transaction and retains the original identity  713ms
+     ✓ rolls back snapshot, refs, names, identity, source state and task pointer on final SQL failure  768ms
+     ✓ is retryable after a committed return-path interruption without resetting the converted state  482ms
+     ✓ rejects cancel at the asynchronous precommit boundary without partial migration  638ms
+     ✓ rejects task at the asynchronous precommit boundary without partial migration  597ms
+     ✓ rejects file at the asynchronous precommit boundary without partial migration  481ms
+     ✓ rejects source-row at the asynchronous precommit boundary without partial migration  494ms
+     ✓ rejects resource-generation at the asynchronous precommit boundary without partial migration  552ms
+     ✓ rejects a changed reference basis without promoting any current application  521ms
+     ✓ rejects a changed manifest basis without promoting any current application  519ms
+     ✓ rejects a changed source-hash basis without promoting any current application  422ms
+     ✓ rejects a changed identity basis without promoting any current application  524ms
+     ✓ rejects a changed adapter basis without promoting any current application  538ms
+     ✓ rejects a changed cli basis without promoting any current application  499ms
+     ✓ rejects a changed approved basis without promoting any current application  304ms
+     ✓ rejects an oversized retained raw record even when its parsed metadata is identical  348ms
+     ✓ does not migrate while a recorded native guard is still occupied  715ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  932ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  664ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  931ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  657ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  933ms
+     ✓ preserves an occupied mirror directory and completes only the missing mirror on retry  698ms
+     ✓ rejects modified persistent original evidence even if the v2 pointer still matches  580ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  1124ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  1017ms
+     ✓ requires a legacy binding only for migrated format2 and preserves ordinary v2 validation  854ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  1153ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths  952ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup  787ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup  834ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it  754ms
+     ✓ rejects a corrupted original codex projection after cleanup without rewriting it  583ms
+     ✓ does not hide a partially present claude-code run by consuming the durable manifest  683ms
+     ✓ does not hide a partially present codex run by consuming the durable manifest  592ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  689ms
+     ✓ rejects a late same-byte original codex Skill inode replacement before publishing SQL  518ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  933ms
+     ✓ rejects a late codex source generation change after cleaned-source verification  510ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  911ms
+     ✓ preserves unknown content which arrives in original codex T before commit  839ms
+     ✓ rejects an undeclared dependency on a retained original runtime  678ms
+     ✓ keeps a missing original static Claude path unavailable without materializing a replacement  950ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  863ms
+[1021/150424.696569:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (29 tests) 16730ms
+     ✓ retains original claude-code names, paths and MCP keys without rewriting any data  741ms
+     ✓ retains original codex names, paths and MCP keys without rewriting any data  477ms
+     ✓ keeps old selected Codex paths enabled while disabling other original versions and current-format projections  574ms
+     ✓ rejects a current-format own projection whose reference is no longer authoritative  1185ms
+     ✓ rejects a current-format own projection whose projection-state is no longer authoritative  990ms
+     ✓ rejects a current-format own projection whose source-state is no longer authoritative  849ms
+     ✓ does not replace or rename a colliding user plugin  814ms
+     ✓ does not replace or rename a colliding user skill  914ms
+     ✓ does not replace or rename a colliding user mcp  912ms
+     ✓ recognizes the exact existing original plugin and Skill paths while retaining the old namespace  654ms
+     ✓ rejects conflicting or duplicate managed flags without rewriting user settings  794ms
+     ✓ does not add a context MCP when the current project explicitly disables it  829ms
+     ✓ rejects a different or damaged task loading basis  558ms
+     ✓ rejects a different or damaged native-root loading basis  579ms
+     ✓ rejects a different or damaged native-id loading basis  515ms
+     ✓ rejects a different or damaged source-hash loading basis  561ms
+     ✓ rejects a different or damaged record loading basis  474ms
+     ✓ rejects a different or damaged manifest loading basis  496ms
+     ✓ rejects a different or damaged reference loading basis  537ms
+     ✓ rejects a different or damaged cli loading basis  483ms
+     ✓ rejects a different or damaged adapter loading basis  589ms
+     ✓ rejects a different or damaged approved loading basis  311ms
+     ✓ does not guess past a missing or changed generation  315ms
+   ✓ plans the original claude-code paths from the durable source after ended-run cleanup  437ms
+
+ Test Files  2 passed (2)
+      Tests  81 passed (81)
+   Start at  15:03:44
+   Duration  59.10s (transform 2.37s, setup 0ms, import 4.68s, tests 53.48s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-source-files-aj-20261021/targeted-report.json

@@ -1,0 +1,39 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/tool-service.test.ts src/main/core/applications/__tests__/private-broker.test.ts src/main/core/applications/__tests__/bridge-runtime.test.ts
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/tool-service.test.ts (12 tests | 1 failed) 2120ms
+     × holds the activity until an executor ignoring cancellation settles and withholds its late result 90ms
+ ❯ src/main/core/applications/__tests__/bridge-runtime.test.ts (2 tests | 1 failed) 2444ms
+     × launches immutable CJS with Electron Node, preserves fixed annotations/schemas and records the host-derived invocation 108ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/bridge-runtime.test.ts > standalone CJS bridge through actual MCP stdio SDK and private host broker > launches immutable CJS with Electron Node, preserves fixed annotations/schemas and records the host-derived invocation
+ReferenceError: Cannot access 'process2' before initialization
+ ❯ src/main/core/applications/__tests__/bridge-runtime.test.ts:20:91
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > holds the activity until an executor ignoring cancellation settles and withholds its late result
+AssertionError: expected 'stopping' to be 'stopped' // Object.is equality
+
+Expected: "stopped"
+Received: "stopping"
+
+ ❯ src/main/core/applications/__tests__/tool-service.test.ts:62:435
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  2 failed | 20 passed (22)
+   Start at  11:42:21
+   Duration  2.65s (transform 232ms, setup 0ms, import 396ms, tests 5.95s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

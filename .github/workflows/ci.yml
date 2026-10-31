@@ -32,7 +32,8 @@ jobs:
   checks:
     needs: workflow-check
     runs-on: macos-latest
-    timeout-minutes: 25
+    # Includes the full native-process/IO suite and the subsequent application build.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,5 +43,7 @@ jobs:
         run: python -m pip install -r scripts/release/requirements-ci.txt
       - run: pnpm typecheck
       - run: pnpm test:release
-      - run: pnpm test
+      - name: Prepare immutable application bundles and native test helpers
+        run: pnpm test:prepare
+      - run: pnpm test --maxWorkers=2
       - run: pnpm build

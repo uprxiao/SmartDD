@@ -1,0 +1,343 @@
+--- a/src/main/core/applications/__tests__/discovery-catalog.test.ts
++++ b/src/main/core/applications/__tests__/discovery-catalog.test.ts
+@@ -84,3 +84,56 @@
+   const same=new DiscoveryCatalog(f.store,f.home,reader);expect(await same.recoverConsumers()).toEqual([{runId:base.hold.run.runId,state:'retained'}]);reader.unknown.add(process.pid);expect(await same.recoverConsumers()).toEqual([{runId:base.hold.run.runId,state:'unknown'}]);reader.unknown.delete(process.pid);reader.identities.set(process.pid,'darwin-proc-v1:999:1');const nextRuns=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}}),next=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:nextRuns.instanceId});expect(await nextRuns.recover()).toContainEqual({runId:base.hold.run.runId,state:'orphaned'});expect(await next.recoverConsumers()).toEqual([{runId:base.hold.run.runId,state:'retained'}]);reader.identities.delete(87651);expect(await nextRuns.recover()).toContainEqual({runId:base.hold.run.runId,state:'stopped'});expect(await next.recoverConsumers()).toEqual([{runId:base.hold.run.runId,state:'released'}]);expect(readFileSync(foreignFile,'utf8')).toBe(foreignBytes);expect(existsSync(file)).toBe(false);
+  });
+ });
++
++describe('authenticated native guard admission while H maintenance waits',()=>{
++ async function startWaiting(){
++  const base=await active(),source=await nextSource(),abort=new AbortController(),outcome=catalog.publish([source],{signal:abort.signal,waitMs:20000}).then(value=>({value,error:null}),error=>({value:null,error}));
++  await vi.waitFor(()=>expect(existsSync(join(catalog.root,'pending.json'))).toBe(true));expect(pending().phase).toBe('waiting');return{...base,source,abort,outcome,bytes:readFileSync(join(catalog.root,'pending.json'))};
++ }
++ async function history(base:Awaited<ReturnType<typeof setup>>,resources=base.prepared.entries.map(e=>e.resourceId)){
++  const taskId='wait-'+randomUUID();await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'codex',stateRoot:f.home,cwd:f.cwd,sessionId:'ordinary-history',reason:'history-unknown'});const row=f.sqlite.prepare('SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {hash:string},discovery=await catalog.nativeGuardSelection();
++  return (ids:{runId:string;ptyId:string})=>runs.reserveNativeGuard({taskId,projectId:'p1',runner:'codex',snapshotHash:row.hash,resourceIds:[f.installedAdapters[1].resource.resourceId,...resources],discovery,verify:async proof=>catalog.verifyNativeIsolation(base.prepared,proof,true)},ids);
++ }
++ it('keeps default run admission strict before invoking even an authentic native guard callback',async()=>{
++  const x=await startWaiting(),reserve=vi.fn(await history(x));try{await expect(catalog.reserveRun(x.prepared.generation,'codex',reserve)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(reserve).not.toHaveBeenCalled();expect(readFileSync(join(catalog.root,'pending.json'))).toEqual(x.bytes);}finally{x.abort.abort();await x.outcome;await x.hold.run.cli.exited();await x.hold.release();}
++ });
++ it.each(['managed-run','copied-guard','incomplete-H'] as const)('refuses %s as maintenance-wait authority and retains any committed C/H evidence',async kind=>{
++  const x=await startWaiting();let issued:Awaited<ReturnType<CapabilityRunRegistry['reserveNativeGuard']>>|undefined;
++  try{const normal=f.plan('codex');normal.catalogGeneration=x.prepared.generation;const normalSaved=kind==='managed-run'?await f.sessions.create(normal,f.home):undefined;const reserve=await history(x,kind==='incomplete-H'?[]:undefined);await expect(catalog.reserveNativeGuardRun(x.prepared.generation,'codex',async ids=>{issued=kind==='managed-run'?await runs.reserve({taskId:normal.taskId,snapshotHash:normalSaved!.pointer.snapshotHash,bindings:[]},ids):await reserve(ids);return kind==='copied-guard'?{...issued}:issued;})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   // A committed normal run, copied handle or incomplete guard never proves
++   // native-only admission. Retain C and the H intent after refusal.
++   if(issued){expect(readdirSync(join(catalog.root,'catalog-consumers'))).toHaveLength(2);expect(runs.get(issued.runId).state).toBe('preparing');expect(f.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state<>'reserved'").get(issued.runId)).toBeUndefined();}
++   expect(readFileSync(join(catalog.root,'pending.json'))).toEqual(x.bytes);expect(await catalog.snapshot()).toEqual(x.prepared);
++  }finally{x.abort.abort();await x.outcome;if(issued)await issued.stop('fixture-owned-preparing-stop');await x.hold.run.cli.exited();await x.hold.release();}
++ });
++ it.each(['materialized','renamed','catalog-published'] as const)('refuses new readers after the %s checkpoint without invoking C registration',async point=>{
++  const base=await setup(),source=await nextSource(),publisher=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId,checkpoint:phase=>{if(phase===point)throw new Error('controlled closed phase');}});await expect(publisher.publish([source])).rejects.toThrow('controlled closed phase');const bytes=readFileSync(join(catalog.root,'pending.json')),reserve=vi.fn(await history(base));await expect(catalog.reserveNativeGuardRun((await catalog.snapshot()).generation,'codex',reserve)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(reserve).not.toHaveBeenCalled();expect(readFileSync(join(catalog.root,'pending.json'))).toEqual(bytes);
++ });
++ it('refuses a self-consistent pending base that differs from the complete live catalog',async()=>{
++  const x=await startWaiting(),file=join(catalog.root,'pending.json'),changed=pending();changed.baseEntries=changed.baseEntries.slice(1);
++  // Match the real canonical generation encoding; no malformed-record shortcut.
++  const {canonicalJson}=await import('../manifest');changed.baseGeneration=digest(canonicalJson({homeId:catalog.homeId,entries:changed.baseEntries}));writeFileSync(file,canonicalJson(changed));const reserve=vi.fn(await history(x));try{await expect(catalog.reserveNativeGuardRun(x.prepared.generation,'codex',reserve)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(reserve).not.toHaveBeenCalled();}finally{writeFileSync(file,x.bytes);x.abort.abort();await x.outcome;await x.hold.run.cli.exited();await x.hold.release();}
++ });
++ it('rechecks the exact native handle at activation and refuses an injected bridge window',async()=>{
++  const x=await startWaiting(),reserve=await history(x);let hold:Awaited<ReturnType<DiscoveryCatalog['reserveNativeGuardRun']>>|undefined;
++  try{hold=await catalog.reserveNativeGuardRun(x.prepared.generation,'codex',reserve);await hold.run.prepare();const fake=randomUUID();f.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'bridge',?,'reserved')").run(fake,hold.run.runId,randomUUID());await expect(hold.activate()).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(runs.get(hold.run.runId).state).toBe('prepared');expect(pending().phase).toBe('waiting');
++   // Fixture-only row had no spawn; cancel that reserved row before own cleanup.
++   f.sqlite.prepare("UPDATE capability_run_processes SET state='canceled' WHERE process_id=?").run(fake);
++  }finally{x.abort.abort();await x.outcome;if(hold){await hold.run.stop('fixture-owned-stop');await hold.release();}await x.hold.run.cli.exited();await x.hold.release();}
++ });
++ it('defers missing base-H state/generation changes until all original and ordinary readers end',async()=>{
++  const base=await active(),entry=base.prepared.entries[0],original=f.store.get(entry.resourceId);rmSync(dirname(entry.path),{recursive:true});const abort=new AbortController(),outcome=catalog.publish(base.sources,{signal:abort.signal,waitMs:20000}).then(value=>({value,error:null}),error=>({value:null,error}));let hold:Awaited<ReturnType<DiscoveryCatalog['reserveNativeGuardRun']>>|undefined;
++  try{await vi.waitFor(()=>expect(existsSync(join(catalog.root,'pending.json'))).toBe(true));expect(pending().phase).toBe('waiting');expect(f.store.get(entry.resourceId)).toEqual(original);const reserve=await history(base);hold=await catalog.reserveNativeGuardRun(base.prepared.generation,'codex',reserve);await hold.run.prepare();await hold.activate();expect(f.sqlite.prepare("SELECT lr.content_hash AS hash,lr.generation FROM capability_lease_resources lr JOIN capability_resource_leases l ON l.lease_id=lr.lease_id WHERE l.owner_id=? AND lr.resource_id=?").get(hold.run.runId,entry.resourceId)).toEqual({hash:original.contentHash,generation:original.generation});
++   await base.hold.run.cli.exited();await base.hold.release();expect(pending().phase).toBe('waiting');expect(f.store.get(entry.resourceId)).toEqual(original);await hold.run.cancelBeforeFork();await hold.release();hold=undefined;const done=await outcome;expect(done.error).toBeNull();expect(done.value).toEqual(base.prepared);expect(f.store.get(entry.resourceId)).toMatchObject({state:'ready',integrity:'valid',generation:original.generation+1,contentHash:original.contentHash});catalog.verify(done.value!);expect((await f.sessions.get(base.snapshot.taskId)).snapshot).toEqual(base.snapshot);
++  }finally{abort.abort();await outcome;if(hold){await hold.run.cancelBeforeFork();await hold.release();}}
++ });
++ it('cancels only the waiting publication while preserving ordinary and original consumers',async()=>{
++  const x=await startWaiting(),reserve=await history(x);let hold:Awaited<ReturnType<DiscoveryCatalog['reserveNativeGuardRun']>>|undefined;
++  try{hold=await catalog.reserveNativeGuardRun(x.prepared.generation,'codex',reserve);await hold.run.prepare();await hold.activate();const originals=x.prepared.entries.map(e=>f.store.get(e.resourceId));x.abort.abort();expect((await x.outcome).error).toMatchObject({code:'CANCELED'});expect(existsSync(join(catalog.root,'pending.json'))).toBe(false);expect(await catalog.snapshot()).toEqual(x.prepared);expect(x.prepared.entries.map(e=>f.store.get(e.resourceId))).toEqual(originals);expect(runs.get(hold.run.runId).state).toBe('prepared');expect(runs.get(x.hold.run.runId).state).toBe('active');expect(readdirSync(join(catalog.root,'catalog-consumers'))).toHaveLength(2);expect(()=>runs.assertActive(hold!.run.runId)).toThrow('不签发');
++  }finally{x.abort.abort();await x.outcome;if(hold){await hold.run.cancelBeforeFork();await hold.release();}await x.hold.run.cli.exited();await x.hold.release();}
++ });
++ it('closes waiting admission under H before allowing a racing reader to register C',async()=>{
++  const base=await setup(),source=await nextSource(),reserve=vi.fn(await history(base));let registered=false,attempt:Promise<unknown>|undefined;const publisher=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId,checkpoint:phase=>{if(phase==='registered')registered=true;}});
++  const done=await publisher.publish([source],{assertPublish:()=>{if(registered&&!attempt)attempt=catalog.reserveNativeGuardRun(base.prepared.generation,'codex',reserve).then(value=>({value,error:null}),error=>({value:null,error}));}});const racing=await attempt as {value:unknown;error:{code:string}};expect(racing.value).toBeNull();expect(['RESOURCE_BUSY','RESOURCE_STATE_CHANGED']).toContain(racing.error.code);expect(reserve).not.toHaveBeenCalled();expect(done.entries).toHaveLength(base.prepared.entries.length+1);catalog.verify(done);expect(readdirSync(join(catalog.root,'catalog-consumers'))).toEqual([]);
++ });
++});
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,3 +1,7 @@
++import {LegacyCapabilityResourceAdopter,readLegacyOwnedTree} from '../legacy-resource-adopter';
++import {treeHash} from '../../capabilities/assets';
++import {writeOwnedTree} from '../../capabilities/files';
++import {projectSkillName,standardNativeSkillName} from '../session-projector';
+ import {DiscoveryCatalog} from '../discovery-catalog';
+ import {captureNativeStaticRoots,verifyNativeStaticRoots} from '../native-static-roots';
+ import {createNativeGuardDiscoveryProof,nativeGuardResourceOmissions,nativeGuardCatalogOmissions,nativeGuardAdapterExclusions,type NativeGuardDiscoveryProof} from '../native-discovery-exclusions';
+@@ -999,3 +1003,32 @@
+   }finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
+  },25000);
+ });
++
++
++describe('ordinary native work while actual H publication waits',()=>{
++ beforeEach(()=>{
++  // TestPtys has no OS children. Deliver only matching synthetic bridge exits.
++  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
++  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const v=await prepare(...args);handles.set(args[0].ptyId,v.bridge);return v;});vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const h=handles.get(id);if(h){handles.delete(id);void h.exited();}});
++ });
++ async function waiting(runner:'claude-code'|'codex'){
++  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
++  const first=await create(codexId),firstNative=await stopForSwitchFixture(first,'codex'),seed=runner==='codex'?first:await create(claudeId),nativeId=runner==='codex'?firstNative:await stopForSwitchFixture(seed,runner),fixed=await managed.sessions.get(seed.task.id),blocker=await create(codexId),catalog=new DiscoveryCatalog(support.store,home,reader,{instanceId:managed.runs.instanceId}),base=await catalog.snapshot(),skill=fixed.snapshot.standardSkills[0],old=readLegacyOwnedTree(join(support.store.root,'packages',skill.skillId,skill.hash),skill.hash),files={...old,'references/BF-maintenance.txt':'private unselected next version'},hash=treeHash(files),name=standardNativeSkillName(skill.skillId,hash);
++  writeOwnedTree(join(support.store.root,'packages',skill.skillId,hash),files,join(support.store.root,'conflicts'));const source=await new LegacyCapabilityResourceAdopter(support.store).adoptStandard(skill.skillId,hash),abort=new AbortController(),work=catalog.publish([{nativeName:name,sourceHash:hash,sourceResourceId:source.resourceId,files:Object.fromEntries(Object.entries(files).map(([p,t])=>[p,p==='SKILL.md'?projectSkillName(Buffer.from(t),name):Buffer.from(t)])),executables:new Set()}],{signal:abort.signal,waitMs:20000}),outcome=work.then(value=>({value,error:null}),error=>({value:null,error}));
++  const pendingPath=join(home,'.agents/smartdd-runtime/pending.json');await vi.waitFor(()=>expect(existsSync(pendingPath)).toBe(true));const pending=readFileSync(pendingPath),value=JSON.parse(pending.toString());expect(value.phase).toBe('waiting');expect(value.baseGeneration).toBe(base.generation);return{seed,nativeId,fixed,blocker,catalog,base,abort,outcome,pending,pendingPath,newPath:join(home,'.agents/skills',name,'SKILL.md')};
++ }
++ it.each([['codex','new','known'],['codex','resume','known'],['codex','new','unknown'],['codex','resume','unknown'],['claude-code','new','unknown'],['claude-code','resume','unknown']] as const)('keeps zero-authority ordinary native work while maintenance is waiting: %s %s %s',async(runner,mode,version)=>{
++  const x=await waiting(runner),profile=runner==='codex'?codexId:claudeId,command=profiles.resolve(profile).command;if(version==='unknown')writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{
++   running=mode==='resume'?await tasks.open({taskId:x.seed.task.id}):await create(profile);const run=running.task.runtimeSnapshot!.runId;expect(ptys.live.has(running.ptyId)).toBe(true);expect(()=>managed.runs.assertActive(run)).toThrow('不签发');expect(managed.runs.inputContext(running.task.id,running.ptyId)).toBeNull();expect(sqlite.prepare("SELECT count(*) n FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(run)).toEqual({n:0});if(version==='known'){const diagnostic=await applications.sessionDiagnostics.inspect(running.task.id);expect(diagnostic.currentRun?.preparation).toMatchObject({state:'unavailable',issueCode:'RESOURCE_BUSY'});expect(diagnostic.applications.find(a=>a.appId==='mail')?.issueCode).toBe('RESOURCE_BUSY');expect(running.task.runtimeSnapshot?.selfCheck?.issues).not.toContain('AGENT_ADAPTER_UNSUPPORTED');}const current=await managed.sessions.get(running.task.id);expect(current.snapshot.packages.map(p=>p.appId)).toEqual(['mail']);if(mode==='resume'){expect(current.snapshot).toEqual(x.fixed.snapshot);expect(running.task.nativeSessionId).toBe(x.nativeId);}
++   const held=sqlite.prepare("SELECT lr.resource_id AS id,lr.content_hash AS hash,lr.generation FROM capability_lease_resources lr JOIN capability_resource_leases l ON l.lease_id=lr.lease_id WHERE l.owner_kind='run' AND l.owner_id=?").all(run);for(const entry of x.base.entries.filter(e=>e.storeId===support.store.storeId)){const r=support.store.get(entry.resourceId);expect(held).toContainEqual({id:r.resourceId,hash:r.contentHash,generation:r.generation});}expect(await x.catalog.snapshot()).toEqual(x.base);expect(readFileSync(x.pendingPath)).toEqual(x.pending);expect(existsSync(x.newPath)).toBe(false);
++   tasks.kill(x.blocker.task.id);await vi.waitFor(()=>expect(managed.runs.get(x.blocker.task.runtimeSnapshot!.runId).state).toBe('stopped'));expect(JSON.parse(readFileSync(x.pendingPath,'utf8')).phase).toBe('waiting');expect(await x.catalog.snapshot()).toEqual(x.base);expect(existsSync(x.newPath)).toBe(false);expect(ptys.live.has(running.ptyId)).toBe(true);
++   writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "'+(runner==='codex'?'0.162.1':'2.1.303 (Claude Code)')+'";; *) exit 70;; esac\n');expect(()=>managed.runs.assertActive(run)).toThrow('不签发');const id=running.task.id,nativeId=mode==='new'?await stopForSwitchFixture(running,runner):x.nativeId;if(mode==='resume'){tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));}const fixed=await managed.sessions.get(id),refs=await managed.sessions.references(id),published=await x.outcome;expect(published.error).toBeNull();expect(published.value!.entries).toHaveLength(x.base.entries.length+1);expect(existsSync(x.newPath)).toBe(true);running=await tasks.open({taskId:id});expect((await managed.sessions.get(id)).snapshot).toEqual(fixed.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);expect(managed.runs.assertActive(running.task.runtimeSnapshot!.runId).snapshot).toEqual(fixed.snapshot);for(const ref of refs)expect(await managed.sessions.references(id)).toContainEqual(ref);
++  }finally{x.abort.abort();await x.outcome;if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each(['new','resume'] as const)('keeps a supported private-Claude plugin independent from H maintenance: %s',async mode=>{
++  const x=await waiting('claude-code');let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=mode==='resume'?await tasks.open({taskId:x.seed.task.id}):await create(claudeId);const fixed=await managed.sessions.get(running.task.id);expect(managed.runs.assertActive(running.task.runtimeSnapshot!.runId).snapshot).toEqual(fixed.snapshot);expect(ptys.launches.at(-1)!.args).toContain('--plugin-dir');expect(consumers()).toHaveLength(1);tasks.kill(x.blocker.task.id);await vi.waitFor(()=>expect(managed.runs.get(x.blocker.task.runtimeSnapshot!.runId).state).toBe('stopped'));expect((await x.outcome).error).toBeNull();expect(ptys.live.has(running.ptyId)).toBe(true);expect(managed.runs.assertActive(running.task.runtimeSnapshot!.runId).snapshot).toEqual(fixed.snapshot);}
++  finally{x.abort.abort();await x.outcome;if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++});
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -11,7 +11,7 @@
+ import { ownedBundle, verifyOwnedBundle, writeOwnedBundle, type OwnedBundle } from './owned-bundle';
+ import type { ProcessIdentity, ProcessIdentityReader } from './process-identity';
+ import type { ResourceRecord, ResourceStore } from './resource-store';
+-import type { OwnedCapabilityRun } from './run-registry';
++import {assertNativeGuardReservation,type OwnedCapabilityRun} from './run-registry';
+ import { withResourceLock } from './resource-lock';
+ import { withDiscoveryLock } from './discovery-catalog-lock';
+ import { LegacyCapabilityResourceAdopter,readLegacyOwnedTree } from './legacy-resource-adopter';
+@@ -188,6 +188,7 @@
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录有未知消费者记录'); const value = jsonFile(join(this.root, 'catalog-consumers', file), consumerSchema); if (value.homeId !== this.homeId || file !== this.consumerName(value))
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录消费者身份不同'); return value; }); }
+     private consumerName(c: Consumer): string { return c.owner.storeId + '-' + c.runId + '.json'; }
++    async hasPendingPublication():Promise<boolean>{return this.lock(()=>this.pending()!==null);}
+     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
+     /** Read-only attribution,not a publication or file-readiness receipt. */
+     async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
+@@ -318,13 +319,6 @@
+                         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影资源记录身份不同');
+                     if(p.entry.format==='legacy-tree-v1'){const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
+                         if(r.kind!=='legacy-agent-projection'||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记或依赖缺失，不重新签认');}
+-                    if(r.state==='ready'&&!present(dirname(p.entry.path))){
+-                        const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(r.kind!==(p.entry.format?'legacy-agent-projection':'agent-projection')||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记及完整来源不同，不能重建原路径');
+-                        if(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources lr WHERE lr.lease_id=l.lease_id AND lr.resource_id=?)) LIMIT 1").get(r.resourceId,r.resourceId))throw new ApplicationError('RESOURCE_BUSY','原H路径仍有未知或活动占用');
+-                        this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
+-                        const key=digest(pending.operationId+':'+r.resourceId),held=this.store.sqlite.prepare('SELECT content_hash,generation FROM capability_lease_resources WHERE lease_id=? AND resource_id=?').get(key,r.resourceId) as {content_hash:string;generation:number}|undefined;
+-                        if(held){if(held.content_hash!==r.contentHash||held.generation!==r.generation)throw new ApplicationError('RESOURCE_STATE_CHANGED','原共享目录的发布代次不同');this.store.sqlite.prepare('UPDATE capability_lease_resources SET generation=? WHERE lease_id=? AND resource_id=?').run(r.generation+1,key,r.resourceId);}
+-                    }
+                     if (r.state !== 'ready' && r.operationId !== pending.operationId) {
+                         const prior = this.store.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(r.operationId) as {
+                             state: string;
+@@ -356,7 +350,18 @@
+     }
+     private mine(pending: Pending): void { const current = this.pending(); if (!current || current.operationId !== pending.operationId || current.token !== pending.token || canonicalJson(current.owner) !== canonicalJson(this.owner) || canonicalJson(current) !== canonicalJson(pending))
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录维护所有权已改变'); }
+-    private async phase(pending: Pending, phase: Pending['phase']): Promise<void> { await this.lock(() => { this.mine(pending); pending.phase = phase; atomicJson(join(this.root, 'pending.json'), pending); }); }
++    /** H lock + C transaction, only after all shared readers have drained. */
++    private stageMissingProjections(plans:readonly Planned[],pending:Pending):void{
++        for(const p of plans){
++            const r=this.store.get(p.entry.resourceId);if(r.state!=='ready'||present(dirname(p.entry.path)))continue;
++            const source=this.store.get(p.source.sourceResourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
++            if(r.kind!==(p.entry.format?'legacy-agent-projection':'agent-projection')||r.ownerStoreId!==this.store.storeId||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.relativePath!==p.relativePath||r.contentHash!==p.hash||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记及完整来源不同，不能重建原路径');
++            const key=digest(pending.operationId+':'+r.resourceId),held=this.store.sqlite.prepare('SELECT content_hash,generation FROM capability_lease_resources WHERE lease_id=? AND resource_id=?').get(key,r.resourceId) as {content_hash:string;generation:number}|undefined;
++            if(!held||held.content_hash!==r.contentHash||held.generation!==r.generation)throw new ApplicationError('RESOURCE_STATE_CHANGED','原共享目录的发布代次不同');
++            this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
++            this.store.sqlite.prepare('UPDATE capability_lease_resources SET generation=? WHERE lease_id=? AND resource_id=?').run(r.generation+1,key,r.resourceId);
++        }
++    }
+     private assertPublisherLeases(pending:Pending,allowEnded=false):void{
+         for(const entry of pending.entries){
+             const lease=this.store.sqlite.prepare("SELECT resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state FROM capability_resource_leases WHERE lease_id=?").get(digest(pending.operationId+':'+entry.resourceId)) as {resource_id:string;owner_kind:string;owner_id:string;host_instance_id:string;pid:number|null;process_started_at:string|null;state:string}|undefined;
+@@ -479,7 +484,16 @@
+             this.checkpoint?.('registered');
+             const deadline = performance.now() + (options.waitMs ?? 3000);
+             for (;;) {
+-                const waiting = await this.lock(() => { this.mine(work); return this.consumers().length > 0; });
++                const waiting = await this.lock(async () => {
++                    this.mine(work);if(this.consumers().length)return true;
++                    if(options.signal?.aborted)return false;
++                    await withResourceLock(this.store.root,()=>{
++                        this.mine(work);this.assertPublisherLeases(work);this.assertNoOtherHolds(work);options.assertPublish?.(operationId);
++                        // Close admission before any base-H state/generation change.
++                        work.phase='materializing';atomicJson(join(this.root,'pending.json'),work);
++                        this.store.sqlite.transaction(()=>this.stageMissingProjections(plans,work)).immediate();
++                    });return false;
++                });
+                 if (!waiting)
+                     break;
+                 if (options.signal?.aborted || performance.now() >= deadline) {
+@@ -493,7 +507,6 @@
+                 throw new ApplicationError('CANCELED', '共享目录发布前已取消');
+             }
+             this.assertPublisherLeases(work);this.assertNoOtherHolds(work);options.assertPublish?.(operationId);
+-            await this.phase(work, 'materializing');
+             const staging = ensureStoreDirectory(this.root, 'staging/' + operationId);
+             for (const p of plans) {
+                 this.verifySource(p);
+@@ -584,10 +597,13 @@
+     private async cancelPending(pending: Pending): Promise<void> { await this.lock(async () => { this.mine(pending); if (!['waiting', 'materializing'].includes(pending.phase) || pending.entries.some(e => e.format!=='legacy-tree-v1'&&!pending.baseEntries.some(b => b.nativeName === e.nativeName) && present(dirname(e.path))))
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '目录已开始物化，须核对原操作后恢复'); await this.finishRecords(pending, 'removed', 'canceled'); unlinkSync(join(this.root, 'pending.json')); durableDirectory(this.root); }); }
+     /** Callback only reserves C refs/leases; it must not fork or perform remote work. */
+-    async reserveRun(generation: string, runner: 'claude-code' | 'codex', register: (ids: {
++    async reserveRun(generation:string,runner:'claude-code'|'codex',register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,false);}
++    /** Zero business authority; only the registry's exact native-guard handle is accepted. */
++    async reserveNativeGuardRun(generation:string,runner:'claude-code'|'codex',register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,true);}
++    private async reserveDiscoveryRun(generation: string, runner: 'claude-code' | 'codex', register: (ids: {
+         runId: string;
+         ptyId: string;
+-    }) => Promise<OwnedCapabilityRun>): Promise<DiscoveryReservation> {
++    }) => Promise<OwnedCapabilityRun>,nativeGuard:boolean): Promise<DiscoveryReservation> {
+         hash.parse(generation);
+         const runId = randomUUID(), ptyId = randomUUID(), record: Consumer = { schema: 1, consumerId: randomUUID(), runId, ptyId, homeId: this.homeId, generation, runner, phase: 'preparing', owner: this.owner }, path = join(this.root, 'catalog-consumers', this.consumerName(record));
+         let run!: OwnedCapabilityRun, catalog!: Catalog;
+@@ -599,13 +615,16 @@
+                 if(known&&known.home!==this.home)throw new ApplicationError('OWNERSHIP_CONFLICT','发现根登记已属于另一目录');
+                 this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_discovery_roots VALUES(?,?)').run(this.homeId,this.home);
+             }).immediate());
+-            if (this.pending())
+-            throw new ApplicationError('RESOURCE_BUSY', '共享目录正在维护，暂不接受新消费者'); catalog = this.catalog(); if (catalog.generation !== generation)
++            const pending=this.pending();catalog=this.catalog();
++            if(pending&&(!nativeGuard||pending.phase!=='waiting'))throw new ApplicationError('RESOURCE_BUSY','共享目录正在维护，暂不接受新消费者');
++            if(pending&&(pending.baseGeneration!==catalog.generation||canonicalJson(pending.baseEntries)!==canonicalJson(catalog.entries)))throw new ApplicationError('RESOURCE_STATE_CHANGED','原维护等待的完整目录基线已变化');
++            if (catalog.generation !== generation)
+             throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享目录代次已变化，重新准备能力'); atomicJson(path, record); try {
+             run = await register({ runId, ptyId });
+             if (run.runId !== runId || run.ptyId !== ptyId)
+                 throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '运行登记未沿用预留身份');
+             this.assertRun(record, false);
++            if(nativeGuard)assertNativeGuardReservation(this.store,run,runner,catalog.entries.filter(e=>e.storeId===this.store.storeId).map(e=>e.resourceId),'preparing');
+         }
+         catch (error) {
+             if (!this.store.sqlite.prepare('SELECT 1 FROM capability_runs WHERE run_id=?').get(runId)) {
+@@ -616,7 +635,7 @@
+         } });
+         const current = () => { const c = jsonFile(path, consumerSchema); if (c.consumerId !== record.consumerId || canonicalJson(c.owner) !== canonicalJson(this.owner))
+             throw new ApplicationError('OWNERSHIP_CONFLICT', '消费者已被其他实例替换'); return c; };
+-        return { run, catalog: { generation: catalog.generation, entries: structuredClone(catalog.entries) }, activate: () => this.lock(() => { const c = current(); this.assertRun(c, false); if (c.generation !== this.catalog().generation)
++        return { run, catalog: { generation: catalog.generation, entries: structuredClone(catalog.entries) }, activate: () => this.lock(() => { const c = current(); this.assertRun(c, false); if(nativeGuard)assertNativeGuardReservation(this.store,run,runner,catalog.entries.filter(e=>e.storeId===this.store.storeId).map(e=>e.resourceId),'prepared'); if (c.generation !== this.catalog().generation)
+                 throw new ApplicationError('RESOURCE_STATE_CHANGED', '原消费者目录代次不同'); c.phase = 'active'; atomicJson(path, c); }), release: () => this.lock(() => { const c = current(); this.assertRun(c, true); c.phase = 'releasing'; atomicJson(path, c); unlinkSync(path); durableDirectory(dirname(path)); }) };
+     }
+     private assertRun(c: Consumer, terminal: boolean): void { const row = this.store.sqlite.prepare('SELECT owner_pid AS pid,owner_started_at AS startedAt,owner_instance_id AS instanceId,pty_id AS ptyId,state,revocation_state AS revocation FROM capability_runs WHERE run_id=?').get(c.runId) as {
+--- a/src/main/core/applications/run-registry.ts
++++ b/src/main/core/applications/run-registry.ts
+@@ -52,6 +52,13 @@
+   /** Caller attests no OS spawn was attempted. Not a recovery/unknown-process API. */
+   cancelBeforeFork(): Promise<CapabilityRunRecord>;
+   stop(reason?: string): Promise<CapabilityRunRecord>;
++}
++// Only a handle minted by reserveGuard can request waiting-phase H admission.
++const nativeGuardReservations = new WeakMap<OwnedCapabilityRun,{store:ResourceStore;assert:(runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared')=>void}>();
++export function assertNativeGuardReservation(store:ResourceStore,run:OwnedCapabilityRun,runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared'):void {
++  const proof=nativeGuardReservations.get(run);
++  if(!proof||proof.store!==store)throw new ApplicationError('SCOPE_DENIED','维护等待只允许当前宿主签发的普通原生守护');
++  proof.assert(runner,resources,phase);
+ }
+ const TERMINAL = new Set(['stopped','failed']);
+ const PROCESS_DONE = new Set(['exited','canceled']);
+@@ -229,7 +236,17 @@
+     }).immediate());
+     this.owned.set(runId,{guard,selectionHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
+     if(this.closed){await this.stop(runId,'host-shutdown');throw new ApplicationError('CANCELED','守护准备期间服务已关闭');}
+-    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
++    const handle:OwnedCapabilityRun={runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
++    nativeGuardReservations.set(handle,{store:this.store,assert:(runner,resources,phase)=>{
++      const {row,owned,session}=this.lifecycle(runId);
++      if(this.closed||owned.guard!==guard||owned.abort.signal.aborted||handle.signal!==owned.abort.signal||handle.runId!==runId||handle.ptyId!==ptyId||row.pty_id!==ptyId||row.runner!==runner||row.task_id!==value.taskId||row.project_id!==value.projectId||row.snapshot_hash!==value.snapshotHash||row.state!==phase||row.pid!==null||row.process_started_at!==null||handle.cli.processId!==processId||handle.cli.launchKey!==ptyId||owned.processes.size!==1||!owned.processes.has(processId)||row.revocation_state!=='open'||row.bindings_json!=='[]'||owned.scope||!resources.every(id=>guard.resources.includes(id)))throw new ApplicationError('SCOPE_DENIED','普通原生守护身份、阶段或完整H来源不同');
++      const children=this.store.sqlite.prepare('SELECT process_id,kind,state,pid,process_started_at FROM capability_run_processes WHERE run_id=?').all(runId) as {process_id:string;kind:string;state:string;pid:number|null;process_started_at:string|null}[];
++      if(children.length!==1||children[0].process_id!==processId||children[0].kind!=='cli'||children[0].state!=='reserved'||children[0].pid!==null||children[0].process_started_at!==null)throw new ApplicationError('SCOPE_DENIED','普通原生守护已存在桥或原生启动窗口');
++      const lease=this.store.sqlite.prepare('SELECT owner_kind,pid,process_started_at FROM capability_resource_leases WHERE lease_id=?').get(leaseId) as {owner_kind:string;pid:number|null;process_started_at:string|null}|undefined;
++      if(!lease||lease.owner_kind!=='run'||lease.pid!==this.host.pid||lease.process_started_at!==this.host.startedAt)throw new ApplicationError('RESOURCE_STATE_CHANGED','普通原生守护的原C占用身份已变化');
++      this.currentLifecycle(row,session);this.checkProtection(row,owned);
++    }});
++    return handle;
+   }
+   /** Narrow an owned prepared run before any child can exist. Not an RPC surface. */
+   async restrictToNative(runId:string,cause?:ManagedCapabilityRestriction):Promise<void>{
+--- a/src/main/core/applications/session-diagnostics.ts
++++ b/src/main/core/applications/session-diagnostics.ts
+@@ -106,7 +106,7 @@
+    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\'succeeded\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;
+    const latest=currentRun&&fixed?db.prepare('SELECT error_code,effect_state FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=? ORDER BY started_at DESC,operation_id DESC LIMIT 1').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {error_code:string|null;effect_state:string|null}|undefined:undefined;
+    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
+-   applications.push({appId,name:appId==='mail'?'邮件':'禅道',fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null,skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null}});
++   applications.push({appId,name:appId==='mail'?'邮件':'禅道',fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null}});
+   }
+   return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
+  });}
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -145,7 +145,7 @@
+     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
+     try{native=await(this.options.inspectNative??inspectNativeLaunch)(input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
+     const catalog=this.catalog(input.home);let current:StoredCapabilitySession|undefined;
+-    if(input.profile.runner==='codex')try{await new LegacyDiscoveryInventory(this.support.store,catalog).prepare(input.signal);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&['CANCELED','RESOURCE_BUSY'].includes(error.code))throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code==='OWNERSHIP_CONFLICT'?'AGENT_CAPABILITY_NAME_CONFLICT':error.code;}
++    if(input.profile.runner==='codex')try{await new LegacyDiscoveryInventory(this.support.store,catalog).prepare(input.signal);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&(error.code==='CANCELED'||error.code==='RESOURCE_BUSY'&&!await catalog.hasPendingPublication()))throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code==='OWNERSHIP_CONFLICT'?'AGENT_CAPABILITY_NAME_CONFLICT':error.code;}
+     if(input.previous?.sessionCapabilities){
+       const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针不属于当前会话');current=await this.sessions.get(input.taskId);
+       if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原固定快照身份不符，保留原记录且不恢复应用能力');
+@@ -187,9 +187,10 @@
+       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
+       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
+       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
++      if(planned.runner==='codex'&&!unavailable&&await catalog.hasPendingPublication())unavailable='RESOURCE_BUSY';
+       if(planned.runner==='codex'&&!unavailable){
+         try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0,plannedStandards),{signal:input.signal,requestedOnly:true})).generation;}
+-        catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else throw error;}
++        catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'&&await catalog.hasPendingPublication())unavailable=error.code;else throw error;}
+       }
+       if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});
+       try{current=await this.sessions.create(planned,input.home,plannedScope);}finally{this.initialApplicationScopes.delete(planned.taskId);}
+@@ -207,6 +208,7 @@
+     }
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
++    if(snapshot.runner==='codex'&&!unavailable&&await catalog.hasPendingPublication())unavailable='RESOURCE_BUSY';
+     if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);
+     const physical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native,physical):undefined,standardSkillScope=facets?.standardSkills.size?snapshot.standardSkills.filter(s=>!facets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||standardSkillScope!==undefined||snapshot.runner==='codex'&&!!physical?.excludedPaths.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
+     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+@@ -217,12 +219,12 @@
+     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
+     let pluginRoot:string|null=null,pluginHash:string|null=null,deliveryToken:ClaudeDeliveryToken|undefined,deliveryProof:ClaudeRunDelivery|undefined;
+     if(!unavailable&&!snapshot.legacyBinding){
+-      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),published=await catalog.publish(sources,{signal:input.signal,requestedOnly:true});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
++      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope);let published:Awaited<ReturnType<DiscoveryCatalog['publish']>>;try{published=await catalog.publish(sources,{signal:input.signal,requestedOnly:true});}catch(error){if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'&&await catalog.hasPendingPublication())return this.prepareUnavailableSession(input,current,native,error.code,catalog);throw error;}for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
+       else if(applicationScope){try{deliveryToken=independent?await this.claudeDelivery.prepareIndependent(input.taskId,standardSkillScope):await this.claudeDelivery.prepare(input.taskId,applicationScope,standardSkillScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
+       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
+     }
+     const finalPhysical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,catalogExclusions=finalPhysical?.excludedPaths.length?{schema:'native-discovery-exclusions-v1' as const,generation:finalPhysical.generation,paths:finalPhysical.excludedPaths}:undefined;
+-    const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>independent?this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,ids,undefined,excludedApplications):applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids,undefined,excludedApplications):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
++    let hold:DiscoveryReservation|undefined;try{hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>independent?this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,ids,undefined,excludedApplications):applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids,undefined,excludedApplications):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;}catch(error){if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'&&await catalog.hasPendingPublication())return this.prepareUnavailableSession(input,current,native,error.code,catalog);throw error;}
+     let run:OwnedCapabilityRun;
+     try{run=hold?.run??(independent?await this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,undefined,deliveryToken,excludedApplications):deliveryToken?await this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope!,projectionIds,undefined,deliveryToken,excludedApplications):await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}));}
+     catch(error){if(deliveryToken)await this.claudeDelivery.cancel(deliveryToken).catch(()=>{});throw error;}
+@@ -284,14 +286,14 @@
+   }
+   private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.support.status().adapters.find(a=>a.agentId===snapshot.runner&&a.version==='1.0.0'):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
+-    const knownVersion=Boolean(native&&(!unavailable||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=snapshot.runner==='codex'||!knownVersion;
++    const knownVersion=Boolean(native&&(!unavailable||unavailable==='RESOURCE_BUSY'||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=snapshot.runner==='codex'||!knownVersion;
+     const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
+     const resources=[`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,...(isolation.hash!==adapter.hash?[isolation.resource.resourceId]:[]),...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
+     const reserve=(ids?:{runId:string;ptyId:string})=>this.runs.reserveFixedNativeGuard({taskId:input.taskId,projectId:input.projectId,runner:snapshot.runner,snapshotHash:current.pointer.snapshotHash,resourceIds:resources,...(discovery?{discovery}:{}),...(snapshot.legacyBinding||unavailable?{restriction:{reason:'managed_capabilities_unavailable' as const,issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED' as const}}:{}),verify:async proof=>{
+       discoveryProof=proof;this.support.adapters.verify(snapshot.adapterBinding.hash);if(isolation.hash!==adapter.hash)this.support.adapters.verify(isolation.hash);if(consumesH)catalog.verifyNativeIsolation(collection,proof);
+       if(!input.newTask)await this.sessions.verifyNativeIdentity(input.taskId,{runner:snapshot.runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
+     }},ids);
+-    const hold=consumesH?await catalog.reserveRun(collection.generation,snapshot.runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
++    const hold=consumesH?await catalog.reserveNativeGuardRun(collection.generation,snapshot.runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+     try{
+       await run.prepare();
+       let args:string[]=[];
+@@ -324,7 +326,7 @@
+     const consumesH=runner==='codex'||!knownVersion,resourceIds=[`agent-adapter:${runner}:${adapter.hash}`,...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
+     const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
+     const reserve=(ids?:{runId:string;ptyId:string})=>this.runs.reserveNativeGuard({taskId:input.taskId,projectId:input.projectId,runner,snapshotHash:record.hash,resourceIds,...(discovery?{discovery}:{}),verify:async proof=>{discoveryProof=proof;this.support.adapters.verify(adapter.hash);if(consumesH){if(proof)catalog.verifyNativeIsolation(collection,proof,true);else catalog.verify(collection);}}},ids);
+-    const hold=consumesH?await catalog.reserveRun(collection.generation,runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
++    const hold=consumesH?await catalog.reserveNativeGuardRun(collection.generation,runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+     try{
+       await run.prepare();
+       let args:string[]=[];

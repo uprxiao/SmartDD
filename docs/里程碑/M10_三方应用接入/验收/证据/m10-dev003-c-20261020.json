@@ -1,0 +1,209 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-C",
+  "recordedAt": "2026-10-20T04:24:20.232441+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; runtime design 6.1/6.2/6.8/8.3; no scope change",
+  "baseCommit": "7297d067ff4ef35cc51a70ae41199fbd56c5430d",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: run-scoped private broker and standalone MCP bridge committed as 7297d06",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "node": "24.19.0",
+      "electron": "42.11.14"
+    }
+  },
+  "implemented": [
+    "Versioned complete immutable Claude Code and Codex CJS adapter trees, executable-aware owned-bundle manifests and migration0013; same-version byte replacement refused",
+    "Exact verified CLI version/platform and native identity checks; original MCP keys, child-only Electron Node mode and controlled argv/file planning without global configuration edits",
+    "Full Claude session plugin projection including binary assets, executable scripts and all relative Skill resources; stable task path and content survive native SID completion and default package upgrade",
+    "Original M4 paths/bytes/markers and legacy-tree-v1 digests retained and registered, never recomputed with the new hash algorithm or guessed from current default resources",
+    "Existing production CapabilityService accepts trusted managed fixed placements, validates actual full projections and uses original runtime; transient run files require explicit owner release, ordinary disposal retains them",
+    "Unmanaged historical task resume retains its recorded project-context MCP name across new run IDs",
+    "Production resource builder/index/full-byte reader and Mac packaging resource declaration; production main initializes local resources and exposes sender-scoped read-only file readiness diagnostics; failures return unavailable state"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 26,
+      "tests": 273,
+      "passed": 273,
+      "failed": 0,
+      "log": "dev003-c-20261020/all-tests.txt",
+      "scope": "Before private-output fixture correction; unchanged business source. Changed 6 bootstrap tests independently rerun below."
+    },
+    {
+      "command": "pnpm test src/main/core/applications/__tests__/agent-support.test.ts",
+      "files": 1,
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "log": "dev003-c-20261020/clean-bootstrap-tests.txt",
+      "scope": "Changed fixture builds standalone CJS and resource index wholly inside its own temporary directory, no pre-existing out required. Subset of the 273, not added to unique count."
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev003-c-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev003-c-20261020/release-rules.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-c-20261020/types.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "failed",
+      "log": "dev003-c-20261020/production-build-progress.txt",
+      "scope": "Production compile and native/offline resource preparation only; no packaged App launch, installer acceptance or publication",
+      "exitCode": 1,
+      "finalLog": "dev003-build-20261020/original-build-failed.json",
+      "followup": "m10-dev003-build-20261020.json"
+    }
+  ],
+  "newTests": {
+    "fixedAgentAdapters": 12,
+    "completeSessionProjection": 6,
+    "existingM4ManagedPlacement": 6,
+    "indexedProductionBootstrap": 6
+  },
+  "artifacts": {
+    "mcpBridge": {
+      "path": "out/applications/mcp-bridge.cjs",
+      "bytes": 764761,
+      "sha256": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428"
+    },
+    "resourceIndex": {
+      "path": "out/capability-bundles/index.json",
+      "sha256": "3e906966fb2002bf592b0a86528286722ed2c78c54a635436c12d9da6b32e0f2",
+      "indexHash": "0dd15f23ec0373abc35068ede50ff8b4183ea4acb5a4999e475e16e0e50c48ba",
+      "resourceSetHash": "697b3c79725ddad06314e4524c9c5b2532614e6489d9966d538736030302d71f",
+      "snapshot": "dev003-c-20261020/resource-index.json",
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "7297d067ff4ef35cc51a70ae41199fbd56c5430d",
+        "dirty": true,
+        "resourceSetHash": "697b3c79725ddad06314e4524c9c5b2532614e6489d9966d538736030302d71f"
+      },
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "applicationBundles": 0
+    }
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "Projection files inferred an overly narrow Buffer<ArrayBuffer> type",
+      "correction": "Explicit complete Record<string,Buffer> preserves Buffer<ArrayBufferLike> values",
+      "redLogs": [
+        "dev003-c-20261020/red-projection-types.txt"
+      ]
+    },
+    {
+      "finding": "Conditional fixture MCP env inferred an optional undefined key incompatible with Record<string,string>",
+      "correction": "Explicit empty Record<string,string>; no runtime or secret validation loosened",
+      "redLogs": [
+        "dev003-c-20261020/red-fixture-types.txt",
+        "dev003-c-20261020/red-repeated-fixture-types.txt"
+      ]
+    },
+    {
+      "finding": "Code inspection found resource bootstrap tests implicitly consumed an existing out/applications build",
+      "correction": "Builder accepts an explicit original CJS input and the test creates both CJS and index in one owned temporary tree; six relevant tests rerun successfully",
+      "observation": "Code inspection, no fabricated executed red test"
+    }
+  ],
+  "boundaries": [
+    "TaskService/PTY still use the historical unmanaged path; no production task has consumed the new managed placement seam yet",
+    "Codex complete H catalog and effective native user/profile configuration inventory are explicit verified private fixtures in these tests, not production catalog coordination or configuration discovery",
+    "No daily HOME/.agents, native history, credentials, userData or M9 worktree was used or changed",
+    "Prepared files remain unverified for native discovery, Skill content reading, model use and bridge recovery; supported mechanism metadata pins Claude Code2.1.303 and Codex0.162.1 only",
+    "Application bundle index is empty; fixed-version application business adapters, shared services/provenance factory, persistent mail cache, actual UI and Agent business integration remain required",
+    "Full pre-migration startup fence, cross-instance H consumer coordination and GC still unfinished",
+    "No M10 packaged App, real Agent model turn or formal T-case was accepted; all 72 product cases retain their existing status",
+    "No external account/API action, email send, main merge, push, tag or release in this checkpoint; production build fetches only pinned public build assets"
+  ],
+  "sourceHashes": {
+    "drizzle/0013_agent_adapters.sql": "41c0ad4c019e54ac464f608dd5520569ab11b52aab18d3bf029446a5a101e1ba",
+    "drizzle/meta/_journal.json": "c904a9e62c2c1ba7e9b90faa189a90e684923151d62d4b8ab02763f530ae96bc",
+    "electron-builder.config.cjs": "5519c85a1b9ac56cee8dc8730903ab1ce1f549dd5781794a6c450b35c1b76cc8",
+    "electron.vite.config.ts": "065bff9106c0a3f7b6ba2e6371aa5b390dfdf3eb8248ec0f70944d51db0a88fa",
+    "resources/agent-adapters/claude-code/1.0.0/adapter.json": "a369136519d6ecb75584aabeafc23311224f57105b6e64d9e6ebdb2b932d23b5",
+    "resources/agent-adapters/claude-code/1.0.0/index.cjs": "f615904f5760bb14465bfd270dbc50100b427d5b63c765cb91c53e088f13a57b",
+    "resources/agent-adapters/claude-code/1.0.0/planner.cjs": "96f5c0b113a2d1b51eb67f225cac3188da38f9c53269190df39f21917bfb82f3",
+    "resources/agent-adapters/codex/1.0.0/adapter.json": "78fa24e114fe5095be1865baa597a91290f11e0ba3fcbc0cec49c3020a80da02",
+    "resources/agent-adapters/codex/1.0.0/index.cjs": "1145b351684ef4245402c5bbbed088af418bd6bae6cf91651bb1ec06e972ee8a",
+    "resources/agent-adapters/codex/1.0.0/planner.cjs": "96f5c0b113a2d1b51eb67f225cac3188da38f9c53269190df39f21917bfb82f3",
+    "scripts/applications/build-bundles.mjs": "a24da5815ea9ffed483001c5e58de494c610034a10795b818ae88ed3ec0dc89d",
+    "scripts/release/native-smoke.cjs": "7e924e8dd078856d473a06b8494de2f76eaefc64a68862cfcdff748893124dee",
+    "src/main/core/applications/__tests__/agent-adapters.test.ts": "ca4ed297781ed7afb135fa64e6afa390e336012f0d429f03a467967864cc88a4",
+    "src/main/core/applications/__tests__/agent-fixture.ts": "a81bfc8afcd1fa23879d5b9625b40960688865d01102cdf1ecafb6a5cf6b9125",
+    "src/main/core/applications/__tests__/agent-support.test.ts": "d183d3f15b5d895e39768ea67bb71875d42be3253011b64dabe05756ff1d6799",
+    "src/main/core/applications/__tests__/session-projector.test.ts": "b3c58c25e642a0fd5a488b8ba0fc63fc30f59231da4a1e70f8edac2fca4b0990",
+    "src/main/core/applications/agent-adapter-registry.ts": "483c808f710a05e4e42912f8ebb85fae378f4fd5c0aa0fc0d2c1b35d37434e20",
+    "src/main/core/applications/agent-assets.ts": "79859feb242d43a67a67f146b21a7f0b646e408192c621964360266b657accd2",
+    "src/main/core/applications/agent-support-service.ts": "52f0cdf8c830d6c22863f79c2ce56e10b65d7de5074f330a3dcd70fe297be1b1",
+    "src/main/core/applications/bundle-source.ts": "32739991e98e7467848477776e54cfaedcb14942ac708a8cc9e70c683e8c767b",
+    "src/main/core/applications/legacy-resource-adopter.ts": "098d22bf97af976bf1286d3d6fa4e59341371e84a200c86f1c236a9cf889c6ce",
+    "src/main/core/applications/owned-bundle.ts": "ddf353f14cdee9682a24079445826d8ea8b860325ba0f14a825ca0e3829e108c",
+    "src/main/core/applications/session-projector.ts": "a4446c4c75627c10dda6feb1aff62a2a0fd2bcd85aee89dc8bb47690b35966f5",
+    "src/main/core/capabilities/capability-service.test.ts": "357e2f0bd07ec4d3c49efc36f9499c43f1858a4edbc45a70ea58359a6a3b65e6",
+    "src/main/core/capabilities/capability-service.ts": "f81f75353679a41378cd23b15f95ed87be57c25423b0ccfeb131d7736f3a1580",
+    "src/main/db/migrations.test.ts": "de6d9a7745a322c4d641fd6c29e53852223c9a6ef64bb721bac0fd12662c37a3",
+    "src/main/db/schema.ts": "92a4bac2cbacbbceefccb878a8b77e63939eb237043d8090e49cfa9a02ddc67a",
+    "src/main/index.ts": "ec67d087eeb316c719a8ca91e82d90d4b752f8c92e91fd6de3cb9cce31853f5f",
+    "src/main/rpc.ts": "82b26ac3a359a453ccbb23b06f09c00c59df3c364dd9fdcc3a4ee3e74697d87a",
+    "src/shared/agent-adapters.ts": "4729327106dda650e66b676b265d0282709b455a8346c2e70c04c560d431bdc3",
+    "src/shared/applications.ts": "2f743eaa1749727b9fc18c5c85fc4735958da9441ef4f4583c5275043af0112a",
+    "src/shared/capability-bundles.ts": "1fe88971a095ac0af2e10fbd30f31e990c51b1b454f84e667b4c572e835ab97f"
+  },
+  "logHashes": {
+    "dev003-c-20261020/all-tests.txt": "af84d7ce75d54dd57a2c6e4cb58ab5b87187fa73dc34d5376e2b910e29d41d02",
+    "dev003-c-20261020/clean-bootstrap-tests.txt": "f15691cdbcf9f7a4ae52391b94981aaa6e4c03fb0f9a1413f8dbca5dfe715d8c",
+    "dev003-c-20261020/initial-adapter-tests.txt": "54184db922a333b4450692656c24c35878ee8200c7ecf1f03f8524a4d36339d6",
+    "dev003-c-20261020/initial-resource-build.txt": "c4629f1e70c443b3509ee21eb291ab2aab0c1d59b72f23bfd5914d162b03c4b8",
+    "dev003-c-20261020/managed-runtime-tests.txt": "a746b85e78931f7f215d384af53be79578a6fb0c5df2d1970158408424567837",
+    "dev003-c-20261020/production-build-progress.txt": "aa79a583866f0ba811ebdd7243072c32456dc57a2eec030429c15b5f0cb8930b",
+    "dev003-c-20261020/project-regression.txt": "5c8023caf1e90e889bb3726a6a0351ca61fb0e417b70947a3181600053a7e479",
+    "dev003-c-20261020/red-fixture-types.txt": "c8d87cdc154bc91e925320ebf354e0d446241289041db3e9dbc04a37523244cb",
+    "dev003-c-20261020/red-projection-types.txt": "7d0eccedbea5cbc202046dd47698a2bd3ec42df866633f4e02d9e20790b1811c",
+    "dev003-c-20261020/red-repeated-fixture-types.txt": "c8d87cdc154bc91e925320ebf354e0d446241289041db3e9dbc04a37523244cb",
+    "dev003-c-20261020/release-rules.txt": "b9e83ce2f648521e0bdb71047dfd46fe8f5954ee92e2f5ad47e170c8ca221ab5",
+    "dev003-c-20261020/resource-index.json": "31c1c034f85ffad088c30b337144cbfe1439b33759c6326f56c6de3b825090a5",
+    "dev003-c-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9"
+  },
+  "logEncoding": "Command stdout/stderr retained with terminal trailing blank lines trimmed only; repeated checks are not counted as new cases",
+  "buildCompletedAt": "2026-10-20T04:48:32.828963+00:00"
+}

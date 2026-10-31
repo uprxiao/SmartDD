@@ -1,0 +1,29 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/coordinator-crash.test.ts src/main/core/applications/__tests__/discovery-early-intent.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/expanded-second-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/coordinator-crash.test.ts (20 tests) 2176ms
+     ✓ serializes concurrent C recovery contenders after the original owner stops  410ms
+     ✓ serializes concurrent H recovery contenders after the original owner stops  368ms
+ ✓ src/main/core/applications/__tests__/discovery-early-intent.test.ts (11 tests) 6429ms
+     ✓ registers and completes the same stopped pre-C intent without substituting source versions  870ms
+     ✓ preserves a running original pre-C owner and all intent bytes  452ms
+     ✓ preserves a unknown original pre-C owner and all intent bytes  434ms
+     ✓ preserves a pre-C staging inconsistency instead of inventing a fresh operation  573ms
+     ✓ preserves a pre-C target inconsistency instead of inventing a fresh operation  419ms
+     ✓ preserves a pre-C target-link inconsistency instead of inventing a fresh operation  490ms
+     ✓ preserves a pre-C resource inconsistency instead of inventing a fresh operation  605ms
+     ✓ preserves a pre-C lease inconsistency instead of inventing a fresh operation  483ms
+     ✓ preserves a pre-C operation inconsistency instead of inventing a fresh operation  576ms
+     ✓ preserves a pre-C advanced-phase inconsistency instead of inventing a fresh operation  734ms
+     ✓ preserves a pre-C source inconsistency instead of inventing a fresh operation  792ms
+
+ Test Files  2 passed (2)
+      Tests  31 passed (31)
+   Start at  18:50:05
+   Duration  9.09s (transform 183ms, setup 0ms, import 338ms, tests 8.61s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/expanded-second-report.json

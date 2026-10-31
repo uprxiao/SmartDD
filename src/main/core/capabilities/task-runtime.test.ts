@@ -45,30 +45,32 @@ beforeEach(() => {
 afterEach(() => { svc.dispose(); capabilities.dispose(); sqlite.close(); rmSync(tmp, { recursive: true, force: true }); });
 
 it('persists the actual child report and cleans only the exited run, keeping the task’s version pins', async () => {
-  const first = svc.create(request);
+  const first = (await svc.create(request));
   const original = first.task.runtimeSnapshot!;
   writeFileSync(join(dirname(original.manifestPath), 'self-check.json'), JSON.stringify({ status: 'passed', issues: [], at: Date.now() }));
   await new Promise((resolve) => setTimeout(resolve, 240));
   expect(svc.get(first.task.id).runtimeSnapshot?.selfCheck.status).toBe('passed');
+  const nativeDir=join(tmp,'claude','projects',encodeClaudeDir(first.task.cwd));mkdirSync(nativeDir,{recursive:true});
+  writeFileSync(join(nativeDir,first.task.nativeSessionId+'.jsonl'),JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
   ptys.emit('exit', first.ptyId, 0);
   expect(existsSync(original.manifestPath)).toBe(false);
-  const reopened = svc.open({ taskId: first.task.id });
+  const reopened = (await svc.open({ taskId: first.task.id }));
   expect(reopened.task.runtimeSnapshot?.skills.map((s) => s.versionId)).toEqual(original.skills.map((s) => s.versionId));
   ptys.emit('exit', first.ptyId, 1); // late duplicate event from the old terminal
   expect(existsSync(reopened.task.runtimeSnapshot!.manifestPath)).toBe(true);
   expect(svc.get(first.task.id).runtimeSnapshot?.runId).toBe(reopened.task.runtimeSnapshot?.runId);
 });
 
-it('records an injection failure without misclassifying the AI profile as broken', () => {
-  const first = svc.create(request); const snapshot = first.task.runtimeSnapshot!;
+it('records an injection failure without misclassifying the AI profile as broken', async () => {
+  const first = (await svc.create(request)); const snapshot = first.task.runtimeSnapshot!;
   writeFileSync(join(dirname(snapshot.manifestPath), 'self-check.json'), JSON.stringify({ status: 'failed', issues: ['missing_dependency:pymysql'], at: Date.now() }));
   ptys.emit('exit', first.ptyId, 78);
   expect(svc.get(first.task.id).runtimeSnapshot?.selfCheck).toMatchObject({ status: 'failed', issues: ['missing_dependency:pymysql'] });
   expect(reports).toEqual([]);
 });
 
-it('does not persist arbitrary child error text or credentials as self-check issues', () => {
-  const first = svc.create(request); const snapshot = first.task.runtimeSnapshot!;
+it('does not persist arbitrary child error text or credentials as self-check issues', async () => {
+  const first = (await svc.create(request)); const snapshot = first.task.runtimeSnapshot!;
   writeFileSync(join(dirname(snapshot.manifestPath), 'self-check.json'), JSON.stringify({ status: 'failed', issues: ['bad token super-secret-value'], at: Date.now() }));
   ptys.emit('exit', first.ptyId, 78);
   expect(JSON.stringify(svc.get(first.task.id))).not.toContain('super-secret-value');
@@ -81,28 +83,28 @@ const childRoot = () => {
     { env: { ...opts.env, CLAUDE_CONFIG_DIR: '/unexpected-shell-root' }, encoding: 'utf8' }).split('\n').find((s) => s.startsWith('CLAUDE_CONFIG_DIR='));
 };
 
-it('keeps Claude’s implicit default config unset after shell rc so existing onboarding is reused', () => {
+it('keeps Claude’s implicit default config unset after shell rc so existing onboarding is reused', async () => {
   profiles.update(request.aiProfileId, { name: 'fixture', runner: 'claude', executable: null, env: [], args: [], color: null, isDefault: true });
-  const task = svc.create(request);
+  const task = (await svc.create(request));
   expect(task.task.injectedEnvNames).not.toContain('CLAUDE_CONFIG_DIR');
   expect(childRoot()).toBeUndefined();
 });
 
-it('retains an explicit Claude config root including an explicit default-looking path', () => {
+it('retains an explicit Claude config root including an explicit default-looking path', async () => {
   const root = join(tmp, 'home', '.claude');
   profiles.update(request.aiProfileId, { name: 'fixture', runner: 'claude', executable: null, env: [{ name: 'CLAUDE_CONFIG_DIR', value: root, secret: false }], args: [], color: null, isDefault: true });
-  svc.create(request);
+  (await svc.create(request));
   expect(childRoot()).toBe(`CLAUDE_CONFIG_DIR=${root}`);
 });
 
-it('resumes an implicit default Claude session under another profile without switching its global state file', () => {
+it('resumes an implicit default Claude session under another profile without switching its global state file', async () => {
   profiles.update(request.aiProfileId, { name: 'fixture', runner: 'claude', executable: null, env: [], args: [], color: null, isDefault: true });
-  const first = svc.create(request);
+  const first = (await svc.create(request));
   const dir = join(tmp, 'home', '.claude', 'projects', encodeClaudeDir(first.task.cwd));
-  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), '');
+  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
   ptys.emit('exit', first.ptyId, 0);
   const other = profiles.create({ name: 'other', runner: 'claude', executable: null, env: [{ name: 'CLAUDE_CONFIG_DIR', value: join(tmp, 'other'), secret: false }], args: [], color: null, isDefault: false });
-  const resumed = svc.open({ taskId: first.task.id, aiProfileId: other.id });
+  const resumed = (await svc.open({ taskId: first.task.id, aiProfileId: other.id }));
   expect(resumed.task.nativeSessionId).toBe(first.task.nativeSessionId);
   expect(childRoot()).toBeUndefined();
 });

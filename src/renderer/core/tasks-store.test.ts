@@ -79,6 +79,23 @@ describe('tasksStore archiving', () => {
 
 // Regression for the M3 review (M1): closing a tab means ending its session, even mid-resume.
 describe('tasksStore.resume', () => {
+  it('views unknown native history without launching, then permits an explicit same-task resume', async () => {
+    const original = { id:'unknown-history-view', nativeSessionId:'original-native-id', ptyId:null, aiProfileId:'profile', archivedAt:null, recovery:'resumable', runtimeSnapshot:null } as TaskView;
+    tasksStore.tasks=[original];tasksStore.tabs=[];tasksStore.terminals.clear();tasksStore.resuming.clear();
+    tasksStore.show(original.id);
+    expect(navigation.currentTaskId).toBe(original.id);
+    expect(rpc.tasks.open).not.toHaveBeenCalled();
+    expect(tasksStore.resuming.has(original.id)).toBe(false);
+    expect(tasksStore.byId.get(original.id)?.runtimeSnapshot).toBeNull();
+    const resumed={...original,ptyId:'explicit-history-pty'};
+    rpc.tasks.open.mockResolvedValue({task:resumed,ptyId:resumed.ptyId});rpc.tasks.list.mockResolvedValue([resumed]);
+    await tasksStore.resume({taskId:original.id});
+    expect(rpc.tasks.open).toHaveBeenCalledTimes(1);
+    expect(rpc.tasks.open).toHaveBeenCalledWith(expect.objectContaining({taskId:original.id}));
+    expect(tasksStore.byId.get(original.id)?.nativeSessionId).toBe(original.nativeSessionId);
+    expect(tasksStore.byId.get(original.id)?.runtimeSnapshot).toBeNull();
+    expect(tasksStore.terminals.get(original.id)).toBe(resumed.ptyId);
+  });
   it('switches sidebar conversations without restarting processes or discarding terminals', () => {
     const a = { id: 'sidebar-a', ptyId: 'pty-a' } as TaskView;
     const b = { id: 'sidebar-b', ptyId: 'pty-b' } as TaskView;

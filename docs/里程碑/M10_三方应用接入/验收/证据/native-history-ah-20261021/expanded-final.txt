@@ -1,0 +1,92 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-races.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/tasks/task-service.test.ts src/main/core/tasks/task-capabilities.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/core/applications/__tests__/mail-read-data.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts src/main/core/tasks/native-sessions.test.ts src/main/core/tasks/session-health.test.ts src/main/db/migrations.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (74 tests | 2 failed) 33375ms
+     × migrates only the provable original prepare identity and leaves frozen sends unchanged on replay 303ms
+     × upgrades v18 send records and retains metadata-only user-source provenance on migration replay 332ms
+ ❯ src/main/core/tasks/task-races.test.ts (6 tests | 1 failed) 140ms
+     × an old run's exit timer does not stop the watcher of the reopened task (review M4) 17ms
+ ❯ src/main/core/capabilities/task-runtime.test.ts (6 tests | 1 failed) 406ms
+   × persists the actual child report and cleans only the exited run, keeping the task’s version pins 267ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/capabilities/task-runtime.test.ts > persists the actual child report and cleans only the exited run, keeping the task’s version pins
+ApplicationError: 无法恢复：原生会话历史状态未知或缺失，请恢复原目录；不会按未发消息新开
+ ❯ TaskService.openOnce src/main/core/tasks/task-service.ts:236:45
+    234|
+    235|     const { recovery, reason } = this.recoveryOf(row);
+    236|     if (recovery === 'unrecoverable') throw new ApplicationError('NATI…
+       |                                             ^
+    237|     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : rec…
+    238|     // The session lives where it was written: resuming under another …
+ ❯ src/main/core/capabilities/task-runtime.test.ts:55:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/tasks/task-races.test.ts > Codex session ownership (review H1) > an old run's exit timer does not stop the watcher of the reopened task (review M4)
+AssertionError: expected 'unrecoverable' to be 'resumable' // Object.is equality
+
+Expected: "resumable"
+Received: "unrecoverable"
+
+ ❯ src/main/core/tasks/task-races.test.ts:156:40
+    154|
+    155|     expect(svc.get(first.id).nativeSessionId).toBe('after-reopen');
+    156|     expect(svc.get(first.id).recovery).toBe('resumable');
+       |                                        ^
+    157|   });
+    158| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > migrates only the provable original prepare identity and leaves frozen sends unchanged on replay
+AssertionError: expected [ …(5) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
++   "0023_capability_run_restrictions",
++   "0024_native_history_observation",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:115:146
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > upgrades v18 send records and retains metadata-only user-source provenance on migration replay
+AssertionError: expected [ …(6) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+  [
+    "0019_mail_user_action_sources",
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
++   "0023_capability_run_restrictions",
++   "0024_native_history_observation",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:342:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed | 10 passed (13)
+      Tests  4 failed | 326 passed (330)
+   Start at  14:12:51
+   Duration  165.34s (transform 852ms, setup 0ms, import 2.30s, tests 162.11s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

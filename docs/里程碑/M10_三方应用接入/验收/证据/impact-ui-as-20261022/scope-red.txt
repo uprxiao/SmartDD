@@ -1,0 +1,42 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-impact.test.ts '--testNamePattern=C project was changed away' --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-impact-ui-as-20261022/scope-red-report.json
+
+[1022/011910.932341:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/011911.079058:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ × src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > refuses a run whose C project was changed away from its actual task instead of reporting empty scope 486ms
+   → expected [Function] to throw an error
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > lists disabled and archived references, emits only non-secret metadata, and does not change any row
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > can explain revocation even when an immutable package and the original snapshot are damaged
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > refuses unknown switch scope and keeps it intact instead of showing no affected runs
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > checks exact revisions and pending switch state without selecting or mutating
+ ↓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > distinguishes empty scope and missing targets and rejects caller authority or SQL fields
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > refuses a run whose C project was changed away from its actual task instead of reporting empty scope
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ src/main/core/applications/__tests__/application-impact.test.ts:15:81
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 skipped (7)
+   Start at  01:19:11
+   Duration  1.69s (transform 1.05s, setup 0ms, import 1.12s, tests 487ms, environment 0ms)
+
+JSON report written to /private/tmp/m10-impact-ui-as-20261022/scope-red-report.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,31 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/skill-observation-monitor.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/core/applications/__tests__/skill-observation-monitor.test.ts (5 tests | 1 failed) 5ms
+   × refreshes after native binding without waiting for the polling interval or overlapping reads 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/skill-observation-monitor.test.ts > refreshes after native binding without waiting for the polling interval or overlapping reads
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/main/core/applications/__tests__/skill-observation-monitor.test.ts:31:55
+     29|  monitor.start('task','run',abort.signal);monitor.start('task','run',a…
+     30|  expect(collect).toHaveBeenCalledTimes(1);finishes[0]();
+     31|  await vi.advanceTimersByTimeAsync(0);expect(collect).toHaveBeenCalled…
+       |                                                       ^
+     32|  finishes[1]();await vi.advanceTimersByTimeAsync(0);
+     33|  monitor.start('task','run',abort.signal);expect(collect).toHaveBeenCa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  12:25:45
+   Duration  101ms (transform 24ms, setup 0ms, import 29ms, tests 5ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

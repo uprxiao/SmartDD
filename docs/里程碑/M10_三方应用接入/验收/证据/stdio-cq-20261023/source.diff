@@ -1,0 +1,98 @@
+diff --git a/resources/applications/definitions.mjs b/resources/applications/definitions.mjs
+index 5c1f51a7..80ab5d1a 100644
+--- a/resources/applications/definitions.mjs
++++ b/resources/applications/definitions.mjs
+@@ -1,6 +1,6 @@
+ // Trusted built-in package sources. Package versions are independent from the App version.
+ // A change to the pinned runtime or any released file requires a new application version.
+-const runtime = { id: 'applications', hash: '8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999', protocolMajor: 1 };
++const runtime = { id: 'applications', hash: '22b6b8b174ac24005d82adfd6349e7f94cce479bb372ec85e94981a22a558667', protocolMajor: 1 };
+ const str = (maxLength = 4096) => ({ type: 'string', maxLength });
+ const integer = (minimum = 0, maximum = Number.MAX_SAFE_INTEGER) => ({ type: 'integer', minimum, maximum });
+ const uuid = { type: 'string', pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$' };
+@@ -48,7 +48,7 @@ const tool = (appId, name, description, permission, method, input, output, seman
+ });
+ const zt = (name, description, method, input, output) => tool('zentao',name,description,'zentao.read',method,input,output,'read','safe-read');
+ const mail = (name, description, permission, method, input, output, semantics = 'read', openWorld = false) => tool('mail',name,description,permission,method,input,output,semantics,semantics === 'read' ? 'safe-read' : 'never',openWorld);
+-const common = { schema: 'smartdd-app-package-v1', version: '1.0.0', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
++const common = { schema: 'smartdd-app-package-v1', version: '1.0.1', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
+ const zentaoConfig = object({ kind: { const: 'zentao' }, baseUrl: str(2048), username: str(512), authMode: enumeration('token','password') });
+ const foxmailConfig = object({ kind: { const: 'foxmail' }, sourcePath: str(4096), account: str(512), queryDays: integer(1,100) },['kind','sourcePath','account']);
+ const smtpConfig = object({ kind: { const: 'smtp' }, host: str(512), port: integer(1,65535), username: str(512), fromAddress: str(512), authMode: { const: 'password' }, mode: enumeration('plain','starttls','implicit-tls') });
+diff --git a/src/main/core/applications/__tests__/bridge-runtime.test.ts b/src/main/core/applications/__tests__/bridge-runtime.test.ts
+index d80aa9ec..80df0249 100644
+--- a/src/main/core/applications/__tests__/bridge-runtime.test.ts
++++ b/src/main/core/applications/__tests__/bridge-runtime.test.ts
+@@ -1,5 +1,6 @@
+ import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
+ import { once } from 'node:events';
++import { createInterface } from 'node:readline';
+ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+@@ -28,6 +29,29 @@ describe.skipIf(process.platform !== 'darwin')('standalone CJS bridge through ac
+       await client.close(); await vi.waitFor(() => expect(reader.state(childIdentity)).toBe('stopped')); await prepared.bridge.exited(); const cliExit = once(cli,'exit'); cli.kill('SIGTERM'); await cliExit; await run.cli.exited(); expect(f.runs.get(run.runId).state).toBe('stopped');
+     } finally { await client.close().catch(() => undefined); if (cli && cli.exitCode === null && cli.signalCode === null) { const done = once(cli,'exit'); cli.kill('SIGKILL'); await done; } await broker?.close(); f.cleanup(); }
+   },30000);
++
++  it('rejects raw MCP requests before initialization and recovers from invalid stdio frames without business calls',async()=>{
++    const f=await runFixture(reader,{application:true,runtime:bundle});let cli:ChildProcess|undefined,child:ChildProcess|undefined,broker:PrivateApplicationBroker|undefined;let calls=0;
++    try{
++      const run = await f.create(); await run.prepare(); await run.cli.arm(); cli = spawn(process.execPath,['-e','setInterval(() => {}, 10000)'],{ cwd: f.home,env: { HOME: f.home,ELECTRON_RUN_AS_NODE: '1' },stdio: 'ignore' }); await once(cli,'spawn'); await run.cli.attach(cli.pid!);
++      const tools = new ApplicationToolService(f.store,f.runs,{ resolve: (_hash,name) => ({ semantics: name.includes('_write_') ? 'write' : 'read',retry: 'never',authorize: () => undefined,execute: async (context,args,operation) => { calls++; return { value: String(args.value),packageHash: operation.packageHash,projectId: context.run.projectId,taskId: context.run.taskId,operationId: operation.operationId }; } }) }); broker = new PrivateApplicationBroker(f.runs,tools); await broker.start(); const prepared = await broker.prepare(run,f.snapshot.mcp[0].serverName); await prepared.bridge.arm();
++
++      child=spawn(process.execPath,[join(f.store.root,'runtime',f.snapshot.packages[0].runtimeHash,'mcp-bridge.cjs'),'--bootstrap',prepared.bootstrapPath],{cwd:f.home,env:{HOME:f.home,ELECTRON_RUN_AS_NODE:'1'},stdio:['pipe','pipe','pipe']});
++      await once(child,'spawn');await prepared.bridge.attach(child.pid!);
++      const messages:Record<string,unknown>[]=[],lines=createInterface({input:child.stdout!});let stderr='';child.stderr!.on('data',chunk=>stderr+=chunk.toString());lines.on('line',line=>messages.push(JSON.parse(line)));
++      let id=0;
++      const send=async(method:string,params:unknown)=>{const requestId=++id;child!.stdin!.write(JSON.stringify({jsonrpc:'2.0',id:requestId,method,params})+'\n');await vi.waitFor(()=>expect(messages.some(x=>x.id===requestId)).toBe(true),{timeout:3000});return messages.find(x=>x.id===requestId)!;};
++      child.stdin!.write(JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized'})+'\n');
++      const earlyList=await send('tools/list',{});expect(earlyList).toHaveProperty('error');expect(calls).toBe(0);
++      const early=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'before-initialize'}});expect(early).toHaveProperty('error');expect(calls).toBe(0);
++      const initialized=await send('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'raw-protocol-fixture',version:'1.0.0'}});expect(initialized).toHaveProperty('result');const notReady=await send('tools/list',{});expect(notReady).toHaveProperty('error');expect(calls).toBe(0);child.stdin!.write(JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized'})+'\n');
++      child.stdin!.write('{"malformed":"private-canary",\n');
++      for(const [method,params] of [['unknown-method',{}],['tools/call',{}],['tools/call',{name:12}],['tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:12}}]] as const){const response=await send(method,params);expect(response.error||(response.result as {isError?:boolean})?.isError).toBeTruthy();expect(calls).toBe(0);}
++      const valid=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'valid-after-invalid'}});expect(valid).not.toHaveProperty('error');expect((valid.result as {isError?:boolean}).isError).not.toBe(true);expect(calls).toBe(1);
++      expect(stderr).not.toContain('private-canary');expect(stderr).not.toMatch(/token|secret|bootstrap/i);
++      lines.close();const exited=once(child,'exit');child.stdin!.end();await exited;await prepared.bridge.exited();const cliExit=once(cli!,'exit');cli!.kill('SIGTERM');await cliExit;await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopped');
++    }finally{for(const process of [child,cli])if(process&&process.exitCode===null&&process.signalCode===null){const done=once(process,'exit');process.kill('SIGKILL');await done;}await broker?.close();f.cleanup();}
++  },30000);
+   it('terminates a refused real broker handshake without leaving an open socket or printing its ticket', async () => {
+     const f = await runFixture(reader,{ application: true,runtime: bundle }); let cli: ChildProcess | undefined, child: ChildProcess | undefined, broker: PrivateApplicationBroker | undefined;
+     try {
+diff --git a/src/main/core/applications/__tests__/builtin-packages.test.ts b/src/main/core/applications/__tests__/builtin-packages.test.ts
+index 88993765..c7d98700 100644
+--- a/src/main/core/applications/__tests__/builtin-packages.test.ts
++++ b/src/main/core/applications/__tests__/builtin-packages.test.ts
+@@ -151,7 +151,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
+    expect(()=>adapters.resolve(installed.packageHash,'smartdd_zentao_work_list_v1',1)).toThrow('可信内置分发依据');expect(resolved).toBe(0);expect(approvals()).toEqual([]);
+  });
+  it('preserves the approved old package and default when same-version bytes change',async()=>{
+-   const installed=await install('zentao');await builtin.packages.activate(installed.packageHash,0);const before=approvals(),changed=changedDistribution('zentao','1.0.0',files=>{files['skills/bug-analysis/SKILL.md']=Buffer.from(files['skills/bug-analysis/SKILL.md'].toString()+'\nchanged\n');});
++   const installed=await install('zentao');await builtin.packages.activate(installed.packageHash,0);const before=approvals(),changed=changedDistribution('zentao',installed.version,files=>{files['skills/bug-analysis/SKILL.md']=Buffer.from(files['skills/bug-analysis/SKILL.md'].toString()+'\nchanged\n');});
+    await expect(builtin.install(changed,changed.index.apps.find(a=>a.appId==='zentao')!)).rejects.toMatchObject({code:'VERSION_CONFLICT'});expect(approvals()).toEqual(before);expect(builtin.packages.active('zentao')?.packageHash).toBe(installed.packageHash);expect(builtin.assertTrusted(installed.packageHash).state).toBe('ready');
+  });
+  it('withholds execution when the retained original distribution proof is corrupt',async()=>{
+diff --git a/src/main/core/applications/bridge-runtime.ts b/src/main/core/applications/bridge-runtime.ts
+index 75936f5c..4316a9a6 100644
+--- a/src/main/core/applications/bridge-runtime.ts
++++ b/src/main/core/applications/bridge-runtime.ts
+@@ -7,13 +7,18 @@ async function main(): Promise<void> {
+   if (process.argv.length !== 4 || process.argv[2] !== '--bootstrap') throw new Error('invalid invocation');
+   const client = new ApplicationBridgeClient(consumeBridgeBootstrap(process.argv[3])); await client.start();
+   const server = new Server({ name: 'WillYou applications',version: '1.0.0' },{ capabilities: { tools: {} } });
++  let initialized = false;
++  server.oninitialized = () => { initialized = server.getClientVersion() !== undefined; };
++  const requireInitialized = () => { if (!initialized) throw new Error('WillYou application MCP initialization required'); };
+   const contracts = new Map<string,number>();
+   server.setRequestHandler('tools/list',async () => {
++    requireInitialized();
+     const response = await client.request('tools/list'); if (response.status !== 'ok') throw new Error('WillYou application capabilities unavailable');
+     const value = response.value as { tools: BridgeTool[];unavailable: unknown }; contracts.clear();
+     return { tools: value.tools.map(tool => { contracts.set(tool.name,tool.contractMajor); const { contractMajor: _,...definition } = tool; return definition; }),_meta: { 'willyou/unavailable': value.unavailable } };
+   });
+   server.setRequestHandler('tools/call',async (request,extra) => {
++    requireInitialized();
+     const contract = contracts.get(request.params.name) ?? Number(/^smartdd_[a-z0-9_]+_v([1-9][0-9]*)$/.exec(request.params.name)?.[1]); if (!Number.isSafeInteger(contract) || contract < 1) return { isError: true,content: [{ type: 'text',text: '此运行尚未发现该固定工具；请检查应用能力状态。' }] };
+     try {
+       const args = request.params.arguments ?? {}, connection = typeof args.connectionId === 'string' ? args.connectionId : null;

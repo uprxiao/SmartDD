@@ -1,0 +1,260 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-I",
+  "recordedAt": "2026-10-20T09:06:49.811442+00:00",
+  "requirementBaseline": "R1.6 incl12.21;R06/R07/R08 and12.5;UI authority layer does not complete native explicit-user instruction path",
+  "baseCommit": "5ff60713f9227aa7ba423c2abf2fbf1cca9b7f7f",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "prototypeBaseline": "8466734",
+  "applicationVersion": "0.0.5",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Original Mail1.0.0 send prepare/get/cancel/execute CJS Data APIs;unchanged schema and runtime",
+    "Current SMTP public config compatibility preflight and draft/content/review hash checks;prepare does not decrypt or submit",
+    "Main-frame display nonce and concrete-intent confirmation;metadata provenance plus live host RAM and original run signal;atomic single consumption",
+    "New0019 migration retains historical draft/send state and source metadata across upgrade/replay;disk assertion alone grants nothing",
+    "One actual submission/current-secret rotation,exact frozen MIME and Bcc envelope,stable attachment,unknown/no replay and project/run authority",
+    "Actual producer promise and persisted mail-send resource lease survive bounded cancellation;close waits actual activity;cloned ancestry cannot bypass active producer",
+    "Exact kernel PID/start provenance;outside-C owner probe with inside-C row recheck;terminal lease cleanup without rewriting original result;graceful pending-grant invalidation",
+    "Public policy changes invalidate old intents;separate socket shutdown cause prevents Nodemailer from overwriting CANCELED while actual callback/socket drains"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects --maxWorkers=2",
+      "status": "passed",
+      "files": 49,
+      "tests": 635,
+      "passed": 635,
+      "failed": 0,
+      "m10AndRelatedRuntime": 556,
+      "projectsAndM8": 79,
+      "log": "dev005-i-20261020/related-validated-20261020.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-i-20261020/types-validated-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev005-i-20261020/build-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "log": "dev005-i-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev005-i-20261020/resources-20261020.json"
+    }
+  ],
+  "testAccounting": {
+    "currentM10RelatedWithProjects": 635,
+    "previousM10RelatedBaseline": 614,
+    "newIntegration": 16,
+    "newEngineLifecycle": 3,
+    "newTrustedRpc": 1,
+    "newActualSmtpCancelDrain": 1,
+    "newTestsIncludedIn635": 21,
+    "note": "614+16+3+1+1=635;repeated subset/whole runs and release rules not added to the unique code count"
+  },
+  "reusedRegression": {
+    "evidence": "m10-dev005-h-20261020.json",
+    "files": 2,
+    "tests": 67,
+    "pathsCheckedUnchangedSince": "5ff60713f9227aa7ba423c2abf2fbf1cca9b7f7f",
+    "checkedScopes": [
+      "src/main/core/files",
+      "src/shared/file-terminal.ts",
+      "src/shared/file-terminal.test.ts",
+      "native/files"
+    ],
+    "sourceManifest": "dev005-i-20261020/source-and-build-manifest.json",
+    "note": "H private failpoint native suite and terminal refs;not rerun in I and not counted as635"
+  },
+  "retainedFailures": [
+    {
+      "log": "dev005-i-20261020/core-first-20261020.json",
+      "passed": 50,
+      "failed": 1,
+      "cause": "Old explicit RPC expected list lacked4 deliberately added endpoints;list updated plus actual-sender negative assertions"
+    },
+    {
+      "log": "dev005-i-20261020/data-first-20261020.json",
+      "passed": 21,
+      "failed": 1,
+      "cause": "Direct trusted-sender rejection is synchronous;test attempted Promise rejection assertion;fixed fixture only"
+    },
+    {
+      "log": "dev005-i-20261020/smtp-drain-20261020.json",
+      "passed": 11,
+      "failed": 1,
+      "cause": "Actual DATA-receipt cancellation returnedESOCKET instead of requiredCANCELED"
+    },
+    {
+      "log": "dev005-i-20261020/related-final-20261020.json",
+      "passed": 634,
+      "failed": 1,
+      "cause": "Changing reject/destroy order did not prevent Nodemailer mutating shared host error.code;final fix closes socket without sharing that error object;expectations unchanged"
+    }
+  ],
+  "immutableResourceVerification": {
+    "indexHash": "a735df8a3405dddaed6afd2b01c4787ba5eae311d441c7aa882fdf05a65f966a",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "evidenceBoundary": {
+    "actualComponents": [
+      "Original immutable CJS package,Tool/Run/Session/host contexts and actual private SQLite",
+      "Private127.0.0.1 SMTP with actual frozen MIME and stable bytes",
+      "Production macOS libproc helper reading actual self PID/start identity"
+    ],
+    "explicitFixtures": [
+      "WebContents/frame and reversible cipher",
+      "CC/Codex CLI process identities,not actual nativeAgent runs",
+      "Unknown-owner/PID-start recovery and producer ignoring cancel are controlled fault fixtures"
+    ],
+    "dailyDataRead": false,
+    "actualAgentRun": false,
+    "externalMailSent": false,
+    "packagedAppExecuted": false,
+    "formalM10Cases": 72,
+    "newFormalProductPasses": 0,
+    "formalProductCasesPassed": 0
+  },
+  "remaining": [
+    "Host-observed native user input and concrete explicit-user instruction authorization without redundant confirmation;current UI path is only one layer",
+    "Production TaskCapabilityLauncher/effective configs/Agent-spawned bridge and actual CC/Codex business acceptance",
+    "Full startup maintenance,run-exit wiring,cross-host recovery,GC,mail health/completeness/last-success status",
+    "P01-P09 and all72 packaged App/system/manual acceptance,defect retest and final delivery"
+  ],
+  "sourceManifest": "dev005-i-20261020/source-and-build-manifest.json",
+  "evidenceFiles": [
+    {
+      "path": "dev005-i-20261020/build-20261020.json",
+      "bytes": 18663,
+      "sha256": "e8a329170523761c1350b65c715475999758be6e8737e4e51498c5b2f6bfe0f5"
+    },
+    {
+      "path": "dev005-i-20261020/core-first-20261020.json",
+      "bytes": 2414,
+      "sha256": "bd1b451b5ac94d27089dd71b8643bd0f848859e12674c48efe218a47c7f03513"
+    },
+    {
+      "path": "dev005-i-20261020/data-first-20261020.json",
+      "bytes": 2125,
+      "sha256": "87db8822201b2e978c41f09db576c67a86eb1c18775f0176a394428030c107d1"
+    },
+    {
+      "path": "dev005-i-20261020/engine-first-20261020.json",
+      "bytes": 644,
+      "sha256": "d4ff06309c69f44601f5fc5c48adab4d412c9af707e46e79006004931649b272"
+    },
+    {
+      "path": "dev005-i-20261020/related-20261020.json",
+      "bytes": 925,
+      "sha256": "ef50a0f7bc8f094e65e4b8f479f9d1ca4f0749856d9592b5ce54011762b065c9"
+    },
+    {
+      "path": "dev005-i-20261020/related-final-20261020.json",
+      "bytes": 1946,
+      "sha256": "cf2f3dfc55e469c756f56efbff2daad731015c3f86b9f38e6df87dfbb37da8f6"
+    },
+    {
+      "path": "dev005-i-20261020/related-validated-20261020.json",
+      "bytes": 935,
+      "sha256": "ca557ef4706118c92cb8a139c9bc47492a3d54bf2b52c5a5d87c63ef088a366f"
+    },
+    {
+      "path": "dev005-i-20261020/release-20261020.json",
+      "bytes": 3566,
+      "sha256": "ced7dd55f16edd25eccbfe24f7ef8eeb9c196c0caa232dd8917afdeda197d40c"
+    },
+    {
+      "path": "dev005-i-20261020/resources-20261020.json",
+      "bytes": 781,
+      "sha256": "6f55886af81372d06f230debd78ff06a5f8e52800a247ab4d5cb4ec68b751a43"
+    },
+    {
+      "path": "dev005-i-20261020/send-second-20261020.json",
+      "bytes": 818,
+      "sha256": "608d0c7e3347989189485abd851f10eb078eaa5f6a4a3edbc153a2321a76d512"
+    },
+    {
+      "path": "dev005-i-20261020/smtp-drain-20261020.json",
+      "bytes": 1714,
+      "sha256": "a3a4761f6f4f377543b3b4b602180cd335a1e8fa2895ba58d677f612fade2547"
+    },
+    {
+      "path": "dev005-i-20261020/smtp-drain-fixed-20261020.json",
+      "bytes": 706,
+      "sha256": "27110cb20fe0b33d77dcc710b68161f2f49f8fedbed07e1492509dcc876c801d"
+    },
+    {
+      "path": "dev005-i-20261020/smtp-first-20261020.json",
+      "bytes": 686,
+      "sha256": "898618c8773fa901befaf195a7b2c6a2a2d78e32c1a11d729b52938b9098b4f6"
+    },
+    {
+      "path": "dev005-i-20261020/source-and-build-manifest.json",
+      "bytes": 6527,
+      "sha256": "31ecde0fa4c0da50d4850aecab359b03507c6352c5fa015ce0252a95a83c89de"
+    },
+    {
+      "path": "dev005-i-20261020/types-composition-20261020.json",
+      "bytes": 451,
+      "sha256": "84391cdc9493b2698550fe08eb1cc45a21cb966fd50463ff0541eba3e4d5a1aa"
+    },
+    {
+      "path": "dev005-i-20261020/types-final-20261020.json",
+      "bytes": 395,
+      "sha256": "238fba5a25e7df08ee0104b956ba91f96f9b855b547fa40624b21528265f94df"
+    },
+    {
+      "path": "dev005-i-20261020/types-first-20261020.json",
+      "bytes": 445,
+      "sha256": "fe08cfdc6d254fe8a5baf9604fb4edcafee5b42eaff28e2b07ba0ce2003ae5d3"
+    },
+    {
+      "path": "dev005-i-20261020/types-second-20261020.json",
+      "bytes": 396,
+      "sha256": "a29a912eee091a715cc4bcf011f3b592584e382546498a230c3dabee522e5fac"
+    },
+    {
+      "path": "dev005-i-20261020/types-validated-20261020.json",
+      "bytes": 399,
+      "sha256": "d100f386764b0e92adf09574c26f4286b4bee1d5f5c0871e808a0907b12fd419"
+    }
+  ]
+}

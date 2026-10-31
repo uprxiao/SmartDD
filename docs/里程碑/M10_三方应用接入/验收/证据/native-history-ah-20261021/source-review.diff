@@ -1,0 +1,773 @@
+--- prior/src/main/core/tasks/task-service.ts
++++ candidate/src/main/core/tasks/task-service.ts
+@@ -1,5 +1,5 @@
+ import { randomUUID } from 'node:crypto';
+-import { existsSync, realpathSync, statSync } from 'node:fs';
++import { accessSync, constants, existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
+ import { homedir } from 'node:os';
+ import { join } from 'node:path';
+ import { desc, eq, isNotNull } from 'drizzle-orm';
+@@ -24,7 +24,8 @@
+ import type { ProfileHealth } from '../ai/profile-health';
+ import { redact } from '../connections/redact';
+ import type { ProjectService } from '../projects/project-service';
+-import { claudeSessionFile, claudeSessionFileExists, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
++import { claudeSessionFile, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
++import { ApplicationError } from '@shared/applications';
+ import { SessionTail } from './session-health';
+ import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
+ 
+@@ -47,7 +48,7 @@
+   baseEnv: () => Record<string, string>;
+   /** Fired whenever the list or a running state changes; the renderer re-reads. */
+   onChanged: () => void;
+-  /** Where API answers seen in the session file go; without it nothing is followed. */
++  /** Optional API health reporting; native history is followed independently. */
+   health?: Pick<ProfileHealth, 'report'>;
+   capabilities?: CapabilityService;
+   managedCapabilities?: TaskCapabilityLauncher;
+@@ -113,6 +114,8 @@
+   private closed = false;
+   private readonly nativeClaims = new Map<string,string>();
+   private readonly bindingNative = new Map<string,Promise<void>>();
++  /** Only this host can attest that a newly started Claude run ended without a history file. */
++  private readonly freshNativeTasks = new Set<string>();
+ 
+   constructor(private readonly d: TaskServiceDeps) {
+     this.now = d.now ?? Date.now;
+@@ -179,6 +182,7 @@
+           aiProfileName: profile.name,
+           runner: profile.runner,
+           nativeSessionId: sessionId,
++          nativeHistoryObserved: null,
+           title: taskTitle(firstMessage, profile.name, ts),
+           firstMessage,
+           injectedEnvNames: JSON.stringify(injectedNames),
+@@ -229,10 +233,10 @@
+     if (!existsSync(row.cwd) || !statSync(row.cwd).isDirectory()) throw new Error(`工作目录不存在：${row.cwd}`);
+ 
+     const { recovery, reason } = this.recoveryOf(row);
+-    if (recovery === 'unrecoverable') throw new Error(`无法恢复：${reason}`);
++    if (recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${reason}`);
+     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
+     // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
+-    const keepRoot = mode === 'resume' && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
++    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
+     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
+       row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined);
+ 
+@@ -476,14 +480,33 @@
+         if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
+       }
+       let ptyId: string;
++      let forkAttempted = false;
+       try {
++        // Recheck after asynchronous preparation/arming and immediately before the
++        // native fork. A late loss must follow the known no-fork failure path.
++        if (context && !context.newTask) {
++          const current = this.require(context.taskId), recovery = this.recoveryOf(current);
++          if (recovery.recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${recovery.reason}`);
++          if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
++          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== stateRootFor(profile.runner, env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
++        }
++        if (context && !context.newTask && profile.runner === 'claude' && mode === 'reopen') {
++          // Persist uncertainty before fork: a host crash must not leave a reusable
++          // "never written" claim while the native process may have written history.
++          this.d.db.update(tasks).set({ nativeHistoryObserved: null }).where(eq(tasks.id, context.taskId)).run();
++        }
+         launchedAt = this.now();
++        forkAttempted = true;
+         ptyId = this.d.ptys.spawn({
+           id: launch?.ptyId, ...command, cwd, env: plan.env, scriptArgs: plan.scriptArgs, cols: size.cols, rows: size.rows,
+         });
+         nativePtyId = ptyId;
++        if (context && profile.runner === 'claude' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
+       } catch (error) {
+-        if (launch) await launch.spawnFailed();
++        if (launch) {
++          if (!forkAttempted && launch.cancelBeforeFork) await launch.cancelBeforeFork();
++          else await launch.spawnFailed();
++        }
+         else runtime?.release();
+         throw error;
+       }
+@@ -550,15 +573,32 @@
+     this.d.onChanged();
+   }
+ 
++  /** A positive observation survives host restarts; absence is never evidence of no history. */
++  private observeNativeHistory(row: TaskRow, file: string | null): boolean {
++    let present = false;
++    try { const stat = file && statSync(file); present = !!stat && stat.isFile() && stat.size > 0; } catch { /* Missing or inaccessible original history. */ }
++    if (present && row.nativeHistoryObserved !== true) {
++      this.d.db.update(tasks).set({ nativeHistoryObserved: true }).where(eq(tasks.id, row.id)).run();
++    }
++    return present;
++  }
++
+   private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
+-    if (row.runner === 'claude') {
+-      if (!row.nativeSessionId) return { recovery: 'unrecoverable', reason: '没有记录 Claude 的 session ID（M3 之前的记录）' };
+-      const root = row.stateRoot ?? stateRootFor('claude', {}, {});
+-      if (claudeSessionFileExists(root, row.cwd, row.nativeSessionId)) return { recovery: 'resumable', reason: '' };
+-      return { recovery: 'fresh', reason: '还没有发过消息，Claude 未写会话文件；打开时沿用原 ID 新开' };
+-    }
+-    if (!row.nativeSessionId) return { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
+-    return { recovery: 'resumable', reason: '' };
++    if (!row.nativeSessionId) return row.runner === 'claude'
++      ? { recovery: 'unrecoverable', reason: '没有记录 Claude 的 session ID（M3 之前的记录）' }
++      : { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
++    const root = row.stateRoot ?? stateRootFor(row.runner, {}, {});
++    let file: string | null = null;
++    try { file = row.runner === 'claude' ? claudeSessionFile(root, row.cwd, row.nativeSessionId) : codexRolloutFile(root, row.nativeSessionId, 0, true); } catch { /* Preserve the original identity on inaccessible history. */ }
++    if (this.observeNativeHistory(row, file)) return { recovery: 'resumable', reason: '' };
++    // Claude reserves its UUID before writing a file. Only a newly created task
++    // whose owned run ended without a file can legitimately reopen that UUID.
++    // A run interrupted before host acknowledgement remains unknown after restart.
++    // NULL is unknown or still running; only this host may recognize its live new run.
++    if (row.runner === 'claude' && (row.nativeHistoryObserved === false || (row.nativeHistoryObserved === null && this.running.has(row.id) && this.freshNativeTasks.has(row.id)))) return { recovery: 'fresh', reason: '尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开' };
++    return { recovery: 'unrecoverable', reason: row.nativeHistoryObserved === true
++      ? '原生会话状态目录或历史缺失或不可用，保留原记录与路径，不能用空目录恢复'
++      : '原生会话历史状态未知或缺失，请恢复原目录；不会按未发消息新开' };
+   }
+ 
+   // Codex creates its session only after the first user message, so poll until it appears.
+@@ -603,7 +643,7 @@
+           if(this.codexWatchers.get(taskId)!==w)return;
+           this.stopWatch(taskId);
+           const currentRuntime=this.runtimes.get(ptyId)?.runtime??managed?.launch.runtime;
+-          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
++          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, nativeHistoryObserved: true, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
+         }catch{this.stopWatch(taskId);this.d.onChanged();return;}
+         finally{if(this.nativeClaims.get(found.id)===claim)this.nativeClaims.delete(found.id);}
+         if (w.finalTail) this.pollFollow(w.finalTail);
+@@ -634,17 +674,19 @@
+   /** Report the API's answers in this run's session file to the profile's health (latest wins). */
+   private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number, resourceSecrets: string[] = []): void {
+     const health = this.d.health;
+-    if (!health) return;
+     this.unfollow(taskId);
+     let scanned = false;
+     const locate = (): string | null => {
+       const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
+       if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
+-      if (profile.runner === 'claude') return claudeSessionFile(root, cwd, row.sid, false);
++      const file = profile.runner === 'claude'
++        ? claudeSessionFile(root, cwd, row.sid, false)
++        : codexRolloutFile(root, row.sid, launchedAt, !scanned);
+       // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
+-      const f = codexRolloutFile(root, row.sid, launchedAt, !scanned);
+       scanned = true;
+-      return f;
++      const current = this.require(taskId);
++      if (current.stateRoot === root && current.cwd === cwd && current.nativeSessionId === row.sid) this.observeNativeHistory(current, file);
++      return file;
+     };
+     // Bound to the settings this run started with: its answers say nothing about an edited profile.
+     const signature = this.d.profiles.launchSignature(profile.id);
+@@ -653,7 +695,7 @@
+       runner: profile.runner,
+       locate,
+       launchedAt,
+-      onEvent: (ev) => health.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
++      onEvent: (ev) => health?.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
+     });
+     const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
+     this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
+@@ -689,6 +731,29 @@
+     }
+     for (const [taskId, id] of this.running) {
+       if (id !== ptyId) continue;
++      if (this.freshNativeTasks.delete(taskId)) {
++        const row = this.require(taskId);
++        let file: string | null = null;
++        try { if (row.stateRoot && row.nativeSessionId) file = claudeSessionFile(row.stateRoot, row.cwd, row.nativeSessionId); } catch { /* Unknown stays held if the native root cannot be inspected. */ }
++        if (!this.observeNativeHistory(row, file) && file === null && row.nativeHistoryObserved !== true) {
++          // An inaccessible root cannot establish that the owned run wrote nothing.
++          let readableRoot = false;
++          try {
++            if (row.stateRoot && statSync(row.stateRoot).isDirectory()) {
++              accessSync(row.stateRoot, constants.R_OK | constants.X_OK);
++              const directory = join(row.stateRoot, 'projects');
++              let names: string[] = [];
++              try { names = readdirSync(directory); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
++              for (const name of names) {
++                const folder = join(directory, name);
++                if (statSync(folder).isDirectory()) accessSync(folder, constants.R_OK | constants.X_OK);
++              }
++              readableRoot = true;
++            }
++          } catch { /* Keep unknown when any possible original history cannot be inspected. */ }
++          if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(eq(tasks.id, taskId)).run();
++        }
++      }
+       this.running.delete(taskId);
+       this.d.onChanged();
+     }
+--- prior/src/main/core/tasks/task-service.test.ts
++++ candidate/src/main/core/tasks/task-service.test.ts
+@@ -1,5 +1,5 @@
+ import { EventEmitter } from 'node:events';
+-import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
++import { appendFileSync, chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ import Database from 'better-sqlite3';
+@@ -97,8 +97,9 @@
+ const claudeRoot = () => join(tmp, 'claude-home');
+ const codexRoot = () => join(tmp, 'codex-home');
+ 
+-const claudeProfile = (over: Partial<AiProfileInput> = {}) =>
+-  profiles.create({
++const claudeProfile = (over: Partial<AiProfileInput> = {}) => {
++  mkdirSync(claudeRoot(), {recursive:true});
++  return profiles.create({
+     name: 'CC-DS',
+     runner: 'claude',
+     executable: null,
+@@ -112,6 +113,7 @@
+     isDefault: false,
+     ...over,
+   });
++};
+ const codexProfile = () =>
+   profiles.create({
+     name: 'Codex',
+@@ -537,3 +539,113 @@
+   ptys.emit('exit',first.ptyId,0);expect(await svc.stopProject(p.id,25)).toBe(true);
+  });
+ });
++
++
++describe('persisted native history cannot become a fresh empty-root session', () => {
++  it.each(['claude', 'codex'].flatMap(runner => ['missing-root', 'empty-root', 'missing-history'].map(fault => ({runner: runner as 'claude' | 'codex', fault}))))('rejects $runner $fault after observed history and host restart, then resumes the restored original', async ({runner, fault}) => {
++    const p = project();
++    const profile = runner === 'claude' ? claudeProfile() : codexProfile();
++    const created = await svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'history guard' });
++    if (runner === 'claude') {
++      writeClaudeSession(created.task.cwd, created.task.id);
++      appendFileSync(claudeSessionPath(created.task.cwd, created.task.id), JSON.stringify({ type: 'assistant', message: { model: 'synthetic', content: [{ type: 'text', text: 'native history written' }] } }) + '\n');
++    } else {
++      const file = writeCodexRollout(created.task.cwd, 'history-guard-native', clock);
++      appendFileSync(file, JSON.stringify({ type: 'response_item', payload: { type: 'message', role: 'assistant', content: [] } }) + '\n');
++      await vi.waitFor(() => expect(svc.get(created.task.id).nativeSessionId).toBe('history-guard-native'), { timeout: 2000 });
++    }
++    await vi.waitFor(() => expect(reports.some(r => r.ev.category === 'ok')).toBe(true), { timeout: 2000 });
++    ptys.emit('exit', created.ptyId, 0);
++    const before = sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id);
++    svc.dispose();
++    const root = runner === 'claude' ? claudeRoot() : codexRoot();
++    const quarantine = root + '-preserved';
++    const source = fault === 'missing-history' ? join(root, runner === 'claude' ? 'projects' : 'sessions') : root;
++    renameSync(source, quarantine);
++    if (fault === 'empty-root') mkdirSync(root);
++    svc = new TaskService({ db: drizzle(sqlite, { schema }), ptys, profiles, projects, baseEnv: () => ({ PATH: '/usr/bin', HOME: '/home/x' }), onChanged: () => changed++, now: () => ++clock, codexPollMs: 20, healthPollMs: 20 });
++    const spawns = ptys.spawned.length;
++    await expect(svc.open({ taskId: created.task.id })).rejects.toThrow(/原生会话.*(缺失|不可用)/);
++    expect(ptys.spawned).toHaveLength(spawns);
++    expect(sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id)).toEqual(before);
++    if (fault === 'empty-root') rmSync(root, { recursive: true });
++    renameSync(quarantine, source);
++    const restored = await svc.open({ taskId: created.task.id });
++    expect(restored.task.nativeSessionId).toBe(runner === 'claude' ? created.task.id : 'history-guard-native');
++    expect(ptys.last.args).toContain(runner === 'claude' ? '--resume' : 'resume');
++    expect(ptys.last.env[runner === 'claude' ? '__SMARTDD_V_CLAUDE_CONFIG_DIR' : '__SMARTDD_V_CODEX_HOME']).toBe(root);
++  });
++});
++
++
++describe('native history evidence boundaries', () => {
++  it('observes native history even when optional profile health reporting is disabled', async () => {
++    svc.dispose();
++    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++,healthPollMs:20});
++    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
++    writeClaudeSession(created.task.cwd,created.task.id);
++    await vi.waitFor(()=>expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:1}));
++    ptys.emit('exit',created.ptyId,0);
++    rmSync(claudeRoot(),{recursive:true});mkdirSync(claudeRoot());
++    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++  });
++  it('does not infer a legacy Claude task was never used from a missing file', async () => {
++    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
++    ptys.emit('exit',created.ptyId,0);
++    sqlite.prepare('UPDATE tasks SET native_history_observed=NULL WHERE id=?').run(created.task.id);
++    expect(svc.get(created.task.id)).toMatchObject({recovery:'unrecoverable',recoveryReason:expect.stringContaining('未知')});
++    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++    expect(ptys.spawned).toHaveLength(1);
++  });
++  it('keeps a legitimately never-written Claude UUID and original root when another profile is selected', async () => {
++    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
++    ptys.emit('exit',created.ptyId,0);
++    const other=claudeProfile({name:'another root',env:[{name:'CLAUDE_CONFIG_DIR',secret:false,value:mk('other-root')}]});
++    const opened=await svc.open({taskId:created.task.id,aiProfileId:other.id});
++    expect(opened.task.nativeSessionId).toBe(created.task.id);
++    expect(ptys.last.args).toContain('--session-id');
++    expect(ptys.last.env.__SMARTDD_V_CLAUDE_CONFIG_DIR).toBe(claudeRoot());
++    expect(opened.task.recovery).toBe('fresh');
++    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
++    ptys.emit('exit',opened.ptyId,0);
++    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:0});
++  });
++});
++
++
++describe('interrupted native history observation', () => {
++  it('does not retain a never-written claim across a host restart before an owned exit', async () => {
++    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
++    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
++    svc.dispose();ptys.emit('exit',created.ptyId,0);
++    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++});
++    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++    expect(ptys.spawned).toHaveLength(1);
++  });
++});
++
++
++describe('unreadable original native root', () => {
++  it('keeps unknown rather than certifying an empty history after an owned exit', async () => {
++    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
++    chmodSync(claudeRoot(),0);
++    try {
++      ptys.emit('exit',created.ptyId,0);
++      expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
++      await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++      expect(ptys.spawned).toHaveLength(1);
++    } finally { chmodSync(claudeRoot(),0o700); }
++  });
++});
++
++
++describe('unusable no-message native artifacts',()=>{
++ it.each(['empty-file','directory'] as const)('does not certify %s as an absent Claude history',async kind=>{
++  const p=project(),first=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''}),file=claudeSessionPath(first.task.cwd,first.task.id);
++  mkdirSync(join(claudeRoot(),'projects',first.task.cwd.replace(/[^a-zA-Z0-9]/g,'-')),{recursive:true});
++  if(kind==='empty-file')writeFileSync(file,'');else mkdirSync(file);
++  ptys.emit('exit',first.ptyId,0);
++  await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++  expect(ptys.spawned).toHaveLength(1);
++ });
++});
+--- prior/src/main/core/tasks/capability-lifecycle.ts
++++ candidate/src/main/core/tasks/capability-lifecycle.ts
+@@ -16,6 +16,8 @@
+   beforeSpawn(): Promise<void>;
+   spawned(nativePid: number | null): Promise<void>;
+   initialInput?(sender: TaskInputSender, text: string): void;
++  /** Host-only receipt: OS spawn has not been attempted; never use after a spawn error. */
++  cancelBeforeFork?(): Promise<void>;
+   spawnFailed(): Promise<void>;
+   exited(): Promise<void>;
+   stop(reason: string): Promise<void>;
+--- prior/src/main/core/applications/run-registry.ts
++++ candidate/src/main/core/applications/run-registry.ts
+@@ -45,6 +45,8 @@
+   runId: string;ptyId: string;signal: AbortSignal;cli: OwnedRunProcess;
+   prepare(): Promise<CapabilityRunRecord>;
+   reserveBridge(): Promise<OwnedRunProcess>;
++  /** Caller attests no OS spawn was attempted. Not a recovery/unknown-process API. */
++  cancelBeforeFork(): Promise<CapabilityRunRecord>;
+   stop(reason?: string): Promise<CapabilityRunRecord>;
+ }
+ const TERMINAL = new Set(['stopped','failed']);
+@@ -161,7 +163,7 @@
+     }).immediate());
+     const owned: OwnedRun = { selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
+     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
+-    return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
++    return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+   }
+   /** Trusted host-only guard for schema0 history. It cannot assertActive or reserve a bridge. */
+   async reserveNativeGuard(input:NativeGuardRequest,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
+@@ -205,7 +207,7 @@
+     }).immediate());
+     this.owned.set(runId,{guard,selectionHash,leaseId,abort:new AbortController(),processes:new Set([processId])});
+     if(this.closed){await this.stop(runId,'host-shutdown');throw new ApplicationError('CANCELED','守护准备期间服务已关闭');}
+-    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
++    return{runId,ptyId,signal:this.owned.get(runId)!.abort.signal,cli:this.processHandle(runId,processId,ptyId),prepare:()=>this.prepare(runId),reserveBridge:()=>this.reserveBridge(runId),cancelBeforeFork:()=>this.cancelBeforeFork(runId),stop:(reason='user-stop')=>this.stop(runId,reason)};
+   }
+   /** Narrow an owned prepared run before any child can exist. Not an RPC surface. */
+   async restrictToNative(runId:string):Promise<void>{
+@@ -226,6 +228,19 @@
+       }).immediate();
+       owned.guard=guard;
+     });
++  }
++  /** Only the current host's still-unforked launch closure may provide this receipt.
++   * An armed window with no PID is not proof by itself, especially after a crash.
++   */
++  private async cancelBeforeFork(runId: string): Promise<CapabilityRunRecord> {
++    await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
++      const { row, owned } = this.owner(runId);
++      if (row.state !== 'prepared' || owned.abort.signal.aborted || row.pid !== null) throw new ApplicationError('RESOURCE_STATE_CHANGED', '不能将已启动或状态不明的运行改为未启动');
++      const children = this.store.sqlite.prepare('SELECT * FROM capability_run_processes WHERE run_id=?').all(runId) as ProcessRow[];
++      if (!children.length || children.some(child => !owned.processes.has(child.process_id) || child.pid !== null || !['reserved','armed','canceled'].includes(child.state))) throw new ApplicationError('RESOURCE_STATE_CHANGED', '子进程已经启动或身份未知，保留占用');
++      this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE run_id=? AND state IN ('reserved','armed')").run(now(), runId);
++    }).immediate());
++    return this.stop(runId, 'native-fork-not-attempted');
+   }
+   private async prepare(runId: string): Promise<CapabilityRunRecord> {
+     const taskId = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+--- prior/src/main/core/applications/task-capability-launcher.ts
++++ candidate/src/main/core/applications/task-capability-launcher.ts
+@@ -199,7 +199,7 @@
+           // The registry recorded the narrowing atomically; initial preparation remains immutable.
+           phase='native-only';return launch;
+         },
+-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
++        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+       return launch;
+     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+   }
+@@ -233,7 +233,7 @@
+       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,nativeOnly:async reason=>{
+         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生启动窗口已使用');
+         launch.args=[];runtime.snapshot.selfCheck?.issues.push(reason);phase='native-only';return launch;
+-      },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原会话启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
++      },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原会话启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+       return launch;
+     }catch(error){await run.stop('unavailable-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+   }
+@@ -263,7 +263,7 @@
+       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,nativeOnly:async reason=>{
+         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生历史启动窗口已使用');
+         await this.runs.restrictToNative(run.runId);launch.args=[];for(const issue of ['AGENT_ADAPTER_UNSUPPORTED',reason])if(!check.issues.includes(issue))check.issues.push(issue);phase='native-only';return launch;
+-      },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原生历史启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry))};
++      },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原生历史启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry))};
+       return launch;
+     }catch(error){await run.stop('history-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+   }
+--- prior/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ candidate/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -4,7 +4,7 @@
+ import {EventEmitter} from 'node:events';
+ import {randomUUID} from 'node:crypto';
+ import {parse as parseToml} from 'smol-toml';
+-import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
++import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+ import {tmpdir} from 'node:os';
+ import {join,resolve} from 'node:path';
+ import Database from 'better-sqlite3';
+@@ -42,7 +42,7 @@
+  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
+ }
+ beforeEach(async()=>{
+- expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));
++ expectedDisposeError=undefined;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
+  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
+  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
+  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
+@@ -54,6 +54,13 @@
+ afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys.kill(id);await applications?.dispose();try{await managed?.dispose();}catch(error){if(error!==expectedDisposeError)throw error;}capabilities?.dispose();sqlite?.close();rmSync(root,{recursive:true,force:true});});
+ const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
+ const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
++// Historical success fixtures need actual native history, not only a claimed ID/root.
++const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(home,runner==='codex'?'.codex':'.claude'))=>{
++ const folder=runner==='codex'?join(stateRoot,'sessions','2026','10','21'):join(stateRoot,'projects',encodeClaudeDir(cwd));mkdirSync(folder,{recursive:true});
++ const file=join(folder,runner==='codex'?'rollout-private-'+id+'.jsonl':id+'.jsonl');
++ writeFileSync(file,JSON.stringify(runner==='codex'?{type:'session_meta',payload:{id,cwd,timestamp:new Date().toISOString(),originator:'codex_cli_rs'}}:{type:'user',message:{role:'user',content:'synthetic retained native history'}})+'\n');return file;
++};
++
+ describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+  it.each(['bad-json','unknown-schema','bad-hash','cross-project-snapshot','cross-project-task'] as const)('T63 refuses %s resume and keeps history,diagnostics and original source identities',async kind=>{
+   const first=await create(),nativeId=randomUUID(),date=new Date(),nativeDir=join(home,'.codex/sessions',String(date.getFullYear()),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0'));mkdirSync(nativeDir,{recursive:true});writeFileSync(join(nativeDir,'rollout-t63-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:new Date().toISOString(),originator:'codex_cli_rs'}})+'\n');await vi.waitFor(()=>expect(tasks.get(first.task.id).nativeSessionId).toBe(nativeId),{timeout:6000});expect(tasks.get(first.task.id).recovery).toBe('resumable');tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));const taskId=first.task.id,original=await managed.sessions.get(taskId),beforeRuntime=(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(taskId) as {runtime_snapshot:string}).runtime_snapshot,refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId),identities=sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId),canary='M10_T63_SYNTHETIC_PRIVATE_FIELD';
+@@ -276,6 +283,7 @@
+  it('opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge',async()=>{
+   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+   const id=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,aiProfileName:'historical fixture',runner:'codex',nativeSessionId:'old-owned-native',title:'old history',firstMessage:'',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory('codex','old-owned-native');
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const opened=await tasks.open({taskId:id}),runId=opened.task.runtimeSnapshot!.runId,argv=ptys.launches.at(-1)!.args,flags=argv.find(a=>a.startsWith('skills.config='))!;
+   expect((parseToml(flags).skills as {config:{enabled:boolean}[]}).config.every(item=>item.enabled===false)).toBe(true);expect(argv.join('\n')).not.toContain('--bootstrap');expect(argv.join('\n')).not.toContain('mcp_servers.');expect(opened.task.runtimeSnapshot?.selfCheck.issues).toEqual(['HISTORY_CAPABILITIES_UNKNOWN']);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(id,opened.ptyId)).toBeNull();expect(consumers()).toHaveLength(1);
+@@ -284,6 +292,7 @@
+  it('continues known native history when its disable-list injection exceeds capacity without rewriting the old record',async()=>{
+   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+   const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,runner:'codex',nativeSessionId:nativeId,title:'capacity history fixture',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory('codex',nativeId);
+   const original=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input);launch.args.push('-c','capacity_fixture='+JSON.stringify('x'.repeat(24000)));return launch;});argMax=50000;
+   const opened=await tasks.open({taskId:id}),runId=opened.task.runtimeSnapshot!.runId;expect(ptys.launches.at(-1)!.args).toEqual(['resume','--cd',cwd,nativeId]);expect(opened.task.runtimeSnapshot!.selfCheck.issues).toEqual(['HISTORY_CAPABILITIES_UNKNOWN','AGENT_ADAPTER_UNSUPPORTED','managed_launch_payload_too_large']);expect(consumers()).toHaveLength(1);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(id,opened.ptyId)).toBeNull();expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});tasks.kill(id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
+  });
+@@ -294,6 +303,7 @@
+   const args=['--config','model="kept-user-override"'];profiles.update(codexId,{name:'Preserved original native profile',runner:'codex',executable:profiles.resolve(codexId).command,args,env:[],color:null,isDefault:true});
+   if(kind==='unknown-cli')writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');
+   const id=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,aiProfileName:'original native fixture',runner:'codex',nativeSessionId:'original-history-id',title:'unverified ordinary history',firstMessage:'',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory('codex','original-history-id');
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const opened=await tasks.open({taskId:id}),launch=ptys.launches.at(-1)!,runtime=opened.task.runtimeSnapshot!;
+   expect(tasks.activePty(id)).toBe(opened.ptyId);expect(ptys.live.size).toBe(1);expect(launch.command).toBe(profiles.resolve(codexId).command);expect(launch.args.slice(0,args.length)).toEqual(args);expect(launch.args.join('\n')).not.toMatch(/skills\.config=|mcp_servers\.|--bootstrap/);
+@@ -331,6 +341,7 @@
+  it.each(['claude-code','codex'] as const)('retains verified original %s M4 sources during guarded resume without claiming migration complete',async runner=>{
+   const id=randomUUID(),nativeSessionId=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:runner==='codex'?'codex':'claude',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot,null,2),stateRoot=join(home,runner==='codex'?'.codex':'.claude');
+   drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:runner==='codex'?codexId:claudeId,runner:runner==='codex'?'codex':'claude',nativeSessionId,title:'real original M4 producer fixture',runtimeSnapshot:raw,configVersion:original.snapshot.configVersion,stateRoot,createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory(runner,nativeSessionId,stateRoot);
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const opened=await tasks.open({taskId:id}),record=sqlite.prepare('SELECT source_record_json,state,evidence_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id) as {source_record_json:string;state:string;evidence_json:string};
+   expect(record).toMatchObject({source_record_json:raw,state:'prepared'});expect(JSON.parse(record.evidence_json)).toMatchObject({taskId:id,runner,runtimeHash:capabilities.runtimeIdentity().hash});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
+@@ -340,6 +351,7 @@
+  it.each(['claude-code','codex'] as const)('recovers captured %s sources through the actual TaskService resume hook after an interrupted receipt and original T removal',async runner=>{
+   const id=randomUUID(),nativeSessionId=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:runner==='codex'?'codex':'claude',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot,null,2),stateRoot=join(home,runner==='codex'?'.codex':'.claude');
+   drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:runner==='codex'?codexId:claudeId,runner:runner==='codex'?'codex':'claude',nativeSessionId,title:'captured source receipt interrupted',runtimeSnapshot:raw,configVersion:original.snapshot.configVersion,stateRoot,createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory(runner,nativeSessionId,stateRoot);
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   sqlite.exec("CREATE TRIGGER interrupted_hook_receipt BEFORE UPDATE ON capability_legacy_migration_preparations WHEN NEW.state='prepared' BEGIN SELECT RAISE(ABORT,'private hook receipt interruption'); END");
+   const first=await tasks.open({taskId:id}),held=sqlite.prepare('SELECT state,evidence_json,manifest_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id) as {state:string;evidence_json:string;manifest_json:string};
+@@ -352,6 +364,7 @@
+  it('reports a damaged original M4 source while preserving metadata and ordinary native Agent availability',async()=>{
+   const id=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:'codex',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot),file=original.snapshot.skills[0].path;writeFileSync(file,'damaged original private projection');
+   drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,runner:'codex',nativeSessionId:'old-private-native',title:'damaged original source',runtimeSnapshot:raw,configVersion:original.snapshot.configVersion,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory('codex','old-private-native');
+   const opened=await tasks.open({taskId:id});expect(ptys.live.has(opened.ptyId)).toBe(true);expect(managed.legacyPreparationWarnings.get(id)).toBe('RESOURCE_RECOVERY_REQUIRED');expect(sqlite.prepare('SELECT * FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toBeUndefined();expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(readFileSync(file,'utf8')).toBe('damaged original private projection');tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(opened.task.runtimeSnapshot!.runId).state).toBe('stopped'));original.release();
+  });
+  it('keeps the first retained M4 identity while native discovery binds a missing ID before the next resume',async()=>{
+@@ -361,6 +374,7 @@
+  });
+  it.each(['claude-code','codex'] as const)('keeps converted %s source paths fixed and ordinary Agent available while original ownership activation is pending',async runner=>{
+   const id=randomUUID(),sessionId=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:runner==='codex'?'codex':'claude',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot),stateRoot=join(home,runner==='codex'?'.codex':'.claude');drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:runner==='codex'?codexId:claudeId,runner:runner==='codex'?'codex':'claude',nativeSessionId:sessionId,title:'converted original source awaiting owner coordination',runtimeSnapshot:raw,configVersion:original.snapshot.configVersion,stateRoot,createdAt:stamp,updatedAt:stamp}).run();
++  seedNativeHistory(runner,sessionId,stateRoot);
+   // A retained native-history success fixture requires its original state root.
+   mkdirSync(stateRoot,{recursive:true});
+   const guarded=await tasks.open({taskId:id});tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(guarded.task.runtimeSnapshot!.runId).state).toBe('stopped'));const retained=sqlite.prepare('SELECT source_snapshot_hash FROM capability_legacy_migration_preparations WHERE task_id=?').get(id) as {source_snapshot_hash:string},adapter=support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.1.0')!,generation=JSON.parse(readFileSync(join(home,'.agents/smartdd-runtime/catalog.json'),'utf8')).generation;
+@@ -383,3 +397,34 @@
+   const first=await create();expect(()=>tasks.attachManagedCapabilities(managed)).toThrow('已经固定');tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));const stored=JSON.parse((sqlite.prepare('SELECT runtime_snapshot AS json FROM tasks WHERE id=?').get(first.task.id) as {json:string}).json);stored.sessionCapabilities.taskId='unrelated';sqlite.prepare('UPDATE tasks SET runtime_snapshot=? WHERE id=?').run(JSON.stringify(stored),first.task.id);await expect(tasks.open({taskId:first.task.id})).rejects.toThrow('不属于');expect(ptys.launches).toHaveLength(1);
+  });
+ });
++
++
++describe('native history loss after managed preparation is armed',()=>{
++ it.each(['claude-code','codex'] as const)('refuses a late %s history loss before fork and cancels the known unspawned run',async runner=>{
++  const first=await create(runner==='codex'?codexId:claudeId),nativeId=runner==='codex'?randomUUID():first.task.id,nativeRoot=join(home,runner==='codex'?'.codex':'.claude'),file=seedNativeHistory(runner,nativeId,nativeRoot);
++  if(runner==='codex')await vi.waitFor(()=>expect(tasks.get(first.task.id).nativeSessionId).toBe(nativeId),{timeout:6000});
++  expect(tasks.get(first.task.id).recovery).toBe('resumable');tasks.kill(first.task.id);
++  await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));
++  const raw=sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(first.task.id),original=managed.prepare.bind(managed),preserved=file+'.preserved';
++  const spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();renameSync(file,preserved);};return launch;});
++  await expect(tasks.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++  expect(ptys.launches).toHaveLength(1);expect(sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(first.task.id)).toEqual(raw);
++  await vi.waitFor(()=>expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_runs WHERE task_id=? AND state<>'stopped'").get(first.task.id)).toEqual({n:0}));
++  expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_run_processes WHERE run_id IN (SELECT run_id FROM capability_runs WHERE task_id=?) AND state NOT IN ('exited','canceled')").get(first.task.id)).toEqual({n:0});
++  expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_resource_leases WHERE owner_kind='run' AND owner_id IN (SELECT run_id FROM capability_runs WHERE task_id=?) AND state<>'released'").get(first.task.id)).toEqual({n:0});
++  spy.mockRestore();renameSync(preserved,file);
++ });
++});
++
++
++describe('late native history arrival before fork',()=>{
++ it('does not reopen a fresh Claude UUID after its original history appears during preparation',async()=>{
++  const first=await create(claudeId);tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));
++  expect(tasks.get(first.task.id).recovery).toBe('fresh');
++  const original=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();seedNativeHistory('claude-code',first.task.id);};return launch;});
++  await expect(tasks.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
++  expect(ptys.launches).toHaveLength(1);expect(tasks.get(first.task.id).recovery).toBe('resumable');
++  await vi.waitFor(()=>expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_runs WHERE task_id=? AND state<>'stopped'").get(first.task.id)).toEqual({n:0}));
++  spy.mockRestore();
++ });
++});
+--- prior/src/main/core/applications/__tests__/run-registry.test.ts
++++ candidate/src/main/core/applications/__tests__/run-registry.test.ts
+@@ -162,3 +162,22 @@
+  it('refuses cross-project, v2 or empty-source promotion and detects changed original metadata',async()=>{const g=await guard();await expect(f.runs.reserveNativeGuard({...g.input,projectId:'different-project'})).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(f.runs.reserveNativeGuard({...g.input,taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash})).rejects.toMatchObject({code:'SESSION_ON_HOLD'});await expect(f.runs.reserveNativeGuard({...g.input,resourceIds:[]})).rejects.toMatchObject({code:'INVALID_INPUT'});f.sqlite.prepare("UPDATE capability_session_snapshots SET snapshot_json='{}' WHERE task_id=?").run(g.taskId);await expect(g.run.prepare()).rejects.toMatchObject({code:'SNAPSHOT_CORRUPT'});expect(leases(g.run.runId)).toEqual([{state:'preparing'}]);await g.run.stop();expect(f.runs.get(g.run.runId).state).toBe('stopped');});
+  it('recovers only when the previous guard owner and actual CLI identity are both stopped',async()=>{const g=await guard();await g.run.prepare();await g.run.cli.arm();reader.identities.set(200003,'darwin-proc-v1:400:3');await g.run.cli.attach(200003);hostStopped(g.run.runId);const other=f.registry();expect(await other.recover()).toContainEqual({runId:g.run.runId,state:'orphaned'});expect(leases(g.run.runId)).toEqual([{state:'recovery-required'}]);reader.identities.delete(200003);expect(await other.recover()).toContainEqual({runId:g.run.runId,state:'stopped'});expect(leases(g.run.runId)).toEqual([{state:'released'}]);expect(()=>other.assertActive(g.run.runId)).toThrow('不属于');});
+ });
++
++
++describe('owned host receipt before an OS fork is attempted',()=>{
++ it('cancels both armed windows and releases after a verified no-fork receipt',async()=>{
++  const run=await f.create();await run.prepare();const bridge=await run.reserveBridge();await bridge.arm();await run.cli.arm();
++  await expect(run.cli.cancelBeforeLaunch()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
++  await run.cancelBeforeFork();expect(f.runs.get(run.runId).state).toBe('stopped');expect(leases(run.runId)).toEqual([{state:'released'}]);
++  expect(f.sqlite.prepare('SELECT kind,state,pid FROM capability_run_processes WHERE run_id=? ORDER BY kind').all(run.runId)).toEqual([{kind:'bridge',state:'canceled',pid:null},{kind:'cli',state:'canceled',pid:null}]);
++ });
++ it('refuses to cancel an actually attached process as never forked',async()=>{
++  const run=await active();await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
++  expect(leases(run.runId)).toEqual([{state:'active'}]);expect(f.runs.get(run.runId).state).toBe('active');await run.cli.exited();
++ });
++ it('refuses an uncertain fork and leaves the existing hold intact',async()=>{
++  const run=await f.create();await run.prepare();await run.cli.arm();await expect(run.cli.attach(999999)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});
++  await expect(run.cancelBeforeFork()).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});
++  expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE run_id=?').get(run.runId)).toEqual({state:'unknown'});expect(leases(run.runId)).toEqual([{state:'active'}]);
++ });
++});
+--- prior/src/main/db/schema.ts
++++ candidate/src/main/db/schema.ts
+@@ -180,6 +180,8 @@
+     configVersion: integer('config_version'),
+     /** CLAUDE_CONFIG_DIR / CODEX_HOME in effect, so resume looks for the session file in the right place. */
+     stateRoot: text('state_root'),
++    /** NULL: unknown or running without evidence; false: owned exit without history; true: history observed. */
++    nativeHistoryObserved: integer('native_history_observed', { mode: 'boolean' }),
+     /** M4: version pins, hashes and injection self-check, never secret values. */
+     runtimeSnapshot: text('runtime_snapshot'),
+     archivedAt: integer('archived_at'),
+--- prior/src/main/db/migrations.test.ts
++++ candidate/src/main/db/migrations.test.ts
+@@ -10,7 +10,7 @@
+ }
+ afterEach(() => open.splice(0).forEach((db) => db.close()));
+ 
+-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions'];
++const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation'];
+ 
+ const tables = (db: Database.Database) =>
+   (
+@@ -24,26 +24,38 @@
+   (db.prepare('SELECT hash FROM __drizzle_migrations ORDER BY id').all() as { hash: string }[]).map((r) => r.hash);
+ 
+ describe('bundled migrations', () => {
++  it('preserves legacy unknown native history and observed evidence when the new nullable column is replayed', () => {
++    const db=memoryDb();runMigrations(db,bundledMigrations().slice(0,24));
++    db.exec("INSERT INTO tasks(id,cwd,runner,native_session_id,title,state_root,runtime_snapshot,created_at,updated_at) VALUES('legacy','/private/tmp/project','claude','original-id','original','/private/tmp/native','original snapshot bytes',1,2)");
++    const original=db.prepare('SELECT * FROM tasks').get() as Record<string,unknown>;
++    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation']);
++    expect(db.prepare('SELECT * FROM tasks').get()).toEqual({...original,native_history_observed:null});
++    db.exec("UPDATE tasks SET native_history_observed=1; DELETE FROM __drizzle_migrations WHERE id>=25");
++    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation']);
++    expect(db.prepare('SELECT * FROM tasks').get()).toEqual({...original,native_history_observed:1});
++    expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++  });
++
+   it('adds native-only restriction receipts without rewriting retained snapshots or the original preparation, including replay',()=>{
+-    const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,23));db.exec("INSERT INTO capability_session_snapshots VALUES('retained-task',2,'original snapshot bytes','original-hash','2026-10-21T00:00:00Z','created','active'); INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash) VALUES('retained-run','retained-task','retained-project','codex','stopped','2026-10-21T00:00:00Z','original-hash'); INSERT INTO capability_run_preparations VALUES('retained-run','original preparation bytes','original-preparation-hash','2026-10-21T00:00:00Z');");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions']);db.exec("INSERT INTO capability_run_restrictions VALUES('retained-run','restriction bytes','restriction-hash','2026-10-21T00:00:01Z'); DELETE FROM __drizzle_migrations WHERE id=24;");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original snapshot bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_preparations').get()).toEqual({evidence_json:'original preparation bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_restrictions').get()).toEqual({evidence_json:'restriction bytes'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,23));db.exec("INSERT INTO capability_session_snapshots VALUES('retained-task',2,'original snapshot bytes','original-hash','2026-10-21T00:00:00Z','created','active'); INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash) VALUES('retained-run','retained-task','retained-project','codex','stopped','2026-10-21T00:00:00Z','original-hash'); INSERT INTO capability_run_preparations VALUES('retained-run','original preparation bytes','original-preparation-hash','2026-10-21T00:00:00Z');");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation']);db.exec("INSERT INTO capability_run_restrictions VALUES('retained-run','restriction bytes','restriction-hash','2026-10-21T00:00:01Z'); DELETE FROM __drizzle_migrations WHERE id>=24;");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original snapshot bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_preparations').get()).toEqual({evidence_json:'original preparation bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_restrictions').get()).toEqual({evidence_json:'restriction bytes'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+   });
+   it('adds canonical H locations without changing existing C resource IDs, paths or foreign-key references', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,14));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('original','runtime','original-hash','original-store','C','runtime/original','ready',1,'valid'); INSERT INTO capability_agent_adapters VALUES('codex','1.0.0','original-hash','original','{}');");
+-    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT resource_id,relative_path,scope_identity,scope_relative_path FROM capability_resources').get()).toEqual({resource_id:'original',relative_path:'runtime/original',scope_identity:'original-store',scope_relative_path:null});
+     expect(db.prepare('SELECT resource_id FROM capability_agent_adapters').get()).toEqual({resource_id:'original'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+-    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+   });
+ 
+   it('adds builtin-source provenance without approving historical packages and preserves proofs on replay', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,15));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('old-package-resource','application-package','old-package','owned-store','C','apps/mail/0.9.0/old-package','ready',1,'valid'); INSERT INTO capability_packages VALUES('old-package','mail','0.9.0','app-manifest-v1','apps/mail/0.9.0/old-package','{}','old-package-resource','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT package_hash,version FROM capability_packages').get()).toEqual({package_hash:'old-package',version:'0.9.0'});
+     expect(db.prepare('SELECT * FROM capability_builtin_package_sources').all()).toEqual([]);
+     db.prepare('INSERT INTO capability_builtin_package_sources VALUES(?,?,?,?)').run('old-package','test-proof-hash','test proof retained','2026-10-20T00:00:00Z');
+-    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT source_index_json FROM capability_builtin_package_sources').get()).toEqual({source_index_json:'test proof retained'});
+     expect(()=>db.prepare('DELETE FROM capability_packages WHERE package_hash=?').run('old-package')).toThrow(/FOREIGN KEY/);
+     expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -52,10 +64,10 @@
+   it('adds scoped business operations without rewriting old project selection,drafts or retained resources on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,16));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained business',1,1); INSERT INTO application_project_settings VALUES('p','mail',1,9,NULL,'2026-10-20T00:00:00Z'); INSERT INTO mail_drafts(id,project_id,source_task_id,subject,attachment_count,current_revision,state,created_at,updated_at) VALUES('d','p','old-task','retained',0,1,'draft','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z'); INSERT INTO mail_draft_revisions VALUES('d',1,'original body JSON','original-content-hash','old-task','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:0});
+     db.exec("UPDATE application_project_settings SET policy_revision=7; INSERT INTO application_data_resources VALUES('r','p','mail','mail-draft-v1','d','1','text',1,'mail.draft','hash',1,'text/plain','retained-package','original-operation','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=17");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:7});expect(db.prepare('SELECT content_json,content_hash FROM mail_draft_revisions').get()).toEqual({content_json:'original body JSON',content_hash:'original-content-hash'});
+     expect(db.prepare('SELECT resource_id,minted_package_hash FROM application_data_resources').get()).toEqual({resource_id:'r',minted_package_hash:'retained-package'});
+     db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT id,project_id FROM mail_drafts').get()).toEqual({id:'d',project_id:'p'});expect(db.prepare('SELECT resource_id FROM application_data_resources').get()).toEqual({resource_id:'r'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -72,10 +84,10 @@
+   it('adds source-scoped ZenTao reads and preserves fetched revisions,binary files and receipt provenance on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,17));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained Zentao',1,1); INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,updated_at) VALUES('p','zentao',1,5,3,'2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     db.prepare('INSERT INTO application_zentao_revisions VALUES(?,?,?,?,?,?,?,?,?,?)').run('owned-object','p','source-connection',1,'story','9007199254740997','revision','detail','original JSON','2026-10-20T00:00:00Z');
+     db.prepare('INSERT INTO application_zentao_files VALUES(?,?,?,?,?,?,?)').run('owned-object','7','binary-hash',Buffer.from([0,255]),'application/octet-stream',2,'2026-10-20T00:00:00Z');
+-    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT native_id,payload_json FROM application_zentao_revisions').get()).toEqual({native_id:'9007199254740997',payload_json:'original JSON'});expect(db.prepare('SELECT bytes FROM application_zentao_files').get()).toEqual({bytes:Buffer.from([0,255])});
+     expect(db.prepare('SELECT check_operation_id,original_operation_id FROM application_read_receipt_checks').get()).toEqual({check_operation_id:'check',original_operation_id:'original'});
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:5,policy_revision:3});db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT project_id FROM application_zentao_revisions').get()).toEqual({project_id:'p'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -84,8 +96,8 @@
+   it('adds mail shared-index lineage and receipt proofs without rewriting original operations or their real caller roles',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,18));
+     db.exec("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES('ui','ui','project','p',NULL,NULL,NULL,NULL,'mail','original',1,'mail.query','read','scope','succeeded','2026-10-20T00:00:00Z'),('index','index-job','internal-index','p',NULL,NULL,'index','ui','mail','original',1,'mail.refresh','read','scope','succeeded','2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+     expect(()=>db.exec("INSERT INTO application_index_waiters VALUES('index','forged','source','2026-10-20T00:00:00Z',NULL,'waiting')")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_index_waiters SET state='invented'")).toThrow(/CHECK/);
+   });
+ 
+@@ -182,7 +194,7 @@
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('old-project','kept',1,1)");
+     db.exec("INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at) VALUES('old-project','mail',1,7,'2026-10-20T00:00:00Z')");
+     db.exec("INSERT INTO mail_blob_objects VALUES('old-content',3,'2026-10-20T00:00:00Z'); INSERT INTO mail_attachment_objects(id,project_id,content_hash,filename,content_type,byte_size,created_at) VALUES('old-attachment','old-project','old-content','old.txt','text/plain',3,'2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions']);
++    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+     expect(db.prepare('SELECT id,kind,filename FROM mail_attachment_objects').all()).toEqual([{ id: 'old-attachment',kind: 'attachment',filename: 'old.txt' }]);
+     expect(db.prepare('SELECT slot,revision FROM application_binding_slot_revisions ORDER BY slot').all()).toEqual([{ slot: 'foxmail',revision: 7 },{ slot: 'smtp',revision: 7 }]);
+     db.exec('DELETE FROM __drizzle_migrations WHERE id>=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });
+--- prior/drizzle/meta/_journal.json
++++ candidate/drizzle/meta/_journal.json
+@@ -169,6 +169,13 @@
+       "when": 1792546200000,
+       "tag": "0023_capability_run_restrictions",
+       "breakpoints": true
++    },
++    {
++      "idx": 24,
++      "version": "6",
++      "when": 1792563000000,
++      "tag": "0024_native_history_observation",
++      "breakpoints": true
+     }
+   ]
+ }
+--- prior/drizzle/0024_native_history_observation.sql
++++ candidate/drizzle/0024_native_history_observation.sql
+@@ -0,0 +1 @@
++ALTER TABLE `tasks` ADD `native_history_observed` integer;
+--- prior/src/main/core/applications/__tests__/mail-send-data.test.ts
++++ candidate/src/main/core/applications/__tests__/mail-send-data.test.ts
+@@ -112,7 +112,7 @@
+  });
+  it('migrates only the provable original prepare identity and leaves frozen sends unchanged on replay',async()=>{
+   const intent=await prepare();const before=f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id);
+-  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations']);
++  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);
+   expect(f.sqlite.prepare('SELECT kind,subject_id FROM application_activity_subjects').all()).toEqual([{kind:'mail-send',subject_id:intent.id}]);expect(f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);
+   f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>20');runBundledMigrations(f.sqlite);expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_activity_subjects').get()).toEqual({n:1});expect(messages).toHaveLength(0);
+  });
+@@ -339,8 +339,8 @@
+  });
+  it('upgrades v18 send records and retains metadata-only user-source provenance on migration replay',async()=>{
+   const intent=await prepare();await confirm(intent);const before=f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id),source=f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get() as Record<string,string>;
+-  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+-  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
++  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
++  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
+   expect(()=>f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(randomUUID(),randomUUID(),'renderer-confirmation','hash','metadata','now')).toThrow(/FOREIGN KEY/);expect(()=>f.sqlite.exec("UPDATE mail_user_action_sources SET source_kind='model-approved'")).toThrow(/CHECK/);expect(f.sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(messages).toHaveLength(0);
+  });
+  it('uses the current rotated secret for the same identity without changing the reviewed bytes',async()=>{
+--- prior/src/main/core/capabilities/task-runtime.test.ts
++++ candidate/src/main/core/capabilities/task-runtime.test.ts
+@@ -50,6 +50,8 @@
+   writeFileSync(join(dirname(original.manifestPath), 'self-check.json'), JSON.stringify({ status: 'passed', issues: [], at: Date.now() }));
+   await new Promise((resolve) => setTimeout(resolve, 240));
+   expect(svc.get(first.task.id).runtimeSnapshot?.selfCheck.status).toBe('passed');
++  const nativeDir=join(tmp,'claude','projects',encodeClaudeDir(first.task.cwd));mkdirSync(nativeDir,{recursive:true});
++  writeFileSync(join(nativeDir,first.task.nativeSessionId+'.jsonl'),JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
+   ptys.emit('exit', first.ptyId, 0);
+   expect(existsSync(original.manifestPath)).toBe(false);
+   const reopened = (await svc.open({ taskId: first.task.id }));
+@@ -99,7 +101,7 @@
+   profiles.update(request.aiProfileId, { name: 'fixture', runner: 'claude', executable: null, env: [], args: [], color: null, isDefault: true });
+   const first = (await svc.create(request));
+   const dir = join(tmp, 'home', '.claude', 'projects', encodeClaudeDir(first.task.cwd));
+-  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), '');
++  mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, first.task.nativeSessionId + '.jsonl'), JSON.stringify({type:'user',message:{content:'synthetic original native history'}})+'\n');
+   ptys.emit('exit', first.ptyId, 0);
+   const other = profiles.create({ name: 'other', runner: 'claude', executable: null, env: [{ name: 'CLAUDE_CONFIG_DIR', value: join(tmp, 'other'), secret: false }], args: [], color: null, isDefault: false });
+   const resumed = (await svc.open({ taskId: first.task.id, aiProfileId: other.id }));
+--- prior/src/main/core/tasks/task-races.test.ts
++++ candidate/src/main/core/tasks/task-races.test.ts
+@@ -149,6 +149,8 @@
+     ptys.emit('exit', 'pty-1', 0);
+     expect((await svc.open({ taskId: first.id })).ptyId).toBe('pty-2');
+     await vi.advanceTimersByTimeAsync(3100); // the old run's grace period has ended
++    const nativeDir=join(dir,'codex','sessions','2026','10','21');mkdirSync(nativeDir,{recursive:true});
++    writeFileSync(join(nativeDir,'rollout-private-after-reopen.jsonl'),JSON.stringify({type:'session_meta',payload:{id:'after-reopen',cwd,timestamp:new Date(clock).toISOString(),originator:'codex_cli_rs'}})+'\n');
+     rollouts.mockResolvedValue([meta('after-reopen', 500)]);
+     await vi.advanceTimersByTimeAsync(300);
+ 

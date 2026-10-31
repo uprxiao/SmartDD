@@ -1,0 +1,38 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-diagnostics.test.ts -t 'records stop-only' --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts (32 tests | 1 failed | 31 skipped) 745ms
+   × records stop-only Skill evidence under the old run even after a new run starts 745ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-diagnostics.test.ts > records stop-only Skill evidence under the old run even after a new run starts
+AssertionError: expected [] to match object [ { kind: 'read', …(1) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "kind": "read",
+-     "runId": "892a4594-0337-4b4f-924c-a4bf1a763f07",
+-   },
+- ]
++ []
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts:124:239
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 skipped (32)
+   Start at  12:32:57
+   Duration  1.07s (transform 178ms, setup 0ms, import 255ms, tests 745ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

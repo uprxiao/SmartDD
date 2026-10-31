@@ -1,0 +1,36 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/launch-budget.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (42 tests | 2 failed) 40085ms
+     × withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers 434ms
+     × withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers 489ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers
+ApplicationError: 原标准Skill元数据缺失
+ ❯ src/main/core/applications/task-capability-launcher.ts:169:266
+
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:169:135
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers
+ApplicationError: 原标准Skill元数据缺失
+ ❯ src/main/core/applications/task-capability-launcher.ts:169:266
+
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:169:135
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 74 passed (76)
+   Start at  09:07:13
+   Duration  42.17s (transform 449ms, setup 0ms, import 721ms, tests 41.24s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

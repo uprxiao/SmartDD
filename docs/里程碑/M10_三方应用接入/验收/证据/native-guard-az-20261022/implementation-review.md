@@ -1,0 +1,19 @@
+# AZ 实现检查（最终回归尚未结束）
+
+本轮是AGENTS第5步、已确认R1.6含12.21的缺陷修复。上一目标轮为progress：AY已准确提交3e674f6并获得1313项绿测，同时AZ真实TaskService组合4项得出CC2过/Codex2红。不是状态复述或等待。当前9源文件/2008输入冻结，5生产+4测试（含publisher fixture）；未改canonical源码/原4文档、M9或旧AF未知桥。
+
+native-static-roots的初始capture仅查询权威H资源元数据及唯一C源依赖，不在登记前读取文件，也不是执行或就绪证明。只识别当前store登记、原home/目录/内容ID推导一致、ready完整的原H投影；真正完整树/marker/路径/二进制/执行位在run lease保护后、准备完成前验证。legacy H保留完整原树与原hash；其C源就绪仅在正常sourceBytes=true执行路径强制检查，native-only验证不能把C源坏状态变成执行信任。
+
+C来源全图仍保存于原run lease的hash/代次占用；guard的闭包仅允许已识别静态H之后的C lineage忽略源ready标志，图跨回H、循环、预算超限、H根变化、来源hash/gen变化、依赖变化均拒绝并保留原lease。adapter或任何实际执行根同时依赖同一个源时，严格就绪优先。普通managed/scoped/independent运行不应用此分类，guard依旧不能assertActive、准备工具桥、业务来源或发送授权。13条基础新增覆盖这些边界，首轮连同原权限回归69项过；最终扩大回归另记。
+
+首个Claude交付槽之前的保护需要真正坏来源触发prepareUnavailableSession，而不只是all-ready原managed reserve后restrict。首次pre-slot测试漏查lease_resources且选错路径，1过1红不能当缺陷证据；修正夹具/完整lease查询并恢复AY原state模块后，真正2条红测分别证实无实际canonical占用和同hash恢复源后generic publisher可以重建正在普通运行使用的路径。原错误夹具/红/green2及更正说明全部保留，未改预期/分母。
+
+原schema2 CC会话有唯一原session-projection引用时，普通guard原子登记schema1空current的占用slot+不可用anchor，再绑定真实run/host owner lease。它不宣称文件ready、不改变S或引入App scope；没有原插件/未知历史/legacy绑定不猜测创建。prepared转native也登记同一占用，已有相同run消费者核对owner/lease后复用，避免重复。真正Claude交付绑定仍严格要求preparing（没有扩大到prepared）。已有通用publication fence对slot持续生效，slot/anchor被删除时仍按既有footprint失败关闭。
+
+实际首次原完整目录仍在时，已有占用slot的current/pending均空也必须先归档实际原树；原目录缺失不补造实际归档。当首次全量交付前后hash相同，仍把原完整树rename到明确previous，再交付已核验stage，保留原S/ref/hash路径；不同hash缺少backup依旧拒绝。已保存restore1红测和观测到的pending hash相等原因；原debug临时观测复用情况单列，不能把fixture清理后路径不存在当作运行时事实。现在九条主组合定向全过，包含原根存在/缺失、原ID恢复和无假slot，最终完整主文件再验。
+
+新增三条真实子进程测试：同hash首次全量交付在registered/backed-up/delivered各实际SIGKILL后，旧活owner拒绝接管，核实原进程停止后继续同op/gen、保留原S/ref/backup；与原不同hash及二次恢复者SIGKILL一起复验。只操作本轮spawn的child handle，不按旧PID/时间清理未知占用。进程fixture的full模式仅取原S全部应用，不接外部业务。
+
+主完整131项和受影响11份实际文件按独立临时根并行执行，每job单worker；原请求的resource-store.test.ts不存在，实际测试位于package-registry.test.ts，独立补20项已过；不存在路径不算执行/通过，当前统计只用真实报告，原job不重启。最终类型已exit0，最终相关结果仍待两原session句柄返回。原生/依赖未改，process fixture只在自己的tmp生成CJS。
+
+仍需公共plugin/标准Skill/legacy MCP独立分面、实际H用户占用，87编号、R08-01、R09完整T39/T40、完成交付备份/stage有据回收；之后新包/两实际Agent/全部72约定层级。软件不是实际Agent/App；正式历史2/72、T64部分边界不变，当前源码没有包。无真实模型/外部业务/对外邮件发送/发布。

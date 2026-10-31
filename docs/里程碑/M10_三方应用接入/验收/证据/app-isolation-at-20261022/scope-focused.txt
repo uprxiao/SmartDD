@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-run-scope.test.ts src/main/core/applications/__tests__/application-resource-availability.test.ts src/main/core/applications/__tests__/application-run-policy.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-app-isolation-at-20261022/scope-focused-report.json
+
+[1022/014234.800393:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/014234.924006:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not turn a valid scope receipt into a bypass of current policy or a CLI restart 579ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute 691ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > allows the healthy scope even when the unrelated original app is explicitly marked unavailable 499ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > never widens an owned scope if its C receipt disappears 683ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > refuses even a rehashed wider receipt or another owner without releasing the original run 642ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > retains a scope receipt across the first native ID bind only with the original recorded version 928ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not arm or grant tools when a selected healthy source disappears during preparation 546ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > rejects a missing shared dependency before persisting any scoped run or incomplete protection 520ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not allow foreign, empty, duplicate application scopes or arbitrary extra roots 598ms
+[1022/014240.884037:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > includes a selected preparation, excludes unrecorded ordinary work, and refuses a foreign-project scope 355ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > keeps live native-only work outside the stop set while preserving its selection and refs 405ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > accepts the immutable narrowing receipt after the first actual native ID is bound 658ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > does not use corrupt narrowing evidence to exempt a selected run 655ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > retains an unresolved older narrowing receipt if its original version is missing 671ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > does not silently classify a corrupt original snapshot as unrelated 418ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > keeps verifiable unknown native history outside the M10 stop set but refuses corrupted scope metadata 569ms
+ ✓ src/main/core/applications/__tests__/application-run-policy.test.ts > trusted application stop scope and launch policy > gates only the selected application in the project with a pending switch 400ms
+[1022/014245.148215:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > checks exactly selected identities without changing SQL or the selection 426ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps Mail ready when only the fixed ZenTao package directory is absent 465ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps ZenTao ready when only the fixed Mail package contents are corrupted 436ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > reports shared runtime absence for every dependent app without dropping the fixed packages 386ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not substitute another app or version for a mismatched original identity 402ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not swallow cancellation or unexpected inspector errors as an ordinary unavailable app 397ms
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  01:42:34
+   Duration  12.85s (transform 148ms, setup 0ms, import 296ms, tests 12.33s, environment 0ms)
+
+JSON report written to /private/tmp/m10-app-isolation-at-20261022/scope-focused-report.json

@@ -11,6 +11,7 @@ import type { TerminalImageCache } from './terminal-image-cache';
 export interface TerminalFileSource {
   relativePath: string; absolutePath: string; revision: FileRevision; signal: AbortSignal;
   assert(): void; inspect(): Promise<FileRevision>;
+  read(offset:number,length:number,signal:AbortSignal):Promise<Uint8Array>;
 }
 interface Binding {
   value: TerminalBinding; owner: string; root: RootLease; cancelled: boolean;

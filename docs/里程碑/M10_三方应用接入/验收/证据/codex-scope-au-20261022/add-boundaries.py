@@ -1,0 +1,13 @@
+from pathlib import Path
+p=Path('/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/__tests__/task-capability-launcher.test.ts');s=p.read_text();needle=" it('reports healthy Mail resources independently of unavailable original ZenTao in a scoped Codex run',async()=>{"
+assert s.count(needle)==1
+s=s.replace(needle,""" it('retains scoped Mail during a real ZenTao selection switch and rechecks current Mail policy on every call',async()=>{
+  const x=await zentaoSwitchFixture();await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash);rmSync(join(support.store.root,zen.relativePath),{recursive:true});const created=await create(),runId=created.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(created.task.id),query=()=>appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}});
+  try{expect(await query()).toMatchObject({status:'ok'});await x.next();expect(ptys.live.has(created.ptyId)).toBe(true);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);await applications.selections.setGlobalEnabled('mail',false,1);expect(await query()).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(ptys.live.has(created.ptyId)).toBe(true);await applications.selections.setGlobalEnabled('mail',true,2);expect(await query()).toMatchObject({status:'ok'});expect((await managed.sessions.get(created.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ },20000);
+ it('keeps the native Agent without any application grant when the original shared application runtime is missing',async()=>{
+  const builtin=await selectBoth(),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),runtime=support.store.get('runtime:'+zen.manifest.runtime.hash);rmSync(join(support.store.root,runtime.relativePath),{recursive:true});const created=await create(),runId=created.task.runtimeSnapshot!.runId;
+  try{expect(ptys.live.has(created.ptyId)).toBe(true);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect((await managed.sessions.get(created.task.id)).snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);expect(managed.runs.inputContext(created.task.id,created.ptyId)).toBeNull();}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
+ });
+"""+needle);p.write_text(s)

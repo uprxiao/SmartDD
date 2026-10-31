@@ -1,0 +1,105 @@
+{
+  "recordedAt": "2026-10-24T11:55:12.049556+00:00",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "requirement": "R1.6 + 12.21; R10-06/11/14/19-20; T65; technical design 11.3 retains historical stable directories",
+  "software": {
+    "uniqueFinalTests": 169,
+    "files": 7,
+    "newClaudeGcTests": 10,
+    "typecheck": "node and web passed"
+  },
+  "package": {
+    "path": "/private/tmp/willyou-m10-ky-package-20261024/mac-arm64/WillYou.app",
+    "asar": "5837165187ab61c015148155558e834d5b0d3ddcd00febdbd39a5539eaa3d940",
+    "native": "974902fea7e19d28e08f51611bcc3f197611407d21eff3e642c8a3c59c83a38c",
+    "nativeSmoke": "six passed",
+    "previousAsar": "da217da3f94d8cb4a78cdea1d58f9af3f8bfcd1c1ceb80eba148f0359531077b"
+  },
+  "actualApp": {
+    "layer": "I: actual packaged UI-scoped IPC, native exclusive moves and physical removal; synthetic unused graph, explicit private fault wrappers, no UI input/native CLI/model",
+    "syntheticClaudeNoActualCli": true,
+    "passedUniqueScenarios": 2,
+    "checkGroups": 8,
+    "initialBatchStatus": "failed before second scenario action; first normal-shared scenario passed",
+    "finalClaudeComparisonStatus": "passed-partial",
+    "all8MainPidsAbsent": [
+      58107,
+      58131,
+      58169,
+      58183,
+      58620,
+      58649,
+      58668,
+      58703
+    ],
+    "uiInputs": 0,
+    "previousVersionPreviewOnly": true
+  },
+  "sourceFreezeDelta": [
+    "scripts/applications/graph-gc-app.mjs"
+  ],
+  "archiveStaysPrivate": {
+    "path": "/private/tmp/willyou-m10-ky-code-20261024.tar.gz",
+    "sha256": "bdcd995995340c12322a019694a099ea9859f174c0454730845dc4757c3a218d",
+    "bytes": 17520342
+  },
+  "formalCases": {
+    "passed": 26,
+    "total": 72,
+    "T65": "partial"
+  },
+  "failureRecords": [
+    "verification/red.log",
+    "verification/red-product.log",
+    "verification/green1.log",
+    "verification/green2.log",
+    "app-1/result.json"
+  ],
+  "limits": [
+    "No real Claude CLI, system approval or GUI inputs",
+    "S/refs and historical stable directories are retained, never released by this change",
+    "Original T65 race/UI/index/cross-volume and remaining formal cases still required"
+  ],
+  "files": {
+    "app-1/logs/claude-alias/bootstrap.log": "7056f5b1537125f4e9e6a1d17382184a9f0d78214f994b4d9399adc8321ba21b",
+    "app-1/logs/normal-shared/before-normal-restart.log": "8bb8b7809cf23799efa36710018a25a929df4901503f7ba3146609d1bc5581ac",
+    "app-1/logs/normal-shared/bootstrap.log": "a7a5ea960bd83bf9d48b5de41392c7034db11bc31af73dc59537e887e8db573f",
+    "app-1/logs/normal-shared/normal-restart.log": "bee031fd1faa8ecb56355a24b3c83bde87138ce7dc504a6fa3bd2921bebde4ff",
+    "app-1/result.json": "12d588037b2bc526aee284621db19edfd0b5369ca0fccb7ef120417aa7888ba0",
+    "app-1/setup/prepare.cjs": "b5c05c1d12cf8397e1d89a6eea1da1075193fe66aa6b57e52325967accaaf50c",
+    "app-1/setup/raw-assets.mjs": "145c6d353d855e871e14ffeebd387b4d42f617893c407e43d01938bae0271eb3",
+    "app-2/logs/claude-alias/before-normal-restart.log": "5729879bed3de018b73483da19cafef2bf4dc6602108c245641974c63cc91586",
+    "app-2/logs/claude-alias/bootstrap.log": "6e57ac92c36502e258adf5fbce22d4c0a35771fa54f8410183fd46f97f1b5bae",
+    "app-2/logs/claude-alias/normal-restart.log": "f3cade16025d59b1cf44a8018f25f146518d388df5959873830d81a99d75f37c",
+    "app-2/logs/claude-alias/previous-alias-defect.log": "288d66de27315e68cd4779288c5604ae9162c5cda84b1b6068842ec5c88f0845",
+    "app-2/result.json": "92e079aaa01ea3421e6ab1601701bd549015887c034c7b60c7d02795a552ae5e",
+    "app-2/setup/prepare.cjs": "06ab1394e79d4cd2fa31e9e01e6b9ac06a1fd521753367430abced4c5023dcb9",
+    "app-2/setup/raw-assets.mjs": "145c6d353d855e871e14ffeebd387b4d42f617893c407e43d01938bae0271eb3",
+    "source/scripts/applications/fixtures/graph-gc-precondition.ts": "e39386203f31dfdf2592c58ad9cb7339855f291fa6911907db5c2df5e160f863",
+    "source/scripts/applications/graph-gc-app.mjs": "641b12b3c15545098ee4bf52aa27230d85d142af798832eba68db26bb9414761",
+    "source/src/main/core/applications/__tests__/resource-gc-claude.test.ts": "ae778a5d5a8477fda958283c224594e3eb321e45332fc811b9e58588eb176d4c",
+    "source/src/main/core/applications/resource-gc-claude.ts": "07b6fd32fd40ed205bd0f8e75897237fac528cd94a001913243a97ea0db834bc",
+    "source/src/main/core/applications/resource-gc-plan.ts": "2e279cf6799971d6b9b492ce49c382cf501108084496ad664afe6bde1372c444",
+    "verification/app-final.log": "1fb22bd312122ad7131775cf1ff7d78e12ac557d752b884301d3f2e696dfa646",
+    "verification/app-first.log": "65aadcac895ba8574dccbb74f248c6f43b5530527d0232e3e2ccc23ae73ad46b",
+    "verification/driver-before-offline-fix.mjs": "14db0ea1d736ed507bd91f697ba49cb87c914cef7f25ea2fd947df5a85cd3c48",
+    "verification/fixture-before.test.ts": "264a5539dc4f5110f117a292fba0123e4fe4fda5a32f57ca2cc3ba03a5f6113d",
+    "verification/green1.log": "f6dea351b86c592c8ad86c0f977763039a8193ccf60b182ee68a3b54cb6457c4",
+    "verification/green2.log": "717d831cc2bbf1736f0795faacc59a0b34ba7d3c3a78f32823fb20d380891a7c",
+    "verification/green3.log": "fd4e596df5146a2ce73e8a494e2af0bc33cc130e593be77c5d33cbe98fdcc324",
+    "verification/legacy-regression.log": "0a0074c9d74914ae4f0a781f6f1f4208853641e77c1109da6d6472c1e85879e7",
+    "verification/offline-diagnosis.json": "03935371f3c1a8930d7a499dfad6b40a748addd967f2e3dde0d72758031b7468",
+    "verification/package.log": "91bf8e1b0f74028ec9b5b6f7b7c99bd93334a84896fdb49a6709459024f36948",
+    "verification/red-product.log": "3f00a68e55f269364d22e3fd854d4bb690aeb63a96b50e94633fe002f92b3139",
+    "verification/red-source/__tests__/resource-gc-claude.test.ts": "a3c131569076a44222b7136052e58f7499f3f1e5b74133739a1429f9f4fdaedf",
+    "verification/red-source/resource-gc-plan.ts": "a5c35078832f7d5dc119881b745748d8af2eec2e10086f93fdf2014173fb72e9",
+    "verification/red.log": "d94f31e00743e6579eca9333c8a13fde1f90810d12eeafd4186be1ccff9c49f9",
+    "verification/regression1.log": "b91645210fb663493347985ab2c3c04ce712511ec09f58634708447a3598b69e",
+    "verification/source-baseline.json": "4273552277d97adf680419d48dfdfdd1c50b049b1638a8d4e1ce21e409cfbb88",
+    "verification/types-final.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "verification/types1.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700",
+    "verification/types2.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+  }
+}

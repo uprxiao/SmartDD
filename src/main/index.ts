@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification } from 'electron';
 import {
   aiProfilesChangedEvent,
+  applicationsChangedEvent,
   menuOpenSettingsEvent,
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
@@ -20,11 +21,18 @@ import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, mark
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { ProfileHealth } from './core/ai/profile-health';
 import { CapabilityService } from './core/capabilities/capability-service';
+import { ResourceStore } from './core/applications/resource-store';
+import {MacProcessIdentityReader} from './core/applications/process-identity';
+import { AgentSupportService } from './core/applications/agent-support-service';
+import { ApplicationService } from './core/applications/application-service';
+import { ManagedTaskCapabilities } from './core/applications/task-capability-launcher';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
 import { TaskService } from './core/tasks/task-service';
 import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
+import { openManagedDatabase } from './db/managed-client';
+import { recoverBuiltinActivation,activateBuiltinDistribution,builtinActivationRequired } from './core/applications/activation-startup';
 import { runProbes } from './probes';
 import { PtyManager } from './pty-manager';
 import { PtyAccess, registerPtyInput } from './pty-access';
@@ -44,9 +52,18 @@ import type { FileCloseRequest } from '@shared/files';
 import { FileDiagramRenderer } from './core/files/diagram-renderer';
 import { installMediaProtocol, installViewerAssets, registerViewerAssetScheme } from './core/files/viewer-assets';
 
-// Preserve both the existing data root and Electron's safeStorage identity.
-configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
-registerViewerAssetScheme();
+// A supported Electron Node launch executes the requested CJS without loading
+// this browser entry. Reaching it with Node intent means the fuse ignored that
+// intent; refuse before opening user data or a second normal App.
+const embeddedNodeModeRejected = process.env.ELECTRON_RUN_AS_NODE === '1';
+if (embeddedNodeModeRejected) {
+  process.stderr.write('WillYou application bridge unavailable: HOST_INCOMPATIBLE\n');
+  app.exit(1);
+} else {
+  // Preserve both the existing data root and Electron's safeStorage identity.
+  configureAppIdentity(app, process.env.SMARTDD_USER_DATA);
+  registerViewerAssetScheme();
+}
 
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
@@ -96,7 +113,7 @@ async function main(): Promise<void> {
   const dbFile = join(app.getPath('userData'), 'smartdd.db');
   let client: DbClient;
   try {
-    client = openDatabase(dbFile);
+    client = process.platform === 'darwin' ? await openManagedDatabase(dbFile,{processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity')),activationRequired:store=>{try{return builtinActivationRequired(store,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'));}catch{console.warn('[applications] Distribution upgrade preflight unavailable');return false;}},activate:(store,lease)=>activateBuiltinDistribution(store,lease,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles')),recoverActivation:(store,lease,id)=>recoverBuiltinActivation(store,lease,id,app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'))}) : openDatabase(dbFile);
   } catch (e) {
     const message = rpcErrorMessage(e);
     if (isProbeMode) process.stderr.write(`${message}\n`);
@@ -121,6 +138,11 @@ async function main(): Promise<void> {
   try { projectTransfer.recover(); }
   catch { console.warn('[project-transfer] recovery pending: check managed-key storage before importing'); }
   const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
+  let agentSupport: AgentSupportService | undefined;
+  try {
+    agentSupport = new AgentSupportService(new ResourceStore(client.sqlite,app.getPath('userData'),undefined,{processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))}),capabilities,app.isPackaged ? join(process.resourcesPath,'capability-bundles') : join(app.getAppPath(),'out/capability-bundles'));
+    await agentSupport.initialize();
+  } catch { console.warn('[applications] Local capability resources unavailable; ordinary task launch remains available'); }
   const health = new ProfileHealth({
     profiles: aiProfiles,
     baseEnv,
@@ -159,8 +181,22 @@ async function main(): Promise<void> {
     write: (id, data) => ptys.write(id, data),
     resize: (id, cols, rows) => ptys.resize(id, cols, rows),
     killTask: (id) => tasks.kill(id),
+    observedInput:(event,target,data)=>applications?.observeInput(event,target,data),
   });
   registerPtyInput(ipcMain, ptyAccess);
+
+  let applications:ApplicationService|undefined;
+  let managedTasks:ManagedTaskCapabilities|undefined;
+  try {
+    if(agentSupport){
+      applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
+      await applications.recover();
+      if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
+        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
+        tasks.attachManagedCapabilities(managedTasks);
+      }
+    }
+  } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}
 
   const voice = new VoiceService({
     adapter: new TypelessAdapter(app.isPackaged ? join(process.resourcesPath, 'native/smartdd-voice') : join(app.getAppPath(), 'out/native/smartdd-voice')),
@@ -204,6 +240,8 @@ async function main(): Promise<void> {
       health,
       tasks,
       capabilities,
+      agentSupport,
+      applications,
       ptys,
       ptyAccess,
       baseEnv,
@@ -269,6 +307,11 @@ async function main(): Promise<void> {
         const commit = await files.closer.request(owner, 'commit', send);
         if (!commit.ready) { resume(); return; }
       }
+      tasks.dispose();
+      ptys.killAll();
+      // Keep read-only native evidence and storage available until owned run
+      // shutdown has drained. Revocation itself still happens immediately.
+      try { await managedTasks?.dispose(); } finally { await applications?.dispose(); }
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
       const win = getMainWindow();
@@ -297,7 +340,7 @@ async function main(): Promise<void> {
   });
 }
 
-main().catch((e) => {
+if (!embeddedNodeModeRejected) main().catch((e) => {
   console.error(e);
   app.exit(1);
 });

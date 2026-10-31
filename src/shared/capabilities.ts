@@ -1,3 +1,4 @@
+import type { CapabilitySessionPointer } from './application-session';
 import type { Runner } from './types';
 
 export interface SkillVersion {
@@ -51,6 +52,7 @@ export interface RuntimeSkill {
 
 /** Persisted task metadata. Secret values and arbitrary CLI/server output must never enter it. */
 export interface RuntimeSnapshot {
+  sessionCapabilities?: CapabilitySessionPointer;
   runId: string;
   projectId: string;
   configVersion: number;

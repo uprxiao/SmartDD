@@ -1,0 +1,35 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts -t 'only retained plugin resource readiness' --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (35 tests | 1 failed | 34 skipped) 319ms
+     × keeps an intact fixed snapshot readable when only retained plugin resource readiness changes 318ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > atomic known-M4 schema conversion; no original owner claim or native activation > keeps an intact fixed snapshot readable when only retained plugin resource readiness changes
+ApplicationError: 固定能力快照、引用或原生身份损坏，保留现场不重建选择
+ ❯ CapabilitySessionRegistry.read src/main/core/applications/session-registry.ts:90:13
+     88|     } catch (error) {
+     89|       if (error instanceof ApplicationError && ['RESOURCE_STATE_CHANGE…
+     90|       throw new ApplicationError('SNAPSHOT_CORRUPT','固定能力快照、引用或原生身份损坏，…
+       |             ^
+     91|     }
+     92|   }
+ ❯ src/main/core/applications/session-registry.ts:97:25
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ CapabilitySessionRegistry.get src/main/core/applications/session-registry.ts:96:12
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:56:349
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 34 skipped (35)
+   Start at  03:32:37
+   Duration  133.02s (transform 132.38s, setup 0ms, import 132.60s, tests 319ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -101,7 +101,7 @@ const profile = (name: string, runner: 'claude' | 'codex', stateRoot?: string, s
       ...(secret ? [{ name: 'ANTHROPIC_AUTH_TOKEN', secret: true, value: secret }] : []),
     ],
   });
-const create = (aiProfileId: string, firstMessage = '') => svc.create({ projectId, aiProfileId, dirId: null, firstMessage });
+const create = async (aiProfileId: string, firstMessage = '') => (await svc.create({ projectId, aiProfileId, dirId: null, firstMessage }));
 const meta = (id: string, dt: number, firstUserMessage?: string): CodexRolloutMeta => ({
   id,
   cwd,
@@ -114,9 +114,9 @@ describe('Codex session ownership (review H1)', () => {
   it('two same-directory watchers whose reads overlap never claim the same session', async () => {
     vi.useFakeTimers();
     const p = profile('codex', 'codex', join(dir, 'codex'));
-    const first = create(p.id, '').task;
+    const first = (await create(p.id, '')).task;
     clock += 10_000;
-    const second = create(p.id, 'second task sends the first message').task;
+    const second = (await create(p.id, 'second task sends the first message')).task;
     const pending: ((v: CodexRolloutMeta[]) => void)[] = [];
     rollouts.mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
     await vi.advanceTimersByTimeAsync(100);
@@ -131,9 +131,9 @@ describe('Codex session ownership (review H1)', () => {
   it('the first user message from the state DB decides between tasks launched together', async () => {
     vi.useFakeTimers();
     const p = profile('codex', 'codex', join(dir, 'codex'));
-    const a = create(p.id, 'fix the login bug').task;
+    const a = (await create(p.id, 'fix the login bug')).task;
     clock += 1000;
-    const b = create(p.id, 'write the release notes').task;
+    const b = (await create(p.id, 'write the release notes')).task;
     rollouts.mockResolvedValue([meta('sa', 1200, 'fix the login bug'), meta('sb', 1300, 'write the release notes')]);
     await vi.advanceTimersByTimeAsync(300);
 
@@ -145,10 +145,12 @@ describe('Codex session ownership (review H1)', () => {
     vi.useFakeTimers();
     const p = profile('codex-reopen', 'codex', join(dir, 'codex'));
     rollouts.mockResolvedValue([]);
-    const first = create(p.id).task;
+    const first = (await create(p.id)).task;
     ptys.emit('exit', 'pty-1', 0);
-    expect(svc.open({ taskId: first.id }).ptyId).toBe('pty-2');
+    expect((await svc.open({ taskId: first.id })).ptyId).toBe('pty-2');
     await vi.advanceTimersByTimeAsync(3100); // the old run's grace period has ended
+    const nativeDir=join(dir,'codex','sessions','2026','10','21');mkdirSync(nativeDir,{recursive:true});
+    writeFileSync(join(nativeDir,'rollout-private-after-reopen.jsonl'),JSON.stringify({type:'session_meta',payload:{id:'after-reopen',cwd,timestamp:new Date(clock).toISOString(),originator:'codex_cli_rs'}})+'\n');
     rollouts.mockResolvedValue([meta('after-reopen', 500)]);
     await vi.advanceTimersByTimeAsync(300);
 
@@ -158,9 +160,9 @@ describe('Codex session ownership (review H1)', () => {
 });
 
 describe('project delete with running tasks (review M2)', () => {
-  it('is refused while a task runs, and allowed after it ended', () => {
+  it('is refused while a task runs, and allowed after it ended', async () => {
     const p = profile('claude', 'claude');
-    const created = create(p.id);
+    const created = (await create(p.id));
     const ctl = createProjectControllers(projects, { runningTasks: (id) => svc.runningInProject(id) }).projects;
     expect(() => ctl.delete(projectId, { deleteSecrets: true })).toThrow('项目下有 1 个任务正在运行，请先结束');
     expect(svc.get(created.task.id).ptyId).toBe('pty-1');
@@ -173,18 +175,18 @@ describe('project delete with running tasks (review M2)', () => {
 });
 
 describe('resume under another state root (review M3)', () => {
-  it('keeps the directory the session was written in', () => {
+  it('keeps the directory the session was written in', async () => {
     const originalRoot = join(dir, 'original-claude-root');
     const changedRoot = join(dir, 'changed-claude-root');
     const a = profile('original', 'claude', originalRoot);
     const b = profile('changed', 'claude', changedRoot);
-    const created = create(a.id, 'original context');
+    const created = (await create(a.id, 'original context'));
     const sessionDir = join(originalRoot, 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'));
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(join(sessionDir, `${created.task.id}.jsonl`), '{}\n');
     ptys.emit('exit', created.ptyId, 0);
 
-    svc.open({ taskId: created.task.id, aiProfileId: b.id });
+    (await svc.open({ taskId: created.task.id, aiProfileId: b.id }));
     expect(ptys.spawned[1].args).toEqual(['--resume', created.task.id]);
     expect(ptys.spawned[1].env.__SMARTDD_V_CLAUDE_CONFIG_DIR).toBe(originalRoot);
     expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id = ?').get(created.task.id)).toEqual({ state_root: originalRoot });
@@ -197,7 +199,7 @@ describe('task health reports (review H2 / M5)', () => {
     const root = join(dir, 'claude');
     const p = profile('cc', 'claude', root, SECRET);
     const signature = profiles.launchSignature(p.id);
-    const created = create(p.id, 'hi');
+    const created = (await create(p.id, 'hi'));
     // Replace the token while the task runs: the report must still hide the one it started with.
     profiles.update(p.id, {
       name: 'cc',

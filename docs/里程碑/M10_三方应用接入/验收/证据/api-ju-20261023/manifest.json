@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "at": "2026-10-24T01:07:51.838372+00:00",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "status": "Production runtime compatibility guard fixed and regression/build/service verified; current full UI deferred; formal T59 remains partial",
+  "formal": {
+    "passed": 23,
+    "total": 72,
+    "percentage": 31.94,
+    "remaining": 49
+  },
+  "software": {
+    "productRed": 2,
+    "greenTargetedIncludedInFull": 2,
+    "fullFiles": 5,
+    "fullPassed": 155,
+    "fullFailed": 0,
+    "typecheck": "passed"
+  },
+  "results": {
+    "positive-service": {
+      "status": "passed-partial",
+      "checks": 12,
+      "layer": "Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance",
+      "root": "/private/tmp/willyou-m10-native-service-L1RBWJ"
+    },
+    "removed-api-service": {
+      "status": "passed-partial",
+      "checks": 11,
+      "layer": "Old-host UI prerequisite; current packed host TaskService resume and trusted PTY input integration, not current-host UI acceptance; actual native Codex with synthetic provider",
+      "root": "/private/tmp/willyou-m10-config-upgrade-7JcuNV"
+    },
+    "current-ui-focus-deferred": {
+      "status": "deferred-focus-loss",
+      "checks": 7,
+      "layer": "Actual two packaged App hosts, native Codex and MCP; UI launch/resume and terminal submit, production IPC stop; local synthetic provider and mailbox, no real model/SMTP; all T59 eight steps remain separate",
+      "root": "/private/tmp/willyou-m10-config-upgrade-UxACLc"
+    }
+  },
+  "packages": {
+    "standard": {
+      "app": "/private/tmp/willyou-m10-ju-package-20261023/mac-arm64/WillYou.app",
+      "asarSha256": "9c14a8e851bb49260cbfd46dce205b823dd0d9041778ff2f8ce5fbe2ddcf555a",
+      "nativeChecks": 6
+    },
+    "compiled-removed-api": {
+      "app": "/private/tmp/willyou-m10-config-host-v2-78sbwV/WillYou.app",
+      "asarSha256": "3d52dc7be76fb065dc948ad493ed9992b21fc064ffba7ab970251e92c0df0de3",
+      "nativeChecks": 6
+    }
+  },
+  "sourceArchive": {
+    "path": "/private/tmp/willyou-m10-ju-source-20261023.tar.gz",
+    "sha256": "b857e798ba002a2d61fbbcaaae9dbf4fdda0259c1034f10b03767ac4bcb79c80",
+    "files": 1823
+  },
+  "sourceRestoration": {
+    "base": "source-baseline.json",
+    "overlays": [
+      "after/scripts/applications/build-config-upgrade-host.mjs",
+      "after/scripts/applications/native-config-upgrade-ui.mjs"
+    ],
+    "productionInputsUnchangedAfterBuild": true
+  },
+  "boundaries": [
+    "Synthetic compiled host declares API2 solely to remove old API1; no API2 business support claimed",
+    "Negative current-host resume/input is TaskService/trusted PTY integration; no UI acceptance or native approval replacement",
+    "Native model is synthetic loopback; no real SMTP/Claude/system-secret-store pass",
+    "Original current-host UI focus failure retained and not counted as passed"
+  ],
+  "cleanup": [
+    {
+      "folder": "positive-service",
+      "pid": 43744,
+      "present": false
+    },
+    {
+      "folder": "positive-service",
+      "pid": 43847,
+      "present": false
+    },
+    {
+      "folder": "removed-api-service",
+      "pid": 44712,
+      "present": false
+    },
+    {
+      "folder": "removed-api-service",
+      "pid": 44623,
+      "present": false
+    },
+    {
+      "folder": "current-ui-focus-deferred",
+      "pid": 43457,
+      "present": false
+    },
+    {
+      "folder": "current-ui-focus-deferred",
+      "pid": 43348,
+      "present": false
+    }
+  ],
+  "files": {
+    "after/scripts/applications/build-config-upgrade-host.mjs": "a762e3690ff5fbf0409c18ac4387077d6e3f66838e15a4ca2f2196abe9878270",
+    "after/scripts/applications/fixtures/config-upgrade-host.cjs": "120d32131bcc83e535a0d2d638c0aba112cfc0990477a3e0e59e6d2c50691c84",
+    "after/scripts/applications/native-codex-service.mjs": "f4accc64ef17323b89aa71225a9267febaa1c50e347f3494519294cd79a39579",
+    "after/scripts/applications/native-config-upgrade-ui.mjs": "efe3e3fb2059919bcbce0215d974eab869d56d34f00f7a9433e40a504b218dc6",
+    "after/src/main/core/applications/__tests__/registered-extension-call.test.ts": "f407bcc73aef5f66a7d3ffe5e369659d529ee7935a168b00d16f8e8ad0237445",
+    "after/src/main/core/applications/application-adapter-registry.ts": "92b32ef1b5e4b09da977bb09c3cf24ecea949164ebde1e40a35d4a121b9bff98",
+    "api-policy-green.log": "1d175289f7a2eaa902f8a9fc642ee7721ac80abd2889035b525e855e84feb422",
+    "api-policy-product-red.log": "00570aa0d7a9212be6ed9bd8526204d7682cf238e2193ba3b0e0e7445ab0f914",
+    "application-adapter-registry.ts.before": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49",
+    "boundaries-connections-54.log": "a94860f6766109bcd247f476529cb54018f1b8bfebfe8447ea84ebb7903bcdd6",
+    "builder-before-chunk-fix.mjs": "d2f6ea4c0c9c86492c004ba37db1fea84551e06d11421d2481229e57108a3dea",
+    "compiled-chunk-patch-red.log": "bdb54c4be7ac367791a7e44cf740b184c3ea2cbff3d90fa931f4a64ede3f669f",
+    "current-ui-focus-deferred/composer.png": "90b21fc2026423d759e85a514787b934825283ca7aaf368a3be22e56fab97b7d",
+    "current-ui-focus-deferred/electron.txt": "19a839a0cf6163fbd8cc9204bc3b8732bd0cfa8d393fb960951f5e3699ce9a17",
+    "current-ui-focus-deferred/execution.log": "d7e2772cc199b79866a232c53a2a5746413180d9696a1ccabae6cad1c35c695e",
+    "current-ui-focus-deferred/failure.png": "bc5d882e9370b6fb4da919a4f240f6664b3833de9e0e21f93c9dd0add9974d09",
+    "current-ui-focus-deferred/old-host-electron.txt": "2bfa43eb2c9b5700dec324a8527ad97d15a010e98c0f0e67b0a9eb8e7f72a58b",
+    "current-ui-focus-deferred/result.json": "11b4f206d099b156ed694d318fe5cf38a3ab6e1afaf8c48f6a07768d7de9ac67",
+    "current-ui-focus-deferred/task-native-response.png": "c3995aaef1e083341c7afb48769fbb2dbe399993601936bbd7b13198031d086f",
+    "driver-before-selector-fix.mjs": "e081914df9f96f8c3f0c386d58849fe41d96b56cf77bed8efbbef167ad8b3b5b",
+    "package-cli-argument-red.log": "7125f8f6ae707d35b716b8ea6124835526210632e09c6ca84870568bffb1ece6",
+    "package.log": "b180efbab63dd2e80c4dcb1d00c8b690fedccfae6130781a3dedf2d45e0c8656",
+    "positive-service/electron.txt": "fdb41b51a2f58495d40c66e7d0bf6475c760db48f9c666c4bef951ca6d6f49d8",
+    "positive-service/execution.log": "9ac0067db48ecf77cabc4291a79a65ef8986e7b02b1fdb9144b20fd98af29beb",
+    "positive-service/result.json": "a99a6375cc72ece3001cbbd58840b9fc5b88bd493f584323b491595a4fefbfa0",
+    "positive-service/task-native-response.png": "2779670286e5fde0a92860774d6b9183fbf48e45f6767a456bd366cef422b2a7",
+    "registered-extension-call.test.ts.before": "e226b4c24851937387067483913535c41977a39abd693ea9453854eff47b9e19",
+    "regression-101.log": "1a44889f527310266ea24858a0c665a0d03579154f5eb2b8fd20a61c0e5321df",
+    "removed-api-host-manifest.json": "1191cbcc236488593238d6377db50b59540f753d9d35f4571e2f817c79b63a28",
+    "removed-api-native-smoke.log": "96572e052da16ca4746a35e68beb4ad23bbf960ad662db95c067c626d4137c8b",
+    "removed-api-r1-profile-red-driver.mjs": "e0c241c0fdeed50435e31f9b199021f22ab0204be611633b8df0a865b4cd0aab",
+    "removed-api-r1-profile-red.json": "50b04d088af3af17cfa04dbeb38b4091bec98ea1698c99e7b018d203a33b1839",
+    "removed-api-r1-profile-red.log": "2f0bbd0576084343e6c9d86b331975278829c1574dce06547e49bc1875b433ae",
+    "removed-api-r2-focus-driver.mjs": "95e84f6bfd77960dda97a10285311cbb633ce43fdf4f4ec7d94b4552866b8323",
+    "removed-api-r2-focus.json": "3ca22af4819f8c4673bff832e58954c5a7913f80f674b37aa7acec1f753866b4",
+    "removed-api-r2-focus.log": "a261d03904e198d3667f7212f4daf6dfd450ea75b3e0af232f30b2df65a51d66",
+    "removed-api-service/composer.png": "3e68137218f01f85e7b58cff1f161d4a99d379a4571d75ff1b1affffacab39a4",
+    "removed-api-service/electron.txt": "958d9904a66a0a10339785907f7512277a7fa143010550ca718168f28be8c929",
+    "removed-api-service/execution.log": "965fde67ab401cc55f356613ae399dc9c9e0f2090d7619002f95a753b18b0789",
+    "removed-api-service/old-host-electron.txt": "595c5cc0e32e3514f435a58677192858b645c2c51aff2dd06da8468c5562ea6a",
+    "removed-api-service/old-session-current-host.png": "9c753912536fc6dabd2f5c379a27a59375c22f9147cac39d4bf6464a0b3637ff",
+    "removed-api-service/removed-api-ordinary-work.png": "9c753912536fc6dabd2f5c379a27a59375c22f9147cac39d4bf6464a0b3637ff",
+    "removed-api-service/result.json": "7b0324e5927e9a873b8b2f562e8cba9d978e48e81b9037cb7951131e91bf619a",
+    "removed-api-service/task-native-response.png": "feb28ffe2564fc92fd0a3494b62a20a0cb23a81187872e56df994cfc6bd66dc8",
+    "source-baseline.json": "08535a26b57e90dfb8ba05d8f21fa7d64dbf8ee12451890d1881773a92adedac",
+    "stock-selector-red.json": "510de9a2230af8d40cfddcec34ee1bd18d21b6aff3277d026a6e069ba808de18",
+    "stock-selector-red.log": "8258a87ee64bb962b037ddfd7cac9d5aaf988e2093330f263f1b0888f420c1c2",
+    "test-fixture-host-registry-red.log": "da6e8419c8b586add1ec36da89c9d2d955291d858828d45167b346edcdbf4bac",
+    "test-fixture-task-id-red.log": "b52811e83a0bb954eb2b62a707cca48aecfd2ed8be6eb65594b955e319aaf6e7",
+    "typecheck.log": "330b9c0cb8c20135ca354a6c4435033ce6de166d4ee090a0151ebb28cc8e3700"
+  }
+}

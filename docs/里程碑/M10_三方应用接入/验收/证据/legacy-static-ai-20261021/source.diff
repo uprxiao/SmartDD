@@ -1,0 +1,393 @@
+--- a/src/main/core/capabilities/capability-service.ts
++++ b/src/main/core/capabilities/capability-service.ts
+@@ -1,5 +1,5 @@
+ import { randomUUID } from 'node:crypto';
+-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
++import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
+ import { homedir } from 'node:os';
+ import { dirname, isAbsolute, join } from 'node:path';
+ import { and, eq, sql } from 'drizzle-orm';
+@@ -17,6 +17,7 @@
+ import { discoverCapabilities } from './discovery';
+ import { readOwnedTree, writeOwnedTree } from './files';
+ import { projectSkillName } from '../applications/session-projector';
++import { registerOriginalRun,type OriginalRunCleanup } from './original-run-lifetime';
+ 
+ export const MCP_CAPABILITY = 'smartdd-project-context';
+ export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG'];
+@@ -60,6 +61,7 @@
+   private readonly runtimeRoot: string;
+   private readonly activeRuns = new Set<string>();
+   private readonly managedRuns = new Set<string>();
++  private readonly runCleanups = new Map<string,() => void>();
+ 
+   constructor(private readonly d: CapabilityDeps) {
+     this.bundles = d.bundles ?? BUNDLED_SKILLS;
+@@ -297,6 +299,41 @@
+     this.activeRuns.add(runRoot); if (input.managed) this.managedRuns.add(runRoot);
+     const snapshot: RuntimeSnapshot = { runId, projectId: project.id, configVersion: project.configVersion, configHash, manifestPath, auditPath, skills: selected,
+       mcp: mcpEnabled ? [{ name: mcpName, loaded: 'unverified' }] : [], selfCheck: { status: 'pending', issues: [], at: null } };
++    const ownedRoot = lstatSync(runRoot);
++    const cleanup = (mode: OriginalRunCleanup): void => {
++      try {
++        if (!existsSync(runRoot)) return;
++        const current = lstatSync(runRoot);
++        if (!current.isDirectory() || current.isSymbolicLink() || current.dev !== ownedRoot.dev || current.ino !== ownedRoot.ino) return;
++        if (mode === 'hold') return;
++        if (mode === 'retain-plugin') {
++          const actual = readOwnedTree(runRoot),known = new Set([...Object.keys(files),'self-check.json']);
++          if (Object.keys(actual).some(name => !known.has(name)) || Object.entries(files).some(([name,bytes]) => actual[name] !== bytes)) return;
++          const directories = new Set<string>();
++          for (const name of Object.keys(files)) for (let parent = dirname(name); parent !== '.'; parent = dirname(parent)) directories.add(parent);
++          for (const dir of ['',...directories]) for (const name of readdirSync(join(runRoot,dir))) {
++            const path = join(dir,name);
++            if (lstatSync(join(runRoot,path)).isDirectory() && !directories.has(path)) return;
++          }
++          const marker = '.smartdd-owned.json';
++          if (readFileSync(join(runRoot,marker),'utf8') !== JSON.stringify({ owner: 'SmartDD',schema: 1 })) return;
++          for (const name of [...Object.keys(actual),marker]) {
++            const leaf = lstatSync(join(runRoot,name));
++            if (!leaf.isFile() || leaf.isSymbolicLink() || leaf.nlink !== 1) return;
++          }
++          // Only known ephemeral leaves are removed. The original plugin tree and
++          // original root marker keep their paths, bytes, modes and inodes.
++          for (const name of [...Object.keys(files),'self-check.json']) {
++            if (name.startsWith('plugin/')) continue;
++            if (name.includes('/')) return;
++            rmSync(join(runRoot,name),{ force: true });
++          }
++        } else rmSync(runRoot,{ recursive: true,force: true });
++      } catch { /* Unknown/replaced paths are retained; never turn cleanup into an overwrite. */ }
++    };
++    const releaseOwned = input.managed ? () => cleanup('remove') : registerOriginalRun(runRoot,snapshot,cleanup);
++    const release = () => { releaseOwned();this.activeRuns.delete(runRoot);this.managedRuns.delete(runRoot);this.runCleanups.delete(runRoot); };
++    this.runCleanups.set(runRoot,release);
+     const allowedIssues = new Set(['file_hash_mismatch', 'file_unreadable', 'resource_path_unreadable', 'manifest_hash_mismatch', 'manifest_invalid', 'runner_not_found', 'self_check_report_failed',
+       ...Object.keys(env).map((n) => `missing_env:${n}`), ...Object.keys(pathEnv).concat(['SMARTDD_PROJECT_ID', 'SMARTDD_CONFIG_VERSION']).map((n) => `wrong_path_env:${n}`),
+       'missing_dependency:pymysql', 'missing_dependency:psycopg2', 'missing_command:ssh']);
+@@ -311,12 +348,12 @@
+           return { status: report.status, issues: report.issues, at: typeof report.at === 'number' ? report.at : Date.now() };
+         } catch { return { status: 'failed', issues: ['self_check_report_invalid'], at: Date.now() }; }
+       },
+-      release: () => { rmSync(runRoot, { recursive: true, force: true }); this.activeRuns.delete(runRoot); this.managedRuns.delete(runRoot); },
++      release,
+     };
+   }
+ 
+   dispose(): void {
+-    for (const root of this.activeRuns) if (!this.managedRuns.has(root)) { rmSync(root,{ recursive: true,force: true }); this.activeRuns.delete(root); }
++    for (const root of [...this.activeRuns]) if (!this.managedRuns.has(root)) this.runCleanups.get(root)?.();
+     // Managed T is released only by the run owner after actual CLI/bridge/executor exit.
+   }
+ }
+--- a/src/main/core/capabilities/original-run-lifetime.ts
++++ b/src/main/core/capabilities/original-run-lifetime.ts
+@@ -0,0 +1,48 @@
++import { realpathSync } from 'node:fs';
++import type { RuntimeSnapshot } from '@shared/capabilities';
++import { canonicalJson,digest } from '../applications/manifest';
++
++export type OriginalRunCleanup = 'remove' | 'hold' | 'retain-plugin';
++interface Owner {
++  pins: string;
++  phase: OriginalRunCleanup;
++  released: boolean;
++  cleanup: (mode: OriginalRunCleanup) => void;
++}
++// Original run paths are globally unique in this host. The registry only contains
++// cleanup closures created by CapabilityService; disk contents cannot create one.
++const owners = new Map<string,Owner>();
++function pins(snapshot: RuntimeSnapshot): string {
++  const { selfCheck: _check,...fixed } = snapshot;
++  return digest(canonicalJson(fixed));
++}
++/** A live runtime closure is authority only for its own tree's cleanup. This is
++ * neither a native-process exit proof nor an API for adopting an unknown owner.
++ */
++export function registerOriginalRun(root: string,snapshot: RuntimeSnapshot,cleanup: Owner['cleanup']): () => void {
++  const canonical = realpathSync(root);
++  if (owners.has(canonical)) throw new Error('原运行目录已有另一释放句柄');
++  const owner: Owner = { pins: pins(snapshot),phase: 'remove',released: false,cleanup };
++  owners.set(canonical,owner);
++  return () => {
++    owner.released = true;
++    cleanup(owner.phase);
++    if (owner.phase !== 'hold' && owners.get(canonical) === owner) owners.delete(canonical);
++  };
++}
++
++/** Called only after the matching source intent / durable references have been
++ * verified by the host. Unknown roots simply remain unknown: nothing is claimed.
++ */
++export function retainOriginalRun(root: string,snapshot: RuntimeSnapshot,phase: 'intent' | 'committed'): boolean {
++  let canonical: string;try { canonical = realpathSync(root); } catch { return false; }
++  const owner = owners.get(canonical);
++  if (!owner || owner.pins !== pins(snapshot)) return false;
++  if (phase === 'intent' && owner.phase === 'remove') owner.phase = 'hold';
++  if (phase === 'committed') owner.phase = 'retain-plugin';
++  if (owner.released && owner.phase === 'retain-plugin') {
++    owner.cleanup(owner.phase);
++    if (owners.get(canonical) === owner) owners.delete(canonical);
++  }
++  return true;
++}
+--- a/src/main/core/applications/legacy-task-retention.ts
++++ b/src/main/core/applications/legacy-task-retention.ts
+@@ -1,6 +1,7 @@
+ import {constants,closeSync,fstatSync,lstatSync,openSync,readSync,realpathSync} from 'node:fs';
+ import {join} from 'node:path';
+ import {ApplicationError} from '@shared/applications';
++import {retainOriginalRun} from '../capabilities/original-run-lifetime';
+ import {canonicalJson,digest} from './manifest';
+ import {withResourceLock} from './resource-lock';
+ import type {ResourceRecord,ResourceStore} from './resource-store';
+@@ -46,7 +47,11 @@
+   try{const resource=this.store.get(legacyPluginResourceId(evidence.taskId,evidence.manifestHash)),content=new LegacyPluginSources(this.store).verify(resource,legacyPluginOrigin(evidence));if(content.manifest.toString('utf8')!==manifest)throw Error('different original manifest');return resource;}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原插件留存尚未完整发布或不能按原依据核验');}
+  }
+  private verifyRetainedFiles(evidence:LegacyTaskEvidence,manifest:string):void{
+-  if(!this.absent(evidence.runRoot))throw new ApplicationError('RESOURCE_STATE_CHANGED','原临时目录在留存恢复期间重新出现，保留原路径并重新核查');
++  if(!this.absent(evidence.runRoot)){
++   const plugin=this.archivedPlugin(evidence,manifest);
++   if(!plugin)throw new ApplicationError('RESOURCE_STATE_CHANGED','原临时目录在留存恢复期间重新出现，保留原路径并重新核查');
++   try{new LegacyPluginSources(this.store).verifyOriginalPlugin(plugin,legacyPluginOrigin(evidence));}catch{throw new ApplicationError('RESOURCE_STATE_CHANGED','原路径不是已留存的完整静态插件，保留原路径并重新核查');}
++  }
+   try{for(const skill of evidence.skills)this.legacy.verify(this.store.get('standard-skill:'+skill.skillId+':'+skill.hash));this.legacy.verify(this.store.get('legacy-runtime:'+evidence.runtimeHash));this.archivedPlugin(evidence,manifest);}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','最初留存的完整来源尚未就绪，保留准备回执等待修复');}
+  }
+  async prepare(input:LegacyRetentionIdentity,value:unknown,signal?:AbortSignal):Promise<LegacyRetentionResult>{
+@@ -57,11 +62,18 @@
+    const inspection=reader.inspect(identity,parsed.data);let evidence:LegacyTaskEvidence,manifest:string,fromRetained=false;
+    if(inspection.state==='verified'){evidence=inspection.evidence;manifest=this.manifest(evidence);}else{
+     const previous=this.read(identity.taskId),runRoot=join(this.store.root,'runs',identity.projectId,identity.taskId,parsed.data.runId);
+-    if(inspection.code!=='LEGACY_MANIFEST_MISSING'||!this.absent(runRoot)||!previous||[previous.evidence_json,previous.evidence_hash,previous.manifest_json,previous.manifest_hash].every(v=>v===null))return{state:'unknown',sourceSnapshotHash,code:inspection.code};
++    if(inspection.code!=='LEGACY_MANIFEST_MISSING'||!previous||[previous.evidence_json,previous.evidence_hash,previous.manifest_json,previous.manifest_hash].every(v=>v===null))return{state:'unknown',sourceSnapshotHash,code:inspection.code};
+     if(previous.state==='migrated')throw new ApplicationError('SNAPSHOT_IMMUTABLE','原M4迁移依据已被后续阶段使用');
+     const retained=retainedLegacySource(this.store,identity.taskId,previous.state);
+     if(retained.row.source_snapshot_json!==snapshot||retained.row.source_record_json!==originalRecord||!this.sameIdentity(retained.row.source_identity_json,identity)||retained.row.bound_native_session_id!==null&&retained.row.bound_native_session_id!==identity.sessionId)throw new ApplicationError('SNAPSHOT_IMMUTABLE','留存恢复对象与最初任务依据或原生身份不同');
+-    evidence=retained.evidence;manifest=retained.row.manifest_json!;fromRetained=true;
++    evidence=retained.evidence;manifest=retained.row.manifest_json!;
++    if(!this.absent(runRoot)){
++     // A completed source capture may leave only the original immutable plugin.
++     // This is a read-only source check, never an unknown-owner adoption.
++     try{const plugin=this.archivedPlugin(evidence,manifest);if(!plugin)throw Error('no original plugin');new LegacyPluginSources(this.store).verifyOriginalPlugin(plugin,legacyPluginOrigin(evidence));}
++     catch{return{state:'unknown',sourceSnapshotHash,code:inspection.code};}
++    }
++    fromRetained=true;
+    }
+    const evidenceJson=canonicalJson(evidence),now=new Date().toISOString(),verifyFiles=()=>{if(fromRetained)this.verifyRetainedFiles(evidence,manifest);else if(!reader.verify(evidence))throw new ApplicationError('RESOURCE_STATE_CHANGED','原M4证据在准备中变化');};
+    const resources:ResourceRecord[]=[],retainSources=async()=>{
+@@ -81,6 +93,7 @@
+      else if(previous.evidence_json===null)this.store.sqlite.prepare('UPDATE capability_legacy_migration_preparations SET evidence_json=?,evidence_hash=?,manifest_json=?,manifest_hash=? WHERE task_id=?').run(evidenceJson,evidence.evidenceHash,manifest,evidence.manifestHash,identity.taskId);
+     }).immediate();
+    },{signal});
++   if(evidence.pluginRoot)retainOriginalRun(evidence.runRoot,parsed.data,'intent');
+    await this.checkpoint?.('intent-recorded');canceled(signal);if(!fromRetained)await retainSources();await this.checkpoint?.('sources-adopted');canceled(signal);
+    verifyFiles();await this.checkpoint?.('before-commit');canceled(signal);verifyFiles();
+    await withResourceLock(this.store.root,()=>{
+@@ -98,6 +111,7 @@
+     }).immediate();
+    },{signal});
+   }catch(error){await withResourceLock(this.store.root,()=>{this.store.sqlite.prepare("UPDATE capability_legacy_migration_preparations SET state='held',issue_code=?,updated_at=? WHERE task_id=? AND source_snapshot_hash=? AND state<>'migrated'").run(error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED',new Date().toISOString(),identity.taskId,sourceSnapshotHash);});throw error;}
++  const retained=retainedLegacySource(this.store,identity.taskId,'prepared');if(retained.evidence.pluginRoot)retainOriginalRun(retained.evidence.runRoot,parsed.data,'committed');
+   await this.checkpoint?.('committed');return{state:'prepared',sourceSnapshotHash,code:null};
+  }
+ }
+--- a/src/main/core/applications/legacy-plugin-source.ts
++++ b/src/main/core/applications/legacy-plugin-source.ts
+@@ -15,10 +15,10 @@
+  return metadataSchema.parse({kind:'m4-legacy-plugin-source-v1',taskId:evidence.taskId,projectId:evidence.projectId,sourceSnapshotHash:evidence.snapshotHash,manifestHash:evidence.manifestHash,runRoot:evidence.runRoot,pluginRoot:evidence.pluginRoot,pluginName:evidence.pluginName,skills:evidence.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,hash:s.hash}))});
+ }
+ const fail=(message:string):never=>{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED',message);};
+-/** Bounded, no-follow reads of a private C archive. Original T/H is never written. */
++/** Bounded, no-follow reads of a private archive or original static tree. Never writes T/H. */
+ function readArchive(root:string):Record<string,Buffer>{
+  if(realpathSync(root)!==root)return fail('原插件来源目录含未登记别名');const files:Record<string,Buffer>=Object.create(null);let count=0,total=0,visited=0;
+- const walk=(dir:string,depth:number)=>{const stat=lstatSync(dir);if(!stat.isDirectory()||stat.isSymbolicLink()||depth>32||++visited>4096)fail('原插件来源目录不完整');for(const name of readdirSync(dir)){const p=join(dir,name),st=lstatSync(p);if(st.isSymbolicLink()||!st.isFile()&&!st.isDirectory())fail('原插件来源含链接或特殊文件');if(st.isDirectory()){walk(p,depth+1);continue;}if(++count>4098||st.nlink!==1||(st.mode&0o111)!==0||st.size>4*1024*1024||(total+=st.size)>32*1024*1024)fail('原插件来源超过读取预算或归属不符');const fd=openSync(p,constants.O_RDONLY|constants.O_NOFOLLOW);try{const before=fstatSync(fd);if(before.dev!==st.dev||before.ino!==st.ino||before.size!==st.size||before.ctimeMs!==st.ctimeMs)fail('原插件来源在读取前变化');const buffer=Buffer.alloc(st.size+1);let length=0;while(length<buffer.length){const n=readSync(fd,buffer,length,buffer.length-length,null);if(!n)break;length+=n;}const after=fstatSync(fd);if(length!==st.size||after.size!==st.size||after.dev!==st.dev||after.ino!==st.ino||after.ctimeMs!==st.ctimeMs||after.mtimeMs!==st.mtimeMs)fail('原插件来源在读取中变化');files[relative(root,p)]=buffer.subarray(0,length);}finally{closeSync(fd);}}};walk(root,0);return files;
++ const walk=(dir:string,depth:number)=>{const stat=lstatSync(dir);if(!stat.isDirectory()||stat.isSymbolicLink()||depth>32||++visited>4096)fail('原插件来源目录不完整');const names=readdirSync(dir);if(!names.length)fail('原插件来源含未声明的空目录');for(const name of names){const p=join(dir,name),st=lstatSync(p);if(st.isSymbolicLink()||!st.isFile()&&!st.isDirectory())fail('原插件来源含链接或特殊文件');if(st.isDirectory()){walk(p,depth+1);continue;}if(++count>4098||st.nlink!==1||(st.mode&0o111)!==0||st.size>4*1024*1024||(total+=st.size)>32*1024*1024)fail('原插件来源超过读取预算或归属不符');const fd=openSync(p,constants.O_RDONLY|constants.O_NOFOLLOW);try{const before=fstatSync(fd);if(before.dev!==st.dev||before.ino!==st.ino||before.size!==st.size||before.ctimeMs!==st.ctimeMs)fail('原插件来源在读取前变化');const buffer=Buffer.alloc(st.size+1);let length=0;while(length<buffer.length){const n=readSync(fd,buffer,length,buffer.length-length,null);if(!n)break;length+=n;}const after=fstatSync(fd);if(length!==st.size||after.size!==st.size||after.dev!==st.dev||after.ino!==st.ino||after.ctimeMs!==st.ctimeMs||after.mtimeMs!==st.mtimeMs)fail('原插件来源在读取中变化');files[relative(root,p)]=buffer.subarray(0,length);}finally{closeSync(fd);}}};walk(root,0);return files;
+ }
+ function checkPayload(origin:LegacyPluginOrigin,files:Readonly<Record<string,Buffer>>,storeRoot:string){
+  const manifestBytes=files['origin/manifest.json'],markerBytes=files['origin/root-marker.json'];if(!manifestBytes||!markerBytes||digest(manifestBytes)!==origin.manifestHash)fail('原插件清单依据缺失或不同');
+@@ -39,6 +39,13 @@
+   const source=reader.capturePlugin(evidence);if(!source)return null;const origin=legacyPluginOrigin(evidence),files={'origin/manifest.json':source.manifest,'origin/root-marker.json':source.rootMarker,...Object.fromEntries(Object.entries(source.files).map(([p,b])=>['plugin/'+p,b]))};checkPayload(origin,files,this.store.root);const bundle=ownedBundle(origin,files),dependencies=evidence.skills.filter(s=>s.enabled).map(s=>'standard-skill:'+s.skillId+':'+s.hash);
+   return this.store.publish({resourceId:legacyPluginResourceId(evidence.taskId,evidence.manifestHash),kind:'legacy-plugin-source',contentHash:bundle.hash,relativePath:'legacy/plugins/'+bundle.hash,dependencies,materialize:dir=>writeOwnedBundle(dir,bundle,this.store.storeId),verify:dir=>{this.readAt(dir,bundle.hash,origin);}});
+  }
++ /** Byte verification only. Matching original static paths do not prove that a
++  * native process exited, grant ownership, repair paths or permit activation.
++  */
++ verifyOriginalPlugin(resource:ResourceRecord,origin:LegacyPluginOrigin):void{
++  const source=this.verify(resource,origin),actual=readArchive(origin.runRoot),expected={'.smartdd-owned.json':source.rootMarker,...Object.fromEntries(Object.entries(source.pluginFiles).map(([p,b])=>['plugin/'+p,b]))};
++  if(canonicalJson(Object.keys(actual).sort())!==canonicalJson(Object.keys(expected).sort())||Object.entries(expected).some(([p,b])=>!actual[p]?.equals(b)))fail('原静态插件路径含不同字节、临时配置或未知内容，保留原路径');
++ }
+  verify(resource:ResourceRecord,origin:LegacyPluginOrigin){
+   if(resource.resourceId!==legacyPluginResourceId(origin.taskId,origin.manifestHash)||resource.kind!=='legacy-plugin-source'||resource.ownerStoreId!==this.store.storeId||resource.pathScope!=='C'||resource.relativePath!=='legacy/plugins/'+resource.contentHash||resource.state!=='ready'||resource.integrity!=='valid')return fail('原插件来源登记不属于此历史');
+   const dependencies=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);const result=this.readAt(this.store.directory(resource),resource.contentHash,origin);
+--- a/src/main/core/applications/__tests__/legacy-retention-recovery.test.ts
++++ b/src/main/core/applications/__tests__/legacy-retention-recovery.test.ts
+@@ -1,4 +1,4 @@
+-import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync,symlinkSync,linkSync} from 'node:fs';
++import {existsSync,mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync,realpathSync,readdirSync,lstatSync,symlinkSync,linkSync,renameSync} from 'node:fs';
+ import {join,dirname} from 'node:path';
+ import {tmpdir} from 'node:os';
+ import {randomUUID} from 'node:crypto';
+@@ -18,6 +18,7 @@
+ import {retainedLegacySource} from '../legacy-session-source';
+ import {canonicalJson,digest} from '../manifest';
+ import {treeHash} from '../../capabilities/assets';
++import {retainOriginalRun} from '../../capabilities/original-run-lifetime';
+ import {writeOwnedTree} from '../../capabilities/files';
+ import {readLegacyOwnedTree} from '../legacy-resource-adopter';
+ let root:string,home:string,cwd:string,projectId:string,sqlite:Database.Database,capabilities:CapabilityService,store:ResourceStore,sessions:CapabilitySessionRegistry,sources:LegacyPluginSources;
+@@ -35,7 +36,10 @@
+ const failCommit=()=>sqlite.exec("CREATE TRIGGER interrupted_captured_receipt BEFORE UPDATE ON capability_legacy_migration_preparations WHEN NEW.state='prepared' BEGIN SELECT RAISE(ABORT,'private captured receipt interruption'); END");
+ const permitCommit=()=>sqlite.exec('DROP TRIGGER interrupted_captured_receipt');
+ async function interrupted(runner:LegacyRetentionIdentity['runner']='claude-code'){
+- const value=await previous(runner);failCommit();await expect(new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).rejects.toThrow('private captured receipt interruption');expect(refs(value.identity.taskId)).toEqual([]);const original=journal(value.identity.taskId);permitCommit();value.runtime.release();return{...value,original};
++ const value=await previous(runner);failCommit();await expect(new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).rejects.toThrow('private captured receipt interruption');expect(refs(value.identity.taskId)).toEqual([]);const original=journal(value.identity.taskId);permitCommit();value.runtime.release();
++ // Explicit private fault: original T disappears after a captured-source interruption.
++ // A normal release now holds this tree until the source receipt is committed.
++ rmSync(dirname(value.runtime.snapshot.manifestPath),{recursive:true,force:true});return{...value,original};
+ }
+ function unchangedTask(value:Awaited<ReturnType<typeof previous>>){
+  expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(value.identity.taskId)).toEqual({runtime_snapshot:value.raw});
+@@ -59,7 +63,10 @@
+  });
+  it('refuses to synthesize a Claude archive if interruption occurred before original capture',async()=>{
+   const value=await previous();await expect(new LegacyTaskRetention(store,phase=>{if(phase==='intent-recorded')throw Error('original capture not reached');}).prepare(value.identity,value.runtime.snapshot)).rejects.toThrow('original capture not reached');
+-  value.runtime.release();await expect(new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(refs(value.identity.taskId)).toEqual([]);expect(sqlite.prepare("SELECT * FROM capability_resources WHERE kind='legacy-plugin-source'").all()).toEqual([]);unchangedTask(value);
++  value.runtime.release();
++  // Explicit private T-loss fault before the original plugin was captured.
++  rmSync(dirname(value.runtime.snapshot.manifestPath),{recursive:true,force:true});
++  await expect(new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(refs(value.identity.taskId)).toEqual([]);expect(sqlite.prepare("SELECT * FROM capability_resources WHERE kind='legacy-plugin-source'").all()).toEqual([]);unchangedTask(value);
+  });
+  it.each(['plugin-bytes','dependency','integrity'] as const)('refuses a retained source with changed %s and preserves the journal',async kind=>{
+   const value=await interrupted(),record=sqlite.prepare("SELECT resource_id FROM capability_resources WHERE kind='legacy-plugin-source'").get() as {resource_id:string},resource=store.get(record.resource_id);
+@@ -113,3 +120,83 @@
+  });
+ 
+ });
++
++
++describe('original M4 static plugin lifetime after source retention',()=>{
++ it('keeps the referenced original Skill path while removing ended-run connection files',async()=>{
++  const value=await previous('claude-code'),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path,original=readFileSync(file),runRoot=dirname(value.runtime.snapshot.manifestPath);
++  expect((await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).state).toBe('prepared');
++  expect(existsSync(join(runRoot,'context.json'))).toBe(true);
++  value.runtime.release();
++  expect(existsSync(file),'historical fixed Skill path must survive ordinary run cleanup').toBe(true);
++  expect(readFileSync(file)).toEqual(original);expect(existsSync(join(runRoot,'context.json'))).toBe(false);expect(existsSync(join(runRoot,'databases.json'))).toBe(false);expect(existsSync(join(runRoot,'servers.json'))).toBe(false);expect(existsSync(value.runtime.snapshot.manifestPath)).toBe(false);
++  expect(refs(value.identity.taskId)).toHaveLength(4);expect(journal(value.identity.taskId).state).toBe('prepared');unchangedTask(value);
++ });
++});
++
++describe('original static cleanup authority and retry boundaries',()=>{
++ it('reopens the source receipt using the unchanged static plugin without recreating old context',async()=>{
++  const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath),service=new LegacyTaskRetention(store);
++  await service.prepare(value.identity,value.runtime.snapshot);const originalRefs=refs(value.identity.taskId),originalJournal=journal(value.identity.taskId);value.runtime.release();
++  const source=retainedLegacySource(store,value.identity.taskId,'prepared');new LegacyPluginSources(store).verifyOriginalPlugin(source.pluginSource!,legacyPluginOrigin(source.evidence));
++  expect(await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).toMatchObject({state:'prepared'});
++  expect(refs(value.identity.taskId)).toEqual(originalRefs);expect(journal(value.identity.taskId)).toMatchObject({source_record_json:originalJournal.source_record_json,evidence_json:originalJournal.evidence_json,manifest_json:originalJournal.manifest_json});
++  expect(existsSync(join(runRoot,'context.json'))).toBe(false);expect(existsSync(value.runtime.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);unchangedTask(value);
++ });
++ it('holds the full original tree after a failed reference commit, then finishes cleanup on retry',async()=>{
++  const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath);failCommit();await expect(new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).rejects.toThrow('private captured receipt interruption');value.runtime.release();
++  expect(existsSync(value.runtime.snapshot.manifestPath)).toBe(true);expect(existsSync(join(runRoot,'context.json'))).toBe(true);expect(refs(value.identity.taskId)).toEqual([]);
++  permitCommit();expect(await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).toMatchObject({state:'prepared'});
++  expect(existsSync(join(runRoot,'context.json'))).toBe(false);expect(existsSync(value.runtime.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);expect(refs(value.identity.taskId)).toHaveLength(4);unchangedTask(value);
++ });
++ it('retains original static Skill paths on service disposal as well as explicit owned release',async()=>{
++  const value=await previous();await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);capabilities.dispose();
++  expect(existsSync(value.runtime.snapshot.manifestPath)).toBe(false);expect(existsSync(value.runtime.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);unchangedTask(value);
++ });
++ it.each(['plugin','transient','extra','empty-dir','marker','symlink','hardlink','root-replaced','root-alias'] as const)('preserves the original tree when %s changes before owned cleanup',async kind=>{
++  const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;
++  await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);
++  if(kind==='plugin')writeFileSync(file,'user Skill edit');
++  if(kind==='transient')writeFileSync(join(runRoot,'context.json'),'user context edit');
++  if(kind==='extra')writeFileSync(join(runRoot,'foreign-note'),'user note');
++  if(kind==='empty-dir')mkdirSync(join(runRoot,'unknown-empty-directory'));
++  if(kind==='marker')writeFileSync(join(runRoot,'.smartdd-owned.json'),'{}');
++  if(kind==='symlink'||kind==='hardlink'){
++   const outside=join(root,'outside');writeFileSync(outside,readFileSync(file));rmSync(file);if(kind==='symlink')symlinkSync(outside,file);else linkSync(outside,file);
++  }
++  if(kind==='root-replaced'||kind==='root-alias'){
++   const original=runRoot+'-preserved';renameSync(runRoot,original);if(kind==='root-alias')symlinkSync(original,runRoot);else{mkdirSync(runRoot);writeFileSync(join(runRoot,'foreign-note'),'replacement user directory');}
++  }
++  const note=kind==='root-replaced'?join(runRoot,'foreign-note'):join(runRoot,'context.json'),before=readFileSync(note);value.runtime.release();
++  expect(readFileSync(note)).toEqual(before);if(kind==='plugin')expect(readFileSync(file,'utf8')).toBe('user Skill edit');if(kind==='extra')expect(readFileSync(join(runRoot,'foreign-note'),'utf8')).toBe('user note');if(kind==='root-alias')expect(lstatSync(runRoot).isSymbolicLink()).toBe(true);unchangedTask(value);
++ });
++ it.each(['plugin','extra','empty-dir','context','link'] as const)('does not recapture a changed retained original %s tree',async kind=>{
++  const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);value.runtime.release();const originalRefs=refs(value.identity.taskId);
++  if(kind==='empty-dir')mkdirSync(join(runRoot,'unknown-empty-directory'));if(kind==='plugin')writeFileSync(file,'user changed static content');if(kind==='extra')writeFileSync(join(runRoot,'user-note'),'preserve extra');if(kind==='context')writeFileSync(join(runRoot,'context.json'),'not the original current context');if(kind==='link'){const outside=join(root,'outside');writeFileSync(outside,readFileSync(file));rmSync(file);symlinkSync(outside,file);}
++  expect(await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).toMatchObject({state:'unknown'});expect(refs(value.identity.taskId)).toEqual(originalRefs);expect(journal(value.identity.taskId).state).toBe('prepared');unchangedTask(value);
++ });
++ it('does not claim an unknown runtime or pin another snapshot onto a live cleanup handle',async()=>{
++  const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath),unknown=join(root,'unknown-root');mkdirSync(unknown);writeFileSync(join(unknown,'foreign-note'),'unknown owner');
++  expect(retainOriginalRun(unknown,value.runtime.snapshot,'committed')).toBe(false);expect(readFileSync(join(unknown,'foreign-note'),'utf8')).toBe('unknown owner');
++  expect(retainOriginalRun(runRoot,{...value.runtime.snapshot,configHash:'f'.repeat(64)},'committed')).toBe(false);value.runtime.release();expect(existsSync(runRoot)).toBe(false);unchangedTask(value);
++ });
++ it('keeps original Codex H paths and bytes while cleaning its ended ordinary T',async()=>{
++  const value=await previous('codex'),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path,original=readFileSync(file);await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);value.runtime.release();
++  expect(existsSync(dirname(value.runtime.snapshot.manifestPath))).toBe(false);expect(readFileSync(file)).toEqual(original);expect(refs(value.identity.taskId)).toHaveLength(3);unchangedTask(value);
++ });
++});
++
++it('refuses a corrupted archive while leaving the still-matching original static plugin untouched',async()=>{
++ const value=await previous(),file=value.runtime.snapshot.skills.find(s=>s.enabled)!.path;await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);value.runtime.release();const original=readFileSync(file),source=retainedLegacySource(store,value.identity.taskId,'prepared'),oldRefs=refs(value.identity.taskId);
++ const damaged=join(store.directory(source.pluginSource!),'plugin/.claude-plugin/plugin.json');writeFileSync(damaged,'corrupted retained source');
++ expect(await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot)).toMatchObject({state:'unknown'});expect(readFileSync(file)).toEqual(original);expect(readFileSync(damaged,'utf8')).toBe('corrupted retained source');expect(refs(value.identity.taskId)).toEqual(oldRefs);unchangedTask(value);
++});
++
++it('keeps the original tree if its owned release occurs before source publication, and finalizes after the receipt commits',async()=>{
++ const value=await previous(),runRoot=dirname(value.runtime.snapshot.manifestPath),service=new LegacyTaskRetention(store,phase=>{if(phase==='intent-recorded'){value.runtime.release();expect(existsSync(join(runRoot,'context.json'))).toBe(true);expect(existsSync(value.runtime.snapshot.manifestPath)).toBe(true);expect(refs(value.identity.taskId)).toEqual([]);}});
++ expect(await service.prepare(value.identity,value.runtime.snapshot)).toMatchObject({state:'prepared'});expect(existsSync(join(runRoot,'context.json'))).toBe(false);expect(existsSync(value.runtime.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);unchangedTask(value);
++});
++it('recognizes its original cleanup handle after the host records a self-check result',async()=>{
++ const value=await previous();value.runtime.snapshot.selfCheck={status:'passed',issues:[],at:Date.now()};value.raw=JSON.stringify(value.runtime.snapshot,null,2);sqlite.prepare('UPDATE tasks SET runtime_snapshot=? WHERE id=?').run(value.raw,value.identity.taskId);
++ await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);value.runtime.release();expect(existsSync(value.runtime.snapshot.manifestPath)).toBe(false);expect(existsSync(value.runtime.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);unchangedTask(value);
++});
+--- a/src/main/core/applications/__tests__/legacy-plugin-source.test.ts
++++ b/src/main/core/applications/__tests__/legacy-plugin-source.test.ts
+@@ -37,7 +37,10 @@
+   const value=await previous(),oldRoot=dirname(value.runtime.snapshot.manifestPath),path=join(oldRoot,'plugin/.claude-plugin/plugin.json'),bytes=Buffer.from('{"description":"historical variant 🌿","version":"1.0.0","name":"smartdd","oldExtra":"preserved"}\n'),marker=Buffer.from('{\n "schema":1, "owner":"SmartDD"\n}\n');writeFileSync(path,bytes);writeFileSync(join(oldRoot,'.smartdd-owned.json'),marker);const manifest=JSON.parse(readFileSync(value.runtime.snapshot.manifestPath,'utf8'));manifest.files[path]=digest(bytes);writeFileSync(value.runtime.snapshot.manifestPath,JSON.stringify(manifest,null,1)+'\n');await new LegacyTaskRetention(store).prepare(value.identity,value.runtime.snapshot);const source=retainedLegacySource(store,value.identity.taskId,'prepared'),content=sources.verify(source.pluginSource!,legacyPluginOrigin(source.evidence));expect(content.pluginFiles['.claude-plugin/plugin.json']).toEqual(bytes);expect(content.rootMarker).toEqual(marker);
+  });
+  it('can verify retained original bytes after old T is removed and after reopening the source service',async()=>{
+-  const value=await retained(),before=sources.verify(value.resource,value.origin);value.runtime.release();const inspection=value.reader.inspect(value.identity,value.runtime.snapshot);expect(inspection).toEqual({state:'unknown',code:'LEGACY_MANIFEST_MISSING'});const stored=retainedLegacySource(store,value.identity.taskId,'prepared'),content=new LegacyPluginSources(store).verify(stored.pluginSource!,legacyPluginOrigin(stored.evidence));expect(content).toEqual(before);expect(sqlite.prepare('SELECT schema_version FROM capability_session_snapshots WHERE task_id=?').get(value.identity.taskId)).toEqual({schema_version:0});
++  const value=await retained(),before=sources.verify(value.resource,value.origin);value.runtime.release();
++  // Explicit private original-T loss fault; ordinary cleanup now retains static paths.
++  rmSync(dirname(value.runtime.snapshot.manifestPath),{recursive:true,force:true});
++  const inspection=value.reader.inspect(value.identity,value.runtime.snapshot);expect(inspection).toEqual({state:'unknown',code:'LEGACY_MANIFEST_MISSING'});const stored=retainedLegacySource(store,value.identity.taskId,'prepared'),content=new LegacyPluginSources(store).verify(stored.pluginSource!,legacyPluginOrigin(stored.evidence));expect(content).toEqual(before);expect(sqlite.prepare('SELECT schema_version FROM capability_session_snapshots WHERE task_id=?').get(value.identity.taskId)).toEqual({schema_version:0});
+  });
+  it('keeps the original retained source/ref after UI task and project deletion',async()=>{
+   const value=await retained();sqlite.prepare('DELETE FROM tasks WHERE id=?').run(value.identity.taskId);sqlite.prepare('DELETE FROM projects WHERE id=?').run(projectId);const source=retainedLegacySource(store,value.identity.taskId,'prepared');expect(source.pluginSource!.resourceId).toBe(value.resource.resourceId);expect(sources.verify(source.pluginSource!,value.origin).pluginFiles).toEqual(sources.verify(value.resource,value.origin).pluginFiles);expect(sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -6,7 +6,7 @@
+ import {parse as parseToml} from 'smol-toml';
+ import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+ import {tmpdir} from 'node:os';
+-import {join,resolve} from 'node:path';
++import {dirname,join,resolve} from 'node:path';
+ import Database from 'better-sqlite3';
+ import {drizzle} from 'drizzle-orm/better-sqlite3';
+ import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+@@ -347,6 +347,9 @@
+   expect(record).toMatchObject({source_record_json:raw,state:'prepared'});expect(JSON.parse(record.evidence_json)).toMatchObject({taskId:id,runner,runtimeHash:capabilities.runtimeIdentity().hash});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
+   expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(ptys.launches.at(-1)!.args.join('\n')).not.toContain('--bootstrap');expect(()=>managed.runs.assertActive(opened.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});
+   tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(opened.task.runtimeSnapshot!.runId).state).toBe('stopped'));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT state FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toEqual({state:'prepared'});original.release();
++  expect(existsSync(original.snapshot.skills.find(s=>s.enabled)!.path)).toBe(true);expect(existsSync(original.snapshot.manifestPath)).toBe(false);
++  const again=await tasks.open({taskId:id});expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
++  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(again.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  });
+  it.each(['claude-code','codex'] as const)('recovers captured %s sources through the actual TaskService resume hook after an interrupted receipt and original T removal',async runner=>{
+   const id=randomUUID(),nativeSessionId=randomUUID(),stamp=Date.now(),original=capabilities.prepare({projectId,taskId:id,runner:runner==='codex'?'codex':'claude',cwd,home,profileArgs:[]}),raw=JSON.stringify(original.snapshot,null,2),stateRoot=join(home,runner==='codex'?'.codex':'.claude');
+@@ -356,7 +359,10 @@
+   sqlite.exec("CREATE TRIGGER interrupted_hook_receipt BEFORE UPDATE ON capability_legacy_migration_preparations WHEN NEW.state='prepared' BEGIN SELECT RAISE(ABORT,'private hook receipt interruption'); END");
+   const first=await tasks.open({taskId:id}),held=sqlite.prepare('SELECT state,evidence_json,manifest_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id) as {state:string;evidence_json:string;manifest_json:string};
+   expect(held).toMatchObject({state:'held',evidence_json:expect.any(String),manifest_json:expect.any(String)});expect(managed.legacyPreparationWarnings.has(id)).toBe(true);expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:0});
+-  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));original.release();sqlite.exec('DROP TRIGGER interrupted_hook_receipt');expect(existsSync(original.snapshot.manifestPath)).toBe(false);
++  tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));original.release();sqlite.exec('DROP TRIGGER interrupted_hook_receipt');
++  // Explicit private T-loss fault. An interrupted source capture now correctly
++  // keeps its current host's original tree on ordinary release.
++  rmSync(dirname(original.snapshot.manifestPath),{recursive:true,force:true});expect(existsSync(original.snapshot.manifestPath)).toBe(false);
+   const reopened=await tasks.open({taskId:id});expect(managed.legacyPreparationWarnings.has(id)).toBe(false);expect(sqlite.prepare('SELECT state,evidence_json,manifest_json FROM capability_legacy_migration_preparations WHERE task_id=?').get(id)).toEqual({...held,state:'prepared'});expect(sqlite.prepare('SELECT COUNT(*) n FROM capability_session_refs WHERE task_id=?').get(id)).toEqual({n:runner==='claude-code'?4:3});
+   expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:raw});expect(sqlite.prepare('SELECT schema_version FROM capability_session_snapshots WHERE task_id=?').get(id)).toEqual({schema_version:0});expect(()=>managed.runs.assertActive(reopened.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(ptys.launches.at(-1)!.args.join('\n')).not.toContain('--bootstrap');expect(sqlite.prepare('SELECT COUNT(*) n FROM mail_send_grants').get()).toEqual({n:0});
+   tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(reopened.task.runtimeSnapshot!.runId).state).toBe('stopped'));

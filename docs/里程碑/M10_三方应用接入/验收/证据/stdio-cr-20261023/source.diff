@@ -1,0 +1,135 @@
+diff --git a/resources/applications/README.md b/resources/applications/README.md
+index b12651f5..46cc5396 100644
+--- a/resources/applications/README.md
++++ b/resources/applications/README.md
+@@ -1,9 +1,11 @@
+ # 内置应用包源码
+ 
+-M10当前包含禅道1.0.1和邮件1.0.1：三套完整Skill、17项工具契约，以及固定版CJS到宿主Data API的分派。版本号与WillYou程序版本独立。展示及业务范围来自M10 R1.6（含12.21），原型中的Skill分别映射为bug-analysis、story-review、work-assistant；原型展示ID没有作为本机数据身份使用。
++M10当前包含禅道1.0.2和邮件1.0.2：三套完整Skill、17项工具契约，以及固定版CJS到宿主Data API的分派。版本号与WillYou程序版本独立。展示及业务范围来自M10 R1.6（含12.21），原型中的Skill分别映射为bug-analysis、story-review、work-assistant；原型展示ID没有作为本机数据身份使用。
+ 
+ `definitions.mjs`是声明、配置／输入／输出Schema和固定动作映射的统一源码。`adapter.cjs`是无数据库／凭据／网络入口的可信内置分派器；各应用版本目录保留Skill完整文件树。生产构建生成全部文件清单、manifest、原件摘要和构建索引，并验证固定runtime，不因桥变化静默改写旧应用版本。
+ 
+ 包发布后，任何Skill、Schema、分派或依赖变化均产生新应用版本。宿主持久保存完整包及原可信分发依据；新默认版本、用户添加应用、项目启用和Agent已发现分别记录。此批文件准备和控制执行器测试不代表实际业务Data API、页面或真实Agent已经验收。任意第三方代码安装不在当前范围，适配模块的执行环境也不作为第三方代码安全沙箱承诺。
+ 
+ 2026-10-23：1.0.1仅更新固定MCP运行时的初始化检查；Skill与业务工具契约沿用1.0.0。保留1.0.0源码目录；已有会话保留原固定包，不能用1.0.1字节修复1.0.0。
++
++2026-10-23：1.0.2更新固定MCP运行时的坏JSON脱敏诊断和超大帧关闭；Skill／业务工具契约不变，旧版本源码保留。
+diff --git a/resources/applications/definitions.mjs b/resources/applications/definitions.mjs
+index 80ab5d1a..9a5b8e4f 100644
+--- a/resources/applications/definitions.mjs
++++ b/resources/applications/definitions.mjs
+@@ -1,6 +1,6 @@
+ // Trusted built-in package sources. Package versions are independent from the App version.
+ // A change to the pinned runtime or any released file requires a new application version.
+-const runtime = { id: 'applications', hash: '22b6b8b174ac24005d82adfd6349e7f94cce479bb372ec85e94981a22a558667', protocolMajor: 1 };
++const runtime = { id: 'applications', hash: 'f34e03358e928de47d897e2bc412774d50c4523c1cf9ccf224168d696a971c7e', protocolMajor: 1 };
+ const str = (maxLength = 4096) => ({ type: 'string', maxLength });
+ const integer = (minimum = 0, maximum = Number.MAX_SAFE_INTEGER) => ({ type: 'integer', minimum, maximum });
+ const uuid = { type: 'string', pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$' };
+@@ -48,7 +48,7 @@ const tool = (appId, name, description, permission, method, input, output, seman
+ });
+ const zt = (name, description, method, input, output) => tool('zentao',name,description,'zentao.read',method,input,output,'read','safe-read');
+ const mail = (name, description, permission, method, input, output, semantics = 'read', openWorld = false) => tool('mail',name,description,permission,method,input,output,semantics,semantics === 'read' ? 'safe-read' : 'never',openWorld);
+-const common = { schema: 'smartdd-app-package-v1', version: '1.0.1', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
++const common = { schema: 'smartdd-app-package-v1', version: '1.0.2', hostApi: { min: 1, max: 1 }, dataApi: 1, runtime, adapter: { entry: 'adapter/index.cjs', format: 'cjs' }, migrations: [] };
+ const zentaoConfig = object({ kind: { const: 'zentao' }, baseUrl: str(2048), username: str(512), authMode: enumeration('token','password') });
+ const foxmailConfig = object({ kind: { const: 'foxmail' }, sourcePath: str(4096), account: str(512), queryDays: integer(1,100) },['kind','sourcePath','account']);
+ const smtpConfig = object({ kind: { const: 'smtp' }, host: str(512), port: integer(1,65535), username: str(512), fromAddress: str(512), authMode: { const: 'password' }, mode: enumeration('plain','starttls','implicit-tls') });
+diff --git a/src/main/core/applications/__tests__/bridge-runtime.test.ts b/src/main/core/applications/__tests__/bridge-runtime.test.ts
+index 80df0249..282ff06b 100644
+--- a/src/main/core/applications/__tests__/bridge-runtime.test.ts
++++ b/src/main/core/applications/__tests__/bridge-runtime.test.ts
+@@ -30,7 +30,7 @@ describe.skipIf(process.platform !== 'darwin')('standalone CJS bridge through ac
+     } finally { await client.close().catch(() => undefined); if (cli && cli.exitCode === null && cli.signalCode === null) { const done = once(cli,'exit'); cli.kill('SIGKILL'); await done; } await broker?.close(); f.cleanup(); }
+   },30000);
+ 
+-  it('rejects raw MCP requests before initialization and recovers from invalid stdio frames without business calls',async()=>{
++  it.each([false,true])('rejects raw MCP requests and closes oversized stdio frames with newline=%s',async newline=>{
+     const f=await runFixture(reader,{application:true,runtime:bundle});let cli:ChildProcess|undefined,child:ChildProcess|undefined,broker:PrivateApplicationBroker|undefined;let calls=0;
+     try{
+       const run = await f.create(); await run.prepare(); await run.cli.arm(); cli = spawn(process.execPath,['-e','setInterval(() => {}, 10000)'],{ cwd: f.home,env: { HOME: f.home,ELECTRON_RUN_AS_NODE: '1' },stdio: 'ignore' }); await once(cli,'spawn'); await run.cli.attach(cli.pid!);
+@@ -45,11 +45,12 @@ describe.skipIf(process.platform !== 'darwin')('standalone CJS bridge through ac
+       const earlyList=await send('tools/list',{});expect(earlyList).toHaveProperty('error');expect(calls).toBe(0);
+       const early=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'before-initialize'}});expect(early).toHaveProperty('error');expect(calls).toBe(0);
+       const initialized=await send('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'raw-protocol-fixture',version:'1.0.0'}});expect(initialized).toHaveProperty('result');const notReady=await send('tools/list',{});expect(notReady).toHaveProperty('error');expect(calls).toBe(0);child.stdin!.write(JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized'})+'\n');
+-      child.stdin!.write('{"malformed":"private-canary",\n');
++      child.stdin!.write('{"malformed":"private-canary",\n'.repeat(3));
+       for(const [method,params] of [['unknown-method',{}],['tools/call',{}],['tools/call',{name:12}],['tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:12}}]] as const){const response=await send(method,params);expect(response.error||(response.result as {isError?:boolean})?.isError).toBeTruthy();expect(calls).toBe(0);}
+       const valid=await send('tools/call',{name:'smartdd_zentao_query_v1',arguments:{value:'valid-after-invalid'}});expect(valid).not.toHaveProperty('error');expect((valid.result as {isError?:boolean}).isError).not.toBe(true);expect(calls).toBe(1);
+-      expect(stderr).not.toContain('private-canary');expect(stderr).not.toMatch(/token|secret|bootstrap/i);
+-      lines.close();const exited=once(child,'exit');child.stdin!.end();await exited;await prepared.bridge.exited();const cliExit=once(cli!,'exit');cli!.kill('SIGTERM');await cliExit;await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopped');
++      await vi.waitFor(()=>expect(stderr).toContain('WillYou application MCP input rejected: INVALID_JSON'),{timeout:2000});
++      expect(stderr.match(/INVALID_JSON/g)).toHaveLength(1);expect(stderr).not.toContain('private-canary');expect(stderr).not.toMatch(/token|secret|bootstrap/i);
++      const exited=once(child,'exit',{signal:AbortSignal.timeout(5000)});child.stdin!.write('x'.repeat(262145)+(newline?'\n':''));await exited;expect(calls).toBe(1);expect(stderr).toContain('WillYou application MCP input rejected: INPUT_TOO_LARGE');lines.close();await prepared.bridge.exited();const cliExit=once(cli!,'exit');cli!.kill('SIGTERM');await cliExit;await run.cli.exited();expect(f.runs.get(run.runId).state).toBe('stopped');
+     }finally{for(const process of [child,cli])if(process&&process.exitCode===null&&process.signalCode===null){const done=once(process,'exit');process.kill('SIGKILL');await done;}await broker?.close();f.cleanup();}
+   },30000);
+   it('terminates a refused real broker handshake without leaving an open socket or printing its ticket', async () => {
+diff --git a/src/main/core/applications/__tests__/builtin-packages.test.ts b/src/main/core/applications/__tests__/builtin-packages.test.ts
+index c7d98700..19b786c1 100644
+--- a/src/main/core/applications/__tests__/builtin-packages.test.ts
++++ b/src/main/core/applications/__tests__/builtin-packages.test.ts
+@@ -120,7 +120,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
+    expect(readFileSync(join(store.root,old.relativePath,'adapter/operations.json'))).toEqual(bundle('zentao').files['adapter/operations.json']);
+    expect(sqlite.prepare("SELECT state FROM capability_resource_operations WHERE kind='restore-application-package'").all()).toEqual([{state:'committed'}]);
+    for(const table of ['application_catalog_state','application_connections','application_project_settings'])expect(sqlite.prepare(`SELECT count(*) AS n FROM ${table}`).get()).toEqual({n:0});
+- });
++ },15000); // Multiple trusted installs, full-file verification and cold restoration; no production deadline change.
+  it('T64 rejects an altered trusted-distribution copy before repairing a missing original package',async()=>{
+    const old=await install('zentao'),proof=approvals(),target=join(store.root,old.relativePath),copy=join(root,'unusable-repair-source');cpSync(output,copy,{recursive:true});
+    writeFileSync(join(copy,entry('zentao').path,'skills/'+bundle('zentao').manifest.skills[0].id+'/SKILL.md'),'altered repair content');rmSync(target,{recursive:true});
+diff --git a/src/main/core/applications/bridge-runtime.ts b/src/main/core/applications/bridge-runtime.ts
+index 4316a9a6..1eb8ca6a 100644
+--- a/src/main/core/applications/bridge-runtime.ts
++++ b/src/main/core/applications/bridge-runtime.ts
+@@ -1,4 +1,5 @@
+ // This entry is bundled with the public MCP SDK into an immutable, standalone CJS resource.
++import { Transform } from 'node:stream';
+ import { Server } from '@modelcontextprotocol/server';
+ import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
+ import type { BridgeTool } from '@shared/application-bridge';
+@@ -7,6 +8,18 @@ async function main(): Promise<void> {
+   if (process.argv.length !== 4 || process.argv[2] !== '--bootstrap') throw new Error('invalid invocation');
+   const client = new ApplicationBridgeClient(consumeBridgeBootstrap(process.argv[3])); await client.start();
+   const server = new Server({ name: 'WillYou applications',version: '1.0.0' },{ capabilities: { tools: {} } });
++  // Never echo parser messages: JSON errors may contain input or credentials.
++  // Emit each bounded diagnostic once per bridge to prevent input-driven log growth.
++  const reportedInputErrors = new Set<string>();
++  const reportInputError = (error: Error) => {
++    const code = error instanceof SyntaxError ? 'INVALID_JSON'
++      : error.message === 'ReadBuffer exceeded maximum size of 262144 bytes' ? 'INPUT_TOO_LARGE' : 'INVALID_PROTOCOL';
++    if (!reportedInputErrors.has(code)) {
++      reportedInputErrors.add(code);
++      process.stderr.write('WillYou application MCP input rejected: ' + code + '\n');
++    }
++  };
++  server.onerror = reportInputError;
+   let initialized = false;
+   server.oninitialized = () => { initialized = server.getClientVersion() !== undefined; };
+   const requireInitialized = () => { if (!initialized) throw new Error('WillYou application MCP initialization required'); };
+@@ -28,6 +41,24 @@ async function main(): Promise<void> {
+   });
+   const close = () => { client.close(); void server.close().catch(() => undefined); };
+   process.stdin.once('end',close); process.once('SIGTERM',close); server.onclose = () => client.close();
+-  await server.connect(new StdioServerTransport(process.stdin,process.stdout,{ maxBufferSize: 256 * 1024 }));
++  // The SDK silently discards JSON syntax errors. Validate bounded frames first
++  // so malformed input is observable without copying any input into diagnostics.
++  let buffered: Buffer = Buffer.alloc(0);
++  const input = new Transform({ transform(chunk: Buffer, _encoding, callback) {
++    if (buffered.length + chunk.length > 256 * 1024) {
++      callback(new Error('ReadBuffer exceeded maximum size of 262144 bytes')); return;
++    }
++    buffered = Buffer.concat([buffered, chunk]);
++    let newline: number;
++    while ((newline = buffered.indexOf(10)) !== -1) {
++      const frame = buffered.subarray(0, newline + 1); buffered = buffered.subarray(newline + 1);
++      try { JSON.parse(frame.toString('utf8')); this.push(frame); }
++      catch (error) { reportInputError(error instanceof Error ? error : new Error('Invalid input')); }
++    }
++    callback();
++  } });
++  input.on('error', error => { reportInputError(error); process.stdin.unpipe(input); process.stdin.destroy(); close(); });
++  await server.connect(new StdioServerTransport(input,process.stdout,{ maxBufferSize: 256 * 1024 }));
++  process.stdin.pipe(input);
+ }
+ void main().catch(() => { process.stderr.write('WillYou application bridge unavailable\n'); process.exitCode = 1; });

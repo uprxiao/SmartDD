@@ -1,0 +1,279 @@
+{
+  "schema": "m10-fixed-native-ae-v1",
+  "recordedAt": "2026-10-21T05:10:46.306220+00:00",
+  "requirement": "M10 R1.6 incl12.21;R07/R10-06/R10-09;partial T64",
+  "branch": "feature/0.0.2",
+  "baseCommit": "1625408dcd32f61ee298fe4f48380f117fcbf6fc",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "goal": "active full M10;not complete;no release",
+  "system": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.1\nBuildVersion:\t\t25G76",
+  "architecture": "arm64",
+  "source": {
+    "baseCommit": "1625408dcd32f61ee298fe4f48380f117fcbf6fc",
+    "files": [
+      {
+        "path": "src/main/core/applications/task-capability-launcher.ts",
+        "sha256": "0e5afe64fc7381494630b3fc7a5e4bb173450c2ac910fbe5cd50e4940578f541",
+        "priorSha256": "fbc4d34636bedc4140b07f37e368e2f05ea3bf416fc52dee7fb90b71384d3c22",
+        "bytes": 40616
+      },
+      {
+        "path": "src/main/core/applications/run-registry.ts",
+        "sha256": "ced378c2d8e68f11131ec7a58c8bb370bb6437400882d8c13e9dc6c9dd8c07a7",
+        "priorSha256": "30c0c6ef883130bc3c8d9d5a829117f171e65f669b947d31ebe4a6e9d619f2e4",
+        "bytes": 42532
+      },
+      {
+        "path": "src/main/core/applications/launch-restriction.ts",
+        "sha256": "2f92f9f8af750808cf61de851ae7009d729708b8b122146c548bde620637c886",
+        "priorSha256": "54770f9fa9076366d1ff847cdec77e547b0acf65071557cd844dfae02d32f364",
+        "bytes": 1720
+      },
+      {
+        "path": "src/shared/application-session-diagnostics.ts",
+        "sha256": "39eee7a3df1fa337d788d4eb3f561a7305cdf7c18643aeb82d426ce013aa797d",
+        "priorSha256": "6a753e7caa4ac806dee7e1fc483c591b4690035edb3ae1f0749ae52813cc6b5e",
+        "bytes": 2516
+      },
+      {
+        "path": "src/renderer/features/applications/session-applications.tsx",
+        "sha256": "ef9d9094a4c632a1e7b4a5a7ddec5d78380ec41891f6b4d86b2173dd0dd754ab",
+        "priorSha256": "1ce47d5abe66bdd9350f19af894277cb81457373306258213d690c323954f15d",
+        "bytes": 9432
+      },
+      {
+        "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+        "sha256": "56509d98ac68e49b2aaf5474a0a0d594899a259c4743ef761d5ce6ea1c627439",
+        "priorSha256": "0ef51ee0cf70cbedac372df07a6eba522adde333bfed89c375091ca9deeb9420",
+        "bytes": 81489
+      },
+      {
+        "path": "src/main/core/applications/__tests__/run-registry.test.ts",
+        "sha256": "0a5cd4427e160381abacd02d2a8edd3e34e2d1fc3b416ac3a442bae2fa0918cb",
+        "priorSha256": "79fe703ce666414702dc35a1b8688c73960a90e68f8038e42cd47bc7498efc4f",
+        "bytes": 27484
+      },
+      {
+        "path": "src/renderer/features/applications/session-applications.test.tsx",
+        "sha256": "24889fe4adc15db29e24c7ccf5693b112291377528bf1364dcbd802b4eca547a",
+        "priorSha256": "3f89e0e312855e1239ff008f473432ec930024efd8705cd62a7346f0a5f97540",
+        "bytes": 11112
+      },
+      {
+        "path": "src/main/core/applications/builtin-package-registry.ts",
+        "sha256": "626424c14bb75073f0d70ca11e4552f576656d2414b5a874c3cb1183ed8b0790",
+        "priorSha256": "ddb13bbafb042a3fafeb94a8584f3e823bb1b793774fd079fcc2bad57ed96e0f",
+        "bytes": 4254
+      }
+    ],
+    "canonicalUnchanged": false,
+    "productionStatus": "formal source overlay;194affectedchecks/types/newAEpackageverified;realCLI/Appfaultcoverageincomplete",
+    "scope": "6 production +3 test files;fixed native-only continuation;not fullT64",
+    "canonicalMatchesTestedPrivate": true
+  },
+  "behavior": "Unavailable fixed application bytes no longer prevent ordinary native create/resume. Keep actual S/hash/native identity/refs/selection, run a distinct native-only lifecycle guard, no business bridge/input provenance/grant; use complete original same-hash repair and later resume to restore managed capability. Metadata trust and executable-byte trust remain separate.",
+  "software": {
+    "uniqueFiles": 11,
+    "passed": 194,
+    "newIncludedThisRound": 7,
+    "includesEarlierADChecks": true,
+    "typesExit": 0,
+    "notRealCLI": "TaskService composition uses version fixtures and fake PTY; no real native session claim",
+    "doNotAddPrior113OrIntermediate2or25": true
+  },
+  "failuresRetained": [
+    {
+      "log": "red.txt",
+      "kind": "fixture",
+      "reason": "Fake PTY did not deliver its owned MCP bridge exit; first known run remained stopping."
+    },
+    {
+      "log": "red-corrected-fixture.txt",
+      "kind": "product",
+      "reason": "Both runners rejected resume from original missing package during Skill preparation."
+    },
+    {
+      "log": "regression-first.txt",
+      "kind": "product",
+      "reason": "111/113 passed;two new-task cases still blocked by conflated metadata/file trust; separated retained trusted metadata before final194green."
+    }
+  ],
+  "package": {
+    "app": "/private/tmp/m10-fixed-native-ae-package-20261021/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "asarSha256": "f4b790eb8e6fedc659ed3cddbf3dd6984c6eaaabf175c9b52765ce489649d005",
+    "mainSha256": "37bf864fcef57ec5896cd585a275c573f146e3daf00e68a94fa1b8fe614b563b",
+    "capabilityBuildMetadata": {
+      "appVersion": "0.0.5",
+      "commit": null,
+      "dirty": true,
+      "resourceSetHash": "deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394"
+    },
+    "frozenPrivateInputsUnchanged": 1967,
+    "rendererChangesFromX": [
+      "out/renderer/assets/index-BaYRlCIK.js",
+      "out/renderer/index.html"
+    ]
+  },
+  "packageChecks": {
+    "nativeCategories": 6,
+    "compiledFiles": 341,
+    "capabilityFiles": 65,
+    "nativeHashFiles": 20,
+    "adHocSignatureExit": 0,
+    "embeddedCommit": null,
+    "embeddedDirty": true
+  },
+  "UI": {
+    "status": "deferred-focus-loss",
+    "root": "/private/tmp/willyou-m10-restore-ad-qF57Hg",
+    "result": "/private/tmp/willyou-m10-restore-ad-qF57Hg/result-ae.json",
+    "firstInputNotExecuted": true,
+    "faultNotInjected": true,
+    "hostPids": [
+      57929
+    ],
+    "hostPidsAbsent": true,
+    "initialActivation": "once for new own test process after independent coding/regression/build gap;failed to acquire focus;guard then yielded;no retry",
+    "nativeFocus": {
+      "hidden": false,
+      "windows": [
+        {
+          "focused": false,
+          "webFocused": false,
+          "visible": true
+        }
+      ]
+    },
+    "cause": "unknown;not attributed to M9",
+    "startupReadonly": "support ready,both builtins filesReady;no task/snapshot/connection/invocation/grant/held lease",
+    "coverage": "No actual navigation or T64 fault accepted. No CLI evidence in this GUI batch.",
+    "cleanup": "only own App stopped;not normal quit acceptance"
+  },
+  "fullCases": {
+    "passed": 2,
+    "total": 72,
+    "complete": [
+      "T42",
+      "T63"
+    ],
+    "remaining": 70,
+    "T64": "partial;realCLI/App exactrepair/no-copy/path/partialdamage/fullconditions incomplete"
+  },
+  "prototype": "No prototype source edits; P09 unavailable reason clarified within approved state; actual App visual equivalence not verified.",
+  "M9Mutated": false,
+  "released": false,
+  "artifacts": [
+    {
+      "path": "证据/fixed-native-ae-20261021/source.json",
+      "bytes": 2876,
+      "sha256": "ef3dcbb3a80de84bd3f7897cd30ffe8ff6b8d8e243dff0f77a00fac4aa16fa6e"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/build-input-snapshot.json",
+      "bytes": 357426,
+      "sha256": "5a23217c6ff8feaf78a2b7ab2509c6da44e84a4a673103173da9030f6c94a255"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/prepackage-native-isolation.json",
+      "bytes": 613,
+      "sha256": "63989e42607d49afa824f502ccd4132b6c118182e10061df47ce95d1ac9cd373"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/red.txt",
+      "bytes": 1808,
+      "sha256": "1d28464e53570c9263bc844e10de9806f46e4464758545a6ac70e3135746aa0c"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/red-corrected-fixture.txt",
+      "bytes": 2942,
+      "sha256": "8137e4ee5bb2d81372c263ad3bc72101d002f172dc32826d422c65c3738ae762"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/green-first.txt",
+      "bytes": 471,
+      "sha256": "da41723b7875dfd7437ce60444ef4e0e3d1aa57339bf49f8609300dbd3107b18"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/regression-first.txt",
+      "bytes": 3305,
+      "sha256": "5e9593a0b847309f55bd20868f5290bf38387abec6dc3a68ca2a461466d8a098"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/regression-final.txt",
+      "bytes": 1060,
+      "sha256": "23d96d330886bc1024ba8c94df77f4a3e16f554aae4b6c2b9bf83a4e729f11d2"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/new-task-green.txt",
+      "bytes": 481,
+      "sha256": "6fbedfed6440315a3190ec61cbefb74aa6d4a1ec859bf7474586e07a4a28c622"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/typecheck.txt",
+      "bytes": 154,
+      "sha256": "f3dee26c641b21079533874afb0510214dcbaaff8a6e9434bf8f924be6e98a90"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/typecheck-final.txt",
+      "bytes": 154,
+      "sha256": "f3dee26c641b21079533874afb0510214dcbaaff8a6e9434bf8f924be6e98a90"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/package.txt",
+      "bytes": 21266,
+      "sha256": "c176891d2cd010bc7351e0aae64e6f2cef8a15eb41ab9df6e6f65975bf3cf7eb"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/package-signature.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/package-verification.txt",
+      "bytes": 426,
+      "sha256": "b498d9fd0e5070b0aad6c856757a138d6be284102dc7d3a1a7a9d4df80ad4fe7"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/package-verification.json",
+      "bytes": 83773,
+      "sha256": "d6eead601907b9b8838f4f93c0c809b49af812b7fdb2a50e605077dbaff18d5b"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/verify-package.cjs",
+      "bytes": 8521,
+      "sha256": "5687c2e743a3bb19c071f5452f03f2194bef24071eca5649dd2c0c9f888eb336"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/packaged-startup-continuation.mjs",
+      "bytes": 10123,
+      "sha256": "ff128a6fa797a7b3b1d8009b9623f6fff8f5895526f1749fc33d8b0f4b455eab"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/startup-db.cjs",
+      "bytes": 1430,
+      "sha256": "d2d98b462ad12cf4e14a99d3ea22d2bfeac27e9f0784bb6828d3bddc2db2fab9"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/packaged-startup.txt",
+      "bytes": 393,
+      "sha256": "f20ac2412dc84d3390905193e49cfc516e8dd9e56e1f6fe7bde15a9c97513a61"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/startup-result.json",
+      "bytes": 32994,
+      "sha256": "a2cd81f10a0a9358f7e8d169fb9e8129e71d42df71bc9eefe0f762a4e5540f7a"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/startup-electron.txt",
+      "bytes": 568,
+      "sha256": "7a9085a1be9be799b3e197fc287f5df74e3b0ac3cab2da62fc75881c70f34adb"
+    },
+    {
+      "path": "证据/fixed-native-ae-20261021/startup-focus-yield.png",
+      "bytes": 135808,
+      "sha256": "69380eb00393f6a0edf5929f2bee033013c6b0a14c0f3b8840be7bdae95139ff"
+    }
+  ],
+  "next": "Non-focus real installed CLI + isolated App IPC/file-service integration;classify I/CLI,not GUI. Keep original S/native ID,missing source/unavailable notice,noauth,repair/recovery and all remaining T64 conditions;then focus gap UI/allremaining70fullcases."
+}

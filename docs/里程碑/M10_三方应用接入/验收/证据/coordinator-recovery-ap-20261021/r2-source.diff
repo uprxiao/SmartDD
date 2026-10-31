@@ -1,0 +1,584 @@
+--- /dev/null
++++ b/src/main/core/applications/coordinator-lock.ts
+@@ -0,0 +1,112 @@
++import { randomUUID } from 'node:crypto';
++import { closeSync,constants,fsyncSync,lstatSync,mkdirSync,openSync,readFileSync,readdirSync,realpathSync,rmdirSync,unlinkSync,writeFileSync } from 'node:fs';
++import { join } from 'node:path';
++import Database from 'better-sqlite3';
++import { z } from 'zod';
++import { ApplicationError } from '@shared/applications';
++import type { ProcessIdentityReader } from './process-identity';
++
++interface Identity { dev:number;ino:number }
++export interface CoordinatorLockOptions { timeoutMs?:number;signal?:AbortSignal;processes?:ProcessIdentityReader }
++const identity = z.object({ dev:z.number().int().nonnegative(),ino:z.number().int().nonnegative() }).strict();
++const ownerSchema = z.object({
++  schema:z.literal(2),protocol:z.literal('sqlite-exclusive-v1'),token:z.uuid(),kind:z.enum(['resource','catalog']),
++  root:identity.extend({path:z.string()}),gate:identity,directory:identity,pid:z.number().int().positive(),startedAt:z.string().optional(),
++}).strict();
++const legacyCatalogOwner=z.object({schema:z.literal(1),token:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
++const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b.ino;
++const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRED','协调锁归属或内核门闩身份不能核验，保留现场');
++const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includes((error as {code?:string}).code ?? '');
++const present = (path:string) => { try{return lstatSync(path);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return null;throw error;} };
++const sync = (path:string) => { const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);try{fsyncSync(fd);}finally{closeSync(fd);} };
++
++/**
++ * Persistent SQLite inode supplies the kernel gate; NEVER unlink/replace it.
++ * Every v2 directory owner holds BEGIN EXCLUSIVE until its action and cleanup
++ * finish. Acquiring that same gate proves the previous v2 critical section has
++ * ended, even after SIGKILL. PID/age are not recovery authority. Business journals,
++ * install/run leases and native identities are verified by their own services.
++ * Legacy C's approximate timestamps cannot prove exit. Legacy H can be handed
++ * off only with its exact native kernel identity proved stopped by the caller.
++ */
++export async function withCoordinatorLock<T>(rootInput:string,kind:'resource'|'catalog',action:()=>T|Promise<T>,options:CoordinatorLockOptions={},host?:{pid:number;startedAt:string}):Promise<T>{
++  if(options.signal?.aborted)throw new ApplicationError('CANCELED','已取消等待资源协调');
++  const root=realpathSync(rootInput),rootId=lstatSync(root),path=join(root,kind+'.lock'),gatePath=join(root,'.'+kind+'.lock.gate.sqlite'),deadline=performance.now()+(options.timeoutMs??3000);
++  const assertRoot=()=>{const current=lstatSync(root);if(!current.isDirectory()||current.isSymbolicLink()||realpathSync(root)!==root||!same(current,rootId))throw recovery();};assertRoot();
++  try{const fd=openSync(gatePath,constants.O_CREAT|constants.O_EXCL|constants.O_WRONLY|constants.O_NOFOLLOW,0o600);closeSync(fd);}catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;}
++  const gateId=lstatSync(gatePath);
++  const assertGate=()=>{
++    assertRoot();const current=lstatSync(gatePath);
++    if(!current.isFile()||current.isSymbolicLink()||current.nlink!==1||current.size>1024*1024||!same(current,gateId))throw recovery();
++    for(const suffix of ['-journal','-wal','-shm']){const side=present(gatePath+suffix);if(side&&(!side.isFile()||side.isSymbolicLink()||side.nlink!==1))throw recovery();}
++  };assertGate();
++  let gate:Database.Database;try{gate=new Database(gatePath,{timeout:0,fileMustExist:true});}catch{throw recovery();}
++  let entered=false;
++  const rootIdentity={path:root,dev:rootId.dev,ino:rootId.ino},gateIdentity={dev:gateId.dev,ino:gateId.ino},binding=JSON.stringify({schema:1,kind,root:rootIdentity,gate:gateIdentity});
++  const wait=async()=>{if(options.signal?.aborted)throw new ApplicationError('CANCELED','已取消等待资源协调');if(performance.now()>=deadline)throw new ApplicationError('RESOURCE_BUSY','资源仍有协调者，请稍后重试');await new Promise<void>(resolve=>setTimeout(resolve,Math.min(20,Math.max(1,deadline-performance.now()))));};
++  try{
++    for(;;){
++      assertGate();if(options.signal?.aborted)throw new ApplicationError('CANCELED','已取消等待资源协调');
++      try{gate.exec('BEGIN EXCLUSIVE');}catch(error){if(!busy(error))throw error;await wait();continue;}
++      if(gate.pragma('journal_mode',{simple:true})!=='delete')throw recovery();
++      // Initialization commits before any directory owner can be published.
++      const tables=gate.prepare("SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name").all() as {name:string;sql:string}[];
++      const application=gate.pragma('application_id',{simple:true}),version=gate.pragma('user_version',{simple:true});
++      const schema='CREATE TABLE coordinator_identity (id INTEGER PRIMARY KEY CHECK(id=1), identity TEXT NOT NULL)';
++      if(!tables.length&&application===0&&version===0){
++        gate.exec(schema);gate.prepare('INSERT INTO coordinator_identity VALUES(1,?)').run(binding);gate.pragma('application_id = 1465470027');gate.pragma('user_version = 1');gate.exec('COMMIT');continue;
++      }
++      if(application!==1465470027||version!==1||tables.length!==1||tables[0].name!=='coordinator_identity'||tables[0].sql!==schema)throw recovery();
++      const rows=gate.prepare('SELECT id,identity FROM coordinator_identity').all() as {id:number;identity:string}[];
++      if(rows.length!==1||rows[0].id!==1||rows[0].identity!==binding){
++        // A previously canonical root now routed through an alias is an
++        // ownership conflict, not an invitation to rebind its existing gate.
++        let known:{root?:{path?:unknown}}|null=null;try{known=JSON.parse(rows[0]?.identity??'null');}catch{/* Unknown gate stays recovery-required. */}
++        if(root!==rootInput&&known?.root?.path===rootInput)throw new ApplicationError('OWNERSHIP_CONFLICT','原资源根的规范位置已被链接替换，保留原路径');
++        throw recovery();
++      }
++      break;
++    }
++    const readOwner=()=>{try{
++      const directory=lstatSync(path),file=join(path,'owner.json'),stat=lstatSync(file);
++      if(!directory.isDirectory()||directory.isSymbolicLink()||!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>8192||readdirSync(path).join(',')!=='owner.json')throw recovery();
++      const fd=openSync(file,constants.O_RDONLY|constants.O_NOFOLLOW);let value:unknown;
++      try{value=JSON.parse(readFileSync(fd,'utf8'));}catch{throw recovery();}finally{closeSync(fd);}
++      return {directory,value};
++    }catch{throw recovery();}
++    };
++    const assertOwned=(expected:z.infer<typeof ownerSchema>)=>{
++      assertGate();const current=readOwner(),owner=ownerSchema.safeParse(current.value);
++      if(!owner.success||JSON.stringify(owner.data)!==JSON.stringify(expected)||!same(current.directory,expected.directory))throw recovery();
++    };
++    const remove=(owner:z.infer<typeof ownerSchema>)=>{assertOwned(owner);unlinkSync(join(path,'owner.json'));rmdirSync(path);sync(root);};
++    for(;;){
++      if(!present(path)){try{mkdirSync(path,{mode:0o700});break;}catch(error){if((error as NodeJS.ErrnoException).code==='EEXIST')continue;throw error;}}
++      const current=readOwner(),parsed=ownerSchema.safeParse(current.value);
++      if(parsed.success){
++        const owner=parsed.data;
++        if(owner.kind!==kind||owner.root.path!==root||!same(owner.root,rootId)||!same(owner.gate,gateId)||!same(owner.directory,current.directory))throw recovery();
++        // Exact SQLite inode is exclusively held: no compliant v2 publisher or
++        // reclaimer can still act on, remove or replace this directory.
++        remove(owner);continue;
++      }
++      const legacy=current.value as {schema?:unknown;token?:unknown;pid?:unknown;startedAt?:unknown};
++      if(!legacy||legacy.schema===2||typeof legacy.token!=='string'||!Number.isSafeInteger(legacy.pid)||(legacy.pid as number)<1||kind==='catalog'&&typeof legacy.startedAt!=='string')throw recovery();
++      const old=kind==='catalog'?legacyCatalogOwner.safeParse(current.value):null;
++      if(old?.success&&options.processes?.state({pid:old.data.pid,startedAt:old.data.startedAt})==='stopped'){
++        // Gate serializes all reclaimers. Prior versions never reap a lock; a
++        // waiting old process can only win mkdir AFTER this exact dir is removed.
++        assertGate();const fresh=readOwner();if(!same(fresh.directory,current.directory)||JSON.stringify(fresh.value)!==JSON.stringify(current.value))throw recovery();
++        unlinkSync(join(path,'owner.json'));rmdirSync(path);sync(root);continue;
++      }
++      await wait();assertGate(); // Legacy owner may release normally; never steal.
++    }
++    assertGate();
++    // An interrupted owner-file write remains unknown; absence is not authority.
++    const dirId=lstatSync(path),owner=ownerSchema.parse({schema:2,protocol:'sqlite-exclusive-v1',token:randomUUID(),kind,root:rootIdentity,gate:gateIdentity,directory:{dev:dirId.dev,ino:dirId.ino},pid:process.pid,...(host?{startedAt:host.startedAt}:{})});
++    writeFileSync(join(path,'owner.json'),JSON.stringify(owner),{flag:'wx',mode:0o600});sync(join(path,'owner.json'));sync(path);sync(root);
++    try{assertOwned(owner);if(options.signal?.aborted)throw new ApplicationError('CANCELED','资源操作已取消');entered=true;return await action();}
++    finally{remove(owner);}
++  }catch(error){if(entered||error instanceof ApplicationError)throw error;throw recovery();
++  }finally{try{if(gate.inTransaction)gate.exec('ROLLBACK');}finally{gate.close();}}
++}
+--- a/src/main/core/applications/resource-lock.ts
++++ b/src/main/core/applications/resource-lock.ts
+@@ -1,39 +1,10 @@
+-import { randomUUID } from 'node:crypto';
+-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+-import { join } from 'node:path';
+-import { ApplicationError } from '@shared/applications';
+ import { ensureStoreDirectory } from './package-files';
+-
+-/** Single-U coordinator. H catalog locking is acquired before this lock by the Agent adapter. */
+-export async function withResourceLock<T>(root: string, action: () => T, options: { timeoutMs?: number; signal?: AbortSignal } = {}): Promise<T> {
+-  ensureStoreDirectory(root, 'locks');
+-  const path = join(root, 'locks', 'resource.lock'), token = randomUUID();
+-  const deadline = performance.now() + (options.timeoutMs ?? 3000);
+-  for (;;) {
+-    if (options.signal?.aborted) throw new ApplicationError('CANCELED', '已取消等待资源协调');
+-    try { mkdirSync(path, { mode: 0o700 }); break; }
+-    catch (error) {
+-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+-      if (performance.now() >= deadline) {
+-        try { const owner = JSON.parse(readFileSync(join(path, 'owner.json'), 'utf8')); if (typeof owner.token !== 'string' || !Number.isInteger(owner.pid)) throw new Error(); }
+-        catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源协调记录不完整，保留现场待核查'); }
+-        throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+-      }
+-      await new Promise<void>(resolve => setTimeout(resolve, Math.min(20, Math.max(1, deadline - performance.now()))));
+-    }
+-  }
+-  try {
+-    writeFileSync(join(path, 'owner.json'), JSON.stringify({ token, pid: process.pid, processStartedAt: new Date(Date.now() - process.uptime() * 1000).toISOString() }), { mode: 0o600, flag: 'wx' });
+-    if (options.signal?.aborted) throw new ApplicationError('CANCELED', '已取消资源操作');
+-    const value = action();
+-    if (value instanceof Promise) throw new Error('资源协调区禁止等待网络、文件复制或异步业务');
++import { withCoordinatorLock,type CoordinatorLockOptions } from './coordinator-lock';
++/** Single-U coordinator. H precedes C; business work in C remains synchronous. */
++export async function withResourceLock<T>(root:string,action:()=>T,options:CoordinatorLockOptions={}):Promise<T>{
++  return withCoordinatorLock(ensureStoreDirectory(root,'locks'),'resource',()=>{
++    const value=action();
++    if(value instanceof Promise)throw new Error('资源协调区禁止等待网络、文件复制或异步业务');
+     return value;
+-  } finally {
+-    // Never remove a lock replaced by another owner; age or PID alone is not proof.
+-    let owner: { token?: string };
+-    try { owner = JSON.parse(readFileSync(join(path, 'owner.json'), 'utf8')); }
+-    catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源协调所有权无法核对'); }
+-    if (owner.token !== token) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源协调所有权已变化，保留现场');
+-    rmSync(path, { recursive: true });
+-  }
++  },options);
+ }
+--- a/src/main/core/applications/discovery-catalog-lock.ts
++++ b/src/main/core/applications/discovery-catalog-lock.ts
+@@ -1,65 +1,10 @@
+-import { randomUUID } from 'node:crypto';
+-import { mkdirSync, readFileSync, rmSync, writeFileSync, lstatSync,realpathSync } from 'node:fs';
+-import { join } from 'node:path';
++import { lstatSync,realpathSync } from 'node:fs';
+ import { ApplicationError } from '@shared/applications';
+ import type { ProcessIdentity } from './process-identity';
+-/** H precedes C and SQLite. Only the exact owning token may release this lock. */
+-export async function withDiscoveryLock<T>(root: string, host: ProcessIdentity, action: () => T | Promise<T>, options: {
+-    timeoutMs?: number;
+-    signal?: AbortSignal;
+-} = {}): Promise<T> {
+-    const original=lstatSync(root);
+-    const assertRoot=()=>{const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync(root)!==root||stat.dev!==original.dev||stat.ino!==original.ino)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','共享目录的规范位置或归属已变化，保留原锁');};assertRoot();
+-    const path = join(root, 'catalog.lock'), token = randomUUID(), deadline = performance.now() + (options.timeoutMs ?? 3000);
+-    for (;;) {
+-        assertRoot();
+-        if (options.signal?.aborted)
+-            throw new ApplicationError('CANCELED', '已取消等待发现目录');
+-        try {
+-            mkdirSync(path, { mode: 0o700 });
+-            break;
+-        }
+-        catch (error) {
+-            if ((error as NodeJS.ErrnoException).code !== 'EEXIST')
+-                throw error;
+-        }
+-        if (performance.now() >= deadline) {
+-            try {
+-                const stat = lstatSync(path), owner = JSON.parse(readFileSync(join(path, 'owner.json'), 'utf8'));
+-                if (!stat.isDirectory() || stat.isSymbolicLink() || typeof owner.token !== 'string' || !Number.isSafeInteger(owner.pid) || typeof owner.startedAt !== 'string')
+-                    throw new Error();
+-            }
+-            catch {
+-                throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录锁记录不完整，保留现场');
+-            }
+-            throw new ApplicationError('RESOURCE_BUSY', '共享目录仍有协调者；不按年龄或PID抢锁');
+-        }
+-        await new Promise<void>(resolve => setTimeout(resolve, Math.min(20, Math.max(1, deadline - performance.now()))));
+-    }
+-    const identity = lstatSync(path);
+-    try {
+-        assertRoot();
+-        writeFileSync(join(path, 'owner.json'), JSON.stringify({ schema: 1, token, ...host }), { flag: 'wx', mode: 0o600 });
+-        if (options.signal?.aborted)
+-            throw new ApplicationError('CANCELED', '共享目录操作已取消');
+-        return await action();
+-    }
+-    finally {
+-        assertRoot();
+-        let owner: {
+-            token?: string;
+-        };
+-        try {
+-            const current = lstatSync(path);
+-            if (current.isSymbolicLink() || !current.isDirectory() || current.ino !== identity.ino || current.dev !== identity.dev)
+-                throw new Error();
+-            owner = JSON.parse(readFileSync(join(path, 'owner.json'), 'utf8'));
+-        }
+-        catch {
+-            throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录锁归属无法核验');
+-        }
+-        if (owner.token !== token)
+-            throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录锁已被替换，保留现场');
+-        rmSync(path, { recursive: true });
+-    }
++import { withCoordinatorLock,type CoordinatorLockOptions } from './coordinator-lock';
++/** H precedes C. Preserve the canonical root across the entire wait. */
++export async function withDiscoveryLock<T>(root:string,host:ProcessIdentity,action:()=>T|Promise<T>,options:CoordinatorLockOptions={}):Promise<T>{
++  const original=lstatSync(root);
++  const verify=()=>{const stat=lstatSync(root);if(!stat.isDirectory()||stat.isSymbolicLink()||realpathSync(root)!==root||stat.dev!==original.dev||stat.ino!==original.ino)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','共享目录的规范位置或归属已变化，保留原锁');};
++  return Promise.resolve().then(()=>{verify();return withCoordinatorLock(root,'catalog',()=>{verify();return action();},options,host);});
+ }
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -120,11 +120,13 @@
+     constructor(readonly store: ResourceStore, home: string, private readonly processes: ProcessIdentityReader, options: {
+         instanceId?: string;
+         checkpoint?: (phase: DiscoveryCheckpoint) => void;
++        intentCheckpoint?:()=>void;
+     } = {}) {
+         this.home = realpathSync(home);
+         this.homeId = digest(this.home);
+         this.instanceId = options.instanceId ?? randomUUID();
+         this.checkpoint = options.checkpoint;
++        this.intentCheckpoint = options.intentCheckpoint;
+         const host = processes.read(process.pid);
+         if (!host || host.pid !== process.pid)
+             throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '无法核验发现目录持有者');
+@@ -152,9 +154,10 @@
+         }
+     }
+     private readonly checkpoint?: (phase: DiscoveryCheckpoint) => void;
++    private readonly intentCheckpoint?:()=>void;
+     private lock<T>(action: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+         const verify=()=>{assertDiscoveryPath(this.home,this.root);const stat=lstatSync(this.root);if(stat.dev!==this.rootIdentity.dev||stat.ino!==this.rootIdentity.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录已被替换，保留原目录');for(const[child,id]of Object.entries(this.childIdentities)){const path=join(this.root,child);assertDiscoveryPath(this.home,path);const st=lstatSync(path);if(!st.isDirectory()||st.dev!==id.dev||st.ino!==id.ino)throw new ApplicationError('OWNERSHIP_CONFLICT','共享目录的读者或暂存记录已被替换，保留原记录');}};
+-        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal});});
++        return Promise.resolve().then(()=>{verify();return withDiscoveryLock(this.root,this.host,()=>{verify();return action();},{signal,processes:this.processes});});
+     }
+     private generation(entries: Entry[]): string { return digest(canonicalJson({ homeId: this.homeId, entries })); }
+     private catalog(): Catalog {
+@@ -276,8 +279,9 @@
+         if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
+         else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
+     }
+-    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions): Promise<void> {
++    private async register(plans: Planned[], pending: Pending,options:DiscoveryPublicationOptions,assertEarly?:()=>void): Promise<void> {
+         await withResourceLock(this.store.root, () => {options.assertPublish?.(pending.operationId);return this.store.sqlite.transaction(() => {
++            assertEarly?.();
+             const oldHome = this.store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(this.homeId) as {
+                 home: string;
+             } | undefined;
+@@ -361,6 +365,21 @@
+         const plans=this.plans(sources),operation=await this.lock(()=>{const prior=this.pending();if(!prior)return null;if(prior.owner.storeId!==this.store.storeId||canonicalJson(prior.entries)!==canonicalJson(plans.map(p=>p.entry)))throw new ApplicationError('RESOURCE_BUSY','共享目录仍有其他待核查操作');return prior.operationId;},options.signal);
+         return this.publication(plans,options,operation??undefined);
+     }
++    /** An intent persisted under H can precede the first C transaction. Require
++     * the exact unchanged base, no C/staging footprint and a separately stopped
++     * original publisher. Never infer this case by deleting a committed ledger. */
++    private assertEarlyIntent(prior:Pending,current:Catalog,plans:Planned[]):void{
++        if(prior.phase!=='waiting'||current.generation!==prior.baseGeneration||canonicalJson(current.entries)!==canonicalJson(prior.baseEntries)||present(join(this.root,'staging',prior.operationId)))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','早期H意图已物化或基线不同，保留原操作');
++        if(this.store.sqlite.prepare('SELECT 1 FROM capability_resource_operations WHERE operation_id=?').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resources WHERE operation_id=? LIMIT 1').get(prior.operationId)||this.store.sqlite.prepare('SELECT 1 FROM capability_resource_leases WHERE owner_id=? LIMIT 1').get(prior.operationId))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H操作已有登记或占用，不能按未登记意图恢复');
++        this.assertNoOtherHolds(prior);
++        for(const p of plans){
++            this.verifySource(p);
++            if(present(dirname(p.entry.path))){
++                if(p.entry.format!=='legacy-tree-v1'&&!prior.baseEntries.some(e=>canonicalJson(e)===canonicalJson(p.entry)))throw new ApplicationError('OWNERSHIP_CONFLICT','未登记的原H意图已有目标内容，保留现场');
++                this.verifyProjection(p,dirname(p.entry.path));
++            }
++        }
++    }
+     private async publication(plans: Planned[], options: DiscoveryPublicationOptions, recoverId?: string): Promise<NonNullable<AgentLoadRequest['catalog']>> {
+         let pending: Pending | undefined, reuse = false;
+         const operationId = recoverId ?? randomUUID();
+@@ -370,6 +389,7 @@
+         try {
+             await this.lock(async () => {
+                 const current = this.catalog(), prior = this.pending();
++                let assertEarly:(()=>void)|undefined;
+                 if (recoverId) {
+                     if (!prior || prior.operationId !== recoverId || prior.owner.storeId !== this.store.storeId || prior.owner.uFingerprint !== this.owner.uFingerprint || canonicalJson(prior.entries) !== canonicalJson(plans.map(p => p.entry)))
+                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '缺少相同归属及内容的原维护记录');
+@@ -377,11 +397,13 @@
+                         plan: string;
+                     } | undefined;
+                     const original = ledger ? pendingSchema.safeParse(JSON.parse(ledger.plan)) : null;
+-                    if (!original?.success || canonicalJson(original.data.owner) !== canonicalJson(prior.owner) || canonicalJson(original.data.entries) !== canonicalJson(prior.entries) || original.data.baseGeneration !== prior.baseGeneration || canonicalJson(original.data.baseEntries) !== canonicalJson(prior.baseEntries))
++                    if (ledger&&(!original?.success || canonicalJson(original.data.owner) !== canonicalJson(prior.owner) || canonicalJson(original.data.entries) !== canonicalJson(prior.entries) || original.data.baseGeneration !== prior.baseGeneration || canonicalJson(original.data.baseEntries) !== canonicalJson(prior.baseEntries)))
+                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原H意图与本数据根操作账不同，保留现场');
+                     if (canonicalJson(prior.owner)!==canonicalJson(this.owner) && this.processes.state({ pid: prior.owner.pid, startedAt: prior.owner.startedAt }) !== 'stopped')
+                         throw new ApplicationError('RESOURCE_BUSY', '原目录维护者仍存活或身份未知');
+-                    this.assertPublisherLeases(prior,true);this.assertNoOtherHolds(prior);
++                    if(ledger)this.assertPublisherLeases(prior,true);
++                    else{assertEarly=()=>this.assertEarlyIntent(prior,this.catalog(),plans);assertEarly();}
++                    this.assertNoOtherHolds(prior);
+                     pending = { ...prior, token: randomUUID(), owner: this.owner };
+                     atomicJson(join(this.root, 'pending.json'), pending);
+                 }
+@@ -399,8 +421,9 @@
+                     }
+                     pending = { schema: 1, operationId, token: randomUUID(), homeId: this.homeId, owner: this.owner, baseGeneration: current.generation, baseEntries: current.entries, entries: plans.map(p => p.entry), phase: 'waiting' };
+                     atomicJson(join(this.root, 'pending.json'), pending);
+-                }
+-                await this.register(plans, pending!,options);
++                    this.intentCheckpoint?.();
++                }
++                await this.register(plans, pending!,options,assertEarly);
+             }, options.signal);
+             if (reuse) {
+                 const snapshot = await this.snapshot();
+--- /dev/null
++++ b/src/main/core/applications/__tests__/coordinator-crash.test.ts
+@@ -0,0 +1,85 @@
++import { spawn,type ChildProcess } from 'node:child_process';
++import { once } from 'node:events';
++import { existsSync,linkSync,mkdirSync,mkdtempSync,readFileSync,realpathSync,renameSync,rmSync,symlinkSync,writeFileSync } from 'node:fs';
++import { builtinModules } from 'node:module';
++import { tmpdir } from 'node:os';
++import { join,resolve } from 'node:path';
++import { build as viteBuild } from 'vite';
++import Database from 'better-sqlite3';
++import { afterAll,afterEach,beforeAll,beforeEach,describe,expect,it } from 'vitest';
++import { withResourceLock } from '../resource-lock';
++import { withDiscoveryLock } from '../discovery-catalog-lock';
++import { MacProcessIdentityReader } from '../process-identity';
++let build:string,root:string;
++const children = new Set<ChildProcess>();
++type Kind = 'C'|'H';
++const directory = (kind:Kind) => join(root,kind === 'C' ? 'locks/resource.lock' : 'catalog.lock');
++const lock = <T>(kind:Kind,action:()=>T,options:{ timeoutMs?:number;signal?:AbortSignal }={}) => kind === 'C' ? withResourceLock(root,action,options) : withDiscoveryLock(root,{ pid:process.pid,startedAt:'fixture-not-recovery-authority' },action,options);
++async function holder(kind:Kind,mode='hold'):Promise<ChildProcess> {
++  const child=spawn(process.execPath,[join(build,'child.cjs'),root,kind,mode,resolve('out/native/willyou-process-identity')],{ env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','pipe','pipe'] });children.add(child);child.once('exit',()=>children.delete(child));
++  await new Promise<void>((accept,reject)=>{
++    let output='',errors='';const timer=setTimeout(()=>reject(Error('coordinator checkpoint timeout '+errors)),4000);
++    child.stderr!.on('data',data=>errors+=data);child.stdout!.on('data',data=>{output+=data;if(output.includes('\n')){clearTimeout(timer);try{expect(JSON.parse(output.split('\n')[0])).toEqual({pid:child.pid,kind});accept();}catch(error){reject(error);}}});
++    child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',()=>{clearTimeout(timer);reject(Error('coordinator exited before checkpoint '+errors));});
++  });return child;
++}
++async function kill(child:ChildProcess):Promise<void> { if(child.exitCode===null&&child.signalCode===null){const done=once(child,'exit');child.kill('SIGKILL');await done;} }
++beforeAll(async()=>{build=mkdtempSync(join(tmpdir(),'willyou-coordinator-build-'));await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/coordinator-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});});
++afterAll(()=>rmSync(build,{recursive:true,force:true}));
++beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-coordinator-')));});
++afterEach(async()=>{await Promise.all([...children].map(kill));rmSync(root,{recursive:true,force:true});});
++describe('C/H actual critical-section termination and exclusive handoff',()=>{
++  it.each(['C','H'] as const)('keeps a live %s owner then reacquires after SIGKILL without changing the business ledger',async kind=>{
++    const ledger=join(root,'business-ledger');writeFileSync(ledger,'unmodified operation and resource leases');
++    const child=await holder(kind),owner=readFileSync(join(directory(kind),'owner.json'));
++    await expect(lock(kind,()=>{throw Error('must not enter while owner lives');},{timeoutMs:40})).rejects.toMatchObject({code:'RESOURCE_BUSY'});
++    expect(readFileSync(join(directory(kind),'owner.json'))).toEqual(owner);
++    await kill(child);
++    expect(await lock(kind,()=>42,{timeoutMs:1000})).toBe(42);
++    expect(existsSync(directory(kind))).toBe(false);expect(readFileSync(ledger,'utf8')).toBe('unmodified operation and resource leases');
++  });
++  it.each(['C','H'] as const)('serializes concurrent %s recovery contenders after the original owner stops',async kind=>{
++    const child=await holder(kind);await kill(child);const counter=join(root,'counter');writeFileSync(counter,'0');
++    await Promise.all(Array.from({length:4},async()=>{
++      const contender=spawn(process.execPath,[join(build,'child.cjs'),root,kind,'increment'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','ignore','pipe']});children.add(contender);contender.once('exit',()=>children.delete(contender));
++      let errors='';contender.stderr!.on('data',data=>errors+=data);const [exit]=await once(contender,'exit');expect({exit,errors}).toEqual({exit:0,errors:''});
++    }));
++    expect(readFileSync(counter,'utf8')).toBe('4');expect(existsSync(directory(kind))).toBe(false);
++  });
++  it.each(['C','H'] as const)('preserves unrecognized legacy %s owners even with an absent PID',async kind=>{
++    mkdirSync(directory(kind),{recursive:true});const owner={schema:1,token:'historical-owner',pid:2147483646,startedAt:'darwin-proc-v1:1:1'};writeFileSync(join(directory(kind),'owner.json'),JSON.stringify(owner));
++    await expect(lock(kind,()=>42,{timeoutMs:20})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(JSON.parse(readFileSync(join(directory(kind),'owner.json'),'utf8'))).toEqual(owner);
++  });
++  it.each(['C','H'] as const)('cancels a %s gate wait without changing a live owner',async kind=>{
++    const child=await holder(kind),before=readFileSync(join(directory(kind),'owner.json')),abort=new AbortController(),work=lock(kind,()=>42,{signal:abort.signal});abort.abort();
++    await expect(work).rejects.toMatchObject({code:'CANCELED'});expect(readFileSync(join(directory(kind),'owner.json'))).toEqual(before);await kill(child);
++  });
++  it.each(['C','H'] as const)('preserves a stopped %s directory containing unrecognized user files',async kind=>{
++    const child=await holder(kind);await kill(child);const file=join(directory(kind),'user-data');writeFileSync(file,'keep');
++    await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(file,'utf8')).toBe('keep');
++  });
++  it.each(['C','H'] as const)('rejects a replaced %s gate inode without deleting the original owner',async kind=>{
++    const child=await holder(kind);await kill(child);const dir=kind==='C'?join(root,'locks'):root,file=join(dir,'.'+(kind==='C'?'resource':'catalog')+'.lock.gate.sqlite'),before=readFileSync(join(directory(kind),'owner.json'));
++    renameSync(file,file+'.original');writeFileSync(file,'');await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(join(directory(kind),'owner.json'))).toEqual(before);
++  });
++  it.each(['C','H'] as const)('rejects a linked %s gate before opening or writing its target',async kind=>{
++    const dir=kind==='C'?join(root,'locks'):root;mkdirSync(dir,{recursive:true});const target=join(root,'user-sqlite'),file=join(dir,'.'+(kind==='C'?'resource':'catalog')+'.lock.gate.sqlite');writeFileSync(target,'user data');symlinkSync(target,file);
++    await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(target,'utf8')).toBe('user data');
++  });
++  it.each(['C','H'] as const)('rejects a hard-linked %s owner file without deleting the other name',async kind=>{
++    const child=await holder(kind);await kill(child);const file=join(directory(kind),'owner.json'),other=join(root,'owner-other'),before=readFileSync(file);linkSync(file,other);
++    await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(other)).toEqual(before);expect(readFileSync(file)).toEqual(before);
++  });
++  it.skipIf(process.platform!=='darwin').each(['stopped','unknown'] as const)('requires exact kernel exit for a legacy H owner: %s',async state=>{
++    const native=new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),host=native.read(process.pid)!,child=await holder('H','legacy'),before=readFileSync(join(directory('H'),'owner.json'));
++    const acquire=()=>withDiscoveryLock(root,host,()=>42,{timeoutMs:50,processes:native});
++    await expect(acquire()).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(join(directory('H'),'owner.json'))).toEqual(before);await kill(child);
++    if(state==='stopped'){expect(await acquire()).toBe(42);expect(existsSync(directory('H'))).toBe(false);}
++    else{await expect(withDiscoveryLock(root,host,()=>42,{timeoutMs:30,processes:{read:pid=>native.read(pid),state:()=> 'unknown'}})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(join(directory('H'),'owner.json'))).toEqual(before);}
++  });
++  it.each(['C','H'] as const)('preserves the %s directory when its gate content or journal mode is unrecognized',async kind=>{
++    const child=await holder(kind);await kill(child);const dir=kind==='C'?join(root,'locks'):root,file=join(dir,'.'+(kind==='C'?'resource':'catalog')+'.lock.gate.sqlite'),before=readFileSync(join(directory(kind),'owner.json'));
++    const sqlite=new Database(file);sqlite.pragma('journal_mode=WAL');sqlite.close();await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(join(directory(kind),'owner.json'))).toEqual(before);
++    writeFileSync(file,'unrecognized gate database');await expect(lock(kind,()=>42)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(readFileSync(join(directory(kind),'owner.json'))).toEqual(before);
++  });
++});
+--- /dev/null
++++ b/src/main/core/applications/__tests__/discovery-crash.test.ts
+@@ -0,0 +1,38 @@
++import {spawn,type ChildProcess} from 'node:child_process';
++import {once} from 'node:events';
++import {existsSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
++import {builtinModules} from 'node:module';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {build as viteBuild} from 'vite';
++import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it} from 'vitest';
++import {DiscoveryCatalog,type DiscoveryCheckpoint} from '../discovery-catalog';
++import {MacProcessIdentityReader} from '../process-identity';
++import {agentFixture} from './agent-fixture';
++let build:string,f:Awaited<ReturnType<typeof agentFixture>>;
++const children=new Set<ChildProcess>();
++beforeAll(async()=>{build=mkdtempSync(join(tmpdir(),'willyou-h-publisher-build-'));await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared'),'@root':resolve('.')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/discovery-publisher-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});});
++afterAll(()=>rmSync(build,{recursive:true,force:true}));
++beforeEach(async()=>{f=await agentFixture();});
++async function kill(child:ChildProcess){if(child.exitCode===null&&child.signalCode===null){const done=once(child,'exit');child.kill('SIGKILL');await done;}children.delete(child);}
++afterEach(async()=>{await Promise.all([...children].map(kill));f.cleanup();});
++describe.skipIf(process.platform!=='darwin')('actual H publication termination including pre-C intent and both short locks',()=>{
++  it.each(['intent-recorded','registered','renamed','catalog-published','records-committed'] satisfies ('intent-recorded'|DiscoveryCheckpoint)[])('restores the original %s operation after SIGKILL, preserving bytes and references',async phase=>{
++    const native=resolve('out/native/willyou-process-identity'),processes=new MacProcessIdentityReader(native),catalog=new DiscoveryCatalog(f.store,f.home,processes),sources=f.projector.sourceSkills(f.plan('codex')),input=join(f.root,'publication-sources.json');
++    writeFileSync(input,JSON.stringify(sources.map(s=>({...s,executables:[...s.executables],files:Object.fromEntries(Object.entries(s.files).map(([p,b])=>[p,Buffer.from(b).toString('base64')]))}))));
++    const child=spawn(process.execPath,[join(build,'child.cjs'),f.root,f.home,native,phase,input],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','pipe','pipe']});children.add(child);
++    await new Promise<void>((accept,reject)=>{let text='',errors='';const timer=setTimeout(()=>reject(Error('H checkpoint timeout '+errors)),4000);child.stderr!.on('data',data=>errors+=data);child.stdout!.on('data',data=>{text+=data;if(text.includes('\n')){clearTimeout(timer);try{expect(JSON.parse(text.split('\n')[0])).toEqual({phase,pid:child.pid});accept();}catch(error){reject(error);}}});child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',()=>{clearTimeout(timer);reject(Error('H exited before checkpoint '+errors));});});
++    const pendingPath=join(catalog.root,'pending.json'),pendingBytes=readFileSync(pendingPath),original=JSON.parse(pendingBytes.toString()),refs=f.sqlite.prepare('SELECT * FROM capability_session_refs ORDER BY task_id,ref_id').all(),sourceTrees=sources.map(s=>f.snapshotTree(f.store.directory(f.store.get(s.sourceResourceId))));
++    if(phase==='intent-recorded'){expect(f.sqlite.prepare('SELECT 1 FROM capability_resource_operations WHERE operation_id=?').get(original.operationId)).toBeUndefined();expect(existsSync(join(catalog.root,'catalog.lock'))).toBe(true);}
++    if(phase==='renamed'){expect(existsSync(join(catalog.root,'catalog.lock'))).toBe(true);expect(existsSync(join(f.store.root,'locks/resource.lock'))).toBe(false);}
++    await expect(catalog.recover(original.operationId,sources)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(pendingPath)).toEqual(pendingBytes);
++    const identity=processes.read(child.pid!)!;await kill(child);expect(processes.state(identity)).toBe('stopped');
++    if(phase==='intent-recorded'){
++      const unknown=new DiscoveryCatalog(f.store,f.home,{read:pid=>processes.read(pid),state:()=> 'unknown'});
++      await expect(unknown.recover(original.operationId,sources)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(pendingPath)).toEqual(pendingBytes);
++    }
++    const restored=await catalog.recover(original.operationId,sources);expect(restored.entries).toHaveLength(sources.length);catalog.verify(restored);expect(existsSync(pendingPath)).toBe(false);
++    expect(f.sqlite.prepare('SELECT * FROM capability_session_refs ORDER BY task_id,ref_id').all()).toEqual(refs);expect(sources.map(s=>f.snapshotTree(f.store.directory(f.store.get(s.sourceResourceId))))).toEqual(sourceTrees);
++    expect(f.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(original.operationId)).toEqual({state:'committed'});expect(f.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_id=? AND state<>'released'").get(original.operationId)).toBeUndefined();
++  },12000);
++});
+--- /dev/null
++++ b/src/main/core/applications/__tests__/discovery-early-intent.test.ts
+@@ -0,0 +1,45 @@
++import {randomUUID} from 'node:crypto';
++import {existsSync,mkdirSync,readFileSync,symlinkSync,writeFileSync} from 'node:fs';
++import {dirname,join} from 'node:path';
++import {afterEach,beforeEach,describe,expect,it} from 'vitest';
++import {DiscoveryCatalog} from '../discovery-catalog';
++import {agentFixture} from './agent-fixture';
++import {FixtureProcessReader} from './run-fixture';
++let f:Awaited<ReturnType<typeof agentFixture>>,reader:FixtureProcessReader,catalog:DiscoveryCatalog;
++beforeEach(async()=>{f=await agentFixture();reader=new FixtureProcessReader();catalog=new DiscoveryCatalog(f.store,f.home,reader);});
++afterEach(()=>f.cleanup());
++async function early(){
++  const sources=f.projector.sourceSkills(f.plan('codex')),file=join(catalog.root,'pending.json');let bytes!:Buffer;
++  const original=new DiscoveryCatalog(f.store,f.home,reader,{intentCheckpoint:()=>{bytes=readFileSync(file);throw Error('captured pre-C intent');}});
++  await expect(original.publish(sources)).rejects.toThrow('captured pre-C');
++  // The live failure rolls itself back. Restore its exact captured pre-C bytes
++  // as a controlled persistent-state fixture; actual SIGKILL is tested separately.
++  expect(existsSync(file)).toBe(false);writeFileSync(file,bytes);
++  const intent=JSON.parse(bytes.toString());reader.identities.set(process.pid,'darwin-proc-v1:999:42');catalog=new DiscoveryCatalog(f.store,f.home,reader);
++  return{sources,file,bytes,intent};
++}
++describe('early H intent recovery refuses unknown ownership and partial C footprints',()=>{
++  it('registers and completes the same stopped pre-C intent without substituting source versions',async()=>{
++    const x=await early(),before=x.sources.map(s=>f.snapshotTree(f.store.directory(f.store.get(s.sourceResourceId)))),done=await catalog.recover(x.intent.operationId,x.sources);
++    catalog.verify(done);expect(done.entries.map(e=>e.sourceHash).sort()).toEqual(x.sources.map(s=>s.sourceHash).sort());
++    expect(x.sources.map(s=>f.snapshotTree(f.store.directory(f.store.get(s.sourceResourceId))))).toEqual(before);
++    expect(f.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(x.intent.operationId)).toEqual({state:'committed'});
++  });
++  it.each(['running','unknown'] as const)('preserves a %s original pre-C owner and all intent bytes',async state=>{
++    const x=await early();if(state==='running')reader.identities.set(process.pid,x.intent.owner.startedAt);else reader.unknown.add(process.pid);
++    await expect(catalog.recover(x.intent.operationId,x.sources)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(x.file)).toEqual(x.bytes);expect(f.sqlite.prepare('SELECT 1 FROM capability_resource_operations WHERE operation_id=?').get(x.intent.operationId)).toBeUndefined();
++  });
++  it.each(['staging','target','target-link','resource','lease','operation','advanced-phase','source'] as const)('preserves a pre-C %s inconsistency instead of inventing a fresh operation',async kind=>{
++    const x=await early(),source=x.sources[0],target=dirname(source.path),ledger=()=>({operations:f.sqlite.prepare('SELECT * FROM capability_resource_operations ORDER BY operation_id').all(),leases:f.sqlite.prepare('SELECT * FROM capability_resource_leases ORDER BY lease_id').all(),resources:f.sqlite.prepare('SELECT * FROM capability_resources ORDER BY resource_id').all()});
++    if(kind==='staging')mkdirSync(join(catalog.root,'staging',x.intent.operationId));
++    if(kind==='target'){mkdirSync(target,{recursive:true});writeFileSync(join(target,'user-data'),'preserve');}
++    if(kind==='target-link'){mkdirSync(dirname(target),{recursive:true});symlinkSync(join(f.root,'user-missing-target'),target);}
++    if(kind==='resource')f.sqlite.prepare('UPDATE capability_resources SET operation_id=? WHERE resource_id=?').run(x.intent.operationId,source.sourceResourceId);
++    if(kind==='lease')f.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,state,created_at) VALUES(?,?,'install',?,'unverified-resumer','recovery-required',?)").run(randomUUID(),source.sourceResourceId,x.intent.operationId,new Date().toISOString());
++    if(kind==='operation')f.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'different-operation',?,'preparing','{}',?,?)").run(x.intent.operationId,f.store.storeId,new Date().toISOString(),new Date().toISOString());
++    if(kind==='advanced-phase'){x.intent.phase='materializing';writeFileSync(x.file,JSON.stringify(x.intent));}
++    if(kind==='source')writeFileSync(join(f.store.directory(f.store.get(source.sourceResourceId)),'SKILL.md'),'source no longer matches');
++    const before=ledger(),bytes=readFileSync(x.file);
++    await expect(catalog.recover(x.intent.operationId,x.sources)).rejects.toBeDefined();expect(readFileSync(x.file)).toEqual(bytes);expect(ledger()).toEqual(before);if(kind==='target')expect(readFileSync(join(target,'user-data'),'utf8')).toBe('preserve');
++  });
++});
+--- a/src/main/core/applications/__tests__/resource-publication-recovery.test.ts
++++ b/src/main/core/applications/__tests__/resource-publication-recovery.test.ts
+@@ -65,16 +65,16 @@
+ });
+ 
+ 
+-describe.skipIf(process.platform!=='darwin')('actual private C publisher termination outside the short coordinator lock',()=>{
++describe.skipIf(process.platform!=='darwin')('actual private C publisher termination at original publication checkpoints',()=>{
+  let build:string,native:string;const children=new Set<ChildProcess>();
+  beforeAll(async()=>{build=mkdtempSync(join(tmpdir(),'willyou-c-publisher-build-'));native=resolve('out/native/willyou-process-identity');await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/resource-publisher-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});});
+  afterAll(()=>rmSync(build,{recursive:true,force:true}));
+  afterEach(async()=>{for(const child of children){const done=once(child,'exit');child.kill('SIGKILL');await done;}children.clear();});
+- it.each(['registered','materialized'] as const)('keeps a living %s publisher, then restores the same operation after actual SIGKILL',async phase=>{
++ it.each(['registered','materialized','renamed'] as const)('keeps a living %s publisher, then restores the same operation after actual SIGKILL',async phase=>{
+   const processes=new MacProcessIdentityReader(native),child=spawn(process.execPath,[join(build,'child.cjs'),root,native,phase],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',NODE_PATH:resolve('node_modules')},stdio:['ignore','pipe','pipe']});children.add(child);let stderr='';child.stderr!.on('data',data=>stderr+=data.toString());
+   const message=await new Promise<{phase:string;pid:number}>((resolveMessage,reject)=>{let text='';const timer=setTimeout(()=>reject(Error('private publisher checkpoint timeout '+stderr)),5000);child.stdout!.on('data',data=>{text+=data.toString();if(text.includes('\n')){clearTimeout(timer);try{resolveMessage(JSON.parse(text.split('\n')[0]));}catch(error){reject(error);}}});child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',()=>{clearTimeout(timer);reject(Error('private publisher exited before checkpoint '+stderr));});});
+   expect(message.phase).toBe(phase);expect(message.pid).toBe(child.pid);const original=processes.read(child.pid!)!,store=new ResourceStore(sqlite,root,undefined,{processes}),record=store.get(spec().resourceId),plan=sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get(record.operationId) as {plan_json:string};expect(JSON.parse(plan.plan_json).host).toEqual(original);const before=leases(record.operationId!);
+   await expect(store.recover(spec(),record.operationId!)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(leases(record.operationId!)).toEqual(before);const done=once(child,'exit');child.kill('SIGKILL');await done;children.delete(child);expect(processes.state(original)).toBe('stopped');
+   expect(await store.recover(spec(),record.operationId!)).toMatchObject({state:'ready',operationId:record.operationId,relativePath:'original-static'});expect(readFileSync(join(store.root,'original-static/entry'),'utf8')).toBe('original immutable C resource');expect(leases(record.operationId!).every((x:any)=>x.state==='released')).toBe(true);
+- });
++ },10000);
+ });
+--- a/src/main/core/applications/__tests__/session-diagnostics.test.ts
++++ b/src/main/core/applications/__tests__/session-diagnostics.test.ts
+@@ -40,7 +40,9 @@
+  it('keeps an unavailable preparation separate from the live native Agent and from verified original files',async()=>{const run=await start();await diagnostics.prepared({...prepared(run),state:'unavailable',issueCode:'AGENT_ADAPTER_UNSUPPORTED'});const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun).toMatchObject({state:'active',preparation:{state:'unavailable',issueCode:'AGENT_ADAPTER_UNSUPPORTED'}});expect(value.applications[0]).toMatchObject({resourceState:'verified',issueCode:'AGENT_ADAPTER_UNSUPPORTED'});expect(f.runs.get(run.runId).state).toBe('active');});
+  it('distinguishes an authenticated bridge observation from current connectivity and from Skill reading',async()=>{const run=await start(),bridge=await run.reserveBridge();bridges.push(bridge);await bridge.arm();(f.reader as FixtureProcessReader).identities.set(29001,'darwin-proc-v1:100:29001');await bridge.attach(29001);await diagnostics.bridgeAuthenticated(run.runId,bridge.processId);connected=true;let value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun?.bridge).toMatchObject({connected:true,observedAt:expect.any(String)});expect(value.applications[0].evidence.skillRead).toBe('unverified');connected=false;value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun?.bridge).toMatchObject({connected:false,observedAt:expect.any(String)});});
+  it('counts only calls from this owned run and original package, never recycling a historical success after resume',async()=>{const run=await start(),put=(runId:string)=>f.sqlite.prepare("INSERT INTO application_invocations(operation_id,run_id,request_id,request_hash,project_id,task_id,app_id,package_hash,tool_name,contract_major,semantics,state,effect_state,started_at) VALUES(?,?,?,'fixture','p1',?,'zentao',?,'smartdd_zentao_query_v1',1,'read','succeeded','read-only',?)").run(randomUUID(),runId,randomUUID(),f.snapshot.taskId,f.application!.packageHash,new Date().toISOString());put(run.runId);expect((await diagnostics.inspect(f.snapshot.taskId)).applications[0].evidence).toMatchObject({toolRequests:1,successfulToolRequests:1,skillRead:'unverified'});await run.cli.exited();await run.stop();const next=await start();await diagnostics.prepared(prepared(next));const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun?.id).toBe(next.runId);expect(value.applications[0].evidence.toolRequests).toBe(0);expect(value.recentRuns.map(r=>r.id)).toContain(run.runId);});
+- it('finds the owned current run even when a clock rollback leaves more than six future-dated history rows',async()=>{for(let i=0;i<8;i++){const history=await start();await history.cli.exited();await history.stop();f.sqlite.prepare('UPDATE capability_runs SET started_at=? WHERE run_id=?').run(`2099-01-0${i+1}T00:00:00.000Z`,history.runId);}const current=await start();await diagnostics.prepared(prepared(current));const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun).toMatchObject({id:current.runId,current:true,preparation:{state:'prepared'}});expect(value.recentRuns).toHaveLength(5);expect(value.recentRuns.every(r=>!r.current&&r.id!==current.runId)).toBe(true);});
++ // Nine durable run lifecycles exercise selection under clock rollback; the
++ // framework default is not a product latency requirement. Keep a bounded wait.
++ it('finds the owned current run even when a clock rollback leaves more than six future-dated history rows',async()=>{for(let i=0;i<8;i++){const history=await start();await history.cli.exited();await history.stop();f.sqlite.prepare('UPDATE capability_runs SET started_at=? WHERE run_id=?').run(`2099-01-0${i+1}T00:00:00.000Z`,history.runId);}const current=await start();await diagnostics.prepared(prepared(current));const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun).toMatchObject({id:current.runId,current:true,preparation:{state:'prepared'}});expect(value.recentRuns).toHaveLength(5);expect(value.recentRuns.every(r=>!r.current&&r.id!==current.runId)).toBe(true);},15000);
+  it('exposes corrupt preparation/bridge metadata as missing evidence, without replaying a call or making a new grant',async()=>{const run=await start();await diagnostics.prepared(prepared(run));f.sqlite.prepare("UPDATE capability_run_preparations SET evidence_json='{}' WHERE run_id=?").run(run.runId);const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.currentRun).toMatchObject({preparation:null,preparationIssue:'RESOURCE_RECOVERY_REQUIRED'});expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM mail_send_grants').get()).toEqual({n:0});expect(f.runs.get(run.runId).state).toBe('active');});
+  it('does not replace a corrupt snapshot with current defaults or terminate its Agent during inspection',async()=>{const run=await start();f.sqlite.prepare("UPDATE capability_session_snapshots SET snapshot_json='invalid' WHERE task_id=?").run(f.snapshot.taskId);const value=await diagnostics.inspect(f.snapshot.taskId);expect(value).toMatchObject({selection:'corrupt',currentRun:null});expect(value.applications).toEqual([]);expect(f.sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(run.runId)).toEqual({state:'active'});expect(f.sqlite.prepare('SELECT retention_state FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId)).toEqual({retention_state:'active'});});
+  it('detects modified original bytes and preserves the fixed version and native run rather than switching packages',async()=>{const run=await start(),path=join(f.store.root,f.application!.relativePath,'adapter/index.cjs'),original=readFileSync(path);try{writeFileSync(path,'tampered');const value=await diagnostics.inspect(f.snapshot.taskId);expect(value.applications[0]).toMatchObject({fixedVersion:'1.0.0',packageHash:f.application!.packageHash,resourceState:'unavailable',issueCode:'HASH_MISMATCH'});expect(value.currentRun?.state).toBe('active');}finally{writeFileSync(path,original);}});
+--- /dev/null
++++ b/src/main/core/applications/__tests__/fixtures/coordinator-process.ts
+@@ -0,0 +1,19 @@
++import { mkdirSync,readFileSync,writeFileSync,writeSync } from 'node:fs';
++import { join } from 'node:path';
++import { randomUUID } from 'node:crypto';
++import { MacProcessIdentityReader } from '../../process-identity';
++import { withResourceLock } from '../../resource-lock';
++import { withDiscoveryLock } from '../../discovery-catalog-lock';
++const [root,kind,mode,helper] = process.argv.slice(2);
++const hold = () => {
++  if(mode==='increment'){
++    const file=join(root,'counter'),before=Number(readFileSync(file,'utf8'));
++    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,30);
++    writeFileSync(file,String(before+1));return;
++  }
++  writeSync(1,JSON.stringify({ pid: process.pid,kind }) + '\n');
++  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);
++};
++if(mode==='legacy'){
++  mkdirSync(join(root,'catalog.lock'));writeFileSync(join(root,'catalog.lock/owner.json'),JSON.stringify({schema:1,token:randomUUID(),...new MacProcessIdentityReader(helper).read(process.pid)!}));hold();
++}else void (kind === 'C' ? withResourceLock(root,hold) : withDiscoveryLock(root,{ pid: process.pid,startedAt: 'fixture-not-recovery-authority' },hold)).catch(error => { console.error(error);process.exitCode = 1; });
+--- /dev/null
++++ b/src/main/core/applications/__tests__/fixtures/discovery-publisher-process.ts
+@@ -0,0 +1,11 @@
++import {readFileSync,writeSync} from 'node:fs';
++import {join} from 'node:path';
++import Database from 'better-sqlite3';
++import {ResourceStore} from '../../resource-store';
++import {DiscoveryCatalog,type DiscoveryProjectionSource} from '../../discovery-catalog';
++import {MacProcessIdentityReader} from '../../process-identity';
++const [root,home,helper,phase,sourcesFile]=process.argv.slice(2),sqlite=new Database(join(root,'state.sqlite')),processes=new MacProcessIdentityReader(helper),store=new ResourceStore(sqlite,root,undefined,{processes});
++const checkpoint=(at:string)=>{if(at===phase){writeSync(1,JSON.stringify({phase:at,pid:process.pid})+'\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}};
++const catalog=new DiscoveryCatalog(store,home,processes,{checkpoint,intentCheckpoint:()=>checkpoint('intent-recorded')});
++const sources=(JSON.parse(readFileSync(sourcesFile,'utf8')) as {nativeName:string;sourceHash:string;sourceResourceId:string;files:Record<string,string>;executables:string[]}[]).map(s=>({...s,files:Object.fromEntries(Object.entries(s.files).map(([p,b])=>[p,Buffer.from(b,'base64')])),executables:new Set(s.executables)})) satisfies DiscoveryProjectionSource[];
++void catalog.publish(sources).catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>sqlite.close());

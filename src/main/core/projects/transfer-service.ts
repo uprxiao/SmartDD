@@ -13,6 +13,7 @@ import type { AiProfileService } from '../ai/ai-profile-service';
 import { inspectDir, pathIdentity } from './dir-status';
 import type { ProjectService } from './project-service';
 import { secretKeys } from './secret-keys';
+import { projectCapabilityEnabled, projectCapabilitySettingId } from './project-capability-setting';
 import { decryptProject, encryptProject, inspectEnvelope, strictBase64, TransferError, validatePayload, type PortableProject } from './transfer-format';
 import { atomicWrite, ImportedKeyFiles, readLimited } from './transfer-files';
 
@@ -146,7 +147,7 @@ export class ProjectTransferService {
   }
   private capabilities(projectId: string): PortableProject['capabilities'] {
     const rows = this.d.db.select().from(projectCapabilities).where(eq(projectCapabilities.projectId, projectId)).all();
-    return TRANSFER_CAPABILITIES.map(id => ({ id, enabled: rows.find(c => c.capabilityId === id)?.enabled ?? true }));
+    return TRANSFER_CAPABILITIES.map(id => ({ id, enabled: projectCapabilityEnabled(rows, projectId, id) }));
   }
   snapshot(projectId: string, profileIds: string[], emptyPasswordRefs: string[]): PortableProject {
     const input = exportSchema.safeParse({ projectId, profileIds, emptyPasswordRefs });
@@ -298,7 +299,7 @@ export class ProjectTransferService {
           if (c.sudoPassword !== undefined) this.d.secrets.set(keys.sudo, c.sudoPassword);
         }
         this.d.checkpoint?.('rows');
-        for (const c of p.capabilities) this.d.db.insert(projectCapabilities).values({ id: randomUUID(), projectId: id, capabilityId: c.id, enabled: c.enabled }).run();
+        for (const c of p.capabilities) this.d.db.insert(projectCapabilities).values({ id: projectCapabilitySettingId(id, c.id), projectId: id, capabilityId: c.id, enabled: c.enabled }).run();
         const profileIds: string[] = [], names = this.d.profiles.list().map(p => p.name);
         for (const ref of draft.selectedProfileRefs) {
           const profile = p.profiles.find(p => p.ref === ref)!, pid = randomUUID(), name = uniqueName(profile.name, names, 60);

@@ -1,0 +1,49 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'T64 continues the original'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (52 tests | 2 failed | 50 skipped) 2483ms
+     × T64 continues the original claude-code session without application authority while its fixed package is unavailable 400ms
+     × T64 continues the original codex session without application authority while its fixed package is unavailable 2082ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 continues the original claude-code session without application authority while its fixed package is unavailable
+ApplicationError: 应用包缺失、不可读或声明损坏
+ ❯ verifyPackageTree src/main/core/applications/package-files.ts:53:11
+     51|   } catch (error) {
+     52|     if (error instanceof ApplicationError) throw error;
+     53|     throw new ApplicationError('HASH_MISMATCH', '应用包缺失、不可读或声明损坏');
+       |           ^
+     54|   }
+     55| }
+ ❯ SessionCapabilityProjector.sourceSkills src/main/core/applications/session-projector.ts:33:69
+ ❯ SessionCapabilityProjector.claude src/main/core/applications/session-projector.ts:53:119
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:163:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 continues the original codex session without application authority while its fixed package is unavailable
+ApplicationError: 应用包缺失、不可读或声明损坏
+ ❯ verifyPackageTree src/main/core/applications/package-files.ts:53:11
+     51|   } catch (error) {
+     52|     if (error instanceof ApplicationError) throw error;
+     53|     throw new ApplicationError('HASH_MISMATCH', '应用包缺失、不可读或声明损坏');
+       |           ^
+     54|   }
+     55| }
+ ❯ SessionCapabilityProjector.sourceSkills src/main/core/applications/session-projector.ts:33:69
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:162:90
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 50 skipped (52)
+   Start at  13:00:53
+   Duration  3.13s (transform 393ms, setup 0ms, import 581ms, tests 2.48s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

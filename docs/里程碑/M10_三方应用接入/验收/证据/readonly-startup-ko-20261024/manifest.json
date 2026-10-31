@@ -1,0 +1,67 @@
+{
+  "schema": "willyou-m10-readonly-startup-ko-v1",
+  "date": "2026-10-24",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "asar": "8a1b0addfa84e80208aca3362284dc00e6ae201e40d108a33aae50c5a7ff73fd",
+  "checks": 6,
+  "layer": "I: actual packaged startup and OS permission denial; SMARTDD_PROBE suppresses error dialog only; no GUI/CLI/system approval acceptance",
+  "before": {
+    "db": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录/smartdd.db",
+    "ino": 60241356,
+    "dev": 16777234,
+    "sha256": "ffcf54181ac49fc3c790b214617e074ba57976297ecb40ac56585d2f83436e6c"
+  },
+  "actualPermissionFailures": [
+    {
+      "userData": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/已有数据 只读目录",
+      "label": "existing-denied",
+      "code": 1,
+      "signal": null,
+      "stderr": "attempt to write a readonly database\n",
+      "probeMode": true
+    },
+    {
+      "userData": "/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读",
+      "label": "fresh-denied",
+      "code": 1,
+      "signal": null,
+      "stderr": "[17496:1024/180728.163540:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163540:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163598:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163599:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163602:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/wasm\n[17496:1024/180728.163605:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Code Cache/js\n[17496:1024/180728.163651:ERROR:net/disk_cache/disk_cache.cc:284] Unable to create cache\n[17496:1024/180728.163655:ERROR:net/disk_cache/disk_cache.cc:284] Unable to create cache\nEACCES: permission denied, open '/private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/.database-access.sqlite'\n[17498:1024/180728.179556:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n[17498:1024/180728.179787:ERROR:net/disk_cache/simple/simple_backend_impl.cc:81] Failed to create directory: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n[17498:1024/180728.179792:ERROR:net/disk_cache/simple/simple_backend_impl.cc:749] Simple Cache Backend: wrong file structure on disk: 1 path: /private/tmp/willyou-m10-readonly-startup-EAqiQB/全新目录 只读/Shared Dictionary/cache\n",
+      "probeMode": true
+    }
+  ],
+  "exitedPids": [
+    17451,
+    17485,
+    17500,
+    17482,
+    17496,
+    17317,
+    17348
+  ],
+  "inputEvents": 0,
+  "retainedFailure": "R1 treated verified migration backups as extra business databases; exact original driver/log retained; R2 validates each backup receipt/hash and requires unchanged inventory across denied startup",
+  "formal": {
+    "passed": 26,
+    "total": 72
+  },
+  "files": {
+    "driver.mjs": "9395305e1ab39c18a5ce1b34f5fd0902878da274f3b99b6e097527e5e2ef2e9b",
+    "execution.log": "b6c97a36fa6db909bde1cb8439a4632a63cd28aceb1bed0c9e089a3588340736",
+    "existing-denied.stderr": "36e6b1f72a1f6d9f8a8e8909f67864156d846c6460d294ee7123167af4fce77e",
+    "existing-denied.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "existing-recovered.log": "e8e6be7e54538f0576559e684833f86ffea53172c027b39f1eb53ef192e412f7",
+    "fresh-denied.stderr": "eb7949fdbcd72c21c5c5e67e2610fddd6313bddb61cb4d77d361de69ce9923a3",
+    "fresh-denied.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fresh-recovered.log": "58e54f381c40365449381a9eb2c6ef5ae4d6d6b12209584cd82dafe1f09b99fe",
+    "initial.log": "034c7c0d835a9088460b8871309e67668e942cf7101cbc24a8ea8e85194c9281",
+    "r1/driver-r1.mjs": "843ab76f25c96a794ed93224c02c7de5b7f9c4b6c563d6b47b80a70b29eeaa52",
+    "r1/execution-r1.log": "bebdd0dcbeba9ac8461e70ff4d181df00bcf4d277568b82e8f217c3247179d2a",
+    "r1/existing-denied.stderr": "36e6b1f72a1f6d9f8a8e8909f67864156d846c6460d294ee7123167af4fce77e",
+    "r1/existing-denied.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "r1/initial.log": "32f39d7256381bdf21da4ba63515e28757f48cc83cec4afff1d600b840df7b26",
+    "r1/result.json": "519b3767cb687dafd7bbda358fc67bfc75a3e84e7aaccd313b6f105779e96886",
+    "result.json": "16330d95983e31962a96b39d560a1d7e79c64ff8986e6dfe33112d2afc97b0c1"
+  }
+}

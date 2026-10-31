@@ -1,0 +1,211 @@
+{
+  "schema": "m10-copy-diagnostic-bp-v1",
+  "at": "2026-10-23T12:53:23.391114+00:00",
+  "branch": "feature/0.0.2",
+  "sourceBase": "aa508e64bb1fac776ae491e3137c74bf428c03ec",
+  "sourceDelta": "copy-diagnostic-bp-20261023/source-delta-final.json",
+  "sourceDirty": true,
+  "manifest": "copy-diagnostic-bp-20261023/artifact-manifest.json",
+  "manifestSha256": "bee481149152cb5950ff45ee6d398fd0ba4f43d5c7b942a09f22ce02aa9d1f50",
+  "checkpoint": "copy-diagnostic-bp-20261023/development-checkpoint.json",
+  "environmentBuild": "copy-diagnostic-bp-20261023/environment-build.json",
+  "packageAsarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf",
+  "software": {
+    "aggregatePassing": 1711,
+    "originalPassing": 1694,
+    "originalFailures": 17,
+    "reconciliation": "software-reconciliation.json.gz",
+    "targetedT39T40": {
+      "passed": 57,
+      "failed": 0,
+      "unselected": 0,
+      "alreadyIncluded": true
+    }
+  },
+  "formalCases": {
+    "passedIds": [
+      "T39",
+      "T40",
+      "T41",
+      "T42",
+      "T63"
+    ],
+    "passed": 5,
+    "total": 72,
+    "percentage": 6.94
+  },
+  "newFormalCaseIds": [
+    "T39",
+    "T40",
+    "T41"
+  ],
+  "aLayerBoundary": "Real packaged UI and actual Codex; synthetic provider responses, private data and local draft only. Results are partial except the specifically completed E-EXT/P cases. No actual external send/model or Claude claim.",
+  "runs": [
+    {
+      "id": "session-setup-red",
+      "originalRoot": "/private/tmp/willyou-m10-session-ui-AbDbix",
+      "status": "failed",
+      "checks": 0,
+      "failedStage": "setup",
+      "error": "Error: Command failed: /private/tmp/willyou-m10-bp-package-20261023/mac-arm64/WillYou.app/Contents/MacOS/WillYou /private/tmp/willyou-m10-session-ui-AbDbix/setup/prepare.cjs /private/tmp/willyou-m10-session-ui-AbDbix/userdata 6a06827f-f0f2-40e2-9d8e-fef6a815aa8b /private/tmp/willyou-m10-bp-package-20261023/mac-arm64/WillYou.app/Contents/Resources/native/willyou-process-identity\nApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场\n",
+      "layer": "A: actual packaged App; private complete fixed-version and unmapped-history fixtures; no Agent/model/provider",
+      "result": "runs/session-setup-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "session-canary-red",
+      "originalRoot": "/private/tmp/willyou-m10-session-ui-guws4Y",
+      "status": "failed",
+      "checks": 0,
+      "failedStage": "setup",
+      "error": "Error: Command failed: /private/tmp/willyou-m10-bp-package-20261023/mac-arm64/WillYou.app/Contents/MacOS/WillYou /private/tmp/willyou-m10-session-ui-guws4Y/setup/prepare.cjs /private/tmp/willyou-m10-session-ui-guws4Y/userdata 5e88b867-e7f3-430c-bbd3-bc11fc8b6924 /private/tmp/willyou-m10-bp-package-20261023/mac-arm64/WillYou.app/Contents/Resources/native/willyou-process-identity\nError: ENOENT: no such file or directory, open '/private/tmp/willyou-m10-session-ui-guws4Y/userdata/claude-deliveries/57d93439-849a-46b1-bcbe-e31454f4d89b/d4cb6a3c-6495-45ea-992f-eb1ccded97bc/previous/unknown-fixture-canary'\n",
+      "layer": "A: actual packaged App; private complete fixed-version and unmapped-history fixtures; no Agent/model/provider",
+      "result": "runs/session-canary-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "session-first-green",
+      "originalRoot": "/private/tmp/willyou-m10-session-ui-wihojM",
+      "status": "passed-partial",
+      "checks": 8,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: actual packaged App; private complete fixed-version and unmapped-history fixtures; no Agent/model/provider",
+      "result": "runs/session-first-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "session-themes-green",
+      "originalRoot": "/private/tmp/willyou-m10-session-ui-yzdyhQ",
+      "status": "passed-partial",
+      "checks": 9,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: actual packaged App; private complete fixed-version and unmapped-history fixtures; no Agent/model/provider",
+      "result": "runs/session-themes-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-create-green",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-idx439",
+      "status": "passed-partial",
+      "checks": 6,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: real packaged App composer -> actual Codex CLI -> real M10 MCP local draft creation -> actual draft UI; model response is private synthetic fixture, no real model or external send",
+      "result": "runs/native-create-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-resume-red",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-dN7abt",
+      "status": "failed",
+      "checks": 6,
+      "failedStage": "ui-resume",
+      "error": "Error: Bounded state wait timed out: ui-resume",
+      "layer": "A: real packaged App composer -> actual Codex CLI -> real M10 MCP local draft creation -> actual draft UI; model response is private synthetic fixture, no real model or external send",
+      "result": "runs/native-resume-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-resume-ready-red",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-zK6zCS",
+      "status": "failed",
+      "checks": 6,
+      "failedStage": "ui-resume",
+      "error": "Error: Bounded state wait timed out: ui-resume",
+      "layer": "A: real packaged App composer -> actual Codex CLI -> real M10 MCP local draft creation -> actual draft UI; model response is private synthetic fixture, no real model or external send",
+      "result": "runs/native-resume-ready-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-resume-observed-red",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-sc4NRG",
+      "status": "failed",
+      "checks": 6,
+      "failedStage": "ui-resume",
+      "error": "Error: Bounded state wait timed out: ui-resume",
+      "layer": "A: real packaged App composer -> actual Codex CLI -> real M10 MCP local draft creation -> actual draft UI; model response is private synthetic fixture, no real model or external send",
+      "result": "runs/native-resume-observed-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-resume-settled-green",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-6kqroi",
+      "status": "passed-partial",
+      "checks": 8,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: real packaged App composer -> actual Codex CLI -> real M10 MCP local draft creation -> actual draft UI; model response is private synthetic fixture, no real model or external send",
+      "result": "runs/native-resume-settled-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "native-unsupported-green",
+      "originalRoot": "/private/tmp/willyou-m10-native-t-VG3YU6",
+      "status": "passed-partial",
+      "checks": 5,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: actual packaged UI and unlisted Codex 0.163.0 ordinary native run; zero M10 grant. Synthetic local model; no real model or external business",
+      "result": "runs/native-unsupported-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "management-native-auth-red",
+      "originalRoot": "/private/tmp/willyou-m10-management-ui-CYjJwI",
+      "status": "failed",
+      "checks": 1,
+      "failedStage": "catalog-add-zen",
+      "error": "Error: Electron Input.dispatchMouseEvent timed out",
+      "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+      "result": "runs/management-native-auth-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "management-auth-diagnostic-red",
+      "originalRoot": "/private/tmp/willyou-m10-management-ui-Zt4rDp",
+      "status": "failed",
+      "checks": 1,
+      "failedStage": "catalog-add-zen",
+      "error": "Error: Electron Input.dispatchMouseEvent timed out",
+      "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+      "result": "runs/management-auth-diagnostic-red/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "versions-green",
+      "originalRoot": "/private/tmp/willyou-m10-versions-ui-g4M4tL",
+      "status": "passed-partial",
+      "checks": 6,
+      "failedStage": null,
+      "error": null,
+      "layer": "A: actual packaged App; private old-version precondition, no account/provider/Agent",
+      "result": "runs/versions-green/result.json.gz",
+      "asarSha256": "c9b58a54390b2b248575cea7a95cc8f18a72650c9e938448986940bac2349bcf"
+    },
+    {
+      "id": "prototype-body-red",
+      "originalRoot": "/private/tmp/willyou-m10-prototype-scope-jMUBiU",
+      "status": "failed",
+      "checks": 0,
+      "failedStage": "setup",
+      "error": "Error: TypeError: Cannot read properties of null (reading 'innerText')\n    at <anonymous>:1:15",
+      "layer": "P only: shared synthetic prototype; not packaged product business acceptance",
+      "result": "runs/prototype-body-red/result.json.gz",
+      "asarSha256": null
+    },
+    {
+      "id": "prototype-scope-green",
+      "originalRoot": "/private/tmp/willyou-m10-prototype-scope-WFnsdY",
+      "status": "passed",
+      "checks": 4,
+      "failedStage": null,
+      "error": null,
+      "layer": "P only: shared synthetic prototype; not packaged product business acceptance",
+      "result": "runs/prototype-scope-green/result.json.gz",
+      "asarSha256": null
+    }
+  ],
+  "remaining": "67 formal cases remain partial, pending or blocked. Claude actual branches cross-machine; native keychain authorization blocks connection flow; live Foxmail/ZenTao/model/external authorized actions still require appropriate environments. Goal active, not complete or released."
+}

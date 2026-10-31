@@ -1,0 +1,1 @@
+原related2命令误写不存在的resource-store.test.ts；Vitest只选择了其余10个实际文件，不能把缺失路径算作执行。实际ResourceStore发布与不可变包测试位于package-registry.test.ts，现独立补跑该文件并按报告唯一文件合并；不重启或取消原2个运行。source和native输入未改，最终统计仅以实际report的文件/参数实例为准。

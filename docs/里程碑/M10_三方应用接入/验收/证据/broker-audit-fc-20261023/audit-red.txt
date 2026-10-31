@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/private-broker.test.ts -t 'persists redacted broker denials'
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/core/applications/__tests__/private-broker.test.ts (27 tests | 1 failed | 26 skipped) 1333ms
+     × persists redacted broker denials with only server-owned scope and a response audit reference 1332ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/private-broker.test.ts > private Unix broker credentials, one-use files and request boundaries > persists redacted broker denials with only server-owned scope and a response audit reference
+AssertionError: expected { schema: 1, …(3) } to match object { status: 'error', …(1) }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "auditId": Any<String>,
+    "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/private-broker.test.ts:36:20
+     34|     const forgedProject=randomUUID(),canary='RAW_ARGUMENT_SECRET_MUST_…
+     35|     const denied=await owned.send({schema:1,method:'tools/call',token,…
+     36|     expect(denied).toMatchObject({status:'error',auditId:expect.any(St…
+       |                    ^
+     37|     const external=await peer(broker.endpoint),untrusted=await externa…
+     38|     expect(untrusted).toMatchObject({status:'error',auditId:expect.any…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 26 skipped (27)
+   Start at  12:55:55
+   Duration  1.96s (transform 487ms, setup 0ms, import 560ms, tests 1.33s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

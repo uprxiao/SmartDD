@@ -80,6 +80,7 @@ export const zhCN = {
     },
     placeholder: '描述任务，作为首条消息发给 CLI（可留空）',
     launchHint: '启动（⌘↩）',
+    cancelPreparation: '取消准备',
     pickProject: '选择项目',
     pickProfile: '选择 AI 配置',
     noDir: '该项目还没有登记代码目录，请先在项目页添加。',
@@ -221,7 +222,7 @@ export const zhCN = {
   },
   settings: {
     title: '设置',
-    sections: { voice: '语音输入', general: '常规', aiProfiles: 'AI 配置', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
+    sections: { applications: '应用', voice: '语音输入', general: '常规', aiProfiles: 'AI 配置', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
     descriptions: {
       general: '语言、数据存放位置与环境自检。',
       aiProfiles: '运行器与账号：每个配置是一个程序加一组环境变量和启动参数。令牌加密保存，不出现在界面和日志中。',
@@ -253,7 +254,7 @@ export const zhCN = {
     new: '新建项目',
     none: '还没有项目',
     archived: '已归档（{{count}}）',
-    sections: { overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', capabilities: 'Skill 与 MCP', tasks: '任务' },
+    sections: { applications: '应用', overview: '概览', dirs: '代码目录', databases: '数据库', servers: '服务器', capabilities: 'Skill 与 MCP', tasks: '任务' },
     descriptions: {
       overview: '名称、别名、说明与项目规则文件。',
       dirs: '一个项目可登记多个代码目录；同一目录只能属于一个未归档的项目。',
@@ -469,6 +470,7 @@ export const en: Widen<typeof zhCN> = {
     },
     placeholder: 'Describe the task; sent to the CLI as the first message (optional)',
     launchHint: 'Start (⌘↩)',
+    cancelPreparation: 'Cancel preparation',
     pickProject: 'Project',
     pickProfile: 'AI profile',
     noDir: 'This project has no code folder yet. Add one on the project page.',
@@ -610,7 +612,7 @@ export const en: Widen<typeof zhCN> = {
   },
   settings: {
     title: 'Settings',
-    sections: { voice: 'Voice input', general: 'General', aiProfiles: 'AI profiles', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
+    sections: { applications: 'Apps', voice: 'Voice input', general: 'General', aiProfiles: 'AI profiles', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
     descriptions: {
       general: 'Language, data location and environment self-check.',
       aiProfiles: 'Runners and accounts: each profile is a program plus environment variables and arguments. Tokens are stored encrypted and never shown in the UI or logs.',
@@ -642,7 +644,7 @@ export const en: Widen<typeof zhCN> = {
     new: 'New project',
     none: 'No projects yet',
     archived: 'Archived ({{count}})',
-    sections: { overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', capabilities: 'Skills & MCP', tasks: 'Tasks' },
+    sections: { applications: 'Apps', overview: 'Overview', dirs: 'Code folders', databases: 'Databases', servers: 'Servers', capabilities: 'Skills & MCP', tasks: 'Tasks' },
     descriptions: {
       overview: 'Name, aliases, description and the project rules file.',
       dirs: 'A project can have several code folders; a folder belongs to at most one active project.',

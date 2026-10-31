@@ -1,0 +1,432 @@
+diff --git a/src/main/core/applications/native-application-conflicts.ts b/src/main/core/applications/native-application-conflicts.ts
+index 7685808e..832316f4 100644
+--- a/src/main/core/applications/native-application-conflicts.ts
++++ b/src/main/core/applications/native-application-conflicts.ts
+@@ -3,15 +3,18 @@ import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+ import type {NativeLaunchContext} from './native-launch-context';
+ import {canonicalFuturePath} from './session-registry';
+ 
+-/** Read-only attribution before publishing. This narrows App loading only; it
++/** Read-only attribution before publishing. This narrows per-run native loading only; it
+  * does not prove filesystem ownership. Publication and adapter preflight must
+  * still verify the actual managed trees and all shared capability conflicts. */
+-export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{
+- const conflicts=new Set<string>();
++export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):{applications:Set<string>;standardSkills:Set<string>;projectMcp:boolean}{
++ const conflicts=new Set<string>(),standards=new Set<string>();let projectMcp=false;
+  const ownPaths=new Set([...snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath)),...snapshot.standardSkills.map(s=>s.projectionPath)]);
+  const applicationMcp=snapshot.mcp.find(m=>m.kind==='applications')?.serverName;
+  for(const item of native.inventory){
+   if(item.kind==='skill'&&ownPaths.has(item.path))continue;
++  if(item.kind==='mcp'&&snapshot.mcp.some(m=>m.kind==='legacy-project-context'&&m.serverName===item.name))projectMcp=true;
++  if(item.kind==='plugin'&&snapshot.runner==='claude-code'&&item.name==='smartdd-session'){for(const p of snapshot.packages)conflicts.add(p.appId);for(const s of snapshot.standardSkills)standards.add(s.projectionPath);continue;}
++  if(item.kind==='skill')for(const s of snapshot.standardSkills){const name=dirname(s.projectionPath).split('/').at(-1);if(item.name===name||item.name==='smartdd-session:'+name)standards.add(s.projectionPath);}
+   if(item.kind==='mcp'&&item.name===applicationMcp){for(const p of snapshot.packages)conflicts.add(p.appId);continue;}
+   for(const p of snapshot.packages){
+    if(item.kind==='skill'&&p.skills.some(s=>item.name===s.nativeName||item.name==='smartdd-session:'+s.nativeName)||item.kind==='native-tool'&&Object.keys(p.toolContractMajors).some(op=>snapshot.adapterBinding.nativeToolNames[op]===item.name))conflicts.add(p.appId);
+@@ -21,6 +24,10 @@ export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,
+   if(typeof item.path!=='string'||item.enabled!==false)continue;
+   const path=canonicalFuturePath(resolve(snapshot.native.cwd,item.path));
+   for(const p of snapshot.packages)if(p.skills.some(s=>path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath))))conflicts.add(p.appId);
++  for(const s of snapshot.standardSkills)if(path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath)))standards.add(s.projectionPath);
+  }
+- return conflicts;
++ return{applications:conflicts,standardSkills:standards,projectMcp};
+ }
++/** Compatibility helper for callers that only need per-App attribution. */
++export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}
++
+diff --git a/src/main/core/applications/session-projector.ts b/src/main/core/applications/session-projector.ts
+index 0d9eb811..2599b10c 100644
+--- a/src/main/core/applications/session-projector.ts
++++ b/src/main/core/applications/session-projector.ts
+@@ -1,8 +1,8 @@
++import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
+ import {verifyClaudeDelivery} from './claude-delivery-state';
+ import { readFileSync } from 'node:fs';
+-import { dirname, join } from 'node:path';
++import { join } from 'node:path';
+ import { parseDocument } from 'yaml';
+-import {z} from 'zod';
+ import { ApplicationError } from '@shared/applications';
+ import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import { canonicalJson, digest } from './manifest';
+@@ -24,14 +24,14 @@ export function projectSkillName(input: Buffer,name: string): Buffer {
+   if (doc.errors.length || typeof doc.get('name') !== 'string' || typeof doc.get('description') !== 'string') throw new ApplicationError('INVALID_PACKAGE','Skill元数据无效');
+   doc.set('name',name); return Buffer.from('---\n' + doc.toString() + '---\n' + text.slice(front[0].length),'utf8');
+ }
+-const claudeMetadataSchema=z.object({kind:z.literal('claude-session-projection'),taskId:z.string().min(1).max(128),selectionHash:z.string().regex(/^[a-f0-9]{64}$/),formatVersion:z.literal(1),sources:z.array(z.object({resourceId:z.string().min(1).max(512),sourceHash:z.string().regex(/^[a-f0-9]{64}$/),nativeName:z.string().min(1).max(64)}).strict()).max(4096)}).strict();
++
+ export type ClaudeProjectionSource={role:'view'|'archive';resource:ResourceRecord;bundle:OwnedBundle;applicationScope:readonly string[]};
+ /** Full source trees are copied; relative scripts/references/assets remain alongside SKILL.md. */
+ export class SessionCapabilityProjector {
+   private readonly packages: PackageRegistry;
+   private readonly legacy: LegacyCapabilityResourceAdopter;
+   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
+-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[],independent=false): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
++  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+     if(applicationScope&&((!applicationScope.length&&!independent)||(independent&&applicationScope.length!==0)||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
+     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
+     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
+@@ -44,7 +44,7 @@ export class SessionCapabilityProjector {
+       }
+       verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
+     }
+-    for (const standard of snapshot.standardSkills) {
++    for (const standard of selectedStandardSkills(snapshot,standardSkillScope)) {
+       const resource = this.store.get(`standard-skill:${standard.skillId}:${standard.hash}`);
+       const files: Record<string,Buffer> = Object.fromEntries(Object.entries(this.legacy.verify(resource)).map(([path,text]) => [path,Buffer.from(text,'utf8')]));
+       const nativeName = standardNativeSkillName(standard.skillId,standard.hash);
+@@ -53,32 +53,24 @@ export class SessionCapabilityProjector {
+     }
+     if (new Set(result.map(s => s.nativeName)).size !== result.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','所选Skill原生名称冲突'); return result;
+   }
+-  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[],independent=false):OwnedBundle{
++  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):OwnedBundle{
+     if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
+-    const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope,independent),files:Record<string,Buffer>={},executables=new Set<string>();
++    const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),files:Record<string,Buffer>={},executables=new Set<string>();
+     files['.claude-plugin/plugin.json']=Buffer.from(JSON.stringify({name:'smartdd-session',version:'1.0.0',description:'WillYou session capabilities'},null,2)+'\n');
+     for(const skill of skills){
+       if(skill.path!==join(root,'skills',skill.nativeName,'SKILL.md'))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Skill投影路径不等于原快照');
+       for(const[path,bytes]of Object.entries(skill.files)){const target=`skills/${skill.nativeName}/${path}`;files[target]=bytes;if(skill.executables.has(path))executables.add(target);}
+     }
+-    return ownedBundle({kind:'claude-session-projection',taskId:snapshot.taskId,selectionHash,formatVersion:1,sources:skills.map(s=>({resourceId:s.sourceResourceId,sourceHash:s.sourceHash,nativeName:s.nativeName}))},files,executables);
++    return ownedBundle({kind:'claude-session-projection',taskId:snapshot.taskId,selectionHash,...(standardSkillScope?{formatVersion:2,standardSkillScope:[...standardSkillScope]}:{formatVersion:1}),sources:skills.map(s=>({resourceId:s.sourceResourceId,sourceHash:s.sourceHash,nativeName:s.nativeName}))},files,executables);
+   }
+   /** Verify a complete view against the full original S;never infer a new selection. */
+   private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):string[]{
+-    if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原Claude来源类型不支持此投影');
+-    const parsed=claudeMetadataSchema.safeParse(manifest.metadata),selected=digest(canonicalJson({...snapshot,native:{...snapshot.native,sessionId:null}}));
+-    if(!parsed.success||parsed.data.taskId!==snapshot.taskId||parsed.data.selectionHash!==selected)throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影来源不属于完整原选择');
+-    const metadata=parsed.data,appSources=(p:CapabilitySessionSnapshotV2['packages'][number])=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}));
+-    const scope=snapshot.packages.filter(p=>appSources(p).some(source=>metadata.sources.some(s=>canonicalJson(s)===canonicalJson(source)))).map(p=>p.appId);
+-    const expected=[...snapshot.packages.filter(p=>scope.includes(p.appId)).flatMap(appSources),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:standardNativeSkillName(s.skillId,s.hash)}))];
+-    if(canonicalJson(metadata.sources)!==canonicalJson(expected)||(requireFull&&scope.length!==snapshot.packages.length))throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影必须包含本轮应用的完整原Skill及全部原标准Skill');
+-    const names=expected.map(s=>s.nativeName);if(new Set(names).size!==names.length||manifest.files.some(f=>f.path!=='.claude-plugin/plugin.json'&&!names.some(name=>f.path.startsWith(`skills/${name}/`)))||names.some(name=>!manifest.files.some(f=>f.path===`skills/${name}/SKILL.md`)))throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影来源目录或原名称不完整');
+-    return scope;
++    return claudeProjectionSelection(manifest,snapshot,requireFull).appIds;
+   }
+   private sourceIdentity(taskId:string,hash:string,archive=false){const kind=archive?'claude-projection-archive':'claude-projection-source';return{kind,resourceId:`${kind}:${taskId}:${hash}`,relativePath:`projection-sources/claude/${taskId}/${archive?'archives':'views'}/${hash}`};}
+   /** Immutable depot only;this does not publish or activate the native plugin root. */
+-  async claudeSource(taskId:string,applicationScope?:readonly string[],independent=false):Promise<ClaudeProjectionSource>{
+-    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash,applicationScope,independent),scope=this.claudeScope(bundle.manifest,current.snapshot),identity=this.sourceIdentity(taskId,bundle.hash);
++  async claudeSource(taskId:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):Promise<ClaudeProjectionSource>{
++    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash,applicationScope,independent,standardSkillScope),scope=this.claudeScope(bundle.manifest,current.snapshot),identity=this.sourceIdentity(taskId,bundle.hash);
+     const dependencies=[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))];
+     const resource=await this.store.publish({...identity,contentHash:bundle.hash,dependencies,materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{this.claudeScope(verifyOwnedBundle(directory,bundle.hash,this.store.storeId),current.snapshot);}});
+     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{role:'view',resource,bundle,applicationScope:Object.freeze(scope)};
+diff --git a/src/main/core/applications/claude-delivery.ts b/src/main/core/applications/claude-delivery.ts
+index ce92c6cb..4b77c948 100644
+--- a/src/main/core/applications/claude-delivery.ts
++++ b/src/main/core/applications/claude-delivery.ts
+@@ -47,11 +47,11 @@ export class ClaudeDeliveryCoordinator{
+   if(!this.sameOwner(p.activeOwner,this.owner)||!this.operations.has(p.id)){if(p.participants.length>=64)throw recovery();const leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-install',p.id,this.owner);p.participants.push({owner:this.owner,leaseId});p.activeOwner=this.owner;writeClaudeSlot(this.store,slot);this.operations.add(p.id);}
+  }
+  private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{schema:2,taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
+- async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false);}
+- async prepareIndependent(taskId:string):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true);}
+- private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean):Promise<ClaudeDeliveryToken>{
++ async prepare(taskId:string,appIds:readonly string[],standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false,standardSkillScope);}
++ async prepareIndependent(taskId:string,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true,standardSkillScope);}
++ private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean,standardSkillScope?:readonly string[]):Promise<ClaudeDeliveryToken>{
+   if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
+-  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent);if(!source.applicationScope.length&&!independent)throw recovery();
++  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent,standardSkillScope);if(!source.applicationScope.length&&!independent)throw recovery();
+   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
+   // Before the first canonical change, preserve the actual registered complete
+   // original tree.Archive creation never guesses a missing original body.
+diff --git a/src/main/core/applications/claude-delivery-state.ts b/src/main/core/applications/claude-delivery-state.ts
+index 81a5a1c3..4db17934 100644
+--- a/src/main/core/applications/claude-delivery-state.ts
++++ b/src/main/core/applications/claude-delivery-state.ts
+@@ -1,8 +1,9 @@
++import {claudeProjectionSelection} from './claude-projection-selection';
+ import {randomUUID} from 'node:crypto';
+ import {claudeRunDeliverySchema} from '@shared/claude-delivery';
+ export type {ClaudeRunDelivery} from '@shared/claude-delivery';
+ import type {ClaudeRunDelivery} from '@shared/claude-delivery';
+-import {basename,dirname,join} from 'node:path';
++import {join} from 'node:path';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+ import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
+@@ -65,9 +66,9 @@ export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord
+  const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
+  if(source.kind!=='claude-projection-source'||source.contentHash!==v.hash||source.state!=='ready'||source.integrity!=='valid'||canonicalJson(deps)!==canonicalJson([v.sourceId]))throw fail();
+  verifyOwnedBundle(store.directory(source),v.hash,store.storeId);
+- const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId),metadata=manifest.metadata;
+- const expected=[...snapshot.packages.filter(p=>v.appIds.includes(p.appId)).flatMap(p=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}))),...snapshot.standardSkills.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
+- if(metadata.kind!=='claude-session-projection'||metadata.taskId!==snapshot.taskId||metadata.selectionHash!==slot.selectionHash||canonicalJson(metadata.sources)!==canonicalJson(expected)||v.appIds.some(id=>!snapshot.packages.some(p=>p.appId===id)))throw fail();
++ const manifest=verifyOwnedBundle(store.directory(resource),v.hash,store.storeId);
++ const selected=claudeProjectionSelection(manifest,snapshot);
++ if(canonicalJson(selected.appIds)!==canonicalJson(v.appIds)||canonicalJson(verifyOwnedBundle(store.directory(source),v.hash,store.storeId))!==canonicalJson(manifest))throw fail();
+  return slot;
+ }
+ export function assertClaudeReservation(store:ResourceStore,taskId:string,token?:ClaudeDeliveryToken):void{
+diff --git a/src/main/core/applications/agent-adapter-registry.ts b/src/main/core/applications/agent-adapter-registry.ts
+index db841184..a36d6014 100644
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -1,3 +1,4 @@
++import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
+ import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
+ import { createRequire } from 'node:module';
+ import { basename, dirname, join, relative } from 'node:path';
+@@ -48,12 +49,15 @@ export class AgentAdapterRegistry {
+     if(input.claudeDelivery&&snapshot.runner!=='claude-code')throw new ApplicationError('INVALID_INPUT','原目录交付依据只适用于Claude');
+     if(input.claudeDelivery&&(!input.pluginRoot||!input.pluginHash||input.claudeDelivery.taskId!==snapshot.taskId))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude原目录交付必须包含原任务的实际插件路径及hash');
+     if(input.applicationScope&&((snapshot.runner!=='codex'&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
+-    const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...snapshot.standardSkills.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
++    const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
++    if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
++    const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
+       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
+       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
+       if(input.claudeDelivery){if(!input.applicationScope||canonicalJson(input.applicationScope)!==canonicalJson(input.claudeDelivery.appIds)||input.pluginHash!==input.claudeDelivery.hash)throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude本轮加载范围与原目录交付不同');assertClaudeRunDelivery(this.store,input.runId,input.claudeDelivery);verifyClaudeDelivery(this.store,this.store.get(input.claudeDelivery.resourceId),snapshot);}
+       const projection = verifyOwnedBundle(input.pluginRoot,input.pluginHash,this.store.storeId);
++      const selected=claudeProjectionSelection(projection,snapshot);if(canonicalJson(selected.appIds)!==canonicalJson(applications.map(p=>p.appId))||canonicalJson(selected.standardSkillScope)!==canonicalJson(standards.map(s=>s.projectionPath)))throw new ApplicationError('SNAPSHOT_IMMUTABLE','实际Claude目录与本轮加载范围不同');
+       const selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+       if (projection.metadata.taskId !== snapshot.taskId || projection.metadata.selectionHash !== selectionHash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','插件投影不属于原固定会话');
+     }
+@@ -84,7 +88,7 @@ export class AgentAdapterRegistry {
+     for (const item of input.inventory) {
+       const own = item.ownerStoreId === this.store.storeId && item.contentHash && ((item.kind === 'skill' && allSkills.some(s => s.path === item.path && s.hash === item.contentHash)) || (item.kind === 'plugin' && item.path === input.pluginRoot && item.contentHash === input.pluginHash));
+       if (own) continue;
+-      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
++      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
+     }
+   }
+   plan(hash: string,value: AgentLoadRequest): AgentLoadPlan {
+@@ -93,7 +97,7 @@ export class AgentAdapterRegistry {
+     try {
+       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
+       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
+-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:input.applicationScope?{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope!.includes(p.appId))}:input.snapshot,mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
++      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
+   }
+   planLegacy(hash:string,value:unknown):AgentLoadPlan {
+diff --git a/src/main/core/applications/task-capability-launcher.ts b/src/main/core/applications/task-capability-launcher.ts
+index 60598372..97eb4aec 100644
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -1,4 +1,4 @@
+-import {nativeApplicationConflicts} from './native-application-conflicts';
++import {nativeCapabilityConflicts} from './native-application-conflicts';
+ import {ClaudeDeliveryCoordinator} from './claude-delivery';
+ import type {ClaudeDeliveryToken,ClaudeRunDelivery} from './claude-delivery-state';
+ import {inspectApplicationResources} from './application-resource-availability';
+@@ -182,12 +182,12 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
+       }else{
+       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
+-      const plannedConflicts=native?nativeApplicationConflicts(planned,native):new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready'&&!plannedConflicts.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
++      const plannedFacets=native?nativeCapabilityConflicts(planned,native):undefined,plannedStandards=plannedFacets?.standardSkills.size?planned.standardSkills.filter(s=>!plannedFacets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready'&&!plannedConflicts.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
+       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
+       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
+       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+       if(planned.runner==='codex'&&!unavailable){
+-        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0),{signal:input.signal})).generation;}
++        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0,plannedStandards),{signal:input.signal})).generation;}
+         catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else throw error;}
+       }
+       if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});
+@@ -206,7 +206,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     }
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+-    const conflicts=native&&!snapshot.legacyBinding?nativeApplicationConflicts(snapshot,native):new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
++    const facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native):undefined,standardSkillScope=facets?.standardSkills.size?snapshot.standardSkills.filter(s=>!facets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&(this.claudeDelivery.has(snapshot.taskId)||standardSkillScope!==undefined))?ready:undefined;
+     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     const excludedApplications=snapshot.packages.filter(p=>!ready.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash,code:conflicts.has(p.appId)?'AGENT_CAPABILITY_NAME_CONFLICT' as const:'CAPABILITY_UNAVAILABLE' as const}));
+@@ -215,8 +215,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
+     let pluginRoot:string|null=null,pluginHash:string|null=null,deliveryToken:ClaudeDeliveryToken|undefined,deliveryProof:ClaudeRunDelivery|undefined;
+     if(!unavailable&&!snapshot.legacyBinding){
+-      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
+-      else if(applicationScope){try{deliveryToken=independent?await this.claudeDelivery.prepareIndependent(input.taskId):await this.claudeDelivery.prepare(input.taskId,applicationScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
++      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
++      else if(applicationScope){try{deliveryToken=independent?await this.claudeDelivery.prepareIndependent(input.taskId,standardSkillScope):await this.claudeDelivery.prepare(input.taskId,applicationScope,standardSkillScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
+       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
+     }
+     const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>independent?this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,ids,undefined,excludedApplications):applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids,undefined,excludedApplications):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
+@@ -227,10 +227,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     try{
+       if(deliveryToken)deliveryProof=this.claudeDelivery.proof(run.runId,deliveryToken);
+       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
+-      const mcpName=snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
++      const mcpName=facets?.projectMcp?null:snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
+       const original=snapshot.legacyBinding?assertLegacySessionSource(this.support.store,snapshot):null;
+-      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot,applicationScope,independent),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
+-      const projections=unavailable?{}:Object.fromEntries(snapshot.standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,...(original?{format:'legacy-tree-v1' as const}:{}),files:source.files}];}));
++      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),skills:RuntimeSkill[]=unavailable?[]:standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
++      const projections=unavailable?{}:Object.fromEntries(standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,...(original?{format:'legacy-tree-v1' as const}:{}),files:source.files}];}));
+       let request:AgentLoadRequest|undefined,legacyRequest:LegacyAgentLoadRequest|undefined;
+       const legacyPlan=()=>{if(!legacyRequest)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原格式加载依据缺失');return this.support.adapters.planLegacy(snapshot.adapterBinding.hash,legacyRequest);};
+       if(!unavailable&&native){
+@@ -241,11 +241,12 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+           legacyRequest={schema:'m4-legacy-load-request-v1',taskId:input.taskId,projectId:input.projectId,sourceSnapshotHash:original.row.source_snapshot_hash,runId:run.runId,cliVersion:native.version,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},catalog:collection,userSkillConfig:flags,inventory};
+           try{legacyPlan();}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT','RESOURCE_RECOVERY_REQUIRED'].includes(error.code)){unavailable=error.code;legacyRequest=undefined;}else throw error;}
+         }else{
+-        request={snapshot,...(independent?{independentCapabilities:true as const}:{}),...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.filter(m=>m.kind==='applications'?!independent:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
++        request={snapshot,...(standardSkillScope?{standardSkillScope}:{}),...(independent?{independentCapabilities:true as const}:{}),...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.filter(m=>m.kind==='applications'?!independent:!facets?.projectMcp&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY)).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
+         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
+       }
+       }
+       let runtime=unavailable?this.unavailableRuntime(input,current,run.runId,unavailable):this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills,projections}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=current.pointer;
++      if(!unavailable&&facets&&(facets.applications.size||facets.standardSkills.size||facets.projectMcp))runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,'AGENT_CAPABILITY_NAME_CONFLICT'])],at:Date.now()};
+       await run.prepare();if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
+       let plan:AgentLoadPlan|undefined;
+       if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);}
+diff --git a/src/shared/agent-adapters.ts b/src/shared/agent-adapters.ts
+index e3ecb8ea..0549ed8e 100644
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -7,7 +7,7 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/), name = z.string().regex(/^[A-Za
+ export const agentAdapterMetadataSchema = z.object({ schema: z.literal('willyou-agent-adapter-v1'),agentId: z.enum(['claude-code','codex']),version: z.string().regex(/^\d+\.\d+\.\d+$/),entry: z.literal('index.cjs'),projectionFormatVersion: z.union([z.literal(1),z.literal(2)]),platforms: z.array(z.literal('darwin-arm64')).length(1),cliVersions: z.array(z.string().regex(/^\d+\.\d+\.\d+$/)).min(1).max(32),bridgeRecovery: z.literal('unverified'),evidenceBaseline: z.string().min(1).max(256) }).strict();
+ export type AgentAdapterMetadata = z.infer<typeof agentAdapterMetadataSchema>;
+ export const agentLoadRequestSchema = z.object({
+-  snapshot: capabilitySessionSnapshotSchema,independentCapabilities:z.literal(true).optional(),claudeDelivery:claudeRunDeliverySchema.optional(),applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(0).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
++  snapshot: capabilitySessionSnapshotSchema,standardSkillScope:z.array(absolute).max(4096).optional(),independentCapabilities:z.literal(true).optional(),claudeDelivery:claudeRunDeliverySchema.optional(),applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(0).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
+   native: z.object({ runner: z.enum(['claude-code','codex']),sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
+   pluginRoot: absolute.nullable(),pluginHash: hash.nullable(),
+   catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict()).max(4096) }).strict().nullable(),
+diff --git a/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/claude-projection-selection.ts b/src/main/core/applications/claude-projection-selection.ts
+new file mode 100644
+index 00000000..665da686
+--- /dev/null
++++ b/src/main/core/applications/claude-projection-selection.ts
+@@ -0,0 +1,33 @@
++import {z} from 'zod';
++import {basename,dirname} from 'node:path';
++import {ApplicationError} from '@shared/applications';
++import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {OwnedBundleManifest} from './owned-bundle';
++import {canonicalJson,digest} from './manifest';
++const source=z.object({resourceId:z.string().min(1).max(512),sourceHash:z.string().regex(/^[a-f0-9]{64}$/),nativeName:z.string().min(1).max(64)}).strict();
++const common={kind:z.literal('claude-session-projection'),taskId:z.string().min(1).max(128),selectionHash:z.string().regex(/^[a-f0-9]{64}$/),sources:z.array(source).max(4096)};
++const metadata=z.discriminatedUnion('formatVersion',[
++ z.object({...common,formatVersion:z.literal(1)}).strict(),
++ z.object({...common,formatVersion:z.literal(2),standardSkillScope:z.array(z.string().min(1).max(4096)).max(4096)}).strict(),
++]);
++/** Loading scope only: never rewrites S, grants tools, or accepts foreign paths. */
++export function selectedStandardSkills(snapshot:CapabilitySessionSnapshotV2,scope?:readonly string[]){
++ const selected=snapshot.standardSkills.filter(s=>scope===undefined||scope.includes(s.projectionPath));
++ if(scope&&(snapshot.legacyBinding||new Set(scope).size!==scope.length||selected.length!==scope.length||canonicalJson(selected.map(s=>s.projectionPath))!==canonicalJson(scope)))throw new ApplicationError('INVALID_INPUT','标准Skill加载范围必须是原固定选择的有序子集');
++ return selected;
++}
++/** Verify complete App Skill groups and explicit standard subset against full S.
++ * Also reject hidden/extraneous files because Claude discovers the physical tree. */
++export function claudeProjectionSelection(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):{appIds:string[];standardSkillScope:string[]}{
++ const fail=()=>new ApplicationError('SNAPSHOT_IMMUTABLE','Claude投影必须对应原选择及明确的完整加载范围');
++ if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw fail();
++ const parsed=metadata.safeParse(manifest.metadata),selectionHash=digest(canonicalJson({...snapshot,native:{...snapshot.native,sessionId:null}}));
++ if(!parsed.success||parsed.data.taskId!==snapshot.taskId||parsed.data.selectionHash!==selectionHash)throw fail();
++ const value=parsed.data,standards=selectedStandardSkills(snapshot,value.formatVersion===2?value.standardSkillScope:undefined),appSources=(p:CapabilitySessionSnapshotV2['packages'][number])=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}));
++ const appIds=snapshot.packages.filter(p=>appSources(p).some(source=>value.sources.some(s=>canonicalJson(s)===canonicalJson(source)))).map(p=>p.appId);
++ const expected=[...snapshot.packages.filter(p=>appIds.includes(p.appId)).flatMap(appSources),...standards.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
++ if(canonicalJson(value.sources)!==canonicalJson(expected)||requireFull&&(appIds.length!==snapshot.packages.length||standards.length!==snapshot.standardSkills.length))throw fail();
++ const names=expected.map(s=>s.nativeName);
++ if(new Set(names).size!==names.length||manifest.files.some(f=>f.path!=='.claude-plugin/plugin.json'&&!names.some(name=>f.path.startsWith(`skills/${name}/`)))||names.some(name=>!manifest.files.some(f=>f.path===`skills/${name}/SKILL.md`)))throw fail();
++ return{appIds,standardSkillScope:standards.map(s=>s.projectionPath)};
++}
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index d4ac2f44..3d840694 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,3 +1,4 @@
++import {SessionCapabilityProjector} from '../session-projector';
+ import {applicationMcpServerName} from '@shared/application-session';
+ import {readClaudeSlot,writeClaudeSlot} from '../claude-delivery-state';
+ import {ApplicationConnectionService} from '../connection-service';
+@@ -121,7 +122,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
+   rmSync(join(support.store.root,pack.relativePath),{recursive:true});const register=vi.spyOn(applications.nativeMessages,'register'),project=vi.spyOn(managed.projector,'sourceSkills');
+   const resumed=await tasks.open({taskId}),runId=resumed.task.runtimeSnapshot!.runId;
+   expect(resumed.task.nativeSessionId).toBe(nativeId);expect(resumed.task.runtimeSnapshot!.sessionCapabilities).toEqual(original.pointer);expect(resumed.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(original.snapshot.standardSkills.map(s=>s.projectionPath).sort());expect(resumed.task.runtimeSnapshot!.skills.every(s=>s.loaded==='unverified')).toBe(true);
+-  expect(ptys.launches).toHaveLength(2);if(runner==='claude-code')expect(ptys.launches[1].args).toContain('--plugin-dir');expect(ptys.launches[1].args.join(' ')).not.toContain('pending-bootstrap');expect(project).toHaveBeenCalledWith(original.snapshot,[],true);expect(register).toHaveBeenCalledWith(runId,runner==='codex'?'0.162.1':'2.1.303',expect.any(AbortSignal));
++  expect(ptys.launches).toHaveLength(2);if(runner==='claude-code')expect(ptys.launches[1].args).toContain('--plugin-dir');expect(ptys.launches[1].args.join(' ')).not.toContain('pending-bootstrap');expect(project).toHaveBeenCalledWith(original.snapshot,[],true,undefined);expect(register).toHaveBeenCalledWith(runId,runner==='codex'?'0.162.1':'2.1.303',expect.any(AbortSignal));
+   expect(managed.runs.assertActive(runId).applicationScope).toEqual([]);expect(managed.runs.bridgePreparation(runId).applicationScope).toEqual([]);expect(managed.runs.inputContext(taskId,resumed.ptyId)?.applicationScope).toEqual([]);expect(()=>applications.contexts.assertSendOrigin(projectId,taskId,runId)).toThrow('本轮此应用能力');const unavailableTools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data));expect(await unavailableTools.list(runId)).toEqual({tools:[],unavailable:[{appId:'mail',code:'CAPABILITY_UNAVAILABLE'}]});expect(await unavailableTools.call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});expect(managed.broker.hasAuthenticated(runId)).toBe(false);
+   expect(sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=?').all(runId)).toEqual([{kind:'cli',state:'active'}]);expect(await managed.sessions.get(taskId)).toEqual(original);for(const ref of refs)expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId)).toContainEqual(ref);expect(sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId)).toEqual(identity);
+   const diagnostic=await applications.sessionDiagnostics.inspect(taskId);expect(diagnostic).toMatchObject({selection:'fixed',agentState:'running',currentRun:{restriction:null,bridge:{connected:false}}});expect(diagnostic.applications.find(a=>a.packageHash===hash)?.resourceState).toBe('unavailable');
+@@ -555,6 +556,41 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
+ 
+ 
+ describe('per-application availability does not withdraw healthy fixed tools',()=>{
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['project-mcp','standard-skill'] as const).map(kind=>({runner,kind}))))('keeps the live loading scope fixed and restores original capability only after stopping: $runner $kind',async({runner,kind})=>{
++  await selectBoth();const profile=runner==='codex'?codexId:claudeId,started=await create(profile),nativeId=await stopForSwitchFixture(started,runner);const original=await managed.sessions.get(started.task.id),target=original.snapshot.standardSkills[0],name=dirname(target.projectionPath).split('/').at(-1)!,mcp=original.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!,file=kind==='project-mcp'?join(cwd,runner==='codex'?'.codex/config.toml':'.mcp.json'):join(cwd,runner==='codex'?'.agents':'.claude','skills','user-owned-standard-conflict','SKILL.md'),text=kind==='project-mcp'?(runner==='codex'?'[mcp_servers.'+mcp.serverName+']\ncommand="python3"\nargs=["-c","pass"]\n':JSON.stringify({mcpServers:{[mcp.serverName]:{command:'python3',args:['-c','pass']}}})):'---\nname: '+name+'\ndescription: User owned.\n---\n';mkdirSync(dirname(file),{recursive:true});writeFileSync(file,text);
++  let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=await tasks.open({taskId:started.task.id});const narrowed=structuredClone(running.task.runtimeSnapshot!),runId=narrowed.runId;expect((await appTools().list(runId)).tools).toHaveLength(17);if(kind==='project-mcp')expect(narrowed.mcp).toEqual([]);else expect(narrowed.skills.filter(s=>s.enabled).map(s=>s.path)).not.toContain(target.projectionPath);rmSync(file);expect((await tasks.get(started.task.id)).runtimeSnapshot).toEqual(narrowed);if(runner==='claude-code'&&kind==='standard-skill'){expect(existsSync(target.projectionPath)).toBe(false);await expect(new SessionCapabilityProjector(support.store,managed.sessions).claude(started.task.id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});}tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));running=await tasks.open({taskId:started.task.id});expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path)).toContain(target.projectionPath);expect(running.task.runtimeSnapshot!.mcp.map(m=>m.name)).toContain(mcp.serverName);expect((await managed.sessions.get(started.task.id)).snapshot).toEqual(original.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);}
++  finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it('keeps a live user-plugin conflict at zero Apps and restores original Skills and App bridge after stopping',async()=>{
++  await selectBoth();const seed=await create(claudeId),nativeId=await stopForSwitchFixture(seed,'claude-code'),original=await managed.sessions.get(seed.task.id),plugin=join(root,'user-owned-smartdd-session-plugin'),file=join(plugin,'.claude-plugin/plugin.json');mkdirSync(dirname(file),{recursive:true});writeFileSync(file,JSON.stringify({name:'smartdd-session'}));const profile=profiles.get(claudeId),executable=profiles.resolve(claudeId).command,setArgs=(args:string[])=>profiles.update(claudeId,{name:profile.name,runner:'claude',executable,args,env:[],color:null,isDefault:false});setArgs(['--plugin-dir',plugin]);let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=await tasks.open({taskId:seed.task.id});const old=running.task.runtimeSnapshot!.runId;expect(managed.runs.assertActive(old).applicationScope).toEqual([]);setArgs([]);expect((await appTools().list(old)).tools).toEqual([]);for(const p of original.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(false);await expect(new SessionCapabilityProjector(support.store,managed.sessions).claude(seed.task.id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(old).state).toBe('stopped'));running=await tasks.open({taskId:seed.task.id});expect((await appTools().list(running.task.runtimeSnapshot!.runId)).tools).toHaveLength(17);expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled)).toHaveLength(original.snapshot.standardSkills.length);expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(original.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);expect(readFileSync(file,'utf8')).toBe(JSON.stringify({name:'smartdd-session'}));}
++  finally{if(running){tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each(['file','directory'] as const)('preserves explicit user disabling of one Codex standard Skill by %s without withdrawing Apps or other standards',async kind=>{
++  await selectBoth();const seed=await create(codexId);await stopForSwitchFixture(seed,'codex');const original=await managed.sessions.get(seed.task.id),target=original.snapshot.standardSkills[0],file=join(cwd,'.codex/config.toml'),text='[skills]\nconfig = [{ path = '+JSON.stringify(kind==='file'?target.projectionPath:dirname(target.projectionPath))+', enabled = false, note = "user original" }]\n';mkdirSync(dirname(file),{recursive:true});writeFileSync(file,text);let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=await tasks.open({taskId:seed.task.id});expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path)).toEqual(original.snapshot.standardSkills.filter(s=>s.skillId!==target.skillId).map(s=>s.projectionPath));expect((await appTools().list(running.task.runtimeSnapshot!.runId)).tools).toHaveLength(17);expect(launchFlags()).toContainEqual({path:target.projectionPath,enabled:false,note:'user original'});expect(readFileSync(file,'utf8')).toBe(text);expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(original.snapshot);}
++  finally{if(running){tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++
++
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['new','resume'] as const).map(mode=>({runner,mode}))))('keeps fixed Apps and standard Skills when only the actual user project MCP name conflicts: $runner $mode',async({runner,mode})=>{
++  await selectBoth();const profile=runner==='codex'?codexId:claudeId,seed=await create(profile),nativeId=await stopForSwitchFixture(seed,runner),original=await managed.sessions.get(seed.task.id),refs=await managed.sessions.references(seed.task.id),file=join(cwd,runner==='codex'?'.codex/config.toml':'.mcp.json'),prepare=managed.prepare.bind(managed);let text='';
++  const spy=vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{const name='smartdd_project_'+digest(input.taskId).slice(0,12);text=runner==='codex'?'[mcp_servers.'+name+']\ncommand="python3"\nargs=["-c","pass"]\n':JSON.stringify({mcpServers:{[name]:{command:'python3',args:['-c','pass']}}})+'\n';mkdirSync(dirname(file),{recursive:true});writeFileSync(file,text);return prepare(input);});let started:Awaited<ReturnType<typeof create>>|undefined;
++  try{started=mode==='resume'?await tasks.open({taskId:seed.task.id}):await create(profile);const fixed=await managed.sessions.get(started.task.id),runtime=started.task.runtimeSnapshot!,runId=runtime.runId;expect(runtime.skills.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath).sort());expect(runtime.mcp).toEqual([]);expect((await appTools().list(runId)).tools).toHaveLength(17);expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});const app=fixed.snapshot.mcp.find(m=>m.kind==='applications')!,legacy=fixed.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!,args=ptys.launches.at(-1)!.args;if(runner==='claude-code'){const config=JSON.parse(readFileSync(args[args.indexOf('--mcp-config')+1],'utf8'));expect(Object.keys(config.mcpServers)).toEqual([app.serverName]);}else{expect(args.join('\n')).toContain('mcp_servers.'+app.serverName);expect(args.join('\n')).not.toContain('mcp_servers.'+legacy.serverName);}expect(runtime.selfCheck).toMatchObject({status:'failed',issues:['AGENT_CAPABILITY_NAME_CONFLICT']});expect(readFileSync(file,'utf8')).toBe(text);expect(capabilities.enabled(projectId,MCP_CAPABILITY)).toBe(true);if(mode==='resume'){expect(fixed.snapshot).toEqual(original.snapshot);expect(started.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);}}
++  finally{spy.mockRestore();if(started){tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['new','resume'] as const).map(mode=>({runner,mode}))))('keeps fixed Apps and other standard Skills when an actual user standard Skill name conflicts: $runner $mode',async({runner,mode})=>{
++  await selectBoth();const profile=runner==='codex'?codexId:claudeId,seed=await create(profile),nativeId=await stopForSwitchFixture(seed,runner),original=await managed.sessions.get(seed.task.id),refs=await managed.sessions.references(seed.task.id),target=original.snapshot.standardSkills[0],name=dirname(target.projectionPath).split('/').at(-1)!,folder=join(cwd,runner==='codex'?'.agents':'.claude','skills','user-owned-standard-conflict'),file=join(folder,'SKILL.md'),text='---\nname: '+name+'\ndescription: User-owned standard-name fixture.\n---\nUser-owned original.\n';mkdirSync(folder,{recursive:true});writeFileSync(file,text);let started:Awaited<ReturnType<typeof create>>|undefined;
++  try{started=mode==='resume'?await tasks.open({taskId:seed.task.id}):await create(profile);const fixed=await managed.sessions.get(started.task.id),runtime=started.task.runtimeSnapshot!,runId=runtime.runId,excluded=fixed.snapshot.standardSkills.find(s=>s.skillId===target.skillId)!;expect(runtime.skills.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(fixed.snapshot.standardSkills.filter(s=>s.skillId!==target.skillId).map(s=>s.projectionPath).sort());expect(runtime.mcp.map(m=>m.name)).toEqual(fixed.snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>m.serverName));expect((await appTools().list(runId)).tools).toHaveLength(17);expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});if(runner==='codex')expect(launchFlags()).toContainEqual({path:excluded.projectionPath,enabled:false});else expect(existsSync(excluded.projectionPath)).toBe(false);expect(runtime.selfCheck).toMatchObject({status:'failed',issues:['AGENT_CAPABILITY_NAME_CONFLICT']});expect(readFileSync(file,'utf8')).toBe(text);expect(fixed.snapshot.standardSkills.map(s=>s.skillId)).toContain(target.skillId);if(mode==='resume'){expect(fixed.snapshot).toEqual(original.snapshot);expect(started.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);}}
++  finally{if(started){tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each(['new','resume'] as const)('keeps the original project MCP when an actual user Claude plugin namespace prevents managed Skills: %s',async mode=>{
++  await selectBoth();const seed=await create(claudeId),nativeId=await stopForSwitchFixture(seed,'claude-code'),original=await managed.sessions.get(seed.task.id),refs=await managed.sessions.references(seed.task.id),plugin=join(root,'user-owned-smartdd-session-plugin'),file=join(plugin,'.claude-plugin/plugin.json'),text=JSON.stringify({name:'smartdd-session',version:'private-user'});mkdirSync(dirname(file),{recursive:true});writeFileSync(file,text);profiles.update(claudeId,{name:profiles.get(claudeId).name,runner:'claude',executable:profiles.resolve(claudeId).command,args:['--plugin-dir',plugin],env:[],color:null,isDefault:false});let started:Awaited<ReturnType<typeof create>>|undefined;
++  try{started=mode==='resume'?await tasks.open({taskId:seed.task.id}):await create(claudeId);const fixed=await managed.sessions.get(started.task.id),runtime=started.task.runtimeSnapshot!,runId=runtime.runId,legacy=fixed.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!;expect(runtime.mcp.map(m=>m.name)).toEqual([legacy.serverName]);expect(runtime.skills.filter(s=>s.enabled)).toEqual([]);expect(managed.runs.assertActive(runId).applicationScope).toEqual([]);const listed=await appTools().list(runId);expect(listed.tools).toEqual([]);expect(listed.unavailable).toEqual(expect.arrayContaining(fixed.snapshot.packages.map(p=>({appId:p.appId,code:'AGENT_CAPABILITY_NAME_CONFLICT'}))));const args=ptys.launches.at(-1)!.args;expect(args.filter(a=>a==='--plugin-dir')).toHaveLength(1);expect(args).toContain(plugin);const config=JSON.parse(readFileSync(args[args.indexOf('--mcp-config')+1],'utf8'));expect(Object.keys(config.mcpServers)).toEqual([legacy.serverName]);expect(runtime.selfCheck).toMatchObject({status:'failed',issues:['AGENT_CAPABILITY_NAME_CONFLICT']});expect(readFileSync(file,'utf8')).toBe(text);if(mode==='resume'){expect(fixed.snapshot).toEqual(original.snapshot);expect(started.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);}}
++  finally{if(started){tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++
+ 
+  it.each(['source-state','missing-root'] as const)('restores the same original supported Claude session after stopping a pre-slot ordinary guard: %s',async fault=>{
+   await selectBoth();const first=await create(claudeId),nativeId=await stopForSwitchFixture(first,'claude-code'),fixed=await managed.sessions.get(first.task.id),refs=await managed.sessions.references(first.task.id),source=new BuiltinPackageRegistry(support.store).retainedMetadata(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash).resourceId,command=join(root,'cc-version-fixture');sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(source);writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const ordinary=await tasks.open({taskId:first.task.id});
+diff --git a/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/__tests__/claude-projection-selection.test.ts b/src/main/core/applications/__tests__/claude-projection-selection.test.ts
+new file mode 100644
+index 00000000..5375687a
+--- /dev/null
++++ b/src/main/core/applications/__tests__/claude-projection-selection.test.ts
+@@ -0,0 +1,31 @@
++import {afterEach,beforeEach,describe,expect,it} from 'vitest';
++import {claudeProjectionSelection} from '../claude-projection-selection';
++import {canonicalJson,digest} from '../manifest';
++import {agentFixture} from './agent-fixture';
++import {parse as parseToml} from 'smol-toml';
++let f:Awaited<ReturnType<typeof agentFixture>>;
++beforeEach(async()=>{f=await agentFixture();});afterEach(()=>f.cleanup());
++describe('explicit standard Skill loading and original Claude projection compatibility',()=>{
++ it('keeps the full original schema1 body while format2 omits only the specified standard and preserves all App assets',async()=>{
++  const s=f.plan();await f.sessions.create(s,f.home);const original=await f.projector.claudeSource(s.taskId),subset=await f.projector.claudeSource(s.taskId,s.packages.map(p=>p.appId),false,[]);expect(original.bundle.manifest.metadata.formatVersion).toBe(1);expect(subset.bundle.manifest.metadata).toMatchObject({formatVersion:2,standardSkillScope:[]});expect(claudeProjectionSelection(subset.bundle.manifest,s)).toEqual({appIds:s.packages.map(p=>p.appId),standardSkillScope:[]});expect(()=>claudeProjectionSelection(subset.bundle.manifest,s,true)).toThrow();expect(subset.bundle.files['skills/'+s.packages[0].skills[0].nativeName+'/assets/data.bin']).toEqual(Buffer.from([0,255,192,128,10]));expect((await f.sessions.get(s.taskId)).snapshot).toEqual(s);f.projector.verify(subset.resource,s);
++ });
++ it.each(['old-format-omission','missing-explicit-scope','extra-hidden-skill','unknown-standard','duplicate-standard','wrong-source-hash','wrong-task','wrong-full-selection','partial-app-group'] as const)('rejects forged %s rather than treating it as a new full selection',async kind=>{
++  const s=f.plan();await f.sessions.create(s,f.home);const source=await f.projector.claudeSource(s.taskId,s.packages.map(p=>p.appId),false,[]),manifest=structuredClone(source.bundle.manifest),m=manifest.metadata;
++  if(kind==='old-format-omission'){m.formatVersion=1;delete m.standardSkillScope;}
++  if(kind==='missing-explicit-scope')delete m.standardSkillScope;
++  if(kind==='extra-hidden-skill')manifest.files.push({...manifest.files[0],path:'skills/foreign/SKILL.md'});
++  if(kind==='unknown-standard')m.standardSkillScope=['/private/user/foreign/SKILL.md'];
++  if(kind==='duplicate-standard')m.standardSkillScope=[s.standardSkills[0].projectionPath,s.standardSkills[0].projectionPath];
++  if(kind==='wrong-source-hash')(m.sources as {sourceHash:string}[])[0].sourceHash='f'.repeat(64);
++  if(kind==='wrong-task')m.taskId='another-task';
++  if(kind==='wrong-full-selection')m.selectionHash='f'.repeat(64);
++  if(kind==='partial-app-group'){s.packages[0].skills.push({...s.packages[0].skills[0],skillId:'second',nativeName:'second',projectionPath:s.packages[0].skills[0].projectionPath.replace(/[^/]+\/SKILL.md$/,'second/SKILL.md')});m.selectionHash=digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));}
++  expect(()=>claudeProjectionSelection(manifest,s)).toThrow();
++ });
++ it('plans Codex standard exclusion against the actual complete catalog and refuses foreign or duplicate paths',async()=>{
++  const s=f.plan('codex');await f.sessions.create(s,f.home);const request=await f.request(s),plan=f.adapters.plan(s.adapterBinding.hash,{...request,standardSkillScope:[]}),flags=(parseToml(plan.args.find(a=>a.startsWith('skills.config='))!).skills as {config:unknown[]}).config;expect(flags).toContainEqual({path:s.standardSkills[0].projectionPath,enabled:false});expect(flags).toContainEqual({path:s.packages[0].skills[0].projectionPath,enabled:true});expect(()=>f.adapters.plan(s.adapterBinding.hash,{...request,standardSkillScope:['/private/user/SKILL.md']})).toThrow();expect(()=>f.adapters.plan(s.adapterBinding.hash,{...request,standardSkillScope:[s.standardSkills[0].projectionPath,s.standardSkills[0].projectionPath]})).toThrow();
++ });
++ it('refuses a Claude subset request without a run-bound physical delivery even with a real full original plugin',async()=>{
++  const s=f.plan();await f.sessions.create(s,f.home);const input=await f.request(s);expect(()=>f.adapters.plan(s.adapterBinding.hash,{...input,standardSkillScope:[]})).toThrow();expect(f.adapters.plan(s.adapterBinding.hash,input).agentId).toBe('claude-code');
++ });
++});

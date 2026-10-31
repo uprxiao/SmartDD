@@ -1,0 +1,52 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts src/renderer/features/applications/session-applications.test.tsx --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (54 tests | 2 failed) 62252ms
+     × keeps selected applications in a new claude-code snapshot when original package bytes are unavailable 209ms
+     × keeps selected applications in a new codex snapshot when original package bytes are unavailable 214ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps selected applications in a new claude-code snapshot when original package bytes are unavailable
+ApplicationError: 应用包缺失、不可读或声明损坏
+ ❯ verifyPackageTree src/main/core/applications/package-files.ts:53:11
+     51|   } catch (error) {
+     52|     if (error instanceof ApplicationError) throw error;
+     53|     throw new ApplicationError('HASH_MISMATCH', '应用包缺失、不可读或声明损坏');
+       |           ^
+     54|   }
+     55| }
+ ❯ BuiltinPackageRegistry.assertTrusted src/main/core/applications/builtin-package-registry.ts:48:5
+ ❯ src/main/core/applications/task-capability-launcher.ts:118:111
+ ❯ ManagedTaskCapabilities.createSnapshot src/main/core/applications/task-capability-launcher.ts:118:55
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:147:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps selected applications in a new codex snapshot when original package bytes are unavailable
+ApplicationError: 应用包缺失、不可读或声明损坏
+ ❯ verifyPackageTree src/main/core/applications/package-files.ts:53:11
+     51|   } catch (error) {
+     52|     if (error instanceof ApplicationError) throw error;
+     53|     throw new ApplicationError('HASH_MISMATCH', '应用包缺失、不可读或声明损坏');
+       |           ^
+     54|   }
+     55| }
+ ❯ BuiltinPackageRegistry.assertTrusted src/main/core/applications/builtin-package-registry.ts:48:5
+ ❯ src/main/core/applications/task-capability-launcher.ts:118:111
+ ❯ ManagedTaskCapabilities.createSnapshot src/main/core/applications/task-capability-launcher.ts:118:55
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:147:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 111 passed (113)
+   Start at  13:03:08
+   Duration  67.05s (transform 488ms, setup 0ms, import 986ms, tests 65.42s, environment 383ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

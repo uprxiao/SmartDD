@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
+import { demoApplicationImpact, demoZenTaoRuns, initialIntegrationState, projectIntegrationState, validateConnection, availableConnections, saveConnection, referenceText, packageVersion, projectPackages, toggleProjectApplication, integrationSnapshot, snapshotCurrent, simulatePackageUpgrade, selectedConnections, switchProjectZenTao, sessionApplicationState, projectAppEnabled, removeApplication, validMailDays, saveDemoDraft, packageRetention, connectionIdentityChanged, mailQueryWindow, verifyDemoSendAccepted } from '../src/integration-model.mjs';
 import { selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability, demoDraftSendEligibility, mailSourceDiagnostic } from '../src/integration-model.mjs';
 
 test('projection drops passwords, tokens, unknown apps and dangling project bindings', () => {
@@ -57,7 +57,9 @@ test('old saved configurations gain package metadata without replacing connectio
   const restored = projectIntegrationState(saved);
   assert.equal(packageVersion(restored, 'zentao'), '1.0.0');
   assert.equal(restored.dataSchema, 1);
-  assert.deepEqual(restored.connections, saved.connections);
+  assert.deepEqual(restored.connections, saved.connections.map(c=>c.kind==='local'?{...c,queryDays:30}:c));
+  assert.deepEqual(restored.connections.map(({queryDays,...c})=>c),saved.connections);
+  assert.equal(restored.connections[1].revision,saved.connections[1].revision);
   assert.deepEqual(restored.bindings, saved.bindings);
 });
 
@@ -266,7 +268,7 @@ test('changing project mail sender invalidates old draft intent and requires exp
  const switched=selectProjectMailConnection(created.state,'ais','smtp','smtp-b');
  assert.equal(demoDraftSendEligibility(switched,'ais',created.draft).changed,true);
  assert.equal(switched.drafts[0].senderId,'smtp-a');
- const updated=saveDemoDraft(switched,'ais',created.draft.id,created.draft.revision);
+ const updated=saveDemoDraft(switched,'ais',created.draft.id,created.draft.revision,{adoptCurrentSender:true});
  assert.equal(updated.draft.senderId,'smtp-b');assert.equal(updated.draft.revision,2);
  assert.equal(demoDraftSendEligibility(updated.state,'ais',updated.draft).ok,true);
  const removed=selectProjectMailConnection(updated.state,'ais','smtp','');
@@ -330,4 +332,109 @@ test('Foxmail partial, unsupported and failed reads never masquerade as a comple
  assert.equal(mailSourceDiagnostic('empty',false,true).state,'failed');
  assert.equal(mailSourceDiagnostic('ready',false,false).title,'未选用读取来源');
  assert.match(mailSourceDiagnostic('unsupported',true).reason,/不提供导出后导入/);
+});
+
+
+test('mail reading and SMTP slot revisions change independently and retain a clear/reselect tombstone', () => {
+ let state=projectIntegrationState(initialIntegrationState());
+ state.connections.push({id:'smtp-slot',app:'mail',kind:'smtp',enabled:true,validation:'ready'}, {id:'fox-slot',app:'mail',kind:'local',enabled:true,validation:'ready'});
+ state=selectProjectMailConnection(state,'ais','smtp','smtp-slot');
+ const created=saveDemoDraft(state,'ais'), readChanged=selectProjectMailConnection(created.state,'ais','local','fox-slot');
+ assert.equal(demoDraftSendEligibility(readChanged,'ais',created.draft).ok,true);
+ assert.equal(projectIntegrationState(readChanged).mailSlotRevisions.ais.smtp,created.draft.mailSendSlotRevision);
+ const cleared=selectProjectMailConnection(readChanged,'ais','smtp',''),reselected=selectProjectMailConnection(cleared,'ais','smtp','smtp-slot');
+ assert.equal(demoDraftSendEligibility(reselected,'ais',created.draft).changed,true);
+ assert.ok(reselected.mailSlotRevisions.ais.smtp>created.draft.mailSendSlotRevision);
+});
+
+
+test('impact lists retain disabled and archived project references without copying connection configuration',()=>{
+ const state=projectIntegrationState(initialIntegrationState());state.projectApps.smartdd.zentao=false;const before=JSON.stringify(state);
+ const impact=demoApplicationImpact(state,{kind:'disconnect',connectionId:'zt-demo'},[{id:'ais',name:'业务项目'},{id:'smartdd',name:'旧项目',archived:true}]);
+ assert.deepEqual(impact.projects.map(p=>[p.id,p.name,p.enabled,p.archived]),[['ais','业务项目',true,false],['smartdd','旧项目',false,true]]);assert.deepEqual(impact.connections.map(c=>Object.keys(c).sort()),[['authorization','enabled','id','name','providerId']]);assert.equal(impact.connections[0].name,'公司禅道');assert.equal(JSON.stringify(impact).includes('demo.user'),false);
+ const removed=demoApplicationImpact(state,{kind:'remove',appId:'mail'},[]);assert.deepEqual(removed.projects.map(p=>p.id),['ais','smartdd']);assert.equal(JSON.stringify(state),before);
+});
+test('prototype switch scope excludes known ordinary/no-app/native-only work and refuses explicitly unknown scope',()=>{
+ const state=projectIntegrationState(initialIntegrationState()),snapshot=integrationSnapshot(state,'ais');
+ const tasks=[{id:'ordinary',project:'ais',status:'running'},{id:'empty',project:'ais',status:'running',integrationSnapshot:{packages:[]}},{id:'native',project:'ais',status:'running',applicationInjection:'native-only',integrationSnapshot:snapshot},{id:'loaded',project:'ais',status:'running',integrationSnapshot:snapshot},{id:'foreign',project:'smartdd',status:'running',integrationSnapshot:snapshot}];
+ assert.deepEqual(demoZenTaoRuns(tasks,'ais').map(t=>t.id),['loaded']);assert.equal(switchProjectZenTao(state,'ais',null,tasks.filter(t=>t.id!=='loaded')).ok,true);assert.throws(()=>demoZenTaoRuns([{id:'unknown',project:'ais',status:'running',integrationScopeUnknown:true}],'ais'),/无法核验/);
+});
+
+test('T27 rejects unsupported authentication and SMTP transport without rejecting legacy defaults', () => {
+  const zen = initialIntegrationState().connections.find(c => c.kind === 'zentao');
+  const smtp = { kind: 'smtp', name: 'sender', host: 'smtp.example.invalid', port: 465, account: 'demo@example.invalid' };
+  for (const draft of [{ ...zen, auth: 'unsupported-auth' }, { ...smtp, auth: 'unsupported-auth' }, { ...smtp, transport: 'unsupported-transport' }, { ...smtp, kind: 'unsupported-kind' }]) assert.ok(validateConnection(draft, 'synthetic-only'));
+  for (const auth of ['password', 'token']) assert.equal(validateConnection({ ...zen, auth }, 'synthetic-only'), '');
+  for (const transport of ['implicit-tls', 'starttls', 'plain', undefined]) assert.equal(validateConnection({ ...smtp, transport }, 'synthetic-only'), '');
+});
+
+
+test('content-only draft revision retains sender identity until an explicit adoption and rejects stale adoption', () => {
+ let source=projectIntegrationState(initialIntegrationState());
+ source.connections.push({id:'sender-old',app:'mail',kind:'smtp',enabled:true,validation:'ready'},{id:'sender-new',app:'mail',kind:'smtp',enabled:true,validation:'ready'});
+ source=selectProjectMailConnection(source,'ais','smtp','sender-old');
+ const created=saveDemoDraft(source,'ais');
+ const switched=selectProjectMailConnection(created.state,'ais','smtp','sender-new');
+ const edit=saveDemoDraft(switched,'ais',created.draft.id,1);
+ assert.equal(edit.ok,true);assert.equal(edit.draft.senderId,'sender-old');
+ assert.equal(edit.draft.mailSendSlotRevision,created.draft.mailSendSlotRevision);
+ assert.equal(demoDraftSendEligibility(edit.state,'ais',edit.draft).changed,true);
+ const stale=saveDemoDraft(edit.state,'ais',created.draft.id,1,{adoptCurrentSender:true});
+ assert.equal(stale.ok,false);assert.equal(stale.state,edit.state);
+ const adopted=saveDemoDraft(edit.state,'ais',created.draft.id,2,{adoptCurrentSender:true});
+ assert.equal(adopted.draft.senderId,'sender-new');assert.equal(adopted.draft.revision,3);
+ assert.equal(demoDraftSendEligibility(adopted.state,'ais',adopted.draft).ok,true);
+ assert.equal(created.draft.senderId,'sender-old');
+});
+
+
+test('stale missing draft references cannot silently create new drafts', () => {
+ const source=projectIntegrationState(initialIntegrationState()),before=JSON.stringify(source);
+ const result=saveDemoDraft(source,'ais','removed-draft',2);
+ assert.equal(result.ok,false);assert.equal(result.state,source);assert.equal(JSON.stringify(source),before);
+});
+
+test('sent and unknown records remain immutable while an explicit new draft preserves original evidence', () => {
+ const created=saveDemoDraft(projectIntegrationState(initialIntegrationState()),'ais');
+ for(const status of ['sending','success','unknown']){
+  const source={...created.state,drafts:[{...created.draft,status}],activity:[{id:'send-proof',draftId:created.draft.id,revision:1,status,project:'ais',app:'mail'}]};
+  const before=JSON.stringify(source),blocked=saveDemoDraft(source,'ais',created.draft.id,1);
+  assert.equal(blocked.ok,false);assert.equal(blocked.state,source);assert.equal(JSON.stringify(source),before);
+  if(status==='success'){
+   const copy=saveDemoDraft(source,'ais');assert.equal(copy.ok,true);assert.notEqual(copy.draft.id,created.draft.id);
+   assert.equal(copy.draft.status,'draft');assert.equal(copy.draft.revision,1);
+   assert.deepEqual(copy.state.drafts.find(d=>d.id===created.draft.id),source.drafts[0]);assert.deepEqual(copy.state.activity,source.activity);
+   const restored=projectIntegrationState(copy.state);assert.equal(restored.drafts.find(d=>d.id===created.draft.id).status,'success');
+   assert.equal(JSON.stringify(source),before);
+  }
+ }
+});
+
+test('both supported ZenTao authentication modes retain and require the explicit account',()=>{
+ const original=initialIntegrationState().connections[0];for(const auth of ['token','password']){assert.equal(validateConnection({...original,auth},'synthetic-only'),'');for(const account of [undefined,'','  '])assert.match(validateConnection({...original,auth,account},'synthetic-only'),/用户名/);}
+});
+
+test('local connection queryDays validate, migrate and persist separately from another source',()=>{
+ const legacy={...initialIntegrationState(),mailQueryDays:7};const projected=projectIntegrationState(legacy);assert.equal(projected.connections[1].queryDays,7);const local={...projected.connections[1]};for(const queryDays of [0,101,-1,1.5,''])assert.match(validateConnection({...local,queryDays}),/1–100/);for(const queryDays of [1,7,30,31,100]){const changed=saveConnection(projected,{...local,queryDays},false);assert.equal(changed.connections[1].queryDays,queryDays);assert.equal(projectIntegrationState(JSON.parse(JSON.stringify(changed))).connections[1].queryDays,queryDays);}
+});
+test('SMTP login and from address are independent and survive public projection without secrets',()=>{
+ const sender={id:'smtp-explicit',app:'mail',kind:'smtp',name:'Sender',host:'smtp.example.invalid',port:465,account:'service-login',fromAddress:'sender@example.invalid',auth:'password'};assert.equal(validateConnection(sender,'synthetic-only'),'');for(const fromAddress of ['', 'not-email','x@host\nBcc:y@example.invalid'])assert.match(validateConnection({...sender,fromAddress},'synthetic-only'),/发件地址/);const saved=saveConnection(initialIntegrationState(),sender,true),row=saved.connections.find(c=>c.id===sender.id);assert.equal(row.fromAddress,sender.fromAddress);assert.equal(row.account,'service-login');assert(!JSON.stringify(row).includes('synthetic-only'));const legacy=projectIntegrationState({...initialIntegrationState(),connections:[{...sender,account:'legacy@example.invalid',fromAddress:undefined}]});assert.equal(legacy.connections[0].fromAddress,'legacy@example.invalid');
+});
+
+// OL: global application access and latent per-project choices are separate.
+test('legacy global application state defaults on and explicit off survives public projection',async()=>{
+ const m=await import('../src/integration-model.mjs');assert.equal(typeof m.applicationEnabled,'function');const base=m.projectIntegrationState(m.initialIntegrationState());assert.equal(m.applicationEnabled(base,'mail'),true);const off=m.setApplicationEnabled(base,'mail',false),restored=m.projectIntegrationState(JSON.parse(JSON.stringify(off)));assert.equal(m.applicationEnabled(restored,'mail'),false);assert.equal(m.applicationEnabled(restored,'zentao'),true);assert.equal(m.applicationEnabled(restored,'unknown'),false);
+});
+test('global suspension preserves project choices,bindings,connections and fixed snapshots',async()=>{
+ const m=await import('../src/integration-model.mjs');assert.equal(typeof m.setApplicationEnabled,'function');let base=m.projectIntegrationState(m.initialIntegrationState());base=m.toggleProjectApplication(base,'smartdd','mail',false);const snapshot=m.integrationSnapshot(base,'ais'),off=m.setApplicationEnabled(base,'mail',false);assert.deepEqual(off.bindings,base.bindings);assert.deepEqual(off.projectApps,base.projectApps);assert.deepEqual(off.connections,base.connections);assert.equal(m.projectAppEnabled(off,'ais','mail'),false);assert.equal(m.projectAppSelected(off,'ais','mail'),true);assert.equal(m.availableConnections(off,'ais').some(c=>c.app==='mail'),false);assert.equal(m.projectPackages(off,'ais').some(c=>c.id==='mail'),false);assert.equal(m.snapshotCurrent(snapshot,off,'ais'),true);const restored=m.setApplicationEnabled(off,'mail',true);assert.equal(m.projectAppEnabled(restored,'ais','mail'),true);assert.equal(m.projectAppEnabled(restored,'smartdd','mail'),false);assert.deepEqual(restored.bindings,base.bindings);
+});
+test('changing a source while globally off preserves the latent enabled project and never reopens access',async()=>{
+ const m=await import('../src/integration-model.mjs');assert.equal(typeof m.setApplicationEnabled,'function');let base=m.projectIntegrationState(m.initialIntegrationState());base.connections.push({...base.connections.find(c=>c.kind==='local'),id:'ol-source-b',name:'OL source B'});const off=m.setApplicationEnabled(base,'mail',false),changed=m.selectProjectMailConnection(off,'ais','local','ol-source-b');assert.equal(m.projectAppSelected(changed,'ais','mail'),true);assert.equal(m.applicationEnabled(changed,'mail'),false);assert.equal(m.projectAppEnabled(changed,'ais','mail'),false);assert.equal(m.selectedConnections(changed,'ais','mail')[0].id,'ol-source-b');assert.equal(m.projectAppEnabled(m.setApplicationEnabled(changed,'mail',true),'ais','mail'),true);
+});
+test('remove and explicit re-add reopen global availability without restoring project authorization',async()=>{
+ const m=await import('../src/integration-model.mjs');assert.equal(typeof m.addApplication,'function');const base=m.projectIntegrationState(m.initialIntegrationState()),off=m.setApplicationEnabled(base,'mail',false),removed=m.removeApplication(off,'mail'),added=m.addApplication(removed,'mail');assert.equal(m.applicationEnabled(added,'mail'),true);assert.equal(m.projectAppSelected(added,'ais','mail'),false);assert.deepEqual(added.connections,base.connections);assert.deepEqual(added.bindings,base.bindings);
+});
+
+test('global off/on invalidates old synthetic send approval without editing the frozen draft',async()=>{
+ const m=await import('../src/integration-model.mjs');let state=m.projectIntegrationState(m.initialIntegrationState());state.connections.push({id:'ol-smtp',app:'mail',kind:'smtp',name:'OL SMTP',account:'sender@example.invalid',fromAddress:'sender@example.invalid',host:'smtp.example.invalid',port:465,credentialPresent:true,enabled:true,validation:'ready',revision:1});state=m.selectProjectMailConnection(state,'ais','smtp','ol-smtp');const saved=m.saveDemoDraft(state,'ais');state=saved.state;const approved=m.approveDemoDraft(state,'ais',saved.draft,saved.draft.revision);assert.equal(approved.ok,true);const restored=m.setApplicationEnabled(m.setApplicationEnabled(state,'mail',false),'mail',true);assert.deepEqual(restored.drafts,state.drafts);assert.equal(m.checkDemoDraftApproval(restored,'ais',saved.draft,approved.approval).ok,false);assert.equal(m.demoDraftSendEligibility(restored,'ais',saved.draft).changed,true);assert.equal(m.setApplicationEnabled(restored,'mail',true),restored);
 });

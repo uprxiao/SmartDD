@@ -73,6 +73,19 @@ describe('main-process PTY ownership', () => {
     expect(() => invoke({ sender: other, senderFrame: other.mainFrame }, 'task-a', 'pty-a', event)).toThrow('TERMINAL_SENDER_DENIED');
     invoke(event, 'task-a', 'pty-a'); expect(kill).toHaveBeenCalledExactlyOnceWith('task-a');
   });
+  it('observes only successful owned writes,never raw failed/unauthorized input or resize/context authorization',()=>{
+    const observed=vi.fn();const current=new PtyAccess({trusted:e=>e.sender===event.sender,activePty:id=>owners.get(id)??null,alive:id=>live.has(id),write,resize,killTask:kill,observedInput:observed});
+    current.authorize(event,payload);current.resize(event,{...payload,cols:80,rows:24});expect(observed).not.toHaveBeenCalled();expect(current.input(event,{...payload,runId:'forged'})).toBe(true);expect(observed).toHaveBeenCalledExactlyOnceWith(event,{taskId:'task-a',ptyId:'pty-a'},payload.data);expect(write.mock.invocationCallOrder[0]).toBeLessThan(observed.mock.invocationCallOrder[0]);
+    write.mockImplementationOnce(()=>{throw new Error('closed native handle');});expect(current.input(event,payload)).toBe(false);expect(current.input({...event,senderFrame:null},payload)).toBe(false);expect(observed).toHaveBeenCalledTimes(1);
+  });
+  it('keeps an accepted keyboard write successful when evidence collection fails,so callers cannot duplicate it',()=>{
+    const current=new PtyAccess({trusted:()=>true,activePty:()=>payload.ptyId,alive:()=>true,write,resize,killTask:kill,observedInput:()=>{throw new Error('observation unavailable');}});expect(current.input(event,payload)).toBe(true);expect(write).toHaveBeenCalledExactlyOnceWith(payload.ptyId,payload.data);
+  });
+  it('passes only the real Electron sender to task launch origin,ignoring renderer-supplied sender arguments',()=>{
+    const create=vi.fn(),handlers=new Map<string,Function>();registerRPCRouter(createTaskController({create} as never,e=>access.requireSender(e)),{handle:(name:string,fn:Function)=>handlers.set(name,fn)} as never);
+    const forged={sender:sender(99),senderFrame:{}},req={projectId:'p1',firstMessage:'literal initial prompt',initialSender:forged};handlers.get('tasks.create')!(event,req,forged);expect(create).toHaveBeenCalledExactlyOnceWith(req,event);
+    expect(()=>handlers.get('tasks.create')!(forged,req,event)).toThrow('TERMINAL_SENDER_DENIED');expect(create).toHaveBeenCalledTimes(1);
+  });
   it('task endpoints cannot bypass sender checks for create/open/delete/kill/archive', () => {
     const names = ['list', 'get', 'create', 'open', 'rename', 'setArchived', 'stopAndArchive', 'delete', 'kill'];
     const svc = Object.fromEntries(names.map(n => [n, vi.fn()]));

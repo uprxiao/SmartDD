@@ -1,0 +1,13 @@
+# 普通原生守护与未就绪依赖：后续必核对组合
+
+本记录是当前软件回归冻结期间的只读代码发现，尚未运行下述组合红测，不能当产品失败已证实或修复已完成。
+
+AX独立模式只对已支持CLI版本正常准备。未验证版本仍走prepareUnavailableSession固定native guard；其资源包含adapter和H目录中的原投影。RunRegistry.closure／checkProtection目前对依赖图每项都要求ready。若旧H投影实际字节仍合法，但它引用的App包／桥被显式标为未就绪，可能因此阻断普通Agent，与R07-01／07／11不符。当前8主红测覆盖经支持版本，不能据此关闭该组合。
+
+应先用真实TaskService软件组合：经支持版本创建并停止两App任务，保留原H文件，标坏App包状态，改变本例私有version-fixture为未知CLI版本，再open同task；要求普通PTY继续、固定S／native ID／原文件不改，App调用／直接业务／发送来源均无权限，实际AppMCP不注入。验证前不改预期为允许阻断。
+
+若证实，区分“被原生实际读取的完整静态投影”和“只是来源身份／清理边的C资源”。不能普遍放宽执行依赖或让普通受管run读取坏资源。候选是在显式native-only守护内保留所有来源占用／hash／代次，仅对已验证完整H静态副本的非执行来源允许未就绪；adapter和其执行依赖仍须就绪，真实读取根仍按实际OwnedBundle校验，任何run／租约／未知PID不清除。H consumer继续冻结发现根，业务context仍一律拒绝，不能拿静态副本等同执行权限。
+
+还需核查CC没有slot的旧完整canonical路径：prepareUnavailableSession目前资源列表主要adapter／H，已有slot时AW已补独立根alias；无slot时旧完整session-projection是否也要显式保护其实际目录，防止用户正在普通resume时另一发布器／修复改写。新交付coordinator的assertNoRuns只能门控自身，不自动证明所有generic publisher均已被覆盖。用实物原路径／持久占用和故障窗口验证，不凭记录名或PID缺席判断安全。
+
+这些属于完整87编号及REVIEW-01／R10核对，目标仍active，不是新增业务范围。不修改M9，不清旧AF未知桥；没有实际Agent或App证据。

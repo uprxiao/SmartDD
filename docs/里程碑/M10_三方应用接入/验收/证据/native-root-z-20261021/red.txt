@@ -1,0 +1,54 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t T64
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (50 tests | 2 failed | 48 skipped) 2105ms
+     × T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available 1091ms
+     × T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available 1013ms
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts (23 tests | 2 failed | 21 skipped) 678ms
+     × T64 refuses a bound native identity when its original state root is missing without recreating it 491ms
+     × T64 refuses a bound native identity when its original state root is file without recreating it 185ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-registry.test.ts > fixed capability selection, native identity and authoritative snapshot mirrors > T64 refuses a bound native identity when its original state root is missing without recreating it
+ FAIL  src/main/core/applications/__tests__/session-registry.test.ts > fixed capability selection, native identity and authoritative snapshot mirrors > T64 refuses a bound native identity when its original state root is file without recreating it
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ ❯ src/main/core/applications/__tests__/session-registry.test.ts:106:78
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available
+TypeError: The "path" argument must be of type string. Received undefined
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:77:19
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available
+TypeError: The "path" argument must be of type string. Received undefined
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:76:52
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 69 skipped (73)
+   Start at  10:23:53
+   Duration  6.77s (transform 2.15s, setup 0ms, import 3.41s, tests 2.78s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,361 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/db/migrations.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-h-binding-am-20261021/second-report.json
+
+[1021/163130.494232:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/163130.643233:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (31 tests) 4459ms
+[1021/163135.429203:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (76 tests) 11423ms
+[1021/163147.138282:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/db/migrations.test.ts (21 tests | 16 failed) 105ms
+     × preserves legacy unknown native history and observed evidence when the new nullable column is replayed 12ms
+     × adds native-only restriction receipts without rewriting retained snapshots or the original preparation, including replay 6ms
+     × adds canonical H locations without changing existing C resource IDs, paths or foreign-key references 6ms
+     × adds builtin-source provenance without approving historical packages and preserves proofs on replay 6ms
+     × adds scoped business operations without rewriting old project selection,drafts or retained resources on replay 6ms
+     ✓ keeps indexed background work read-only and requires real role-specific identities at the database boundary 6ms
+     × adds source-scoped ZenTao reads and preserves fetched revisions,binary files and receipt provenance on replay 6ms
+     × adds mail shared-index lineage and receipt proofs without rewriting original operations or their real caller roles 6ms
+     × loads every journal entry with its SQL and hash 1ms
+     × creates the schema on an empty database and records the hash 6ms
+     × upgrades existing draft attachments and seeds independent nullable connection-slot revisions without resetting data 6ms
+     × retains native run history after project deletion and skips its completed FK rebuild on replay 6ms
+     × is a no-op the second time 6ms
+     × re-runs 0001 safely when its tables exist but the record is missing 6ms
+     × re-runs 0002 without duplicating tasks copied from sessions 6ms
+     × re-runs 0003 when its columns already exist, keeping the stored results 6ms
+     × adopts an M0 database without touching existing rows 6ms
+     ✓ applies only the migrations past the recorded count 0ms
+     ✓ rolls back the whole batch when one statement fails 0ms
+     ✓ skips ADD COLUMN for a column that is already there 0ms
+     ✓ refuses a database migrated by a newer version 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > preserves legacy unknown native history and observed evidence when the new nullable column is replayed
+AssertionError: expected [ …(2) ] to deeply equal [ '0024_native_history_observation' ]
+
+- Expected
++ Received
+
+  [
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:31:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds native-only restriction receipts without rewriting retained snapshots or the original preparation, including replay
+AssertionError: expected [ …(3) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:40:653
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds canonical H locations without changing existing C resource IDs, paths or foreign-key references
+AssertionError: expected [ '0014_discovery_catalog', …(11) ] to deeply equal [ '0014_discovery_catalog', …(10) ]
+
+- Expected
++ Received
+
+@@ -8,6 +8,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:45:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds builtin-source provenance without approving historical packages and preserves proofs on replay
+AssertionError: expected [ …(11) ] to deeply equal [ …(10) ]
+
+- Expected
++ Received
+
+@@ -7,6 +7,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:54:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds scoped business operations without rewriting old project selection,drafts or retained resources on replay
+AssertionError: expected [ …(10) ] to deeply equal [ …(9) ]
+
+- Expected
++ Received
+
+@@ -6,6 +6,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:67:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds source-scoped ZenTao reads and preserves fetched revisions,binary files and receipt provenance on replay
+AssertionError: expected [ '0017_zentao_business_reads', …(8) ] to deeply equal [ '0017_zentao_business_reads', …(7) ]
+
+- Expected
++ Received
+
+@@ -5,6 +5,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:87:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adds mail shared-index lineage and receipt proofs without rewriting original operations or their real caller roles
+AssertionError: expected [ '0018_mail_index_provenance', …(7) ] to deeply equal [ '0018_mail_index_provenance', …(6) ]
+
+- Expected
++ Received
+
+@@ -4,6 +4,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:99:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > loads every journal entry with its SQL and hash
+AssertionError: expected [ '0000_init', '0001_projects', …(24) ] to deeply equal [ '0000_init', '0001_projects', …(23) ]
+
+- Expected
++ Received
+
+@@ -22,6 +22,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:106:42
+    104|   it('loads every journal entry with its SQL and hash', () => {
+    105|     const migrations = bundledMigrations();
+    106|     expect(migrations.map((m) => m.tag)).toEqual(ALL);
+       |                                          ^
+    107|     expect(migrations[0].sql).toContain('app_settings');
+    108|     expect(migrations[1].sql).toContain('project_databases');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > creates the schema on an empty database and records the hash
+AssertionError: expected [ '0000_init', '0001_projects', …(24) ] to deeply equal [ '0000_init', '0001_projects', …(23) ]
+
+- Expected
++ Received
+
+@@ -22,6 +22,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:116:38
+    114|   it('creates the schema on an empty database and records the hash', (…
+    115|     const db = memoryDb();
+    116|     expect(runBundledMigrations(db)).toEqual(ALL);
+       |                                      ^
+    117|     expect(tables(db)).toEqual([
+    118|       '__drizzle_migrations',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > upgrades existing draft attachments and seeds independent nullable connection-slot revisions without resetting data
+AssertionError: expected [ '0009_mail_execution', …(16) ] to deeply equal [ '0009_mail_execution', …(15) ]
+
+- Expected
++ Received
+
+@@ -13,6 +13,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:198:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > retains native run history after project deletion and skips its completed FK rebuild on replay
+SqliteError: duplicate column name: h_binding_hash
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:211:62
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > is a no-op the second time
+AssertionError: expected [ …(26) ] to have a length of 25 but got 26
+
+- Expected
++ Received
+
+- 25
++ 26
+
+ ❯ src/main/db/migrations.test.ts:219:26
+    217|     runBundledMigrations(db);
+    218|     expect(runBundledMigrations(db)).toEqual([]);
+    219|     expect(recorded(db)).toHaveLength(ALL.length);
+       |                          ^
+    220|   });
+    221|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0001 safely when its tables exist but the record is missing
+SqliteError: duplicate column name: h_binding_hash
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:227:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0002 without duplicating tasks copied from sessions
+SqliteError: duplicate column name: h_binding_hash
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:237:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > re-runs 0003 when its columns already exist, keeping the stored results
+SqliteError: duplicate column name: h_binding_hash
+ ❯ Database.exec node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:9:14
+ ❯ src/main/db/migrations.ts:78:131
+     76|       for (const stmt of m.sql.split('--> statement-breakpoint')) {
+     77|         const trimmed = stmt.trim();
+     78|         if (trimmed && !columnAlreadyExists(connection, trimmed) && !g…
+       |                                                                                                                                   ^
+     79|       }
+     80|       record.run(m.hash, m.when);
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/db/migrations.test.ts:250:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > adopts an M0 database without touching existing rows
+AssertionError: expected [ '0000_init', '0001_projects', …(24) ] to deeply equal [ '0000_init', '0001_projects', …(23) ]
+
+- Expected
++ Received
+
+@@ -22,6 +22,7 @@
+    "0020_application_activity_subjects",
+    "0021_capability_run_evidence",
+    "0022_legacy_task_migration_preparations",
+    "0023_capability_run_restrictions",
+    "0024_native_history_observation",
++   "0025_legacy_h_bindings",
+  ]
+
+ ❯ src/main/db/migrations.test.ts:272:38
+    270|       INSERT INTO sessions VALUES ('s1', 'claude', '/tmp', NULL, 'old'…
+    271|     `);
+    272|     expect(runBundledMigrations(db)).toEqual(ALL);
+       |                                      ^
+    273|     expect(tables(db)).toContain('app_settings');
+    274|     expect(tables(db)).toContain('probe_kv');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  16 failed | 112 passed (128)
+   Start at  16:31:30
+   Duration  16.70s (transform 249ms, setup 0ms, import 491ms, tests 15.99s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-h-binding-am-20261021/second-report.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,1122 @@
+{
+  "schema": "m10-packaged-mail-index-v1",
+  "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS",
+  "startedAt": "2026-10-26T22:40:50.719Z",
+  "branch": "feature/0.0.2",
+  "head": "f1f1728d68a8595e665d4833dff048189e63e0f8",
+  "dirty": true,
+  "app": "/private/tmp/willyou-m10-mr-package-20261027/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "90959634ee81a752eec28365446703342afdb73e2dd49b48ea8ad503e911a955",
+  "driverSha256": "f3a1375a8f35ee7b6179c6c9261523389686d716b09c0b5c9b41e8f91dc42123",
+  "nativeSha256": "5653a39892942354174f96583b3678c7c8285ff0d5343bcfe97364f0e0f18e17",
+  "layer": "I: actual packaged service IPC -> Worker -> native read-only SQLite/MIME -> durable cache; synthetic sources; no UI/CLI/model/SMTP",
+  "cases": [
+    {
+      "mode": "gate-lifetime",
+      "dir": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime",
+      "checks": [
+        "Actual packaged query/reply uses independent original cache gate; control bytes included exactly once in auxiliary/500MB total and live host blocks maintenance",
+        "Two ordinary packaged hosts share original U/H/cache concurrently with distinct real native sessions; unchanged gate inode excludes maintenance",
+        "Normal sibling exit releases only its cache lifetime; surviving original App still prevents exclusive maintenance without changing business/source",
+        "After both actual Apps normally exit the original independent gate grants exclusive maintenance then normal sharing without inode replacement",
+        "Independent maintenance gate blocks only new cache opening with RESOURCE_BUSY while ordinary App/main DB project settings remain usable; failed read consumers settle",
+        "After exclusive contender exits the same ordinary App opens original cache and reuses four complete records without batch scan, preserving old reference/source/reply and original gate inode"
+      ],
+      "appPids": [
+        52369,
+        52415,
+        52446
+      ],
+      "projectId": "7ae71322-a96e-47ea-bea8-229b59cfa97f",
+      "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+      "cacheGate": {
+        "status": "passed-independent-gate-prerequisite",
+        "startedAt": "2026-10-26T22:40:53.430Z",
+        "scope": "I actual two packaged App hosts sharing own U/H; separate original gate-API Node contenders; no UI/Agent/clock/native VFS/cache content/identity/credential changes; original physical-index MQ defect not fixed",
+        "probes": [
+          {
+            "label": "first-cache-host-live",
+            "status": "denied",
+            "pid": 52413,
+            "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache",
+            "mode": "maintenance",
+            "message": "仍有宿主使用数据库，暂不能进入维护或启动"
+          },
+          {
+            "label": "two-cache-hosts-live",
+            "status": "denied",
+            "pid": 52433,
+            "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache",
+            "mode": "maintenance",
+            "message": "仍有宿主使用数据库，暂不能进入维护或启动"
+          },
+          {
+            "label": "only-first-cache-host-remains",
+            "status": "denied",
+            "pid": 52434,
+            "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache",
+            "mode": "maintenance",
+            "message": "仍有宿主使用数据库，暂不能进入维护或启动"
+          },
+          {
+            "label": "all-cache-hosts-stopped",
+            "status": "granted",
+            "pid": 52443,
+            "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache",
+            "mode": "maintenance"
+          },
+          {
+            "label": "normal-sharing-after-maintenance-exit",
+            "status": "granted",
+            "pid": 52444,
+            "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache",
+            "mode": "shared"
+          }
+        ],
+        "contenderPids": [
+          52413,
+          52433,
+          52434,
+          52443,
+          52444,
+          52445
+        ],
+        "fixtureSha256": "1cca55df2b55644bef6b0b880b12b20f3cc93704fb1706ebf736e352cd7d5944",
+        "contender": {
+          "entry": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/gate-contender.ts",
+          "entrySha256": "2e6e723136064ba4cb5cc5195d796a911a479f5b583abab5dfff288d8717078a",
+          "compiled": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/gate-contender.cjs",
+          "compiledSha256": "63160c003c00b71d92ef98982d4a4617d0933cda74f48cd8c3e0a5ba1181a89b",
+          "productionGateSourceSha256": "19a4693567b0b9c3db0d7599b136349f11b1c1b99ba7832e3d195ef20b2524fd",
+          "runtime": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+          "layer": "Separate original gate API/native Node software contender, not packaged App UI/business RPC"
+        },
+        "warm": {
+          "query": {
+            "items": [
+              {
+                "subject": "Synthetic index 4",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-4@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "4",
+                  "contentRevision": "a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741"
+                }
+              },
+              {
+                "subject": "Synthetic index 3",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-3@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "3",
+                  "contentRevision": "51c8f2c979ca5da853bc59876339f8d90141dd4a9bc201972e1ddf0dbe84d7ac"
+                }
+              },
+              {
+                "subject": "Synthetic index 2",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-2@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "2",
+                  "contentRevision": "10798fb82703e8cea5ca6401bd890fd4ffce67ecfee10548eeeea49e98ba5bad"
+                }
+              },
+              {
+                "subject": "Synthetic index 1",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-1@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "79d899869a57eebb819cda1a57e88b4f17aab674a6cda036a3f921be5c369bfe"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 4,
+            "range": {
+              "days": 100,
+              "timeZone": "Asia/Singapore",
+              "startDate": "2026-07-20",
+              "endDate": "2026-10-27",
+              "start": "2026-07-19T16:00:00.000Z",
+              "endExclusive": "2026-10-27T16:00:00.000Z"
+            },
+            "checkedAt": "2026-10-26T22:40:54.110Z",
+            "problems": []
+          },
+          "refresh": {
+            "scanned": 4,
+            "total": 4,
+            "finished": true,
+            "problemCount": 0,
+            "lastSuccessfulRefreshAt": "2026-10-26T22:40:54.110Z"
+          }
+        },
+        "beforeBusiness": {
+          "drafts": [
+            {
+              "id": "44d58cca-3779-4028-9959-4f620e4e37a4",
+              "project_id": "7ae71322-a96e-47ea-bea8-229b59cfa97f",
+              "source_task_id": null,
+              "copied_from_draft_id": null,
+              "subject": "Re: Synthetic index 4",
+              "attachment_count": 0,
+              "current_revision": 1,
+              "state": "draft",
+              "active_intent_id": null,
+              "last_execution_id": null,
+              "created_at": "2026-10-26T22:40:54.521Z",
+              "updated_at": "2026-10-26T22:40:54.521Z"
+            }
+          ],
+          "revisions": [
+            {
+              "draft_id": "44d58cca-3779-4028-9959-4f620e4e37a4",
+              "revision": 1,
+              "content_json": "{\"attachmentIds\":[],\"bcc\":[],\"cc\":[],\"html\":null,\"inReplyTo\":\"<index-4@example.test>\",\"mode\":\"reply\",\"references\":[\"<index-4@example.test>\"],\"senderConnectionId\":null,\"sourceMessageRef\":{\"connectionId\":\"d63f9a32-d392-4226-b262-bfbf8572713f\",\"contentRevision\":\"a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741\",\"identityRevision\":1,\"nativeId\":\"4\"},\"subject\":\"Re: Synthetic index 4\",\"text\":\"MR reply remains while cache gate coordinates hosts\",\"to\":[\"sender@example.test\"]}",
+              "content_hash": "4b3bdaf2ce9355f9a8644b4930505fdbeeea87c26e41934f984a3a0145b6da9d",
+              "actor_task_id": null,
+              "created_at": "2026-10-26T22:40:54.521Z"
+            }
+          ],
+          "attachments": [],
+          "send": [],
+          "projects": [
+            {
+              "id": "7ae71322-a96e-47ea-bea8-229b59cfa97f",
+              "name": "T16 gate-lifetime",
+              "aliases": "[]",
+              "description": "Synthetic mail source only",
+              "rules_path": null,
+              "config_version": 1,
+              "archived_at": null,
+              "created_at": 1793054453028,
+              "updated_at": 1793054453028
+            }
+          ],
+          "defaults": [
+            {
+              "app_id": "mail",
+              "package_hash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+              "activation_generation": 1,
+              "activated_at": "2026-10-26T22:40:51.998Z"
+            },
+            {
+              "app_id": "zentao",
+              "package_hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+              "activation_generation": 1,
+              "activated_at": "2026-10-26T22:40:51.997Z"
+            }
+          ],
+          "bindings": [
+            {
+              "project_id": "7ae71322-a96e-47ea-bea8-229b59cfa97f",
+              "app_id": "mail",
+              "slot": "foxmail",
+              "connection_id": "d63f9a32-d392-4226-b262-bfbf8572713f",
+              "identity_revision": 1
+            }
+          ]
+        },
+        "beforePersistent": {
+          ".willyou-mail-owner.json": {
+            "dev": 16777234,
+            "ino": 63503882,
+            "size": 61,
+            "sha256": "8cfde3e2c2a82cc2213cdb1eb1fbf7e4693abd78be7a7d04726c71725f701155"
+          }
+        },
+        "beforeSource": {
+          "Mail/Inbox/1.mail": "79d899869a57eebb819cda1a57e88b4f17aab674a6cda036a3f921be5c369bfe",
+          "Mail/Inbox/2.mail": "10798fb82703e8cea5ca6401bd890fd4ffce67ecfee10548eeeea49e98ba5bad",
+          "Mail/Inbox/3.mail": "51c8f2c979ca5da853bc59876339f8d90141dd4a9bc201972e1ddf0dbe84d7ac",
+          "Mail/Inbox/4.mail": "a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741",
+          "messages.db": "920a04cb9d4c825adc4fcbdc4df27709f54d1a0a26c7a5cf182aeed87ae07a1c"
+        },
+        "control": {
+          "dev": 16777234,
+          "ino": 63503992,
+          "size": 8192,
+          "sha256": "c0936936935c198bb77b7d6bd510905e431f036dc1995e18bc454bf283015ab5"
+        },
+        "initialUsage": {
+          "ok": true,
+          "value": {
+            "limit": 500000000,
+            "indexLimit": 16777216,
+            "metadataReserved": 67108864,
+            "chargedObjectBytes": 5950,
+            "pendingWriteBytes": 0,
+            "readyObjects": 5,
+            "activeLeases": 0,
+            "actual": {
+              "index": 86016,
+              "auxiliary": 8192,
+              "objects": 5950,
+              "staging": 0,
+              "other": 61,
+              "total": 100219
+            },
+            "unrecognized": [],
+            "overBudget": false,
+            "availableForObjects": 432885186,
+            "storage": {
+              "business": {
+                "files": {
+                  "bytes": 61,
+                  "complete": true
+                },
+                "sharedDatabase": {
+                  "bytes": 2161560,
+                  "complete": true
+                },
+                "drafts": 1,
+                "sends": 0
+              },
+              "versions": {
+                "appId": "mail",
+                "items": [
+                  {
+                    "appId": "mail",
+                    "version": "1.0.4",
+                    "packageHash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                    "resourceId": "app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                    "state": "ready",
+                    "defaultForNewSessions": true,
+                    "sessionRefCount": 0,
+                    "tombstoneRefCount": 0,
+                    "activeRunCount": 0,
+                    "references": [],
+                    "sourceBytes": 67173,
+                    "projectionBytes": 0,
+                    "reclaimableBytes": 0,
+                    "integrity": "valid",
+                    "compatibility": "compatible",
+                    "retentionReasons": [
+                      "新会话默认版本",
+                      "运行或资源操作仍有占用"
+                    ],
+                    "issues": [],
+                    "canCleanup": false,
+                    "planHash": "11e688919629a6f105a1c27ae6b1329fe2f9b9607411d6d1a869e2093f747f0c",
+                    "cleanupGraph": {
+                      "planHash": "11e688919629a6f105a1c27ae6b1329fe2f9b9607411d6d1a869e2093f747f0c",
+                      "deleteOrder": [],
+                      "retained": [
+                        {
+                          "resourceId": "app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                          "reasons": [
+                            "active-default",
+                            "lease:3b0a647b-0083-4681-9590-405b2be9321a"
+                          ]
+                        },
+                        {
+                          "resourceId": "runtime:adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+                          "reasons": [
+                            "external-consumer:app:c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+                            "retained-consumer:app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                            "retained-consumer:app:c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b"
+                          ]
+                        }
+                      ],
+                      "issues": [],
+                      "requiresSharedCoordinator": false
+                    }
+                  }
+                ],
+                "checkedAt": "2026-10-26T22:40:54.751Z",
+                "recoveryPending": 0
+              }
+            }
+          }
+        },
+        "secondQuery": {
+          "query": {
+            "items": [
+              {
+                "subject": "Synthetic index 4",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-4@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "4",
+                  "contentRevision": "a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741"
+                }
+              },
+              {
+                "subject": "Synthetic index 3",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-3@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "3",
+                  "contentRevision": "51c8f2c979ca5da853bc59876339f8d90141dd4a9bc201972e1ddf0dbe84d7ac"
+                }
+              },
+              {
+                "subject": "Synthetic index 2",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-2@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "2",
+                  "contentRevision": "10798fb82703e8cea5ca6401bd890fd4ffce67ecfee10548eeeea49e98ba5bad"
+                }
+              },
+              {
+                "subject": "Synthetic index 1",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-1@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "79d899869a57eebb819cda1a57e88b4f17aab674a6cda036a3f921be5c369bfe"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 4,
+            "range": {
+              "days": 100,
+              "timeZone": "Asia/Singapore",
+              "startDate": "2026-07-20",
+              "endDate": "2026-10-27",
+              "start": "2026-07-19T16:00:00.000Z",
+              "endExclusive": "2026-10-27T16:00:00.000Z"
+            },
+            "checkedAt": "2026-10-26T22:41:00.430Z",
+            "problems": []
+          },
+          "refresh": {
+            "scanned": 4,
+            "total": 4,
+            "finished": true,
+            "problemCount": 0,
+            "lastSuccessfulRefreshAt": "2026-10-26T22:41:00.430Z"
+          }
+        },
+        "sessions": [
+          {
+            "session_id": "ec72b0c8-cfaf-4941-8db1-187c70fd8fd6",
+            "pid": 52369,
+            "started_at": "darwin-proc-v1:1793054450:803847",
+            "state": "open"
+          },
+          {
+            "session_id": "5c559016-9dc6-4483-a601-07344f6e67e0",
+            "pid": 52415,
+            "started_at": "darwin-proc-v1:1793054455:656921",
+            "state": "open"
+          }
+        ],
+        "secondNative": [
+          {
+            "type": "native-start",
+            "pid": 52429
+          },
+          {
+            "type": "native-close",
+            "pid": 52429,
+            "code": 0,
+            "signal": null
+          },
+          {
+            "type": "native-start",
+            "pid": 52430
+          },
+          {
+            "type": "native-close",
+            "pid": 52430,
+            "code": 0,
+            "signal": null
+          },
+          {
+            "type": "native-start",
+            "pid": 52431
+          },
+          {
+            "type": "native-close",
+            "pid": 52431,
+            "code": 0,
+            "signal": null
+          }
+        ],
+        "secondExit": {
+          "pid": 52415,
+          "code": 0,
+          "signal": null
+        },
+        "maintenanceHolder": {
+          "status": "held",
+          "pid": 52445,
+          "root": "/private/tmp/willyou-m10-mail-index-app-3GraYS/gate-lifetime/userdata/cache"
+        },
+        "blockedQuery": {
+          "ok": false,
+          "code": "RESOURCE_BUSY",
+          "message": "邮件缓存仍有其他宿主占用，请稍后重试"
+        },
+        "holderExit": {
+          "code": 0,
+          "signal": null
+        },
+        "recoveredQuery": {
+          "query": {
+            "items": [
+              {
+                "subject": "Synthetic index 4",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-4@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "4",
+                  "contentRevision": "a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741"
+                }
+              },
+              {
+                "subject": "Synthetic index 3",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-3@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "3",
+                  "contentRevision": "51c8f2c979ca5da853bc59876339f8d90141dd4a9bc201972e1ddf0dbe84d7ac"
+                }
+              },
+              {
+                "subject": "Synthetic index 2",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-2@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "2",
+                  "contentRevision": "10798fb82703e8cea5ca6401bd890fd4ffce67ecfee10548eeeea49e98ba5bad"
+                }
+              },
+              {
+                "subject": "Synthetic index 1",
+                "from": "sender@example.test",
+                "to": "receiver@example.test",
+                "date": "2026-10-27T04:00:00.000Z",
+                "messageId": "<index-1@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "d63f9a32-d392-4226-b262-bfbf8572713f",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "79d899869a57eebb819cda1a57e88b4f17aab674a6cda036a3f921be5c369bfe"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 4,
+            "range": {
+              "days": 100,
+              "timeZone": "Asia/Singapore",
+              "startDate": "2026-07-20",
+              "endDate": "2026-10-27",
+              "start": "2026-07-19T16:00:00.000Z",
+              "endExclusive": "2026-10-27T16:00:00.000Z"
+            },
+            "checkedAt": "2026-10-26T22:41:06.146Z",
+            "problems": []
+          },
+          "refresh": {
+            "scanned": 4,
+            "total": 4,
+            "finished": true,
+            "problemCount": 0,
+            "lastSuccessfulRefreshAt": "2026-10-26T22:41:06.146Z"
+          }
+        },
+        "finalUsage": {
+          "ok": true,
+          "value": {
+            "limit": 500000000,
+            "indexLimit": 16777216,
+            "metadataReserved": 67108864,
+            "chargedObjectBytes": 8370,
+            "pendingWriteBytes": 0,
+            "readyObjects": 8,
+            "activeLeases": 0,
+            "actual": {
+              "index": 86016,
+              "auxiliary": 8192,
+              "objects": 8370,
+              "staging": 0,
+              "other": 61,
+              "total": 102639
+            },
+            "unrecognized": [],
+            "overBudget": false,
+            "availableForObjects": 432882766,
+            "storage": {
+              "business": {
+                "files": {
+                  "bytes": 61,
+                  "complete": true
+                },
+                "sharedDatabase": {
+                  "bytes": 1559920,
+                  "complete": true
+                },
+                "drafts": 1,
+                "sends": 0
+              },
+              "versions": {
+                "appId": "mail",
+                "items": [
+                  {
+                    "appId": "mail",
+                    "version": "1.0.4",
+                    "packageHash": "b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                    "resourceId": "app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                    "state": "ready",
+                    "defaultForNewSessions": true,
+                    "sessionRefCount": 0,
+                    "tombstoneRefCount": 0,
+                    "activeRunCount": 0,
+                    "references": [],
+                    "sourceBytes": 67173,
+                    "projectionBytes": 0,
+                    "reclaimableBytes": 0,
+                    "integrity": "valid",
+                    "compatibility": "compatible",
+                    "retentionReasons": [
+                      "新会话默认版本",
+                      "运行或资源操作仍有占用"
+                    ],
+                    "issues": [],
+                    "canCleanup": false,
+                    "planHash": "e87ddb67fb8d52779897d05c38f45da286c05e89b1206e331c4df2ab567ce511",
+                    "cleanupGraph": {
+                      "planHash": "e87ddb67fb8d52779897d05c38f45da286c05e89b1206e331c4df2ab567ce511",
+                      "deleteOrder": [],
+                      "retained": [
+                        {
+                          "resourceId": "app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                          "reasons": [
+                            "active-default",
+                            "lease:cc18d858-76bf-4b8f-babd-99b80f68c7b9"
+                          ]
+                        },
+                        {
+                          "resourceId": "runtime:adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+                          "reasons": [
+                            "external-consumer:app:c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+                            "retained-consumer:app:b7ac8435b9fe6dec50487b82078ec8c30beb7f26205c08d1460dad30729f7dfe",
+                            "retained-consumer:app:c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b"
+                          ]
+                        }
+                      ],
+                      "issues": [],
+                      "requiresSharedCoordinator": false
+                    }
+                  }
+                ],
+                "checkedAt": "2026-10-26T22:41:06.684Z",
+                "recoveryPending": 0
+              }
+            }
+          }
+        },
+        "finishedAt": "2026-10-26T22:41:06.904Z"
+      },
+      "runs": [
+        {
+          "label": "first-gate-host-normal-exit",
+          "appPid": 52369,
+          "events": [
+            {
+              "type": "request",
+              "worker": 1,
+              "method": "verify",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52398
+            },
+            {
+              "type": "native-close",
+              "pid": 52398,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 1,
+              "method": "verify",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 2,
+              "method": "scan.begin",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52401
+            },
+            {
+              "type": "native-close",
+              "pid": 52401,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52402
+            },
+            {
+              "type": "native-close",
+              "pid": 52402,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 2,
+              "method": "scan.begin",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 2,
+              "method": "scan.entries",
+              "offset": 0
+            },
+            {
+              "type": "result",
+              "worker": 2,
+              "method": "scan.entries",
+              "offset": 0,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 2,
+              "method": "scan.batch",
+              "offset": 0
+            },
+            {
+              "type": "result",
+              "worker": 2,
+              "method": "scan.batch",
+              "offset": 0,
+              "error": null,
+              "readHeaders": 4,
+              "reusedHeaders": 0
+            },
+            {
+              "type": "request",
+              "worker": 2,
+              "method": "scan.finish",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52403
+            },
+            {
+              "type": "native-close",
+              "pid": 52403,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 2,
+              "method": "scan.finish",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 3,
+              "method": "read",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52404
+            },
+            {
+              "type": "native-close",
+              "pid": 52404,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52405
+            },
+            {
+              "type": "native-close",
+              "pid": 52405,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 3,
+              "method": "read",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            }
+          ]
+        },
+        {
+          "label": "final",
+          "appPid": 52446,
+          "events": [
+            {
+              "type": "request",
+              "worker": 1,
+              "method": "scan.begin",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52475
+            },
+            {
+              "type": "native-close",
+              "pid": 52475,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52476
+            },
+            {
+              "type": "native-close",
+              "pid": 52476,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 1,
+              "method": "scan.begin",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 1,
+              "method": "scan.finish",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52477
+            },
+            {
+              "type": "native-close",
+              "pid": 52477,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 1,
+              "method": "scan.finish",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            },
+            {
+              "type": "request",
+              "worker": 2,
+              "method": "read",
+              "offset": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52478
+            },
+            {
+              "type": "native-close",
+              "pid": 52478,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "native-start",
+              "pid": 52479
+            },
+            {
+              "type": "native-close",
+              "pid": 52479,
+              "code": 0,
+              "signal": null
+            },
+            {
+              "type": "result",
+              "worker": 2,
+              "method": "read",
+              "offset": null,
+              "error": null,
+              "readHeaders": null,
+              "reusedHeaders": null
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.begin",
+          "offset": null
+        },
+        {
+          "type": "native-start",
+          "pid": 52475
+        },
+        {
+          "type": "native-close",
+          "pid": 52475,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "type": "native-start",
+          "pid": 52476
+        },
+        {
+          "type": "native-close",
+          "pid": 52476,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.begin",
+          "offset": null,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        },
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.finish",
+          "offset": null
+        },
+        {
+          "type": "native-start",
+          "pid": 52477
+        },
+        {
+          "type": "native-close",
+          "pid": 52477,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.finish",
+          "offset": null,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        },
+        {
+          "type": "request",
+          "worker": 2,
+          "method": "read",
+          "offset": null
+        },
+        {
+          "type": "native-start",
+          "pid": 52478
+        },
+        {
+          "type": "native-close",
+          "pid": 52478,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "type": "native-start",
+          "pid": 52479
+        },
+        {
+          "type": "native-close",
+          "pid": 52479,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "type": "result",
+          "worker": 2,
+          "method": "read",
+          "offset": null,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        }
+      ],
+      "finalSource": {
+        "Mail/Inbox/1.mail": "79d899869a57eebb819cda1a57e88b4f17aab674a6cda036a3f921be5c369bfe",
+        "Mail/Inbox/2.mail": "10798fb82703e8cea5ca6401bd890fd4ffce67ecfee10548eeeea49e98ba5bad",
+        "Mail/Inbox/3.mail": "51c8f2c979ca5da853bc59876339f8d90141dd4a9bc201972e1ddf0dbe84d7ac",
+        "Mail/Inbox/4.mail": "a8bd4a417691c0a15d8d70049c447193b61dd16cf305358e4c54c6a87a1d6741",
+        "messages.db": "920a04cb9d4c825adc4fcbdc4df27709f54d1a0a26c7a5cf182aeed87ae07a1c"
+      },
+      "status": "passed"
+    }
+  ],
+  "checks": [
+    {
+      "case": "gate-lifetime",
+      "name": "Actual packaged query/reply uses independent original cache gate; control bytes included exactly once in auxiliary/500MB total and live host blocks maintenance",
+      "at": "2026-10-26T22:40:55.654Z"
+    },
+    {
+      "case": "gate-lifetime",
+      "name": "Two ordinary packaged hosts share original U/H/cache concurrently with distinct real native sessions; unchanged gate inode excludes maintenance",
+      "at": "2026-10-26T22:41:00.817Z"
+    },
+    {
+      "case": "gate-lifetime",
+      "name": "Normal sibling exit releases only its cache lifetime; surviving original App still prevents exclusive maintenance without changing business/source",
+      "at": "2026-10-26T22:41:01.271Z"
+    },
+    {
+      "case": "gate-lifetime",
+      "name": "After both actual Apps normally exit the original independent gate grants exclusive maintenance then normal sharing without inode replacement",
+      "at": "2026-10-26T22:41:01.554Z"
+    },
+    {
+      "case": "gate-lifetime",
+      "name": "Independent maintenance gate blocks only new cache opening with RESOURCE_BUSY while ordinary App/main DB project settings remain usable; failed read consumers settle",
+      "at": "2026-10-26T22:41:05.931Z"
+    },
+    {
+      "case": "gate-lifetime",
+      "name": "After exclusive contender exits the same ordinary App opens original cache and reuses four complete records without batch scan, preserving old reference/source/reply and original gate inode",
+      "at": "2026-10-26T22:41:06.904Z"
+    }
+  ],
+  "appPids": [
+    52369,
+    52415,
+    52446
+  ],
+  "nativePids": [
+    52429,
+    52430,
+    52431,
+    52398,
+    52401,
+    52402,
+    52403,
+    52404,
+    52405,
+    52475,
+    52476,
+    52477,
+    52478,
+    52479
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 52446,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 52369,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 52415,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 52446,
+      "checkedInputs": 0
+    }
+  ],
+  "status": "passed-partial",
+  "remaining": [
+    "Actual P06 entry/manual refresh/visual/focus, genuine Foxmail client/download/permission behavior, actual Agent/multi-Agent range calls and explicit cancellation matrix remain by original T16/T17"
+  ],
+  "finishedAt": "2026-10-26T22:41:07.143Z"
+}

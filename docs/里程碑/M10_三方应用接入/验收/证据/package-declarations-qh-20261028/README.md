@@ -1,0 +1,1 @@
+QH: public package declarations display repair. Three red tests →76 green/typecheck/P build. New UI initial-focus timeout before P navigation, zero inputs/checks; A not started. Prior actual tool rows are reused only for metadata contract. Source overlay + QE prior recovery inputs; no current visual pass.

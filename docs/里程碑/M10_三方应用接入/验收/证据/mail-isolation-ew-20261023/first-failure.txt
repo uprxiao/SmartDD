@@ -1,0 +1,40 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/selection-service.test.ts src/main/core/applications/__tests__/mail-read-data.test.ts -t 'mail multi-selection|identical Message-ID' --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/applications/__tests__/mail-read-data.test.ts (28 tests | 1 failed | 27 skipped) 10074ms
+     × isolates different mailboxes with identical Message-ID and numeric native ID 6902ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-read-data.test.ts > actual fixed-package mail query/read/resource through host,Worker,native SQLite and durable quota > isolates different mailboxes with identical Message-ID and numeric native ID
+AssertionError: expected { schema: 1, …(5) } to match object { status: 'ok', …(1) }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+    "value": {
+-     "data": "SOURCE_A_ONLY",
++     "data": "SOURCE_A_ONLY
++ ",
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-read-data.test.ts:126:80
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 1 passed | 38 skipped (40)
+   Start at  12:44:49
+   Duration  11.19s (transform 912ms, setup 0ms, import 1.28s, tests 10.41s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

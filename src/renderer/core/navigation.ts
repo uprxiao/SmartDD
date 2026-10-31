@@ -1,20 +1,29 @@
+import type {ApplicationActivityQuery} from '@shared/application-activity';
 import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
 /** The view registry: every top-level view the main area can show. */
-export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled'] as const;
+export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about';
+export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects' | 'activity';
+export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
+
+export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
 
 class NavigationStore {
   currentViewId: ViewId = 'home';
+  applicationPage: ApplicationPage = 'catalog';
+  activityFilter:ApplicationActivityQuery={};
+  projectSection: ProjectSectionId = 'overview';
   /** The project the 'project' view shows. */
   currentProjectId: string | null = null;
   /** The task the 'task' view shows. */
   currentTaskId: string | null = null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
-  homePreset: { projectId: string; seq: number } | null = null;
+  homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
+  /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
+  homeInputDrafts = new Map<string | null, string>();
   settingsSection: SettingsSectionId = 'general';
   /** ⌘K task search. */
   searchOpen = false;
@@ -39,6 +48,11 @@ class NavigationStore {
     if (projectId) this.homePreset = { projectId, seq: (this.homePreset?.seq ?? 0) + 1 };
     this.currentViewId = 'home';
   }
+
+  prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
+  consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
+  homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
+  setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
 
   openTask(id: string): void {
     this.currentTaskId = id;
@@ -67,7 +81,17 @@ class NavigationStore {
     this.currentViewId = 'settings';
   }
 
-  openProject(id: string): void {
+  openApplications(page:ApplicationPage='catalog',projectId?:string):void {
+    if(projectId)this.currentProjectId=projectId;
+    this.applicationPage=page;this.currentViewId='apps';
+  }
+
+  openApplicationActivity(filter:ApplicationActivityQuery={}):void{this.activityFilter=filter;this.applicationPage='activity';this.currentViewId='apps';}
+
+  setProjectSection(section:ProjectSectionId):void{this.projectSection=section;}
+
+  openProject(id: string,section:ProjectSectionId='overview'): void {
+    this.projectSection=section;
     this.currentProjectId = id;
     this.currentViewId = 'project';
   }
@@ -78,6 +102,7 @@ class NavigationStore {
 
   /** After a delete: leave the view instead of showing a project that no longer exists. */
   closeProject(id: string): void {
+    this.homeInputDrafts.delete(id);
     if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;

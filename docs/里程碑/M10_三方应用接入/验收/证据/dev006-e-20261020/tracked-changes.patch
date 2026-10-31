@@ -1,0 +1,174 @@
+diff --git a/scripts/applications/management-ui.mjs b/scripts/applications/management-ui.mjs
+index a368dc17..5dd28c1c 100644
+--- a/scripts/applications/management-ui.mjs
++++ b/scripts/applications/management-ui.mjs
+@@ -34,7 +34,7 @@ async function choose(label,index){if(label==='SMTP 连接方式'&&process.env.M
+ 
+ async function saveZentao(){await fill('连接名称','M10 禅道');await fill('禅道服务地址',`http://127.0.0.1:${zt.address().port}/biz/`);await fill('禅道账号','tester');await fill('认证凭据','m10-private-zt-fixture');await click('button','测试连接');await waitText('身份验证通过，可保存连接');await fill('连接名称','M10 禅道已编辑');assert.equal(await app.evaluate(`document.querySelector('dialog button[type=submit],dialog footer button:last-child').disabled`),true);checked('P03 edit invalidates old host test receipt');await click('button','测试连接');await waitText('身份验证通过，可保存连接');await click('button','保存连接');await app.waitFor('!document.querySelector("dialog")');const saved=await app.invoke('applications.connections','zentao');assert(saved.ok&&saved.value.length===1);firstConnection=saved.value[0];assert.equal(firstConnection.name,'M10 禅道已编辑');assert.equal(firstConnection.hasSecret,true);checked('P03 real test and UI save persisted one verified ZenTao connection');}
+ try{
+- await listen(zt);await listen(smtp);app=await openElectron({executable,userData,env:testEnv});result.appPid=app.processId;await app.cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});await app.evaluate("document.title='A · M10 · isolated management acceptance';true");
++ await listen(zt);await listen(smtp);app=await openElectron({executable,userData,env:testEnv});await app.evaluate(`document.title='A · M10 · isolated management acceptance';true`);result.appPid=app.processId;await app.cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});await app.evaluate("document.title='A · M10 · isolated management acceptance';true");
+  project=await app.invoke('projects.create',{name:'M10 隔离验收项目',aliases:[],description:'Private UI acceptance setup',rulesPath:null});result.setup={projectId:project.id,method:'projects.create only prepares unrelated project prerequisite; not counted as UI project creation'};const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');let loaded=false;for(const deadline=Date.now()+15000;Date.now()<deadline;){try{loaded=await app.evaluate(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&Boolean(document.querySelector('[data-testid=nav-apps]'))`);}catch{}if(loaded)break;await new Promise(r=>setTimeout(r,100));}assert(loaded,'new renderer navigation must be complete before pointer input');
+  await app.evaluate(`document.title='A · M10 · isolated management acceptance';window.__m10Input=[];for(const type of ['pointerdown','click','keydown'])document.addEventListener(type,e=>window.__m10Input.push({type,key:e.key,target:e.target.tagName,label:e.target.closest('[aria-label]')?.getAttribute('aria-label'),text:e.target.textContent?.slice(0,50),disabled:e.target.matches(':disabled')}),true);true`);stage='catalog-add-zen';await click('[data-testid=nav-apps]');await waitText('连接应用，让 WillYou');await click('[aria-label=添加禅道]');await waitText('查看指派给我的 Bug');checked('P01 catalog add via actual pointer');await click('.m10-app-heading .m10-button.primary');await waitText('添加禅道连接');await saveZentao();
+  stage='project-select-zen';await click('button','管理项目选用');await waitText('项目选用');await choose('当前应用项目',1);await app.waitFor(`Boolean(document.querySelector('[role=switch][aria-label="为M10 隔离验收项目启用禅道"]'))`);await click('[role=switch][aria-label="为M10 隔离验收项目启用禅道"]');await app.waitFor(`document.querySelector('[role=switch][aria-label="为M10 隔离验收项目启用禅道"]')?.getAttribute('aria-checked')==='true'`);await click('input[type=radio][aria-label="为M10 隔离验收项目选用M10 禅道已编辑"]');await app.waitFor(`document.querySelector('input[type=radio][aria-label="为M10 隔离验收项目选用M10 禅道已编辑"]')?.checked===true`);const selected=await app.invoke('applications.projectSettings',project.id,'zentao');assert.equal(selected.value.connections.zentao,firstConnection.id);checked('P04 project enabled and explicit single ZenTao source persisted');
+@@ -53,6 +53,6 @@ try{
+   assert((await app.invoke('applications.mailCacheStatus')).ok);const after=await app.invoke('applications.activity',{limit:100});assert(after.ok);const marker=after.value.items.find(row=>row.action==='application.cache.status'&&!beforeIds.has(row.kind+':'+row.id));assert(marker);result.activityPrerequisite={operationId:marker.id,method:'mailCacheStatus RPC only prepares a real read audit row; not counted as a UI cache action'};
+   const providerBefore={zentao:result.providers.zentaoRequests.length,smtp:result.providers.smtpCommands.length,data:result.providers.smtpDataSubmissions};await click('.m10-page-head button','刷新记录');await app.waitFor(`Array.from(document.querySelectorAll('.m10-activity-row')).filter(row=>row.innerText.includes('查看邮件缓存')).length===${oldCount+1}`);assert.deepEqual({zentao:result.providers.zentaoRequests.length,smtp:result.providers.smtpCommands.length,data:result.providers.smtpDataSubmissions},providerBefore);await app.screenshot(join(scratch,'activity-list.png'));checked('P08 UI refresh reveals newly prepared persistent audit row without a provider or SMTP replay');
+  }
+- stage='relaunch';assert.deepEqual(app.rendererErrors,[]);await writeFile(join(scratch,'electron-first.log'),app.logs());await app.close();app=null;app=await openElectron({executable,userData,env:testEnv});await click('[data-testid=nav-apps]');await waitText('连接应用，让 WillYou');const after=await app.invoke('applications.connections','zentao');assert.equal(after.value[0].id,firstConnection.id);assert.equal((await app.invoke('applications.projectSettings',project.id,'mail')).value.connections.smtp,smtpConnection.id);assert.equal(result.providers.smtpDataSubmissions,0);checked('Restart preserves exact connection and project choices; test cleanup is not counted as normal exit acceptance');if(process.env.M10_ACTIVITY_CHECKS==='1'){await click('.m10-sidebar button','调用记录');await waitText('查看操作来源、当前阶段');const records=await app.invoke('applications.activity',{limit:100});assert(records.value.items.some(row=>row.id===result.activityPrerequisite.operationId));await app.waitFor(`document.querySelectorAll('.m10-activity-row').length>0`);checked('P08 same isolated userData retains real audit records after relaunch');await app.screenshot(join(scratch,'activity-restarted.png'));}else await app.screenshot(join(scratch,'catalog-restarted.png'));assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
++ stage='relaunch';assert.deepEqual(app.rendererErrors,[]);await writeFile(join(scratch,'electron-first.log'),app.logs());await app.close();app=null;app=await openElectron({executable,userData,env:testEnv});await app.evaluate(`document.title='A · M10 · isolated management acceptance';true`);await click('[data-testid=nav-apps]');await waitText('连接应用，让 WillYou');const after=await app.invoke('applications.connections','zentao');assert.equal(after.value[0].id,firstConnection.id);assert.equal((await app.invoke('applications.projectSettings',project.id,'mail')).value.connections.smtp,smtpConnection.id);assert.equal(result.providers.smtpDataSubmissions,0);checked('Restart preserves exact connection and project choices; test cleanup is not counted as normal exit acceptance');if(process.env.M10_ACTIVITY_CHECKS==='1'){await click('.m10-sidebar button','调用记录');await waitText('查看操作来源、当前阶段');const records=await app.invoke('applications.activity',{limit:100});assert(records.value.items.some(row=>row.id===result.activityPrerequisite.operationId));await app.waitFor(`document.querySelectorAll('.m10-activity-row').length>0`);checked('P08 same isolated userData retains real audit records after relaunch');await app.screenshot(join(scratch,'activity-restarted.png'));}else await app.screenshot(join(scratch,'catalog-restarted.png'));assert.deepEqual(app.rendererErrors,[]);result.status='passed-partial';
+ }catch(error){result.status='failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=1;if(app)try{result.dom=await app.evaluate('document.body.innerText');result.inputTrace=await app.evaluate('window.__m10Input');result.projectState=await app.invoke('applications.projectSettings',project.id,'zentao');await app.screenshot(join(scratch,'failure.png'));}catch{}}
+ finally{if(app){result.rendererErrors=app.rendererErrors;await writeFile(join(scratch,'electron-last.log'),app.logs());await app.close();}for(const socket of sockets)socket.destroy();await Promise.all([new Promise(r=>zt.close(r)),new Promise(r=>smtp.close(r))]);result.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,checks:result.checks.length,failedStage:result.failedStage,error:result.error,artifacts:scratch}));}
+diff --git a/src/main/core/applications/__tests__/application-controller.test.ts b/src/main/core/applications/__tests__/application-controller.test.ts
+index 9d2f20b3..0aec9f70 100644
+--- a/src/main/core/applications/__tests__/application-controller.test.ts
++++ b/src/main/core/applications/__tests__/application-controller.test.ts
+@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
+ import { createApplicationController } from '../controller';
+ import type { ApplicationService } from '../application-service';
+ let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
+-function fakeService(){return{listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
++function fakeService(){return{listVersions:vi.fn(),cleanupVersion:vi.fn(),listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+ const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
+ function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
+ const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
+@@ -27,7 +27,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
+  });
+  it('exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags',()=>{
+-  expect([...handlers.keys()].sort()).toEqual(['activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
++  expect([...handlers.keys()].sort()).toEqual(['versions','cleanupVersion','activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+  });
+  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
+   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
+@@ -51,6 +51,9 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+  it('keeps history metadata and frozen results behind the main-frame gate without enabling an app',async()=>{
+   for(const[name,method]of[['activity','listActivity'],['activityDetail','activityDetail']] as const){expect(await invoke(name,event(82),{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockReturnValueOnce({items:[]});expect(await invoke(name,sender,{})).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,{},...(name==='activityDetail'?[undefined]:[]));}
+  });
++ it('gates version inspection and cleanup before parsing any renderer plan',async()=>{
++  for(const[name,method]of[['versions','listVersions'],['cleanupVersion','cleanupVersion']] as const){expect(await invoke(name,event(82),{sql:'invalid'})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({items:[]});expect(await invoke(name,sender,'mail')).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,'mail');}
++ });
+  it('checks sender authority even when the optional service is unavailable',async()=>{
+   register(undefined);expect(await invoke('catalog',event(82))).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(await invoke('catalog')).toMatchObject({ok:false,code:'CAPABILITY_UNAVAILABLE'});
+  });
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index c7fd648f..1191c8ab 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -1,3 +1,5 @@
++import {ApplicationVersionMaintenance} from './version-maintenance';
++import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+ import type {ApplicationActivityQuery} from '@shared/application-activity';
+ import {ApplicationActivityService} from './activity-service';
+ import type {MailDraftDataView,MailDraftListData} from '@shared/application-data';
+@@ -35,6 +37,7 @@ import type { CapabilityRunRegistry } from './run-registry';
+ const uuid=z.uuid();
+ /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
+ export class ApplicationService {
++  readonly versions:ApplicationVersionMaintenance;
+   readonly activity:ApplicationActivityService;
+   readonly connections:ApplicationConnectionService;
+   readonly selections:ApplicationSelectionService;
+@@ -58,6 +61,7 @@ export class ApplicationService {
+     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
+     requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
+   }){
++    this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
+     this.activity=new ApplicationActivityService(store);
+     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null});
+     this.builtin=new BuiltinPackageRegistry(store);
+@@ -72,10 +76,12 @@ export class ApplicationService {
+   }
+   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);}
+   attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
+-  async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();
++  async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await this.versions.recover();
+     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
+     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
+   }
++  listVersions(sender:ApplicationUiSender,appId:ApplicationId){this.options.requireSender(sender);return this.versions.list(appId);}
++  async cleanupVersion(sender:ApplicationUiSender,input:ApplicationVersionCleanup){this.options.requireSender(sender);const result=await this.versions.cleanup(input);this.options.changed?.();return result;}
+   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
+   activityDetail(sender:ApplicationUiSender,kind:'operation'|'send',id:string){this.options.requireSender(sender);return{...this.activity.detail(kind,id),recoveryIssue:this.mailRecoveryIssue};}
+   catalog(sender:ApplicationUiSender){
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+index fc63de87..787b0ec5 100644
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -1,3 +1,4 @@
++import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+ import type {ApplicationActivityQuery} from '@shared/application-activity';
+ import type { IpcMainInvokeEvent } from 'electron';
+ import { ZodError } from 'zod';
+@@ -20,6 +21,8 @@ export function createApplicationController(service:ApplicationService|undefined
+     }
+   };
+   return createScopedRPCController({
++    versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
++    cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),
+     activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),
+     activityDetail:(event,kind:'operation'|'send',id:string)=>run(event,current=>current.activityDetail(event,kind,id)),
+     catalog:(event)=>run(event,current=>current.catalog(event)),
+diff --git a/src/main/core/applications/resource-store.ts b/src/main/core/applications/resource-store.ts
+index 5af25eeb..63ab737a 100644
+--- a/src/main/core/applications/resource-store.ts
++++ b/src/main/core/applications/resource-store.ts
+@@ -108,9 +108,15 @@ export class ResourceStore {
+       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
+       if (old) {
+         this.assertIdentity(this.get(spec.resourceId), spec);
+-        if (old.state !== 'ready' || old.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
++        if (old.state !== 'removed' && (old.state !== 'ready' || old.integrity !== 'valid')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
+         const actual = (this.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(spec.resourceId) as { dependency_id: string }[]).map(d => d.dependency_id);
+         if (canonicalJson(actual) !== canonicalJson([...spec.dependencies].sort())) throw new ApplicationError('RESOURCE_STATE_CHANGED', '资源依赖与原发布不一致');
++        if (old.state === 'removed') {
++          const now = new Date().toISOString();
++          this.sqlite.prepare(`INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,? ,?,'preparing',?,?,?)`).run(operationId, 'restore-' + spec.kind, this.storeId, canonicalJson({ resourceId: spec.resourceId, hash: spec.contentHash, relativePath: spec.relativePath, dependencies: [...spec.dependencies].sort(), instanceId: this.instanceId, pid: process.pid }), now, now);
++          this.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',generation=generation+1,operation_id=? WHERE resource_id=? AND state='removed'").run(operationId,spec.resourceId);
++          leaseId = this.lease(spec.resourceId, operationId); return;
++        }
+         reuse = true; leaseId = this.lease(spec.resourceId, operationId); return;
+       }
+       const now = new Date().toISOString();
+diff --git a/src/renderer/features/applications/style.css b/src/renderer/features/applications/style.css
+index 34a778dc..81db911a 100644
+--- a/src/renderer/features/applications/style.css
++++ b/src/renderer/features/applications/style.css
+@@ -129,3 +129,7 @@
+ .m10-resource-view pre,.m10-raw-html{white-space:pre-wrap;overflow-wrap:anywhere}.m10-detail-props{flex-wrap:wrap}.m10-detail-props>span{min-width:110px;max-width:100%;overflow-wrap:anywhere}.m10-review>span{overflow-wrap:anywhere}.m10-review .m10-resource-view{min-width:0}.m10-review input[type=checkbox]{width:auto}.m10-dialog.wide{max-height:85vh;overflow:auto}.m10-raw-html{display:block;font:12px/1.6 monospace}
+ 
+ .m10-activity-row{display:flex;align-items:center;gap:14px;width:100%;padding:18px 0;text-align:left;border-bottom:1px solid var(--border)}.m10-activity-row:hover{background:var(--hover)}.m10-activity-copy{flex:1;min-width:0}.m10-activity-copy>strong{display:block;font-size:13px;font-weight:500}.m10-activity-copy>small{display:block;color:var(--secondary);font-size:11px;line-height:19px;overflow-wrap:anywhere}.m10-activity-detail{padding:0 26px 24px;font-size:12px;line-height:1.7}.m10-activity-detail h2{font-size:16px;font-weight:500}.m10-activity-detail h3{margin:22px 0 12px;font-size:13px}.m10-activity-detail pre,.m10-message-id{white-space:pre-wrap;overflow-wrap:anywhere}.m10-activity-detail .m10-review{padding:0}.m10-activity-detail summary{cursor:pointer;color:var(--secondary)}.m10-activity-filters{flex-wrap:wrap}
++
++.m10-version-row{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border)}.m10-version-summary{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}.m10-version-summary strong{font-size:13px}.m10-version-summary>span,.m10-version-summary>small{color:var(--muted);font-size:12px;line-height:1.6}.m10-version-summary p{margin:2px 0;overflow-wrap:anywhere}.m10-version-actions{display:flex;flex-direction:column;gap:8px}.m10-version-reference{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}.m10-version-reference>span{color:var(--muted);font-size:12px}@media(max-width:1100px){.m10-version-row{flex-direction:column}.m10-version-actions{flex-direction:row;flex-wrap:wrap}}
++
++.m10-version-summary>span{margin-left:0}.m10-version-summary .m10-inline-label{margin-left:8px}
+diff --git a/src/renderer/features/applications/workspace.test.tsx b/src/renderer/features/applications/workspace.test.tsx
+index aa3031ed..e17a5c9a 100644
+--- a/src/renderer/features/applications/workspace.test.tsx
++++ b/src/renderer/features/applications/workspace.test.tsx
+@@ -8,7 +8,7 @@ import {ConnectionForm} from './connection-form';
+ import {ProjectApplications} from './project-applications';
+ import {ApplicationsWorkspace} from './workspace';
+ import type {CatalogItem} from './api';
+-const m=vi.hoisted(()=>({catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
++const m=vi.hoisted(()=>({versions:vi.fn(async()=>({ok:true,value:{appId:'mail',items:[],checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}})),catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
+ vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projectList,get:m.projectGet},dialog:{pickDirectory:vi.fn()}},events:{on:()=>()=>{}}}));
+ vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
+ const uid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+diff --git a/src/renderer/features/applications/workspace.tsx b/src/renderer/features/applications/workspace.tsx
+index 772f5006..6a436570 100644
+--- a/src/renderer/features/applications/workspace.tsx
++++ b/src/renderer/features/applications/workspace.tsx
+@@ -1,3 +1,4 @@
++import {ApplicationVersionsPanel} from './versions';
+ import {useEffect,useRef,useState} from 'react';
+ import {observer} from 'mobx-react-lite';
+ import {ArrowLeft,ArrowUpRight,Check,ChevronDown,ChevronRight,Clock3,Folder,Link2,MoreHorizontal,Package,Plus,Puzzle,RefreshCw,Search,Send,Zap} from 'lucide-react';
+@@ -44,6 +45,7 @@ function ApplicationDetail({app,projectPicker}:{app:CatalogItem;projectPicker:Re
+  const confirm=async()=>{if(!confirmation)return;const done=await action.run(confirmation.kind,async()=>{if(confirmation.kind==='remove')unwrap(await rpc.applications.setAdded(app.appId,false,app.revision));else unwrap(await rpc.applications.disconnect(confirmation.connection.id,confirmation.connection.revision));});if(done){setConfirmation(null);if(confirmation.kind==='remove')navigation.openApplications();}};
+  return <div ref={menuRoot}><button className="m10-back" onClick={()=>navigation.openApplications()}><ArrowLeft size={15}/>全部应用</button><div className="m10-app-heading"><AppMark app={app.appId} large/><div><h1>{app.displayName}<span className="m10-package-version">v{app.version??'—'}</span></h1><p>{app.appId==='mail'?'在项目 Agent 中查询、准备草稿与获准发送邮件':'查看指派给我的 Bug 和研发需求'}</p></div><div className="m10-menu-wrap"><button className="m10-button primary" disabled={!!action.busy} aria-expanded={addMenu} onClick={()=>{if(!app.added)void action.run('add',async()=>{unwrap(await rpc.applications.setAdded(app.appId,true,app.revision));});else if(app.appId==='zentao')configure('zentao');else {setAppMenu(false);setConnectionMenu(null);setAddMenu(!addMenu);}}}><Plus size={14}/>{app.added?'添加连接':'添加应用'}</button>{addMenu&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>configure('foxmail')}>本地读取来源</button><button role="menuitem" onClick={()=>configure('smtp')}>SMTP 发件账号</button></div>}</div><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label="应用更多操作" disabled={!app.added||!!action.busy} expanded={appMenu} onClick={()=>{setAddMenu(false);setConnectionMenu(null);setAppMenu(!appMenu);}}/>{appMenu&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setAppMenu(false);setConfirmation({kind:'remove'});}}>移除应用</button></div>}</div></div>
+   <div className="m10-detail-grid"><div className="m10-detail-primary"><section className="m10-package-section" aria-label={app.displayName+'应用包'}><div className="m10-package-heading"><Package size={17}/><h2>应用包</h2><span className="m10-pill">v{app.version??'—'}</span><small>随 WillYou 交付</small></div><p className="m10-package-description">连接、工具与 {app.skills.length} 个 Skill 一起提供，在项目中选用后使用。</p><div className="m10-bundled-skills">{app.skills.map(skill=><article key={skill.id}><Zap size={16}/><div><strong>{skillNames[skill.id]??skill.id}<span className="m10-inline-label">随应用启用</span></strong><p>{skill.description}</p></div></article>)}</div><button className="m10-package-disclosure" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>查看工具与包内容<ChevronRight size={13}/></button>{expanded&&<div className="m10-package-contents">{app.tools.map(tool=><div key={tool.name}><Check size={13}/><span>{tool.name}</span><small>{tool.readOnly?'读取':tool.permission==='mail.send'?'明确授权后发送':'本地准备'}</small></div>)}<p>账号和业务数据独立于应用包保存。旧会话保留原包版本。</p></div>}</section>
++   <ApplicationVersionsPanel appId={app.appId}/>
+    <section className="m10-section"><div className="m10-section-heading"><h2>连接</h2><span>{connections.data?.length??0} 个连接</span>{app.added&&<AppSwitch checked={app.enabled} label={'全局启用'+app.displayName} disabled={!!action.busy} onChange={enabled=>void action.run('enable',async()=>{unwrap(await rpc.applications.setEnabled(app.appId,enabled,app.revision));})}/>}</div>
+     {connections.error?<AppEmpty error title="连接加载失败" text={connections.error.message} action="重试" onAction={()=>void connections.refetch()}/>:connections.isPending?<p role="status">正在读取连接…</p>:connections.data?.map(c=><div className="m10-connection" key={c.id}><div className="m10-connection-icon">{c.providerId==='smtp'?<Send size={18}/>:c.providerId==='foxmail'?<Folder size={18}/>:<Link2 size={18}/>}</div><div className="m10-connection-copy"><strong title={c.name}>{c.name}</strong><small title={c.config.kind==='zentao'?c.config.baseUrl:c.config.kind==='foxmail'?c.config.sourcePath:c.config.host}>{c.config.kind==='zentao'?c.config.username+' · '+c.config.baseUrl:c.config.kind==='foxmail'?c.config.account+' · '+c.config.sourcePath:c.config.fromAddress+' · '+c.config.host}</small><span className={'m10-state '+(c.enabled&&c.authorization==='connected'&&c.health==='healthy'?'ready':'')}>{connectionState(c)}</span><small>上次验证：{timeText(c.testedAt)}{c.healthCode?' · '+c.healthCode:''}{c.cleanupPending?' · 凭据清理待完成':''}</small></div><AppSwitch checked={c.enabled} label={'启用'+c.name} disabled={!!action.busy} onChange={enabled=>void action.run('connection-'+c.id,async()=>{unwrap(await rpc.applications.setConnectionEnabled(c.id,enabled,c.revision));})}/><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label={'管理'+c.name} expanded={connectionMenu===c.id} onClick={()=>{setAppMenu(false);setAddMenu(false);setConnectionMenu(connectionMenu===c.id?null:c.id);}}/>{connectionMenu===c.id&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setConnectionMenu(null);setForm({kind:c.providerId,connection:c});}}>编辑／重新连接</button><button role="menuitem" disabled={!!action.busy} onClick={()=>{setConnectionMenu(null);setConfirmation({kind:'disconnect',connection:c});}}>断开连接</button></div>}</div></div>)}
+     {!connections.isPending&&!connections.error&&!connections.data?.length&&<div className="m10-unconnected"><Link2 size={20}/><p>添加应用后，还需要连接你的账号{app.appId==='mail'?'或本地邮件来源':''}。</p>{app.added&&<button className="m10-button secondary" onClick={()=>configure(app.appId==='mail'?'foxmail':'zentao')}>配置连接</button>}</div>}

@@ -1,0 +1,152 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T13:17:34.395Z",
+  "branch": "feature/0.0.2",
+  "commit": "5514a998882275613303243f8492ad54a160ee3e",
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-dev006-e2-package-20261020/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "e5b8a5fd7b5ee52bbd474caa7d0d63a84d06a41ba0208dcc79a01e6088caf7b0",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-Driuzb",
+  "userData": "/private/tmp/willyou-m10-management-ui-Driuzb/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T13:17:35.765Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T13:17:36.080Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T13:17:36.270Z",
+      "passed": true
+    },
+    {
+      "name": "P04 project enabled and explicit single ZenTao source persisted",
+      "at": "2026-10-20T13:17:36.991Z",
+      "passed": true
+    },
+    {
+      "name": "P05 real readonly list and separate detail/body/history through UI",
+      "at": "2026-10-20T13:17:37.341Z",
+      "passed": true
+    },
+    {
+      "name": "P03 SMTP verify and save does not submit DATA",
+      "at": "2026-10-20T13:17:37.949Z",
+      "passed": true
+    },
+    {
+      "name": "P04 separate SMTP slot without auto selecting a reading source",
+      "at": "2026-10-20T13:17:38.127Z",
+      "passed": true
+    },
+    {
+      "name": "P06 no source and P07 empty real persisted drafts, readable cache usage",
+      "at": "2026-10-20T13:17:38.291Z",
+      "passed": true
+    },
+    {
+      "name": "P06 confirmed real cache clear through UI",
+      "at": "2026-10-20T13:17:38.501Z",
+      "passed": true
+    },
+    {
+      "name": "P08 actual UI save history links original connection and operation ID",
+      "at": "2026-10-20T13:17:38.764Z",
+      "passed": true
+    },
+    {
+      "name": "P08 UI refresh reveals newly prepared persistent audit row without a provider or SMTP replay",
+      "at": "2026-10-20T13:17:38.965Z",
+      "passed": true
+    },
+    {
+      "name": "Restart preserves exact connection and project choices; test cleanup is not counted as normal exit acceptance",
+      "at": "2026-10-20T13:17:42.836Z",
+      "passed": true
+    },
+    {
+      "name": "P08 same isolated userData retains real audit records after relaunch",
+      "at": "2026-10-20T13:17:42.894Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/bugs/12"
+    ],
+    "smtpCommands": [
+      "EHLO",
+      "AUTH",
+      "QUIT"
+    ],
+    "smtpDataSubmissions": 0,
+    "socketErrors": []
+  },
+  "status": "passed-partial",
+  "fixtureTrust": {
+    "scope": "only this isolated App process",
+    "mechanism": "NODE_EXTRA_CA_CERTS for private loopback certificate; production certificate validation stays enabled",
+    "certSha256": "9fa52e183675db2df93ed437e9a0eb6236036298e097e3e4b6885bcf4681bcdf"
+  },
+  "deferred": [
+    {
+      "check": "SMTP plain-mode native dropdown selection",
+      "state": "not passed",
+      "reason": "CDP default selection did not change; CUA frontmostApplicationChanged, retained separate red traces"
+    }
+  ],
+  "appPid": 33190,
+  "setup": {
+    "projectId": "4210a1cb-0726-4e39-98ab-49009ea369d5",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": ".m10-sidebar button",
+    "text": "调用记录"
+  },
+  "choiceTrace": [
+    {
+      "label": "当前应用项目",
+      "keyName": "Home",
+      "value": "4210a1cb-0726-4e39-98ab-49009ea369d5",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "ArrowDown",
+      "value": "4210a1cb-0726-4e39-98ab-49009ea369d5",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "Enter",
+      "value": "4210a1cb-0726-4e39-98ab-49009ea369d5",
+      "active": "SELECT"
+    }
+  ],
+  "activityPrerequisite": {
+    "operationId": "115755fc-c6b1-4d5e-90a6-eea3275c6e8d",
+    "method": "mailCacheStatus RPC only prepares a real read audit row; not counted as a UI cache action"
+  },
+  "rendererErrors": [],
+  "finishedAt": "2026-10-20T13:17:45.973Z"
+}

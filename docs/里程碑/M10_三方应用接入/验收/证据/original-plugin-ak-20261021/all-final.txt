@@ -1,0 +1,242 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/tasks/task-capabilities.test.ts src/main/core/tasks/task-service.test.ts src/main/core/tasks/task-races.test.ts src/main/core/applications/__tests__/legacy-task-evidence.test.ts src/main/core/applications/__tests__/legacy-plugin-source.test.ts src/main/core/applications/__tests__/legacy-retention-recovery.test.ts src/main/core/applications/__tests__/legacy-task-retention.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/db/migrations.test.ts src/main/core/applications/__tests__/package-registry.test.ts src/main/core/applications/__tests__/package-restoration-runs.test.ts src/main/core/applications/__tests__/builtin-packages.test.ts src/main/core/applications/__tests__/session-registry.test.ts src/main/core/applications/__tests__/session-projector.test.ts src/main/core/applications/__tests__/version-maintenance.test.ts src/main/core/applications/__tests__/agent-support.test.ts src/main/core/applications/__tests__/agent-adapters.test.ts src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-original-plugin-ak-20261021/final-test-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (73 tests) 24270ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  310ms
+     ✓ keeps an intact fixed snapshot readable when only retained plugin resource readiness changes  307ms
+     ✓ reads the earlier five-field persisted migration layout without requiring a plugin archive that was never recorded  325ms
+     ✓ does not steal another task native identity or a previously registered original MCP name  985ms
+     ✓ retains the converted source/snapshot and disabled references after deleting the UI task/project  301ms
+     ✓ plans the original native load after conversion and rejects an adapter different from the fixed binding  343ms
+     ✓ rolls back retained native binding if a later snapshot version write fails  305ms
+     ✓ does not demote or reconstruct a converted snapshot after losing the task pointer  307ms
+     ✓ pins the original retained identity bytes independently of mutable registry rows  417ms
+     ✓ pins the original retained record bytes independently of mutable registry rows  475ms
+   ✓ converts the retained claude-code source after normal transient cleanup and plans the same original paths  984ms
+   ✓ converts the retained codex source after normal transient cleanup and plans the same original paths  455ms
+     ✓ keeps an all-disabled claude-code history empty after transient cleanup  399ms
+     ✓ keeps an all-disabled codex history empty after transient cleanup  403ms
+     ✓ rejects a corrupted original claude-code projection after cleanup without rewriting it  320ms
+     ✓ rejects a late same-byte original claude-code Skill inode replacement before publishing SQL  364ms
+     ✓ rejects a late same-byte original codex Skill inode replacement before publishing SQL  310ms
+     ✓ rejects a late claude-code source generation change after cleaned-source verification  411ms
+     ✓ rejects a late codex source generation change after cleaned-source verification  380ms
+     ✓ preserves unknown content which arrives in original claude-code T before commit  693ms
+     ✓ restores a missing original static Claude path from the exact retained source before conversion  366ms
+     ✓ refuses a changed retained Claude archive even when its original static paths still match  335ms
+   ✓ invalidates the claude-code file receipt when a caller changes its returned logical evidence  434ms
+   ✓ invalidates the codex file receipt when a caller changes its returned logical evidence  324ms
+   ✓ retains an original static Claude projection through conversion, then repairs the same path on replay  790ms
+     ✓ preserves empty at the original path without registering it as a ready projection  338ms
+     ✓ preserves marker at the original path without registering it as a ready projection  394ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  504ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  330ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  336ms
+     ✓ rechecks a late unknown native run before publishing any original files  357ms
+     ✓ preserves a dangling user alias which appears after private materialization  508ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  526ms
+     ✓ keeps a canceled publication recoverable without recreating old context  416ms
+   ✓ detects loss of the original static projection dependency after migration  436ms
+   ✓ detects loss of the original static projection reference after migration  512ms
+   ✓ recognizes the owned original static Skill path in read-only session diagnostics  476ms
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (57 tests) 75876ms
+     ✓ T63 refuses bad-json resume and keeps history,diagnostics and original source identities  2677ms
+     ✓ T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities  2225ms
+     ✓ T63 refuses bad-hash resume and keeps history,diagnostics and original source identities  2318ms
+     ✓ T63 refuses cross-project-snapshot resume and keeps history,diagnostics and original source identities  2288ms
+     ✓ T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities  2024ms
+     ✓ T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available  410ms
+     ✓ T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available  2076ms
+     ✓ T64 continues the original claude-code session without application authority while its fixed package is unavailable  506ms
+     ✓ T64 continues the original codex session without application authority while its fixed package is unavailable  2243ms
+     ✓ keeps selected applications in a new claude-code snapshot when original package bytes are unavailable  357ms
+     ✓ keeps selected applications in a new codex snapshot when original package bytes are unavailable  379ms
+     ✓ withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2544ms
+     ✓ withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  3297ms
+     ✓ fails an oversized original native payload before arming and never retries a fork  706ms
+     ✓ never falls back or retries after an uncertain native fork failure  2770ms
+     ✓ registers native input provenance using the current verified claude-code launch version and owned run signal  689ms
+     ✓ registers native input provenance using the current verified codex launch version and owned run signal  638ms
+     ✓ joins the trusted home prompt to native claude-code user records only after owned spawn and invalidates it on stop  2676ms
+     ✓ joins the trusted home prompt to native codex user records only after owned spawn and invalidates it on stop  4439ms
+     ✓ does not assign home-user origin to an internal task creation without a trusted sender  2690ms
+     ✓ does not capture a launch argument when native spawning fails  2607ms
+     ✓ clears a captured launch origin if the new task cannot be committed to SQLite  2961ms
+     ✓ does not duplicate an accepted launch when optional origin observation fails  499ms
+     ✓ registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit  858ms
+     ✓ uses the same session selection and paths when project defaults change between runs  1194ms
+     ✓ retains user Skill flags and MCP names while adding a full managed selection  788ms
+     ✓ gives Claude one stable complete plugin without registering a Codex consumer  1089ms
+     ✓ keeps the old launcher runtime occupied even with the project-context MCP disabled  764ms
+     ✓ keeps a native Agent available on unverified profile configuration, with no managed argv or credentials  542ms
+     ✓ preserves selected independent Codex profile flags through the actual TaskService host composition  725ms
+     ✓ preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays  792ms
+     ✓ keeps the native Agent available when effective Skill flags are over-count  800ms
+     ✓ keeps the native Agent available when effective Skill flags are non-json  506ms
+     ✓ diagnoses an actual Claude plugin namespace conflict without removing the user plugin or stopping the Agent  529ms
+     ✓ keeps original Mail tool contracts callable without SMTP and rejects later policy revocation without stopping the CLI  3029ms
+     ✓ connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child  2874ms
+     ✓ opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge  778ms
+     ✓ continues known native history when its disable-list injection exceeds capacity without rewriting the old record  519ms
+     ✓ continues ordinary native history with a populated shared catalog and unknown-cli, without granting application access  520ms
+     ✓ continues ordinary native history with a populated shared catalog and unverified-config, without granting application access  509ms
+     ✓ runs an unverified history CLI through a real OS PTY while keeping its catalog consumer and refusing every application grant  643ms
+     ✓ preserves old M4 metadata byte-for-byte during a guarded open, self-check, native ID discovery and exit  1791ms
+     ✓ retains verified original claude-code M4 sources during guarded resume without claiming migration complete  436ms
+     ✓ retains verified original codex M4 sources during guarded resume without claiming migration complete  394ms
+     ✓ recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal  390ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  389ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  1958ms
+     ✓ keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending  498ms
+     ✓ keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending  484ms
+     ✓ does not demote a recorded v2 session when the task loses its capability pointer  509ms
+     ✓ revokes the private broker even if an owned PTY stop fails and retains the actual child lease  2523ms
+     ✓ rejects replacing the registry after a task has begun and does not fork after an invalid pointer  573ms
+     ✓ refuses a late claude-code history loss before fork and cancels the known unspawned run  575ms
+     ✓ refuses a late codex history loss before fork and cancels the known unspawned run  2699ms
+     ✓ does not reopen a fresh Claude UUID after its original history appears during preparation  686ms
+ ✓ src/main/core/applications/__tests__/discovery-catalog.test.ts (31 tests) 15918ms
+     ✓ publishes complete immutable binary/executable trees and records real H locations with full C dependencies  576ms
+     ✓ retains original source bytes and original catalog when publishing the same verified set  437ms
+     ✓ uses one canonical HOME lock/catalog through aliases and distinct identities across two real HOMEs  723ms
+     ✓ builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot  747ms
+     ✓ blocks new consumers during pending publication and waits for actual CLI exit rather than stop intent  780ms
+     ✓ retains an armed PID-null window and pending directory protection until the owned exit is recorded  453ms
+     ✓ keeps a live executor protected after all child processes have exited  538ms
+     ✓ rolls back only its reservation when the C registration transaction fails  454ms
+     ✓ holds a reservation when C committed but its callback failed before returning  515ms
+     ✓ cancels an unpublished waiting intent on cancel and allows exact-content retry  893ms
+     ✓ cancels an unpublished waiting intent on timeout and allows exact-content retry  702ms
+     ✓ does not adopt or overwrite an identical namesake belonging to another store  873ms
+     ✓ respects a different store consumer and never removes its reservation from this database  978ms
+     ✓ recovers exact original bytes after a controlled registered interruption  352ms
+     ✓ recovers exact original bytes after a controlled materialized interruption  456ms
+     ✓ recovers exact original bytes after a controlled renamed interruption  447ms
+     ✓ recovers exact original bytes after a controlled catalog-published interruption  486ms
+     ✓ refuses replacement recovery inputs and an active old owner without weakening the original gate  349ms
+     ✓ retains corrupt consumers and user files and never treats them as stale by age  486ms
+     ✓ refuses a user-owned target and corrupted source projection without touching either original  465ms
+     ✓ checks supplied projected bytes against the original source, then safely cancels an unpublished materialization  559ms
+     ✓ does not recreate a deleted initialized catalog as an empty managed set  438ms
+     ✓ rejects a broken linked metadata file without replacing that link  380ms
+     ✓ recovers a stopped original publication owner using its kernel identity and exact original operation ledger  457ms
+     ✓ keeps a recovered consumer until the original host and all children are proven stopped in its own C ledger  462ms
+     ✓ does not silently repair a missing original H dependency ledger on verified reuse  371ms
+     ✓ retains living,unknown and live-child owners, then releases exact stopped records while preserving another store  610ms
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (29 tests) 11829ms
+     ✓ retains original claude-code names, paths and MCP keys without rewriting any data  564ms
+     ✓ retains original codex names, paths and MCP keys without rewriting any data  467ms
+     ✓ keeps old selected Codex paths enabled while disabling other original versions and current-format projections  656ms
+     ✓ rejects a current-format own projection whose reference is no longer authoritative  481ms
+     ✓ rejects a current-format own projection whose projection-state is no longer authoritative  585ms
+     ✓ rejects a current-format own projection whose source-state is no longer authoritative  409ms
+     ✓ does not replace or rename a colliding user plugin  415ms
+     ✓ does not replace or rename a colliding user skill  614ms
+     ✓ does not replace or rename a colliding user mcp  453ms
+     ✓ recognizes the exact existing original plugin and Skill paths while retaining the old namespace  707ms
+     ✓ rejects conflicting or duplicate managed flags without rewriting user settings  489ms
+     ✓ does not add a context MCP when the current project explicitly disables it  460ms
+     ✓ rejects a different or damaged task loading basis  350ms
+     ✓ rejects a different or damaged source-hash loading basis  334ms
+     ✓ rejects a different or damaged record loading basis  333ms
+     ✓ rejects a different or damaged manifest loading basis  330ms
+     ✓ requires the explicit legacy API instead of treating its adapter as a new-session adapter  548ms
+   ✓ plans the original claude-code paths from the durable source after ended-run cleanup  508ms
+   ✓ plans the original codex paths from the durable source after ended-run cleanup  534ms
+ ✓ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (40 tests) 9323ms
+     ✓ recovers a durable captured source receipt after final SQL failure and original T removal  384ms
+     ✓ rejects an original T which reappears during cold recovery without changing its contents  380ms
+     ✓ rolls back a second final SQL failure during cold recovery and retries the same source exactly  525ms
+     ✓ reopens the source receipt using the unchanged static plugin without recreating old context  360ms
+     ✓ holds the full original tree after a failed reference commit, then finishes cleanup on retry  331ms
+     ✓ does not recapture a changed retained original extra tree  342ms
+     ✓ does not recapture a changed retained original context tree  417ms
+ ✓ src/main/core/applications/__tests__/builtin-packages.test.ts (23 tests) 15404ms
+     ✓ builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime  355ms
+     ✓ finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls  2935ms
+     ✓ compiles all original input/output contracts and rejects injected scope,authorization and out-of-budget resource inputs  329ms
+     ✓ prepares first defaults without adding applications,creating accounts or enabling projects; restarting is idempotent  1021ms
+     ✓ T64 repairs an absent original package through trusted startup without replacing an explicitly newer default  769ms
+     ✓ T64 rejects an altered trusted-distribution copy before repairing a missing original package  830ms
+     ✓ isolates a damaged package and keeps the other package available with a precise partial state  564ms
+     ✓ executes the original pure CJS adapter through fixed Data API with real session/run protection and invocation ledger  336ms
+     ✓ routes the fixed mail write once and preserves an uncertain receipt without transport retries or duplicate execution  940ms
+     ✓ keeps old snapshot routing after a new default and refuses replacing the context with the new package  1307ms
+     ✓ prevents a fixed adapter from executing its business method twice in one tool invocation  412ms
+     ✓ does not let a verified adapter receive a different package or contract in its host operation context  1292ms
+     ✓ rechecks current policy before delivering cached invocation results and never asks the adapter to mint authorization  543ms
+ ✓ src/main/core/tasks/task-capabilities.test.ts (12 tests) 8762ms
+     ✓ reserves one authoritative identity before forking and releases transient files only after the owned exit  806ms
+     ✓ joins concurrent resume requests and refuses a competing profile while preparation is pending  847ms
+     ✓ cancels a preparing resume without forking or releasing the fixed session source references  836ms
+     ✓ does not show a dead PTY as running when the owned exit wins the PID-attachment race  568ms
+     ✓ retains an armed fork-failure window instead of claiming an unknown child never existed  440ms
+     ✓ keeps transient resources while disposal waits for the actual native exit  490ms
+     ✓ completes the first native ID in the authoritative registry and persists the new pointer without losing it to self-check writes  852ms
+     ✓ stops its own native child if task persistence fails after the fork  720ms
+     ✓ does not leave a process or create a task when shutdown arrives while PID attachment is completing  513ms
+     ✓ does not bind two different rollouts while the first authoritative native identity is pending  986ms
+     ✓ discovers a native session flushed before a slow PID attachment completes by using the actual fork time  716ms
+     ✓ aborts the owned preparation and waits for its real settlement before reporting stopped  982ms
+ ✓ src/main/core/applications/__tests__/session-diagnostics.test.ts (14 tests) 5564ms
+     ✓ identifies a live native-only capacity run without restoring business authority or rewriting initial preparation  557ms
+     ✓ keeps the original capacity restriction in history and never applies it to a resumed independent run  444ms
+     ✓ reports a corrupted persisted restriction without minting authority or rewriting the original preparation  332ms
+     ✓ distinguishes an authenticated bridge observation from current connectivity and from Skill reading  322ms
+     ✓ finds the owned current run even when a clock rollback leaves more than six future-dated history rows  1063ms
+     ✓ exposes corrupt preparation/bridge metadata as missing evidence, without replaying a call or making a new grant  414ms
+     ✓ does not replace a corrupt snapshot with current defaults or terminate its Agent during inspection  423ms
+     ✓ detects modified original bytes and preserves the fixed version and native run rather than switching packages  523ms
+ ✓ src/main/core/applications/__tests__/agent-support.test.ts (6 tests) 5598ms
+     ✓ builds an index whose complete adapter/runtime hashes match the runtime registries  449ms
+     ✓ initializes once from actual indexed files and exposes only prepared resources, with native discovery still unverified  462ms
+     ✓ refuses an unknown build output tree rather than deleting user files  855ms
+ ✓ src/main/core/applications/__tests__/agent-adapters.test.ts (12 tests) 4811ms
+     ✓ prepares Claude with one stable full plugin and two original MCP keys; child Node mode stays inside MCP JSON  445ms
+     ✓ changes neither stable projection path nor content when the native ID is first completed  569ms
+     ✓ rejects a colliding user plugin without changing its files or renaming the fixed mapping  396ms
+     ✓ rejects a colliding user skill without changing its files or renaming the fixed mapping  304ms
+     ✓ rejects a colliding user mcp without changing its files or renaming the fixed mapping  602ms
+     ✓ rejects a colliding user native-tool without changing its files or renaming the fixed mapping  479ms
+     ✓ recognizes its exact existing plugin identity while rejecting a different plugin tree under the same task  451ms
+     ✓ does not silently infer a catalog or replace a pinned adapter with another installed version  528ms
+ ✓ src/main/core/applications/__tests__/session-registry.test.ts (23 tests) 3867ms
+     ✓ preserves old package and names after default activation and rejects a replacement snapshot  328ms
+ ✓ src/main/core/applications/__tests__/legacy-plugin-source.test.ts (18 tests) 4536ms
+     ✓ retains complete exact plugin bytes and original marker through the actual legacy preparation hook  367ms
+     ✓ preserves historical plugin metadata and root marker byte formatting rather than synthesizing a current template  357ms
+     ✓ can verify retained original bytes after old T is removed and after reopening the source service  361ms
+     ✓ keeps the original retained source/ref after UI task and project deletion  325ms
+     ✓ returns defensive copies of captured bytes and never uses mutated caller buffers  368ms
+     ✓ leaves no retained plugin reference when the preparation SQL commit fails  340ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts (37 tests) 5025ms
+ ✓ src/main/core/applications/__tests__/version-maintenance.test.ts (16 tests) 4175ms
+     ✓ permits exact-hash reinstall after cleanup but rejects same-version changed content  715ms
+     ✓ does not offer cleanup for shared hard-linked source files  409ms
+     ✓ recovers a stopped-owner interruption at marked and rejects new consumption while deleting  433ms
+ ✓ src/main/core/tasks/task-service.test.ts (40 tests) 2545ms
+ ✓ src/main/core/applications/__tests__/session-projector.test.ts (6 tests) 1934ms
+     ✓ copies binary assets, executable scripts and complete standard references, rewriting only derived Skill metadata  374ms
+     ✓ keeps the original complete projection after a different package becomes the default  536ms
+     ✓ does not overwrite a user-owned namesake or follow a linked source file  319ms
+ ✓ src/main/core/applications/__tests__/legacy-task-retention.test.ts (20 tests) 3138ms
+     ✓ persists original claude-code metadata, manifest and source refs without changing task/pointer/paths  400ms
+ ✓ src/main/core/capabilities/capability-service.test.ts (22 tests) 2046ms
+ ✓ src/main/core/applications/__tests__/legacy-task-evidence.test.ts (28 tests) 1877ms
+ ✓ src/main/core/capabilities/task-runtime.test.ts (6 tests) 892ms
+   ✓ persists the actual child report and cleans only the exited run, keeping the task’s version pins  319ms
+ ✓ src/main/core/applications/__tests__/package-registry.test.ts (20 tests) 1498ms
+ ✓ src/main/core/applications/__tests__/package-restoration-runs.test.ts (2 tests) 488ms
+ ✓ src/main/core/tasks/task-races.test.ts (6 tests) 414ms
+ ✓ src/main/db/migrations.test.ts (21 tests) 379ms
+
+ Test Files  24 passed (24)
+      Tests  562 passed (562)
+   Start at  15:42:23
+   Duration  230.34s (transform 2.14s, setup 0ms, import 13.68s, tests 210.17s, environment 3ms)
+
+JSON report written to /private/tmp/m10-original-plugin-ak-20261021/final-test-report.json

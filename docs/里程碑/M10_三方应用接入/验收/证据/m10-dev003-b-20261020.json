@@ -1,0 +1,108 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-B",
+  "recordedAt": "2026-10-20T03:31:40.170135+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; runtime design 6.6/8.3/9.1",
+  "baseCommit": "71c2c8bc2be19c11f1d0e98367f3fffd9b74c0cc",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "implemented": [
+    "preparing/prepared/active/stopping lifecycle, resource dependency closure and generation protected before reading bytes or OS fork",
+    "separate persisted reserved/armed/attached/exit process identities for CLI and bridge; native ID fill updates fixed run pointer without changing selection",
+    "run-scoped in-flight activities and immediate authorization revocation; wait for actual CLI/bridge/executor completion before releasing leases",
+    "read-only macOS libproc identity helper with kernel microsecond start time; PID reuse/unknown state is never permission to signal a process",
+    "conservative interrupted-owner recovery: dead unarmed reservation can stop; armed PID-null window, live child, unavailable identity or missing child ledger remains held",
+    "bounded revoke waiting with late completion, no exit/revoke promise cycle, and owned exit records remain possible when snapshot bytes are corrupt",
+    "migration 0011 closure/process/activity/store coordination metadata; build and packaged-native checks include new helper"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 20,
+      "tests": 216,
+      "passed": 216,
+      "failed": 0,
+      "log": "dev003-b-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev003-b-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev003-b-20261020/release-rules.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-b-20261020/types.txt"
+    },
+    {
+      "command": "node scripts/applications/build.mjs",
+      "status": "passed",
+      "architecture": "arm64",
+      "log": "dev003-b-20261020/native-build.txt",
+      "binaryHash": "29e6e838c5a221beaa6dc4ba342465993274451595f349944d69c0738d5e92d5"
+    }
+  ],
+  "newTests": {
+    "lifecycle": 21,
+    "actualMacOSProcess": 3
+  },
+  "actualProcessBoundary": [
+    "Own test host PID and own two synthetic Node child PIDs only; no enumeration, credentials or command-line inspection",
+    "Actual kernel identity, controlled child termination/exit callbacks and in-flight executor participate in a whole lease lifecycle",
+    "Owner interruption and PID-reuse scenarios use explicit synthetic probe/SQL fault fixtures; not actual killed packaged host or native Agent recovery"
+  ],
+  "findingsAndCorrections": [
+    {
+      "finding": "Exit callback can be awaited by a revoker; waiting on the same revoker from that callback would form a cycle",
+      "correction": "Record the owned exit without waiting back on an already-running revocation; regression passes"
+    },
+    {
+      "finding": "Approximate ISO host uptime used by earlier modules is insufficient proof for the kernel identity reader",
+      "correction": "Unsupported identity format returns unknown, never stopped; production owner integration still pending"
+    }
+  ],
+  "boundaries": [
+    "No production TaskService, actual PTY/CLI, private broker or bridge creation wired yet; tests use real synthetic Node children, not real Agents",
+    "Resource closure protects C-store metadata; H catalog coordination, full startup migration fence, GC and cross-store consumers remain pending",
+    "Local policy/revoke callbacks use controlled fixture dependencies; real current application policy and executor/broker integration remain next work",
+    "Existing MailExecutionService still uses its prior approximate owner stamp until production process identity integration; this probe will not declare that stamp stopped",
+    "Packaged-native assertions were added; no M10 App was packaged or accepted in this checkpoint",
+    "No real email/ZenTao service, daily process or M9 worktree modified",
+    "No product T-case pass count changed; no push, main merge, tag or release"
+  ],
+  "sourceHashes": {
+    "drizzle/0011_capability_run_lifecycle.sql": "8870b5206914cf411863e7fe60c48eaf5250233be97a9367bc0532c9564ab461",
+    "drizzle/meta/_journal.json": "0faed8b246b6265438486219cd337724aa507dbfe8f6ce848f2b1a6bc3b1a394",
+    "src/main/db/schema.ts": "f1a654f12e74bc21868da94357865e201b1c7d5eb9025e00648f70289916a26d",
+    "src/main/db/migrations.test.ts": "d30464b1d2177231cba5edb6655ca7e4a87ee135c4410607d70ee9a2ea3df23a",
+    "src/shared/application-session.ts": "4fec568e84f9fef38a32c961c2b39d297dacd86cceb5a9cff5dfbc75ded0baf6",
+    "src/main/core/applications/session-registry.ts": "0c1ac55c34bad8f0c3be774ab36b501352a28bf6f5b7d7071280ff857ed7e6fb",
+    "src/main/core/applications/run-registry.ts": "0e499930b5b2576b80e87b2c403d12f084c822dfda84edf0db8d0463ddbabd45",
+    "src/main/core/applications/process-identity.ts": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b",
+    "src/main/core/applications/__tests__/run-fixture.ts": "d622c137172f6406a0044bfcc906b34677c35a26e78de273eb5d307afd3a65fa",
+    "src/main/core/applications/__tests__/run-registry.test.ts": "37004edcedfe79f795a72a6f755bd01b73ec2ad30dc156e1776d6892f045b0d0",
+    "src/main/core/applications/__tests__/process-identity.test.ts": "980db5586e1b6b11f102c997759536a99d7a3f94cd991d22260912f2ef4dacd3",
+    "native/applications/process-identity.cc": "bd301a34e479a28f071e15d605505dacdfe00faa2b1d516a7cd3d66c1a1bfa8d",
+    "scripts/applications/build.mjs": "76cd5b08ee2159ac8bd0685a8bc87d46452a30f6f1a34d822ec3abf7df6393ce",
+    "scripts/release/native-smoke.cjs": "a61229f3278546386252ad8f80422c71f9f6aa26cd24d2a7608057cdd314c23f",
+    "electron-builder.config.cjs": "a89ac4a69fa2bd8ab78c8f5fd4ce9277831a57046f247b6f5637586c498e8764"
+  },
+  "logHashes": {
+    "dev003-b-20261020/all-tests.txt": "9fb9f9b852186e07b136ccd43886c883d19fb1a31c0bfc36749c35fe7b693560",
+    "dev003-b-20261020/native-build.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dev003-b-20261020/project-regression.txt": "54de95dbd58c7be05741decb1df99f66301fc02d8f4ce93563aac653565439d9",
+    "dev003-b-20261020/release-rules.txt": "ec9b27d0b84e46e6e22e1657348e2d1a1796903a6dc1e655fab3e89e7ce01207",
+    "dev003-b-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9"
+  },
+  "logEncoding": "Source stdout/stderr copied with terminal blank lines trimmed; tests/commands/status preserved, native compiler emitted no output"
+}

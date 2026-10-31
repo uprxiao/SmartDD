@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const [resources,root,out]=process.argv.slice(2),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const main=fs.readFileSync(path.join(resources,'app.asar/out/main/index.js')),built=fs.readFileSync(path.join(root,'out/main/index.js'));assert.equal(hash(main),hash(built));
+const bundles=require(path.join(root,'scripts/applications/verify-bundles.cjs')).verifyCapabilityBundles(path.join(resources,'capability-bundles'),'0.0.5');assert.equal(bundles.resourceSetHash,'302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d');
+const index=JSON.parse(fs.readFileSync(path.join(resources,'capability-bundles/index.json'),'utf8'));
+const result={recordedAt:new Date().toISOString(),mainSha256:hash(main),packagedMainMatchesCurrentBuild:true,bundles,buildMetadata:index.build,electron:process.versions.electron,arch:process.arch,windowLaunched:false};fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n');process.stdout.write(JSON.stringify(result)+'\n');

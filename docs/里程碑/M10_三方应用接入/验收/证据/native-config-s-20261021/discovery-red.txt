@@ -1,0 +1,182 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/discovery.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/capabilities/discovery.test.ts (28 tests | 12 failed) 45ms
+     × lets a later whole empty Skill array remove earlier path overrides 4ms
+     × does not keep an old disabled path when a later array replaces it with another path 2ms
+     × accepts the valid inline CLI configuration form --config= without changing source files 2ms
+     × accepts the valid inline CLI configuration form -c without changing source files 2ms
+     × uses the native literal-string fallback for a CLI value that is not TOML 1ms
+     × marks a missing -c value as unverified instead of an empty override 1ms
+     × marks a missing --config value as unverified instead of an empty override 1ms
+     × never interprets prompt arguments after the native end-of-options marker as config 1ms
+     × reads the selected independent profile file only for the verified CLI ("--profile") 1ms
+     × reads the selected independent profile file only for the verified CLI ("--profile=read-only") 1ms
+     × reads the selected independent profile file only for the verified CLI ("-p") 1ms
+     × applies profile below the project layer and repeated CLI overrides above both 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > lets a later whole empty Skill array remove earlier path overrides
+AssertionError: expected false to be null
+
+- Expected:
+null
+
++ Received:
+false
+
+ ❯ src/main/core/capabilities/discovery.test.ts:118:93
+    116|     file('custom/config.toml',`skills.config=[{path=${JSON.stringify(p…
+    117|     const detail=details(),rows=discoverCapabilities({...c,args:['-c',…
+    118|     expect(detail.userSkillConfig).toEqual([]);expect(rows.find(r=>r.p…
+       |                                                                                             ^
+    119|   });
+    120|   it('does not keep an old disabled path when a later array replaces i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > does not keep an old disabled path when a later array replaces it with another path
+AssertionError: expected false to be null
+
+- Expected:
+null
+
++ Received:
+false
+
+ ❯ src/main/core/capabilities/discovery.test.ts:124:54
+    122|     file('custom/config.toml',`skills.config=[{path=${JSON.stringify(o…
+    123|     const detail=details(),rows=discoverCapabilities({...c,args:['-c',…
+    124|     expect(rows.find(r=>r.path===original)?.enabled).toBeNull();expect…
+       |                                                      ^
+    125|     expect(detail.userSkillConfig).toEqual([{path:other,enabled:true,c…
+    126|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > accepts the valid inline CLI configuration form --config= without changing source files
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > accepts the valid inline CLI configuration form -c without changing source files
+AssertionError: expected [ 'profile_configuration_unverified' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "profile_configuration_unverified",
++ ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:131:27
+    129|     file('custom/config.toml',`skills.config=[{path=${JSON.stringify(p…
+    130|     const rows=discoverCapabilities({...c,args:[prefix+`skills.config=…
+    131|     expect(detail.issues).toEqual([]);expect(detail.userSkillConfig).t…
+       |                           ^
+    132|   });
+    133|   it('uses the native literal-string fallback for a CLI value that is …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > uses the native literal-string fallback for a CLI value that is not TOML
+AssertionError: expected [ 'config_parse_failed' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "config_parse_failed",
++ ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:135:27
+    133|   it('uses the native literal-string fallback for a CLI value that is …
+    134|     const detail=details(),rows=discoverCapabilities({...c,args:['-c',…
+    135|     expect(detail.issues).toEqual([]);expect(rows.find(r=>r.name==='na…
+       |                           ^
+    136|   });
+    137|   it.each(['-c','--config'])('marks a missing %s value as unverified i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > marks a missing -c value as unverified instead of an empty override
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > marks a missing --config value as unverified instead of an empty override
+AssertionError: expected [] to include 'profile_configuration_unverified'
+ ❯ src/main/core/capabilities/discovery.test.ts:138:106
+    136|   });
+    137|   it.each(['-c','--config'])('marks a missing %s value as unverified i…
+    138|     const detail=details();discoverCapabilities({...c,args:[flag],deta…
+       |                                                                                                          ^
+    139|   });
+    140|   it('never interprets prompt arguments after the native end-of-option…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > never interprets prompt arguments after the native end-of-options marker as config
+AssertionError: expected [ { …(2) } ] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "enabled": false,
++     "enabled": true,
+      "path": "/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-scan-OjwLFm/custom/skills/original/SKILL.md",
+    },
+  ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:143:36
+    141|     const path=file('custom/skills/original/SKILL.md',skill),detail=de…
+    142|     const rows=discoverCapabilities({...c,args:['--','-c',`skills.conf…
+    143|     expect(detail.userSkillConfig).toEqual([{path,enabled:false}]);exp…
+       |                                    ^
+    144|   });
+    145|   it.each([['--profile','read-only'],['--profile=read-only'],['-p','re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > reads the selected independent profile file only for the verified CLI ("--profile")
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > reads the selected independent profile file only for the verified CLI ("--profile=read-only")
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > reads the selected independent profile file only for the verified CLI ("-p")
+AssertionError: expected [ 'profile_configuration_unverified' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "profile_configuration_unverified",
++ ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:149:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  src/main/core/capabilities/discovery.test.ts > Codex effective configuration precedence > applies profile below the project layer and repeated CLI overrides above both
+AssertionError: expected [ 'profile_configuration_unverified' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "profile_configuration_unverified",
++ ]
+
+ ❯ src/main/core/capabilities/discovery.test.ts:155:149
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 16 passed (28)
+   Start at  07:22:52
+   Duration  211ms (transform 42ms, setup 0ms, import 68ms, tests 45ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

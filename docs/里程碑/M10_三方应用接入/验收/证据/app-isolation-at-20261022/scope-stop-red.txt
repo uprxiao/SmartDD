@@ -1,0 +1,44 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-run-scope.test.ts '--testNamePattern=keeps the full S' --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-app-isolation-at-20261022/scope-stop-red-report.json
+
+[1022/014129.698373:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/014129.819819:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not turn a valid scope receipt into a bypass of current policy or a CLI restart
+ × src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute 958ms
+   → expected true to be false // Object.is equality
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > allows the healthy scope even when the unrelated original app is explicitly marked unavailable
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > never widens an owned scope if its C receipt disappears
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > refuses even a rehashed wider receipt or another owner without releasing the original run
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > retains a scope receipt across the first native ID bind only with the original recorded version
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not arm or grant tools when a selected healthy source disappears during preparation
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > rejects a missing shared dependency before persisting any scoped run or incomplete protection
+ ↓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not allow foreign, empty, duplicate application scopes or arbitrary extra roots
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/main/core/applications/__tests__/application-run-scope.test.ts:22:214
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  01:41:29
+   Duration  2.72s (transform 152ms, setup 0ms, import 1.69s, tests 958ms, environment 0ms)
+
+JSON report written to /private/tmp/m10-app-isolation-at-20261022/scope-stop-red-report.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,74 @@
+{
+  "schema": "m10-native-config-direct-observer-v1",
+  "startedAt": "2026-10-20T23:32:31.702Z",
+  "root": "/private/tmp/m10-codex-native-config-s-2VRIaa",
+  "version": "codex-cli 0.162.1",
+  "layer": "actual Codex app-server config/read and skills/list; isolated files only; no thread,turn,model,tool or business request;not packaged App/TUI/resume proof",
+  "cases": [
+    {
+      "name": "base-disabled",
+      "extra": [],
+      "effectiveSkillConfig": [
+        {
+          "path": "/private/tmp/m10-codex-native-config-s-2VRIaa/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false
+        }
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-2VRIaa/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "passed"
+    },
+    {
+      "name": "whole-array-empty",
+      "extra": [
+        "--config",
+        "skills.config=[]"
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-2VRIaa/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "failed"
+    }
+  ],
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n\nundefined !== []\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n\nundefined !== []\n\n    at run (file:///private/tmp/m10-native-config-s-20261021/native-config-read-probe.mjs:13:864)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///private/tmp/m10-native-config-s-20261021/native-config-read-probe.mjs:14:70",
+  "clients": [
+    {
+      "name": "base-disabled",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    },
+    {
+      "name": "whole-array-empty",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    }
+  ],
+  "finishedAt": "2026-10-20T23:32:31.892Z"
+}

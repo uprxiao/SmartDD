@@ -1,0 +1,261 @@
+--- before/src/main/core/capabilities/capability-service.test.ts
++++ after/src/main/core/capabilities/capability-service.test.ts
+@@ -59,6 +59,29 @@
+ }
+ 
+ describe('project runtime projection', () => {
++  it('M10-UG-01 reads legacy random-id imported settings without rewriting them or injecting resources', () => {
++    projects.createDatabase(a.id, dbInput('legacy-disabled-password'));
++    db.insert(schema.projectCapabilities).values(['project-db-diagnostics', 'remote-password-ssh', 'smartdd-project-context'].map(capabilityId => ({ id: randomUUID(), projectId: a.id, capabilityId, enabled: false }))).run();
++    const before = db.select().from(schema.projectCapabilities).all();
++    expect(svc.list(a.id).every(s => !s.enabled)).toBe(true);
++    expect(svc.enabled(a.id, 'smartdd-project-context')).toBe(false);
++    const run = prepare();
++    expect(run.env.PROJECT_DB_CONFIG).toBeUndefined();
++    expect(Object.values(run.env)).not.toContain('legacy-disabled-password');
++    expect(JSON.parse(readFileSync(run.snapshot.manifestPath, 'utf8')).pythonModules).toEqual([]);
++    expect(db.select().from(schema.projectCapabilities).all()).toEqual(before);
++    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
++  });
++  it('M10-UG-01 normalizes legacy rows only when that project setting is explicitly saved', () => {
++    db.insert(schema.projectCapabilities).values({ id: randomUUID(), projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: false }).run();
++    svc.setEnabled(a.id, 'project-db-diagnostics', true);
++    const matching = db.select().from(schema.projectCapabilities).all().filter(row => row.projectId === a.id && row.capabilityId === 'project-db-diagnostics');
++    expect(matching).toEqual([{ id: `${a.id}:project-db-diagnostics`, projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: true }]);
++    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(true);
++    svc.setEnabled(a.id, 'project-db-diagnostics', false);
++    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(false);
++    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
++  });
+   it('projects only the selected project, no raw credentials on disk/argv, with a matching config version', () => {
+     const da = projects.createDatabase(a.id, dbInput('alpha-password'));
+     projects.createDatabase(b.id, dbInput('beta-password', { database: 'beta' }));
+--- before/src/main/core/capabilities/capability-service.ts
++++ after/src/main/core/capabilities/capability-service.ts
+@@ -3,7 +3,7 @@
+ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, realpathSync } from 'node:fs';
+ import { homedir } from 'node:os';
+ import { dirname, isAbsolute, join } from 'node:path';
+-import { and, eq, sql } from 'drizzle-orm';
++import { and, eq, ne, sql } from 'drizzle-orm';
+ import type { CapabilityPreview, RuntimeSkill, RuntimeSnapshot, SkillVersion, StandardSkill } from '@shared/capabilities';
+ import { DB_VENDORS } from '@shared/projects';
+ import type { Runner } from '@shared/types';
+@@ -13,6 +13,7 @@
+ import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
+ import type { ProjectService } from '../projects/project-service';
+ import { secretKeys } from '../projects/secret-keys';
++import { projectCapabilityEnabled, projectCapabilitySettingId } from '../projects/project-capability-setting';
+ import { stateRootFor } from '../tasks/native-sessions';
+ import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } from './assets';
+ import { discoverCapabilities } from './discovery';
+@@ -101,14 +102,16 @@
+   }
+ 
+   enabled(projectId: string, capabilityId: string): boolean {
+-    return this.d.db.select().from(projectCapabilities).where(eq(projectCapabilities.id, `${projectId}:${capabilityId}`)).get()?.enabled ?? true;
++    const rows = this.d.db.select().from(projectCapabilities).where(and(eq(projectCapabilities.projectId, projectId), eq(projectCapabilities.capabilityId, capabilityId))).all();
++    return projectCapabilityEnabled(rows, projectId, capabilityId);
+   }
+ 
+   setEnabled(projectId: string, capabilityId: string, enabled: boolean): void {
+     this.d.projects.getProject(projectId);
+     if (typeof enabled !== 'boolean' || (!this.bundles.some((s) => s.id === capabilityId) && capabilityId !== MCP_CAPABILITY)) throw new Error('能力设置无效');
+     this.d.db.transaction(() => {
+-      const id = `${projectId}:${capabilityId}`;
++      const id = projectCapabilitySettingId(projectId, capabilityId);
++      this.d.db.delete(projectCapabilities).where(and(eq(projectCapabilities.projectId, projectId), eq(projectCapabilities.capabilityId, capabilityId), ne(projectCapabilities.id, id))).run();
+       this.d.db.insert(projectCapabilities).values({ id, projectId, capabilityId, enabled }).onConflictDoUpdate({ target: projectCapabilities.id, set: { enabled } }).run();
+       this.d.db.update(projects).set({ configVersion: sql`${projects.configVersion} + 1`, updatedAt: Date.now() }).where(eq(projects.id, projectId)).run();
+     });
+--- before/src/main/core/projects/transfer-service.test.ts
++++ after/src/main/core/projects/transfer-service.test.ts
+@@ -18,6 +18,7 @@
+ import { SecretsStore } from '../../secrets';
+ import { AiProfileService } from '../ai/ai-profile-service';
+ import { ProjectService } from './project-service';
++import { CapabilityService } from '../capabilities/capability-service';
+ import { ProjectTransferService, transferFilename } from './transfer-service';
+ import { decryptProject, encryptProject, validatePayload } from './transfer-format';
+ import { transferFixture } from './transfer-fixtures';
+@@ -55,6 +56,34 @@
+ afterEach(() => { services.splice(0).forEach(s => s.disposeAll()); clients.splice(0).forEach(c => c.close()); rmSync(root, { recursive: true, force: true }); });
+ 
+ describe('M8 real SQLite transfer services', () => {
++  it('M10-UG-01 keeps disabled v1 capabilities disabled in the receiving runtime', async () => {
++    const a = setup('disabled-runtime'), fixture = transferFixture();
++    fixture.capabilities = fixture.capabilities.map(c => ({ ...c, enabled: false }));
++    const preview = await unlock(a.svc, fixture), result = a.svc.commit(1, preview.token, randomUUID(), ready(a.svc, preview));
++    const capabilities = new CapabilityService({ db: a.client.db, projects: a.projects, secrets: a.secrets, userData: a.home });
++    try {
++      expect(capabilities.list(result.projectId).every(s => !s.enabled)).toBe(true);
++      expect(capabilities.enabled(result.projectId, 'smartdd-project-context')).toBe(false);
++      const project = a.projects.getProject(result.projectId);
++      const runtime = capabilities.prepare({ projectId: result.projectId, taskId: 'disabled-import-runtime', runner: 'codex', cwd: project.dirs[0].path, home: folder('disabled-native-home'), profileArgs: [] });
++      expect(runtime.snapshot.skills.filter(s => s.enabled)).toEqual([]);
++      expect(runtime.snapshot.mcp).toEqual([]);
++      expect(runtime.env.PROJECT_DB_CONFIG).toBeUndefined();
++      expect(runtime.env.REMOTE_SERVERS_CONFIG).toBeUndefined();
++      expect(JSON.parse(readFileSync(runtime.snapshot.manifestPath, 'utf8')).pythonModules).toEqual([]);
++      expect(a.svc.snapshot(result.projectId, [], []).capabilities).toEqual(fixture.capabilities);
++      const rows = a.client.db.select().from(schema.projectCapabilities).where(eq(schema.projectCapabilities.projectId, result.projectId)).all();
++      expect(rows.every(row => row.id === `${result.projectId}:${row.capabilityId}`)).toBe(true);
++    } finally { capabilities.dispose(); }
++  });
++  it('M10-UG-01 exports the effective explicit setting after a legacy imported row was overridden', () => {
++    const a = setup('legacy-export'), project = a.projects.createProject({ name: 'Legacy', aliases: [], description: '', rulesPath: null }, [{ label: '', path: folder('legacy-project') }]);
++    a.client.db.insert(schema.projectCapabilities).values([
++      { id: randomUUID(), projectId: project.id, capabilityId: 'project-db-diagnostics', enabled: false },
++      { id: `${project.id}:project-db-diagnostics`, projectId: project.id, capabilityId: 'project-db-diagnostics', enabled: true },
++    ]).run();
++    expect(a.svc.snapshot(project.id, [], []).capabilities.find(c => c.id === 'project-db-diagnostics')?.enabled).toBe(true);
++  });
+   it('I01/D07/S01 imports atomically with new ids, receiver encryption, no tasks or old default changes', async () => {
+     const a = setup('A'), b = setup('B');
+     const preview = await unlock(a.svc), draft = ready(a.svc, preview);
+--- before/src/main/core/projects/transfer-service.ts
++++ after/src/main/core/projects/transfer-service.ts
+@@ -13,6 +13,7 @@
+ import { inspectDir, pathIdentity } from './dir-status';
+ import type { ProjectService } from './project-service';
+ import { secretKeys } from './secret-keys';
++import { projectCapabilityEnabled, projectCapabilitySettingId } from './project-capability-setting';
+ import { decryptProject, encryptProject, inspectEnvelope, strictBase64, TransferError, validatePayload, type PortableProject } from './transfer-format';
+ import { atomicWrite, ImportedKeyFiles, readLimited } from './transfer-files';
+ 
+@@ -146,7 +147,7 @@
+   }
+   private capabilities(projectId: string): PortableProject['capabilities'] {
+     const rows = this.d.db.select().from(projectCapabilities).where(eq(projectCapabilities.projectId, projectId)).all();
+-    return TRANSFER_CAPABILITIES.map(id => ({ id, enabled: rows.find(c => c.capabilityId === id)?.enabled ?? true }));
++    return TRANSFER_CAPABILITIES.map(id => ({ id, enabled: projectCapabilityEnabled(rows, projectId, id) }));
+   }
+   snapshot(projectId: string, profileIds: string[], emptyPasswordRefs: string[]): PortableProject {
+     const input = exportSchema.safeParse({ projectId, profileIds, emptyPasswordRefs });
+@@ -298,7 +299,7 @@
+           if (c.sudoPassword !== undefined) this.d.secrets.set(keys.sudo, c.sudoPassword);
+         }
+         this.d.checkpoint?.('rows');
+-        for (const c of p.capabilities) this.d.db.insert(projectCapabilities).values({ id: randomUUID(), projectId: id, capabilityId: c.id, enabled: c.enabled }).run();
++        for (const c of p.capabilities) this.d.db.insert(projectCapabilities).values({ id: projectCapabilitySettingId(id, c.id), projectId: id, capabilityId: c.id, enabled: c.enabled }).run();
+         const profileIds: string[] = [], names = this.d.profiles.list().map(p => p.name);
+         for (const ref of draft.selectedProfileRefs) {
+           const profile = p.profiles.find(p => p.ref === ref)!, pid = randomUUID(), name = uniqueName(profile.name, names, 60);
+--- before/src/main/core/applications/legacy-agent-load.ts
++++ after/src/main/core/applications/legacy-agent-load.ts
+@@ -8,6 +8,7 @@
+ import {retainedLegacySource} from './legacy-session-source';
+ import {assertLegacySessionSource} from './legacy-session-source';
+ import type {ResourceStore} from './resource-store';
++import {projectCapabilityEnabled,type ProjectCapabilitySetting} from '../projects/project-capability-setting';
+ import {canonicalJson,digest} from './manifest';
+ import {verifyOwnedBundle} from './owned-bundle';
+ import {readLegacyOwnedTree} from './legacy-resource-adopter';
+@@ -60,7 +61,8 @@
+    for(const version of versions){if(!/^[a-z][a-z0-9-]{0,63}$/.test(version.skillId)||!/^[a-f0-9]{64}$/.test(version.hash)||version.id!==version.skillId+':'+version.hash)problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力版本记录无效');const dir=join(home,'.agents/skills',`smartdd-${version.skillId}-${version.hash.slice(0,16)}`);try{lstatSync(dir);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')continue;throw error;}inside(home,dir);const originalRoot=join(store.root,'packages',version.skillId,version.hash);inside(store.root,originalRoot);const original=readLegacyOwnedTree(originalRoot,version.hash),projection=readLegacyOwnedTree(dir,version.hash);if(canonicalJson({...original})!==canonicalJson({...projection}))problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力完整投影不符');const candidate={path:join(dir,'SKILL.md'),nativeName:nativeName(original),sourceHash:version.hash},known=managedSkills.find(s=>s.path===candidate.path);if(known&&canonicalJson(known)!==canonicalJson(candidate))problem('RESOURCE_RECOVERY_REQUIRED','原H目录已有不同来源');if(!known)managedSkills.push(candidate);}
+    if(managedSkills.length>4096||new Set(managedSkills.map(s=>s.path)).size!==managedSkills.length||selectedPaths.some(p=>!managedSkills.some(s=>s.path===p)))problem('RESOURCE_RECOVERY_REQUIRED','旧选择未在完整管理目录中找到');
+   }
+-  const contextEnabled=(store.sqlite.prepare('SELECT enabled FROM project_capabilities WHERE id=?').get(input.projectId+':smartdd-project-context') as {enabled:number}|undefined)?.enabled!==0;
++  const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(input.projectId) as ProjectCapabilitySetting[];
++  const contextEnabled=projectCapabilityEnabled(settings,input.projectId,'smartdd-project-context');
+   const mcp:LegacyPlannerInput['mcp']=contextEnabled?evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,command:'python3',args:[join(evidence.runtimePath,'context_mcp.py'),join(store.root,'runs',input.projectId,input.taskId,input.runId,'context.json')],env:{}})):[];
+   const ownPaths=new Set([...managedSkills.map(s=>s.path),...selectedPaths]),selectedNames=new Set(selected.map(s=>s.nativeName));
+   for(const item of input.inventory){const own=item.kind==='skill'&&ownPaths.has(item.path)||item.kind==='plugin'&&item.path===evidence.pluginRoot&&item.name===evidence.pluginName;if(own)continue;if(item.kind==='plugin'&&evidence.pluginRoot&&item.name===evidence.pluginName||item.kind==='skill'&&([...selectedNames].some(name=>item.name===name||item.name===evidence.pluginName+':'+name))||item.kind==='mcp'&&mcp.some(m=>m.serverName===item.name))problem('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原M4名称冲突，保留原配置');}
+--- before/src/main/core/applications/task-capability-launcher.ts
++++ after/src/main/core/applications/task-capability-launcher.ts
+@@ -14,6 +14,7 @@
+ import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import type { RuntimeSkill, RuntimeSnapshot } from '@shared/capabilities';
+ import { CapabilityService, MCP_CAPABILITY, type PreparedRuntime } from '../capabilities/capability-service';
++import { projectCapabilityEnabled, type ProjectCapabilitySetting } from '../projects/project-capability-setting';
+ import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
+ import type { AgentSupportService } from './agent-support-service';
+ import type { ApplicationService } from './application-service';
+@@ -126,12 +127,13 @@
+     assertNoPendingApplicationSwitch(this.support.store,planned?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>planned.appIds.includes(p.appId))}:snapshot);
+     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
+     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
+-    const actual=store.sqlite.prepare('SELECT v.skill_id AS skillId,v.id AS versionId,v.hash FROM skill_versions v LEFT JOIN project_capabilities p ON p.id=? || v.skill_id WHERE v.active=1 AND COALESCE(p.enabled,1)=1 ORDER BY v.skill_id').all(snapshot.projectId+':');
++    const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(snapshot.projectId) as ProjectCapabilitySetting[];
++    const actual=(store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;versionId:string;hash:string}[]).filter(row=>projectCapabilityEnabled(settings,snapshot.projectId,row.skillId));
+     const expected=snapshot.standardSkills.map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash})).sort((a,b)=>a.skillId.localeCompare(b.skillId));
+     if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间标准Skill选择已变化');
+     const bindings=this.bindings(snapshot.projectId,snapshot.packages.map(p=>p.appId));
+     for(const app of snapshot.packages){const current=bindings.filter(b=>b.appId===app.appId&&b.connectionId).map(b=>({bindingId:`${snapshot.projectId}:${app.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!}));if(canonicalJson(current)!==canonicalJson(app.bindings))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目连接选择已变化');}
+-    const context=this.capabilities.enabled(snapshot.projectId,MCP_CAPABILITY);
++    const context=projectCapabilityEnabled(settings,snapshot.projectId,MCP_CAPABILITY);
+     if(context!==snapshot.mcp.some(m=>m.kind==='legacy-project-context'))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目上下文选择已变化');
+   }
+   private selectedApps(projectId:string):{appId:string;packageHash:string}[]{
+--- before/src/main/core/applications/__tests__/legacy-agent-load.test.ts
++++ after/src/main/core/applications/__tests__/legacy-agent-load.test.ts
+@@ -77,6 +77,21 @@
+  it('does not add a context MCP when the current project explicitly disables it',async()=>{
+   const value=await previous('claude-code');capabilities.setEnabled(projectId,MCP_CAPABILITY,false);const plan=adapters.planLegacy(value.adapter.hash,value.input);expect(plan.args).toHaveLength(2);expect(plan.files).toEqual({});
+  });
++ it.each(['claude-code','codex'] as const)('M10-UG-01 honors legacy imported context settings for %s without rewriting retained history',async runner=>{
++  const value=await previous(runner);
++  sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,MCP_CAPABILITY);
++  const before=hashes();
++  const disabled=adapters.planLegacy(value.adapter.hash,value.input);
++  expect(disabled.args.join('\n')).not.toContain('mcp_servers.');expect(disabled.files).toEqual({});expect(hashes()).toEqual(before);
++  // A later explicit canonical setting overrides the old imported row, including raw SQLite 0/1 values.
++  sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,1)').run(`${projectId}:${MCP_CAPABILITY}`,projectId,MCP_CAPABILITY);
++  const enabledBefore=hashes();
++  const enabled=adapters.planLegacy(value.adapter.hash,value.input);
++  if(runner==='codex')expect(enabled.args.join('\n')).toContain('mcp_servers.');
++  else expect(Object.keys(JSON.parse(enabled.files['mcp.json']).mcpServers)).toEqual([value.runtime.snapshot.mcp[0].name]);
++  expect(hashes()).toEqual(enabledBefore);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(value.input.taskId)).toEqual({runtime_snapshot:value.raw});
++  expect(sqlite.prepare('SELECT COUNT(*) AS n FROM project_capabilities WHERE project_id=?').get(projectId)).toEqual({n:2});
++ });
+  it.each(['task','native-root','native-id','source-hash','record','manifest','reference','cli','adapter','approved'] as const)('rejects a different or damaged %s loading basis',async kind=>{
+   const value=await previous();let hash=value.adapter.hash;
+   if(kind==='task')value.input.taskId=randomUUID();if(kind==='native-root')value.input.native.stateRoot=join(home,'other-root');if(kind==='native-id')value.input.native.sessionId=randomUUID();if(kind==='source-hash')value.input.sourceSnapshotHash='a'.repeat(64);if(kind==='record')sqlite.prepare("UPDATE tasks SET runtime_snapshot='{}' WHERE id=?").run(value.input.taskId);if(kind==='manifest')sqlite.prepare("UPDATE capability_legacy_migration_preparations SET manifest_json='{}' WHERE task_id=?").run(value.input.taskId);if(kind==='reference')sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-runtime'").run(value.input.taskId);if(kind==='cli')value.input.cliVersion='99.0.0';if(kind==='adapter')hash=installed.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.0.0')!.hash;if(kind==='approved')Object.assign(value.input,{approved:true});expect(()=>adapters.planLegacy(hash,value.input)).toThrow();
+--- before/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ after/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -138,6 +138,26 @@
+ };
+ 
+ describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
++ it('M10-UG-01 keeps legacy imported disabled standard capabilities out of a new managed Mail session',async()=>{
++  projects.createDatabase(projectId,{env:'test',label:'definition only',aliases:[],vendor:'postgres',host:'127.0.0.1',port:9,database:'fixture',schema:'public',username:'fixture',accessLevel:'readonly',isDefault:true,note:'Never connected',password:'isolated-disabled-password'});
++  for(const id of ['project-db-diagnostics','remote-password-ssh',MCP_CAPABILITY])sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,id);
++  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
++  let prepared:Awaited<ReturnType<typeof managed.broker.prepare>>|undefined;const original=managed.broker.prepare.bind(managed.broker);
++  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{prepared=await original(...args);return prepared;});
++  const created=await create();
++  try{
++   const session=await managed.sessions.get(created.task.id);if(session.snapshot.schema!==2)throw Error('Expected current managed snapshot');
++   expect(session.snapshot.standardSkills).toEqual([]);expect(session.snapshot.mcp.some(m=>m.kind==='legacy-project-context')).toBe(false);
++   expect(session.snapshot.packages.map(p=>p.appId)).toEqual(['mail']);expect(session.snapshot.mcp.some(m=>m.kind==='applications')).toBe(true);
++   const runtime=created.task.runtimeSnapshot!;expect(runtime.skills.filter(s=>s.enabled)).toEqual([]);expect(runtime.mcp).toEqual([]);
++   expect(JSON.parse(readFileSync(runtime.manifestPath,'utf8')).pythonModules).toEqual([]);
++   expect(ptys.launches[0].env.PROJECT_DB_CONFIG).toBeUndefined();expect(Object.values(ptys.launches[0].env)).not.toContain('isolated-disabled-password');
++  }finally{
++   tasks.kill(created.task.id);
++   // This fake PTY never forks a native bridge; settle its explicit fixture receipt only.
++   if(prepared)await prepared.bridge.exited();
++  }
++ });
+  it('connects the host recovery descriptor to a fresh authenticated broker instance without replacing the Agent',async()=>{
+   const clients:ApplicationBridgeClient[]=[];
+   vi.spyOn(support.adapters,'recovery').mockReturnValue({capability:'supported',evidence:'controlled adapter and kernel-peer fixture only',replace:async request=>{const client=new ApplicationBridgeClient(consumeBridgeBootstrap(request.bootstrapPath));clients.push(client);await client.start();}});
+--- /dev/null
++++ after/src/main/core/projects/project-capability-setting.ts
+@@ -0,0 +1,16 @@
++export type ProjectCapabilitySetting = {
++  id: string;
++  projectId: string;
++  capabilityId: string;
++  enabled: boolean | 0 | 1;
++};
++
++export const projectCapabilitySettingId = (projectId: string, capabilityId: string): string => `${projectId}:${capabilityId}`;
++
++/** Older imports used random row IDs. An explicit later setting takes precedence. */
++export function projectCapabilityEnabled(rows: readonly ProjectCapabilitySetting[], projectId: string, capabilityId: string): boolean {
++  const matching = rows.filter(row => row.projectId === projectId && row.capabilityId === capabilityId);
++  const explicit = matching.find(row => row.id === projectCapabilitySettingId(projectId, capabilityId));
++  // Absence retains the standard defaults; conflicting legacy rows cannot turn a disabled capability on.
++  return explicit ? Boolean(explicit.enabled) : matching.every(row => Boolean(row.enabled));
++}

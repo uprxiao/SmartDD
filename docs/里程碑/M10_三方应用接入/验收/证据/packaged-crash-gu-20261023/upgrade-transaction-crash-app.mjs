@@ -1,0 +1,39 @@
+// Fault injection in this private packaged process only. Package bytes stay unchanged.
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {join,dirname} from 'node:path';
+import {spawn,execFileSync} from 'node:child_process';
+import {once} from 'node:events';
+import {createHash} from 'node:crypto';
+import {openElectron,pause} from '../lib/electron-harness.mjs';
+const old=process.env.WILLYOU_OLD_APP,current=process.env.WILLYOU_ACCEPTANCE_APP;assert(old&&current);
+const checkpoint=process.env.WILLYOU_CRASH_PHASE??'transaction';assert(['transaction','committed'].includes(checkpoint));
+const root=await mkdtemp('/private/tmp/willyou-m10-packaged-crash-'),userData=join(root,'userdata'),home=join(root,'home');await mkdir(home);
+const result={root,checkpoint,startedAt:new Date().toISOString(),checks:[],layer:'packaged main-process SQL statement fault injection, no business UI acceptance'};let app,child,ws,logs='';
+const sql=q=>JSON.parse(execFileSync('/usr/bin/sqlite3',['-readonly','-json',join(userData,'smartdd.db'),q],{encoding:'utf8'})||'[]');
+const defaults=()=>sql('SELECT app_id,package_hash,activation_generation FROM capability_active_packages ORDER BY app_id');
+async function until(check,label,ms=15000){const end=Date.now()+ms;while(Date.now()<end){if(await check())return;if(child&&(child.exitCode!==null||child.signalCode!==null))throw Error('Child exited: '+logs);await pause(50);}throw Error('Timeout '+label);}
+async function quit(){await app.mainEvaluate("(()=>{const e=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');setTimeout(()=>e.app.quit(),30);return true})()");assert.equal((await app.waitForExit()).code,0);await app.close();app=undefined;}
+try{
+ const resources=join(dirname(dirname(current)),'Resources'),asar=join(resources,'app.asar');result.asar=createHash('sha256').update(await readFile(asar)).digest('hex');
+ app=await openElectron({executable:old,userData,env:{HOME:home},inspectMain:true});const before=defaults();assert.equal(before.length,2);await quit();
+ const env={...process.env,SMARTDD_USER_DATA:userData,HOME:home};for(const key of Object.keys(env))if(/^(ELECTRON_RUN_AS_NODE|ANTHROPIC_|OPENAI_|CLAUDECODE|CLAUDE_CODE_)/.test(key))delete env[key];
+ child=spawn(current,['--inspect-brk=127.0.0.1:0'],{env,stdio:['ignore','pipe','pipe']});child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=>logs+=b);
+ await until(()=>/ws:\/\/127\.0\.0\.1:\d+\/[a-f0-9-]+/.test(logs),'inspector');ws=new WebSocket(logs.match(/ws:\/\/127\.0\.0\.1:\d+\/[a-f0-9-]+/)[0]);await once(ws,'open');
+ let seq=0,entryPaused=false;const waiting=new Map();ws.addEventListener('message',({data})=>{const m=JSON.parse(data);if(m.method==='Debugger.paused')entryPaused=true;if(m.id&&waiting.has(m.id)){const cb=waiting.get(m.id);waiting.delete(m.id);m.error?cb.reject(Error(m.error.message)):cb.resolve(m.result);}});
+ const rpc=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq,timer=setTimeout(()=>{waiting.delete(id);reject(Error(method+' timed out'));},10000);waiting.set(id,{resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}});ws.send(JSON.stringify({id,method,params}));});
+ await rpc('Runtime.enable');await rpc('Debugger.enable');await rpc('Runtime.runIfWaitingForDebugger');await until(()=>entryPaused,'entry breakpoint');
+ let injection=`(()=>{const req=process.getBuiltinModule('module').createRequire(${JSON.stringify(join(asar,'package.json'))});const Database=req('better-sqlite3'),original=Database.prototype.prepare;Database.prototype.prepare=function(sql){const statement=original.call(this,sql);if(sql===\"UPDATE capability_resource_operations SET state='committed',plan_json=?,updated_at=? WHERE operation_id=?\"){const run=statement.run;statement.run=function(...args){const plan=JSON.parse(args[0]);const value=run.apply(this,args);if(plan.schema===1&&plan.backup&&plan.requests){req('node:fs').writeSync(1,'WILLYOU_ACTIVATION_TX_CHECKPOINT\\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}return value;};}return statement;};return 'armed';})()`;
+ if(checkpoint==='committed')injection=`(()=>{const req=process.getBuiltinModule('module').createRequire(${JSON.stringify(join(asar,'package.json'))});const Database=req('better-sqlite3'),original=Database.prototype.prepare;Database.prototype.prepare=function(sql){const db=this,statement=original.call(db,sql);if(sql==="UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=? AND host_instance_id=?"){const run=statement.run;statement.run=function(...args){const row=original.call(db,"SELECT l.owner_kind,o.state FROM capability_resource_leases l LEFT JOIN capability_resource_operations o ON o.operation_id=l.owner_id WHERE l.lease_id=?").get(args[1]);if(row?.owner_kind==='application-activation'&&row.state==='committed'){req('node:fs').writeSync(1,'WILLYOU_ACTIVATION_TX_CHECKPOINT\\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}return run.apply(this,args);};}return statement;};return 'armed';})()`;
+ const armed=await rpc('Runtime.evaluate',{expression:injection,returnByValue:true});assert(!armed.exceptionDetails,JSON.stringify(armed.exceptionDetails));assert.equal(armed.result.value,'armed');
+ await rpc('Debugger.resume');await until(()=>logs.includes('WILLYOU_ACTIVATION_TX_CHECKPOINT'),'activation transaction');
+ if(checkpoint==='transaction')assert.deepEqual(defaults(),before);else for(const row of defaults())assert.equal(row.activation_generation,before.find(r=>r.app_id===row.app_id).activation_generation+1);result.checks.push(checkpoint==='transaction'?'Actual packaged transaction paused after writing receipt; external reader still sees old defaults':'Actual packaged commit visible before activation lease release');
+ const stopped=once(child,'exit');child.kill('SIGKILL');await stopped;ws.close();ws=undefined;child=undefined;
+ const pending=sql("SELECT operation_id,state FROM capability_resource_operations WHERE kind='application-activation'");assert.equal(pending.length,1);assert.equal(pending[0].state,checkpoint==='transaction'?'verified':'committed');assert(sql("SELECT 1 FROM capability_resource_leases WHERE owner_kind='application-activation' AND state<>'released'").length>0);
+ result.checks.push(checkpoint==='transaction'?'SIGKILL rolled back commit and retained operation-owned leases for recovery':'SIGKILL retained committed receipt and operation-owned leases');
+ app=await openElectron({executable:current,userData,env:{HOME:home},inspectMain:true});assert.deepEqual(sql("SELECT operation_id,state FROM capability_resource_operations WHERE kind='application-activation'"),[{operation_id:pending[0].operation_id,state:'committed'}]);assert.equal(sql("SELECT 1 FROM capability_resource_leases WHERE state<>'released'").length,0);
+ const after=defaults();for(const row of after)assert.equal(row.activation_generation,before.find(r=>r.app_id===row.app_id).activation_generation+1);await app.screenshot(join(root,'recovered.png'));await writeFile(join(root,'recovered.log'),app.logs());await quit();
+ result.checks.push('Unmodified packaged restart recovered same operation and released stopped-process leases');
+ assert.equal(createHash('sha256').update(await readFile(asar)).digest('hex'),result.asar);result.status='passed';
+}catch(error){result.status='failed';result.error=String(error);process.exitCode=1;}
+finally{ws?.close();if(child&&child.exitCode===null&&child.signalCode===null){const done=once(child,'exit');child.kill('SIGKILL');await done;}if(app){await writeFile(join(root,'failure.log'),app.logs());await app.close();}await writeFile(join(root,'injected-process.log'),logs);result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));}

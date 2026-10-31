@@ -1,0 +1,218 @@
+{
+  "schema": "m10-isolated-native-cli-config-v1",
+  "startedAt": "2026-10-20T23:38:36.008Z",
+  "root": "/private/tmp/m10-codex-config-s-4t0rD8",
+  "executable": "/Users/liubu/.local/bin/codex",
+  "cliVersion": "codex-cli 0.162.1",
+  "layer": "actual Codex exec + private loopback synthetic Responses provider; no real model or business data; not packaged WillYou/TUI/resume acceptance",
+  "cases": [
+    {
+      "name": "baseline-positive-control",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.124Z",
+          "path": "/v1/responses",
+          "model": "m10-base-model",
+          "ownSkillMetadataPresent": true,
+          "requestBytes": 29697,
+          "sha256": "d2dea486b215ddbca3600175d704853703d073fcb7fa33b46e334d5337591c91"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "profile",
+      "args": [
+        "--profile",
+        "review"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.187Z",
+          "path": "/v1/responses",
+          "model": "m10-profile-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29526,
+          "sha256": "65f133fdefcc50bed9a85eb98072ce313c18ee899f7b3afb58bbb4df3023ce42"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "cli-replaces-profile",
+      "args": [
+        "--profile",
+        "review",
+        "-c",
+        "model=\"m10-cli-model\"",
+        "--config",
+        "skills.config=[]"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.245Z",
+          "path": "/v1/responses",
+          "model": "m10-cli-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29568,
+          "sha256": "c581b5f4b55a6f9878bc68685b8d42522a6bd50ac083ca222f2a72fd88ecf1e9"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "inline-config",
+      "args": [
+        "--profile=review",
+        "--config=model=\"m10-inline-model\"",
+        "-cskills.config=[]"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.304Z",
+          "path": "/v1/responses",
+          "model": "m10-inline-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29574,
+          "sha256": "1772b1f6e0119ba91e5bc6ba685681837a9cc52aa0a0afc89d90532c11c10032"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "explicit-same-path-reenable",
+      "args": [
+        "--profile",
+        "review",
+        "-c",
+        "model=m10-unquoted-model",
+        "--config",
+        "skills.config=[{path=\"/private/tmp/m10-codex-config-s-4t0rD8/home/.agents/skills/m10-profile-owned/SKILL.md\",enabled=true}]"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.362Z",
+          "path": "/v1/responses",
+          "model": "m10-unquoted-model",
+          "ownSkillMetadataPresent": true,
+          "requestBytes": 29755,
+          "sha256": "a847c5b7eb04d5dbaef23be2b6b9e63069c53f2db8164c283142a5f8668db059"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "profile-relative-origin",
+      "args": [
+        "--profile",
+        "relative"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:38:36.418Z",
+          "path": "/v1/responses",
+          "model": "m10-relative-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29528,
+          "sha256": "de093686e23117f4bb937ee92996a77e6970eba01eef12051f53ed32bd674c88"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-10-20T23:38:36.124Z",
+      "path": "/v1/responses",
+      "model": "m10-base-model",
+      "ownSkillMetadataPresent": true,
+      "requestBytes": 29697,
+      "sha256": "d2dea486b215ddbca3600175d704853703d073fcb7fa33b46e334d5337591c91"
+    },
+    {
+      "at": "2026-10-20T23:38:36.187Z",
+      "path": "/v1/responses",
+      "model": "m10-profile-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29526,
+      "sha256": "65f133fdefcc50bed9a85eb98072ce313c18ee899f7b3afb58bbb4df3023ce42"
+    },
+    {
+      "at": "2026-10-20T23:38:36.245Z",
+      "path": "/v1/responses",
+      "model": "m10-cli-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29568,
+      "sha256": "c581b5f4b55a6f9878bc68685b8d42522a6bd50ac083ca222f2a72fd88ecf1e9"
+    },
+    {
+      "at": "2026-10-20T23:38:36.304Z",
+      "path": "/v1/responses",
+      "model": "m10-inline-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29574,
+      "sha256": "1772b1f6e0119ba91e5bc6ba685681837a9cc52aa0a0afc89d90532c11c10032"
+    },
+    {
+      "at": "2026-10-20T23:38:36.362Z",
+      "path": "/v1/responses",
+      "model": "m10-unquoted-model",
+      "ownSkillMetadataPresent": true,
+      "requestBytes": 29755,
+      "sha256": "a847c5b7eb04d5dbaef23be2b6b9e63069c53f2db8164c283142a5f8668db059"
+    },
+    {
+      "at": "2026-10-20T23:38:36.418Z",
+      "path": "/v1/responses",
+      "model": "m10-relative-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29528,
+      "sha256": "de093686e23117f4bb937ee92996a77e6970eba01eef12051f53ed32bd674c88"
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "nativeSemantics": "0.162.1 per-path state retains lower entries absent from a higher array;an explicit later entry for the same path wins. Positive-control metadata observer;no claim of a real-model Skill read.",
+  "isolation": {
+    "freshHome": true,
+    "freshCodexHome": true,
+    "dailyCredentialsCopied": false,
+    "dailyConfigCopied": false,
+    "proxy": "unreachable loopback for non-local traffic",
+    "model": "private loopback synthetic response only",
+    "toolsRequested": 0
+  },
+  "originalConfigBytesUnchanged": true,
+  "allOwnedChildrenTerminal": true,
+  "finishedAt": "2026-10-20T23:38:36.424Z"
+}

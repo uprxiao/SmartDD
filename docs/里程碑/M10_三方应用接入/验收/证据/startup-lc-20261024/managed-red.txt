@@ -1,0 +1,39 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/db/managed-client.test.ts --maxWorkers=1 --reporter=verbose
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/db/managed-client.test.ts > holds shared ownership for the live client and releases it on close, then reopens retained data 336ms
+ × src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'stopped' 703ms
+   → 受管运行或在途操作尚未停妥
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'running' 618ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'unknown' 676ms
+ × src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'stopped' 819ms
+   → 受管运行或在途操作尚未停妥
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'running' 810ms
+ ✓ src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'unknown' 850ms
+ ✓ src/main/db/managed-client.test.ts > does not treat a completed file mirror as authority when its DB receipt is missing 256ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'activation'; original owner 'stopped'
+ FAIL  src/main/db/managed-client.test.ts > recovers only proved stopped reads before 'migration-and-activation'; original owner 'stopped'
+Error: 受管运行或在途操作尚未停妥
+ ❯ assertIdle src/main/core/applications/activation-maintenance.ts:49:222
+
+ ❯ activatePreparedPackages src/main/core/applications/activation-maintenance.ts:51:2
+ ❯ Object.activate src/main/db/managed-client.test.ts:43:237
+ ❯ openManagedDatabase src/main/db/managed-client.ts:57:94
+ ❯ src/main/db/managed-client.test.ts:45:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  21:21:04
+   Duration  5.51s (transform 208ms, setup 0ms, import 366ms, tests 5.07s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

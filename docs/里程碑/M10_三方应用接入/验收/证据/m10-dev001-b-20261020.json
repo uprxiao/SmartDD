@@ -1,0 +1,90 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "at": "2026-10-20T02:07:50.879351+00:00",
+  "checkpoint": "DEV001-B",
+  "requirements": "R1.6 + 12.21",
+  "branch": "feature/0.0.2",
+  "baseCommit": "8928742",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "results": [
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test src/main/core/applications src/main/db/migrations.test.ts",
+      "files": 5,
+      "passed": 48,
+      "failed": 0,
+      "exitCode": 0
+    }
+  ],
+  "faultInjection": {
+    "layer": "real SQLite + private owned directories",
+    "points": [
+      "registered",
+      "materialized",
+      "renamed"
+    ],
+    "expected": "Original default and bytes preserved; same-hash explicit recovery; no live Agent or business resource"
+  },
+  "productAcceptance": "Not executed; do not count these tests as complete T cases",
+  "remaining": [
+    "resource GC",
+    "full session snapshots and cross-instance coordination",
+    "connection services",
+    "Agent bridge and adapters",
+    "actual business",
+    "real UI and packaged acceptance"
+  ],
+  "files": [
+    {
+      "path": "src/main/core/applications/__tests__/fixtures.ts",
+      "sha256": "d795d713c34183a19385912ef18c520ca715634795c901ebbfd3e7614f64e9ea"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/manifest.test.ts",
+      "sha256": "c84a41b29819414972afd23d160b912e7b0a54f68ed6584d886a77a54b94b63a"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/package-files.test.ts",
+      "sha256": "a6423e53213965caed5228650b828a70ec63d01c22ff760bd3f6264f11e1cd72"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/package-registry.test.ts",
+      "sha256": "6e31f3869560c7b48a86f1b8f2981ab01993264fd2b6dcb7b3939f9fdfc7832b"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/resource-lock.test.ts",
+      "sha256": "7a68c876b544d5e553d20b3acc8ddf74a673ea71f0a445171de62e1133df6860"
+    },
+    {
+      "path": "src/main/core/applications/manifest.ts",
+      "sha256": "94b6c96662acdcb912b5b6d146ec28276bf8d19d43e97f6d087bd8257bc5ae25"
+    },
+    {
+      "path": "src/main/core/applications/package-files.ts",
+      "sha256": "e7356964827a7051d4544fbe69548c791bcf394100d13f5d93eb7871cef6dc2c"
+    },
+    {
+      "path": "src/main/core/applications/package-registry.ts",
+      "sha256": "4823d82a39b9449d71cd2b87ee5467df9aa44d2870717a48bce779fc72667606"
+    },
+    {
+      "path": "src/main/core/applications/resource-lock.ts",
+      "sha256": "64795022d5e8d3f6745b6daf61a0eed10b3fc289f734752c67e490d5b6f3f12d"
+    },
+    {
+      "path": "src/main/core/applications/resource-store.ts",
+      "sha256": "35bfd3dc32987ff14f08846af741c7235d24b93b86959f3a06677f94e1b0601a"
+    },
+    {
+      "path": "src/main/core/applications/runtime-registry.ts",
+      "sha256": "4327e8a3136070a9b4ed07a0906aaf3de817c45d05018352938c457f8296fe23"
+    },
+    {
+      "path": "src/shared/applications.ts",
+      "sha256": "f90148ab6d7c1745afe23006352c1f56c5f3a8cf2b26027247d5c77cc0065969"
+    }
+  ]
+}

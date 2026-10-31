@@ -1,0 +1,104 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/selection-service.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/zentao-data.test.ts src/main/core/applications/__tests__/mail-read-data.test.ts --maxWorkers=2 --reporter=default --reporter=json --outputFile=/private/tmp/willyou-m10-ev-isolation.json
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ✓ src/main/core/applications/__tests__/zentao-data.test.ts (22 tests) 78786ms
+     ✓ lists only the current assigned-self source and preserves large exact IDs and a confirmed empty Story result  1030ms
+     ✓ paginates with an opaque project/source-bound cursor and detects changed limits or duplicate pages  1610ms
+     ✓ returns a changed total as explicitly incomplete without pretending an empty complete search  2159ms
+     ✓ uses the same current data for trusted UI and Agent and keeps full body,history and field values in bounded resources  4415ms
+     ✓ reads nested Story description and acceptance criteria without incorrectly marking the body missing  3292ms
+     ✓ downloads ordinary,historical and inline files only through the fixed same-origin API and preserves binary bytes  3648ms
+     ✓ reports missing,oversized and redirected files as partial without following a supplied URL or claiming complete  3137ms
+     ✓ does not treat malformed history and file metadata as a complete object  3764ms
+     ✓ rejects forged or foreign-project source references and resource metadata before exposing data  3877ms
+     ✓ rechecks assignment for detail,old resources and cached list/detail/resource receipts  4769ms
+     ✓ does not replay cached attachment bytes once the file no longer belongs to the current assigned object  4410ms
+     ✓ keeps old explicit revisions readable while new detail and changed file bytes get new references  5334ms
+     ✓ invalidates old cursors and references on explicit connection switch without changing the original fixed package  4377ms
+     ✓ uses a rotated current secret under the same identity and never persists it in business operations or fetched payloads  3733ms
+     ✓ uses the single outer read retry budget for transient failures and never retries explicit authentication failure  3492ms
+     ✓ withholds an injected outside-assignee list and never records it as fetched project data  2520ms
+     ✓ updates current health separately from the saved test and recovers without changing policy or secret revisions  3457ms
+     ✓ does not return old body bytes as current data after the source object disappears  4106ms
+     ✓ cancels an active read on connection disconnect and withholds the late HTTP result  3213ms
+     ✓ bounds a cancelled cached-receipt permission check without restarting the Agent or replaying the original read  3648ms
+   ✓ reconstructs the business service with the same persisted source and resource revisions without relying on a prior in-memory client  4529ms
+   ✓ binds stored source content to its canonical revision and rejects a corrupt retained reference before requesting fresh data  3477ms
+ ✓ src/main/core/applications/__tests__/mail-read-data.test.ts (27 tests) 178135ms
+     ✓ exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result  5096ms
+     ✓ uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source  6219ms
+     ✓ paginates more than200 matches without omission and reuses completed persistent checks without reparsing unchanged messages  11635ms
+     ✓ persists partial scan checkpoints and resumes after service reconstruction without inventing a complete empty query  8319ms
+     ✓ distinguishes source deletion from a missing local file and never serves old cached bodies as current mail  8607ms
+     ✓ rechecks current source existence before delivering a cached ToolService query receipt  5149ms
+     ✓ rejects changed source bytes,forged identity or expanded model scope before returning resources  6828ms
+     ✓ uses independent project cursors and resource authorization even when two projects explicitly share the same connection  7767ms
+     ✓ rebuilds resources after deliberate cache clear using the original source reference and keeps stable IDs  7741ms
+     ✓ shares an in-flight check while cancellation of one waiter leaves the other authorized project running  5074ms
+     ✓ reuses durable per-message fulltext across queries and reparses only added,changed or moved files  7613ms
+     ✓ rejects a source that changes after a batch and retries a transient incomplete check on a fresh query  6796ms
+     ✓ retains the last cancelled shared producer and its package lease until its actual work settles  3393ms
+     ✓ keeps a shared check alive when one project revokes its selection  4833ms
+     ✓ pins the full original mail revision during the separate attachment read even if attachment bytes are unchanged  5984ms
+     ✓ encodes chunks that split multibyte UTF-8 as exact base64 bytes  8935ms
+     ✓ derives reply/reply-all from real headers and the explicitly selected SMTP identity without retrieving its secret  7405ms
+     ✓ creates replies with no SMTP and preserves their independent content after source deletion and reconnection loss  8059ms
+     ✓ refuses invalid reply links,missing addresses and a sender outside the current SMTP slot  8496ms
+     ✓ copies exact MIME attachment bytes to persistent business storage once and keeps them after cache/source loss  8338ms
+     ✓ rejects cross-project,modified and oversized resource imports and does not accept model-supplied filesystem paths  7027ms
+     ✓ captures current-workspace capabilities and imports real native file bytes without granting arbitrary paths  4776ms
+     ✓ denies a workspace reference in another project and after the original file root closes  4086ms
+     ✓ refuses replacement by a symlink and capture of a real file above the attachment budget  4195ms
+     ✓ does not commit an attachment when cancellation arrives while actual source work is pending  3655ms
+     ✓ rejects a file modified between native chunks without saving a mixed attachment  3785ms
+     ✓ denies the configured date boundary even when a caller knows the exact old file hash  4719ms
+ ✓ src/main/core/applications/__tests__/selection-service.test.ts (11 tests) 2928ms
+     ✓ stops project runs before committing another ZenTao source  386ms
+     ✓ preserves the prior connection when stopped=false does not prove all runs exited  349ms
+     ✓ preserves the prior connection when stopped=true does not prove all runs exited  304ms
+     ✓ holds a pending switch gate and rejects a competing selection without borrowing a later result  336ms
+     ✓ does not commit a pending switch after removal changed the app authorization  321ms
+ ✓ src/main/core/applications/__tests__/business-data.test.ts (32 tests) 107085ms
+     ✓ creates without either external slot and lets the other supported Agent and UI read the same business object  3829ms
+     ✓ continues across Agents with CAS and preserves revision-bound original body resources  4121ms
+     ✓ keeps immutable resource identities across a business-service restart and expires old actor capabilities  3573ms
+     ✓ copies an owned draft to a distinct object without new source access  3122ms
+     ✓ cannot fake reply provenance or silently substitute a model-supplied project or approval  3014ms
+     ✓ rejects cross-project drafts and references even when their valid IDs and hashes are known  4317ms
+     ✓ rejects changed resource metadata, oversized chunks and offsets past the original length  3716ms
+     ✓ chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text  4041ms
+     ✓ does not trust JSON copies of host scopes or callers  2677ms
+     ✓ records UI and Agent roles separately without inventing tasks for UI reads  3406ms
+     ✓ permits configuration while project use is off but cannot upgrade configuration scope to reading or sending  3237ms
+     ✓ gives an index child its own read-only identity and parent reference without a fake model task  2825ms
+     ✓ rejects an in-flight result after global disable and reenable, preserving the original operation record  3134ms
+     ✓ changes source and SMTP slots without invalidating independent local draft operations  4256ms
+     ✓ pins the exact source of an in-flight read and denies source ABA even when the original account is selected again  4279ms
+     ✓ uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit  3716ms
+     ✓ returns cached business receipts only while the original authorization generation remains valid and never duplicates writes  3686ms
+     ✓ keeps pending UI resource leases until ignored cancellation actually settles  2674ms
+     ✓ keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown  3067ms
+     ✓ waits for actual UI work on service shutdown and rejects its eventual result  2934ms
+     ✓ returns stable,lossless binary attachment chunks from the durable copy rather than a source path  3879ms
+     ✓ keeps an existing reference unchanged when the same logical revision is offered different content  2756ms
+     ✓ paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor  3754ms
+     ✓ invalidates old local operations when project enablement changes off and on even without changing any external slot  3543ms
+   ✓ does not begin a queued configuration provider after host shutdown while C acquisition was pending  3143ms
+     ✓ reports persistent mail storage and original package usage separately from the rebuildable cache  3935ms
+     ✓ leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests  3408ms
+     ✓ lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts  4079ms
+     ✓ does not create a cache for forged or destroyed UI senders  2571ms
+     ✓ preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown  2113ms
+     ✓ tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks  1789ms
+     ✓ discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection  1739ms
+
+ Test Files  4 passed (4)
+      Tests  92 passed (92)
+   Start at  12:41:19
+   Duration  186.89s (transform 909ms, setup 0ms, import 1.70s, tests 366.93s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-m10-ev-isolation.json

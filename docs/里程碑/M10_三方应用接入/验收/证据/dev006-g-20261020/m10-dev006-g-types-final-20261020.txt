@@ -1,0 +1,11 @@
+
+> smartdd@0.0.5 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/__tests__/terminal-insertion.test.ts(10,521): error TS2322: Type 'Mock<Constructable | Procedure>' is not assignable to type '(sender: ApplicationUiSender, input: { target: { taskId: string; ptyId: string; }; projectId: string; source: { kind: "skill"; appId: "zentao" | "mail"; skillId: string; } | { ...; } | { ...; } | { ...; }; }) => Promise<...>'.
+  Type 'MockInstance<Constructable | Procedure> & (new (...args: any[]) => any) & {}' is not assignable to type '(sender: ApplicationUiSender, input: { target: { taskId: string; ptyId: string; }; projectId: string; source: { kind: "skill"; appId: "zentao" | "mail"; skillId: string; } | { ...; } | { ...; } | { ...; }; }) => Promise<...>'.
+    Type 'MockInstance<Constructable | Procedure> & (new (...args: any[]) => any) & {}' provides no match for the signature '(sender: ApplicationUiSender, input: { target: { taskId: string; ptyId: string; }; projectId: string; source: { kind: "skill"; appId: "zentao" | "mail"; skillId: string; } | { ...; } | { ...; } | { ...; }; }): Promise<...>'.
+src/main/core/applications/__tests__/terminal-insertion.test.ts(10,529): error TS2322: Type 'Mock<Constructable | Procedure>' is not assignable to type '(ptyId: string) => Promise<boolean>'.
+  Type 'MockInstance<Constructable | Procedure> & (new (...args: any[]) => any) & {}' is not assignable to type '(ptyId: string) => Promise<boolean>'.
+    Type 'MockInstance<Constructable | Procedure> & (new (...args: any[]) => any) & {}' provides no match for the signature '(ptyId: string): Promise<boolean>'.
+ ELIFECYCLE  Command failed with exit code 2.

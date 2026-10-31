@@ -1,0 +1,120 @@
+{
+  "schema": "m10-isolated-native-cli-config-v1",
+  "startedAt": "2026-10-20T23:31:42.391Z",
+  "root": "/private/tmp/m10-codex-config-s-QCMtHL",
+  "executable": "/Users/liubu/.local/bin/codex",
+  "cliVersion": "codex-cli 0.162.1",
+  "layer": "actual Codex exec + private loopback synthetic Responses provider; no real model or business data; not packaged WillYou/TUI/resume acceptance",
+  "cases": [
+    {
+      "name": "baseline-positive-control",
+      "args": [],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:31:42.511Z",
+          "path": "/v1/responses",
+          "model": "m10-base-model",
+          "ownSkillMetadataPresent": true,
+          "requestBytes": 29685,
+          "sha256": "2e7071140896cc781e40706605a29895311b4a63480116e688d60fabe2327305"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "profile",
+      "args": [
+        "--profile",
+        "review"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:31:42.568Z",
+          "path": "/v1/responses",
+          "model": "m10-profile-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29514,
+          "sha256": "a7b6ce9ddb7334bd09dd0f83ad2ad4c26f37888638584640c75c3dd772b61e1e"
+        }
+      ],
+      "replyMarker": true,
+      "status": "passed"
+    },
+    {
+      "name": "cli-replaces-profile",
+      "args": [
+        "--profile",
+        "review",
+        "-c",
+        "model=\"m10-cli-model\"",
+        "--config",
+        "skills.config=[]"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "requests": [
+        {
+          "at": "2026-10-20T23:31:42.626Z",
+          "path": "/v1/responses",
+          "model": "m10-cli-model",
+          "ownSkillMetadataPresent": false,
+          "requestBytes": 29556,
+          "sha256": "8bcfef836892faaa277deff8ad1d436db8c2709dfa36d61139ae99104f05646b"
+        }
+      ],
+      "replyMarker": true,
+      "status": "failed"
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-10-20T23:31:42.511Z",
+      "path": "/v1/responses",
+      "model": "m10-base-model",
+      "ownSkillMetadataPresent": true,
+      "requestBytes": 29685,
+      "sha256": "2e7071140896cc781e40706605a29895311b4a63480116e688d60fabe2327305"
+    },
+    {
+      "at": "2026-10-20T23:31:42.568Z",
+      "path": "/v1/responses",
+      "model": "m10-profile-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29514,
+      "sha256": "a7b6ce9ddb7334bd09dd0f83ad2ad4c26f37888638584640c75c3dd772b61e1e"
+    },
+    {
+      "at": "2026-10-20T23:31:42.626Z",
+      "path": "/v1/responses",
+      "model": "m10-cli-model",
+      "ownSkillMetadataPresent": false,
+      "requestBytes": 29556,
+      "sha256": "8bcfef836892faaa277deff8ad1d436db8c2709dfa36d61139ae99104f05646b"
+    }
+  ],
+  "status": "failed",
+  "isolation": {
+    "freshHome": true,
+    "freshCodexHome": true,
+    "dailyCredentialsCopied": false,
+    "dailyConfigCopied": false,
+    "proxy": "unreachable loopback for non-local traffic",
+    "model": "private loopback synthetic response only",
+    "toolsRequested": 0
+  },
+  "error": "AssertionError [ERR_ASSERTION]: Native Skill enable configuration differs from the declared layer",
+  "stack": "AssertionError [ERR_ASSERTION]: Native Skill enable configuration differs from the declared layer\n    at run (file:///private/tmp/m10-native-config-s-20261021/cli-profile-probe.mjs:41:207)\n    at async file:///private/tmp/m10-native-config-s-20261021/cli-profile-probe.mjs:47:2",
+  "allOwnedChildrenTerminal": true,
+  "finishedAt": "2026-10-20T23:31:42.633Z"
+}

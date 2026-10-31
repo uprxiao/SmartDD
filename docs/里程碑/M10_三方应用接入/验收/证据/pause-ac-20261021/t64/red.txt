@@ -1,0 +1,82 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/package-registry.test.ts --maxWorkers=1 -t T64
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts (20 tests | 7 failed | 10 skipped) 432ms
+     × T64 restores a missing original package only from its exact content without selecting the latest default or rewriting history 99ms
+     × T64 resumes missing-package restoration interrupted at registered under its new durable operation identity 41ms
+     × T64 resumes missing-package restoration interrupted at materialized under its new durable operation identity 41ms
+     × T64 resumes missing-package restoration interrupted at renamed under its new durable operation identity 39ms
+     × T64 defers a missing package while a direct resource consumer still holds a real lease 39ms
+     × T64 defers a missing package while a dependent resource consumer still holds a real lease 35ms
+     × T64 retains a user directory that appears after restoration is registered and leaves recovery pending 35ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 restores a missing original package only from its exact content without selecting the latest default or rewriting history
+ApplicationError: 应用包缺失、不可读或声明损坏
+ ❯ verifyPackageTree src/main/core/applications/package-files.ts:53:11
+     51|   } catch (error) {
+     52|     if (error instanceof ApplicationError) throw error;
+     53|     throw new ApplicationError('HASH_MISMATCH', '应用包缺失、不可读或声明损坏');
+       |           ^
+     54|   }
+     55| }
+ ❯ Object.verify src/main/core/applications/package-registry.ts:54:22
+ ❯ ResourceStore.publish src/main/core/applications/resource-store.ts:132:18
+ ❯ PackageRegistry.install src/main/core/applications/package-registry.ts:68:5
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts:41:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at registered under its new durable operation identity
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at materialized under its new durable operation identity
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at renamed under its new durable operation identity
+AssertionError: expected [Function] to throw error including 'injected interruption' but got '应用包缺失、不可读或声明损坏'
+
+Expected: "injected interruption"
+Received: "应用包缺失、不可读或声明损坏"
+
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts:45:42
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 defers a missing package while a direct resource consumer still holds a real lease
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 defers a missing package while a dependent resource consumer still holds a real lease
+AssertionError: expected ApplicationError: 应用包缺失、不可读或声明损坏 { code: '…' } to match object { code: 'RESOURCE_BUSY' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ ApplicationError {
++   "code": "HASH_MISMATCH",
+  }
+
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts:53:156
+
+ ❯ ResourceStore.use src/main/core/applications/resource-store.ts:99:24
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts:53:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/main/core/applications/__tests__/package-registry.test.ts > application publication with a real SQLite resource ledger > T64 retains a user directory that appears after restoration is registered and leaves recovery pending
+Error: ENOENT: no such file or directory, open '/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-registry-Or3Ti6/capabilities/apps/zentao/1.0.0/a84808df4aa9f6b5fa7d4ed8358e7fdac594260954c545878fd80e5f9945a162/user.txt'
+ ❯ src/main/core/applications/__tests__/package-registry.test.ts:62:139
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 3 passed | 10 skipped (20)
+   Start at  10:46:18
+   Duration  902ms (transform 184ms, setup 0ms, import 295ms, tests 432ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -40,6 +40,8 @@ export interface TaskView {
 }
 
 export interface CreateTaskRequest {
+  /** Optional renderer-owned token for canceling this preparation before a task exists. */
+  launchToken?: string;
   projectId: string;
   /** null: the project's default directory. */
   dirId: string | null;

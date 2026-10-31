@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { Worker as NodeWorker } from 'node:worker_threads';
 import { useSyncExternalStore } from 'react';
@@ -60,10 +60,20 @@ const packagedAppAvailable = process.platform === 'darwin' && Boolean(process.en
 async function fixture(watched: boolean, initial = '\n# Initial heading\n\n**initial emphasis**\n') {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-markdown-refresh-'))), project = join(directory, 'project'), userdata = join(directory, 'userdata'); mkdirSync(project); mkdirSync(userdata);
   const path = join(project, 'source.md'); writeFileSync(path, initial); writeFileSync(join(project, 'other.txt'), 'Other tab\n');
-  const resources = join(process.env.SMARTDD_MARKDOWN_REFRESH_APP!, 'Contents/Resources'), executable = join(resources, 'native/willyou-files');
-  const packagedRequire = createRequire(join(resources, 'app.asar/package.json')), originalFs = packagedRequire('original-fs') as typeof import('node:fs');
-  const nativeSubscribe = packagedRequire('@parcel/watcher').subscribe as (path: string, callback: SubscribeCallback, options: { backend: 'fs-events' }) => Promise<AsyncSubscription>;
-  output.nativePackage = { path: process.env.SMARTDD_MARKDOWN_REFRESH_APP, asarSha256: sha(originalFs.readFileSync(join(resources, 'app.asar'))), brokerSha256: sha(readFileSync(executable)), watcherVersion: packagedRequire('@parcel/watcher/package.json').version };
+  const app = process.env.SMARTDD_MARKDOWN_REFRESH_APP;
+  const resources = app ? join(app, 'Contents/Resources') : null;
+  const executable = resources ? join(resources, 'native/willyou-files') : resolve('out/native/willyou-files');
+  const nativeRequire = createRequire(resources ? join(resources, 'app.asar/package.json') : resolve('package.json'));
+  const nativeSubscribe = nativeRequire('@parcel/watcher').subscribe as (path: string, callback: SubscribeCallback, options: { backend: 'fs-events' }) => Promise<AsyncSubscription>;
+  if (resources) {
+    const originalFs = nativeRequire('original-fs') as typeof import('node:fs');
+    output.nativePackage = { path: app, asarSha256: sha(originalFs.readFileSync(join(resources, 'app.asar'))), brokerSha256: sha(readFileSync(executable)), watcherVersion: nativeRequire('@parcel/watcher/package.json').version };
+  } else {
+    // Same real native broker, FSEvents watcher, production worker and disk IO.
+    // No App is launched by this integration test, so a package is not required.
+    // Explicit package runs retain their original ASAR/native provenance above.
+    output.nativeIntegration = { mode: 'repository native build; not packaged-App acceptance', executable, brokerSha256: sha(readFileSync(executable)), watcherVersion: nativeRequire('@parcel/watcher/package.json').version };
+  }
   const nativeEvents: unknown[] = [], updates: FileWatchUpdate[] = [];
   bridge.subscribe = (path, callback) => nativeSubscribe(path, (error, events) => { nativeEvents.push({ error: error?.message ?? null, events }); callback(error, events); }, { backend: 'fs-events' });
   const broker = new ObservedBroker(executable), resolver = { sources: () => [{ kind: 'project-directory' as const, id: 'root', path: project, label: 'H14/H17 isolated source', projectId: 'markdown-refresh' }] };

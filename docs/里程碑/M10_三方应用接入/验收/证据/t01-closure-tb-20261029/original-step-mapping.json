@@ -1,0 +1,41 @@
+{
+  "case": "T01",
+  "coreDefinition": "../evidence-closure-qy-20261028/original-72-core-before.json",
+  "steps": [
+    {
+      "step": 1,
+      "evidence": "three missing-field checks;no IPC/socket/auth increase"
+    },
+    {
+      "step": 2,
+      "evidence": "three rejectedUi and AUTH_FAILED replies,save disabled"
+    },
+    {
+      "step": 3,
+      "evidence": "three actual ready/save checks and persisted connections"
+    },
+    {
+      "step": 4,
+      "evidence": "beforeRestart/afterRestart,restartedUi,restartRechecks;new authenticating requests"
+    },
+    {
+      "step": 5,
+      "evidence": "smtp mode counters,invalid ports,unsupportedMode INVALID_INPUT,local read separation"
+    },
+    {
+      "step": 6,
+      "evidence": "smtp[].data all0;DB send/task/run/lease all0"
+    }
+  ],
+  "layers": {
+    "software": "4 files69 passed",
+    "packaged": "14 groups;native storage and protocols real",
+    "synthetic": "Private source,servers,secret canaries and process-local CA only"
+  },
+  "formalBefore": 48,
+  "formalAfter": 49,
+  "remaining": 23,
+  "percent": 68.06,
+  "immutableCoreFields": 504,
+  "onlyNewFormalPass": "T01"
+}

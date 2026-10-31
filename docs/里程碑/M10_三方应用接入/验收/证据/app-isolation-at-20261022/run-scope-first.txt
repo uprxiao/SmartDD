@@ -1,0 +1,106 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-run-scope.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-app-isolation-at-20261022/run-scope-first-report.json
+
+[1022/013903.492600:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/013903.654884:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ × src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute 776ms
+   → expected { schema: 1, …(3) } to match object { status: 'ok', value: { …(1) } }
+(11 matching properties omitted from actual)
+ × src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > allows the healthy scope even when the unrelated original app is explicitly marked unavailable 783ms
+   → expected { schema: 1, …(3) } to match object { status: 'ok' }
+(11 matching properties omitted from actual)
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > never widens an owned scope if its C receipt disappears 608ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > refuses even a rehashed wider receipt or another owner without releasing the original run 589ms
+ × src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > retains a scope receipt across the first native ID bind only with the original recorded version 534ms
+   → expected { schema: 1, …(3) } to match object { status: 'ok' }
+(11 matching properties omitted from actual)
+ × src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not arm or grant tools when a selected healthy source disappears during preparation 540ms
+   → 不能将已启动或状态不明的运行改为未启动
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > rejects a missing shared dependency before persisting any scoped run or incomplete protection 499ms
+ ✓ src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not allow foreign, empty, duplicate application scopes or arbitrary extra roots 379ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > keeps the full S and refs while the healthy fixed app calls its original tool and unavailable app cannot execute
+AssertionError: expected { schema: 1, …(3) } to match object { status: 'ok', value: { …(1) } }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "packageHash": "d090c936934299a2f4d79922a30c53052c1991b24c70e14eac539c020b5bbb42",
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/application-run-scope.test.ts:21:62
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > allows the healthy scope even when the unrelated original app is explicitly marked unavailable
+AssertionError: expected { schema: 1, …(3) } to match object { status: 'ok' }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/application-run-scope.test.ts:23:357
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > retains a scope receipt across the first native ID bind only with the original recorded version
+AssertionError: expected { schema: 1, …(3) } to match object { status: 'ok' }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/application-run-scope.test.ts:26:610
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/application-run-scope.test.ts > host-owned per-application runtime authority and complete selected dependency protection > does not arm or grant tools when a selected healthy source disappears during preparation
+ApplicationError: 不能将已启动或状态不明的运行改为未启动
+ ❯ sqliteTransaction.<anonymous> src/main/core/applications/run-registry.ts:246:93
+
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ src/main/core/applications/run-registry.ts:250:8
+ ❯ src/main/core/applications/resource-lock.ts:6:17
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:108:130
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:5:10
+ ❯ CapabilityRunRegistry.cancelBeforeFork src/main/core/applications/run-registry.ts:244:11
+ ❯ Object.cancelBeforeFork src/main/core/applications/run-registry.ts:174:211
+ ❯ src/main/core/applications/__tests__/application-run-scope.test.ts:16:204
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'RESOURCE_STATE_CHANGED' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  01:39:03
+   Duration  5.01s (transform 139ms, setup 0ms, import 227ms, tests 4.71s, environment 0ms)
+
+JSON report written to /private/tmp/m10-app-isolation-at-20261022/run-scope-first-report.json
+ ELIFECYCLE  Test failed. See above for more details.

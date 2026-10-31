@@ -1,0 +1,427 @@
+{
+  "schema": "m10-dev006-session-diagnostics-checkpoint-v1",
+  "at": "2026-10-20T14:19:18.308952+00:00",
+  "state": "开发中，完整M10未完成",
+  "requirement": "R1.6 including12.21; R07/R10, P09, T45/T62/T66/T69/T71",
+  "branch": "feature/0.0.2",
+  "baseCommit": "ad95b6046de65aae293fd2f93007e57871b4dae1",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "sourceManifest": "dev006-f-20261020/source-manifest.json",
+  "sourceManifestHash": "1151d4d8b80451c2a09801c405d4588ffb12bb01e66dd7ee167c005edc5531f6",
+  "sourceFiles": 23,
+  "appVersion": "0.0.5",
+  "builtApp": "/private/tmp/m10-dev006-f2-package-20261020/mac-arm64/WillYou.app",
+  "hashes": {
+    "asar": "899c4e0da6730894b82222d19e3009055db76c425f51b8cf0f6cff111a6c3693",
+    "foxmail": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+    "processIdentity": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0",
+    "lockfile": "96802e0adce3e2e196bd3c41214aafe4b504aeb1088974e39ca85af376e6480e",
+    "bridge": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428"
+  },
+  "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+  "resourceIndexHash": "ac70a550cafd781efe63ac90d17fa6314fececf4c9591a3b79ca851cbf4a5aa5",
+  "fixedPackageResourcesUnchanged": true,
+  "validation": {
+    "broad": {
+      "filesPassed": 55,
+      "filesSkipped": 1,
+      "testsPassed": 695,
+      "testsSkipped": 2,
+      "skippedReason": "M4 opt-in real CLI probes not enabled, not passed"
+    },
+    "finalFrontendCache": {
+      "files": 3,
+      "tests": 20,
+      "status": "passed",
+      "note": "overlaps broad; covers changed PTY/run cache key"
+    },
+    "finalOwnedRunIdentity": {
+      "files": 3,
+      "tests": 33,
+      "status": "passed",
+      "note": "after current-run identity-first lookup; includes one new clock rollback test; overlaps broad and frontend, do not add"
+    },
+    "types": "passed final identity check",
+    "packageNativeSmoke": "passed macOS arm64; F2 final production baseline",
+    "packagedUi": {
+      "session": {
+        "status": "passed-partial",
+        "checks": 7,
+        "result": "dev006-f-20261020/green-session/result.json"
+      },
+      "management": {
+        "status": "passed-partial",
+        "checks": 13,
+        "result": "dev006-f-20261020/green-management/result.json"
+      },
+      "versions": {
+        "status": "passed-partial",
+        "checks": 6,
+        "result": "dev006-f-20261020/green-versions/result.json"
+      }
+    },
+    "fullProductCasesPassed": 0,
+    "fullProductCasesTotal": 72
+  },
+  "implemented": [
+    "只读当前任务会话诊断；原固定版本、原身份、当前默认／选用／健康／原包配置兼容分别展示",
+    "迁移21按run保留不可变宿主准备、真实内核工具桥认证事件；不保存凭据／argv／消息／配置体",
+    "核验原包／runtime／所属Skill投影及引用；损坏／未知历史不补当前版本或停止Agent",
+    "当前所属PTY/run独立于历史时间排序；停止／恢复重建前端诊断缓存，不沿用旧调用数／就绪",
+    "历史证据与当前连接分开；Skill发现／读取明确未验证，工具完成不等于外部写成功",
+    "实际TaskHeader入口、刷新、Escape焦点、配置／调用记录导航及显式新版新建草稿入口；不自动创建／启动"
+  ],
+  "boundaries": [
+    "真实App旧版0.9.0由真实PackageRegistry安装完整私有前置；非已发布旧版／程序升级／真实Agent证据",
+    "P09前置只准备完整Claude投影及宿主文件，再停止未启动CLI的run；native helper核对本机进程，不冒充CLI执行",
+    "真实OS PTY集成仍为合成CLI＋原MCP桥；实际CC／Codex业务未验收，Skill发现／读取收集器待实现",
+    "连接兼容只读已知原Schema，不解密秘密、不联网、不新建授权；健康是上次状态，非本次网络检查",
+    "仅观察有限浅深色截图；未完成原型全部字体／图标／间距／窄窗／悬停／键盘及系统剪贴板",
+    "原生选择plain欠验保留；管理回归仅私有TLS测试，无SMTP DATA或外部模型／发信",
+    "受控终端示例／业务引用插入及修复／桥恢复入口仍待实现；不以本批只读页面替代完整P09",
+    "外部驱动raw资源加载仅修复前置helper，生产App／鉴权／包哈希不改；临时数据库／userdata／证书私钥不归档"
+  ],
+  "redPreserved": [
+    "扩大回归693通过2失败2跳过：两处旧迁移预期漏21，补预期列表后695通过2跳过，业务冻结／授权断言未放宽",
+    "首轮P09夹具独立esbuild未转换Vite raw glob，未进入测试界面；补实际源码raw映射仅作用于前置helper",
+    "第二轮helper --inject参数误用等号，编译即拒绝；修正为CLI规定冒号后第三轮7检查点及终端0通过",
+    "管理首轮未开启P08扩展为10局部检查；开启后13含原10，不相加",
+    "F1打包后补当前run时间回拨保护；最终F2重新构建并执行全部本批UI；不沿用F1结论"
+  ],
+  "remaining": [
+    "P09受控终端插入、真实原生Skill发现／读取与CC／Codex业务验收",
+    "原生明确用户指令来源授权、完整M4保真迁移／配置／用户能力保留",
+    "C/H完整派生／共享依赖GC与修复／维护、非空发送unknown及历史owner恢复入口",
+    "Foxmail真实界面与系统层、全部72条约定层级及最终交付归档；无发布授权"
+  ],
+  "evidenceFiles": {
+    "dev006-f-20261020/capability-bundle-index.json": {
+      "sha256": "8221a77d60b803dc3860ea7cd70f8752164ab60cc6a701bd327e000ef1c5ef83",
+      "bytes": 1394
+    },
+    "dev006-f-20261020/green-management/activity-detail.png": {
+      "sha256": "78a6e755bd1ff29710cc130f546e1b43e6ead7902741bc6188986e1d67bc7c20",
+      "bytes": 111940
+    },
+    "dev006-f-20261020/green-management/activity-list.png": {
+      "sha256": "6be1070e2ec4202a6323991495ec3514bf4f52f2f002321d7c32b2181f984b8f",
+      "bytes": 108951
+    },
+    "dev006-f-20261020/green-management/activity-restarted.png": {
+      "sha256": "9db20932a2dd8e2c8e50863787119e717820b10553bc795ed4e276eb1370f770",
+      "bytes": 227735
+    },
+    "dev006-f-20261020/green-management/electron-first.txt": {
+      "sha256": "2ba9f0f5af66c6a8277f9beb7861704ef41daf4412eb1f6ac922a8e0ec3c410e",
+      "bytes": 678
+    },
+    "dev006-f-20261020/green-management/electron-last.txt": {
+      "sha256": "0b22dcbf5944609c6fac3030d691565d415d079d447b0e225bb14cb2a52dd667",
+      "bytes": 98
+    },
+    "dev006-f-20261020/green-management/mail-status.png": {
+      "sha256": "6ef634ede2a08eb7b2dab9c4ae4e34b8dfaac8526b73cecc7001b3adb7105fdc",
+      "bytes": 122471
+    },
+    "dev006-f-20261020/green-management/result.json": {
+      "sha256": "69c8c8c66ae3d0073e0a96b4fe618d3bbeb74b267e14cae47642a94b5cb76bc4",
+      "bytes": 4890
+    },
+    "dev006-f-20261020/green-management/zentao-detail.png": {
+      "sha256": "0c3ad72dd24e4abed41dd24f0158bd26bd2b26a6bce4f74b684e17f896a0a141",
+      "bytes": 93084
+    },
+    "dev006-f-20261020/green-management-first/catalog-restarted.png": {
+      "sha256": "79d9c646308d852821724c6f7f4799aaf3d6f8eecd84d6adde1ad4ecdddc438b",
+      "bytes": 175551
+    },
+    "dev006-f-20261020/green-management-first/electron-first.txt": {
+      "sha256": "3b00866681a0c889b0159bcf626ec529a2980ee377388a596daefdba60a479a1",
+      "bytes": 678
+    },
+    "dev006-f-20261020/green-management-first/electron-last.txt": {
+      "sha256": "b7ea9af34f2ebd9054f1c4b1693ca64de875021e90c7dc3a5aa1060bdad7e522",
+      "bytes": 98
+    },
+    "dev006-f-20261020/green-management-first/mail-status.png": {
+      "sha256": "6ef634ede2a08eb7b2dab9c4ae4e34b8dfaac8526b73cecc7001b3adb7105fdc",
+      "bytes": 122471
+    },
+    "dev006-f-20261020/green-management-first/result.json": {
+      "sha256": "78ff3ca0f3993360164d5628d0ad530d7c4248315da089f052c4920603c16f11",
+      "bytes": 4162
+    },
+    "dev006-f-20261020/green-management-first/zentao-detail.png": {
+      "sha256": "971c68af4bbb683412a0d5c0c09b1f2ea93de37956f2ef42770975eaf219ba8f",
+      "bytes": 93198
+    },
+    "dev006-f-20261020/green-session/bootstrap-electron.txt": {
+      "sha256": "82e191e933217c5384840835d015832818d2b87a818a791656ba877e5bd4cd33",
+      "bytes": 678
+    },
+    "dev006-f-20261020/green-session/last-electron.txt": {
+      "sha256": "5753909cdddc910cfee02ffa9859605ad8611a062635183421c2f71bdd354330",
+      "bytes": 98
+    },
+    "dev006-f-20261020/green-session/result.json": {
+      "sha256": "6a29644a87d0ad8693e8ee20f942895ef93d93fca1b1df7765f673d83144cca6",
+      "bytes": 3134
+    },
+    "dev006-f-20261020/green-session/session-fixed-dark.png": {
+      "sha256": "247d911cf2e94f54a69286f2f41dcf313c9a98b52b6064163314efc9b998e1cc",
+      "bytes": 295566
+    },
+    "dev006-f-20261020/green-session/session-fixed-light.png": {
+      "sha256": "75f8c1611ef5ccfbdf31a474497bc6624a4472b6ca3b63e41f427ee8b5528a9e",
+      "bytes": 301736
+    },
+    "dev006-f-20261020/green-session/session-new-composer.png": {
+      "sha256": "eea06b52e0102cfa727936830dc13ba0fcfb324fa768f30f29011cf90ed524d9",
+      "bytes": 158755
+    },
+    "dev006-f-20261020/green-session/session-unknown-dark.png": {
+      "sha256": "07c5033e7237395866383eb75564f187e71dc7f722068dbf44948bc8cd5a00df",
+      "bytes": 287827
+    },
+    "dev006-f-20261020/green-versions/bootstrap-electron.txt": {
+      "sha256": "14ea5ee45324cf187e7f0bd843c8f5b8baf36d619575a1ae878801d4e61ca727",
+      "bytes": 678
+    },
+    "dev006-f-20261020/green-versions/first-electron.txt": {
+      "sha256": "bd13c16c48e3a87a8f243fd0b2b6fa1a1033f4e862eb167487434b18080b1d44",
+      "bytes": 98
+    },
+    "dev006-f-20261020/green-versions/last-electron.txt": {
+      "sha256": "cbd8d8d1e9720c5d4b328ef9f94da79896c4b44be607d8cf55ae98092a9c4209",
+      "bytes": 98
+    },
+    "dev006-f-20261020/green-versions/result.json": {
+      "sha256": "e02499b94a8a3c2712c4826d4988114daa0884ffe5795357212d106857b2eff9",
+      "bytes": 2786
+    },
+    "dev006-f-20261020/green-versions/versions-cleaned.png": {
+      "sha256": "bbde47dbf37698af493a230f9c2d0ac854b38c64e49247ff2d88790f94e2dfee",
+      "bytes": 290044
+    },
+    "dev006-f-20261020/green-versions/versions-dark.png": {
+      "sha256": "35decf2078f8840b9cf1a12e5f9dd4cb038f25eab36c98310fe3bc7a08fa4941",
+      "bytes": 314959
+    },
+    "dev006-f-20261020/green-versions/versions-light.png": {
+      "sha256": "7e8538463dd78a2ead105e4cf4b2155d7736731493586fd87b4a89169181787a",
+      "bytes": 297336
+    },
+    "dev006-f-20261020/green-versions/versions-restarted.png": {
+      "sha256": "29967d915a3e3508dd925348dc12d41635984d88dfb427b50f34e2dbfdb2d4ab",
+      "bytes": 289086
+    },
+    "dev006-f-20261020/m10-dev006-f-identity-tests-20261020.txt": {
+      "sha256": "a0502972624dd4d5711a1b07ddf0561789b51e47dcca02417665eb111c4c4fad",
+      "bytes": 528
+    },
+    "dev006-f-20261020/m10-dev006-f-identity-types-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-management-ui-20261020.txt": {
+      "sha256": "6865c21ab78778fea227bdcf5295ebe21081c8140230998763475e5847799fa8",
+      "bytes": 100
+    },
+    "dev006-f-20261020/m10-dev006-f-management-ui-final-20261020.txt": {
+      "sha256": "d7c320e20d8a25b45cc7ad19c1b5256d62e8bfeec35e232523bb61532a37ebfa",
+      "bytes": 100
+    },
+    "dev006-f-20261020/m10-dev006-f-package-20261020.txt": {
+      "sha256": "ebd1b245b8b4f0679476dd2782b72e9614bf189309138b47c7c082b311a5efac",
+      "bytes": 21167
+    },
+    "dev006-f-20261020/m10-dev006-f-regression-20261020.txt": {
+      "sha256": "537290783f78078690dae9f8efd41983fd3ded8bfffa142298a229356df429f0",
+      "bytes": 2249
+    },
+    "dev006-f-20261020/m10-dev006-f-regression-final-20261020.txt": {
+      "sha256": "3c95892b5af943b5ef5b7cc007cdd3eb20b42ad4056842e47861f19e60f0ca5c",
+      "bytes": 610
+    },
+    "dev006-f-20261020/m10-dev006-f-session-ui-first-20261020.txt": {
+      "sha256": "41995797deb3dd73cd7b0dacea603ad642d29bebb6d06afb28afdfede0b64aad",
+      "bytes": 2273
+    },
+    "dev006-f-20261020/m10-dev006-f-session-ui-second-20261020.txt": {
+      "sha256": "34ebad5c3bd3d15dd2d4b8d9521f2eadc334606d626839b2973cdeb7a03f2723",
+      "bytes": 1129
+    },
+    "dev006-f-20261020/m10-dev006-f-session-ui-third-20261020.txt": {
+      "sha256": "62d948a86fa0e2335f7ba1afdf8952e97543ede95d70f9eb73bc33b6dc121e87",
+      "bytes": 96
+    },
+    "dev006-f-20261020/m10-dev006-f-tests-first-20261020.txt": {
+      "sha256": "5936354972efd063875ee1054ba0b1983b20e3013b7c45e0f35d57b00a7111ba",
+      "bytes": 635
+    },
+    "dev006-f-20261020/m10-dev006-f-tests-second-20261020.txt": {
+      "sha256": "02535d724ac3e61b8ec7d4b4d4fbffec4d5eab822fb2d69028c42640b2bee860",
+      "bytes": 799
+    },
+    "dev006-f-20261020/m10-dev006-f-tests-third-20261020.txt": {
+      "sha256": "942f1ce5de9773db4e71ea7a3ecd3d4e4d3cf5c40e2464d0d306be05a6e7b1ac",
+      "bytes": 799
+    },
+    "dev006-f-20261020/m10-dev006-f-types-final-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-final2-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-final3-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-final4-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-first-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-second-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-types-third-20261020.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-f-20261020/m10-dev006-f-ui-final-20261020.txt": {
+      "sha256": "bb09a665b10d526e39aa03af85935b94f6bc68bfa355a45472092c34e216464b",
+      "bytes": 503
+    },
+    "dev006-f-20261020/m10-dev006-f-versions-ui-20261020.txt": {
+      "sha256": "6e3f52f0af63cc2152fa9d44755d9cf06d2f9dce2fd2d9dbe65e3d3e3b0fce72",
+      "bytes": 97
+    },
+    "dev006-f-20261020/m10-dev006-f2-package-20261020.txt": {
+      "sha256": "00e02812c14d4bde96e288020a4b733a6b268602f8e11343145dd8a169e5faee",
+      "bytes": 20919
+    },
+    "dev006-f-20261020/red-session-flag/bootstrap-electron.txt": {
+      "sha256": "b34da7b5a8ae0cd12416ac970748c05158709f002d9b95b40b31ab6ec45b26b8",
+      "bytes": 678
+    },
+    "dev006-f-20261020/red-session-flag/result.json": {
+      "sha256": "a5ffa497a439ce7189b379396f3c1670ca5f61619975ab75e20a46edda9e1af4",
+      "bytes": 3423
+    },
+    "dev006-f-20261020/red-session-setup/bootstrap-electron.txt": {
+      "sha256": "f2ab2374b6764b6de4cfd764d475daf29351f380ca01f122372316b217c1e055",
+      "bytes": 678
+    },
+    "dev006-f-20261020/red-session-setup/result.json": {
+      "sha256": "b5fb4f4f3ce7a5981d9db3ee1a4441b28c4eb9e611ca718c5cbeff7e7b0b8b44",
+      "bytes": 3792
+    },
+    "dev006-f-20261020/source/drizzle/0021_capability_run_evidence.sql": {
+      "sha256": "9246563053b650cf21d92136d35fb6d434c49baa0d259049d86eb5c770091a9e",
+      "bytes": 848
+    },
+    "dev006-f-20261020/source/drizzle/meta/_journal.json": {
+      "sha256": "d80c33b743f9982afa672568ec7c37a3ef7c2e416ec4536a1c632b26d293294b",
+      "bytes": 3293
+    },
+    "dev006-f-20261020/source/scripts/applications/fixtures/session-precondition.ts": {
+      "sha256": "01897f58c0248132cf30cf28a63b37c76f6e482c07a8dbfafa30148f9f775a73",
+      "bytes": 6778
+    },
+    "dev006-f-20261020/source/scripts/applications/session-ui.mjs": {
+      "sha256": "b2ec680a25d5addea24be30671abead43e24d822ac4ec0453653cfe8ed911e9b",
+      "bytes": 10991
+    },
+    "dev006-f-20261020/source/src/main/core/applications/__tests__/application-controller.test.ts": {
+      "sha256": "ef15042cbdc1a219ba6cba788d4ae285da6570d06bfa7d122cc4d0363c59d4b3",
+      "bytes": 9381
+    },
+    "dev006-f-20261020/source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "dbc810ea0e7eff26e95fd39b5836a2c382612b619d9f09a89524bd5ee704e998",
+      "bytes": 33111
+    },
+    "dev006-f-20261020/source/src/main/core/applications/__tests__/run-fixture.ts": {
+      "sha256": "353e7c3ebf2f87df3af380bee0a591e2e60a6ec53b459b9d5015d389e89a309e",
+      "bytes": 9367
+    },
+    "dev006-f-20261020/source/src/main/core/applications/__tests__/session-diagnostics.test.ts": {
+      "sha256": "747df5a2955c3018b778fdc80662c4c6a8f15b8b2ea8727d6c5251ea4f787413",
+      "bytes": 10848
+    },
+    "dev006-f-20261020/source/src/main/core/applications/__tests__/task-capability-launcher.test.ts": {
+      "sha256": "4de96fb45d040037260998624729a2e60e90dfb9e22254db64cd2534b904c66a",
+      "bytes": 23656
+    },
+    "dev006-f-20261020/source/src/main/core/applications/application-service.ts": {
+      "sha256": "4913f7366b19d5ac47d8bb2622eed2613bf1f9be4d74438b6d4b4ff42f3973d1",
+      "bytes": 23518
+    },
+    "dev006-f-20261020/source/src/main/core/applications/controller.ts": {
+      "sha256": "5c06221f6a332ea46553450a4a151c1f34bcf1892ecf39ec89ea1650cd2086a7",
+      "bytes": 6378
+    },
+    "dev006-f-20261020/source/src/main/core/applications/package-config-views.ts": {
+      "sha256": "d7b0219460d8cabb0b5f7ddfa7df1934dea1eaf11f6783404868c5181305898c",
+      "bytes": 3117
+    },
+    "dev006-f-20261020/source/src/main/core/applications/private-broker.ts": {
+      "sha256": "b8398aba1ae516e8b824a099f470d8a2cbb112304d2769b47eecd0311f8c02d4",
+      "bytes": 13476
+    },
+    "dev006-f-20261020/source/src/main/core/applications/session-diagnostics.ts": {
+      "sha256": "5f66cf04f97f0018bf4e68b0d957b975479ba797cc8ef62512396d653fb54a4d",
+      "bytes": 17038
+    },
+    "dev006-f-20261020/source/src/main/core/applications/task-capability-launcher.ts": {
+      "sha256": "0bfe7279608700d717fcb4a4b8f08764fb0dc29aae1169584648a9d3c29c26ea",
+      "bytes": 31290
+    },
+    "dev006-f-20261020/source/src/main/db/migrations.test.ts": {
+      "sha256": "12da32693f9d789742da4e4fc5223300f500ae72355af55deed224b63ad5975d",
+      "bytes": 24152
+    },
+    "dev006-f-20261020/source/src/main/db/schema.ts": {
+      "sha256": "335ac87e3c689d906e91f532aa2ba9f3fc36606e71e4d9d1b58581f8add006ef",
+      "bytes": 39754
+    },
+    "dev006-f-20261020/source/src/main/index.ts": {
+      "sha256": "7c1ac62d322f9039251dee1c42d153ad9a15e943eb679063094a8abc8aa5f5a0",
+      "bytes": 16158
+    },
+    "dev006-f-20261020/source/src/renderer/features/applications/session-applications.test.tsx": {
+      "sha256": "79d6818486e4becaa15af9ae932ccda6f43468b1ebc0ad80535bd5c3f4bf7a2e",
+      "bytes": 7556
+    },
+    "dev006-f-20261020/source/src/renderer/features/applications/session-applications.tsx": {
+      "sha256": "587e7a683346d2d63cd5b56ca85cbe7f7a90222209480fcaf12ee856b9b7e9d6",
+      "bytes": 8252
+    },
+    "dev006-f-20261020/source/src/renderer/features/applications/style.css": {
+      "sha256": "ec942e35e72aed87cbc95d9ec5af22fd9355d032385a40d8f244b87427626e08",
+      "bytes": 35247
+    },
+    "dev006-f-20261020/source/src/renderer/views/task-chrome.tsx": {
+      "sha256": "5c60a86bfa78acf56e5d30fe9b3cf89123d2a6c0f7867028a005134a7c258dd2",
+      "bytes": 11591
+    },
+    "dev006-f-20261020/source/src/shared/application-session-diagnostics.ts": {
+      "sha256": "9fa946d90ffdc8ca939a2954fd224533d8cbf5b56168a4bbc92502d1c9c48e0f",
+      "bytes": 2128
+    },
+    "dev006-f-20261020/source-manifest.json": {
+      "sha256": "1151d4d8b80451c2a09801c405d4588ffb12bb01e66dd7ee167c005edc5531f6",
+      "bytes": 3678
+    },
+    "dev006-f-20261020/tracked-changes.patch": {
+      "sha256": "31c319d6b90e7a7157c8ab0c1bbf38cc97481dddddba0bdd0950b05c9a0424bb",
+      "bytes": 70002
+    }
+  }
+}

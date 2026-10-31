@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@renderer/lib/ui/switch';
 
 const issueLabels: Record<string, [string, string]> = {
+  managed_launch_payload_too_large: ['本次应用能力内容超过启动容量，已停用应用注入；Agent 可继续工作', 'Application capabilities exceed launch capacity; disabled for this run. The Agent can continue.'],
+  AGENT_ADAPTER_UNSUPPORTED: ['此 Agent 配置的应用能力暂不可用，其他工作可继续', 'Application capabilities are unavailable for this Agent configuration; other work can continue.'],
+  HISTORY_CAPABILITIES_UNKNOWN: ['无法确认历史会话的应用能力，已保留原会话并停用应用授权', 'Historical application capabilities could not be verified; the original session is preserved with application access disabled.'],
   file_hash_mismatch: ['投影内容已改变，请重新启动任务', 'Projection changed; restart the task'],
   file_unreadable: ['投影文件不可读取', 'Projection file unreadable'],
   manifest_invalid: ['投影清单无效', 'Invalid projection manifest'],

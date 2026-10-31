@@ -125,6 +125,29 @@ M9 DEV048 language-service host:
   Existing locked packages are used directly for JSON-RPC transport/protocol types.
   Language servers are user-configured local executables and are not bundled or downloaded.
 
+M10 applications (implementation in progress):
+- SMTP composition/transport uses the unmodified Nodemailer 10.1.7 library
+  (Andris Reinman and contributors, MIT-0).
+- Local RFC 822/MIME decoding uses unmodified postal-mime 4.0.11
+  (Andris Reinman and contributors, MIT-0).
+  Exact dependency versions/integrities are in pnpm-lock.yaml; original licenses,
+  source links and license hashes are retained in licenses/M10/.
+- The Foxmail native reader uses macOS system SQLite through public C APIs; it
+  does not distribute SQLite or Foxmail code. Its readonly VFS, bounded Worker,
+  source checks, and provider business logic are WillYou implementations.
+- ZenTao reading promotes this repository's reviewed M10 my_work_client.py
+  protocol contract; no ZenTao PHP source is copied into the application.
+
+M10 private application MCP bridge (implementation in progress):
+- Uses the existing official @modelcontextprotocol/server and core 2.0.0, plus
+  zod 4.6.7; runtime CJS bundles their local locked code rather than finding a
+  user-installed SDK or Node. Original installed package metadata and LICENSE
+  texts are retained in licenses/M10/bridge/; server and Zod texts are also
+  included in the CJS banner. The MCP LICENSE contains an Apache-2.0/MIT
+  transition notice; the upstream full text, rather than a metadata-only
+  license label, governs this retained notice. Generated CJS is bundled by
+  Vite/Rollup; installed upstream source files are not edited.
+
 M9 legacy DOCX rendering uses docx-preview 0.3.7 by Volodymyr Baydalka (Apache-2.0).
 Upstream: https://github.com/VolodymyrBaydalka/docxjs; license retained at
 licenses/M9/docx-preview@0.3.7__LICENSE. It is used in a scriptless frame with

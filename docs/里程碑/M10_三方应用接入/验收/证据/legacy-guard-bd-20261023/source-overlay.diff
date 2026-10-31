@@ -1,0 +1,292 @@
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,6 +1,6 @@
+ import {DiscoveryCatalog} from '../discovery-catalog';
+ import {captureNativeStaticRoots,verifyNativeStaticRoots} from '../native-static-roots';
+-import {createNativeGuardDiscoveryProof,nativeGuardResourceOmissions,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof} from '../native-discovery-exclusions';
++import {createNativeGuardDiscoveryProof,nativeGuardResourceOmissions,nativeGuardCatalogOmissions,nativeGuardAdapterExclusions,type NativeGuardDiscoveryProof} from '../native-discovery-exclusions';
+ import {spawnSync} from 'node:child_process';
+ import {secretKeys} from '../../projects/secret-keys';
+ import {SessionCapabilityProjector} from '../session-projector';
+@@ -927,3 +927,75 @@
+   }finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
+  });
+ });
++
++
++describe('registered legacy H damage retains ordinary native work',()=>{
++ beforeEach(()=>{
++  // This private TestPtys composition never forks CLI/MCP children. Match each
++  // synthetic bridge exit to its own synthetic CLI exit, as in the existing controls.
++  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
++  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
++  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);void handle.exited();}});
++ });
++ it.each(['claude-code','codex'].flatMap(runner=>['new','resume'].flatMap(mode=>['owned-byte-edit','user-replacement'].map(fault=>[runner,mode,fault] as const))))('retains registered legacy H and full original C without application grants: %s %s %s',async(runner,mode,fault)=>{
++  const old=capabilities.prepare({projectId,taskId:randomUUID(),runner:'codex',cwd,home,profileArgs:[]}),originalPath=old.snapshot.skills.find(s=>s.enabled)!.path;old.release();
++  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
++  const h=await create(codexId),hId=await stopForSwitchFixture(h,'codex'),catalogFile=join(home,'.agents/smartdd-runtime/catalog.json'),catalog=readFileSync(catalogFile),raw=JSON.parse(catalog.toString()),entry=raw.entries.find((e:{path:string})=>e.path===originalPath);expect(entry).toMatchObject({format:'legacy-tree-v1',storeId:support.store.storeId});
++  const profile=runner==='codex'?codexId:claudeId,seed=mode==='resume'?(runner==='codex'?h:await create(claudeId)):undefined,nativeId=seed?(runner==='codex'?hId:await stopForSwitchFixture(seed,'claude-code')):undefined,fixed=seed?await managed.sessions.get(seed.task.id):undefined,refs=seed?await managed.sessions.references(seed.task.id):[],hResource=support.store.get(entry.resourceId),sourceRow=sqlite.prepare('SELECT dependency_id AS id FROM capability_resource_dependencies WHERE resource_id=?').get(entry.resourceId) as {id:string},source=support.store.get(sourceRow.id),original=readFileSync(originalPath),folder=dirname(originalPath),backup=join(root,'BD-original-legacy-H');
++  if(fault==='user-replacement'){renameSync(folder,backup);mkdirSync(folder);writeFileSync(originalPath,'---\nname: user-legacy-replacement\ndescription: preserve this user directory\n---\n');}else writeFileSync(originalPath,Buffer.concat([original,Buffer.from('\nEdited owned legacy bytes.\n')]));
++  const user=readFileSync(originalPath),command=profiles.resolve(profile).command;writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=seed?await tasks.open({taskId:seed.task.id}):await create(profile);const run=running.task.runtimeSnapshot!.runId;expect(ptys.live.has(running.ptyId)).toBe(true);expect(()=>managed.runs.assertActive(run)).toThrow('不签发');expect(managed.runs.inputContext(running.task.id,running.ptyId)).toBeNull();expect(sqlite.prepare("SELECT count(*) n FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(run)).toEqual({n:0});
++   const held=sqlite.prepare("SELECT r.resource_id AS id,r.content_hash AS hash,r.generation FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_kind='run' AND l.owner_id=?").all(run);expect(held).toContainEqual({id:hResource.resourceId,hash:hResource.contentHash,generation:hResource.generation});expect(held).toContainEqual({id:source.resourceId,hash:source.contentHash,generation:source.generation});expect(readFileSync(catalogFile)).toEqual(catalog);expect(readFileSync(originalPath)).toEqual(user);
++   const consumer=JSON.parse(readFileSync(join(home,'.agents/smartdd-runtime/catalog-consumers',support.store.storeId+'-'+run+'.json'),'utf8'));expect(consumer.generation).toBe(raw.generation);expect(consumer.runId).toBe(run);expect(consumer.ptyId).toBe(running.ptyId);expect(consumer.runner).toBe(runner);
++   if(seed){expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed!.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);}expect(sqlite.prepare('SELECT count(*) n FROM mail_send_grants').get()).toEqual({n:0});
++  }finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },25000);
++
++ async function registeredLegacyFixture(runner:'claude-code'|'codex'){
++  const old=capabilities.prepare({projectId,taskId:randomUUID(),runner:'codex',cwd,home,profileArgs:[]}),path=old.snapshot.skills.find(s=>s.enabled)!.path;old.release();
++  const h=await create(codexId),hNative=await stopForSwitchFixture(h,'codex'),seed=runner==='codex'?h:await create(claudeId),nativeId=runner==='codex'?hNative:await stopForSwitchFixture(seed,runner),fixed=await managed.sessions.get(seed.task.id),catalogPath=join(home,'.agents/smartdd-runtime/catalog.json'),catalog=readFileSync(catalogPath),raw=JSON.parse(catalog.toString()),entry=raw.entries.find((e:{path:string})=>e.path===path);expect(entry.format).toBe('legacy-tree-v1');
++  return{path,original:readFileSync(path),seed,nativeId,fixed,catalogPath,catalog,raw,entry,command:profiles.resolve(runner==='codex'?codexId:claudeId).command};
++ }
++ it('uses an actual converted Codex zero-authority guard for pure-false legacy planning and rejects all ordinary or copied bypasses',async()=>{
++  const old=await retainedOriginal('codex'),activated=await tasks.open({taskId:old.id}),fixed=await managed.sessions.get(old.id);expect(fixed.snapshot.legacyBinding).toBeDefined();tasks.kill(old.id);await vi.waitFor(()=>expect(managed.runs.get(activated.task.runtimeSnapshot!.runId).state).toBe('stopped'));
++  const path=old.runtime.snapshot.skills.find(s=>s.enabled)!.path,original=readFileSync(path),configPath=join(home,'.codex/config.toml'),config='skills.config=[{path='+JSON.stringify(path)+',enabled=true,note="preserve exact user choice"}]\n';writeFileSync(path,Buffer.concat([original,Buffer.from('\nChanged old bytes.\n')]));writeFileSync(configPath,config);
++  const plan=support.adapters.planNativeGuard.bind(support.adapters);let observed:{hash:string;request:Parameters<typeof plan>[1];proof:NativeGuardDiscoveryProof}|undefined;
++  const spy=vi.spyOn(support.adapters,'planNativeGuard').mockImplementation((hash,request,proof)=>{observed={hash,request:structuredClone(request),proof};return plan(hash,request,proof);});let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{
++   running=await tasks.open({taskId:old.id});spy.mockRestore();expect(observed).toBeDefined();const value=observed!,run=running.task.runtimeSnapshot!.runId,request=value.request,proof=value.proof,catalog=request.catalog!,instance=new DiscoveryCatalog(support.store,home,reader,{instanceId:managed.runs.instanceId});expect(nativeGuardCatalogOmissions(support.store,proof,home,catalog)).toContain(path);
++   expect(()=>support.adapters.plan(value.hash,request)).toThrow();expect(()=>support.adapters.plan(value.hash,{...request,catalogExclusions:{schema:'native-discovery-exclusions-v1',generation:catalog.generation,paths:[path]}})).toThrow('不能排除旧格式');expect(()=>nativeGuardAdapterExclusions(support.store,proof)).toThrow('旧格式排除');
++   expect(()=>instance.verifyNativeIsolation(catalog)).toThrow();const roots=captureNativeStaticRoots(support.store,catalog.entries.filter(e=>e.storeId===support.store.storeId).map(e=>e.resourceId));expect(()=>verifyNativeStaticRoots(support.store,roots)).toThrow();expect(()=>verifyNativeStaticRoots(support.store,roots,proof)).not.toThrow();
++   const again=plan(value.hash,request,proof),flags=(parseToml(again.args.find(a=>a.startsWith('skills.config='))!).skills as {config:{path:string;enabled:boolean;note?:string}[]}).config;expect(flags).toContainEqual({path,enabled:true,note:'preserve exact user choice'});expect(flags.filter(f=>f.path!==path).every(f=>f.enabled===false)).toBe(true);expect(readFileSync(configPath,'utf8')).toBe(config);expect(()=>managed.runs.assertActive(run)).toThrow('不签发');expect(managed.runs.inputContext(old.id,running.ptyId)).toBeNull();
++   for(const copied of [structuredClone(proof),JSON.parse(JSON.stringify(proof)),{schema:'native-guard-discovery-proof-v1',runId:run}])expect(()=>plan(value.hash,request,copied as NativeGuardDiscoveryProof)).toThrow();
++   for(const changed of [{...request,runId:randomUUID()},{...request,native:{...request.native,home:join(root,'other-home')}},{...request,native:{...request.native,sessionId:randomUUID()}},{...request,snapshot:{...request.snapshot,standardSkills:fixed.snapshot.standardSkills}},{...request,snapshot:{...request.snapshot,mcp:fixed.snapshot.mcp}},{...request,snapshot:{...request.snapshot,legacyBinding:fixed.snapshot.legacyBinding}},{...request,catalog:{...catalog,entries:catalog.entries.filter(e=>e.path!==path)}}])expect(()=>plan(value.hash,changed,proof)).toThrow();
++   expect(()=>createNativeGuardDiscoveryProof(support.store,{schema:'native-guard-discovery-omissions-v1',home,catalog,paths:[path]},{kind:'fixed',runId:run,taskId:old.id,projectId,runner:'codex',snapshotHash:managed.runs.get(run).snapshotHash},()=>{})).toThrow('不能排除旧格式');
++   writeFileSync(path,original);expect(()=>plan(value.hash,request,proof)).toThrow('须重新准备');expect(()=>managed.runs.assertActive(run)).toThrow('不签发');tasks.kill(old.id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));expect(()=>nativeGuardResourceOmissions(support.store,proof)).toThrow();running=await tasks.open({taskId:old.id});expect((await managed.sessions.get(old.id)).snapshot).toEqual(fixed.snapshot);expect(running.task.nativeSessionId).toBe(old.sessionId);expect(managed.runs.assertActive(running.task.runtimeSnapshot!.runId).snapshot).toEqual(fixed.snapshot);expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path)).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath));
++  }finally{spy.mockRestore();if(running){tasks.kill(old.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each(['claude-code','codex'].flatMap(runner=>['restored-original','catalog-changed','other-H-changed'].map(fault=>[runner,fault] as const)))('rechecks registered legacy retention at the final native fork: %s %s',async(runner,fault)=>{
++  const x=await registeredLegacyFixture(runner as 'claude-code'|'codex');writeFileSync(x.path,Buffer.concat([x.original,Buffer.from('\nUnverified old bytes.\n')]));writeFileSync(x.command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const count=ptys.launches.length,prepare=managed.prepare.bind(managed);let mutated=false;
++  const spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();mutated=true;if(fault==='restored-original')writeFileSync(x.path,x.original);else if(fault==='catalog-changed'){const raw=JSON.parse(x.catalog.toString());raw.generation='0'.repeat(64);writeFileSync(x.catalogPath,JSON.stringify(raw));}else{const other=x.raw.entries.find((e:{path:string})=>e.path!==x.path);expect(other).toBeDefined();writeFileSync(other.path,readFileSync(other.path,'utf8')+'\nChanged other H tree.\n');}};return launch;});
++  try{let failure:unknown;try{await tasks.open({taskId:x.seed.task.id});}catch(error){failure=error;}expect(failure).toBeDefined();expect(['RESOURCE_STATE_CHANGED','RESOURCE_RECOVERY_REQUIRED','HASH_MISMATCH','OWNERSHIP_CONFLICT']).toContain((failure as {code:string}).code);expect(mutated).toBe(true);expect(ptys.launches).toHaveLength(count);expect((await managed.sessions.get(x.seed.task.id)).snapshot).toEqual(x.fixed.snapshot);expect(sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state NOT IN('stopped','failed')").get()).toEqual({n:0});expect(consumers()).toEqual([]);}
++  finally{spy.mockRestore();writeFileSync(x.catalogPath,x.catalog);}
++ },25000);
++ it.each(['claude-code','codex'] as const)('preserves actual schema0 native history through registered legacy corruption and same-path repair: %s',async runner=>{
++  const x=await registeredLegacyFixture(runner),id=randomUUID(),nativeId=randomUUID(),stamp=Date.now(),stateRoot=join(home,runner==='codex'?'.codex':'.claude');drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:runner==='codex'?codexId:claudeId,runner:runner==='codex'?'codex':'claude',nativeSessionId:nativeId,title:'registered legacy H unknown original history',runtimeSnapshot:null,configVersion:0,stateRoot,createdAt:stamp,updatedAt:stamp}).run();seedNativeHistory(runner,nativeId,stateRoot);writeFileSync(x.path,Buffer.concat([x.original,Buffer.from('\nUnverified history old H.\n')]));writeFileSync(x.command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=await tasks.open({taskId:id});const run=running.task.runtimeSnapshot!.runId;expect(running.task.nativeSessionId).toBe(nativeId);expect(running.task.runtimeSnapshot!.sessionCapabilities).toBeUndefined();expect(()=>managed.runs.assertActive(run)).toThrow('不签发');expect(managed.runs.inputContext(id,running.ptyId)).toBeNull();const held=sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json,retention_state FROM capability_session_snapshots WHERE task_id=?').get(id);expect(held).toMatchObject({schema_version:0,retention_state:'hold'});expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));writeFileSync(x.path,x.original);writeFileSync(x.command,'#!/bin/sh\ncase "$1" in --version) echo "'+(runner==='codex'?'0.162.1':'2.1.303 (Claude Code)')+'";; *) exit 70;; esac\n');running=await tasks.open({taskId:id});expect(running.task.nativeSessionId).toBe(nativeId);expect(()=>managed.runs.assertActive(running!.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json,retention_state FROM capability_session_snapshots WHERE task_id=?').get(id)).toEqual(held);expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});expect(readFileSync(x.catalogPath)).toEqual(x.catalog);}
++  finally{if(running){tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },25000);
++
++ it.each([['new','owned-byte-edit'],['resume','user-replacement']] as const)('supports known Codex ordinary continuation despite registered legacy H failure: %s %s',async(mode,fault)=>{
++  const runner='codex';
++  const old=capabilities.prepare({projectId,taskId:randomUUID(),runner:'codex',cwd,home,profileArgs:[]}),originalPath=old.snapshot.skills.find(s=>s.enabled)!.path;old.release();
++  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
++  const h=await create(codexId),hId=await stopForSwitchFixture(h,'codex'),catalogFile=join(home,'.agents/smartdd-runtime/catalog.json'),catalog=readFileSync(catalogFile),raw=JSON.parse(catalog.toString()),entry=raw.entries.find((e:{path:string})=>e.path===originalPath);expect(entry).toMatchObject({format:'legacy-tree-v1',storeId:support.store.storeId});
++  const profile=runner==='codex'?codexId:claudeId,seed=mode==='resume'?(runner==='codex'?h:await create(claudeId)):undefined,nativeId=seed?(runner==='codex'?hId:await stopForSwitchFixture(seed,'claude-code')):undefined,fixed=seed?await managed.sessions.get(seed.task.id):undefined,refs=seed?await managed.sessions.references(seed.task.id):[],hResource=support.store.get(entry.resourceId),sourceRow=sqlite.prepare('SELECT dependency_id AS id FROM capability_resource_dependencies WHERE resource_id=?').get(entry.resourceId) as {id:string},source=support.store.get(sourceRow.id),original=readFileSync(originalPath),folder=dirname(originalPath),backup=join(root,'BD-original-legacy-H');
++  if(fault==='user-replacement'){renameSync(folder,backup);mkdirSync(folder);writeFileSync(originalPath,'---\nname: user-legacy-replacement\ndescription: preserve this user directory\n---\n');}else writeFileSync(originalPath,Buffer.concat([original,Buffer.from('\nEdited owned legacy bytes.\n')]));
++  const user=readFileSync(originalPath),command=profiles.resolve(profile).command;writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n');let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=seed?await tasks.open({taskId:seed.task.id}):await create(profile);const run=running.task.runtimeSnapshot!.runId;expect(ptys.live.has(running.ptyId)).toBe(true);expect(()=>managed.runs.assertActive(run)).toThrow('不签发');expect(managed.runs.inputContext(running.task.id,running.ptyId)).toBeNull();expect(sqlite.prepare("SELECT count(*) n FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(run)).toEqual({n:0});
++   const held=sqlite.prepare("SELECT r.resource_id AS id,r.content_hash AS hash,r.generation FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_kind='run' AND l.owner_id=?").all(run);expect(held).toContainEqual({id:hResource.resourceId,hash:hResource.contentHash,generation:hResource.generation});expect(held).toContainEqual({id:source.resourceId,hash:source.contentHash,generation:source.generation});expect(readFileSync(catalogFile)).toEqual(catalog);expect(readFileSync(originalPath)).toEqual(user);
++   const consumer=JSON.parse(readFileSync(join(home,'.agents/smartdd-runtime/catalog-consumers',support.store.storeId+'-'+run+'.json'),'utf8'));expect(consumer.generation).toBe(raw.generation);expect(consumer.runId).toBe(run);expect(consumer.ptyId).toBe(running.ptyId);expect(consumer.runner).toBe(runner);
++   if(seed){expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed!.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);}expect(sqlite.prepare('SELECT count(*) n FROM mail_send_grants').get()).toEqual({n:0});
++  }finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },25000);
++});
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -1,4 +1,4 @@
+-import {validateNativeDiscoveryExclusions} from './native-discovery-exclusions';
++import {validateNativeDiscoveryExclusions,nativeGuardPlanOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
+ import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
+ import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
+ import { createRequire } from 'node:module';
+@@ -41,7 +41,7 @@
+     const manifest = verifyOwnedBundle(join(this.store.root,installed.resource.relativePath),hash,this.store.storeId);
+     if (canonicalJson(manifest) !== canonicalJson(installed.manifest)) throw new ApplicationError('HASH_MISMATCH','Agent适配器完整树已改变'); return installed;
+   }
+-  private preflight(installed: InstalledAgentAdapter,input: AgentLoadRequest): void {
++  private preflight(installed: InstalledAgentAdapter,input: AgentLoadRequest,guardOmissions?:ReadonlySet<string>): void {
+     const snapshot = input.snapshot, meta = installed.metadata;
+     if (snapshot.runner !== meta.agentId || snapshot.adapterBinding.hash !== installed.hash || snapshot.adapterBinding.id !== meta.agentId || snapshot.adapterBinding.version !== meta.version || snapshot.adapterBinding.projectionFormatVersion !== meta.projectionFormatVersion) throw new ApplicationError('SNAPSHOT_CORRUPT','固定适配器与原快照不一致');
+     if (!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64') || !meta.cliVersions.includes(input.cliVersion)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
+@@ -53,7 +53,7 @@
+     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
+     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
+     const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+-    const excludedH=validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
++    const excludedH=guardOmissions??validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
+     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
+       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
+       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
+@@ -94,13 +94,15 @@
+       if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
+     }
+   }
+-  plan(hash: string,value: AgentLoadRequest): AgentLoadPlan {
++  plan(hash:string,value:AgentLoadRequest):AgentLoadPlan{return this.planChecked(hash,value);}
++  planNativeGuard(hash:string,value:AgentLoadRequest,proof:NativeGuardDiscoveryProof):AgentLoadPlan{return this.planChecked(hash,value,proof);}
++  private planChecked(hash:string,value:AgentLoadRequest,proof?:NativeGuardDiscoveryProof):AgentLoadPlan {
+     const parsed = agentLoadRequestSchema.safeParse(value); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','Agent加载计划包含未允许字段或格式错误');
+-    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');this.preflight(installed,input);
++    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');const omitted=proof?nativeGuardPlanOmissions(this.store,proof,input):undefined;this.preflight(installed,input,omitted);
+     try {
+       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
+       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
+-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&input.catalogExclusions?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!input.catalogExclusions!.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
++      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
+   }
+   planLegacy(hash:string,value:unknown):AgentLoadPlan {
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -1,4 +1,4 @@
+-import {verifyModernDiscoveryProjection,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
++import {verifyModernDiscoveryProjection,nativeGuardEntryUnavailable,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
+ import { randomUUID } from 'node:crypto';
+ import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+@@ -199,8 +199,8 @@
+     });}
+     /** Read-only candidate,not a verified guard receipt or loading authority. */
+     async nativeGuardSelection():Promise<NativeGuardDiscoverySelection|undefined>{return this.lock(()=>{
+-        const raw=this.catalog(),paths:string[]=[];for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))paths.push(entry.path);else throw error;}}
+-        return paths.length?{schema:'native-guard-discovery-omissions-v1' as const,home:this.home,catalog:structuredClone({generation:raw.generation,entries:raw.entries}),paths}:undefined;
++        const raw=this.catalog(),paths:string[]=[];let legacy=false;for(const entry of raw.entries)if(nativeGuardEntryUnavailable(entry,this.home,true)){paths.push(entry.path);if(entry.format)legacy=true;}
++        return paths.length?{schema:legacy?'native-guard-retention-omissions-v1' as const:'native-guard-discovery-omissions-v1' as const,home:this.home,catalog:structuredClone({generation:raw.generation,entries:raw.entries}),paths}:undefined;
+     });}
+     verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
+     /** Only for a no-authority native guard: verify complete H bytes/metadata,
+@@ -213,7 +213,7 @@
+         for (const entry of parsed.entries) {
+             if (entry.path !== join(this.home, '.agents/skills', entry.nativeName, 'SKILL.md'))
+                 throw new ApplicationError('OWNERSHIP_CONFLICT', '投影越过实际发现根');
+-            if(omitted.has(entry.path)){if(entry.format)throw new ApplicationError('SCOPE_DENIED','旧目录不参与普通守护的新格式排除');continue;}
++            if(omitted.has(entry.path))continue;
+             if(entry.format==='legacy-tree-v1'){
+                 const identity=verifyLegacyDiscoveryEntry(entry,this.home);
+                 if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);
+--- a/src/main/core/applications/native-discovery-exclusions.ts
++++ b/src/main/core/applications/native-discovery-exclusions.ts
+@@ -5,7 +5,7 @@
+ import {ApplicationError} from '@shared/applications';
+ import type {AgentLoadRequest} from '@shared/agent-adapters';
+ import {canonicalJson,digest} from './manifest';
+-import {assertDiscoveryPath} from './legacy-discovery';
++import {assertDiscoveryPath,legacyDiscoveryEntry,verifyLegacyDiscoveryEntry} from './legacy-discovery';
+ import {verifyOwnedBundle} from './owned-bundle';
+ import type {ResourceStore} from './resource-store';
+ type Entry=NonNullable<AgentLoadRequest['catalog']>['entries'][number];
+@@ -25,6 +25,22 @@
+  if(manifest.metadata.kind!=='codex-agent-projection-v1'||manifest.metadata.homeId!==digest(home)||manifest.metadata.nativeName!==entry.nativeName||manifest.metadata.sourceHash!==entry.sourceHash)throw new ApplicationError('HASH_MISMATCH','原投影内容或原生身份不同');
+ }
+ 
++/** A retention candidate is not an ownership claim. Legacy identity must still
++ * match the complete registered entry before any physical failure can be omitted. */
++export function nativeGuardEntryUnavailable(entry:Entry,home:string,legacy=false):boolean{
++ if(entry.format){
++  if(!legacy)throw new ApplicationError('SCOPE_DENIED','旧格式目录不能使用现代加载排除');
++  const match=/^smartdd-([a-z][a-z0-9-]{0,63})-([a-f0-9]{16})$/.exec(entry.nativeName);
++  if(!match||canonicalJson(legacyDiscoveryEntry(entry.storeId,home,match[1],entry.sourceHash))!==canonicalJson(entry))throw recovery();
++ }
++ try{if(entry.format)verifyLegacyDiscoveryEntry(entry,home);else verifyModernDiscoveryProjection(entry,home);return false;}
++ catch(error){
++  if(error instanceof ApplicationError&&['HASH_MISMATCH','OWNERSHIP_CONFLICT',...(entry.format?['RESOURCE_RECOVERY_REQUIRED']:[])].includes(error.code))return true;
++  if(entry.format&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))return true;
++  throw error;
++ }
++}
++
+ interface CatalogBinding {runId:string;taskId:string;projectId:string;runner:'claude-code'|'codex';home:string;catalog:NonNullable<AgentLoadRequest['catalog']>}
+ function boundCatalog(store:ResourceStore,input:CatalogBinding){
+  const {catalog,home}=input,homeId=digest(home);if(digest(canonicalJson({homeId,entries:catalog.entries}))!==catalog.generation)throw recovery();
+@@ -36,9 +52,9 @@
+  if(consumer.schema!==1||consumer.homeId!==homeId||consumer.generation!==catalog.generation||consumer.runner!==input.runner||consumer.runId!==input.runId||consumer.ptyId!==run.pty_id||!['preparing','active'].includes(String(consumer.phase))||!owner||owner.storeId!==store.storeId||owner.uFingerprint!==digest(dirname(store.root))||owner.instanceId!==run.owner_instance_id||owner.pid!==run.owner_pid||owner.startedAt!==run.owner_started_at)throw recovery();
+  return run;
+ }
+-function unverifiedPaths(catalog:CatalogBinding['catalog'],home:string,paths:readonly string[],selectedPaths:readonly string[]):Set<string>{
++function unverifiedPaths(catalog:CatalogBinding['catalog'],home:string,paths:readonly string[],selectedPaths:readonly string[],legacy=false):Set<string>{
+  if(new Set(paths).size!==paths.length)throw recovery();const excluded=new Set(paths);
+- for(const path of excluded){const entry=catalog.entries.find(e=>e.path===path);if(!entry||entry.format||selectedPaths.includes(path))throw new ApplicationError('SCOPE_DENIED','不能排除旧格式、未知路径或本轮启用的受管Skill');let unavailable=false;try{verifyModernDiscoveryProjection(entry,home);}catch(error){if(error instanceof ApplicationError&&['HASH_MISMATCH','OWNERSHIP_CONFLICT'].includes(error.code))unavailable=true;else throw error;}if(!unavailable)throw new ApplicationError('RESOURCE_STATE_CHANGED','原目录已恢复受管归属，须重新准备而非扩大本轮加载');}
++ for(const path of excluded){const entry=catalog.entries.find(e=>e.path===path);if(!entry||entry.format&&!legacy||selectedPaths.includes(path))throw new ApplicationError('SCOPE_DENIED','不能排除旧格式、未知路径或本轮启用的受管Skill');if(!nativeGuardEntryUnavailable(entry,home,legacy))throw new ApplicationError('RESOURCE_STATE_CHANGED','原目录已恢复受管归属，须重新准备而非扩大本轮加载');}
+  return excluded;
+ }
+ /** Explicit host-only omission of physically unverified modern entries.The raw
+@@ -51,7 +67,8 @@
+  return unverifiedPaths(catalog,home,proof.paths,selectedPaths);
+ }
+ const hash=z.string().regex(/^[a-f0-9]{64}$/),absolute=z.string().min(1).max(4096).refine(s=>s.startsWith('/')&&!/[\x00\r\n]/.test(s));
+-const guardSelectionSchema=z.object({schema:z.literal('native-guard-discovery-omissions-v1'),home:absolute,catalog:agentLoadRequestSchema.shape.catalog.unwrap(),paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict();
++const modernGuardSelectionSchema=z.object({schema:z.literal('native-guard-discovery-omissions-v1'),home:absolute,catalog:agentLoadRequestSchema.shape.catalog.unwrap(),paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict();
++const guardSelectionSchema=z.discriminatedUnion('schema',[modernGuardSelectionSchema,modernGuardSelectionSchema.extend({schema:z.literal('native-guard-retention-omissions-v1')}).strict()]);
+ export type NativeGuardDiscoverySelection=z.infer<typeof guardSelectionSchema>;
+ const guardContextSchema=z.object({runId:z.uuid(),taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:hash,kind:z.enum(['history','fixed'])}).strict();
+ export interface NativeGuardDiscoveryProof {readonly schema:'native-guard-discovery-proof-v1';readonly runId:string}
+@@ -67,7 +84,8 @@
+  if(!source||source.snapshot_hash!==context.snapshotHash||digest(source.snapshot_json)!==context.snapshotHash)throw recovery();
+  if(context.kind==='fixed'){if(source.schema_version!==2||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
+  else if(source.schema_version!==0||source.retention_state!=='hold'||source.legacy_status!=='history-unknown')throw recovery();
+- unverifiedPaths(selection.catalog,selection.home,selection.paths,[]);record.assertOwnedGuard();return record;
++ if(selection.schema==='native-guard-retention-omissions-v1'&&!selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format==='legacy-tree-v1'))throw recovery();
++ unverifiedPaths(selection.catalog,selection.home,selection.paths,[],selection.schema==='native-guard-retention-omissions-v1');record.assertOwnedGuard();return record;
+ }
+ /** Mint only after the actual no-authority guard owns its complete C lease and H
+  * consumer.The retained input is parsed/cloned;JSON copies are not receipts. */
+@@ -81,9 +99,23 @@
+ export function nativeGuardResourceOmissions(store:ResourceStore,proof:NativeGuardDiscoveryProof):Set<string>{
+  const {selection}=guardRecord(store,proof),ids=new Set<string>();
+  for(const path of selection.paths){const entry=selection.catalog.entries.find(e=>e.path===path)!;if(entry.storeId!==store.storeId)continue;const r=store.get(entry.resourceId);
+-  if(r.kind!=='agent-projection'||r.pathScope!=='H'||r.ownerStoreId!==store.storeId||r.scopeIdentity!==digest(selection.home)||r.relativePath!=='.agents/skills/'+entry.nativeName||r.contentHash!==entry.projectionHash)throw recovery();ids.add(r.resourceId);}
++  if(r.kind!==(entry.format?'legacy-agent-projection':'agent-projection')||r.pathScope!=='H'||r.ownerStoreId!==store.storeId||r.scopeIdentity!==digest(selection.home)||r.relativePath!=='.agents/skills/'+entry.nativeName||r.contentHash!==entry.projectionHash)throw recovery();ids.add(r.resourceId);}
+  return ids;
+ }
+ export function nativeGuardAdapterExclusions(store:ResourceStore,proof:NativeGuardDiscoveryProof):NonNullable<AgentLoadRequest['catalogExclusions']>{
+- const {selection,context}=guardRecord(store,proof);if(context.runner!=='codex')throw recovery();return{schema:'native-discovery-exclusions-v1',generation:selection.catalog.generation,paths:[...selection.paths]};
++ const {selection,context}=guardRecord(store,proof);if(context.runner!=='codex')throw recovery();if(selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format))throw new ApplicationError('SCOPE_DENIED','旧格式排除只能用于本轮零授权守护规划');return{schema:'native-discovery-exclusions-v1',generation:selection.catalog.generation,paths:[...selection.paths]};
+ }
++
++/** Pure-false planning only. The opaque live guard is independent from the old
++ * serialized modern-exclusion field, whose legacy rejection stays unchanged. */
++export function nativeGuardPlanOmissions(store:ResourceStore,proof:NativeGuardDiscoveryProof,input:AgentLoadRequest):Set<string>{
++ const {selection,context}=guardRecord(store,proof),snapshot=input.snapshot;
++ if(context.runner!=='codex'||input.runId!==context.runId||snapshot.runner!==context.runner||snapshot.taskId!==context.taskId||snapshot.projectId!==context.projectId||snapshot.packages.length||snapshot.standardSkills.length||snapshot.mcp.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||snapshot.legacyBinding||input.mcp.length||input.pluginRoot!==null||input.pluginHash!==null||input.catalogExclusions||input.applicationScope||input.standardSkillScope||input.claudeDelivery||input.currentExecutable!==process.execPath||!input.catalog)throw recovery();
++ const omitted=nativeGuardCatalogOmissions(store,proof,input.native.home,input.catalog);
++ const row=store.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(context.taskId) as {snapshot_json:string};
++ const source=JSON.parse(row.snapshot_json),native=context.kind==='fixed'?source.native:source;
++ if(input.native.runner!==context.runner||input.native.cwd!==native.cwd||input.native.stateRoot!==native.stateRoot||input.native.sessionId!==native.sessionId)throw recovery();
++ const adapter=store.get('agent-adapter:'+context.runner+':'+snapshot.adapterBinding.hash);
++ const held=store.sqlite.prepare("SELECT 1 FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_kind='run' AND l.owner_id=? AND r.resource_id=? AND r.content_hash=? AND r.generation=?").get(context.runId,adapter.resourceId,adapter.contentHash,adapter.generation);if(!held)throw recovery();
++ return omitted;
++}
+--- a/src/main/core/applications/native-static-roots.ts
++++ b/src/main/core/applications/native-static-roots.ts
+@@ -31,7 +31,7 @@
+   const [current]=captureNativeStaticRoots(store,[proof.resource.resourceId]);
+   if(!current||canonicalJson(current)!==canonicalJson(proof))throw invalid();
+   const r=proof.resource,home=(store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(r.scopeIdentity) as {home:string}|undefined)?.home;
+-  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');if(omitted.has(r.resourceId)){if(r.kind!=='agent-projection')throw invalid();continue;}assertDiscoveryPath(home,path);
++  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');if(omitted.has(r.resourceId))continue;assertDiscoveryPath(home,path);
+   if(r.kind==='legacy-agent-projection'){
+    const identity=verifyLegacyDiscoveryEntry({resourceId:r.resourceId,storeId:store.storeId,path,nativeName:name,sourceHash:r.contentHash,projectionHash:r.contentHash,format:'legacy-tree-v1'},home);if(identity.sourceResourceId!==proof.sourceId)throw invalid();
+   }else{
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -1,4 +1,4 @@
+-import {nativeGuardAdapterExclusions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
++import {nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
+ import {nativeCapabilityConflicts} from './native-application-conflicts';
+ import {ClaudeDeliveryCoordinator} from './claude-delivery';
+ import type {ClaudeDeliveryToken,ClaudeRunDelivery} from './claude-delivery-state';
+@@ -299,8 +299,8 @@
+         // Only compute false discovery flags; retain the actual fixed S everywhere
+         // else. This transient request is neither stored nor granted a bridge.
+         const {legacyBinding:_original,...fixed}=snapshot,hidden:CapabilitySessionSnapshotV2={...fixed,provenance:'created',adapterBinding:{id:snapshot.runner,version:isolation.metadata.version,hash:isolation.hash,projectionFormatVersion:1,nativeToolNames:{}},packages:[],standardSkills:[],mcp:[]};
+-        const omissions=discoveryProof?nativeGuardAdapterExclusions(this.support.store,discoveryProof):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.paths.includes(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+-        args=this.support.adapters.plan(isolation.hash,{snapshot:hidden,...(omissions?{catalogExclusions:omissions}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]}).args;
++        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
++        const request:AgentLoadRequest={snapshot:hidden,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(isolation.hash,request,discoveryProof):this.support.adapters.plan(isolation.hash,request)).args;
+       }
+       const issue=snapshot.legacyBinding?unavailable??'RESOURCE_RECOVERY_REQUIRED':unavailable??'CAPABILITY_UNAVAILABLE',runtime=this.unavailableRuntime(input,current,run.runId,issue);if((!native||!adapter.metadata.cliVersions.includes(native.version))&&!runtime.snapshot.selfCheck?.issues.includes('AGENT_ADAPTER_UNSUPPORTED'))runtime.snapshot.selfCheck?.issues.push('AGENT_ADAPTER_UNSUPPORTED');entry.runtime=runtime;
+       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原会话原生启动已取消');
+@@ -332,8 +332,8 @@
+         // A transient empty selection is used solely to prepare false discovery
+         // flags. It is never persisted, inspected as history or granted a bridge.
+         const snapshot:CapabilitySessionSnapshotV2={schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:{}},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:collection.generation,packages:[],standardSkills:[],mcp:[],provenance:'migrated-known-legacy'};
+-        const omissions=discoveryProof?nativeGuardAdapterExclusions(this.support.store,discoveryProof):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.paths.includes(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+-        args=this.support.adapters.plan(adapter.hash,{snapshot,...(omissions?{catalogExclusions:omissions}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]}).args;
++        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
++        const request:AgentLoadRequest={snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(adapter.hash,request,discoveryProof):this.support.adapters.plan(adapter.hash,request)).args;
+       }
+       const check:RuntimeSnapshot['selfCheck']={status:'failed',issues:['HISTORY_CAPABILITIES_UNKNOWN',...(nativeUnverified?['AGENT_ADAPTER_UNSUPPORTED']:[])],at:Date.now()},runtime:PreparedRuntime={persistSnapshot:false,args:[],env:{},secretValues:[],snapshot:{runId:run.runId,projectId:input.projectId,configVersion:input.previous?.configVersion??0,configHash:record.hash,manifestPath:input.previous?.manifestPath??join(this.support.store.root,'sessions',input.taskId,'snapshot.json'),auditPath:input.previous?.auditPath??join(this.support.store.root,'resource-audit',input.projectId,input.taskId+'.jsonl'),skills:[],mcp:[],selfCheck:check},wrap:(command,argv)=>({command,args:argv}),check:()=>check,release:()=>{}};entry.runtime=runtime;
+       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生历史启动已取消');

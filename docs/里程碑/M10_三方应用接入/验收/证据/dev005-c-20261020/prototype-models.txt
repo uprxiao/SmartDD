@@ -1,0 +1,232 @@
+TAP version 13
+# Subtest: projection drops passwords, tokens, unknown apps and dangling project bindings
+ok 1 - projection drops passwords, tokens, unknown apps and dangling project bindings
+  ---
+  duration_ms: 1.062791
+  type: 'test'
+  ...
+# Subtest: availability checks current project binding, connection health and application installation
+ok 2 - availability checks current project binding, connection health and application installation
+  ---
+  duration_ms: 0.16875
+  type: 'test'
+  ...
+# Subtest: editing a paused connection keeps it paused and stores a credential-presence flag only
+ok 3 - editing a paused connection keeps it paused and stores a credential-presence flag only
+  ---
+  duration_ms: 0.142916
+  type: 'test'
+  ...
+# Subtest: ZenTao config rejects embedded secrets, query strings and non-HTTP addresses
+ok 4 - ZenTao config rejects embedded secrets, query strings and non-HTTP addresses
+  ---
+  duration_ms: 0.119542
+  type: 'test'
+  ...
+# Subtest: local mailbox needs an absolute source and never needs a password
+ok 5 - local mailbox needs an absolute source and never needs a password
+  ---
+  duration_ms: 0.127792
+  type: 'test'
+  ...
+# Subtest: sender validates account, service and integer port separately from local reading
+ok 6 - sender validates account, service and integer port separately from local reading
+  ---
+  duration_ms: 0.142125
+  type: 'test'
+  ...
+# Subtest: object references preserve Bug/Story namespace and contain no executable control characters
+ok 7 - object references preserve Bug/Story namespace and contain no executable control characters
+  ---
+  duration_ms: 0.111291
+  type: 'test'
+  ...
+# Subtest: new prototype projects keep bindings through persistence projection
+ok 8 - new prototype projects keep bindings through persistence projection
+  ---
+  duration_ms: 0.484542
+  type: 'test'
+  ...
+# Subtest: old saved configurations gain package metadata without replacing connections or project bindings
+ok 9 - old saved configurations gain package metadata without replacing connections or project bindings
+  ---
+  duration_ms: 0.408042
+  type: 'test'
+  ...
+# Subtest: project application enablement bundles skills once and never enables pending external writes
+ok 10 - project application enablement bundles skills once and never enables pending external writes
+  ---
+  duration_ms: 0.343666
+  type: 'test'
+  ...
+# Subtest: application disablement preserves selection and other projects; enabling never selects a fallback
+ok 11 - application disablement preserves selection and other projects; enabling never selects a fallback
+  ---
+  duration_ms: 0.129458
+  type: 'test'
+  ...
+# Subtest: fixed session identity survives edits, upgrades and revocation but cannot cross projects
+ok 12 - fixed session identity survives edits, upgrades and revocation but cannot cross projects
+  ---
+  duration_ms: 0.228166
+  type: 'test'
+  ...
+# Subtest: simulated upgrade preserves all local records; a failed migration leaves the original state untouched
+ok 13 - simulated upgrade preserves all local records; a failed migration leaves the original state untouched
+  ---
+  duration_ms: 0.138333
+  type: 'test'
+  ...
+# Subtest: unhealthy connections do not remove capabilities from a new snapshot
+ok 14 - unhealthy connections do not remove capabilities from a new snapshot
+  ---
+  duration_ms: 0.169916
+  type: 'test'
+  ...
+# Subtest: mail can be enabled without any connection and draft ability does not imply SMTP availability
+ok 15 - mail can be enabled without any connection and draft ability does not imply SMTP availability
+  ---
+  duration_ms: 0.06675
+  type: 'test'
+  ...
+# Subtest: ZenTao switching is rejected until all related runs stop and leaves other projects unchanged
+ok 16 - ZenTao switching is rejected until all related runs stop and leaves other projects unchanged
+  ---
+  duration_ms: 0.12325
+  type: 'test'
+  ...
+# Subtest: removal preserves credentials, history, drafts and references; adding again does not re-enable projects
+ok 17 - removal preserves credentials, history, drafts and references; adding again does not re-enable projects
+  ---
+  duration_ms: 9.010166
+  type: 'test'
+  ...
+# Subtest: mail query days enforce integers 1–100 and migration preserves an existing valid 7
+ok 18 - mail query days enforce integers 1–100 and migration preserves an existing valid 7
+  ---
+  duration_ms: 0.134458
+  type: 'test'
+  ...
+# Subtest: synthetic draft roundtrip keeps identity and revision, drops arbitrary body and detects concurrent edits
+ok 19 - synthetic draft roundtrip keeps identity and revision, drops arbitrary body and detects concurrent edits
+  ---
+  duration_ms: 0.168875
+  type: 'test'
+  ...
+# Subtest: stopped and archived sessions protect old versions; unknown historical capability is conservative
+ok 20 - stopped and archived sessions protect old versions; unknown historical capability is conservative
+  ---
+  duration_ms: 0.115458
+  type: 'test'
+  ...
+# Subtest: shared-discovery runs postpone upgrade publication without stopping the Agent or changing defaults
+ok 21 - shared-discovery runs postpone upgrade publication without stopping the Agent or changing defaults
+  ---
+  duration_ms: 0.065417
+  type: 'test'
+  ...
+# Subtest: editing an existing account identity is rejected; ordinary same-identity credential rotation remains allowed
+ok 22 - editing an existing account identity is rejected; ordinary same-identity credential rotation remains allowed
+  ---
+  duration_ms: 0.088667
+  type: 'test'
+  ...
+# Subtest: natural-day query windows include today and pin a concrete range
+ok 23 - natural-day query windows include today and pin a concrete range
+  ---
+  duration_ms: 0.453167
+  type: 'test'
+  ...
+# Subtest: verifying an unknown send synchronizes only the exact related draft revision without a second send
+ok 24 - verifying an unknown send synchronizes only the exact related draft revision without a second send
+  ---
+  duration_ms: 0.102333
+  type: 'test'
+  ...
+# Subtest: mail has independent nullable source and sender selections; legacy ambiguous groups fail closed
+ok 25 - mail has independent nullable source and sender selections; legacy ambiguous groups fail closed
+  ---
+  duration_ms: 0.294125
+  type: 'test'
+  ...
+# Subtest: clearing the last mail connection preserves independent enablement and draft capability across reload
+ok 26 - clearing the last mail connection preserves independent enablement and draft capability across reload
+  ---
+  duration_ms: 0.372083
+  type: 'test'
+  ...
+# Subtest: changing project mail sender invalidates old draft intent and requires explicit new revision
+ok 27 - changing project mail sender invalidates old draft intent and requires explicit new revision
+  ---
+  duration_ms: 0.1875
+  type: 'test'
+  ...
+# Subtest: fixed-package fault repairs preserve session identity, default version, business data and failure state
+ok 28 - fixed-package fault repairs preserve session identity, default version, business data and failure state
+  ---
+  duration_ms: 0.28825
+  type: 'test'
+  ...
+# Subtest: bridge that requires next launch cannot be reconnected in place or bypass current revocation
+ok 29 - bridge that requires next launch cannot be reconnected in place or bypass current revocation
+  ---
+  duration_ms: 0.10475
+  type: 'test'
+  ...
+# Subtest: capability name conflicts require explicit resolved evidence and never overwrite or rename user capabilities
+ok 30 - capability name conflicts require explicit resolved evidence and never overwrite or rename user capabilities
+  ---
+  duration_ms: 0.086917
+  type: 'test'
+  ...
+# Subtest: Foxmail partial, unsupported and failed reads never masquerade as a complete empty search
+ok 31 - Foxmail partial, unsupported and failed reads never masquerade as a complete empty search
+  ---
+  duration_ms: 0.074625
+  type: 'test'
+  ...
+# Subtest: mail reading and SMTP slot revisions change independently and retain a clear/reselect tombstone
+ok 32 - mail reading and SMTP slot revisions change independently and retain a clear/reselect tombstone
+  ---
+  duration_ms: 0.08325
+  type: 'test'
+  ...
+# Subtest: code directory defaults follow edits and removal without changing other projects
+ok 33 - code directory defaults follow edits and removal without changing other projects
+  ---
+  duration_ms: 0.484208
+  type: 'test'
+  ...
+# Subtest: removing the last directory makes the project unavailable for launch
+ok 34 - removing the last directory makes the project unavailable for launch
+  ---
+  duration_ms: 0.245375
+  type: 'test'
+  ...
+# Subtest: database default is unique across the project, matching the existing app
+ok 35 - database default is unique across the project, matching the existing app
+  ---
+  duration_ms: 0.09175
+  type: 'test'
+  ...
+# Subtest: saved passwords survive keep, clear explicitly, and never enter prototype model
+ok 36 - saved passwords survive keep, clear explicitly, and never enter prototype model
+  ---
+  duration_ms: 0.46875
+  type: 'test'
+  ...
+# Subtest: empty replacement is not reported as a saved credential
+ok 37 - empty replacement is not reported as a saved credential
+  ---
+  duration_ms: 0.087625
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 37
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.391375

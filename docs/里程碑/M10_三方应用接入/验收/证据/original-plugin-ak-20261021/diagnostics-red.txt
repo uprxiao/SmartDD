@@ -1,0 +1,28 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts -t 'read-only session diagnostics' --maxWorkers=1
+
+[1021/154139.507785:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/154139.652904:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (73 tests | 1 failed | 72 skipped) 275ms
+   × recognizes the owned original static Skill path in read-only session diagnostics 274ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > recognizes the owned original static Skill path in read-only session diagnostics
+AssertionError: expected [ 'RESOURCE_RECOVERY_REQUIRED' ] to not include 'RESOURCE_RECOVERY_REQUIRED'
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:237:221
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 72 skipped (73)
+   Start at  15:41:39
+   Duration  725ms (transform 239ms, setup 0ms, import 375ms, tests 275ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

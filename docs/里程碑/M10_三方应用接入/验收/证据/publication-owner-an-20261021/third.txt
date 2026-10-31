@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/resource-publication-recovery.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts --maxWorkers=1 -t 'C publication recovery|actual private C publisher|owned original C|original Claude C staged|final rename boundary' --reporter=default --reporter=json --outputFile=/private/tmp/m10-publication-owner-an-20261021/third-report.json
+
+[1021/172513.930548:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/172515.096188:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (13 tests) 5140ms
+     ✓ keeps a living registered publisher, then restores the same operation after actual SIGKILL  372ms
+     ✓ keeps a living materialized publisher, then restores the same operation after actual SIGKILL  392ms
+[1021/172522.830755:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (99 tests | 83 skipped) 16507ms
+     ✓ preserves extra at the original path without registering it as a ready projection  942ms
+     ✓ preserves empty at the original path without registering it as a ready projection  1093ms
+     ✓ preserves marker at the original path without registering it as a ready projection  1537ms
+     ✓ preserves symlink at the original path without registering it as a ready projection  621ms
+     ✓ preserves hardlink at the original path without registering it as a ready projection  693ms
+     ✓ preserves full-T at the original path without registering it as a ready projection  488ms
+     ✓ keeps an unknown target resource lease intact and does not restore the missing path  1684ms
+     ✓ rechecks a late unknown native run before publishing any original files  608ms
+     ✓ preserves a dangling user alias which appears after private materialization  851ms
+     ✓ resumes a failed post-rename publication under the original operation and long-term reference  1405ms
+     ✓ keeps a canceled publication recoverable without recreating old context  1414ms
+     ✓ rejects a late dangling target in the generic publisher even without a caller guard  355ms
+     ✓ recovers original Claude registered after proven publisher exit without changing paths, refs or S  869ms
+     ✓ recovers original Claude materialized after proven publisher exit without changing paths, refs or S  927ms
+     ✓ recovers original Claude renamed after proven publisher exit without changing paths, refs or S  1521ms
+   ✓ does not mark original Claude ready after an unknown task run appears at the final rename boundary  1497ms
+
+ Test Files  2 passed (2)
+      Tests  29 passed | 83 skipped (112)
+   Start at  17:25:14
+   Duration  27.69s (transform 3.16s, setup 0ms, import 5.25s, tests 21.65s, environment 1ms)
+
+JSON report written to /private/tmp/m10-publication-owner-an-20261021/third-report.json

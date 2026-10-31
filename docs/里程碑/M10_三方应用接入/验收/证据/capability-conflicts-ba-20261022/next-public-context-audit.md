@@ -1,0 +1,9 @@
+# 后续公共上下文语义核对
+
+本批保留的是原项目MCP入口／原名与生成配置，现有用例核对runtime.mcp及实际native argv/JSON，尚未调用带数据库／SSH资源项目的真实Python project_context响应；不把入口仍在写成所有业务数据语义已验证。
+
+现有CapabilityService.prepare用实际selected native standards决定hasSkill，再生成databases/servers、对应配置路径及context.json。BA标准Skill子集会沿用该既有逻辑。需按原M4规则与M10“不阻塞无关能力”核对：在只因名称冲突而未加载标准Skill时，MCP的资源身份／配置范围应如何保留；与用户主动在WillYou停用能力、外部CLI仅禁用Skill的含义分别核对。不能直接把原Skill重新作为已加载注入、自动绑更多秘密或更改原S来绕过问题。
+
+接续先用隔离项目配置假的DB/SSH身份和秘密、原S和当前开关，通过真实TaskService准备并调用原固定context_mcp.py的project_context（无DB/SSH网络动作），核对实际返回、当前权限与原生加载区分。先证实差异及需求依据，再修复或记录真实边界。这个核对未完成，因此REVIEW-01与87编号不能关闭；当前仍第5步，不提前打包验收。
+
+已读原M4文档：docs/M4_Skill与配置注入.md第11／38行明确只解密当前启用Skill所需凭据；第14行明确项目MCP仅返回无秘密的公共上下文，三开关可分别关闭。原context_mcp.py只有project_context读取，不提供DB/SSH执行。所以上述是待核对语义／验证边界，尚非已证实产品缺陷；不得为保留MCP入口擅自恢复未加载Skill或扩大秘密注入。新探针应同时检查公共返回与无关秘密未注入，必要时先核对原设计／既有测试。

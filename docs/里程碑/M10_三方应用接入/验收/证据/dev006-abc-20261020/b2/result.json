@@ -1,0 +1,56 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T11:38:26.417Z",
+  "branch": "feature/0.0.2",
+  "commit": "43d7cb389104bb42218c8ef1c0c0e44393a34a08",
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-dev006-b-package-20261020/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "3116679735954ce6223d6a37c58cbd92e4d6278ab698c482c2cb97361f56122a",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-R4HN31",
+  "userData": "/private/tmp/willyou-m10-management-ui-R4HN31/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T11:38:28.128Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T11:38:33.168Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T11:38:33.325Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user"
+    ],
+    "smtpCommands": [],
+    "smtpDataSubmissions": 0
+  },
+  "status": "failed",
+  "appPid": 3073,
+  "setup": {
+    "projectId": "5c83d092-2645-4602-a57c-77892f610782",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": "[role=switch][aria-label=\"为M10 隔离验收项目启用禅道\"]"
+  },
+  "failedStage": "project-select-zen",
+  "error": "Error: Electron test condition timed out",
+  "stack": "Error: Electron test condition timed out\n    at Object.waitFor (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/scripts/lib/electron-harness.mjs:68:13)\n    at async file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/scripts/applications/management-ui.mjs:34:267",
+  "dom": "自定义\n应用\n技能\n已添加\n禅道\n管理\n项目选用\nWillYou\n项目选用\n\n为项目启用应用，工具与配套 Skill 一起使用。\n\n选择项目\nM10 隔离验收项目\n项目应用\n\n启用应用后，配套 Skill 与工具一起提供给本项目的新会话。\n\n管理应用\n禅道v1.0.0 · 新会话默认\n\n2 个 Skill · 旧会话保留创建时的版本\n\n未启用\n\n每项目仅一个生效连接；停用或认证失败不会自动切换账号。\n\n禅道连接\n不选用\n查询时提示来源未配置，不自动选择其他连接。\nM10 禅道已编辑\ntester · http://127.0.0.1:53452/biz/\n已验证连接 · OK\nBug 分析、需求评审\n随应用启用\n查看应用与连接\n邮件v1.0.0 · 新会话默认\n\n1 个 Skill · 旧会话保留创建时的版本\n\n尚未添加\n\n每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。\n\n本地读取来源\n不选用\n查询时提示来源未配置，不自动选择其他连接。\nSMTP 发件账号\n不选用\n仍可保存草稿；发送时需要有效发件账号。\n先添加邮件应用\n邮件工作助手\n随应用启用\n查看应用与连接\n新会话采用当前版本，恢复会话保留原版本\n\n连接和权限按当前配置检查；某项应用暂不可用不停止 Agent 的其他工作。升级不会替换旧会话的固定包。\n\n首版目标：macOS arm64 · Claude Code / Codex · 仅 WillYou 内启动／恢复。\n新建任务\n连接、草稿和记录独立保存在本机；项目导出不包含这些应用数据，导入后需在本机重新选用连接。",
+  "rendererErrors": [],
+  "finishedAt": "2026-10-20T11:38:45.704Z"
+}

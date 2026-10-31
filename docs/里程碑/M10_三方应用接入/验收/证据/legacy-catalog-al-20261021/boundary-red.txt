@@ -1,0 +1,78 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts --maxWorkers=1 -t 'refuses ready'
+
+[1021/160759.338213:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/160759.829663:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (30 tests | 2 failed | 28 skipped) 431ms
+     × refuses ready when original H bytes change at the renamed boundary 240ms
+     × refuses ready when original H bytes change at the catalog-published boundary 190ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > refuses ready when original H bytes change at the renamed boundary
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [
++     {
++       "format": "legacy-tree-v1",
++       "nativeName": "smartdd-project-db-diagnostics-e35d11cc0f884fac",
++       "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-ssb3we/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
++       "projectionHash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       "resourceId": "h-projection:3b58a6032ad91bd4fe0cec3407bdb0f4ca070143785e3a5ebf6a2f62bc520ada",
++       "sourceHash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       "storeId": "a2f6131a-8bfd-49e6-a671-6efe02a09062",
++     },
++   ],
++   "generation": "3b210a1ea19d0b90ff675c22f5bba6fae60d7ac761f3a607745ee77d1f8a0e6b",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:86:43
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > refuses ready when original H bytes change at the catalog-published boundary
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "entries": [
++     {
++       "format": "legacy-tree-v1",
++       "nativeName": "smartdd-project-db-diagnostics-e35d11cc0f884fac",
++       "path": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-aw6iBf/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
++       "projectionHash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       "resourceId": "h-projection:2cf74b6843cf344e49b5520778ac5e7de4fca3553d68e85e976b464ba9eeb593",
++       "sourceHash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++       "storeId": "44ada9e4-a6b3-4201-a640-3b6ce8b2ce4b",
++     },
++   ],
++   "generation": "321fdfbdee355f4793f6273273e7cbf2f53e4f76a627ec535119ad10bd2be0a0",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:86:43
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 28 skipped (30)
+   Start at  16:07:59
+   Duration  1.13s (transform 376ms, setup 0ms, import 529ms, tests 431ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-21T18:32:17.627533+00:00",
+  "exitCode": 1,
+  "passed": 431,
+  "failed": 2,
+  "pending": 0,
+  "files": 18,
+  "sourceFrozen": true,
+  "sourceInputs": 1997,
+  "command": [
+    "pnpm",
+    "test",
+    "src/main/core/applications/__tests__/application-run-scope.test.ts",
+    "src/main/core/applications/__tests__/application-resource-availability.test.ts",
+    "src/main/core/applications/__tests__/application-run-policy.test.ts",
+    "src/main/core/applications/__tests__/run-registry.test.ts",
+    "src/main/core/applications/__tests__/session-registry.test.ts",
+    "src/main/core/applications/__tests__/tool-service.test.ts",
+    "src/main/core/applications/__tests__/business-data.test.ts",
+    "src/main/core/applications/__tests__/mail-send-data.test.ts",
+    "src/main/core/applications/__tests__/native-user-inputs.test.ts",
+    "src/main/core/applications/__tests__/native-user-messages.test.ts",
+    "src/main/core/applications/__tests__/session-diagnostics.test.ts",
+    "src/main/core/applications/__tests__/private-broker.test.ts",
+    "src/main/core/applications/__tests__/agent-bridge-processes.test.ts",
+    "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+    "src/main/core/applications/__tests__/application-controller.test.ts",
+    "src/main/core/applications/__tests__/codex-application-scope.test.ts",
+    "src/main/core/applications/__tests__/agent-adapters.test.ts",
+    "src/main/core/applications/__tests__/session-projector.test.ts",
+    "--maxWorkers=1",
+    "--testTimeout=15000",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=/private/tmp/m10-codex-scope-au-20261022/regression-report.json"
+  ],
+  "failures": [
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "name": "per-application availability does not withdraw healthy fixed tools retains scoped Mail during a real ZenTao selection switch and rechecks current Mail policy on every call",
+      "message": [
+        "ApplicationError: 应用包缺失、不可读或声明损坏\n    at verifyPackageTree (/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/package-files.ts:53:11)\n    at BuiltinPackageRegistry.assertTrusted (/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/builtin-package-registry.ts:53:5)\n    at run (/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/execution-context.ts:185:20)\n    at ResourceStore.use (/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/resource-store.ts:116:24)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+      ]
+    },
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "name": "per-application availability does not withdraw healthy fixed tools keeps healthy Mail draft calls available in a new claude-code run when only selected ZenTao bytes are missing",
+      "message": [
+        "AssertionError: SCOPE_DENIED: 原生守护不签发应用工具、业务来源或凭据: expected 'error' to be 'ok' // Object.is equality\n    at /private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/__tests__/task-capability-launcher.test.ts:653:120\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "expectedKnownClaudeRed": false,
+  "goal": "active full M10;phase5;not complete"
+}

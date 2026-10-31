@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -97,8 +97,9 @@ const mk = (name: string) => {
 const claudeRoot = () => join(tmp, 'claude-home');
 const codexRoot = () => join(tmp, 'codex-home');
 
-const claudeProfile = (over: Partial<AiProfileInput> = {}) =>
-  profiles.create({
+const claudeProfile = (over: Partial<AiProfileInput> = {}) => {
+  mkdirSync(claudeRoot(), {recursive:true});
+  return profiles.create({
     name: 'CC-DS',
     runner: 'claude',
     executable: null,
@@ -112,6 +113,7 @@ const claudeProfile = (over: Partial<AiProfileInput> = {}) =>
     isDefault: false,
     ...over,
   });
+};
 const codexProfile = () =>
   profiles.create({
     name: 'Codex',
@@ -143,18 +145,18 @@ const writeCodexRollout = (cwd: string, id: string, at: number) => {
 const claudeSessionPath = (cwd: string, id: string) => join(claudeRoot(), 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${id}.jsonl`);
 
 describe('TaskService.closeSession', () => {
-  const pair = () => {
+  const pair = async () => {
     const p = project(), profile = codexProfile();
-    const a = svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Keep original history' });
-    const b = svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Other session' });
+    const a = await svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Keep original history' });
+    const b = await svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'Other session' });
     return { p, a, b };
   };
   it('waits for this exact PTY, preserves both records and project, and reopens normally', async () => {
     vi.useFakeTimers();
-    const { p, a, b } = pair(), timersBefore = vi.getTimerCount(), listeners = ptys.listenerCount('exit');
+    const { p, a, b } = await pair(), timersBefore = vi.getTimerCount(), listeners = ptys.listenerCount('exit');
     vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
     let done = false; const closing = svc.closeSession(a.task.id).then(result => { done = true; return result; });
-    expect(() => svc.open({ taskId: a.task.id })).toThrow('会话正在关闭');
+    await expect(svc.open({ taskId: a.task.id })).rejects.toThrow('会话正在关闭');
     expect(() => svc.delete(a.task.id)).toThrow('会话正在关闭');
     expect(() => svc.setArchived(a.task.id, true)).toThrow('会话正在关闭');
     expect(svc.get(a.task.id).ptyId).toBe(a.ptyId); expect(done).toBe(false);
@@ -164,20 +166,20 @@ describe('TaskService.closeSession', () => {
     expect(svc.get(b.task.id).ptyId).toBe(b.ptyId); expect(svc.list()).toHaveLength(2);
     expect(projects.getProject(p.id).name).toBe('AIS'); expect(ptys.killed).toEqual([a.ptyId]);
     expect(ptys.listenerCount('exit')).toBe(listeners); expect(vi.getTimerCount()).toBe(timersBefore - 2);
-    const reopened = svc.open({ taskId: a.task.id }); expect(reopened.ptyId).not.toBe(a.ptyId);
+    const reopened = await svc.open({ taskId: a.task.id }); expect(reopened.ptyId).not.toBe(a.ptyId);
     expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
   });
   it('keeps the session visible and releases its close guard when native stop throws', async () => {
-    const { a, b } = pair(), listeners = ptys.listenerCount('exit');
+    const { a, b } = await pair(), listeners = ptys.listenerCount('exit');
     const stop = vi.spyOn(ptys, 'kill').mockImplementation(() => { throw new Error('native stop refused'); });
     await expect(svc.closeSession(a.task.id)).rejects.toThrow('native stop refused');
     expect(svc.get(a.task.id)).toMatchObject({ ptyId: a.ptyId, archivedAt: null });
     expect(svc.get(b.task.id).ptyId).toBe(b.ptyId); expect(ptys.listenerCount('exit')).toBe(listeners);
-    expect(svc.open({ taskId: a.task.id }).ptyId).toBe(a.ptyId);
+    expect((await svc.open({ taskId: a.task.id })).ptyId).toBe(a.ptyId);
     stop.mockRestore(); await svc.closeSession(a.task.id); expect(svc.get(a.task.id).ptyId).toBeNull();
   });
   it('times out without hiding history, stops no other PTY, and supports a later retry', async () => {
-    vi.useFakeTimers(); const { a, b } = pair(), listeners = ptys.listenerCount('exit');
+    vi.useFakeTimers(); const { a, b } = await pair(), listeners = ptys.listenerCount('exit');
     vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
     const closing = expect(svc.closeSession(a.task.id)).rejects.toThrow('会话仍保留');
     await vi.advanceTimersByTimeAsync(ARCHIVE_STOP_TIMEOUT_MS); await closing;
@@ -187,15 +189,25 @@ describe('TaskService.closeSession', () => {
     expect(result.archivedAt).toBeNull(); expect(result.ptyId).toBeNull(); expect(svc.list()).toHaveLength(2);
   });
   it('keeps native session files byte-exact and does not start a process when already stopped', async () => {
-    const { a } = pair(), marker = join(codexRoot(), 'owned-session-marker.jsonl');
+    const { a } = await pair(), marker = join(codexRoot(), 'owned-session-marker.jsonl');
     mkdirSync(codexRoot(), { recursive: true }); writeFileSync(marker, 'public synthetic history\n');
     ptys.emit('exit', a.ptyId, 0); const spawns = ptys.spawned.length;
     await svc.closeSession(a.task.id);
     expect(ptys.spawned).toHaveLength(spawns); expect(ptys.killed).toEqual([]);
     expect(readFileSync(marker, 'utf8')).toBe('public synthetic history\n'); expect(svc.get(a.task.id).archivedAt).toBeNull();
   });
+  it('cancels an opening before its first async boundary without a late spawn or loss of history', async () => {
+    const { a, b } = await pair();
+    ptys.emit('exit', a.ptyId, 0); const spawned = ptys.spawned.length;
+    const opening = svc.open({ taskId: a.task.id });
+    const canceled = expect(opening).rejects.toThrow('任务启动已取消');
+    const closed = await svc.closeSession(a.task.id); await canceled;
+    expect(closed).toMatchObject({ id: a.task.id, ptyId: null, archivedAt: null });
+    expect(ptys.spawned).toHaveLength(spawned); expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
+    const reopened = await svc.open({ taskId: a.task.id }); expect(reopened.ptyId).not.toBe(a.ptyId);
+  });
   it('cancels an unfinished session close on application exit without recording success', async () => {
-    vi.useFakeTimers(); const { a } = pair();
+    vi.useFakeTimers(); const { a } = await pair();
     vi.spyOn(ptys, 'kill').mockImplementation(id => { ptys.killed.push(id); });
     const closing = expect(svc.closeSession(a.task.id)).rejects.toThrow('会话关闭未完成');
     svc.dispose(); await closing;
@@ -205,10 +217,10 @@ describe('TaskService.closeSession', () => {
 });
 
 describe('TaskService.create', () => {
-  it('launches in the project directory with the profile env injected and records only names', () => {
+  it('launches in the project directory with the profile env injected and records only names', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task, ptyId } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '  修复登录\n细节  ' });
+    const { task, ptyId } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '  修复登录\n细节  ' }));
 
     const s = ptys.last;
     expect(s.cwd).toBe(p.dirs[0].path);
@@ -243,7 +255,7 @@ describe('TaskService.create', () => {
     expect(raw).toContain(claudeRoot()); // state_root recorded
   });
 
-  it('uses the chosen directory; refuses unavailable directories and archived projects', () => {
+  it('uses the chosen directory; refuses unavailable directories and archived projects', async () => {
     const a = mk('a');
     const b = mk('b');
     const p = project([
@@ -252,45 +264,45 @@ describe('TaskService.create', () => {
     ]);
     const prof = claudeProfile();
     const dirB = p.dirs.find((d) => d.path === b)!;
-    svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' }));
     expect(ptys.last.cwd).toBe(b);
 
     rmSync(b, { recursive: true });
-    expect(() => svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' })).toThrow(`代码目录不可用：${b}`);
+    await expect(svc.create({ projectId: p.id, dirId: dirB.id, aiProfileId: prof.id, firstMessage: '' })).rejects.toThrow(`代码目录不可用：${b}`);
     projects.setArchived(p.id, true);
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).toThrow('已归档');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).rejects.toThrow('已归档');
     expect(ptys.spawned).toHaveLength(1);
   });
 
-  it('records nothing when the profile lacks a token or the CLI fails to start', () => {
+  it('records nothing when the profile lacks a token or the CLI fails to start', async () => {
     const p = project();
     const noTok = claudeProfile({ name: 'NoTok', env: [{ name: 'ANTHROPIC_AUTH_TOKEN', secret: true }] });
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: noTok.id, firstMessage: 'x' })).toThrow('缺少令牌');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: noTok.id, firstMessage: 'x' })).rejects.toThrow('缺少令牌');
     ptys.fail = new Error('spawn failed');
-    expect(() => svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'x' })).toThrow('spawn failed');
+    await expect(svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'x' })).rejects.toThrow('spawn failed');
     expect(svc.list()).toEqual([]);
     expect(changed).toBe(0);
   });
 
-  it('names an untitled task after the profile and time', () => {
+  it('names an untitled task after the profile and time', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '   ' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '   ' }));
     expect(task.title).toMatch(/^CC-DS \d+-\d\d \d\d:\d\d$/);
     expect(ptys.last.args).toEqual(['--model', 'ds', '--session-id', task.id]);
   });
 });
 
 describe('running state', () => {
-  it('tracks the pty until it exits; several tasks per project may run at once', () => {
+  it('tracks the pty until it exits; several tasks per project may run at once', async () => {
     const p = project();
     const prof = claudeProfile();
-    const t1 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' }).task;
-    const t2 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' }).task;
+    const t1 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'a' })).task;
+    const t2 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'b' })).task;
     expect(svc.runningCount()).toBe(2);
     expect(svc.activePty(t1.id)).toBe('pty-1');
     expect(svc.activePty('unknown')).toBeNull();
     // A running task reopens to the same terminal instead of a second CLI.
-    expect(svc.open({ taskId: t1.id }).ptyId).toBe('pty-1');
+    expect((await svc.open({ taskId: t1.id })).ptyId).toBe('pty-1');
     expect(ptys.spawned).toHaveLength(2);
 
     const before = changed;
@@ -303,19 +315,19 @@ describe('running state', () => {
     expect(changed).toBe(before + 1);
   });
 
-  it('revokes input while stop waits for exit, then accepts only the reopened PTY', () => {
-    const created = svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' });
+  it('revokes input while stop waits for exit, then accepts only the reopened PTY', async () => {
+    const created = (await svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '' }));
     svc.kill(created.task.id);
     expect(svc.activePty(created.task.id)).toBeNull();
     ptys.emit('exit', created.ptyId, 0);
-    const reopened = svc.open({ taskId: created.task.id });
+    const reopened = (await svc.open({ taskId: created.task.id }));
     expect(reopened.ptyId).not.toBe(created.ptyId);
     expect(svc.activePty(created.task.id)).toBe(reopened.ptyId);
   });
 
-  it('refuses to archive a running task; delete kills it and keeps the CLI files', () => {
+  it('refuses to archive a running task; delete kills it and keeps the CLI files', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     writeClaudeSession(task.cwd, task.id);
     expect(() => svc.setArchived(task.id, true)).toThrow('正在运行');
     svc.delete(task.id);
@@ -327,11 +339,11 @@ describe('running state', () => {
 });
 
 describe('TaskService archive lifecycle', () => {
-  const running = () => svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '保留归档记录' });
+  const running = async () => (await svc.create({ projectId: project().id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: '保留归档记录' }));
 
   it('stops only the selected task, preserves its native file and identity, then restores without starting', async () => {
-    const a = running();
-    const b = svc.create({ projectId: a.task.projectId!, dirId: null, aiProfileId: a.task.aiProfileId!, firstMessage: 'other' });
+    const a = (await running());
+    const b = (await svc.create({ projectId: a.task.projectId!, dirId: null, aiProfileId: a.task.aiProfileId!, firstMessage: 'other' }));
     writeClaudeSession(a.task.cwd, a.task.id);
     const original = readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8');
     const archived = await svc.stopAndArchive(a.task.id);
@@ -341,23 +353,23 @@ describe('TaskService archive lifecycle', () => {
     expect(svc.get(b.task.id).ptyId).toBe(b.ptyId);
     expect(svc.list().map(t => t.id)).toEqual([b.task.id]);
     expect(svc.list({ includeArchived: true })).toHaveLength(2);
-    expect(() => svc.open({ taskId: a.task.id })).toThrow('先取消归档');
+    await expect(svc.open({ taskId: a.task.id })).rejects.toThrow('先取消归档');
     expect(readFileSync(claudeSessionPath(a.task.cwd, a.task.id), 'utf8')).toBe(original);
     const restored = svc.setArchived(a.task.id, false);
     expect(restored).toMatchObject({ projectId: a.task.projectId, archivedAt: null, ptyId: null, recovery: 'resumable' });
     expect(ptys.spawned).toHaveLength(2);
-    svc.open({ taskId: a.task.id });
+    (await svc.open({ taskId: a.task.id }));
     expect(ptys.last.args).toContain('--resume');
     expect(ptys.last.args).toContain(a.task.id);
   });
 
   it('waits for the exact PTY exit and prevents reopen or competing archive mutations during the wait', async () => {
-    const a = running();
+    const a = (await running());
     vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = svc.stopAndArchive(a.task.id);
     expect(svc.get(a.task.id)).toMatchObject({ archivedAt: null, ptyId: a.ptyId });
     ptys.emit('exit', 'unrelated-pty', 0);
-    expect(() => svc.open({ taskId: a.task.id })).toThrow('正在结束并归档');
+    await expect(svc.open({ taskId: a.task.id })).rejects.toThrow('正在结束并归档');
     expect(() => svc.setArchived(a.task.id, false)).toThrow('正在结束并归档');
     await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('正在结束并归档');
     ptys.emit('exit', a.ptyId, 0);
@@ -367,7 +379,7 @@ describe('TaskService archive lifecycle', () => {
 
   it('keeps the task visible after a stop timeout and allows a later retry', async () => {
     vi.useFakeTimers();
-    const a = running();
+    const a = (await running());
     const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('未归档');
     await vi.advanceTimersByTimeAsync(ARCHIVE_STOP_TIMEOUT_MS);
@@ -379,7 +391,7 @@ describe('TaskService archive lifecycle', () => {
   });
 
   it('keeps the task visible and releases its guard if stopping throws', async () => {
-    const a = running();
+    const a = (await running());
     const kill = vi.spyOn(ptys, 'kill').mockImplementation(() => { throw new Error('stop failed'); });
     await expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('stop failed');
     expect(svc.get(a.task.id).archivedAt).toBeNull();
@@ -389,7 +401,7 @@ describe('TaskService archive lifecycle', () => {
   });
 
   it('cleans up a pending archive when the application exits', async () => {
-    const a = running();
+    const a = (await running());
     vi.spyOn(ptys, 'kill').mockImplementation(() => undefined);
     const pending = expect(svc.stopAndArchive(a.task.id)).rejects.toThrow('归档未完成');
     svc.dispose();
@@ -400,32 +412,32 @@ describe('TaskService archive lifecycle', () => {
 });
 
 describe('TaskService.open (resume after restart)', () => {
-  const stopped = (prof = claudeProfile(), msg = 'hello') => {
+  const stopped = async (prof = claudeProfile(), msg = 'hello') => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: msg });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: msg }));
     ptys.emit('exit', 'pty-1', 0);
     return { task, prof, p };
   };
 
-  it('Claude with a session file resumes with --resume and no first message', () => {
-    const { task } = stopped();
+  it('Claude with a session file resumes with --resume and no first message', async () => {
+    const { task } = (await stopped());
     writeClaudeSession(task.cwd, task.id);
     expect(svc.get(task.id).recovery).toBe('resumable');
-    const r = svc.open({ taskId: task.id });
+    const r = (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['--model', 'ds', '--resume', task.id]);
     expect(ptys.last.cwd).toBe(task.cwd);
     expect(r.task.ptyId).toBe(r.ptyId);
   });
 
-  it('Claude without a session file reopens under the same id with --session-id', () => {
-    const { task } = stopped();
+  it('Claude without a session file reopens under the same id with --session-id', async () => {
+    const { task } = (await stopped());
     expect(svc.get(task.id).recovery).toBe('fresh');
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['--model', 'ds', '--session-id', task.id]);
   });
 
-  it('resumes with another profile of the same runner and refreshes the snapshot', () => {
-    const { task } = stopped();
+  it('resumes with another profile of the same runner and refreshes the snapshot', async () => {
+    const { task } = (await stopped());
     writeClaudeSession(task.cwd, task.id);
     const other = claudeProfile({
       name: 'CC-Claude',
@@ -436,26 +448,26 @@ describe('TaskService.open (resume after restart)', () => {
         { name: 'CLAUDE_CONFIG_DIR', secret: false, value: claudeRoot() },
       ],
     });
-    const r = svc.open({ taskId: task.id, aiProfileId: other.id });
+    const r = (await svc.open({ taskId: task.id, aiProfileId: other.id }));
     expect(ptys.last.env.__SMARTDD_V_ANTHROPIC_API_KEY).toBe('k-claude');
     expect(ptys.last.env.__SMARTDD_V_ANTHROPIC_AUTH_TOKEN).toBeUndefined();
     expect(r.task).toMatchObject({ aiProfileName: 'CC-Claude', aiProfileColor: '#ef4444', injectedEnvNames: ['ANTHROPIC_API_KEY', 'CLAUDE_CONFIG_DIR'] });
   });
 
-  it('refuses a profile of another runner, a deleted profile and a vanished directory', () => {
-    const { task, prof } = stopped();
-    expect(() => svc.open({ taskId: task.id, aiProfileId: codexProfile().id })).toThrow('不能用 codex 的 AI 配置恢复 claude 任务');
+  it('refuses a profile of another runner, a deleted profile and a vanished directory', async () => {
+    const { task, prof } = (await stopped());
+    await expect(svc.open({ taskId: task.id, aiProfileId: codexProfile().id })).rejects.toThrow('不能用 codex 的 AI 配置恢复 claude 任务');
     profiles.delete(prof.id);
     const v = svc.get(task.id);
     expect(v.aiProfileId).toBeNull();
     expect(v.aiProfileName).toBe('CC-DS'); // snapshot survives
-    expect(() => svc.open({ taskId: task.id })).toThrow('原 AI 配置已删除');
+    await expect(svc.open({ taskId: task.id })).rejects.toThrow('原 AI 配置已删除');
     const again = claudeProfile({ name: 'Again' });
     rmSync(task.cwd, { recursive: true });
-    expect(() => svc.open({ taskId: task.id, aiProfileId: again.id })).toThrow('工作目录不存在');
+    await expect(svc.open({ taskId: task.id, aiProfileId: again.id })).rejects.toThrow('工作目录不存在');
   });
 
-  it('marks records without a native id as unrecoverable (e.g. migrated M0 sessions)', () => {
+  it('marks records without a native id as unrecoverable (e.g. migrated M0 sessions)', async () => {
     const cwd = mk('old');
     sqlite
       .prepare("INSERT INTO tasks (id, cwd, runner, title, created_at, updated_at) VALUES ('old', ?, 'claude', '旧会话', 1, 1)")
@@ -463,7 +475,7 @@ describe('TaskService.open (resume after restart)', () => {
     const v = svc.get('old');
     expect(v.recovery).toBe('unrecoverable');
     expect(v.recoveryReason).toContain('session ID');
-    expect(() => svc.open({ taskId: 'old', aiProfileId: claudeProfile().id })).toThrow('无法恢复');
+    await expect(svc.open({ taskId: 'old', aiProfileId: claudeProfile().id })).rejects.toThrow('无法恢复');
   });
 });
 
@@ -471,7 +483,7 @@ describe('Codex', () => {
   it('discovers the session id once Codex writes its rollout, then resumes with --cd', async () => {
     const p = project();
     const prof = codexProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看代码' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看代码' }));
     expect(ptys.last.args).toEqual(['看看代码']);
     expect(task).toMatchObject({ nativeSessionId: null, recovery: 'not-started' });
 
@@ -485,17 +497,17 @@ describe('Codex', () => {
     expect(svc.get(task.id).recovery).toBe('resumable');
 
     ptys.emit('exit', 'pty-1', 0);
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual(['resume', '--cd', task.cwd, 'mine']);
     expect(ptys.last.env.CODEX_HOME).toBeUndefined();
     expect(ptys.last.env.__SMARTDD_V_CODEX_HOME).toBe(codexRoot());
   });
 
-  it('a Codex task that never got a message starts fresh without the old first message', () => {
+  it('a Codex task that never got a message starts fresh without the old first message', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: codexProfile().id, firstMessage: '第一句' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: codexProfile().id, firstMessage: '第一句' }));
     ptys.emit('exit', 'pty-1', 0);
-    svc.open({ taskId: task.id });
+    (await svc.open({ taskId: task.id }));
     expect(ptys.last.args).toEqual([]);
   });
 });
@@ -507,7 +519,7 @@ describe('profile health from running tasks', () => {
   it('reports the API errors Claude writes into the session file, and a later reply', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' }));
     writeClaudeSession(task.cwd, task.id);
     appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(402, 'API Error: 402 Insufficient Balance'));
     await vi.waitFor(() => expect(reports).toHaveLength(1), { timeout: 2000 });
@@ -519,30 +531,30 @@ describe('profile health from running tasks', () => {
     expect(reports).toHaveLength(2);
   });
 
-  it('reads the error written just before the CLI exits', () => {
+  it('reads the error written just before the CLI exits', async () => {
     const p = project();
     const prof = claudeProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'hi' }));
     writeClaudeSession(task.cwd, task.id);
     appendFileSync(claudeSessionPath(task.cwd, task.id), apiError(401, 'Invalid API key'));
     ptys.emit('exit', 'pty-1', 1);
     expect(reports.map((r) => r.ev.category)).toEqual(['auth']);
   });
 
-  it('flags a CLI that dies right after launch, but not a normal quit or our own kill', () => {
+  it('flags a CLI that dies right after launch, but not a normal quit or our own kill', async () => {
     const p = project();
     const prof = claudeProfile();
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }));
     ptys.emit('exit', 'pty-1', 127);
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }));
     ptys.emit('exit', 'pty-2', 1);
     expect(reports.map((r) => [r.ev.category, r.ev.message])).toEqual([
       ['not_found', '找不到 CLI 命令（退出码 127）'],
       ['other', 'CLI 启动后 1 秒退出（退出码 1）'],
     ]);
-    const t3 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    const t3 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).task;
     ptys.emit('exit', 'pty-3', 0);
-    const t4 = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' }).task;
+    const t4 = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '' })).task;
     svc.kill(t4.id);
     expect(reports).toHaveLength(2);
     expect(t3.id).not.toBe(t4.id);
@@ -551,7 +563,7 @@ describe('profile health from running tasks', () => {
   it('follows the Codex rollout once its session id is known', async () => {
     const p = project();
     const prof = codexProfile();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: '看看' }));
     const file = writeCodexRollout(task.cwd, 'mine', clock);
     await vi.waitFor(() => expect(svc.get(task.id).nativeSessionId).toBe('mine'), { timeout: 2000 });
     const done = { type: 'event_msg', payload: { type: 'task_complete', last_agent_message: null, error: { message: 'unexpected status 401 Unauthorized', codex_error_info: { http_connection_failed: { http_status_code: 401 } } } } };
@@ -562,9 +574,9 @@ describe('profile health from running tasks', () => {
 });
 
 describe('rename / archive / list', () => {
-  it('renames, archives and filters archived tasks', () => {
+  it('renames, archives and filters archived tasks', async () => {
     const p = project();
-    const { task } = svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    const { task } = (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     expect(svc.rename(task.id, '  新标题 ').title).toBe('新标题');
     expect(() => svc.rename(task.id, ' ')).toThrow('不能为空');
     ptys.emit('exit', 'pty-1', 0);
@@ -575,11 +587,137 @@ describe('rename / archive / list', () => {
     expect(svc.list()).toHaveLength(1);
   });
 
-  it('deleting the project deletes its tasks', () => {
+  it('deleting the project deletes its tasks', async () => {
     const p = project();
-    svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' });
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
     ptys.emit('exit', 'pty-1', 0);
     projects.deleteProject(p.id, { deleteSecrets: true });
     expect(svc.list({ includeArchived: true })).toEqual([]);
   });
+});
+
+
+describe('project-scoped application connection stop',()=>{
+ it('stops only tasks belonging to the selected project and keeps another project running',async()=>{
+  const firstProject=project(),secondProject=projects.createProject({name:'Independent M9 fixture',aliases:[],description:'',rulesPath:null},[{label:'other',path:mk('independent-code')}]),profile=claudeProfile();
+  const first=await svc.create({projectId:firstProject.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  const second=await svc.create({projectId:secondProject.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  expect(await svc.stopProject(firstProject.id,200)).toBe(true);expect(ptys.killed).toEqual([first.ptyId]);expect(svc.activePty(second.task.id)).toBe(second.ptyId);expect(svc.runningInProject(secondProject.id)).toBe(1);
+ });
+ it('reports a bounded unsuccessful stop until its owned PTY actually exits',async()=>{
+  const p=project(),profile=claudeProfile(),first=await svc.create({projectId:p.id,dirId:null,aiProfileId:profile.id,firstMessage:''});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{ptys.killed.push(id);});
+  expect(await svc.stopProject(p.id,25)).toBe(false);expect(svc.activePty(first.task.id)).toBeNull();expect(svc.runningInProject(p.id)).toBe(1);
+  ptys.emit('exit',first.ptyId,0);expect(await svc.stopProject(p.id,25)).toBe(true);
+ });
+});
+
+
+describe('persisted native history cannot become a fresh empty-root session', () => {
+  it.each(['claude', 'codex'].flatMap(runner => ['missing-root', 'empty-root', 'missing-history'].map(fault => ({runner: runner as 'claude' | 'codex', fault}))))('rejects $runner $fault after observed history and host restart, then resumes the restored original', async ({runner, fault}) => {
+    const p = project();
+    const profile = runner === 'claude' ? claudeProfile() : codexProfile();
+    const created = await svc.create({ projectId: p.id, dirId: null, aiProfileId: profile.id, firstMessage: 'history guard' });
+    if (runner === 'claude') {
+      writeClaudeSession(created.task.cwd, created.task.id);
+      appendFileSync(claudeSessionPath(created.task.cwd, created.task.id), JSON.stringify({ type: 'assistant', message: { model: 'synthetic', content: [{ type: 'text', text: 'native history written' }] } }) + '\n');
+    } else {
+      const file = writeCodexRollout(created.task.cwd, 'history-guard-native', clock);
+      appendFileSync(file, JSON.stringify({ type: 'response_item', payload: { type: 'message', role: 'assistant', content: [] } }) + '\n');
+      await vi.waitFor(() => expect(svc.get(created.task.id).nativeSessionId).toBe('history-guard-native'), { timeout: 2000 });
+    }
+    await vi.waitFor(() => expect(reports.some(r => r.ev.category === 'ok')).toBe(true), { timeout: 2000 });
+    ptys.emit('exit', created.ptyId, 0);
+    const before = sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id);
+    svc.dispose();
+    const root = runner === 'claude' ? claudeRoot() : codexRoot();
+    const quarantine = root + '-preserved';
+    const source = fault === 'missing-history' ? join(root, runner === 'claude' ? 'projects' : 'sessions') : root;
+    renameSync(source, quarantine);
+    if (fault === 'empty-root') mkdirSync(root);
+    svc = new TaskService({ db: drizzle(sqlite, { schema }), ptys, profiles, projects, baseEnv: () => ({ PATH: '/usr/bin', HOME: '/home/x' }), onChanged: () => changed++, now: () => ++clock, codexPollMs: 20, healthPollMs: 20 });
+    const spawns = ptys.spawned.length;
+    await expect(svc.open({ taskId: created.task.id })).rejects.toThrow(/原生会话.*(缺失|不可用)/);
+    expect(ptys.spawned).toHaveLength(spawns);
+    expect(sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(created.task.id)).toEqual(before);
+    if (fault === 'empty-root') rmSync(root, { recursive: true });
+    renameSync(quarantine, source);
+    const restored = await svc.open({ taskId: created.task.id });
+    expect(restored.task.nativeSessionId).toBe(runner === 'claude' ? created.task.id : 'history-guard-native');
+    expect(ptys.last.args).toContain(runner === 'claude' ? '--resume' : 'resume');
+    expect(ptys.last.env[runner === 'claude' ? '__SMARTDD_V_CLAUDE_CONFIG_DIR' : '__SMARTDD_V_CODEX_HOME']).toBe(root);
+  });
+});
+
+
+describe('native history evidence boundaries', () => {
+  it('observes native history even when optional profile health reporting is disabled', async () => {
+    svc.dispose();
+    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++,healthPollMs:20});
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    writeClaudeSession(created.task.cwd,created.task.id);
+    await vi.waitFor(()=>expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:1}));
+    ptys.emit('exit',created.ptyId,0);
+    rmSync(claudeRoot(),{recursive:true});mkdirSync(claudeRoot());
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  });
+  it('does not infer a legacy Claude task was never used from a missing file', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    ptys.emit('exit',created.ptyId,0);
+    sqlite.prepare('UPDATE tasks SET native_history_observed=NULL WHERE id=?').run(created.task.id);
+    expect(svc.get(created.task.id)).toMatchObject({recovery:'unrecoverable',recoveryReason:expect.stringContaining('未知')});
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+    expect(ptys.spawned).toHaveLength(1);
+  });
+  it('keeps a legitimately never-written Claude UUID and original root when another profile is selected', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    ptys.emit('exit',created.ptyId,0);
+    const other=claudeProfile({name:'another root',env:[{name:'CLAUDE_CONFIG_DIR',secret:false,value:mk('other-root')}]});
+    const opened=await svc.open({taskId:created.task.id,aiProfileId:other.id});
+    expect(opened.task.nativeSessionId).toBe(created.task.id);
+    expect(ptys.last.args).toContain('--session-id');
+    expect(ptys.last.env.__SMARTDD_V_CLAUDE_CONFIG_DIR).toBe(claudeRoot());
+    expect(opened.task.recovery).toBe('fresh');
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+    ptys.emit('exit',opened.ptyId,0);
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:0});
+  });
+});
+
+
+describe('interrupted native history observation', () => {
+  it('does not retain a never-written claim across a host restart before an owned exit', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+    svc.dispose();ptys.emit('exit',created.ptyId,0);
+    svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:'/home/x'}),onChanged:()=>changed++});
+    await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+    expect(ptys.spawned).toHaveLength(1);
+  });
+});
+
+
+describe('unreadable original native root', () => {
+  it('keeps unknown rather than certifying an empty history after an owned exit', async () => {
+    const p=project(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''});
+    chmodSync(claudeRoot(),0);
+    try {
+      ptys.emit('exit',created.ptyId,0);
+      expect(sqlite.prepare('SELECT native_history_observed FROM tasks WHERE id=?').get(created.task.id)).toEqual({native_history_observed:null});
+      await expect(svc.open({taskId:created.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+      expect(ptys.spawned).toHaveLength(1);
+    } finally { chmodSync(claudeRoot(),0o700); }
+  });
+});
+
+
+describe('unusable no-message native artifacts',()=>{
+ it.each(['empty-file','directory'] as const)('does not certify %s as an absent Claude history',async kind=>{
+  const p=project(),first=await svc.create({projectId:p.id,dirId:null,aiProfileId:claudeProfile().id,firstMessage:''}),file=claudeSessionPath(first.task.cwd,first.task.id);
+  mkdirSync(join(claudeRoot(),'projects',first.task.cwd.replace(/[^a-zA-Z0-9]/g,'-')),{recursive:true});
+  if(kind==='empty-file')writeFileSync(file,'');else mkdirSync(file);
+  ptys.emit('exit',first.ptyId,0);
+  await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  expect(ptys.spawned).toHaveLength(1);
+ });
 });

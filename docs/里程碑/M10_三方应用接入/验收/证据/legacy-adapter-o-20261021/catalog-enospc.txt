@@ -1,0 +1,117 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-agent-load.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts (27 tests | 19 failed) 10698ms
+     × rejects a current-format own projection whose reference is no longer authoritative 429ms
+     × rejects a current-format own projection whose projection-state is no longer authoritative 566ms
+     × recognizes the exact existing original plugin and Skill paths while retaining the old namespace 253ms
+     × rejects conflicting or duplicate managed flags without rewriting user settings 83ms
+     × does not add a context MCP when the current project explicitly disables it 115ms
+     × rejects a different or damaged native-root loading basis 3604ms
+     × rejects a different or damaged native-id loading basis 108ms
+     × rejects a different or damaged source-hash loading basis 227ms
+     × rejects a different or damaged record loading basis 99ms
+     × rejects a different or damaged manifest loading basis 242ms
+     × rejects a different or damaged reference loading basis 168ms
+     × rejects a different or damaged cli loading basis 97ms
+     × rejects a different or damaged adapter loading basis 58ms
+     × rejects a different or damaged approved loading basis 1ms
+     × does not guess past a missing or changed generation 182ms
+     × does not guess past a missing or changed catalog-file 205ms
+     × does not guess past a missing or changed projection 280ms
+     × does not guess past a missing or changed owner-link 155ms
+     × requires the explicit legacy API instead of treating its adapter as a new-session adapter 111ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a current-format own projection whose reference is no longer authoritative
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a current-format own projection whose projection-state is no longer authoritative
+AssertionError: expected [Function] to throw an error
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:57:89
+     55|   if(kind==='projection-state')sqlite.prepare("UPDATE capability_resou…
+     56|   if(kind==='source-state')sqlite.prepare("UPDATE capability_resources…
+     57|   const before=hashes();expect(()=>adapters.planLegacy(value.adapter.h…
+       |                                                                                         ^
+     58|  });
+     59|  it.each(['plugin','skill','mcp'] as const)('does not replace or renam…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > recognizes the exact existing original plugin and Skill paths while retaining the old namespace
+ApplicationError: 资源协调所有权无法核对
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:35:19
+     33|     let owner: { token?: string };
+     34|     try { owner = JSON.parse(readFileSync(join(path, 'owner.json'), 'u…
+     35|     catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '…
+       |                   ^
+     36|     if (owner.token !== token) throw new ApplicationError('RESOURCE_RE…
+     37|     rmSync(path, { recursive: true });
+ ❯ ResourceStore.recordFailure src/main/core/applications/resource-store.ts:179:11
+ ❯ ResourceStore.publish src/main/core/applications/resource-store.ts:141:18
+ ❯ AgentAdapterRegistry.install src/main/core/applications/agent-adapter-registry.ts:26:5
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:30:780
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects conflicting or duplicate managed flags without rewriting user settings
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > does not add a context MCP when the current project explicitly disables it
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged native-id loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged source-hash loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged record loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged manifest loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged reference loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged cli loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged adapter loading basis
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > does not guess past a missing or changed generation
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > does not guess past a missing or changed catalog-file
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > does not guess past a missing or changed projection
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > does not guess past a missing or changed owner-link
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > requires the explicit legacy API instead of treating its adapter as a new-session adapter
+SqliteError: database or disk is full
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:69:9
+ ❯ runMigrations src/main/db/migrations.ts:82:4
+     80|       record.run(m.hash, m.when);
+     81|     }
+     82|   })();
+       |    ^
+     83|   return pending.map((m) => m.tag);
+     84| }
+ ❯ runBundledMigrations src/main/db/migrations.ts:87:10
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:29:229
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged native-root loading basis
+ApplicationError: 资源协调记录不完整，保留现场待核查
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:19:23
+     17|       if (performance.now() >= deadline) {
+     18|         try { const owner = JSON.parse(readFileSync(join(path, 'owner.…
+     19|         catch { throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED…
+       |                       ^
+     20|         throw new ApplicationError('RESOURCE_BUSY', '资源正在使用，请稍后重试');
+     21|       }
+ ❯ ResourceStore.recordFailure src/main/core/applications/resource-store.ts:179:5
+ ❯ ResourceStore.publish src/main/core/applications/resource-store.ts:141:7
+ ❯ AgentAdapterRegistry.install src/main/core/applications/agent-adapter-registry.ts:26:5
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:30:780
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects a different or damaged approved loading basis
+Error: ENOSPC: no space left on device, mkdtemp '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-load-XXXXXX'
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:29:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  19 failed | 8 passed (27)
+   Start at  02:43:17
+   Duration  11.53s (transform 564ms, setup 0ms, import 752ms, tests 10.70s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

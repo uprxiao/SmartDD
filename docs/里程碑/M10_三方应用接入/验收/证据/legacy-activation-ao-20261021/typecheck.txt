@@ -1,0 +1,11 @@
+
+> smartdd@0.0.5 typecheck /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/task-capability-launcher.ts(224,348): error TS2322: Type '{ [k: string]: { files: Record<string, Buffer<ArrayBufferLike>> | { [k: string]: Buffer<ArrayBuffer>; }; format?: "legacy-tree-v1" | undefined; path: string; nativeName: string | null; }; }' is not assignable to type 'Record<string, { path: string; nativeName: string; format?: "legacy-tree-v1" | undefined; files: Readonly<Record<string, Uint8Array<ArrayBufferLike>>>; }>'.
+  'string' index signatures are incompatible.
+    Type '{ files: Record<string, Buffer<ArrayBufferLike>> | { [k: string]: Buffer<ArrayBuffer>; }; format?: "legacy-tree-v1" | undefined; path: string; nativeName: string | null; }' is not assignable to type '{ path: string; nativeName: string; format?: "legacy-tree-v1" | undefined; files: Readonly<Record<string, Uint8Array<ArrayBufferLike>>>; }'.
+      Types of property 'nativeName' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+ ELIFECYCLE  Command failed with exit code 2.

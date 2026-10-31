@@ -1,0 +1,246 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV004-D / DEV005-E",
+  "recordedAt": "2026-10-20T06:36:29.083896+00:00",
+  "requirementBaseline": "R1.6 incl12.21; assigned-self Bug/Story readonly; fixed original package contracts; no product scope expansion",
+  "baseCommit": "017a72e4d0e41c9390371efac13123d3ae35cecc",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: actual host contexts,durable draft Data API and trusted main RPC committed as017a72e; full M10 goal remains active",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "All three original ZenTao CJS tools now execute actual current assigned-self list/detail/resource business services; UI has three explicit trusted RPC endpoints sharing the same backend",
+    "Known configApi1 projections are verified with original package schema and auth contract; exact current identity/config/policy/binding and same-identity current secrets remain host-owned",
+    "Opaque project/source/policy-bound paging cursors,exact string IDs,explicit partial results on duplicate/short/changed-total/budget cases,and no cross-project or forged reference lookup",
+    "Canonical source payloads and exact revisions in0017,stable body/history/large-field/binary references,original-version reads guarded by current assignment/existence,atomic fetched provenance and no package lifetime ownership of business data",
+    "Ordinary,historical and same-origin inline file IDs downloaded only by fixed v1 path,no redirect or arbitrary URL/token forwarding,declared size/actual bytes/hash checked with explicit partial failures",
+    "Bounded asynchronous current-authorization checks before cached response delivery,real activity retained until checker settles,original operation/effect/attempts preserved and external writes never made replayable by receipt timeout",
+    "Connection health changes use full revision CAS and change-only events without rewriting saved testedAt or application policy; stale secret/config health results cannot poison current state"
+  ],
+  "methods": [
+    "zentao.work.list",
+    "zentao.object.get",
+    "zentao.resource.read"
+  ],
+  "engineeringLimits": {
+    "pageDefault": 50,
+    "pageMax": 200,
+    "cursorLifetimeMs": 600000,
+    "maxCursorSeenObjects": 10000,
+    "fileBytes": 26214400,
+    "detailDownloadBytes": 67108864,
+    "fileCandidates": 200,
+    "resourceChunkBytes": 262144,
+    "httpSingleAttemptMs": 8000,
+    "notes": "Original tool budget and schema remain authoritative. Limits produce explicit partial/unavailable results,not silently complete shortened data."
+  },
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects",
+      "status": "passed",
+      "files": 44,
+      "tests": 526,
+      "passed": 526,
+      "failed": 0,
+      "breakdown": {
+        "m10AndRelatedRuntime": 447,
+        "projectsAndM8": 79
+      },
+      "log": "dev004-d-dev005-e-20261020/final-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev004-d-dev005-e-20261020/final-types.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev004-d-dev005-e-20261020/final-build.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed on independent rerun",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev004-d-dev005-e-20261020/release-rules-serial.txt",
+      "earlierFailure": "dev004-d-dev005-e-20261020/red-release-concurrent-timeout.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "scope": "actual production resource output,not a packaged App result",
+      "log": "dev004-d-dev005-e-20261020/resource-verification.json"
+    }
+  ],
+  "newTests": {
+    "actualZentaoHttpAndBusiness": 22,
+    "asyncCachedReceiptActivityAndReadWriteEffects": 3,
+    "preservedSourceUpgradeAndReplay": 1,
+    "totalIncludedIn526": 26,
+    "note": "Prior500 and intermediate16/31/56/71/525 overlap and are not added. No formal product case was skipped or counted as passed."
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "Initial blob builder import used drizzle-orm rather than sqlite-core",
+      "correction": "Import SQLite blob builder from its actual module",
+      "redLog": "dev004-d-dev005-e-20261020/red-blob-import.json"
+    },
+    {
+      "finding": "Private bundle runtime fixture supplied Uint8Array where the existing run fixture deliberately requires Buffer",
+      "correction": "Explicit lossless Buffer copy; package/runtime bytes and hashes unchanged",
+      "redLog": "dev004-d-dev005-e-20261020/red-runtime-buffer-type.json"
+    },
+    {
+      "finding": "Two cancellation cases passed assertions but failed cleanup because their HTTP held response was released twice",
+      "correction": "Make the owned private response release idempotent and retain cancellation/late-result assertions",
+      "redLog": "dev004-d-dev005-e-20261020/red-http-fixture-cleanup.json"
+    },
+    {
+      "finding": "During concurrent build/regression,unchanged native-probe fixture hit its5second outer spawnSync deadline;13/14 release tests passed",
+      "investigation": "The unchanged probe includes a separate8second watcher deadline. The ended child and complete failure were inspected; concurrent build finished. Standalone exact14-test rerun passed,the affected case in79.745125ms. No script,timeout or assertion changed. Specific transient trigger was not reproduced and is not claimed fixed.",
+      "redLog": "dev004-d-dev005-e-20261020/red-release-concurrent-timeout.json",
+      "retest": "dev004-d-dev005-e-20261020/release-rules-serial.txt"
+    },
+    {
+      "finding": "Derived completeness flags should not become part of the durable original payload identity",
+      "correction": "Persist only canonical original business payload,recompute parser completeness,verify original source digest before following retained references;new corruption case and full526 retest pass"
+    }
+  ],
+  "actualBoundary": [
+    "Actual private HTTP server,original immutable package CJS,Session/Run/ToolService,SQLite revisions and binary contents,common contexts/resource service and main RPC composition participate",
+    "HTTP user,work,Bug/Story detail and file endpoints are local protocol fixtures;no real ZenTao account/site is contacted. Kernel identity,Agent adapter,cipher and WebContents are explicit controlled fixtures",
+    "New UI endpoints are registered and business UI entry methods exercised;renderer pages,real Claude/Codex native model paths and packaged App were not exercised",
+    "ZenTao fetched bodies/files reside in business SQLite,not the as-yet-unimplemented mail cache/quota;no claim of500MB mail cache or entire user-data bounded size",
+    "No daily credentials,mailboxes,native sessions,external business sends,model calls,M9 changes/process operations,main merge,push,tag or release"
+  ],
+  "remaining": [
+    "Mail persistent500MB/30day cache,source refresh/multiple consumers,current queries/reads/reply and attachment import,actual send authorization provenance and Data API",
+    "Production TaskCapabilityLauncher,effective native configuration,Agent-created bridge PID proof,actual runtime/main broker attachment and fixed native ID/Task pointer reconciliation",
+    "Lightweight confirmed UI,actual packaged App72 formal cases,both supported real Agents and required system-layer checks,defect retests and delivery archival",
+    "Startup migration fencing,old H-lock recovery,GC,full multi-process crash recovery;retain the observed release fixture timeout as an environment observation until actual platform probes are complete"
+  ],
+  "productAcceptance": {
+    "formalCases": 72,
+    "newPackagedAppPasses": 0,
+    "status": "not executed in this checkpoint; M10 remains development in progress"
+  },
+  "build": {
+    "appVersion": "0.0.5",
+    "index": {
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "apps": [
+        {
+          "appId": "zentao",
+          "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "path": "apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "version": "1.0.0"
+        },
+        {
+          "appId": "mail",
+          "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "path": "apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "version": "1.0.0"
+        }
+      ],
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "017a72e4d0e41c9390371efac13123d3ae35cecc",
+        "dirty": true,
+        "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d"
+      },
+      "indexHash": "b6b8ed1f94d5e32347313cb28d28a80598780acf1397bb9f040d25798e3c6c16",
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "schema": "willyou-capability-bundles-v1"
+    },
+    "artifacts": {
+      "out/main/index.js": "d3f31efb3bda82fcb72874a9ad887e1149d198efed5f15d77a21cfc20696005c",
+      "out/preload/index.js": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908",
+      "out/main/m10-mail-reader.js": "f25eed2d3d01fc7955d33337f5f81321650bad81f124c27b2f5aed9211ce942f",
+      "out/applications/mcp-bridge.cjs": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "out/capability-bundles/index.json": "44afb24269bde3f9bc68916f98407fe85baaa09c9613ce7e46b102037fe7d50a",
+      "out/native/willyou-foxmail": "483678fb21961b724917f0bdbc754da026708af4ed16abc9836d5aa151d9bfde",
+      "out/native/willyou-process-identity": "29e6e838c5a221beaa6dc4ba342465993274451595f349944d69c0738d5e92d5"
+    },
+    "notes": "Base017a72e plus exact production sources below;later edits are documentation/evidence only. Original1.0.0 package/runtime contents and resourceSetHash remain unchanged."
+  },
+  "sourceHashes": {
+    "drizzle/0017_zentao_business_reads.sql": "90b45345febe2d1a18c9c35678b7c898e739f5a8220973e0976bdeae15f6f747",
+    "drizzle/meta/_journal.json": "8ae727efddbc682e6aca658fdb60c6b2f4eac13a29c9e88891f0873c2669b813",
+    "src/main/core/applications/__tests__/application-controller.test.ts": "85a9b575bb10b59979e0870e04ef61e018b0465d612ba61d69368785984d7cba",
+    "src/main/core/applications/__tests__/tool-service.test.ts": "2325f014b1d32da520850bc8e0a739eca64e9999022de2f2f6d83769040bbcf0",
+    "src/main/core/applications/__tests__/zentao-data.test.ts": "252a7f24ea3e8b0aad967aeb218c487a681e77df8a53b3c263bc3e7c751fc35d",
+    "src/main/core/applications/application-adapter-registry.ts": "d21b1e39331eea51a25b47ab3e43f41b7b1755e891caeb7bf99ecba3036c1fd6",
+    "src/main/core/applications/application-service.ts": "8c5aa7221a7b92d8d2180dd3e921ad61ab4ed814d0d41c2b09c327fe02d82017",
+    "src/main/core/applications/business-data-service.ts": "7b394e1f39f5c2aaa196d20ac3f0b4c5873f60d4c81d227e68cbcb0eb990001f",
+    "src/main/core/applications/connection-service.ts": "04c79753630c6e9f85e50ddc11f24064367ef1291e7a99d903eb1b3aa1fa96e0",
+    "src/main/core/applications/controller.ts": "5b780de03698474c7e10fa7b98732018d4d06bac3f67d56b4dc5cac0ec0077f5",
+    "src/main/core/applications/execution-context.ts": "0186af52ee7ec2d24ff9eef46e28b4c8faee7fa73cd8149ecb0025fa656bf3bd",
+    "src/main/core/applications/package-config-views.ts": "91eafa3e6a5d9f462be09647333350fdae127a8faedb2d7f9108e71a82890de6",
+    "src/main/core/applications/providers/json-http.ts": "72f64a2192a5740279a2da35554542f15a02a0776e274a3f151e6e4ec18e4a32",
+    "src/main/core/applications/providers/zentao.ts": "3651b14e3fa59cb3237964978528f7e40d4bb931d996b5b6f0fb94ab05b7efde",
+    "src/main/core/applications/tool-service.ts": "deddb43f2dc7bbf3980d8f19b313eeb9909bd4da9ac82fe18e56acc03be78c7d",
+    "src/main/core/applications/zentao-data-service.ts": "6012bcb98b9d3bd19e45aea0e5bffacfb90b5537fc05bd7a96f4578970d15d94",
+    "src/main/db/migrations.test.ts": "78ef444701089673756f08c3f24b4458cdecea9ea1b989c99fd004bbf9d8e1f6",
+    "src/main/db/schema.ts": "6c20c23399aa44b858dfdbdf17aad3de0afee4ab14fcb70b911968d691c599ee",
+    "src/shared/application-zentao.ts": "e3695b11db02037e42ab3bd582b3e76a9fc2d7bb103b60c0fb54e2f7fd8ab1ce"
+  },
+  "documentationHashes": {
+    "docs/里程碑/M10_三方应用接入/README.md": "65af95cc2908cfc2a135e01d3fd0f86617dc8df2e7e62cd3f2166e2fbc853c84",
+    "docs/里程碑/M10_三方应用接入/实施计划与进度.md": "de2f53e0c208575ed4f942dfdff5dd27c6c56741800011388e5f3fa2f803c8b3",
+    "docs/里程碑/M10_三方应用接入/技研/禅道DataAPI与来源资源接入检查点_20261020.md": "b4fd3c026baca027a46aaef2d3401e04ed01d38115342695822d9fa7dba43ec2",
+    "docs/里程碑/M10_三方应用接入/验收/执行与缺陷记录.md": "8a23d347f87495cff2a876f56fa5396a6a7f589cfbbb9abe7d83b1bb95ccf8b1",
+    "docs/里程碑/README.md": "784abb1a3ff3634109d1326b2d67bec121e8eeb048adfabdea8645e1bac3ed71",
+    "docs/需求池.md": "93760704b432da653dffd401142ed62548cd43266c1f4d6252e17d3cd7ef9fb3"
+  },
+  "unchangedReleaseSources": {
+    "scripts/release/release.test.mjs": "085fb4abf5a7dec02e5f8c2179782ebd89c046235a75c07c1fb5e80551d2cf67",
+    "scripts/release/native-smoke.cjs": "e627e42e03fc51e6ef438ee1d3c2bb702f2c0b64d979a96d02f583d7fdd16293"
+  },
+  "evidenceHashes": {
+    "before-source-normalization-525.txt": "1c4a8601813e91836e85e095b77e5e338723d3d8422df90a68ff59048740f738",
+    "bundle-index.json": "a63bc5e0a87b22d6fcb71a3ab305da0cb60cf31f8db8f922a486ea330d0a2651",
+    "final-build.txt": "24aa50b11f92bf4504d0ebb029abe884448be64e32cf463251b8a6df856d84a8",
+    "final-tests.txt": "8d53c20940368f531fb3297cdcb495883df2caef652bcb45ac0c50e3c0412025",
+    "final-types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "first-zentao-16.txt": "ba5ebac64f2f3f3584ac4bfc06b61ca2308715d4ea309a475b30d8db48bb555d",
+    "red-blob-import.json": "5c6b0ecc0b604b306f6d6c41a7fc2187e97e4423e333e50fa8b2f97138e570a8",
+    "red-http-fixture-cleanup.json": "331741ef969018b5aa783cd41e36e5f45b9f78dea5f86977056f5190f2adf1f6",
+    "red-release-concurrent-timeout.json": "cbbc3168817e35ccf0ee25f1aae79b256893ba9d0fc3b2bb3f3dd0d09a7d6261",
+    "red-runtime-buffer-type.json": "91279e108d17d84843bb7f65bd7927379d937814a0dffac3f303a1e6f7c98782",
+    "related-existing-71.txt": "af9544764b6328b1a49b07173c2ec7f4f6f6a57affa90b746f471ec925a9b6c1",
+    "related-retest-56.txt": "2bdbe8d46c82002c83c9ce8868124179f2dab3e5a16a0ec1eda8161bd07a1fb4",
+    "release-rules-serial.txt": "aed54f42f286331de852dfce34a3ab2ed5aa2a4a7f32f921765c440c9907b4b8",
+    "resource-verification.json": "1a7cf23095755b58c1d6febc048d28e87b3a70bc4e3f1601c17ad6db1618bc92",
+    "source-revision-31.txt": "5fa6a2400b636884abeaeb1f9244720b508c437d1cd63ea7c2a882f344ca239d"
+  }
+}

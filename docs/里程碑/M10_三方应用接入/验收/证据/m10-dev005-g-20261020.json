@@ -1,0 +1,275 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-G",
+  "recordedAt": "2026-10-20T07:55:57.490957+00:00",
+  "requirementBaseline": "R1.6 incl12.21; existing R05/read/query/refresh scope; no product scope change",
+  "baseCommit": "82189ad22072e89894a87f525e47052fc8953fc6",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "prototypeBaseline": "8466734",
+  "applicationVersion": "0.0.5",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Original v1 mail query/read/resource Data APIs and three trusted main-frame RPC routes",
+    "Real native read-only metadata and Worker fixed-source snapshots,bounded resumable full pagination,source SHA references and current-source receipt rechecks",
+    "Quota-governed persistent per-message header/fulltext blocks reused across queries and restarts; changed/moved/added reparsed and deleted omitted",
+    "Multi-project shared read-only index activity,independent waiter cancellation/revocation and real producer/Worker/native-child lifetime protection",
+    "Project-bound exact body/HTML/attachment resources,UTF8-safe bounded bytes,stable rebuild after cache clear and full original mail revision pinned during separate attachment fetch",
+    "Connection test bounded reply retains independent actual producer resource lease and shutdown activity",
+    "0018 operational waiter/source provenance only; no body or query result in main business SQLite",
+    "Atomic cache record CAS and bounded message catalogue merge preserve newer checkpoint/fulltext"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects",
+      "status": "passed",
+      "files": 47,
+      "tests": 596,
+      "passed": 596,
+      "failed": 0,
+      "m10AndRelatedRuntime": 517,
+      "projectsAndM8": 79,
+      "log": "dev005-g-20261020/final-tests-v2-20261020.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-g-20261020/validated-types-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev005-g-20261020/validated-build-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev005-g-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev005-g-20261020/resource-verification.json"
+    }
+  ],
+  "newTests": {
+    "actualMailDataApi": 16,
+    "workerNative": 2,
+    "actualVerifierLifetime": 1,
+    "cacheCas": 1,
+    "trustedMailRpc": 1,
+    "migration": 1,
+    "totalIncludedIn596": 22,
+    "note": "574 previous plus22 new; repeated or earlier failed runs are not added"
+  },
+  "engineeringLimits": {
+    "queryDaysDefault": 30,
+    "queryDaysMaximum": 100,
+    "queryWorkMs": 15000,
+    "defaultBatch": 50,
+    "maximumBatch": 100,
+    "metadataRows": 100000,
+    "sourceInventoryEntries": 50000,
+    "sourceDepth": 12,
+    "nativeTimeoutMs": 10000,
+    "workerRequestTimeoutMs": 30000,
+    "rawMessageBytes": 8388608,
+    "decodedBytes": 16777216,
+    "headerPrefixBytes": 65536,
+    "reuseTextBytes": 16777216,
+    "readIndexBlockBytes": 33554432,
+    "catalogueIdentities": 100000,
+    "resourceChunkBytes": 262144,
+    "cursorMs": 600000,
+    "newNativeIntegrationFixtureMs": 15000,
+    "paginationFixtureMs": 30000
+  },
+  "failuresPreserved": [
+    "Migration expectation lists initially omitted0018; original composition run49/61 and later migration19/19 retained",
+    "Initial test TS implicit this fixed with explicit MailWorkerClient receiver",
+    "MIME fixture decoded newline differs between plain and multipart; corrected expected text,retained exact resource SHA assertion",
+    "Per-message individual cache writes reached real15s work budget after150/260; replaced with batched quota-governed catalogue blocks",
+    "First aggregate593/595 and subsequent594/595 hit default5s outer integration deadline;new multi-Worker/native/durable-IO test group has explicit15s fixture deadline,product timing/quotas and business assertions unchanged"
+  ],
+  "immutableResourceVerification": {
+    "indexHash": "1e88d32cc2e4795d038817a6ce775ab919245a32c4aab0d3bb9d100dfa224376",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "evidenceBoundary": {
+    "actualComponents": [
+      "private synthetic Foxmail source SQLite and.mail files",
+      "production native reader and kernel identity helper",
+      "actual Worker and durable shared cache",
+      "original immutable v1 CJS package",
+      "host services,operational SQLite,session/run/tool chain and RPC authority"
+    ],
+    "explicitFixtures": [
+      "test-only cipher",
+      "WebContents authority",
+      "CLI run native identity records instead of actual Claude/Codex"
+    ],
+    "dailyDataRead": false,
+    "actualAgentRun": false,
+    "externalMailSent": false,
+    "packagedAppExecuted": false,
+    "formalM10Cases": 72,
+    "newFormalProductPasses": 0,
+    "formalProductCasesPassed": 0
+  },
+  "remaining": [
+    "reply creation and attachment import,including trusted workspace reference resolution",
+    "send Data APIs and concrete user authority provenance",
+    "production TaskCapabilityLauncher/effective native config/Agent-spawned bridge identity and real CC/Codex flows",
+    "mail connection health and complete startup/maintenance/recovery/GC",
+    "P01-P09 product UI and full72 packaged App acceptance,system/manual checks and delivery"
+  ],
+  "sourceManifest": "dev005-g-20261020/source-and-build-manifest.json",
+  "evidenceFiles": [
+    {
+      "path": "dev005-g-20261020/aggregate-20261020.json",
+      "bytes": 2587,
+      "sha256": "6a177bd646c9b045daf49d4cf905865859137d6f7c737377d3ff5ca31cfa65cd"
+    },
+    {
+      "path": "dev005-g-20261020/build-20261020.json",
+      "bytes": 18649,
+      "sha256": "0150da23c60eb2723a31b24d02d4cb6708d03342267b84655e342851766873a5"
+    },
+    {
+      "path": "dev005-g-20261020/composition-first-20261020.json",
+      "bytes": 11596,
+      "sha256": "d3d8e900e40dfe58a9c0654dad6fb6f3974a38b78e141e9b2d2a79b1ed40b1f1"
+    },
+    {
+      "path": "dev005-g-20261020/composition-types-20261020.json",
+      "bytes": 599,
+      "sha256": "d624aee24857409503735c59e5fde9aa87433af58207c4413b8a663049d73c18"
+    },
+    {
+      "path": "dev005-g-20261020/final-tests-20261020.json",
+      "bytes": 1891,
+      "sha256": "850b1881b3ab83def9711f45aed2ffb2d900e7d78647c9f7a88aa61e4100f72e"
+    },
+    {
+      "path": "dev005-g-20261020/final-tests-v2-20261020.json",
+      "bytes": 903,
+      "sha256": "8a2c22f84b7d419933bc265cd6bb8ecf12d642086dba34aaa747c8cb06589e3c"
+    },
+    {
+      "path": "dev005-g-20261020/final-types-20261020.json",
+      "bytes": 380,
+      "sha256": "0d2e7a3888cdf306db72bdd57e15b162532ae2dba05e4f7ec1c69a9650964562"
+    },
+    {
+      "path": "dev005-g-20261020/incremental-first-20261020.json",
+      "bytes": 2304,
+      "sha256": "a13c4827f75084f1f93d3fae81d3e27c11d9ab32250bfb256a4f89a49b095bfc"
+    },
+    {
+      "path": "dev005-g-20261020/incremental-second-20261020.json",
+      "bytes": 1673,
+      "sha256": "5297770af11ee3d76e730797c3d6a3d862831eb6eb22d91a992f9cac58072c4b"
+    },
+    {
+      "path": "dev005-g-20261020/incremental-second-types-20261020.json",
+      "bytes": 393,
+      "sha256": "051f7f52f0be9fdfe6880b2debc642bb7952da0ce287cbd293fff00fbea71768"
+    },
+    {
+      "path": "dev005-g-20261020/incremental-types-20261020.json",
+      "bytes": 386,
+      "sha256": "9de3847b3be740daf63ba765b856b0d07550f62dafbc48d30e0214d58b07d855"
+    },
+    {
+      "path": "dev005-g-20261020/mail-data-first-20261020.json",
+      "bytes": 2513,
+      "sha256": "50e88ff7b0bc9200f91c9e26ec17ee7364d999cd9fb7f1afa53e519c6f26623b"
+    },
+    {
+      "path": "dev005-g-20261020/mail-data-second-20261020.json",
+      "bytes": 666,
+      "sha256": "9bca6081d6c9f4991e340b435fd600c48f1bd346d4b72e0e86218950b31e7f24"
+    },
+    {
+      "path": "dev005-g-20261020/mail-data-types-first-20261020.json",
+      "bytes": 390,
+      "sha256": "65ddb8980036f23d076e51e20ff7e4b0ebb62d1a4f00c430906fe47c37ea5f90"
+    },
+    {
+      "path": "dev005-g-20261020/query-types-first-20261020.json",
+      "bytes": 386,
+      "sha256": "8c24f0fcd27875703ec9164fd1107d74f28741362b19bdba08c7e42aa6064b3d"
+    },
+    {
+      "path": "dev005-g-20261020/release-20261020.json",
+      "bytes": 3544,
+      "sha256": "659bd98500a4bb4b737a84ee28985fb2f290d94abb803b6e5c089e8422a92335"
+    },
+    {
+      "path": "dev005-g-20261020/resource-verification.json",
+      "bytes": 626,
+      "sha256": "c8c73af2489b75ea4a66c2ee6133554a8e54b8e8156587205824e7208ca94ced"
+    },
+    {
+      "path": "dev005-g-20261020/scan-types-first-20261020.json",
+      "bytes": 385,
+      "sha256": "6015cc8b8220f6404186c42ada9645567ede5f6060567d3b4bcbd645a1619afb"
+    },
+    {
+      "path": "dev005-g-20261020/source-and-build-manifest.json",
+      "bytes": 5617,
+      "sha256": "a5455638440b43c9a31f2287649b5e4024d37dd7b4ed365cddf786249de8635d"
+    },
+    {
+      "path": "dev005-g-20261020/typecheck-20261020.json",
+      "bytes": 378,
+      "sha256": "ee5c081d0bf1f6b6a42335195b3608e8d56dfefa5df1f0b7eddbdf1e80cf51db"
+    },
+    {
+      "path": "dev005-g-20261020/validated-build-20261020.json",
+      "bytes": 18660,
+      "sha256": "f795accdb18912e114788bc631ecf77a9a0a79f85e31ca8e90f52f3b76b2b560"
+    },
+    {
+      "path": "dev005-g-20261020/validated-types-20261020.json",
+      "bytes": 384,
+      "sha256": "afb61f8403beed9509586d60023721230c56c8cbb165d5afcc08bf639f8d240e"
+    },
+    {
+      "path": "dev005-g-20261020/worker-first-20261020.json",
+      "bytes": 626,
+      "sha256": "d311b4dda427867b6f0df48c603f22e808d89c19b1ec10cffe7be7bf8a830f7f"
+    }
+  ],
+  "sourceInspectionFinding": "Separate attachment read race fixed to require original full mail SHA even when attachment bytes are identical"
+}

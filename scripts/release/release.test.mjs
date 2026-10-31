@@ -76,7 +76,8 @@ test('packaging refuses another OS before rebuilding or producing installers', (
 
 test('native probe finishes after PTY exit even if a worker handle remains open', (t) => {
   // Reproduce the Windows ConPTY lifecycle without requiring a Windows host.
-  // Real SQLite/PTY behavior is verified separately inside each platform package.
+  // Every native module below is an explicit lifecycle fixture; real SQLite/PTY/
+  // watcher behavior is verified separately inside each platform package.
   const dir = mkdtempSync(join(tmpdir(), 'smartdd-native-exit-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const put = (name, text = '') => {
@@ -94,17 +95,24 @@ test('native probe finishes after PTY exit even if a worker handle remains open'
     onData(fn) {setImmediate(() => fn('SMARTDD_NATIVE_PTY_OK'))},
     onExit(fn) {setInterval(() => {}, 10000); setImmediate(() => fn({exitCode:0}))}
   });`);
-  const require = createRequire(import.meta.url);
-  const watcher = require.resolve('@parcel/watcher');
-  put('app.asar/node_modules/@parcel/watcher/index.js', `module.exports = require(${JSON.stringify(watcher)});`);
-  put('app.asar/node_modules/@parcel/watcher/package.json', JSON.stringify(require('@parcel/watcher/package.json')));
-  // Load the real host watcher before spoofing Windows for the PTY lifecycle.
-  // Its native binding and file events are still checked by the probe.
-  put('preload.cjs', `require(${JSON.stringify(watcher)}); Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});`);
+  put('app.asar/node_modules/@parcel/watcher/package.json', JSON.stringify({ version: '2.5.6', main: 'index.js' }));
+  put('app.asar/node_modules/@parcel/watcher/index.js', `
+    // A mocked native-binding marker belongs only to this all-mocked probe fixture.
+    require.cache[__filename + '.fixture-watcher.node'] = { exports: {} };
+    exports.subscribe = async (directory, listener) => {
+      // This test isolates lingering PTY worker handles. Native watcher delivery
+      // is checked by each real platform package, not by this lifecycle fixture.
+      const file = require('node:path').join(directory, 'probe.txt');
+      const event = setImmediate(() => {
+        require('node:assert/strict').equal(require('node:fs').readFileSync(file, 'utf8'), 'watch fixture');
+        listener(null, [{path:file}]);
+      });
+      return {unsubscribe: async () => clearImmediate(event)};
+    };
+  `);
+  put('preload.cjs', "Object.defineProperty(process.versions, 'electron', {value:'fixture'}); Object.defineProperty(process, 'platform', {value:'win32'});");
   const result = spawnSync(process.execPath, ['--require', join(dir, 'preload.cjs'),
-    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], {
-    encoding: 'utf8', timeout: 12000, env: { ...process.env, TEMP: dir, TMP: dir },
-  });
+    join(root, 'scripts/release/native-smoke.cjs'), dir, '0.0.2', process.arch], { encoding: 'utf8', timeout: 12000, env: { ...process.env, TEMP: dir, TMP: dir } });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).pty, 'passed');

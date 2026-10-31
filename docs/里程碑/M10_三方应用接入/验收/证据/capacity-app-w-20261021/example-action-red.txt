@@ -1,0 +1,57 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/renderer/features/applications/session-applications.test.tsx --maxWorkers=1 -t 'capacity-disabled injection'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/renderer/features/applications/session-applications.test.tsx (9 tests | 1 failed | 8 skipped) 81ms
+     × shows capacity-disabled injection separately from initial preparation while the native terminal continues, without lifecycle actions 81ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/applications/session-applications.test.tsx > P09 real session diagnostic presentation > shows capacity-disabled injection separately from initial preparation while the native terminal continues, without lifecycle actions
+AssertionError: expected <button …(1)>…(1)</button> to be null
+
+- Expected:
+null
+
++ Received:
+<button
+  class="m10-button secondary"
+>
+  插入示例到终端
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-arrow-up-right"
+    fill="none"
+    height="13"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="13"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M7 7h10v10"
+    />
+    <path
+      d="M7 17 17 7"
+    />
+  </svg>
+</button>
+
+ ❯ src/renderer/features/applications/session-applications.test.tsx:20:300
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  09:33:25
+   Duration  841ms (transform 94ms, setup 0ms, import 287ms, tests 81ms, environment 388ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,112 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-service.test.ts --maxWorkers=1 -t 'persisted native history cannot'
+
+[1021/140216.123420:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/140216.541515:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/tasks/task-service.test.ts (29 tests | 2 failed | 27 skipped) 140ms
+     × rejects claude after observed history is removed and the host restarts 79ms
+     × rejects codex after observed history is removed and the host restarts 61ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/tasks/task-service.test.ts > persisted native history cannot become a fresh empty-root session > rejects claude after observed history is removed and the host restarts
+AssertionError: promise resolved "{ task: { …(23) }, ptyId: 'pty-2' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "pty-2",
++   "task": {
++     "aiProfileColor": "#3b82f6",
++     "aiProfileId": "b69b03d0-e473-47c1-b6d8-9981f48eaafa",
++     "aiProfileName": "CC-DS",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792562536953,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-task-c22VbA/code",
++     "dirId": "f1d7ea6f-85a2-41e4-b6ff-89b042cd3629",
++     "firstMessage": "history guard",
++     "id": "509cd2b3-d0d1-4b2c-8bd4-48ed4921dc3d",
++     "injectedEnvNames": [
++       "ANTHROPIC_AUTH_TOKEN",
++       "ANTHROPIC_BASE_URL",
++       "CLAUDE_CONFIG_DIR",
++     ],
++     "lastLaunchedAt": 1792562536956,
++     "nativeSessionId": "509cd2b3-d0d1-4b2c-8bd4-48ed4921dc3d",
++     "projectConfigVersion": 1,
++     "projectId": "7676e80a-8225-4434-8545-d52696117607",
++     "projectName": "AIS",
++     "ptyId": "pty-2",
++     "recovery": "fresh",
++     "recoveryReason": "还没有发过消息，Claude 未写会话文件；打开时沿用原 ID 新开",
++     "runner": "claude",
++     "runtimeSnapshot": null,
++     "title": "history guard",
++     "updatedAt": 1792562536957,
++   },
+  }
+
+ ❯ src/main/core/tasks/task-service.test.ts:564:55
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/tasks/task-service.test.ts > persisted native history cannot become a fresh empty-root session > rejects codex after observed history is removed and the host restarts
+AssertionError: promise resolved "{ task: { …(23) }, ptyId: 'pty-2' }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "ptyId": "pty-2",
++   "task": {
++     "aiProfileColor": null,
++     "aiProfileId": "3af73c17-9e29-4687-b15b-2a19a90f74e3",
++     "aiProfileName": "Codex",
++     "archivedAt": null,
++     "configVersion": 1,
++     "createdAt": 1792562537024,
++     "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/smartdd-task-aXZdAR/code",
++     "dirId": "b3b967dd-8b46-4064-b4ea-58e51e5dfa1d",
++     "firstMessage": "history guard",
++     "id": "c907f58e-70c1-41e5-9896-52f30725628b",
++     "injectedEnvNames": [
++       "CODEX_HOME",
++     ],
++     "lastLaunchedAt": 1792562537028,
++     "nativeSessionId": "history-guard-native",
++     "projectConfigVersion": 1,
++     "projectId": "faa094c8-adba-41ae-bb9c-b2354026dd5c",
++     "projectName": "AIS",
++     "ptyId": "pty-2",
++     "recovery": "resumable",
++     "recoveryReason": "",
++     "runner": "codex",
++     "runtimeSnapshot": null,
++     "title": "history guard",
++     "updatedAt": 1792562537029,
++   },
+  }
+
+ ❯ src/main/core/tasks/task-service.test.ts:564:55
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 27 skipped (29)
+   Start at  14:02:16
+   Duration  566ms (transform 172ms, setup 0ms, import 345ms, tests 140ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

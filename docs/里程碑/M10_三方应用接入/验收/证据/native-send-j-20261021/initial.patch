@@ -1,0 +1,207 @@
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 6fb8b880..f4edbd58 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -84,7 +84,7 @@ export class ApplicationService {
+     }});
+     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
+     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
+-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations,async context=>{this.contexts.require(context,'mail.send');if(context.callerKind==='agent-run'&&context.runId)await this.nativeMessages.read(context.runId);this.contexts.require(context,'mail.send');});this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
++    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference)=>this.mailReads.source(context,reference),readResource:(context,resource)=>this.mailReads.resourceBytes(context,resource),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
+     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.nativeInputs.observe(sender,target,data),uncertain:(sender,target)=>this.nativeInputs.uncertain(sender,target)});}
+   }
+   private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
+diff --git a/src/main/core/applications/mail-send-data-service.ts b/src/main/core/applications/mail-send-data-service.ts
+index f3a9d20f..265d94c6 100644
+--- a/src/main/core/applications/mail-send-data-service.ts
++++ b/src/main/core/applications/mail-send-data-service.ts
+@@ -18,7 +18,7 @@ export type {MailSendData} from '@shared/mail-execution';
+ import type {MailSendData} from '@shared/mail-execution';
+ export class MailSendDataService implements ApplicationDataHost {
+  private readonly views:PackageConfigViews;
+- constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations,private readonly observeNative?:(context:ApplicationExecutionContext)=>Promise<void>){
++ constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){
+   this.views=new PackageConfigViews(contexts);resources.registerProvider({kind:'mail-send-review-v1',appId:'mail',contractMajor:1,permission:'mail.draft',read:async(context,backing)=>{
+    const intent=(await this.engine()).get(this.contexts.sendActor(context,context.allowedOperations.includes('mail.send')?'mail.send':'mail.draft'),backing.objectId);if(backing.part!=='review'||!intent.review||intent.reviewHash!==backing.objectRevision)throw new ApplicationError('HASH_MISMATCH','原发送审阅修订不同');return Buffer.from(canonicalJson(intent.review));
+   }});
+@@ -35,10 +35,10 @@ export class MailSendDataService implements ApplicationDataHost {
+  }
+  async execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<{intent:MailSendData}>{
+   if(!methods.has(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','发送方法不属于当前宿主契约');const permission=method==='mail.send.prepare'||method==='mail.send.execute'?'mail.send':'mail.draft',actor=this.contexts.sendActor(context,permission),engine=await this.engine();let intent:MailSendIntent;
+-  if(method==='mail.send.prepare'){const parsed=prepareSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送准备字段无效');await this.preflight(context);await this.observeNative?.(context);intent=await engine.prepare(actor,{...parsed.data,operationId:context.operationId},context.signal);}
++  if(method==='mail.send.prepare'){const parsed=prepareSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送准备字段无效');await this.preflight(context);intent=await engine.prepare(actor,{...parsed.data,operationId:context.operationId},context.signal);const ref=await this.authorizations.tryNative(context,intent);if(ref)intent=await engine.authorize(actor,intent.id,ref);}
+   else if(method==='mail.send.execute'){
+    const parsed=executeSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送执行字段无效');intent=engine.get(actor,parsed.data.intentId);if(intent.reviewHash!==parsed.data.expectedReviewHash)throw new ApplicationError('INTENT_STALE','发送审阅内容已变化');
+-   if(!intent.executionId){await this.preflight(context);if(!intent.authorized)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源');}
++   if(!intent.executionId){await this.preflight(context);if(!intent.authorized||this.authorizations.needsNativeRefresh(intent)){const ref=await this.authorizations.tryNative(context,intent);if(ref)intent=await engine.authorize(actor,intent.id,ref);}if(!intent.authorized)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源');await this.authorizations.revalidateNative(context,intent);}
+    intent=await engine.execute(actor,intent.id,context.signal);
+   }else{const parsed=getSchema.safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','发送记录字段无效');intent=method==='mail.send.get'?engine.get(actor,parsed.data.intentId):await engine.cancel(actor,parsed.data.intentId);}
+   return{intent:await this.view(context,intent)};
+diff --git a/src/main/core/applications/mail-user-authorizations.ts b/src/main/core/applications/mail-user-authorizations.ts
+index b5f7ded0..c59b4f28 100644
+--- a/src/main/core/applications/mail-user-authorizations.ts
++++ b/src/main/core/applications/mail-user-authorizations.ts
+@@ -5,14 +5,17 @@ import type { MailSendActor,MailSendIntent,MailSendReview,VerifiedMailUserAction
+ import { ApplicationExecutionContexts,type ApplicationExecutionContext,type ApplicationUiSender } from './execution-context';
+ import { canonicalJson,digest } from './manifest';
+ import { withResourceLock } from './resource-lock';
++import {NativeUserMessages,type NativeUserMessage} from './native-user-messages';
++import {resolveReferencedMailSend} from './native-mail-intent';
+ const confirmSchema=z.object({intentId:z.uuid(),expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/),displayReceiptId:z.uuid(),reviewedUnknownExecutionIds:z.array(z.uuid()).max(100).default([])}).strict();
+ interface Display {sender:ApplicationUiSender['sender'];frame:ApplicationUiSender['senderFrame'];projectId:string;intentId:string;reviewHash:string;expiresAt:number}
+-interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null}
++interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null;native?:NativeUserMessage}
+ /** Only host-observed sources mint authority. Persistent provenance alone is never a live grant. */
+ export class MailUserAuthorizations {
+- private readonly displays=new Map<string,Display>();private readonly actions=new Map<string,Action>();private closed=false;
++ private readonly displays=new Map<string,Display>();private readonly actions=new Map<string,Action>();private closed=false;private nativeSources?:NativeUserMessages;
+  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly now=Date.now){}
+- private cleanup(){for(const [id,value] of this.displays)if(value.expiresAt<=this.now())this.displays.delete(id);for(const [id,value] of this.actions)if(Date.parse(value.value.expiresAt)<=this.now()||value.originSignal?.aborted)this.actions.delete(id);}
++ attachNative(sources:NativeUserMessages):void{if(this.nativeSources&&this.nativeSources!==sources)throw new ApplicationError('RESOURCE_STATE_CHANGED','原生用户来源服务已经固定');this.nativeSources=sources;}
++ private cleanup(){for(const [id,value] of this.displays)if(value.expiresAt<=this.now())this.displays.delete(id);for(const [id,value] of this.actions)if(Date.parse(value.value.expiresAt)<=this.now()||value.originSignal?.aborted||value.native&&!this.nativeSources?.isLive(value.native))this.actions.delete(id);}
+  present(context:ApplicationExecutionContext,sender:ApplicationUiSender,intent:MailSendIntent):{displayReceiptId:string;review:MailSendReview}{
+   this.contexts.require(context,'mail.draft');if(this.closed||context.callerKind!=='ui'||context.action!=='ui.mail.send.review'||intent.projectId!==context.projectId||!intent.review||!intent.reviewHash)throw new ApplicationError('SCOPE_DENIED','发送审阅必须来自当前项目的真实界面');this.cleanup();if(this.displays.size>=256)throw new ApplicationError('RESOURCE_BUSY','发送审阅已满，请稍后重试');
+   const displayReceiptId=randomUUID();this.displays.set(displayReceiptId,{sender:sender.sender,frame:sender.senderFrame,projectId:intent.projectId,intentId:intent.id,reviewHash:intent.reviewHash,expiresAt:this.now()+600000});return{displayReceiptId,review:intent.review};
+@@ -27,9 +30,41 @@ export class MailUserAuthorizations {
+   await withResourceLock(this.contexts.store.root,()=>{this.contexts.require(context,'mail.send');if(this.closed||this.displays.get(args.displayReceiptId)!==display)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次界面确认已被消费或关闭');if(originSignal?.aborted)throw new ApplicationError('SCOPE_DENIED','原发送运行已结束');this.contexts.store.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(id,intent.id,value.source,sourceHash,provenance,at);this.displays.delete(args.displayReceiptId);});
+   if(this.closed)throw new ApplicationError('CANCELED','发送授权服务已关闭');this.actions.set(id,{value,provenance,originSignal});return id;
+  }
++ private activeNative(intent:MailSendIntent):string|null{
++  const row=this.contexts.store.sqlite.prepare("SELECT g.evidence_id,g.source FROM mail_send_intents i JOIN mail_send_grants g ON g.id=i.grant_id WHERE i.id=? AND i.project_id=? AND g.state='active'").get(intent.id,intent.projectId) as {evidence_id:string;source:string}|undefined;
++  return row?.source==='native-user-message'?row.evidence_id:null;
++ }
++ needsNativeRefresh(intent:MailSendIntent):boolean{return this.activeNative(intent)!==null;}
++ async tryNative(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<string|null>{
++  this.contexts.require(context,'mail.send');this.cleanup();const sources=this.nativeSources,review=intent.review;
++  if(this.closed||!sources||context.callerKind!=='agent-run'||!context.runId||!review||!intent.reviewHash||intent.executionId||!['awaiting-authorization','authorized'].includes(intent.state)||review.sourceRunId!==context.runId||review.sourceTaskId!==context.taskId||review.projectId!==context.projectId)return null;
++  const old=[...this.actions.values()].find(action=>action.native&&action.value.intentId===intent.id&&action.value.reviewHash===intent.reviewHash);
++  if(old?.native&&sources.isLive(old.native)&&await sources.verify(old.native)){this.contexts.require(context,'mail.send');return old.value.id;}
++  const observed=await sources.read(context.runId);this.contexts.require(context,'mail.send');
++  const message=observed.messages.find(value=>sources.isLive(value));if(!message)return null;
++  const resolved=resolveReferencedMailSend(message.text,review);if(!resolved)return null;
++  await sources.claim(message,intent.id);this.contexts.require(context,'mail.send');
++  const originSignal=this.contexts.assertSendOrigin(intent.projectId,review.sourceTaskId,review.sourceRunId);if(!originSignal||originSignal.aborted||!sources.isLive(message))return null;
++  const at=new Date(message.receipt.observedAt).toISOString(),id='native-'+digest(canonicalJson({receiptId:message.receipt.id,intentId:intent.id,reviewHash:intent.reviewHash})),provenance=canonicalJson({schema:1,kind:'native-user-message',intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:context.taskId,runId:context.runId,nativeSessionId:message.nativeSessionId,runner:message.runner,cliVersion:message.cliVersion,nativeRecordHash:message.recordHash,nativeTimestamp:message.timestamp,inputReceipt:message.receipt,action:resolved,at}),sourceHash=digest(provenance);
++  const value:VerifiedMailUserAction=Object.freeze({id,source:'native-user-message',sourceHash,intentId:intent.id,reviewHash:intent.reviewHash,projectId:intent.projectId,taskId:review.sourceTaskId,runId:review.sourceRunId,createdAt:at,expiresAt:new Date(message.receipt.observedAt+600000).toISOString(),reviewedUnknownExecutionIds:Object.freeze([]) as unknown as string[]});
++  await withResourceLock(this.contexts.store.root,()=>{
++   this.contexts.require(context,'mail.send');this.cleanup();if(this.closed||originSignal.aborted||!sources.isLive(message)||Date.parse(value.expiresAt)<=this.now())throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生具体指令已失效');
++   if(!this.actions.has(id)&&this.actions.size>=1024)throw new ApplicationError('RESOURCE_BUSY','当前发送证据已满');
++   const row=this.contexts.store.sqlite.prepare('SELECT intent_id,source_kind,source_hash,provenance_json FROM mail_user_action_sources WHERE evidence_id=?').get(id) as {intent_id:string;source_kind:string;source_hash:string;provenance_json:string}|undefined;
++   if(row&&(row.intent_id!==intent.id||row.source_kind!==value.source||row.source_hash!==sourceHash||row.provenance_json!==provenance))throw new ApplicationError('HASH_MISMATCH','同一原生用户来源已有不同记录');
++   if(!row)this.contexts.store.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(id,intent.id,value.source,sourceHash,provenance,at);
++   this.actions.set(id,{value,provenance,originSignal,native:message});
++  });return id;
++ }
++ async revalidateNative(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<void>{
++  const id=this.activeNative(intent);if(!id)return;
++  const action=this.actions.get(id),sources=this.nativeSources;
++  if(!sources||!action?.native||!sources.isLive(action.native)||!await sources.verify(action.native))throw new ApplicationError('AUTHORIZATION_REQUIRED','原生具体指令来源已变化，请核对本次冻结邮件');
++  this.contexts.require(context,'mail.send');if(!sources.isLive(action.native))throw new ApplicationError('AUTHORIZATION_REQUIRED','原生指令已被新的输入或取消替代');
++ }
+  allowUi(actor:MailSendActor,intent:MailSendIntent):boolean{const context=this.contexts.sendScope(actor);return context.callerKind==='ui'&&context.action==='ui.mail.send.authorize'&&context.projectId===intent.projectId;}
+  verify(actor:MailSendActor,id:string,intent:MailSendIntent):VerifiedMailUserAction{
+-  const context=this.contexts.sendScope(actor),action=this.actions.get(id);if(this.closed||!action||action.value.intentId!==intent.id||action.value.reviewHash!==intent.reviewHash||action.value.projectId!==actor.projectId||Date.parse(action.value.expiresAt)<=this.now()||action.originSignal?.aborted)throw new ApplicationError('AUTHORIZATION_REQUIRED','没有当前有效的宿主用户授权来源');
++  const context=this.contexts.sendScope(actor),action=this.actions.get(id);if(this.closed||!action||action.value.intentId!==intent.id||action.value.reviewHash!==intent.reviewHash||action.value.projectId!==actor.projectId||Date.parse(action.value.expiresAt)<=this.now()||action.originSignal?.aborted||action.native&&!this.nativeSources?.isLive(action.native))throw new ApplicationError('AUTHORIZATION_REQUIRED','没有当前有效的宿主用户授权来源');
+   if(!this.allowUi(actor,intent)&&(actor.runId!==action.value.runId||actor.taskId!==action.value.taskId))throw new ApplicationError('SCOPE_DENIED','授权不属于当前真实发送运行');
+   if(context.callerKind==='ui'&&context.action!=='ui.mail.send.authorize'&&(action.value.runId!==null||action.value.taskId!==null))throw new ApplicationError('SCOPE_DENIED','界面不能代替另一个Agent运行提交发送');
+   const row=this.contexts.store.sqlite.prepare('SELECT * FROM mail_user_action_sources WHERE evidence_id=?').get(id) as {intent_id:string;source_kind:string;source_hash:string;provenance_json:string}|undefined;
+diff --git a/src/main/core/applications/native-user-inputs.ts b/src/main/core/applications/native-user-inputs.ts
+index cc0312e3..9a6f7128 100644
+--- a/src/main/core/applications/native-user-inputs.ts
++++ b/src/main/core/applications/native-user-inputs.ts
+@@ -6,11 +6,11 @@ import {canonicalJson,digest} from './manifest';
+ export interface NativeInputTarget {taskId:string;ptyId:string}
+ export interface HostUserInputReceipt {
+  readonly id:string;readonly projectId:string;readonly taskId:string;readonly runId:string;readonly ptyId:string;
+- readonly selectionHash:string;readonly textHash:string;readonly observedAt:number;
++ readonly selectionHash:string;readonly textHash:string;readonly observedAt:number;readonly inputSequence:number;
+  readonly transport:'terminal'|'launch-argument';readonly senderId:number;readonly frameProcessId:number;readonly frameRoutingId:number;
+ }
+ interface Captured {receipt:HostUserInputReceipt;text:string;signal:AbortSignal;usedBy:string|null;boundSessionId:string|null}
+-interface Editor {runId:string;selectionHash:string;text:string;bytes:number;escape:string;paste:boolean;known:boolean;launchCaptured:boolean;lastCr:boolean;signal:AbortSignal;detach:()=>void}
++interface Editor {runId:string;selectionHash:string;text:string;bytes:number;escape:string;paste:boolean;known:boolean;launchCaptured:boolean;inputSequence:number;lastCr:boolean;signal:AbortSignal;detach:()=>void}
+ const beginPaste='\x1b[200~',endPaste='\x1b[201~',normalize=(text:string)=>text.replace(/\r\n?/g,'\n');
+ const selection=(context:RunContext)=>digest(canonicalJson({...context.snapshot,native:{...context.snapshot.native,sessionId:null}}));
+ /** RAM-only provenance of bytes actually accepted by the trusted PTY transport.
+@@ -33,8 +33,8 @@ export class NativeUserInputs {
+   this.deps.requireSender(sender);if(this.closed||typeof data!=='string'||Buffer.byteLength(data)>1024*1024)return;const context=this.deps.current(target);if(!context||!this.eligible(context)){this.clear(target.ptyId);return;}
+   const stamp=selection(context);let editor=this.editors.get(target.ptyId);
+   if(editor&&(editor.runId!==context.run.runId||editor.selectionHash!==stamp)){this.clear(target.ptyId);editor=undefined;}
+-  if(!editor){if(this.editors.size>=128)return;const remove=()=>this.clear(target.ptyId);editor={runId:context.run.runId,selectionHash:stamp,text:'',bytes:0,escape:'',paste:false,known:true,launchCaptured:false,lastCr:false,signal:context.signal,detach:()=>context.signal.removeEventListener('abort',remove)};this.editors.set(target.ptyId,editor);context.signal.addEventListener('abort',remove,{once:true});}
+-  const completed:string[]=[];let next=0;
++  if(!editor){if(this.editors.size>=128)return;const remove=()=>this.clear(target.ptyId);editor={runId:context.run.runId,selectionHash:stamp,text:'',bytes:0,escape:'',paste:false,known:true,launchCaptured:false,inputSequence:0,lastCr:false,signal:context.signal,detach:()=>context.signal.removeEventListener('abort',remove)};this.editors.set(target.ptyId,editor);context.signal.addEventListener('abort',remove,{once:true});}
++  const completed:{text:string;sequence:number}[]=[];let next=0;
+   for(const character of data){
+    if(editor.escape){editor.escape+=character;const expected=editor.paste?endPaste:beginPaste;if(expected.startsWith(editor.escape)){if(editor.escape===expected){editor.paste=!editor.paste;editor.escape='';editor.lastCr=false;}continue;}
+     // Unknown cursor/history/terminal protocol means we cannot reconstruct the accepted line.
+@@ -44,11 +44,12 @@ export class NativeUserInputs {
+    if(editor.paste){if(character==='\r'){this.append(editor,'\n');editor.lastCr=true;}else if(character==='\n'&&editor.lastCr)editor.lastCr=false;else{this.append(editor,character);editor.lastCr=false;}}
+    else if(character==='\r'||character==='\n'){
+     if(character==='\n'&&editor.lastCr){editor.lastCr=false;continue;}
+-    if(editor.known&&editor.text.trim()){completed[next]=editor.text;next=(next+1)%this.maxReceipts;}
++    if(!editor.known||editor.text.trim())editor.inputSequence++;
++    if(editor.known&&editor.text.trim()){completed[next]={text:editor.text,sequence:editor.inputSequence};next=(next+1)%this.maxReceipts;}
+     editor.text='';editor.bytes=0;editor.escape='';editor.known=true;editor.lastCr=character==='\r';
+    }else{
+     editor.lastCr=false;
+-    if(character==='\x03'){editor.text='';editor.bytes=0;editor.known=true;}
++    if(character==='\x03'){editor.inputSequence++;editor.text='';editor.bytes=0;editor.known=true;}
+     else if(character==='\x15'){editor.text='';editor.bytes=0;editor.known=true;}
+     else if(character==='\x7f'||character==='\b'){const cut=editor.text.length>=2&&/[\uD800-\uDBFF]/.test(editor.text.at(-2)!)&&/[\uDC00-\uDFFF]/.test(editor.text.at(-1)!)?2:1;editor.bytes-=Buffer.byteLength(editor.text.slice(-cut));editor.text=editor.text.slice(0,-cut);}
+     else if(character==='\x17'){editor.text=editor.text.replace(/\S+\s*$/u,'');editor.bytes=Buffer.byteLength(editor.text);}
+@@ -57,7 +58,7 @@ export class NativeUserInputs {
+    }
+    if(editor.bytes>1024*1024){editor.text='';editor.bytes=0;editor.known=false;}
+   }
+-  const first=completed.length===this.maxReceipts?next:0;for(let index=0;index<completed.length;index++){this.capture(sender,target,context,completed[(first+index)%completed.length],stamp);this.prune();}
++  const first=completed.length===this.maxReceipts?next:0;for(let index=0;index<completed.length;index++){const entry=completed[(first+index)%completed.length];this.capture(sender,target,context,entry.text,stamp,'terminal',entry.sequence);this.prune();}
+   this.prune();
+  }
+  /** Called only after the host passes this exact argument to its owned, active process. */
+@@ -65,15 +66,15 @@ export class NativeUserInputs {
+   this.deps.requireSender(sender);if(this.closed||typeof text!=='string'||!text.trim()||Buffer.byteLength(text)>1024*1024)return;
+   this.observe(sender,target,'');const editor=this.editors.get(target.ptyId),context=this.deps.current(target);
+   if(!editor||editor.launchCaptured||!context||!this.eligible(context)||editor.runId!==context.run.runId||editor.selectionHash!==selection(context))return;
+-  editor.launchCaptured=true;this.capture(sender,target,context,text,editor.selectionHash,'launch-argument');this.prune();
++  editor.launchCaptured=true;this.capture(sender,target,context,text,editor.selectionHash,'launch-argument',0);this.prune();
+  }
+  /** A partial native controlled write makes this editable line unprovable until reset/submission. */
+  uncertain(sender:ApplicationUiSender,target:NativeInputTarget):void{this.observe(sender,target,'');const editor=this.editors.get(target.ptyId);if(editor){editor.text='';editor.bytes=0;editor.escape='';editor.paste=false;editor.known=false;}}
+  private append(editor:Editor,text:string){const joinedSurrogate=/[\uD800-\uDBFF]/.test(editor.text.at(-1)??'')&&/[\uDC00-\uDFFF]/.test(text[0]??'');editor.bytes+=Buffer.byteLength(text)-(joinedSurrogate?2:0);editor.text+=text;}
+- private capture(sender:ApplicationUiSender,target:NativeInputTarget,context:RunContext,text:string,stamp:string,transport:HostUserInputReceipt['transport']='terminal'){
++ private capture(sender:ApplicationUiSender,target:NativeInputTarget,context:RunContext,text:string,stamp:string,transport:HostUserInputReceipt['transport']='terminal',inputSequence=0){
+   const frame=sender.senderFrame;if(!frame||!Number.isSafeInteger(frame.processId)||!Number.isSafeInteger(frame.routingId))return;
+   const normalized=normalize(text);if(Buffer.byteLength(normalized)>this.maxBytes)return;
+-  const receipt=Object.freeze({id:randomUUID(),projectId:context.run.projectId,taskId:context.run.taskId,runId:context.run.runId,ptyId:target.ptyId,selectionHash:stamp,textHash:digest(normalized),observedAt:this.now(),transport,senderId:sender.sender.id,frameProcessId:frame.processId,frameRoutingId:frame.routingId});
++  const receipt=Object.freeze({id:randomUUID(),projectId:context.run.projectId,taskId:context.run.taskId,runId:context.run.runId,ptyId:target.ptyId,selectionHash:stamp,textHash:digest(normalized),observedAt:this.now(),inputSequence,transport,senderId:sender.sender.id,frameProcessId:frame.processId,frameRoutingId:frame.routingId});
+   this.captured.set(receipt.id,{receipt,text:normalized,signal:context.signal,usedBy:null,boundSessionId:context.snapshot.native.sessionId});
+  }
+  /** Exact text/time matching is origin evidence only, never a semantic approval decision. */
+@@ -82,6 +83,11 @@ export class NativeUserInputs {
+   const normalized=normalize(text),hash=digest(normalized);
+   const candidates=[...this.captured.values()].reverse().filter(value=>(value.boundSessionId===null||value.boundSessionId===context.snapshot.native.sessionId)&&value.receipt.runId===context.run.runId&&value.receipt.taskId===context.run.taskId&&value.receipt.projectId===context.run.projectId&&value.receipt.textHash===hash&&value.text===normalized&&nativeTimestamp>=value.receipt.observedAt-5000&&nativeTimestamp<=value.receipt.observedAt+120000);if(!candidates.length)return null;const stamp=selection(context),matched=candidates.find(value=>value.receipt.selectionHash===stamp);if(!matched)return null;matched.boundSessionId=context.snapshot.native.sessionId;return matched.receipt;
+  }
++ /** Pure RAM guard: safe inside the send authorization transaction, with no process/filesystem IO. */
++ isLatest(receipt:HostUserInputReceipt):boolean{
++  this.prune();const value=this.captured.get(receipt.id),editor=this.editors.get(receipt.ptyId);
++  return !this.closed&&value?.receipt===receipt&&!value.signal.aborted&&value.boundSessionId!==null&&!!editor&&!editor.signal.aborted&&editor.runId===receipt.runId&&editor.selectionHash===receipt.selectionHash&&editor.inputSequence===receipt.inputSequence;
++ }
+  claim(receipt:HostUserInputReceipt,context:RunContext,intentId:string):void{
+   this.prune();const value=this.captured.get(receipt.id);
+   if(this.closed||!this.eligible(context)||!value||value.receipt!==receipt||!context.snapshot.native.sessionId||value.boundSessionId!==context.snapshot.native.sessionId||receipt.runId!==context.run.runId||receipt.projectId!==context.run.projectId||receipt.taskId!==context.run.taskId||receipt.selectionHash!==selection(context)||value.usedBy&&value.usedBy!==intentId)throw new ApplicationError('AUTHORIZATION_REQUIRED','本次原生用户输入来源已失效或用于其他意图');value.usedBy=intentId;
+diff --git a/src/main/core/applications/native-user-messages.ts b/src/main/core/applications/native-user-messages.ts
+index f9170e91..2ba5ee24 100644
+--- a/src/main/core/applications/native-user-messages.ts
++++ b/src/main/core/applications/native-user-messages.ts
+@@ -166,6 +166,11 @@ export class NativeUserMessages {
+       } finally { await file.close(); }
+     } catch { return false; }
+   }
++  /** Pure RAM liveness/ordering guard. Full file/process verification remains asynchronous. */
++  isLive(message: NativeUserMessage): boolean {
++    this.prune();const proof=this.proofs.get(message),registration=this.registrations.get(message.runId);
++    return !this.closed&&!!proof&&!!registration&&!registration.signal.aborted&&registration.version===message.cliVersion&&this.inputs.isLatest(message.receipt);
++  }
+   async claim(message: NativeUserMessage, intentId: string): Promise<void> {
+     if (!z.uuid().safeParse(intentId).success) throw new ApplicationError('INVALID_INPUT', '具体发送意图编号无效');
+     if (!await this.verify(message)) throw new ApplicationError('AUTHORIZATION_REQUIRED', '原生用户消息来源已变化或失效');

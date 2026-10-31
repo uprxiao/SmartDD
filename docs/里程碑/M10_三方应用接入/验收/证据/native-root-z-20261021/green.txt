@@ -1,0 +1,36 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-registry.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (50 tests | 3 failed) 95676ms
+     × withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers 975ms
+     × keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending 782ms
+     × keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending 900ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending
+ApplicationError: 原生会话状态目录缺失或不可用，保留原路径，不新建空根恢复
+ ❯ CapabilitySessionRegistry.verifyNativeIdentity src/main/core/applications/session-registry.ts:156:29
+    154|     if (native.sessionId !== null) {
+    155|       let available = false; try { available = statSync(actual.stateRo…
+    156|       if (!available) throw new ApplicationError('NATIVE_IDENTITY_CONF…
+       |                             ^
+    157|     }
+    158|   }
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:132:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 70 passed (73)
+   Start at  10:24:49
+   Duration  104.67s (transform 2.18s, setup 0ms, import 3.29s, tests 100.48s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,143 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-E",
+  "recordedAt": "2026-10-20T05:16:19.413402+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; same native session and fixed capabilities; no scope change",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "baseCommit": "e13143384e457c4cd97266b84f107c1d4ac594f6",
+  "previousGoalTurnClassification": "progress: H discovery coordination and production build fix committed; M10 goal remains active",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Awaitable TaskService create/resume and host-only capability lifecycle callbacks; concurrent same-task resumes share one preparation and conflicting profiles are rejected",
+    "Project running checks cover preparation and authoritative outstanding runs; cancellation/shutdown revoke before signalling only the owned PTY",
+    "A reserved host UUID is used before native fork; native PID comes from the actual node-pty handle, never renderer fields or terminal output",
+    "Actual exit, early-exit/attachment races, DB save failure after fork and shutdown during attach preserve transient resources until the lifecycle owner confirms completion",
+    "Original native root, implicit Claude config semantics, legacy unconfigured M4 path and current IPC response shape are retained",
+    "First Codex native-ID binding is serialized across scans; authoritative pointer changes are persisted and cannot be overwritten by self-check results; native discovery uses fork time rather than slow attachment completion"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts",
+      "files": 34,
+      "tests": 363,
+      "passed": 363,
+      "failed": 0,
+      "log": "dev003-e-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-e-20261020/types.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev003-e-20261020/build.txt",
+      "scope": "Production main/preload/renderer/native build; not a packaged App acceptance"
+    }
+  ],
+  "newTests": {
+    "controlledTaskSessionCatalogRunIntegration": 11,
+    "actualNativePtyIsolation": 2,
+    "note": "All part of363; repeated runs and earlier362/65 results are not added"
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "Mechanical async test-call migration awaited the rejected promise inside expect in6 cases, producing6 failures plus cleanup rejection",
+      "correction": "Move the promise directly into rejects matcher and keep the same expected rejection; update direct service call sites to await results",
+      "redLog": "dev003-e-20261020/red-async-assertion-conversion.json"
+    },
+    {
+      "finding": "While the first authoritative native ID write was delayed, the same watcher could claim a second rollout on another tick",
+      "correction": "Keep subsequent scans gated by the task pending authoritative binding; two real synthetic rollout files and an80ms held write reproduce the original failure and verify one original ID",
+      "redLog": "dev003-e-20261020/red-native-binding-race.json"
+    },
+    {
+      "finding": "Slow asynchronous PID attachment could move the watch baseline past an already flushed rollout",
+      "correction": "Capture the actual native-fork timestamp and use it for lastLaunchedAt, discovery and health follow; controlled clock advances5seconds while attachment is pending"
+    }
+  ],
+  "actualBoundary": [
+    "Task integration uses actual TaskService, CapabilityService, immutable adapter/planner, private H/C files and SQLite Session/Run/Catalog services; native PTY and kernel process identities in these11 cases are explicit controlled fixtures",
+    "Two separate native tests use real node-pty and private HOME/work with owned synthetic Electron Node children, native handle PIDs, actual exit and PING/PONG after another PTY stops",
+    "Other aggregate tests retain prior real local protocol/Unix/MCP/native helper coverage under their original boundary; no real Agent or business account was used"
+  ],
+  "build": {
+    "appVersion": "0.0.5",
+    "resourceIndex": {
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "apps": [],
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "e13143384e457c4cd97266b84f107c1d4ac594f6",
+        "dirty": true,
+        "resourceSetHash": "697b3c79725ddad06314e4524c9c5b2532614e6489d9966d538736030302d71f"
+      },
+      "indexHash": "a7f834f9ccd5c96b3452b15c87a12ace99a9a9e25fa048fdce60c79775af2e68",
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "schema": "willyou-capability-bundles-v1"
+    },
+    "artifacts": {
+      "out/main/index.js": "d48f97854c44e7abaa8e43ec3a271566aa540e3421776c0f72c7edcc7aae7c46",
+      "out/preload/index.js": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908",
+      "out/applications/mcp-bridge.cjs": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "out/capability-bundles/index.json": "cf7f15094ca92e68354c8516a04bdc2e50732fbb8fef651922ca85377ebfc608"
+    }
+  },
+  "boundaries": [
+    "Main has not yet instantiated a production TaskCapabilityLauncher; new managed lifecycle is exercised by the explicit integration factory, so ordinary UI tasks still follow existing M4 behavior",
+    "Effective native configuration inventory, actual Agent-spawned bridge process ownership, production executors and trusted user authorization provenance remain required",
+    "C native-ID update and Task cache pointer need production crash reconciliation; H stale-lock recovery, startup migration fence and GC remain incomplete",
+    "Built-in application package index is still empty; application pages, persistent mail cache, actual Agent and packaged App acceptance are pending",
+    "No formal product T case has been marked passed; no daily HOME/credentials/session was used, no M9 edits/process operation, no external mail/business action, no merge/push/tag/release"
+  ],
+  "sourceHashes": {
+    "src/main/core/tasks/capability-lifecycle.ts": "ad9de914e505dea384523c6f8f82548ade7ec45ff1f97ab2c1a1f62668288dc8",
+    "src/main/core/tasks/task-service.ts": "6dd02c665e2eb8320b27168f7f1cee4b236ec9c2fb52989d0b2a5b84661c44e9",
+    "src/main/core/tasks/task-service.test.ts": "37266e9188fd3f005c7ab7e7b2d9c38cc1ddf538bf27ee46a92daca75d35b22e",
+    "src/main/core/tasks/task-races.test.ts": "56b83b5ad5ec7be43638164856756a91a3af0bd392dc79b3d9fc549cf9dc58f2",
+    "src/main/core/tasks/task-capabilities.test.ts": "1a3da2060c36ccc83986d4ab18020221dad036eff590925f917415377911ae40",
+    "src/main/core/capabilities/task-runtime.test.ts": "d03a8f0c002136bbbaf0c00facdc02ede65008bf938ed6f00da77fbce2770767",
+    "src/main/pty-manager.ts": "4fbd282ed39fceb804606bb41b5c0c2b8baecd983c21ffcfac4eddfd7418243a",
+    "src/main/pty-manager.test.ts": "ac8d329fd2004355cd2dae0960e6ebb83192e4595d5e1f12e39a0d8abc0218a8"
+  },
+  "logHashes": {
+    "dev003-e-20261020/all-tests.txt": "5572cd83dd6f6047e7b7e62776bdb18b5b080712d0bcc8c317702783a145efcf",
+    "dev003-e-20261020/build.txt": "84c05b98b90c5f036889b7b6ac2395f76fb9853dd47d35b47d65076117900dac",
+    "dev003-e-20261020/pre-fix-all-tests.txt": "70d9451e03438fb80ba13ecdba9fa5cd6bcb9a05e70d6260c7fa054e39814ed7",
+    "dev003-e-20261020/red-async-assertion-conversion.json": "30872f854cb6f3b4413022c0f5453ba891cf3558360b579bdc62aad5ab7ef0c8",
+    "dev003-e-20261020/red-native-binding-race.json": "9e65391f659a08a3619bf9368c07f11af25a890d52f18e205b5c301467ccb2d3",
+    "dev003-e-20261020/task-tests-before-identity-guard.txt": "bdf371a76327b1ba493929b4c629df4d836f78722456ccee973170223e2ea297",
+    "dev003-e-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9"
+  },
+  "logEncoding": "Text logs preserve stdout/stderr with terminal trailing blank lines trimmed only; red diagnostics losslessly JSON-wrapped with original raw SHA256. All formal T-case states remain unchanged."
+}

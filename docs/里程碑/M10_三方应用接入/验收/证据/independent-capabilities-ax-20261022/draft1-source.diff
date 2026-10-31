@@ -1,0 +1,372 @@
+--- a/src/main/core/applications/builtin-package-registry.ts
++++ b/src/main/core/applications/builtin-package-registry.ts
+@@ -33,7 +33,7 @@
+   }
+ 
+   /** Retained distribution identity only. Never proof that executable bytes exist. */
+-  trustedMetadata(hash: string): InstalledApplicationPackage {
++  retainedMetadata(hash: string): InstalledApplicationPackage {
+     const installed = this.packages.get(hash);
+     const rows = this.store.sqlite.prepare('SELECT source_index_hash,source_index_json FROM capability_builtin_package_sources WHERE package_hash=?').all(hash) as {source_index_hash:string;source_index_json:string}[];
+     if (!rows.length || !['zentao','mail'].includes(installed.appId)) throw new ApplicationError('SCOPE_DENIED','应用适配器没有可信内置分发依据');
+@@ -43,6 +43,11 @@
+       catch { throw new ApplicationError('HASH_MISMATCH','原内置分发依据损坏，保留记录并停止执行'); }
+       if (index.indexHash !== row.source_index_hash || !index.apps.some(a => a.hash === installed.packageHash && a.appId === installed.appId && a.version === installed.version) || !index.runtimes.some(r => r.hash === installed.manifest.runtime.hash && r.id === installed.manifest.runtime.id && r.protocolMajor === installed.manifest.runtime.protocolMajor)) throw new ApplicationError('HASH_MISMATCH','原内置分发依据与固定应用／运行资源不一致');
+     }
++    return installed;
++  }
++  /** Executable metadata also requires a ready resource;retained identity grants nothing. */
++  trustedMetadata(hash:string):InstalledApplicationPackage {
++    const installed=this.retainedMetadata(hash);
+     const resource = this.store.get(installed.resourceId);
+     if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定内置应用资源未就绪');
+     return installed;
+--- a/src/main/core/applications/application-run-scope.ts
++++ b/src/main/core/applications/application-run-scope.ts
+@@ -6,7 +6,8 @@
+ import type {ResourceStore} from './resource-store';
+ import type {RunContext} from './run-registry';
+ const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().min(1).max(512);
+-export const applicationRunScopeSchema=z.object({schema:z.literal(1),runId:z.uuid(),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,selectionHash:hash,ownerInstanceId:z.uuid(),ownerPid:z.number().int().positive(),ownerStartedAt:z.string().min(1),applications:z.array(z.object({appId:z.string().min(1).max(20),packageHash:hash}).strict()).min(1).max(32),roots:z.array(z.object({refId:id,refKind:id,refHash:hash,relativePath:id}).strict()).min(1).max(4096),createdAt:z.iso.datetime(),evidenceHash:hash}).strict();
++const scopeFields=z.object({schema:z.literal(1),runId:z.uuid(),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,selectionHash:hash,ownerInstanceId:z.uuid(),ownerPid:z.number().int().positive(),ownerStartedAt:z.string().min(1),applications:z.array(z.object({appId:z.string().min(1).max(20),packageHash:hash}).strict()).min(1).max(32),roots:z.array(z.object({refId:id,refKind:id,refHash:hash,relativePath:id}).strict()).min(1).max(4096),createdAt:z.iso.datetime(),evidenceHash:hash}).strict();
++export const applicationRunScopeSchema=z.discriminatedUnion('schema',[scopeFields,scopeFields.extend({schema:z.literal(2),mode:z.literal('independent-capabilities'),applications:z.array(scopeFields.shape.applications.element).length(0)})]);
+ export type ApplicationRunScope=z.infer<typeof applicationRunScopeSchema>;
+ export const applicationScopeOperationId=(runId:string)=>'application-run-scope:'+runId;
+ const invalid=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本轮应用范围依据无法核验，保留原运行和资源');
+--- a/src/main/core/applications/session-registry.ts
++++ b/src/main/core/applications/session-registry.ts
+@@ -50,10 +50,13 @@
+     for (const m of snapshot.mcp) add((m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash,m.kind === 'applications' ? 'runtime' : 'legacy-runtime',m.runtimeHash);
+     return requested;
+   }
+-  private sourceReferences(snapshot: CapabilitySessionSnapshotV2): SessionResourceReference[] {
++  private executionSelection(snapshot:CapabilitySessionSnapshotV2,appIds:readonly string[]):CapabilitySessionSnapshotV2 {return{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId)),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
++  private sourceReferences(snapshot: CapabilitySessionSnapshotV2,initialScope?:readonly string[]): SessionResourceReference[] {
++    if(initialScope&&(snapshot.legacyBinding||new Set(initialScope).size!==initialScope.length||initialScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','初始资源范围不属于原选择');
++    const required=this.expectedSources(initialScope?this.executionSelection(snapshot,initialScope):snapshot);
+     return [...this.expectedSources(snapshot)].map(([id,expected]) => {
+       const resource = this.store.get(id);
+-      if (resource.kind !== expected.kind || resource.contentHash !== expected.hash || resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','固定会话资源身份不一致或尚未就绪');
++      if (resource.kind !== expected.kind || resource.contentHash !== expected.hash || required.has(id)&&(resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('RESOURCE_STATE_CHANGED','固定会话资源身份不一致或尚未就绪');
+       return { refKind: expected.kind,refId: id,refHash: expected.hash,relativePath: resource.relativePath };
+     }).sort((a,b) => compareCodePoints(a.refId,b.refId));
+   }
+@@ -105,7 +108,7 @@
+       catch (error) { if (error instanceof ApplicationError && error.code === 'SNAPSHOT_CORRUPT') this.quarantine(taskId,'corrupt'); throw error; }
+     });
+   }
+-  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string): Promise<StoredCapabilitySession> {
++  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
+     const parsed = capabilitySessionSnapshotSchema.safeParse(input);
+     if (!parsed.success || !isAbsolute(discoveryHome)) throw new ApplicationError('INVALID_INPUT','会话能力或原生发现目录无效');
+     const snapshot = parsed.data, bytes = canonicalJson(snapshot), hash = digest(bytes); if (Buffer.byteLength(bytes) > 4 * 1024 * 1024) throw new ApplicationError('INVALID_INPUT','会话快照超过元数据预算');
+@@ -113,7 +116,7 @@
+     const saved = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       const previous = this.store.sqlite.prepare(SELECT).get(snapshot.taskId) as SnapshotRow | undefined;
+       if (previous) { if (previous.snapshot_hash !== hash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原任务能力已经固定，不能改成新版本或新路径'); const known = this.read(snapshot.taskId); if (known.discoveryHome !== home) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原生发现目录已经固定'); return known; }
+-      this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot);
++      this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot,initialApplicationScope);
+       if (snapshot.native.sessionId && this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=?').get(snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
+       for (const mcp of snapshot.mcp) if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖');
+       this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,2,?,?,?,?,'active')").run(snapshot.taskId,bytes,hash,snapshot.createdAt,snapshot.provenance);
+@@ -173,11 +176,11 @@
+     }
+   }
+   /** Host-only active roots. Full S and its long-term refs remain untouched. */
+-  scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[]):SessionResourceReference[]{
++  scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[],independent=false):SessionResourceReference[]{
+     const current=this.inspectCoordinated(taskId),snapshot=current.snapshot;
+-    if(snapshot.legacyBinding||snapshot.provenance!=='created'||!appIds.length||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
++    if(snapshot.legacyBinding||snapshot.provenance!=='created'||(!appIds.length&&!independent)||(independent&&appIds.length!==0)||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
+     this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
+-    const expected=this.expectedSources({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
++    const expected=this.expectedSources(this.executionSelection(snapshot,appIds)),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
+     for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
+     // The ordinary launcher always reads its original M4 runtime, including
+     // when its context MCP is disabled. Narrow only application-specific roots.
+@@ -185,9 +188,9 @@
+     for(const id of projectionIds){const ref=all.find(r=>r.refId===id);if(!ref||!['session-projection','agent-projection','claude-delivery'].includes(ref.refKind))throw new ApplicationError('SCOPE_DENIED','本轮投影须已登记到原会话');if(!roots.some(r=>r.refId===id))roots.push(ref);}
+     return roots.sort((a,b)=>compareCodePoints(a.refId,b.refId));
+   }
+-  async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[]):Promise<void>{
++  async verifyScopedResources(taskId:string,appIds:readonly string[],projectionIds:readonly string[],independent=false):Promise<void>{
+     const current=await this.get(taskId);if(current.retention!=='active')throw new ApplicationError('SESSION_ON_HOLD','原会话能力处于保留状态');
+-    const roots=this.scopedReferencesCoordinated(taskId,appIds,projectionIds);
++    const roots=this.scopedReferencesCoordinated(taskId,appIds,projectionIds,independent);
+     for(const ref of roots){const resource=this.store.get(ref.refId);if(resource.kind!==ref.refKind||resource.contentHash!==ref.refHash||resource.relativePath!==ref.relativePath||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮固定资源身份或状态已改变');if(ref.refKind==='application-package'){const pack=this.packages.get(ref.refHash);verifyPackageTree(join(this.store.root,ref.relativePath),pack,this.store.storeId);}else if(ref.refKind==='runtime')this.runtimes.verify(ref.refHash);else this.deps.verifyExtraResource(resource,current.snapshot);}
+   }
+   async addProjectionReference(taskId: string,expectedHash: string,resourceId: string): Promise<void> {
+--- a/src/main/core/applications/run-registry.ts
++++ b/src/main/core/applications/run-registry.ts
+@@ -150,7 +150,9 @@
+   async reserve(input: z.infer<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
+   /** Host-only narrowing; never exposed as an RPC or model parameter. */
+   async reserveScoped(input:z.infer<typeof reserveSchema>,appIds:readonly string[],projectionIds:readonly string[]=[],reservation?:{runId:string;ptyId:string},delivery?:ClaudeDeliveryToken):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation,{appIds:[...appIds],projectionIds:[...projectionIds]},delivery);}
+-  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string},narrowing?:{appIds:readonly string[];projectionIds:readonly string[]},deliveryToken?:ClaudeDeliveryToken): Promise<OwnedCapabilityRun> {
++  /** Explicit host-only zero application authority;ordinary empty scopes remain invalid. */
++  async reserveIndependent(input:z.infer<typeof reserveSchema>,projectionIds:readonly string[]=[],reservation?:{runId:string;ptyId:string},delivery?:ClaudeDeliveryToken):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation,{appIds:[],projectionIds:[...projectionIds],independent:true},delivery);}
++  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string},narrowing?:{appIds:readonly string[];projectionIds:readonly string[];independent?:true},deliveryToken?:ClaudeDeliveryToken): Promise<OwnedCapabilityRun> {
+     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
+     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
+     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
+@@ -164,7 +166,7 @@
+       if (!this.store.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(session.snapshot.projectId)) throw new ApplicationError('NOT_FOUND','项目已删除，保留历史但不能启动');
+       if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(value.taskId)) throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用');
+       this.deps.assertCurrent(session.snapshot,value.bindings);const timestamp=now();
+-      if(narrowing){const roots=this.sessions.scopedReferencesCoordinated(value.taskId,narrowing.appIds,narrowing.projectionIds),payload={schema:1 as const,runId,taskId:value.taskId,projectId:session.snapshot.projectId,runner:session.snapshot.runner,snapshotHash:value.snapshotHash,selectionHash,ownerInstanceId:this.instanceId,ownerPid:this.host.pid,ownerStartedAt:this.host.startedAt,applications:session.snapshot.packages.filter(p=>narrowing.appIds.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash})),roots,createdAt:timestamp};scope=applicationRunScopeSchema.parse({...payload,evidenceHash:digest(canonicalJson(payload))});}
++      if(narrowing){const roots=this.sessions.scopedReferencesCoordinated(value.taskId,narrowing.appIds,narrowing.projectionIds,narrowing.independent===true),payload={...(narrowing.independent?{schema:2 as const,mode:'independent-capabilities' as const}:{schema:1 as const}),runId,taskId:value.taskId,projectId:session.snapshot.projectId,runner:session.snapshot.runner,snapshotHash:value.snapshotHash,selectionHash,ownerInstanceId:this.instanceId,ownerPid:this.host.pid,ownerStartedAt:this.host.startedAt,applications:session.snapshot.packages.filter(p=>narrowing.appIds.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash})),roots,createdAt:timestamp};scope=applicationRunScopeSchema.parse({...payload,evidenceHash:digest(canonicalJson(payload))});}
+       const resources=this.closure(value.taskId,undefined,scope);
+       this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
+       if(scope)this.store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'application-run-scope',?,'committed',?,?,?)").run(applicationScopeOperationId(runId),this.store.storeId,canonicalJson(scope),timestamp,timestamp);
+@@ -237,7 +239,7 @@
+         this.store.sqlite.prepare('INSERT INTO capability_run_restrictions VALUES(?,?,?,?)').run(runId,text,digest(text),evidence.restrictedAt);
+         const resources=this.closure(row.task_id,owned.guard,owned.scope).map(r=>r.resourceId);
+         this.store.sqlite.prepare("UPDATE capability_runs SET bindings_json='[]' WHERE run_id=?").run(runId);
+-        return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>owned.scope?this.sessions.verifyScopedResources(row.task_id,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[]):this.sessions.verifyResources(row.task_id)};
++        return owned.guard??{kind:'fixed' as const,snapshotHash:row.snapshot_hash,resources:Object.freeze(resources),verify:()=>owned.scope?this.sessions.verifyScopedResources(row.task_id,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[],owned.scope.schema===2):this.sessions.verifyResources(row.task_id)};
+       }).immediate();
+       owned.guard=guard;
+     });
+@@ -261,7 +263,7 @@
+       if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','运行已被撤销，不能继续准备');
+       this.currentLifecycle(row,session); this.protect(runId,owned); return row.task_id;
+     }).immediate());
+-    const owned=this.owned.get(runId)!,guard=owned.guard;if(guard)await guard.verify();else if(owned.scope)await this.sessions.verifyScopedResources(taskId,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[]);else await this.sessions.verifyResources(taskId);
++    const owned=this.owned.get(runId)!,guard=owned.guard;if(guard)await guard.verify();else if(owned.scope)await this.sessions.verifyScopedResources(taskId,owned.scope.applications.map(p=>p.appId),owned.scopeProjectionIds??[],owned.scope.schema===2);else await this.sessions.verifyResources(taskId);
+     return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       const { row,owned,session } = this.lifecycle(runId); if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','准备期间运行已被撤销');
+       this.currentLifecycle(row,session); this.checkProtection(row,owned);
+--- a/src/main/core/applications/session-projector.ts
++++ b/src/main/core/applications/session-projector.ts
+@@ -31,8 +31,8 @@
+   private readonly packages: PackageRegistry;
+   private readonly legacy: LegacyCapabilityResourceAdopter;
+   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
+-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+-    if(applicationScope&&(!applicationScope.length||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
++  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[],independent=false): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
++    if(applicationScope&&((!applicationScope.length&&!independent)||(independent&&applicationScope.length!==0)||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
+     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
+     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
+       const installed = this.packages.get(application.packageHash); verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
+@@ -53,9 +53,9 @@
+     }
+     if (new Set(result.map(s => s.nativeName)).size !== result.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','所选Skill原生名称冲突'); return result;
+   }
+-  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[]):OwnedBundle{
++  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[],independent=false):OwnedBundle{
+     if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
+-    const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope),files:Record<string,Buffer>={},executables=new Set<string>();
++    const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope,independent),files:Record<string,Buffer>={},executables=new Set<string>();
+     files['.claude-plugin/plugin.json']=Buffer.from(JSON.stringify({name:'smartdd-session',version:'1.0.0',description:'WillYou session capabilities'},null,2)+'\n');
+     for(const skill of skills){
+       if(skill.path!==join(root,'skills',skill.nativeName,'SKILL.md'))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Skill投影路径不等于原快照');
+@@ -77,8 +77,8 @@
+   }
+   private sourceIdentity(taskId:string,hash:string,archive=false){const kind=archive?'claude-projection-archive':'claude-projection-source';return{kind,resourceId:`${kind}:${taskId}:${hash}`,relativePath:`projection-sources/claude/${taskId}/${archive?'archives':'views'}/${hash}`};}
+   /** Immutable depot only;this does not publish or activate the native plugin root. */
+-  async claudeSource(taskId:string,applicationScope?:readonly string[]):Promise<ClaudeProjectionSource>{
+-    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash,applicationScope),scope=this.claudeScope(bundle.manifest,current.snapshot),identity=this.sourceIdentity(taskId,bundle.hash);
++  async claudeSource(taskId:string,applicationScope?:readonly string[],independent=false):Promise<ClaudeProjectionSource>{
++    const current=await this.sessions.get(taskId),bundle=this.claudeBundle(current.snapshot,current.selectionHash,applicationScope,independent),scope=this.claudeScope(bundle.manifest,current.snapshot),identity=this.sourceIdentity(taskId,bundle.hash);
+     const dependencies=[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))];
+     const resource=await this.store.publish({...identity,contentHash:bundle.hash,dependencies,materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{this.claudeScope(verifyOwnedBundle(directory,bundle.hash,this.store.storeId),current.snapshot);}});
+     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{role:'view',resource,bundle,applicationScope:Object.freeze(scope)};
+--- a/src/shared/claude-delivery.ts
++++ b/src/shared/claude-delivery.ts
+@@ -1,4 +1,4 @@
+ import {z} from 'zod';
+ /** Host preparation/load-plan data only.Never accepted by renderer/tool RPC. */
+-export const claudeRunDeliverySchema=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),leaseId:z.uuid(),revision:z.number().int().positive(),resourceId:z.string().min(1).max(512),hash:z.string().regex(/^[a-f0-9]{64}$/),generation:z.number().int().positive(),appIds:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length)}).strict();
++export const claudeRunDeliverySchema=z.object({schema:z.literal(2),taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),leaseId:z.uuid(),revision:z.number().int().positive(),resourceId:z.string().min(1).max(512),hash:z.string().regex(/^[a-f0-9]{64}$/),generation:z.number().int().positive(),appIds:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(0).max(32).refine(a=>new Set(a).size===a.length)}).strict();
+ export type ClaudeRunDelivery=z.infer<typeof claudeRunDeliverySchema>;
+--- a/src/main/core/applications/claude-delivery-state.ts
++++ b/src/main/core/applications/claude-delivery-state.ts
+@@ -11,13 +11,13 @@
+ import {verifyOwnedBundle} from './owned-bundle';
+ const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/);
+ export const deliveryOwner=z.object({instanceId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/)}).strict();
+-const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).max(32).refine(a=>new Set(a).size===a.length);
++const appIds=z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(0).max(32).refine(a=>new Set(a).size===a.length);
+ const view=z.object({resourceId:z.string(),sourceId:z.string(),hash,generation:z.number().int().positive(),appIds}).strict();
+ const participant=z.object({owner:deliveryOwner,leaseId:z.uuid()}).strict();
+ const pending=z.object({id:z.uuid(),sourceId:z.string(),hash,appIds,priorHash:hash.nullable(),priorResourceIds:z.array(z.string()).max(1024),resourceId:z.string(),generation:z.number().int().positive(),abandonedStages:z.array(z.string()).max(64),participants:z.array(participant).min(1).max(64),activeOwner:deliveryOwner,stage:z.string(),backup:z.string()}).strict();
+ const preparation=z.object({id:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive()}).strict();
+ const consumer=z.object({runId:z.uuid(),leaseId:z.uuid(),owner:deliveryOwner,revision:z.number().int().positive(),resourceId:z.string(),hash,generation:z.number().int().positive()}).strict();
+-export const claudeSlotSchema=z.object({schema:z.literal(1),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict();
++export const claudeSlotSchema=z.object({schema:z.union([z.literal(1),z.literal(2)]),storeId:z.uuid(),taskId:id,selectionHash:hash,root:z.string(),anchorId:z.string(),revision:z.number().int().positive(),current:view.nullable(),pending:pending.nullable(),preparation:preparation.nullable(),consumers:z.array(consumer).max(128)}).strict().superRefine((slot,ctx)=>{if(slot.schema===1&&(slot.current?.appIds.length===0||slot.pending?.appIds.length===0))ctx.addIssue({code:'custom',message:'旧交付记录不能声明空应用范围'});});
+ export type ClaudeSlot=z.infer<typeof claudeSlotSchema>;
+ export type DeliveryOwner=z.infer<typeof deliveryOwner>;
+ export const claudeDeliveryTokenSchema=claudeRunDeliverySchema.extend({preparationId:z.uuid()});
+@@ -82,11 +82,11 @@
+  if(!row||row.task_id!==slot.taskId||row.state!=='preparing'||row.owner_instance_id!==p.owner.instanceId||row.owner_pid!==p.owner.pid||row.owner_started_at!==p.owner.startedAt||canonicalJson([...appIds].sort())!==canonicalJson([...token.appIds].sort()))throw fail();
+  const stamp=new Date().toISOString();store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(aliasLeaseId,slot.anchorId,runId,p.owner.instanceId,p.owner.pid,p.owner.startedAt,stamp);
+  slot.consumers.push({runId,leaseId:aliasLeaseId,owner:p.owner,revision:slot.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation});slot.preparation=null;writeClaudeSlot(store,slot);store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE lease_id=?").run(stamp,p.leaseId);
+- return{taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
++ return{schema:2,taskId:token.taskId,leaseId:aliasLeaseId,revision:token.revision,resourceId:token.resourceId,hash:token.hash,generation:token.generation,appIds:[...token.appIds]};
+ }
+ export function assertClaudeRunDelivery(store:ResourceStore,runId:string,proof:ClaudeRunDelivery):void{
+  const slot=readClaudeSlot(store,proof.taskId),v=slot?.current,c=slot?.consumers.find(c=>c.runId===runId);
+- if(!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
++ if(proof.schema!==2||!slot||!v||!c||slot.pending||slot.revision!==proof.revision||c.revision!==proof.revision||c.leaseId!==proof.leaseId||c.resourceId!==proof.resourceId||c.hash!==proof.hash||c.generation!==proof.generation||v.resourceId!==proof.resourceId||v.hash!==proof.hash||v.generation!==proof.generation||canonicalJson(v.appIds)!==canonicalJson(proof.appIds))throw fail();
+  const run=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
+  if(!run||run.task_id!==slot.taskId||run.owner_instance_id!==c.owner.instanceId||run.owner_pid!==c.owner.pid||run.owner_started_at!==c.owner.startedAt||['stopped','failed'].includes(run.state))throw fail();lease(store,c.leaseId,c.owner,runId,'run',slot.anchorId,['preparing','active']);
+ }
+--- a/src/main/core/applications/claude-delivery.ts
++++ b/src/main/core/applications/claude-delivery.ts
+@@ -46,10 +46,12 @@
+  private claim(slot:ClaudeSlot):void{this.assertPending(slot);const p=slot.pending!;for(const participant of p.participants){const mine=this.sameOwner(participant.owner,this.owner)&&this.operations.has(p.id);if(!mine&&this.processes.state(participant.owner)!=='stopped')throw new ApplicationError('RESOURCE_BUSY','原Claude发布者或恢复者仍存活或无法核实');}
+   if(!this.sameOwner(p.activeOwner,this.owner)||!this.operations.has(p.id)){if(p.participants.length>=64)throw recovery();const leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-install',p.id,this.owner);p.participants.push({owner:this.owner,leaseId});p.activeOwner=this.owner;writeClaudeSlot(this.store,slot);this.operations.add(p.id);}
+  }
+- private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
+- async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{
++ private preparation(slot:ClaudeSlot):ClaudeDeliveryToken{const v=slot.current!;if(!v||slot.pending||slot.preparation)throw recovery();const id=randomUUID(),leaseId=randomUUID();this.putLease(leaseId,slot.anchorId,'claude-delivery-preparation',id,this.owner);slot.preparation={id,leaseId,owner:this.owner,revision:slot.revision};writeClaudeSlot(this.store,slot);this.preparations.add(id);return{schema:2,taskId:slot.taskId,preparationId:id,leaseId,revision:slot.revision,resourceId:v.resourceId,hash:v.hash,generation:v.generation,appIds:[...v.appIds]};}
++ async prepare(taskId:string,appIds:readonly string[]):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,appIds,false);}
++ async prepareIndependent(taskId:string):Promise<ClaudeDeliveryToken>{return this.prepareSelection(taskId,[],true);}
++ private async prepareSelection(taskId:string,appIds:readonly string[],independent:boolean):Promise<ClaudeDeliveryToken>{
+   if(readClaudeSlot(this.store,taskId)?.pending){const recovered=await this.recover(taskId);if(recovered)await this.cancel(recovered);}
+-  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds);if(!source.applicationScope.length)throw recovery();
++  const current=await this.sessions.get(taskId),source=await this.projector.claudeSource(taskId,appIds,independent);if(!source.applicationScope.length&&!independent)throw recovery();
+   const relative=claudeRoot(taskId),root=join(this.store.root,relative);let archiveId:string|null=null;
+   // Before the first canonical change, preserve the actual registered complete
+   // original tree.Archive creation never guesses a missing original body.
+@@ -60,7 +62,7 @@
+     if(present(root)&&!archiveId)throw new ApplicationError('OWNERSHIP_CONFLICT','原目录在准备期间被其他内容占用');
+     this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'claude-delivery-root',?,?,'C',?,?,'recovery-required',1,'unknown',?)").run(anchorId,digest(canonicalJson({taskId,selectionHash,root:relative})),this.store.storeId,`claude-deliveries/${taskId}/anchor`,relative,claudeSlotId(taskId));writeClaudeSlot(this.store,slot);
+    }
+-   if(slot.selectionHash!==current.selectionHash||slot.pending)throw recovery();this.recoverPreparation(slot);this.idle(slot);
++   if(slot.selectionHash!==current.selectionHash||slot.pending)throw recovery();this.recoverPreparation(slot);this.idle(slot);if(independent)slot.schema=2;
+    if(slot.current?.hash===source.bundle.hash){verifyClaudeDelivery(this.store,this.store.get(slot.current.resourceId),current.snapshot);token=this.preparation(slot);return;}
+    const priorIds=(this.store.sqlite.prepare("SELECT resource_id FROM capability_resources WHERE path_scope='C' AND COALESCE(scope_relative_path,relative_path)=? AND resource_id<>?").all(relative,slot.anchorId) as {resource_id:string}[]).map(r=>r.resource_id);
+    const refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=?').all(taskId) as {ref_id:string}[];
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -7,14 +7,14 @@
+ export const agentAdapterMetadataSchema = z.object({ schema: z.literal('willyou-agent-adapter-v1'),agentId: z.enum(['claude-code','codex']),version: z.string().regex(/^\d+\.\d+\.\d+$/),entry: z.literal('index.cjs'),projectionFormatVersion: z.union([z.literal(1),z.literal(2)]),platforms: z.array(z.literal('darwin-arm64')).length(1),cliVersions: z.array(z.string().regex(/^\d+\.\d+\.\d+$/)).min(1).max(32),bridgeRecovery: z.literal('unverified'),evidenceBaseline: z.string().min(1).max(256) }).strict();
+ export type AgentAdapterMetadata = z.infer<typeof agentAdapterMetadataSchema>;
+ export const agentLoadRequestSchema = z.object({
+-  snapshot: capabilitySessionSnapshotSchema,claudeDelivery:claudeRunDeliverySchema.optional(),applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(1).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
++  snapshot: capabilitySessionSnapshotSchema,independentCapabilities:z.literal(true).optional(),claudeDelivery:claudeRunDeliverySchema.optional(),applicationScope:z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(20)).min(0).max(32).optional(),runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
+   native: z.object({ runner: z.enum(['claude-code','codex']),sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
+   pluginRoot: absolute.nullable(),pluginHash: hash.nullable(),
+   catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict()).max(4096) }).strict().nullable(),
+   userSkillConfig: z.array(z.record(z.string(),z.unknown()).refine(boundedJson)).max(4096),
+   inventory: z.array(z.object({ kind: z.enum(['plugin','skill','mcp','native-tool']),name: z.string().min(1).max(256),path: z.string().max(4096),ownerStoreId: z.uuid().nullable(),contentHash: hash.nullable() }).strict()).max(12000),
+   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: name,command: z.string().min(1).max(4096).refine(s => !/[\x00\r\n]/.test(s)),args: z.array(z.string().max(4096).refine(s => !/[\x00\r\n]/.test(s))).max(32),env: z.record(z.string().regex(/^[A-Z_][A-Z0-9_]*$/),z.string().max(4096)) }).strict()).max(2),
+-}).strict();
++}).strict().superRefine((v,ctx)=>{if(v.applicationScope?.length===0&&!v.independentCapabilities||v.independentCapabilities&&(!v.applicationScope||v.applicationScope.length!==0||v.mcp.some(m=>m.kind==='applications')))ctx.addIssue({code:'custom',message:'空应用范围须显式独立能力准备且不能注入应用桥'});});
+ export type AgentLoadRequest = z.infer<typeof agentLoadRequestSchema>;
+ export const agentLoadPlanSchema = z.object({ schema: z.literal(1),agentId: z.enum(['claude-code','codex']),args: z.array(z.string().max(2 * 1024 * 1024)).max(128),files: z.record(z.string().regex(/^mcp\.json$/),z.string().max(1024 * 1024)),phase: z.literal('prepared'),bridgeRecovery: z.literal('unverified') }).strict();
+ export type AgentLoadPlan = z.infer<typeof agentLoadPlanSchema>;
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -84,7 +84,7 @@
+     for (const item of input.inventory) {
+       const own = item.ownerStoreId === this.store.storeId && item.contentHash && ((item.kind === 'skill' && allSkills.some(s => s.path === item.path && s.hash === item.contentHash)) || (item.kind === 'plugin' && item.path === input.pluginRoot && item.contentHash === input.pluginHash));
+       if (own) continue;
+-      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && snapshot.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
++      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
+     }
+   }
+   plan(hash: string,value: AgentLoadRequest): AgentLoadPlan {
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -131,7 +131,7 @@
+     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
+     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
+     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
+-    const packages=this.selectedApps(input.projectId).map(({packageHash})=>{const p=this.applications.builtin.trustedMetadata(packageHash),m=p.manifest;return{appId:p.appId,version:p.version,packageHash,hashAlgorithm:'app-manifest-v1' as const,hostApi:m.hostApi,dataApi:m.dataApi,runtimeHash:m.runtime.hash,toolContractMajors:Object.fromEntries(m.tools.map(t=>[t.name,t.contractMajor])),skills:m.skills.map(s=>{const name=applicationNativeSkillName(p.appId,s.id,packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(m,s.path),sourceRelativePath:s.path,projectionPath:skillPath(name)};}),bindings:bindings.filter(b=>b.appId===p.appId&&b.connectionId).map(b=>({bindingId:`${input.projectId}:${p.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!})),allowedOperations:[...m.permissions]};});
++    const packages=this.selectedApps(input.projectId).map(({packageHash})=>{const p=this.applications.builtin.retainedMetadata(packageHash),m=p.manifest;return{appId:p.appId,version:p.version,packageHash,hashAlgorithm:'app-manifest-v1' as const,hostApi:m.hostApi,dataApi:m.dataApi,runtimeHash:m.runtime.hash,toolContractMajors:Object.fromEntries(m.tools.map(t=>[t.name,t.contractMajor])),skills:m.skills.map(s=>{const name=applicationNativeSkillName(p.appId,s.id,packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(m,s.path),sourceRelativePath:s.path,projectionPath:skillPath(name)};}),bindings:bindings.filter(b=>b.appId===p.appId&&b.connectionId).map(b=>({bindingId:`${input.projectId}:${p.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!})),allowedOperations:[...m.permissions]};});
+     const runtimeHashes=[...new Set(packages.map(p=>p.runtimeHash))];if(runtimeHashes.length>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
+     const mcp:CapabilitySessionSnapshotV2['mcp']=packages.length?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash:runtimeHashes[0]}]:[];
+     if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
+@@ -181,16 +181,16 @@
+         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
+       }else{
+       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
+-      const plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready').map(p=>p.appId),plannedScope=plannedReady.length>0&&plannedReady.length<planned.packages.length?plannedReady:undefined;
++      const plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready').map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
+       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
+       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
+       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+-      if(planned.runner==='codex'&&!unavailable&&(plannedReady.length>0||planned.packages.length===0)){
+-        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope),{signal:input.signal})).generation;}
++      if(planned.runner==='codex'&&!unavailable){
++        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0),{signal:input.signal})).generation;}
+         catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else throw error;}
+       }
+       if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});
+-      try{current=await this.sessions.create(planned,input.home);}finally{this.initialApplicationScopes.delete(planned.taskId);}
++      try{current=await this.sessions.create(planned,input.home,plannedScope);}finally{this.initialApplicationScopes.delete(planned.taskId);}
+       await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
+       }
+     }
+@@ -205,20 +205,21 @@
+     }
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+-    const ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready').map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&ready.length>0&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
++    const ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready').map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
+     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
++    const independent=applicationScope?.length===0;
+     const gateSnapshot=applicationScope?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>applicationScope.includes(p.appId))}:snapshot;
+     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
+     let pluginRoot:string|null=null,pluginHash:string|null=null,deliveryToken:ClaudeDeliveryToken|undefined,deliveryProof:ClaudeRunDelivery|undefined;
+     if(!unavailable&&!snapshot.legacyBinding){
+-      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
+-      else if(applicationScope){try{deliveryToken=await this.claudeDelivery.prepare(input.taskId,applicationScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
++      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
++      else if(applicationScope){try{deliveryToken=independent?await this.claudeDelivery.prepareIndependent(input.taskId):await this.claudeDelivery.prepare(input.taskId,applicationScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
+       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
+     }
+-    const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
++    const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>independent?this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,ids):applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
+     let run:OwnedCapabilityRun;
+-    try{run=hold?.run??(deliveryToken?await this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope!,projectionIds,undefined,deliveryToken):await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}));}
++    try{run=hold?.run??(independent?await this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,undefined,deliveryToken):deliveryToken?await this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope!,projectionIds,undefined,deliveryToken):await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}));}
+     catch(error){if(deliveryToken)await this.claudeDelivery.cancel(deliveryToken).catch(()=>{});throw error;}
+     const entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+     try{
+@@ -226,7 +227,7 @@
+       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
+       const mcpName=snapshot.mcp.find(m=>m.kind==='legacy-project-context')?.serverName??null;
+       const original=snapshot.legacyBinding?assertLegacySessionSource(this.support.store,snapshot):null;
+-      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot,applicationScope),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
++      const sources=unavailable?[]:original?original.evidence.skills.filter(s=>s.enabled).map(s=>{if(!s.nativeName)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill原生名称缺失');return{path:s.projectionPath,nativeName:s.nativeName,sourceHash:s.hash,sourceResourceId:'standard-skill:'+s.skillId+':'+s.hash,files:Object.fromEntries(Object.entries(this.support.legacy.verify(this.support.store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set<string>()};}):this.projector.sourceSkills(snapshot,applicationScope,independent),skills:RuntimeSkill[]=unavailable?[]:snapshot.standardSkills.map(s=>{const known=this.support.store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,name,version,hash FROM skill_versions WHERE id=? AND skill_id=? AND hash=?').get(s.versionId,s.skillId,s.hash) as Pick<RuntimeSkill,'skillId'|'versionId'|'name'|'version'|'hash'>|undefined;if(!known)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原标准Skill元数据缺失或身份不同');return{...known,path:s.projectionPath,loaded:'unverified',enabled:true};});
+       const projections=unavailable?{}:Object.fromEntries(snapshot.standardSkills.map(s=>{const source=sources.find(v=>v.path===s.projectionPath)!;return[s.versionId,{path:s.projectionPath,nativeName:source.nativeName,...(original?{format:'legacy-tree-v1' as const}:{}),files:source.files}];}));
+       let request:AgentLoadRequest|undefined,legacyRequest:LegacyAgentLoadRequest|undefined;
+       const legacyPlan=()=>{if(!legacyRequest)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原格式加载依据缺失');return this.support.adapters.planLegacy(snapshot.adapterBinding.hash,legacyRequest);};
+@@ -238,7 +239,7 @@
+           legacyRequest={schema:'m4-legacy-load-request-v1',taskId:input.taskId,projectId:input.projectId,sourceSnapshotHash:original.row.source_snapshot_hash,runId:run.runId,cliVersion:native.version,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},catalog:collection,userSkillConfig:flags,inventory};
+           try{legacyPlan();}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT','RESOURCE_RECOVERY_REQUIRED'].includes(error.code)){unavailable=error.code;legacyRequest=undefined;}else throw error;}
+         }else{
+-        request={snapshot,...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
++        request={snapshot,...(independent?{independentCapabilities:true as const}:{}),...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.filter(m=>m.kind==='applications'?!independent:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
+         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
+       }
+       }
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -554,6 +554,21 @@
+ 
+ 
+ describe('per-application availability does not withdraw healthy fixed tools',()=>{
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['new','resume'] as const).flatMap(mode=>(['missing-bytes','registered-unready'] as const).map(fault=>({runner,mode,fault})))))('keeps original independent Skills and project MCP when all selected apps are unavailable: $runner $mode $fault',async({runner,mode,fault})=>{
++  const builtin=await selectBoth(),profile=runner==='codex'?codexId:claudeId,first=mode==='resume'?await create(profile):undefined;
++  if(first)await stopForSwitchFixture(first,runner);const original=first?await managed.sessions.get(first.task.id):undefined,originalRefs=first?await managed.sessions.references(first.task.id):[];
++  for(const appId of ['mail','zentao']){const pack=builtin.assertTrusted(builtin.packages.active(appId)!.packageHash);rmSync(join(support.store.root,pack.relativePath),{recursive:true});if(fault==='registered-unready')sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(pack.resourceId);}
++  let started:Awaited<ReturnType<typeof create>>|undefined;
++  try{started=first?await tasks.open({taskId:first.task.id}):await create(profile);const fixed=await managed.sessions.get(started.task.id),runtime=started.task.runtimeSnapshot!,legacy=fixed.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!,application=fixed.snapshot.mcp.find(m=>m.kind==='applications')!;
++   expect(fixed.snapshot.standardSkills.length).toBeGreaterThan(0);expect(legacy).toBeDefined();expect(application).toBeDefined();expect(fixed.snapshot.packages.map(p=>p.appId).sort()).toEqual(['mail','zentao']);
++   expect(runtime.skills.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath).sort());expect(runtime.mcp.map(m=>m.name)).toEqual([legacy.serverName]);
++   expect(managed.runs.assertActive(runtime.runId).applicationScope).toEqual([]);expect((await appTools().list(runtime.runId)).tools).toEqual([]);expect(await appTools().call(runtime.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});
++   const args=ptys.launches.at(-1)!.args;if(runner==='claude-code'){expect(args[args.indexOf('--plugin-dir')+1]).toBe(join(support.store.root,'sessions',started.task.id,'claude/plugin'));const config=JSON.parse(readFileSync(args[args.indexOf('--mcp-config')+1],'utf8'));expect(Object.keys(config.mcpServers)).toEqual([legacy.serverName]);}else{const flags=launchFlags();for(const skill of fixed.snapshot.standardSkills)expect(flags).toContainEqual({path:skill.projectionPath,enabled:true});expect(args.join('\n')).toContain('mcp_servers.'+legacy.serverName);expect(args.join('\n')).not.toContain('mcp_servers.'+application.serverName);}
++   for(const s of fixed.snapshot.standardSkills)expect(existsSync(s.projectionPath)).toBe(true);for(const p of fixed.snapshot.packages)for(const s of p.skills)if(runner==='claude-code')expect(existsSync(s.projectionPath)).toBe(false);
++   if(original){expect(fixed.snapshot).toEqual(original.snapshot);for(const ref of originalRefs)expect(await managed.sessions.references(started.task.id)).toContainEqual(ref);}
++  }finally{if(started){tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++
+  it('resumes original Claude with Mail at the actual old Skill paths,then restores the original full plugin only on a later stopped-run resume',async()=>{
+   const builtin=await selectBoth(),first=await create(claudeId);await stopForSwitchFixture(first,'claude-code');const fixed=await managed.sessions.get(first.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),beforeRefs=await managed.sessions.references(first.task.id),zen=builtin.assertTrusted(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash),original=beforeRefs.find(r=>r.refKind==='session-projection')!;rmSync(join(support.store.root,zen.relativePath),{recursive:true});
+   const resumed=await tasks.open({taskId:first.task.id}),runId=resumed.task.runtimeSnapshot!.runId;

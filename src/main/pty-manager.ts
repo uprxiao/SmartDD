@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import * as pty from 'node-pty';
-import { LAUNCH_SCRIPT } from './launch-env';
+import { shellWrapped } from './launch-env';
+export { loginShell, shellWrapped } from './launch-env';
 import { TerminalModes } from './terminal-modes';
 
 export interface SpawnOptions {
+  /** Optional identity reserved by the host before forking; never accepted from renderer input. */
+  id?: string;
   command: string;
   args: string[];
   cwd: string;
@@ -15,26 +18,13 @@ export interface SpawnOptions {
   rows?: number;
 }
 
-export const loginShell = () => process.env.SHELL || '/bin/zsh';
-
-// Run through a login+interactive shell so PATH matches the user's terminal even when the
-// app is launched from Finder. LAUNCH_SCRIPT re-exports the profile's variables after the rc
-// files and execs the command, which bypasses shell aliases/functions such as `claude`.
-export function shellWrapped(
-  command: string,
-  args: string[],
-  scriptArgs: string[] = ['--'],
-  shell = loginShell()
-): { file: string; args: string[] } {
-  return { file: shell, args: ['-l', '-i', '-c', LAUNCH_SCRIPT, 'smartdd', ...scriptArgs, command, ...args] };
-}
-
 export class PtyManager extends EventEmitter {
   private readonly ptys = new Map<string, pty.IPty>();
   private readonly modes = new Map<string, TerminalModes>();
 
   spawn(opts: SpawnOptions): string {
-    const id = randomUUID();
+    const id = opts.id ?? randomUUID();
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id) || this.ptys.has(id)) throw new Error('PTY_IDENTITY_CONFLICT');
     const { file, args } = shellWrapped(opts.command, opts.args, opts.scriptArgs);
     const p = pty.spawn(file, args, {
       name: 'xterm-256color',
@@ -55,6 +45,9 @@ export class PtyManager extends EventEmitter {
   }
 
   has(id: string): boolean { return this.ptys.has(id); }
+
+  /** Native handle receipt, main-process only. Never infer a PID from terminal output. */
+  nativePid(id: string): number | null { return this.ptys.get(id)?.pid ?? null; }
 
   write(id: string, data: string): void {
     this.ptys.get(id)?.write(data);

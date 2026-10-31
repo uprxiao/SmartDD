@@ -1,0 +1,117 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/tasks/task-capabilities.test.ts src/main/core/tasks/task-service.test.ts src/main/core/tasks/task-races.test.ts src/main/core/applications/__tests__/legacy-task-evidence.test.ts src/main/core/applications/__tests__/legacy-plugin-source.test.ts src/main/core/applications/__tests__/legacy-retention-recovery.test.ts src/main/core/applications/__tests__/legacy-task-retention.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/db/migrations.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-static-ai-20261021/affected-test-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/legacy-retention-recovery.test.ts (38 tests) 3306ms
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (57 tests | 1 failed) 61438ms
+     ✓ T63 refuses bad-json resume and keeps history,diagnostics and original source identities  2024ms
+     ✓ T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities  1949ms
+     ✓ T63 refuses bad-hash resume and keeps history,diagnostics and original source identities  1963ms
+     ✓ T63 refuses cross-project-snapshot resume and keeps history,diagnostics and original source identities  1948ms
+     ✓ T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities  1961ms
+     ✓ T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available  422ms
+     ✓ T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available  2061ms
+     ✓ T64 continues the original claude-code session without application authority while its fixed package is unavailable  493ms
+     ✓ T64 continues the original codex session without application authority while its fixed package is unavailable  2232ms
+     ✓ keeps selected applications in a new claude-code snapshot when original package bytes are unavailable 270ms
+     ✓ keeps selected applications in a new codex snapshot when original package bytes are unavailable 293ms
+     ✓ withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2398ms
+     ✓ withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2584ms
+     ✓ fails an oversized original native payload before arming and never retries a fork  318ms
+     ✓ never falls back or retries after an uncertain native fork failure  2336ms
+     ✓ registers native input provenance using the current verified claude-code launch version and owned run signal 292ms
+     ✓ registers native input provenance using the current verified codex launch version and owned run signal  366ms
+     ✓ joins the trusted home prompt to native claude-code user records only after owned spawn and invalidates it on stop  2280ms
+     ✓ joins the trusted home prompt to native codex user records only after owned spawn and invalidates it on stop  3894ms
+     ✓ does not assign home-user origin to an internal task creation without a trusted sender  2321ms
+     ✓ does not capture a launch argument when native spawning fails  2344ms
+     ✓ clears a captured launch origin if the new task cannot be committed to SQLite  2305ms
+     ✓ does not duplicate an accepted launch when optional origin observation fails 243ms
+     ✓ registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit  386ms
+     ✓ uses the same session selection and paths when project defaults change between runs  490ms
+     ✓ retains user Skill flags and MCP names while adding a full managed selection  366ms
+     ✓ gives Claude one stable complete plugin without registering a Codex consumer  471ms
+     ✓ keeps the old launcher runtime occupied even with the project-context MCP disabled  345ms
+     ✓ keeps a native Agent available on unverified profile configuration, with no managed argv or credentials 222ms
+     ✓ preserves selected independent Codex profile flags through the actual TaskService host composition  328ms
+     ✓ preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays  329ms
+     ✓ keeps the native Agent available when effective Skill flags are over-count 295ms
+     ✓ keeps the native Agent available when effective Skill flags are non-json 231ms
+     ✓ diagnoses an actual Claude plugin namespace conflict without removing the user plugin or stopping the Agent 236ms
+     ✓ keeps original Mail tool contracts callable without SMTP and rejects later policy revocation without stopping the CLI  2557ms
+     ✓ connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child  2786ms
+     ✓ opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge  793ms
+     ✓ continues known native history when its disable-list injection exceeds capacity without rewriting the old record  505ms
+     ✓ continues ordinary native history with a populated shared catalog and unknown-cli, without granting application access  499ms
+     ✓ continues ordinary native history with a populated shared catalog and unverified-config, without granting application access  513ms
+     ✓ runs an unverified history CLI through a real OS PTY while keeping its catalog consumer and refusing every application grant  691ms
+     ✓ preserves old M4 metadata byte-for-byte during a guarded open, self-check, native ID discovery and exit  1796ms
+     ✓ retains verified original claude-code M4 sources during guarded resume without claiming migration complete  303ms
+     ✓ retains verified original codex M4 sources during guarded resume without claiming migration complete 286ms
+     × recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal 328ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  366ms
+     ✓ reports a damaged original M4 source while preserving metadata and ordinary native Agent availability 260ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  1910ms
+     ✓ keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending  414ms
+     ✓ keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending  379ms
+     ✓ does not disguise malformed nonempty history as an empty capability selection 162ms
+     ✓ does not demote a recorded v2 session when the task loses its capability pointer  391ms
+     ✓ revokes the private broker even if an owned PTY stop fails and retains the actual child lease  2438ms
+     ✓ rejects replacing the registry after a task has begun and does not fork after an invalid pointer  417ms
+     ✓ refuses a late claude-code history loss before fork and cancels the known unspawned run  332ms
+     ✓ refuses a late codex history loss before fork and cancels the known unspawned run  1981ms
+     ✓ does not reopen a fresh Claude UUID after its original history appears during preparation  331ms
+ ✓ src/main/core/applications/__tests__/legacy-session-migration.test.ts (35 tests) 4875ms
+     ✓ publishes exact original claude-code selection, refs, names and task pointer in one transaction  320ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts (37 tests) 1555ms
+ ✓ src/main/db/migrations.test.ts (21 tests) 95ms
+ ✓ src/main/core/capabilities/capability-service.test.ts (22 tests) 607ms
+ ✓ src/main/core/tasks/task-capabilities.test.ts (12 tests) 4019ms
+     ✓ reserves one authoritative identity before forking and releases transient files only after the owned exit  346ms
+     ✓ joins concurrent resume requests and refuses a competing profile while preparation is pending  346ms
+     ✓ cancels a preparing resume without forking or releasing the fixed session source references  345ms
+     ✓ completes the first native ID in the authoritative registry and persists the new pointer without losing it to self-check writes  367ms
+     ✓ does not bind two different rollouts while the first authoritative native identity is pending  481ms
+     ✓ discovers a native session flushed before a slow PID attachment completes by using the actual fork time  428ms
+     ✓ aborts the owned preparation and waits for its real settlement before reporting stopped  414ms
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (27 tests) 5644ms
+     ✓ keeps old selected Codex paths enabled while disabling other original versions and current-format projections  316ms
+     ✓ rejects a current-format own projection whose projection-state is no longer authoritative  320ms
+     ✓ rejects a current-format own projection whose source-state is no longer authoritative  391ms
+     ✓ does not replace or rename a colliding user plugin  303ms
+ ✓ src/main/core/applications/__tests__/legacy-plugin-source.test.ts (18 tests) 1839ms
+ ✓ src/main/core/tasks/task-service.test.ts (40 tests) 2591ms
+     ✓ keeps the task visible after a stop timeout and allows a later retry  930ms
+ ✓ src/main/core/applications/__tests__/legacy-task-retention.test.ts (20 tests) 1466ms
+     ✓ keeps an interrupted intent-recorded attempt and resumes without losing original metadata  387ms
+ ✓ src/main/core/applications/__tests__/legacy-task-evidence.test.ts (28 tests) 571ms
+ ✓ src/main/core/capabilities/task-runtime.test.ts (6 tests) 409ms
+ ✓ src/main/core/tasks/task-races.test.ts (6 tests) 137ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:359:245
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 13 passed (14)
+      Tests  1 failed | 366 passed (367)
+   Start at  14:44:30
+   Duration  91.80s (transform 541ms, setup 0ms, import 2.10s, tests 88.55s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-static-ai-20261021/affected-test-report.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -27,3 +27,7 @@ describe('native save/copy kernel write authority',()=>{
   for(const platform of['win32','linux'] as const)expect(nativeFileCommand(executable,{operation:'save',root,recoveryRoot},platform).writeConfined).toBe(false);
  });
 });
+
+it('confines saved-copy cleanup to its destination and private recovery without a source write grant',()=>{
+ const command=nativeFileCommand('/private/helper',{operation:'finish-copy',root:{path:'/private/output'},recoveryRoot:{path:'/private/recovery'}},'darwin');expect(command.writeConfined).toBe(true);expect(command.args).toContain('PROJECT_ROOT=/private/output');expect(command.args).toContain('RECOVERY_ROOT=/private/recovery');expect(()=>nativeFileCommand('/private/helper',{operation:'finish-copy',root:{path:'relative'},recoveryRoot:{path:'/private/recovery'}},'darwin')).toThrow('[UNTRUSTED]');
+});

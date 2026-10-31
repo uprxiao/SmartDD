@@ -1,0 +1,41 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/native-mail-intent.test.ts src/main/core/applications/__tests__/native-user-inputs.test.ts src/main/core/applications/__tests__/native-user-messages.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (39 tests | 1 failed) 16156ms
+     × shares one native source and one grant across concurrent prepares of the same frozen revision 394ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > shares one native source and one grant across concurrent prepares of the same frozen revision
+AssertionError: expected { schema: 1, …(4) } to match object { status: 'ok', value: { …(1) } }
+(12 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "ok",
+-   "value": {
+-     "intent": {
+-       "authorized": true,
+-     },
+-   },
++   "status": "error",
+  }
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:171:46
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 130 passed (131)
+   Start at  00:26:09
+   Duration  17.93s (transform 317ms, setup 0ms, import 568ms, tests 17.10s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

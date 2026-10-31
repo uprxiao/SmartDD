@@ -1,0 +1,35 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-diagnostics.test.ts src/main/db/registered-host-migration.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/db/registered-host-migration.test.ts (8 tests | 1 failed) 88ms
+     × replays the rebuild without deleting static host metadata,new connections or original references 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > replays the rebuild without deleting static host metadata,new connections or original references
+AssertionError: expected [ Array(1) ] to deeply equal [ '0026_registered_application_hosts' ]
+
+- Expected
++ Received
+
+  [
+-   "0026_registered_application_hosts",
++   "0027_capability_skill_observations",
+  ]
+
+ ❯ src/main/db/registered-host-migration.test.ts:30:58
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 39 passed (40)
+   Start at  12:29:49
+   Duration  37.02s (transform 181ms, setup 0ms, import 272ms, tests 36.58s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

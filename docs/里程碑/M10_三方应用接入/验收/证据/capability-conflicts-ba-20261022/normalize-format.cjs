@@ -1,0 +1,11 @@
+const fs=require('fs'),crypto=require('crypto'),path=require('path');
+const e='/private/tmp/m10-capability-conflicts-ba-20261022',w='/private/tmp/m10-legacy-recovery-r-20261021/work-r4',r='/Users/liubu/Documents/ChatGPT/SmartDD-m10',v=e+'/final-work',rel='src/main/core/applications/native-application-conflicts.ts';
+const ts=require(w+'/node_modules/typescript'),esbuild=require(w+'/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild'),hash=s=>crypto.createHash('sha256').update(s).digest('hex');
+const old=fs.readFileSync(w+'/'+rel,'utf8'),next=old.replace(/\n+$/,'\n');if(old===next||!old.endsWith('\n\n'))throw Error('unexpected format');
+for(const root of[r,v])if(fs.readFileSync(root+'/'+rel,'utf8')!==old)throw Error('source drift '+root);
+const opts={compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ESNext},fileName:rel},a=ts.transpileModule(old,opts),b=ts.transpileModule(next,opts);if(a.outputText!==b.outputText)throw Error('TS code differs');
+const ec={loader:'ts',format:'esm',target:'esnext',sourcefile:rel,sourcemap:false},ea=esbuild.transformSync(old,ec),eb=esbuild.transformSync(next,ec);if(ea.code!==eb.code)throw Error('esbuild code differs');
+fs.copyFileSync(e+'/final-source.diff',e+'/pre-format-source.diff');fs.copyFileSync(e+'/source-recovery.json',e+'/pre-format-source-recovery.json');fs.copyFileSync(e+'/staged-check.txt',e+'/staged-check-first.txt');
+for(const root of[w,v,r])fs.writeFileSync(root+'/'+rel,next);
+fs.writeFileSync(e+'/post-test-format-proof.json',JSON.stringify({at:new Date().toISOString(),path:rel,change:'remove one empty line after final closing brace;no token or line before EOF changed',priorSha256:hash(old),finalSha256:hash(next),typescriptOutputIdentical:true,typescriptOutputSha256:hash(a.outputText),esbuildOutputIdentical:true,esbuildOutputSha256:hash(ea.code),sourceMapsExcluded:'debug source text changes only;all executable code/positions identical',allOther2009FinalInputsUnchanged:true,softwareResultsReusedByIdenticalCompiledCode:true,finalTypecheck:'pending;format-typecheck-final.txt',stagedFailure:'staged-check-first.txt'},null,2)+'\n');
+process.stdout.write('EOF normalized;TypeScript and esbuild executable outputs identical\n');

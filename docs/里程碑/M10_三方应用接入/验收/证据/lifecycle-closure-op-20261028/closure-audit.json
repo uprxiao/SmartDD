@@ -1,0 +1,150 @@
+{
+  "status": "passed-original-T30-seven-steps-and-nine-expected-clauses-reviewed",
+  "method": "Original definitions copied verbatim;manual requirement/evidence assessment plus separate machine result/source/pid/DB verification;not a verifier inferring arbitrary coverage",
+  "originalDefinition": {
+    "用例编号": "M10-T30（新增；简称T30）",
+    "关联需求／原型状态": "M10-R01-01–04,R02-05,R07-03,R05-04；P02,P04,P09；R1.6／12.11增量，原型待同步",
+    "页面／操作位置": "#apps/zentao；#apps/mail → 连接管理",
+    "测试层级": "原型交互检查；后续打包UI端到端",
+    "前置条件": "各操作入口按需求12.11实现；打包层须有隔离测试用户数据和可控秘密服务，不使用日常凭据。",
+    "环境与测试数据": "E-PROTO、E-PACK按层级分别记录；已保存连接、A/B关联项目、主动停用项目、旧会话及带附件草稿／发送记录。",
+    "具体操作步骤": "1. 在项目页停用／启用；2. 从连接菜单停用／启用；3. 查看断开影响并断开、同身份重连，模拟清理凭据失败；4. 查看移除影响并移除／重新添加；5. 重新启用项目后分别新建和resume旧会话；6. 独立清理缓存，核对连接状态、历史／草稿／发送记录及附件；7. 重启核对。",
+    "明确预期结果": "各入口注明作用域，断开／移除显示受影响连接和项目；项目停用不影响其他项目，停用保留凭据，断开要求重连且不宣称远端令牌撤销。秘密清理失败明确提示，不能假称已清完；主动停用项目不因重连开启。移除关闭项目使用但保留配置、业务数据、附件及旧包；重加需项目启用，已断开的连接仍需重连。旧会话保留固定版本，新会话用当前默认包；非就绪能力不显示可用但Agent可继续；独立清缓存不改连接启用，不新增会话删除按钮，恢复不自动发送或执行旧批准。"
+  },
+  "originalDefinitionSha256": "55169f7f560b5163be28a22da9380c5b0d770be24de792189c8464a664723ffb",
+  "originalSteps": [
+    {
+      "n": 1,
+      "expected": "1. 在项目页停用／启用",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 2,
+      "expected": "2. 从连接菜单停用／启用",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 3,
+      "expected": "3. 查看断开影响并断开、同身份重连，模拟清理凭据失败",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 4,
+      "expected": "4. 查看移除影响并移除／重新添加",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 5,
+      "expected": "5. 重新启用项目后分别新建和resume旧会话",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 6,
+      "expected": "6. 独立清理缓存，核对连接状态、历史／草稿／发送记录及附件",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    },
+    {
+      "n": 7,
+      "expected": "7. 重启核对。",
+      "assessment": "proved by P and actual packaged scope;see OP document seven-row table"
+    }
+  ],
+  "expectedClauses": [
+    {
+      "n": 1,
+      "verbatimWithoutDelimiter": "各入口注明作用域，断开／移除显示受影响连接和项目",
+      "evidence": [
+        "P两个项目选用/影响取消与确认",
+        "OO真实影响两连接/两项目及A/B状态"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 2,
+      "verbatimWithoutDelimiter": "项目停用不影响其他项目，停用保留凭据，断开要求重连且不宣称远端令牌撤销",
+      "evidence": [
+        "P A停用不影响B+SMTP启停",
+        "OP实际哨兵5检查+OO真实断开/同身份重连"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 3,
+      "verbatimWithoutDelimiter": "秘密清理失败明确提示，不能假称已清完",
+      "evidence": [
+        "P cleanupPending失败/重载/恢复",
+        "OO exact-key DELETE触发故障/原journal恢复"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 4,
+      "verbatimWithoutDelimiter": "主动停用项目不因重连开启",
+      "evidence": [
+        "P同身份重连不启用A",
+        "OO实际原A停用保持/B保持"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 5,
+      "verbatimWithoutDelimiter": "移除关闭项目使用但保留配置、业务数据、附件及旧包",
+      "evidence": [
+        "P移除保留3草稿/2结果/配置/旧包",
+        "OO非空3草稿4修订/稳定8193附件/冻结MIME/2明确合成终态的实际历史展示及持久行/包字节inode"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 6,
+      "verbatimWithoutDelimiter": "重加需项目启用，已断开的连接仍需重连",
+      "evidence": [
+        "P普通无凭据来源断开后remove/readd仍disconnected",
+        "OO已实际断开的历史SMTP在remove/readd/重启后原行保持，A显式启用/B不启用"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 7,
+      "verbatimWithoutDelimiter": "旧会话保留固定版本，新会话用当前默认包",
+      "evidence": [
+        "P1.0.0旧任务resume/1.1.0新任务",
+        "OP实际Codex1.0.4原N/S/Skill路径与1.0.5新native，UI停止两Task/原固定事实不变"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 8,
+      "verbatimWithoutDelimiter": "非就绪能力不显示可用但Agent可继续",
+      "evidence": [
+        "P未就绪来源仍可演示任务",
+        "OP当前包liveMailPause:disabled/Agent运行中，普通真实Codex响应，同N/run/PTY/S，应用调用不增"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    },
+    {
+      "n": 9,
+      "verbatimWithoutDelimiter": "独立清缓存不改连接启用，不新增会话删除按钮，恢复不自动发送或执行旧批准",
+      "evidence": [
+        "P独立缓存模拟与原公开状态逐字相等/无新增会话删除",
+        "OO真实清非空缓存/原连接与全部业务行/文件保持，普通重启无发送/新grant；当前155软件含旧授权策略往返失效/owner结束重启及一次发送去重；源核对会话应用面板无删除会话按钮"
+      ],
+      "assessment": "proved within original P/App lifecycle and controlled-secret scope"
+    }
+  ],
+  "scopePreserved": true,
+  "excludedClaims": [
+    "Real safeStorage encryption/Keychain T01/T08",
+    "Real SMTP delivery/reply/import T18/T19",
+    "Claude actual adapter/platform/unknown matrices",
+    "All-page visual/system clipboard/IME T22",
+    "FullM10 completion"
+  ],
+  "formalAfterGate": {
+    "passed": 34,
+    "total": 72,
+    "remaining": 38,
+    "changedOnly": "T30"
+  },
+  "goal": "active"
+}

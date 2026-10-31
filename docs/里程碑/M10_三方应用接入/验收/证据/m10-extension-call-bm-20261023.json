@@ -1,0 +1,928 @@
+{
+  "schema": "m10-extension-call-bm-v1",
+  "at": "2026-10-23T09:40:08.816650+00:00",
+  "branch": "feature/0.0.2",
+  "sourceBase": "35088e7b44de6c483b522e6d7e7bf51c0f57b69c",
+  "phase": 5,
+  "requirements": "R1.6+12.21;R09 software exit;T39/T40/T42 formal final-baseline check deferred",
+  "software": {
+    "files": 14,
+    "total": 352,
+    "passed": 352,
+    "failed": 0,
+    "pending": 0,
+    "newCases": 31,
+    "removedPriorCases": 0,
+    "counting": "One final complete14-file software run.31new included;all priorBL321retained. Earlierreds/filtered/greenrepeats not added. Not formal72 or packaged App acceptance."
+  },
+  "typecheckExit": 0,
+  "sourceInputsFrozen": 2022,
+  "changedSourceFiles": [
+    {
+      "path": "src/main/core/applications/__tests__/registered-extension-call.test.ts",
+      "beforeSha256": null,
+      "candidateSha256": "bd3d6a19b776c66cbdd9be37d0143bd6c3b0356c39caa4e873b7e9d0e893fe6b"
+    },
+    {
+      "path": "src/main/core/applications/application-adapter-registry.ts",
+      "beforeSha256": "d21b1e39331eea51a25b47ab3e43f41b7b1755e891caeb7bf99ecba3036c1fd6",
+      "candidateSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "src/main/core/applications/builtin-package-registry.ts",
+      "beforeSha256": "3dd298c039260dc76b1dd5197304ddacf9027d417a7fe0da570a2c1ce960c78d",
+      "candidateSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "src/main/core/applications/business-data-service.ts",
+      "beforeSha256": "70c25191bfd3fc58c69ef4f8be365e485c88932f8030d3033bdc446ca4ae1ad3",
+      "candidateSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "beforeSha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b",
+      "candidateSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "src/main/core/applications/host-application-registry.ts",
+      "beforeSha256": "89cd68231d1608bca97f7522210625575076e0f10917f606815522c4a71432e6",
+      "candidateSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "src/main/core/applications/tool-service.ts",
+      "beforeSha256": "5002ca293b9ba9926207db740584a697a1560152ca61696a090017542ab004aa",
+      "candidateSha256": "c1fdf17447015cc31a780a8adbbf8357f89275727c82385cadbe5e2f0a373167"
+    }
+  ],
+  "runtimeOutputsUnchanged": 69,
+  "nativePinsUnchanged": 3,
+  "guideSha256": "3e1cd7b688d0d11b46eb8f8ddcc01bbda4393937e0ce3ca0d5afcae99e8deab7",
+  "artifacts": [
+    {
+      "path": "证据/extension-call-bm-20261023/baseline-inputs.json.gz",
+      "bytes": 101538,
+      "sha256": "2a364d53fe8a7fed02b277fde556b07b477d79950f2cd34d37599493aa916db2",
+      "encoding": "gzip",
+      "uncompressedBytes": 369785,
+      "uncompressedSha256": "a5e4829c1f876c9bce1033f1986013d8e4d8622772140ca9fcb8dc181411b052"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/environment.json.gz",
+      "bytes": 313,
+      "sha256": "d73e48de7dc8dfec82003597d91ae4120c2069895b79031df9cbedaadb715594",
+      "encoding": "gzip",
+      "uncompressedBytes": 412,
+      "uncompressedSha256": "a2903a3b988cd403e907f1df86cc8520a269f69dfdd7306858b0505d3f03ac1c"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/extend-context.py.gz",
+      "bytes": 1545,
+      "sha256": "8c49c2c56afe9217b64af6d9ffb867a489b361cd77d8bc6366555651ba50f0be",
+      "encoding": "gzip",
+      "uncompressedBytes": 4554,
+      "uncompressedSha256": "f1f55f8989dbeeb070c96a9413845dd91a038d222de6ac94570f41241042e11d"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/final-candidate.diff.gz",
+      "bytes": 19011,
+      "sha256": "6171bb34c13b1e4a51f879305399a2c7248bf076759dd522ec77dcacc47ff45c",
+      "encoding": "gzip",
+      "uncompressedBytes": 81454,
+      "uncompressedSha256": "9e7d0b376788706ef70e86ed980fb464bb5e07a418e979ed62fbe9fc20126626"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/final-inputs.json.gz",
+      "bytes": 101646,
+      "sha256": "33f156cee51c13e4d61e5d37f483259b793414c463255f3fdd98de62e3a200eb",
+      "encoding": "gzip",
+      "uncompressedBytes": 367568,
+      "uncompressedSha256": "1afa45a97278f42d385e716fd31f52077d71922228003ed8ef5f023594b46c00"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/frozen-check.json.gz",
+      "bytes": 235,
+      "sha256": "9825954c475679095b1916f3f08df9a46b4d8f621982c36e79cc6f94cd175771",
+      "encoding": "gzip",
+      "uncompressedBytes": 360,
+      "uncompressedSha256": "17a14a8c9bdb275cdfcf8cb35787950265ea4110cceef7b598b2f335ffe07003"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-inputs.json.gz",
+      "bytes": 101579,
+      "sha256": "85aa29b320e939bbcba64d671f6f9895a5ec565d8269bacea25707ecf684a515",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "26d85e8da06dd6913e07469aada85c81cf83acb509681cfc4bc758b6ac8a88dd"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-report.json.gz",
+      "bytes": 18360,
+      "sha256": "e07e5076f69b2e15d17cdfdc22ea5330caf59ab63334f2c0dc5b26d335dff56d",
+      "encoding": "gzip",
+      "uncompressedBytes": 164262,
+      "uncompressedSha256": "19a92185c7c3b98f86664a6f6341708909d11da6a0498fbaacee56eabe4b3a6d"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-result.json.gz",
+      "bytes": 424,
+      "sha256": "c13d121562912a6d22596983fdfedf37afe7044b2a3a15eea586fb41128c33d8",
+      "encoding": "gzip",
+      "uncompressedBytes": 1332,
+      "uncompressedSha256": "6d871d33787c4472408a223aef549a841a63218182216136cedee13a72c6fb4c"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full.txt.gz",
+      "bytes": 12614,
+      "sha256": "cc18238ca510d8d46b17312d8c0a71374c847f7419600ae2e475ee73035c1b29",
+      "encoding": "gzip",
+      "uncompressedBytes": 84792,
+      "uncompressedSha256": "f0d0d1e996ba6da10b4a9b95fe8b2158eca39d9062f172cac4029a0d9e5a8158"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-inputs.json.gz",
+      "bytes": 101581,
+      "sha256": "67f7167f5893c699f6abbc766771e9b2904c5fb3b2e4cf972ae65346d4d67265",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "80573d3349ea8bca267c3c4907cad395a759366a831af068dc8c707a6126453b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-report.json.gz",
+      "bytes": 2200,
+      "sha256": "fe1a6fc3d9a31bdc646e9eecf78783f0300c96ebbf5a700ef5f1d628d8cf3ce3",
+      "encoding": "gzip",
+      "uncompressedBytes": 15551,
+      "uncompressedSha256": "4d5f6dea498055089de63657b66be5e170b4e6374a16d625d54f6fde3e9f4379"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-result.json.gz",
+      "bytes": 323,
+      "sha256": "cddce2c5e897d5d239e99fdf2a426ec57e260cf980036ee99833bc86fc624f65",
+      "encoding": "gzip",
+      "uncompressedBytes": 619,
+      "uncompressedSha256": "16f50c3eeefb0f43c54cb961df78e675f5e1c279d8b6dd63db5039a6e75e69f4"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1.txt.gz",
+      "bytes": 1766,
+      "sha256": "2a1e83191a3df826ad9ad99220530f7c860810369191e2b439744d1c25a68ff5",
+      "encoding": "gzip",
+      "uncompressedBytes": 8936,
+      "uncompressedSha256": "e516d871cf87be178fcc969b264f26f0981b8b1ff3101fee73879e57356da5f5"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-inputs.json.gz",
+      "bytes": 101578,
+      "sha256": "c88e728df457051bbf0399afbe3cbdd957e8677abe7f90a2b8aeca3c848a4fe9",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "c81352591700925bc395de94845a401e8cfe67c69f2e70fccd0ad97bb75a0f21"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-report.json.gz",
+      "bytes": 2924,
+      "sha256": "9a9432e6f0f5b2e75ce7754c0aa0e4ffd3fe6285f25acf8051e076fbf4f92f5a",
+      "encoding": "gzip",
+      "uncompressedBytes": 25119,
+      "uncompressedSha256": "bc89a33ca3a8f8b3fd021840e23b8d1a2a0e0cb82615c9dd4250dc23225977c6"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-result.json.gz",
+      "bytes": 322,
+      "sha256": "c6f3f46d8dadd120d0a100444d861a8acb8b1e5562638e38ee26342681851cc5",
+      "encoding": "gzip",
+      "uncompressedBytes": 619,
+      "uncompressedSha256": "1970c6c10478f38cb07c68346d62efbd8d27007bd7d64ad49196bf62ba16d351"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2.txt.gz",
+      "bytes": 2231,
+      "sha256": "9c2abd25381d3a59da9a3ac88d5e2ef3baf102fb9291a03837d07b9dcd26dc03",
+      "encoding": "gzip",
+      "uncompressedBytes": 14116,
+      "uncompressedSha256": "b88a183a3f61e5d9bf68bd3e0dd2c161709328e93920bd0622d5419d88efa2a2"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/guide-review.json.gz",
+      "bytes": 766,
+      "sha256": "f318aad22a3ce3f60c54c522ddb46524ee616df2281f0d6adcfa6806aa817b59",
+      "encoding": "gzip",
+      "uncompressedBytes": 1361,
+      "uncompressedSha256": "2dcb9cc0924e8557e3e2e61c3ba4f7f1dd9b24db8d49df4c5aa1527a6ba5628a"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-inputs.json.gz",
+      "bytes": 101579,
+      "sha256": "ba947b07a9293826a5050f78c0d145a8d9e87bb77b2c2fbf7119cabd9a6a2388",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "d7e050cdd861cf9754efb047f688fb7670bb92da4d55786cf6df6aaf968f35c8"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-report.json.gz",
+      "bytes": 1979,
+      "sha256": "7876221eca5ff187d89e05d4ac10a6a531f7fb25787aad557ffd3b0ab5ec5ef5",
+      "encoding": "gzip",
+      "uncompressedBytes": 15055,
+      "uncompressedSha256": "8ebbff36e0712e7deadfb4e4e7b1aa868a53d951b389dcb616c98b757a1a67b4"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-result.json.gz",
+      "bytes": 299,
+      "sha256": "ccbb48747003e11b4ff2d6d628e8b359e12d26852b69552827fc9b995076e009",
+      "encoding": "gzip",
+      "uncompressedBytes": 472,
+      "uncompressedSha256": "9b75b1635e7ea7e24d5ce4f31dd795088fc41a3e161a3fbd8784627098c1c471"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red.txt.gz",
+      "bytes": 1611,
+      "sha256": "790e6c0a9d73ea9dd655fa4db7bef81008f65846f38e01e2b797287fa3334f93",
+      "encoding": "gzip",
+      "uncompressedBytes": 9222,
+      "uncompressedSha256": "00d0ca56c5f37fb0a28dceaa9445d04dc6b2cf13a4d5ea28c0bdf0940ad03ead"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-inputs.json.gz",
+      "bytes": 101580,
+      "sha256": "b4033a1f334edae8e48727e82a341f41d5fa61452d9a30ec3fae9ce5bb2beac8",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "536d42893bd4687d7f9674d9f7f2406a1375bc0be69761c6e11af3fb9165b90a"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-report.json.gz",
+      "bytes": 1829,
+      "sha256": "f8c80bcebcc898d5b8ee2057f26fa9ae5826851e7c59c4dc26569227d6548deb",
+      "encoding": "gzip",
+      "uncompressedBytes": 16313,
+      "uncompressedSha256": "7e0a6f104d470a37a8f409fbaf15561de090f34ada1bd09685a7beeec57b426d"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-result.json.gz",
+      "bytes": 317,
+      "sha256": "f8081352b8f0b8b059ad616bf6ae90baf6a5596ffc9749523201eca56dd8b047",
+      "encoding": "gzip",
+      "uncompressedBytes": 514,
+      "uncompressedSha256": "096bf95bb0732234fa2144e6653851ffd82514ddaf9049ee0b678bb610a277a3"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red.txt.gz",
+      "bytes": 1614,
+      "sha256": "272669949a5d5b0e97ca6997d0ec83c6bdc488be86b2c2d5a2a15d46fc028601",
+      "encoding": "gzip",
+      "uncompressedBytes": 10178,
+      "uncompressedSha256": "58f69d783d2efe71baf5fb43fdae526989ec547bc83af445337fd7dd8b29416e"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/preserved-worktree.json.gz",
+      "bytes": 1008,
+      "sha256": "7292abcb7d8d8f5f8df4811b0f664eb9fcecb65dde52534503612eaacdc98d67",
+      "encoding": "gzip",
+      "uncompressedBytes": 2828,
+      "uncompressedSha256": "cb941c4e6c39620c8c6a1caf20090fb7894f362268f869ae2b85aee4f37394f4"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/r09-software-matrix.json.gz",
+      "bytes": 1412,
+      "sha256": "ec986d1c73c2cbf7f2b4fde765a8cd8dbe91f547274bb763eedd07ecf0be32cb",
+      "encoding": "gzip",
+      "uncompressedBytes": 10146,
+      "uncompressedSha256": "ce8d10dacda244d7d07f764ff4fb2475b7d6680016dadfb3762092847521f08e"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/red-inputs.json.gz",
+      "bytes": 101582,
+      "sha256": "8cb2dc1f7bcfe1a87deec3e3580a73cad0ee712526aa8c1052c18c1b02681b1d",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "59119b1393968d7d74fe9761e0a3fca457ba73498e8b1eebabec9a789b6a59ff"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/red-report.json.gz",
+      "bytes": 1024,
+      "sha256": "69a787a0ef525b3478b0cafbf0c3446857cf051ccc77abdc7e022f37b926cd6f",
+      "encoding": "gzip",
+      "uncompressedBytes": 5338,
+      "uncompressedSha256": "8af259ad7feb6c6b8e86df667b7021a87630f0a7ac32032fece34f2a4ed01101"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/red-result.json.gz",
+      "bytes": 294,
+      "sha256": "f6f459940eba1d714027c4e5ad2fa5675f0aab6257a29dc4d4df0573b45c65c7",
+      "encoding": "gzip",
+      "uncompressedBytes": 468,
+      "uncompressedSha256": "5383c70222f86be255fa94c4e26880cacfb10ffc6ca233d3136e2a02d921838e"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/red.txt.gz",
+      "bytes": 1238,
+      "sha256": "4321cc15f7550c96b3610fe59271ba9b7b9d0ac6c7a1e8dd825a0b6a587fd1c9",
+      "encoding": "gzip",
+      "uncompressedBytes": 4648,
+      "uncompressedSha256": "60e565a6de3b643901175de2f9e1e004bae2226ff81a26f94950d6f897d352e7"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/requirement-review-r09.json.gz",
+      "bytes": 285,
+      "sha256": "74ae312fca57079ecb92502fb2cb59a0b7c733d4e6224d5557db20e42ecd9ee1",
+      "encoding": "gzip",
+      "uncompressedBytes": 377,
+      "uncompressedSha256": "c20ee70bb4ca8acd767f8480198658ee572ceccb239629f3074b07d6a0c6d9a3"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/run-check.py.gz",
+      "bytes": 915,
+      "sha256": "c061a83ecaed7fb04a422dfde7d814efaa836011e6cef41fe889b890adcfeb4b",
+      "encoding": "gzip",
+      "uncompressedBytes": 2008,
+      "uncompressedSha256": "adb4a0b75d1607278d745b2b5511f7c4341a2a5a0702f8f171f1187fc02b4c9d"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/runtime-output-check.json.gz",
+      "bytes": 338,
+      "sha256": "47087bf465ede737ae70172d49d463f62d87d85864ee3a6eb6b231ee2fffb8ba",
+      "encoding": "gzip",
+      "uncompressedBytes": 557,
+      "uncompressedSha256": "46fd0d91ebc28e3008f68ce78e80ff6c2d426849a5fb1a01ab393e41d4373413"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/software-summary.json.gz",
+      "bytes": 11706,
+      "sha256": "f29b6512c6f6fb2118e2311f01a9dc94fafe5c152782ad6efdd9c53eb1069b68",
+      "encoding": "gzip",
+      "uncompressedBytes": 111726,
+      "uncompressedSha256": "6da35f4b6dcbc3f81caa2ee056d79cf93f8b90e2dde698da9d4ca42ca808e3ee"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-overlay.json.gz",
+      "bytes": 818,
+      "sha256": "e2a4f6c16aab16d422d446d5dd0b3ca7a6d8404ca158aa1b36d2284db62c650b",
+      "encoding": "gzip",
+      "uncompressedBytes": 1924,
+      "uncompressedSha256": "5068ee7aee5687b94cc6f9e70f2e44ae24ae32eba11ac1810838d517456326d6"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-inputs.json.gz",
+      "bytes": 101581,
+      "sha256": "67f7167f5893c699f6abbc766771e9b2904c5fb3b2e4cf972ae65346d4d67265",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "80573d3349ea8bca267c3c4907cad395a759366a831af068dc8c707a6126453b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-result.json.gz",
+      "bytes": 165,
+      "sha256": "036aa759c9885589da4a438d9b345b97da9f9d04a392b8eb2d659e726337d42a",
+      "encoding": "gzip",
+      "uncompressedBytes": 217,
+      "uncompressedSha256": "36d7b2813fcc9cd76fbc6488b00b84129f0a30eee2449e1dc671b5399ef999b5"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1.txt.gz",
+      "bytes": 370,
+      "sha256": "a4798857ea3c24b39ffe1f0262bb194f7ce186ebb3aeac99f14c3ed6fe81b626",
+      "encoding": "gzip",
+      "uncompressedBytes": 1086,
+      "uncompressedSha256": "d11807389c474747bf3967780fb4de4325d04cf578ef0e352b2c08637bc8cb56"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-inputs.json.gz",
+      "bytes": 101578,
+      "sha256": "c88e728df457051bbf0399afbe3cbdd957e8677abe7f90a2b8aeca3c848a4fe9",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "c81352591700925bc395de94845a401e8cfe67c69f2e70fccd0ad97bb75a0f21"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-result.json.gz",
+      "bytes": 165,
+      "sha256": "e13f1ddc2d8d79cb19f1cb748c414ac98e7e06e0334eaa072c3f206bfcaa0072",
+      "encoding": "gzip",
+      "uncompressedBytes": 217,
+      "uncompressedSha256": "2bd0e18a6b5f35c9f9347a87a316f565c52226e85ab777e9768ff1c0a090d645"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2.txt.gz",
+      "bytes": 135,
+      "sha256": "27da6cb6807b4ce3578cb566a8c4cec517df74b758f372a76d267ffe34950d1b",
+      "encoding": "gzip",
+      "uncompressedBytes": 156,
+      "uncompressedSha256": "a58478b5a053928e9cae665f8e70f12c217663ed4e1b33db406b548d78a525b8"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-inputs.json.gz",
+      "bytes": 101579,
+      "sha256": "85aa29b320e939bbcba64d671f6f9895a5ec565d8269bacea25707ecf684a515",
+      "encoding": "gzip",
+      "uncompressedBytes": 369962,
+      "uncompressedSha256": "26d85e8da06dd6913e07469aada85c81cf83acb509681cfc4bc758b6ac8a88dd"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-result.json.gz",
+      "bytes": 166,
+      "sha256": "0b93cf679d3c11c192c0e25cdbb393f17963ceff15293ff24b67f08760bc7489",
+      "encoding": "gzip",
+      "uncompressedBytes": 217,
+      "uncompressedSha256": "c8d863b419243dc49a2665ca06c017e53ff0556bf013785f9fe5a43242d83e8e"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3.txt.gz",
+      "bytes": 135,
+      "sha256": "27da6cb6807b4ce3578cb566a8c4cec517df74b758f372a76d267ffe34950d1b",
+      "encoding": "gzip",
+      "uncompressedBytes": 156,
+      "uncompressedSha256": "a58478b5a053928e9cae665f8e70f12c217663ed4e1b33db406b548d78a525b8"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 7248,
+      "sha256": "ec11c744ce47338feb833229d313a04c741563464a96b8b8e05142a842867b5c",
+      "encoding": "gzip",
+      "uncompressedBytes": 23764,
+      "uncompressedSha256": "bd3d6a19b776c66cbdd9be37d0143bd6c3b0356c39caa4e873b7e9d0e893fe6b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/full-source/src/main/core/applications/tool-service.ts.gz",
+      "bytes": 6386,
+      "sha256": "3dddd2bb4c607a68755c50cbdf5f1cc706c37f391a49b0a5bbe26649bd9ff20a",
+      "encoding": "gzip",
+      "uncompressedBytes": 21118,
+      "uncompressedSha256": "c1fdf17447015cc31a780a8adbbf8357f89275727c82385cadbe5e2f0a373167"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 5295,
+      "sha256": "2d8ac41e689223a2b94d6d78ac121c75e8f18e208a185ee7b8eb3b4fe30abdae",
+      "encoding": "gzip",
+      "uncompressedBytes": 15302,
+      "uncompressedSha256": "0d7af1ef0c1e1636a647a8ae9b0cc26d83bf3fdcf2fe0cc18f09663b069d5d99"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1060,
+      "sha256": "be8b6507642d4a6b2010bcee34918a2db1e57da1741e844cd7201c2012bf0e8e",
+      "encoding": "gzip",
+      "uncompressedBytes": 3244,
+      "uncompressedSha256": "a33e665182e90439e54ca96b6d05e254cae4ef90887bb6ff50bebb08c13167da"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green1-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 6649,
+      "sha256": "41c58f624ed60906b8dbd6770f5f224c57026777bf0e072ff37897a143cd9892",
+      "encoding": "gzip",
+      "uncompressedBytes": 20788,
+      "uncompressedSha256": "5613c218ce08f0cb5c70d74e0ecb9719ee7f9bdcadbf7326aea99da6412e6b2f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/green2-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 6946,
+      "sha256": "bf5db7c715f89e5b256a1569147fa484d387d08f4cf2a0792b578007475632bf",
+      "encoding": "gzip",
+      "uncompressedBytes": 22302,
+      "uncompressedSha256": "b5305f23ba03c0bace23ee9cd525ed235e6b980c6293cb5d0b8006da868328de"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/log-red-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 7248,
+      "sha256": "ec11c744ce47338feb833229d313a04c741563464a96b8b8e05142a842867b5c",
+      "encoding": "gzip",
+      "uncompressedBytes": 23764,
+      "uncompressedSha256": "bd3d6a19b776c66cbdd9be37d0143bd6c3b0356c39caa4e873b7e9d0e893fe6b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/ordering-red-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/red-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 5295,
+      "sha256": "2d8ac41e689223a2b94d6d78ac121c75e8f18e208a185ee7b8eb3b4fe30abdae",
+      "encoding": "gzip",
+      "uncompressedBytes": 15302,
+      "uncompressedSha256": "0d7af1ef0c1e1636a647a8ae9b0cc26d83bf3fdcf2fe0cc18f09663b069d5d99"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 5295,
+      "sha256": "2d8ac41e689223a2b94d6d78ac121c75e8f18e208a185ee7b8eb3b4fe30abdae",
+      "encoding": "gzip",
+      "uncompressedBytes": 15302,
+      "uncompressedSha256": "0d7af1ef0c1e1636a647a8ae9b0cc26d83bf3fdcf2fe0cc18f09663b069d5d99"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1060,
+      "sha256": "be8b6507642d4a6b2010bcee34918a2db1e57da1741e844cd7201c2012bf0e8e",
+      "encoding": "gzip",
+      "uncompressedBytes": 3244,
+      "uncompressedSha256": "a33e665182e90439e54ca96b6d05e254cae4ef90887bb6ff50bebb08c13167da"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types1-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 6649,
+      "sha256": "41c58f624ed60906b8dbd6770f5f224c57026777bf0e072ff37897a143cd9892",
+      "encoding": "gzip",
+      "uncompressedBytes": 20788,
+      "uncompressedSha256": "5613c218ce08f0cb5c70d74e0ecb9719ee7f9bdcadbf7326aea99da6412e6b2f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types2-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 7248,
+      "sha256": "ec11c744ce47338feb833229d313a04c741563464a96b8b8e05142a842867b5c",
+      "encoding": "gzip",
+      "uncompressedBytes": 23764,
+      "uncompressedSha256": "bd3d6a19b776c66cbdd9be37d0143bd6c3b0356c39caa4e873b7e9d0e893fe6b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/types3-source/src/main/core/applications/tool-service.ts.gz",
+      "bytes": 6386,
+      "sha256": "3dddd2bb4c607a68755c50cbdf5f1cc706c37f391a49b0a5bbe26649bd9ff20a",
+      "encoding": "gzip",
+      "uncompressedBytes": 21118,
+      "uncompressedSha256": "c1fdf17447015cc31a780a8adbbf8357f89275727c82385cadbe5e2f0a373167"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/__tests__/registered-extension-call.test.ts.gz",
+      "bytes": 7248,
+      "sha256": "ec11c744ce47338feb833229d313a04c741563464a96b8b8e05142a842867b5c",
+      "encoding": "gzip",
+      "uncompressedBytes": 23764,
+      "uncompressedSha256": "bd3d6a19b776c66cbdd9be37d0143bd6c3b0356c39caa4e873b7e9d0e893fe6b"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/application-adapter-registry.ts.gz",
+      "bytes": 3062,
+      "sha256": "2da7ba46ea5f932b0319414dd9480ad26eb6626f179a3061b52018b7e8d89166",
+      "encoding": "gzip",
+      "uncompressedBytes": 8632,
+      "uncompressedSha256": "64984c10b3a0eba522a8c6ff1b13a660c89125f39f70c3056f33ecc7bc169a49"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/builtin-package-registry.ts.gz",
+      "bytes": 1898,
+      "sha256": "4743a2e7be0f0873c38c348499f90207c1d7e364168a321cd40f79ac44cbafbc",
+      "encoding": "gzip",
+      "uncompressedBytes": 5006,
+      "uncompressedSha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/business-data-service.ts.gz",
+      "bytes": 1144,
+      "sha256": "1e48393044509123716e2c4344096c9e031a2952db651975511341c2fe04bd6d",
+      "encoding": "gzip",
+      "uncompressedBytes": 3661,
+      "uncompressedSha256": "6e9a3bf622888b0b2a2aec575634d81022aea987c4b286addb1f29016f6a5f6f"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/execution-context.ts.gz",
+      "bytes": 7452,
+      "sha256": "465611d0d3083ef39f349d843c83c90b7d03b5d413fb8828893799766c32fe8a",
+      "encoding": "gzip",
+      "uncompressedBytes": 31162,
+      "uncompressedSha256": "e91f5ccb94f1e168e60390556146cdc507f03c555b8186940f435586270da165"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/host-application-registry.ts.gz",
+      "bytes": 3868,
+      "sha256": "ac33d878c53a40ab092ac739ae42957ed475a46836c64f0ba7aac5cbb4ea27ad",
+      "encoding": "gzip",
+      "uncompressedBytes": 12198,
+      "uncompressedSha256": "9fe30bbc3d911b038b7a2d21a62522b7a762e252f92df95f5832598f02ce6593"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/source-snapshot/src/main/core/applications/tool-service.ts.gz",
+      "bytes": 6386,
+      "sha256": "3dddd2bb4c607a68755c50cbdf5f1cc706c37f391a49b0a5bbe26649bd9ff20a",
+      "encoding": "gzip",
+      "uncompressedBytes": 21118,
+      "uncompressedSha256": "c1fdf17447015cc31a780a8adbbf8357f89275727c82385cadbe5e2f0a373167"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/guide-final.md.gz",
+      "bytes": 5621,
+      "sha256": "bd83df8a64c52fa2e1aae7c42639d7635c9355313ee1a25471f7bcf6e5c071c2",
+      "encoding": "gzip",
+      "uncompressedBytes": 10768,
+      "uncompressedSha256": "3e1cd7b688d0d11b46eb8f8ddcc01bbda4393937e0ce3ca0d5afcae99e8deab7"
+    },
+    {
+      "path": "证据/extension-call-bm-20261023/technical-final.md.gz",
+      "bytes": 2455,
+      "sha256": "c9c05a3b4361b6116842d5374ee83307724497f157dabc10e837a83a7f8ef29f",
+      "encoding": "gzip",
+      "uncompressedBytes": 3866,
+      "uncompressedSha256": "aa4f039f495e5cfba66b12d25bdf49e157ac510caf4025473c1a1497a1796faf"
+    }
+  ],
+  "newAppBuilt": false,
+  "actualAgentSessionRun": false,
+  "MCPTransportStarted": false,
+  "formalAcceptance": "historical2/72 T42/T63,T64partial;no new formal pass;current source not packaged",
+  "M9MutatedByThisBatch": false,
+  "oldAFUnknownBridge": "held untouched",
+  "preexistingDocsPreserved": 4,
+  "preexistingUntrackedPreserved": 9,
+  "goal": "active fullM10;not complete",
+  "next": "89ID requirement-by-requirement audit,proof-basedbackup/stageGC,scopegaps;then fresh package/two real agents/all72"
+}

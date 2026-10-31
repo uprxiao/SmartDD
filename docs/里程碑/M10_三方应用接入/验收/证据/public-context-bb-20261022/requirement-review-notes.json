@@ -1,0 +1,181 @@
+{
+  "observedAt": "2026-10-21T23:11:56.947668+00:00",
+  "sourceBase": "2abcab1b16ce9deb3df94eb301a8e7c147b804ee + BB overlay",
+  "requirement": "M10 R1.6+12.21",
+  "requirementSha256": "65029b2a55b57597302247475cb03a1743cd8d352b2068d3ad8ccede126d979e",
+  "numberRows": 87,
+  "complete": false,
+  "phase5": "source observations and existing software linkage;does not close whole87-row audit or formal cases",
+  "observations": [
+    {
+      "id": "M10-R01-01",
+      "source": [
+        "connection-service.ts:setEnabled/authentication",
+        "execution-context.ts:connection/validateTarget",
+        "application-service.ts:management/setConnectionEnabled"
+      ],
+      "software": [
+        "keeps a credential on disable and makes stale in-flight candidate results ineffective",
+        "keeps selected identity separate from current connection health and disablement"
+      ],
+      "observation": "Disable updates current policy without deleting secret/config/slot;each current target check rejects disabled or disconnected connections.Explicit project selection/enabled state is retained.",
+      "renderer": "workspace.tsx connection AppSwitch calls the trusted setConnectionEnabled endpoint",
+      "softwareMatches": [
+        {
+          "title": "keeps a credential on disable and makes stale in-flight candidate results ineffective",
+          "passedInstances": 1
+        },
+        {
+          "title": "keeps selected identity separate from current connection health and disablement",
+          "passedInstances": 1
+        }
+      ]
+    },
+    {
+      "id": "M10-R01-02",
+      "source": [
+        "connection-service.ts:disconnect/cleanupObsoleteSecret/recoverSecretChanges",
+        "application-service.ts:disconnect",
+        "execution-context.ts:subject/connection"
+      ],
+      "software": [
+        "revokes before secret cleanup, then recovers cleanup without restoring authorization"
+      ],
+      "observation": "Revocation and secret-ref removal commit before cleanup;cleanup checks remaining connection references and journals failures.Other nonsecret config and business/history rows are retained.No source-file deletion or remote token revocation is claimed.",
+      "renderer": "workspace.tsx disconnect confirmation waits for trusted impact query before RPC",
+      "softwareMatches": [
+        {
+          "title": "revokes before secret cleanup, then recovers cleanup without restoring authorization",
+          "passedInstances": 1
+        }
+      ]
+    },
+    {
+      "id": "M10-R01-03",
+      "source": [
+        "selection-service.ts:setAdded",
+        "application-service.ts:setAdded/management",
+        "session-registry.ts:references/retention"
+      ],
+      "software": [
+        "keeps connection configuration and history while removal disables project use and re-add does not enable it",
+        "does not commit a pending switch after removal changed the app authorization"
+      ],
+      "observation": "Removal disables project policies and cancels pending binding changes without deleting connection rows/credentials/business data or retained package refs.Re-add changes catalog only;project flags remain off.",
+      "renderer": "workspace.tsx remove confirmation uses setAdded(false),returns to catalog after success",
+      "softwareMatches": [
+        {
+          "title": "keeps connection configuration and history while removal disables project use and re-add does not enable it",
+          "passedInstances": 1
+        },
+        {
+          "title": "does not commit a pending switch after removal changed the app authorization",
+          "passedInstances": 1
+        }
+      ]
+    },
+    {
+      "id": "M10-R01-04",
+      "source": [
+        "connection-service.ts:testCandidate/commitCandidate",
+        "selection-service.ts:select/requireEnabled",
+        "task-capability-launcher.ts:prepareOnce",
+        "mail-user-authorizations.ts:nativeLive/contextLive"
+      ],
+      "software": [
+        "requires a new connection for a verified account identity change",
+        "keeps original independent Skills while respecting current project MCP disablement after app loss"
+      ],
+      "observation": "Same identity reconnect preserves existing explicit slots/enabled state;identity digest change is refused for in-place edit.Original session load and tool ceiling continue to come from original S/current policy;reconnect is not a send/replay trigger.",
+      "renderer": "workspace.tsx edit/reconnect passes the original connection to connection-form;new identity needs a separate connection/selection",
+      "softwareMatches": [
+        {
+          "title": "requires a new connection for a verified account identity change",
+          "passedInstances": 1
+        },
+        {
+          "title": "keeps original independent Skills while respecting current project MCP disablement after app loss",
+          "passedInstances": 2
+        }
+      ]
+    },
+    {
+      "id": "M10-R02-09",
+      "source": [
+        "selection-service.ts:projectSettings/select/commit",
+        "execution-context.ts:connection",
+        "application-service.ts:select"
+      ],
+      "software": [
+        "keeps independent nullable mail source and sender slots while draft use remains enabled",
+        "rejects multiple/ambiguous slots and wrong provider roles in service and database",
+        "stores exactly one source per slot and rejects a stale project revision"
+      ],
+      "observation": "Source and SMTP are distinct nullable slots.Strict input/role checking,unique persistent bindings and revision checks reject arrays,wrong roles and stale updates.Local draft use is independent of external slot presence.",
+      "renderer": "project-applications.tsx distinct explicit source/SMTP single selects;no implicit identity matching",
+      "softwareMatches": [
+        {
+          "title": "keeps independent nullable mail source and sender slots while draft use remains enabled",
+          "passedInstances": 1
+        },
+        {
+          "title": "rejects multiple/ambiguous slots and wrong provider roles in service and database",
+          "passedInstances": 1
+        },
+        {
+          "title": "stores exactly one source per slot and rejects a stale project revision",
+          "passedInstances": 1
+        }
+      ]
+    }
+  ],
+  "softwareStatus": "all referenced existing cases found passed in this frozen complete main/related run;source observations only;formal/whole87 audit not complete",
+  "formalStatus": "T03/T04/T30/T58 and visual/system results not promoted by these observations",
+  "sourceFiles": [
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "fcea5abd4dc33b4291b7aabb40ab66d91e2995dcd38ef73c5f27da7029fee353",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "8f1d14771e0a441ca37bd2c5d7c590fcf37d4196a420c7d18bdb60aa1656ed65",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "5a640192413776a8322dfc41f616aba1e46806b3a5fcb1de6dbc04b64d93a13b",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/main/core/applications/application-service.ts",
+      "sha256": "397a508badf7f067da3f6d35de322f98b8f9d109418e4e4939709a5cab001cc3",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/main/core/applications/session-registry.ts",
+      "sha256": "dfd7cf352ecf8c1ab74c6302f3efe60780758b072cce9b9fd808eb41e36ba275",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/main/core/applications/mail-user-authorizations.ts",
+      "sha256": "ad56ed006f3f4c71a9a4371587d4b4f1ab11b6dc86db4dd305ac013e132ac9a6",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/renderer/features/applications/workspace.tsx",
+      "sha256": "44eb7de1e124dd5bffdcdff0df867a06883f2e82bf5cfdda23c260c51b466735",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/renderer/features/applications/connection-form.tsx",
+      "sha256": "2a803e17f2b0759971607eb5f1bfa3f0d4d82e429ae359cd71105b812d149287",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    },
+    {
+      "path": "src/renderer/features/applications/project-applications.tsx",
+      "sha256": "e7a626eaf5d9564178e09f75ec65db2008337f05d84cd456c5515b42645adc3b",
+      "boundary": "parent canonical bytes;BB does not edit this file"
+    }
+  ]
+}

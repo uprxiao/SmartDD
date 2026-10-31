@@ -1,0 +1,13 @@
+import {randomUUID} from 'node:crypto';
+import {join} from 'node:path';
+import Database from 'better-sqlite3';
+import {ResourceStore} from '../../resource-store';
+import {CapabilitySessionRegistry} from '../../session-registry';
+import {SessionCapabilityProjector} from '../../session-projector';
+import {MacProcessIdentityReader} from '../../process-identity';
+import {ClaudeDeliveryCoordinator,type ClaudeDeliveryCheckpoint} from '../../claude-delivery';
+const [root,helper,taskId,phase,mode]=process.argv.slice(2),sqlite=new Database(join(root,'state.sqlite')),processes=new MacProcessIdentityReader(helper),store=new ResourceStore(sqlite,root,undefined,{processes});
+let projector:SessionCapabilityProjector;
+const sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw Error('existing snapshot only');},verifyExtraResource:(resource,snapshot)=>projector.verify(resource,snapshot)});projector=new SessionCapabilityProjector(store,sessions);
+const coordinator=new ClaudeDeliveryCoordinator(store,sessions,projector,processes,randomUUID(),at=>{if(at===phase as ClaudeDeliveryCheckpoint){process.stdout.write(JSON.stringify({phase:at,pid:process.pid})+'\n');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0);}});
+void(mode==='recover'?coordinator.recover(taskId):mode==='full'?sessions.get(taskId).then(s=>coordinator.prepare(taskId,s.snapshot.packages.map(p=>p.appId))):coordinator.prepare(taskId,['mail'])).then(()=>{throw Error('checkpoint not reached');}).catch(e=>{process.stderr.write(String(e));process.exitCode=1;}).finally(()=>sqlite.close());

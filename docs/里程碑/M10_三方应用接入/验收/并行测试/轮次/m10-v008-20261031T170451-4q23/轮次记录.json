@@ -1,0 +1,85 @@
+{
+  "schema": "m10-release-round-v1",
+  "runId": "m10-v008-20261031T170451-4q23",
+  "updatedAt": "2026-10-31T18:33:29.896326+00:00",
+  "coordinator": "/root",
+  "privateRoot": "/private/tmp/willyou-v008-integration-4q23427h",
+  "worktree": "/private/tmp/willyou-v008-integration-4q23427h/worktree",
+  "source": "5ff90489 M10 + 25e9edc6 main, resolving",
+  "agents": [
+    {
+      "id": "/root/v008_full_software",
+      "group": "V008-G002",
+      "private": "evidence/V008-G002/attempt-001",
+      "resources": [
+        "heavy-native-tests"
+      ],
+      "state": "running"
+    },
+    {
+      "id": "/root/v008_release_checks",
+      "group": "V008-G003",
+      "private": "evidence/V008-G003/attempt-001",
+      "resources": [
+        "light-software-tests"
+      ],
+      "state": "completed_released"
+    }
+  ],
+  "resources": {
+    "production-edits": null,
+    "build": null,
+    "UI": null,
+    "heavy-native-tests": null,
+    "light-software-tests": null
+  },
+  "deliveries": [
+    {
+      "group": "V008-G003",
+      "attempt": 2,
+      "path": "/private/tmp/willyou-v008-integration-4q23427h/evidence/V008-G003/attempt-002",
+      "manifestSha256": "70705b357654ac7cc46cf0f95a0dcb150f01f104157cb55d27014ad744050f04",
+      "result": "3 commands,15 release tests,17 workflow checks passed; source unchanged; no new formal milestone pass"
+    },
+    {
+      "group": "V008-G002",
+      "attempt": 1,
+      "manifestSha256": "109c12bf91e96fc3d1f0ba4c8ee68c016b3143e83748b5aa6105a329aaa2a2e0",
+      "passed": 5632,
+      "failed": 2,
+      "conditionalSkipped": 1000,
+      "cleanup": "all488 observed own processes gone;source/out/native28 unchanged",
+      "receipt": "software-summary.json"
+    }
+  ],
+  "next": "Fixture-only calibration10passed;final branchCI/build/package then G004 UI",
+  "sourceSnapshot": "/private/tmp/willyou-v008-integration-4q23427h/source-attempt-001/manifest.json",
+  "prototypeFollowup": {
+    "group": "V008-G005",
+    "agent": "/root/v008_release_checks",
+    "status": "completed_verified_and_released",
+    "privateEvidence": "/private/tmp/willyou-v008-integration-4q23427h/evidence/V008-G005",
+    "scope": "pure Node prototype tests only; all native/UI/build resources excluded",
+    "handoffSha256": "35142493ea54ad44e748930e36f5a6b08faf7c360740df8168dac451402f17c2",
+    "coordinatorVerifiedFiles": 16
+  },
+  "releaseUi": {
+    "group": "V008-G004",
+    "owner": "coordinator",
+    "resources": [
+      "UI",
+      "heavy-native-tests"
+    ],
+    "status": "completed_verified_released",
+    "upgradeRoot": "/private/tmp/willyou-m10-v008-upgrade-CdVbbr",
+    "oldAsar": "c25ba97abb4f9a520fc409e1a3a256ec7c7bc71fb8d1f907d8673665f1ede2e0",
+    "newAsar": "409a8714b25de63acfa3fad1df9c28ed453c6b9a15f55ffcf68dc8c402c0da77",
+    "driverManifest": "76369828c6741bfe00771a2e74408943f37e35f9271da9c08e7c75428d6aa6ab",
+    "actualBatchRoots": [
+      "/private/tmp/willyou-m10-v008-upgrade-CdVbbr",
+      "/private/tmp/willyou-m10-native-terminal-bJnZxS",
+      "/private/tmp/willyou-m10-native-terminal-SuiNYh"
+    ],
+    "curatedManifestSha256": "95e116feec96743fa8e785e9275da157ee99f405867081da78f2560df0c86495"
+  }
+}

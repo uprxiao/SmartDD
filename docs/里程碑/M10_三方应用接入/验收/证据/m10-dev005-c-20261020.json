@@ -1,0 +1,96 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-C",
+  "recordedAt": "2026-10-20T03:00:23.503935+00:00",
+  "requirementBaseline": "R1.6 incl 12.21 and detailed runtime design 5.4/5.5/5.9",
+  "baseCommit": "2a3a09fff6283d134a5808b0d927adddf6b39a5a",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: committed provider and draft persistence checkpoints with actual verification",
+  "implemented": [
+    "durable prepare/review/grant/execution records; frozen MIME and envelope kept as separate message business objects",
+    "host-verified evidence references, exact review/scope/run/identity/binding checks; canonical stable event ID",
+    "one execution per intent and per draft revision, current-secret rotation, partial receipts and unknown without auto-resubmission",
+    "cancellation and service disposal abort waiting; actual submitted receipts remain external-result facts",
+    "recovery only after stopped-owner proof; preparing failures released and interrupted claims made unknown, not replayed",
+    "independent connection slot revisions including nullable tombstones, disable/re-enable and clear/reselect ABA; local drafts independent from unrelated bad external slot",
+    "prototype synthetic model synchronized to separate reading/SMTP slot revisions; old snapshot metadata retained"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 17,
+      "tests": 174,
+      "passed": 174,
+      "failed": 0,
+      "m10AndMigrationTests": 144,
+      "m4Tests": 30,
+      "log": "dev005-c-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-c-20261020/types.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/applications/__tests__/mail-execution.test.ts",
+      "tests": 24,
+      "passed": 24,
+      "reason": "Final stable evidence-ID invariant added after aggregate; only this service and its test changed",
+      "log": "dev005-c-20261020/final-evidence-id-tests.txt"
+    },
+    {
+      "command": "node --test prototypes/m6-codex/tests/integration-model.test.mjs prototypes/m6-codex/tests/preview-model.test.mjs",
+      "tests": 37,
+      "passed": 37,
+      "log": "dev005-c-20261020/prototype-models.txt"
+    }
+  ],
+  "actualTransportIntegration": {
+    "localOnly": true,
+    "flows": [
+      "actual SMTP readonly AUTH verification -> encrypted fixture secret boundary -> explicit selection -> persistent draft -> frozen bytes -> trusted fixture proof -> durable claim -> actual SMTP transport -> saved result",
+      "normal DATA acknowledgement and dropped DATA acknowledgement; in both cases server receives one message and duplicate execution never submits again"
+    ],
+    "tls": "This business-chain fixture uses plain loopback; separate real STARTTLS/implicit-TLS adapter tests remain in the 174 aggregate"
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "Earlier DEV002 used a common project binding revision; runtime design requires separate read/send slots",
+      "correction": "Add monotonic role revisions, including empty selections; SMTP resolves only its role and drafts only application policy; prototype state synchronized",
+      "evidence": "Independent read-slot change/fault, clear/reselect, global disable/re-enable, upgrade replay tests passed"
+    }
+  ],
+  "boundaries": [
+    "No real email or ZenTao account/service accessed",
+    "Authorization and host-owner proofs remain trusted dependency fixtures in this batch; renderer/native-user provenance ledger and process lifecycle integration are not yet implemented or accepted",
+    "Fault checkpoints simulate lost host progression; no actual killed packaged process or real CLI resume is claimed",
+    "No production startup, RPC, MCP, UI or real Agent hook-up yet",
+    "No M10 packaged App product pass count changed; 24 unit/integration tests do not replace T07/T18/T19/T20/T58",
+    "No new visual browser verification; prototype model only",
+    "No main merge, push, tag or release"
+  ],
+  "sourceHashes": {
+    "drizzle/0009_mail_execution.sql": "6a384b27bc72c2929a66033f32aaa8d3e4e1526192606fe98cf91f00566bc92f",
+    "drizzle/meta/_journal.json": "3c510379b2da63dfb8909b0ef71cf2ad3a7a5c9bdbe2e6ce67427048a6b6d17d",
+    "src/shared/mail-execution.ts": "81c1ca5ad1a2f607022666b1d20c2389f2454eb2d32c831f576bfc3990b3a9ed",
+    "src/shared/application-connections.ts": "f308d583343f3a319292d1ee7b759fc394f25292b280f280a4d120c569af8d4d",
+    "src/shared/applications.ts": "aa1fe02e5b1c494b06db17e52a9f312d2d40d3d2b0197aa2e2060a03087f5732",
+    "src/main/db/schema.ts": "f4f30565abd1330d48bafd782f3f86f77a8b9a11874c600ef6526ba34f9f77e7",
+    "src/main/db/migrations.test.ts": "70c826db99b57b512be945e29d56a8b46749775681af4b93eadbfcb952762a26",
+    "src/main/core/applications/mail-execution-service.ts": "c3df9721af83f2940453b70486b1e6b54e3c43977144879754b21ebc3daa0ce1",
+    "src/main/core/applications/mail-blob-store.ts": "a048aa73610a665270f89af7b9b286dbef556c73d1acbaf50fc5e34b56d1ffaa",
+    "src/main/core/applications/selection-service.ts": "9d6701c1e708afcaff27a89ade1a822312aeef7ad177541c5abaa00adbfae0d0",
+    "src/main/core/applications/__tests__/mail-execution.test.ts": "c2d320589b2423984e3e0a79d8bf240655df29396bafac15d84e8c3060a3a88d",
+    "src/main/core/applications/__tests__/mail-drafts.test.ts": "0f86440a81bff6cb201894c0713d2d87c48fef6093e457268473b3a54a706fbc",
+    "prototypes/m6-codex/src/integration-model.mjs": "eb9d5fff72e03cd746595bb83d5b2517af3c76f190b1d6435d1b61404d1f2575",
+    "prototypes/m6-codex/tests/integration-model.test.mjs": "de8836391f46389b70cf73b20b46eaba741ee746da78be1adcb45dfe73578555"
+  },
+  "logHashes": {
+    "dev005-c-20261020/prototype-models.txt": "ff6029cb2cb1dc5fde149ade8cc4ac3a5134ac1b640f6ad4d6a0a4cdf54c916a",
+    "dev005-c-20261020/all-tests.txt": "f1d6fd3a07cb5c670e1dfddee05e8bd061b0048dd3ea37c2193709c717241350",
+    "dev005-c-20261020/types.txt": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+    "dev005-c-20261020/final-evidence-id-tests.txt": "01430e86868e0bcdf6d32cad6a65b8493d32958d78cecc52794eec96ec54ca55"
+  },
+  "metadataErratum": "m10-prototype-image-metadata-erratum-20261020.json"
+}

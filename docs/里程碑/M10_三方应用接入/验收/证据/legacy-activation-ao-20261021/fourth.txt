@@ -1,0 +1,31 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/capabilities/capability-service.test.ts --maxWorkers=1 -t 'original M4|M4 sources until|captured .* sources|original activation keeps|M4 original complete|first retained M4 identity' --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-activation-ao-20261021/fourth-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (70 tests | 55 skipped) 14358ms
+     ✓ retains original claude-code M4 sources until transient cleanup and then automatically migrates the same task  652ms
+     ✓ retains original codex M4 sources until transient cleanup and then automatically migrates the same task  667ms
+     ✓ recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal  724ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  877ms
+     ✓ reports a damaged original M4 source while preserving metadata and ordinary native Agent availability  386ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  2490ms
+     ✓ automatically restores original claude-code paths and MCP names after transient cleanup without adopting current project Apps  983ms
+     ✓ automatically restores original codex paths and MCP names after transient cleanup without adopting current project Apps  1031ms
+     ✓ does not inject a currently disabled original claude-code project MCP while retaining its fixed historical name  768ms
+     ✓ does not inject a currently disabled original codex project MCP while retaining its fixed historical name  781ms
+     ✓ keeps user disabling an original Codex Skill, then activates the unchanged S only after the conflict is removed  980ms
+     ✓ continues original claude-code without conversion for an unsupported CLI and activates after the supported version returns  877ms
+     ✓ continues original codex without conversion for an unsupported CLI and activates after the supported version returns  931ms
+     ✓ keeps converted claude-code identity and ordinary Agent when the original source is damaged, then restores the same S after source repair  1065ms
+     ✓ keeps converted codex identity and ordinary Agent when the original source is damaged, then restores the same S after source repair  1144ms
+ ✓ src/main/core/capabilities/capability-service.test.ts (26 tests | 22 skipped) 240ms
+
+ Test Files  2 passed (2)
+      Tests  19 passed | 77 skipped (96)
+   Start at  17:44:31
+   Duration  15.78s (transform 557ms, setup 0ms, import 999ms, tests 14.60s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-activation-ao-20261021/fourth-report.json

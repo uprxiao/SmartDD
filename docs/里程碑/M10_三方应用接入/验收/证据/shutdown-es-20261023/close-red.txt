@@ -1,0 +1,38 @@
+
+> smartdd@0.0.5 test /Users/hx/hx/hxWork/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'waits for an already-started' --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/hx/hxWork/SmartDD
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (234 tests | 1 failed | 233 skipped) 2479ms
+     × waits for an already-started stop history write before completing managed shutdown 2478ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > waits for an already-started stop history write before completing managed shutdown
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:518:127
+    516|    tasks.kill(first.task.id);await vi.waitFor(()=>expect(entered).toBe…
+    517|    expect(()=>managed.runs.assertActive(runId)).toThrow();
+    518|    const closing=managed.dispose().then(()=>{closed=true;});await new …
+       |                                                                                                                               ^
+    519|    release();await closing;expect(closed).toBe(true);expect(capture).t…
+    520|   }finally{release();capture.mockRestore();}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 233 skipped (234)
+   Start at  12:35:10
+   Duration  3.29s (transform 539ms, setup 0ms, import 746ms, tests 2.48s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

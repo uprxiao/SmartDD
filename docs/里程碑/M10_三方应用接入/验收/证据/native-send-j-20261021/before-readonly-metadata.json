@@ -1,0 +1,716 @@
+{
+  "schema": "m10-native-fixed-draft-send-v1",
+  "recordedAt": "2026-10-20T16:45:02.689194+00:00",
+  "recordedLocal": "2026-10-21T00:45:02.689200+08:00",
+  "requirements": "M10 R1.6 including12.21; R08-01–03 /12.5 and R06-13",
+  "branch": "feature/0.0.2",
+  "baseCommit": "44b177638b61c57c152f78013032ad5bbed1d175",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "system": "macOS-26.6.1-arm64-arm-64bit",
+  "state": "development continues; active goal; no release",
+  "implementedPath": "exact existing draft URI plus unquoted explicit send imperative, actual host input and matching synthetic native-user record, frozen SMTP mail review, one execution",
+  "changes": [
+    "latest user-input sequence guard and cancel/uncertain/overflow invalidation",
+    "input-time non-secret SMTP/revisions and application policy hashes",
+    "stable one-intent native evidence, RAM object/signal guards and asynchronous original-row revalidation",
+    "late authorization reuses existing execution without SMTP replay",
+    "effective data view shows missing live authorization as awaiting-authorization",
+    "bounded optional Git build metadata; unknown remains dirty"
+  ],
+  "tests": {
+    "initialExisting": {
+      "files": 3,
+      "passed": 74,
+      "log": "existing-tests-initial.txt"
+    },
+    "resolverRed": {
+      "files": 3,
+      "passed": 84,
+      "failed": 8,
+      "log": "intent-and-order-first.txt",
+      "reason": "URI query question mark was wrongly treated as URI terminator"
+    },
+    "nativeFirst": {
+      "files": 4,
+      "passed": 130,
+      "failed": 1,
+      "log": "native-send-first.txt",
+      "reason": "fixture used distinct prepare operation IDs; original DRAFT_LOCKED was correct"
+    },
+    "lateClaimRed": {
+      "passed": 3,
+      "failed": 1,
+      "skippedByFilter": 40,
+      "log": "late-claim-and-guards-first.txt",
+      "reason": "late source claim saw INTENT_STALE instead of original settled execution"
+    },
+    "policyGapRed": {
+      "failed": 3,
+      "skippedByFilter": 50,
+      "log": "input-policy-gap-red.txt",
+      "reason": "input-time selection/policy changes and live-authorization display were missing"
+    },
+    "importRed": {
+      "typecheckExit": 2,
+      "softwarePassed": 126,
+      "softwareFailed": 19,
+      "logs": [
+        "typecheck-policy.txt",
+        "input-policy-fixed.txt"
+      ],
+      "reason": "missing manifest imports in added ApplicationService scope helper"
+    },
+    "directFinal": {
+      "files": 4,
+      "passed": 148,
+      "log": "input-policy-fixed2.txt"
+    },
+    "widerJ2": {
+      "filesPassed": 17,
+      "filesFailedInitialization": 2,
+      "passed": 299,
+      "notStarted": 83,
+      "log": "related-j2-final.txt",
+      "reason": "optional Git metadata read exceeded initialization budget; original process inspected before retry"
+    },
+    "metadataCorrection": {
+      "files": 3,
+      "passed": 104,
+      "log": "git-metadata-fixed.txt",
+      "includes": "all83 previously not started plus21 original-package tests; one controlled private PATH timeout fixture; complete resourceSet unchanged"
+    },
+    "finalUniqueScope": {
+      "files": 20,
+      "passed": 403,
+      "overlap": "299 and104 cover non-overlapping files.148 and earlier direct runs overlap; not added.17-file host/renderer source unchanged after J2; only optional build metadata and its package test changed, verified in104 and new package."
+    },
+    "typecheckFinal": {
+      "exitCode": 0,
+      "log": "typecheck-j-final.txt"
+    }
+  },
+  "package": {
+    "recordedAt": "2026-10-20T16:43:25.200552+00:00",
+    "appPath": "/private/tmp/m10-native-send-j-package-20261021/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "platform": "macOS-26.6.1-arm64-arm-64bit",
+    "arch": "arm64",
+    "sourceUnchanged": true,
+    "sourceEntries": 12,
+    "asar": {
+      "sha256": "c7947f4136d6e57debb7c2d8d627e58022050e6409d18c970cdb82c4a0ef7ae9",
+      "bytes": 93191388
+    },
+    "native": {
+      "native/smartdd-voice": {
+        "sha256": "0c2480cfcce5516e7cd92bb7112b5670b672fb524bcc10c1dcabaedb6bae7bfd",
+        "bytes": 75264
+      },
+      "native/willyou-files": {
+        "sha256": "75049c1606d6303f8bf37df829740440a18c5f67d2765b74ce6afdae695d8b82",
+        "bytes": 385168
+      },
+      "native/willyou-foxmail": {
+        "sha256": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+        "bytes": 76688
+      },
+      "native/willyou-process-identity": {
+        "sha256": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0",
+        "bytes": 55136
+      }
+    },
+    "windowLaunched": false,
+    "UIAcceptance": "not executed",
+    "mainSha256": "d418ca069bf17864babe2701f45f80fed944242e92eb8613c6dcb9e882a89f6e",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "bundles": {
+      "indexHash": "5776b16bb25dd52192f03ba1242a30a4fd3a9f385975e492820c85fc4b71b714",
+      "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+      "adapters": 2,
+      "runtimes": 1,
+      "apps": [
+        {
+          "appId": "zentao",
+          "version": "1.0.0",
+          "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "skills": 2,
+          "tools": 3,
+          "files": 13
+        },
+        {
+          "appId": "mail",
+          "version": "1.0.0",
+          "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "skills": 1,
+          "tools": 14,
+          "files": 34
+        }
+      ]
+    },
+    "packagedMainMatchesCurrentBuild": true,
+    "exitCode": 0,
+    "nativeSmoke": "passed; package-final.txt",
+    "verification": "packaged-main.json"
+  },
+  "sourceManifest": {
+    "path": "native-send-j-20261021/source-manifest.json",
+    "sha256": "f9b429ec70b6708386c5fc8257fca0cb4872322abbfd8d499785704446f604f6",
+    "files": 20
+  },
+  "sourceRecovery": {
+    "initial": "initial-source + initial-source.json before first checks",
+    "resolverRed": "resolver-red-source + resolver-red-source.json",
+    "nativeFirst": "native-send-red-source + native-send-red-source.json",
+    "lateClaim": "late-claim-red-source + late-claim-red-source.json",
+    "policyGap": "input-policy-red-source + input-policy-red-source.json",
+    "missingImport": "import-red-source/application-service.ts incremental snapshot; corresponding helper/test changes preserved in final source",
+    "j2": "final-j2-source + final-j2-source.json, before widened J2 batch",
+    "final": "final-build-source + final-build-source.json, host12 production/test entries frozen through package"
+  },
+  "formalLedger": {
+    "total": 72,
+    "completePassed": 1,
+    "ids": [
+      "M10-T42"
+    ],
+    "T07": "partial fixed-reference native semantic/source/service layers; complete language/context/actual CLI/App pending",
+    "T18": "partial exact private SMTP draft/revision/attachment/BCC and cancel layers; remaining original steps pending",
+    "T19": "partial native unknown/dedup layers; complete packaged failure/recovery/external verification pending"
+  },
+  "boundaries": {
+    "nativeRecords": "synthetic CC/Codex JSON formats",
+    "senderAndRun": "controlled trusted sender / process identity fixtures, not real Electron UI or actual CC/Codex",
+    "businessServices": "real original package/Data API/SQLite and private loopback SMTP",
+    "newPackagedUI": "not executed",
+    "newWindowLaunched": false,
+    "dailyCredentials": false,
+    "realModels": false,
+    "externalBusinessMail": false,
+    "M9": "only read-only stat/realpath identity comparisons; no source/dependency/config/process mutation",
+    "immutable1.0Resources": "unchanged",
+    "appVersion": "0.0.5 unchanged"
+  },
+  "remaining": [
+    "full natural-language and unique-context intent resolution and clarification",
+    "actual CC/Codex discovery/read/native role and business acceptance",
+    "complete M4 legacy identity-preserving migration and configuration/shared C-H maintenance",
+    "real Foxmail",
+    "all confirmed packaged UI/system cases and remaining original T18/T19 steps"
+  ],
+  "evidenceFiles": {
+    "concurrency-corrected-first.txt": {
+      "sha256": "a84b7249fb1038fbcedf6a6d19b9800c19c6dbc5932683a20450f76ebb73afdc",
+      "bytes": 448
+    },
+    "concurrency-diagnostic.txt": {
+      "sha256": "0eec7ce7a66266ef1cdb3308b736c4d07dadf31482d840df2d40d5f39127afcc",
+      "bytes": 2602
+    },
+    "existing-tests-initial.txt": {
+      "sha256": "b78972cd32c0c9756ad9c5a55f822845e422954e8587997825f4b338de9c1a0b",
+      "bytes": 531
+    },
+    "final-build-source/scripts/applications/build-bundles.mjs": {
+      "sha256": "4351cbcbaa8ed2cc9619ce0729cb93f460654de4b733359c794bd8e99ce9b542",
+      "bytes": 6677
+    },
+    "final-build-source/src/main/core/applications/__tests__/builtin-packages.test.ts": {
+      "sha256": "f2b1cfe458cf5920404aad85e693c08d1de4a85d5681a6a20881823f000f019a",
+      "bytes": 24212
+    },
+    "final-build-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "b82d922b46c21ad1d3cd7f1a4ffd6c24c079915525fd2a9306807d0993fa9bea",
+      "bytes": 54680
+    },
+    "final-build-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "final-build-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "a7377987dbe1ffce99ed8012da940d73fdbdf801c53b03284bffb275492ef26d",
+      "bytes": 12284
+    },
+    "final-build-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "final-build-source/src/main/core/applications/application-service.ts": {
+      "sha256": "cc1e0c84b35ecef3a3a75f5890e64a49f2d602cea02b86c0d82761050eaf53cf",
+      "bytes": 26542
+    },
+    "final-build-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "c0c57ceed80a7d46e856fd9d5882eaf7e33d69bff290d7083640b41b011783f3",
+      "bytes": 7861
+    },
+    "final-build-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "b90b19b02aa0220eaf987a92068ae6cde6c4c08177bffe53ae36b8e1294a2955",
+      "bytes": 13101
+    },
+    "final-build-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "ad91485e01f8600726fa2f83b5ffb391d9d3eb2bc8647c9c899a43a68029c84c",
+      "bytes": 3946
+    },
+    "final-build-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "06240b1e074f2d970955d51964373ad1582d97ddab258dcddcabae1cb6cb4e27",
+      "bytes": 11730
+    },
+    "final-build-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "final-build-source.json": {
+      "sha256": "88d38d1cf0ec13cef83ef093effcceaaaa9b53f087bc323302fd84bb879e9e51",
+      "bytes": 2459
+    },
+    "final-j2-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "b82d922b46c21ad1d3cd7f1a4ffd6c24c079915525fd2a9306807d0993fa9bea",
+      "bytes": 54680
+    },
+    "final-j2-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "final-j2-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "a7377987dbe1ffce99ed8012da940d73fdbdf801c53b03284bffb275492ef26d",
+      "bytes": 12284
+    },
+    "final-j2-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "final-j2-source/src/main/core/applications/application-service.ts": {
+      "sha256": "cc1e0c84b35ecef3a3a75f5890e64a49f2d602cea02b86c0d82761050eaf53cf",
+      "bytes": 26542
+    },
+    "final-j2-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "c0c57ceed80a7d46e856fd9d5882eaf7e33d69bff290d7083640b41b011783f3",
+      "bytes": 7861
+    },
+    "final-j2-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "b90b19b02aa0220eaf987a92068ae6cde6c4c08177bffe53ae36b8e1294a2955",
+      "bytes": 13101
+    },
+    "final-j2-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "ad91485e01f8600726fa2f83b5ffb391d9d3eb2bc8647c9c899a43a68029c84c",
+      "bytes": 3946
+    },
+    "final-j2-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "06240b1e074f2d970955d51964373ad1582d97ddab258dcddcabae1cb6cb4e27",
+      "bytes": 11730
+    },
+    "final-j2-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "final-j2-source.json": {
+      "sha256": "b3da781256fcb7d8410374dface00a14fbe297518067536e9b20dd5b5bf85137",
+      "bytes": 2040
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/README.md": {
+      "sha256": "f2f133bf0871423346eb177ee6ea77f56d6d41116a8f1425be180c5fca3ef316",
+      "bytes": 43868
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/交付说明.md": {
+      "sha256": "f3df68f91b77f7dcbf2c5105cfa070e74a13c98ab4fe8629eb388cb2e0e63d69",
+      "bytes": 28497
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/实施计划与进度.md": {
+      "sha256": "527b27d64bf21d9d4ed989b5688aafbb66f913e82dfe96b71a83cb3a3061a35a",
+      "bytes": 54546
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/技研/固定草稿原生发送授权检查点_20261021.md": {
+      "sha256": "42e45b673552bb91987df784c2aee614477be97dcd89adae97d5691416f52d87",
+      "bytes": 6176
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/验收/执行与缺陷记录.md": {
+      "sha256": "ffaaba109cba537b81f0d664fac79336bf3fe836f4300a9c9fc4d6e6edf400a3",
+      "bytes": 92346
+    },
+    "final-source/docs/里程碑/M10_三方应用接入/验收/测试用例.md": {
+      "sha256": "8a4084710e96392b14b6628c6489e959a03bfc7e492afae958e9b7de873c8438",
+      "bytes": 152978
+    },
+    "final-source/docs/里程碑/README.md": {
+      "sha256": "ea90f56796c86938de1e634f8d3fa2899b0b0f9e219c76b87c6f193716e69390",
+      "bytes": 4371
+    },
+    "final-source/docs/需求池.md": {
+      "sha256": "181ccbf9db3d818cbfa05611d7075de0c17083cde6c12caec657196736121c04",
+      "bytes": 7235
+    },
+    "final-source/scripts/applications/build-bundles.mjs": {
+      "sha256": "4351cbcbaa8ed2cc9619ce0729cb93f460654de4b733359c794bd8e99ce9b542",
+      "bytes": 6677
+    },
+    "final-source/src/main/core/applications/__tests__/builtin-packages.test.ts": {
+      "sha256": "f2b1cfe458cf5920404aad85e693c08d1de4a85d5681a6a20881823f000f019a",
+      "bytes": 24212
+    },
+    "final-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "b82d922b46c21ad1d3cd7f1a4ffd6c24c079915525fd2a9306807d0993fa9bea",
+      "bytes": 54680
+    },
+    "final-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "final-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "a7377987dbe1ffce99ed8012da940d73fdbdf801c53b03284bffb275492ef26d",
+      "bytes": 12284
+    },
+    "final-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "final-source/src/main/core/applications/application-service.ts": {
+      "sha256": "cc1e0c84b35ecef3a3a75f5890e64a49f2d602cea02b86c0d82761050eaf53cf",
+      "bytes": 26542
+    },
+    "final-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "c0c57ceed80a7d46e856fd9d5882eaf7e33d69bff290d7083640b41b011783f3",
+      "bytes": 7861
+    },
+    "final-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "b90b19b02aa0220eaf987a92068ae6cde6c4c08177bffe53ae36b8e1294a2955",
+      "bytes": 13101
+    },
+    "final-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "ad91485e01f8600726fa2f83b5ffb391d9d3eb2bc8647c9c899a43a68029c84c",
+      "bytes": 3946
+    },
+    "final-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "06240b1e074f2d970955d51964373ad1582d97ddab258dcddcabae1cb6cb4e27",
+      "bytes": 11730
+    },
+    "final-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "final-test-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "91dd5c0bf736a2bf125b00f4df34690adcf6fcad6e9bc3e665601516f7b309ec",
+      "bytes": 52379
+    },
+    "final-test-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "final-test-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "e00620c36bebce34ba5a0746a5a4cd0a7a778c47f0354517efb0383903c9e290",
+      "bytes": 11470
+    },
+    "final-test-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "final-test-source/src/main/core/applications/application-service.ts": {
+      "sha256": "fc64a56ad87ed0bfcf80e0f5cad920ba1c578eb4a46ef5289473a768657e6c0a",
+      "bytes": 25478
+    },
+    "final-test-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "08ca4d4a7c346bd79dbe5fe495ca3a2fed9319254a2ea63ae066bbc8f159d321",
+      "bytes": 7775
+    },
+    "final-test-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "d0bce7ebf759b17c0721988fbb7a0f226d9f4b3f10e9e7c3b88c5e7ed7ed4ba2",
+      "bytes": 12504
+    },
+    "final-test-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "22759ea3271a137273566643e5986924e19e4e55a085ee7ce808ae8e0499205b",
+      "bytes": 3246
+    },
+    "final-test-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "57910dcd49e088948b94d1349cb37297ad980b5a53566639d78530c0862d33d4",
+      "bytes": 11170
+    },
+    "final-test-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "final-test-source.json": {
+      "sha256": "7a0bbb25e23c6e773cdefb25948a1ec95e70999d248830e1980281d3cf324788",
+      "bytes": 1763
+    },
+    "git-metadata-before-fix/scripts/applications/build-bundles.mjs": {
+      "sha256": "a0037bfa33e6b09ccc4052b8aa37f4bba7e5149d4bbb83c1f52cc32e79ca13b6",
+      "bytes": 6463
+    },
+    "git-metadata-fixed.txt": {
+      "sha256": "bb140a05c6530e8fb29b52c2d11604d99a602b22d54acd61f06f76c814ab9463",
+      "bytes": 524
+    },
+    "import-red-source/src/main/core/applications/application-service.ts": {
+      "sha256": "ec3e5e36d46407b348a4a69e58d5c21c57c35a523169a95bd12c1745fa8b1216",
+      "bytes": 26493
+    },
+    "initial-source/src/main/core/applications/application-service.ts": {
+      "sha256": "fc64a56ad87ed0bfcf80e0f5cad920ba1c578eb4a46ef5289473a768657e6c0a",
+      "bytes": 25478
+    },
+    "initial-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "5a925059b0397d66fd37191d6edb807c82c6d4843fcadda967ad64b592c31d04",
+      "bytes": 7136
+    },
+    "initial-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "d0bce7ebf759b17c0721988fbb7a0f226d9f4b3f10e9e7c3b88c5e7ed7ed4ba2",
+      "bytes": 12504
+    },
+    "initial-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "5d503e37251fe66f9c12c5a09346edd030ea9cab3d78e2bfce0ad3826f1587f4",
+      "bytes": 3162
+    },
+    "initial-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "b290ec317d41192dfffd58d0d7f6f87a1e01077643cc8528d0ca20f12b159ff8",
+      "bytes": 11111
+    },
+    "initial-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "initial-source.json": {
+      "sha256": "0363f7ac1d9f0d8890c6cb2142fff70f374ebdd80bf8231390201eaf449766c0",
+      "bytes": 940
+    },
+    "initial.patch": {
+      "sha256": "50b2f8ddf1ddc2f6af7f81043ab94f3851ef71214d8a7d8bfa5ad6e0f18cc25f",
+      "bytes": 30232
+    },
+    "input-policy-fixed.txt": {
+      "sha256": "93d409ab24203d0e9f4f5539428cae1bd9bb00fcb2057adaab72834c98747a6d",
+      "bytes": 12307
+    },
+    "input-policy-fixed2.txt": {
+      "sha256": "3d49bdbf339e38637b2c8fd211a0792a6920874a4ac3074f2214b70528927fcb",
+      "bytes": 597
+    },
+    "input-policy-gap-red.txt": {
+      "sha256": "7aee8ec7bd60593b0523e2c4905d992243b0d2de91be6110d7eb79d26f158ac1",
+      "bytes": 2736
+    },
+    "input-policy-red-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "2c551ec4d49fe2509ff1d095de30207d659de51d925392c6efccb0cf8d154c28",
+      "bytes": 54679
+    },
+    "input-policy-red-source/src/main/core/applications/application-service.ts": {
+      "sha256": "fc64a56ad87ed0bfcf80e0f5cad920ba1c578eb4a46ef5289473a768657e6c0a",
+      "bytes": 25478
+    },
+    "input-policy-red-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "08ca4d4a7c346bd79dbe5fe495ca3a2fed9319254a2ea63ae066bbc8f159d321",
+      "bytes": 7775
+    },
+    "input-policy-red-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "d0bce7ebf759b17c0721988fbb7a0f226d9f4b3f10e9e7c3b88c5e7ed7ed4ba2",
+      "bytes": 12504
+    },
+    "input-policy-red-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "22759ea3271a137273566643e5986924e19e4e55a085ee7ce808ae8e0499205b",
+      "bytes": 3246
+    },
+    "input-policy-red-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "57910dcd49e088948b94d1349cb37297ad980b5a53566639d78530c0862d33d4",
+      "bytes": 11170
+    },
+    "input-policy-red-source.json": {
+      "sha256": "7c82fdf2097f933a2bf318d7ff08c4781830dcebb5b07e97f109f49477f4706a",
+      "bytes": 949
+    },
+    "intent-and-order-first.txt": {
+      "sha256": "f05720daabb3217daab884ffe1110750e58bc8f9b622dc08c6a11da42f748772",
+      "bytes": 4932
+    },
+    "isolation-files.json": {
+      "sha256": "28cd4a0607aeb004b006b52fb6a615b8e6d482fe20312407698524bf0e5711c7",
+      "bytes": 2035
+    },
+    "late-claim-and-guards-first.txt": {
+      "sha256": "ab8f7e5f58fba33e737e37e2b331d1c79c84cd899dfaef859d38c17805a2dc99",
+      "bytes": 1946
+    },
+    "late-claim-red-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "93a1d31543faa763931b8d509b628342a58378210ebed4b860ed3fc988b85b13",
+      "bytes": 48325
+    },
+    "late-claim-red-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "5a925059b0397d66fd37191d6edb807c82c6d4843fcadda967ad64b592c31d04",
+      "bytes": 7136
+    },
+    "late-claim-red-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "d0bce7ebf759b17c0721988fbb7a0f226d9f4b3f10e9e7c3b88c5e7ed7ed4ba2",
+      "bytes": 12504
+    },
+    "late-claim-red-source.json": {
+      "sha256": "5f7bf6065a62a0107eb7ecdb410093a5e28cf0a21392ef8967a42f2b15c76406",
+      "bytes": 486
+    },
+    "native-send-first.txt": {
+      "sha256": "c2dd69c06a56e1e2daa5802be930a0b5fe33071443f9f890cd7901fb941eff5e",
+      "bytes": 1633
+    },
+    "native-send-fixed.txt": {
+      "sha256": "8612a673217291cd2cec8bbc8dac194e6aa2e535d45242e086b8ba4bc71c4c3e",
+      "bytes": 597
+    },
+    "native-send-red-source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "696d7d738d7cb550e74e78801bac2d95ede1655f7c3ce51d49df69bd2c4d60a4",
+      "bytes": 43140
+    },
+    "native-send-red-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "native-send-red-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "e00620c36bebce34ba5a0746a5a4cd0a7a778c47f0354517efb0383903c9e290",
+      "bytes": 11470
+    },
+    "native-send-red-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "native-send-red-source/src/main/core/applications/application-service.ts": {
+      "sha256": "fc64a56ad87ed0bfcf80e0f5cad920ba1c578eb4a46ef5289473a768657e6c0a",
+      "bytes": 25478
+    },
+    "native-send-red-source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "5a925059b0397d66fd37191d6edb807c82c6d4843fcadda967ad64b592c31d04",
+      "bytes": 7136
+    },
+    "native-send-red-source/src/main/core/applications/mail-user-authorizations.ts": {
+      "sha256": "d0bce7ebf759b17c0721988fbb7a0f226d9f4b3f10e9e7c3b88c5e7ed7ed4ba2",
+      "bytes": 12504
+    },
+    "native-send-red-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "22759ea3271a137273566643e5986924e19e4e55a085ee7ce808ae8e0499205b",
+      "bytes": 3246
+    },
+    "native-send-red-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "57910dcd49e088948b94d1349cb37297ad980b5a53566639d78530c0862d33d4",
+      "bytes": 11170
+    },
+    "native-send-red-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "native-send-red-source.json": {
+      "sha256": "f411e341e370cb65fb266f605ce68afc7eeaa9494d016de74b738896b4dfdbaa",
+      "bytes": 1614
+    },
+    "package-final.txt": {
+      "sha256": "514f4e8665a9f408f566adf8f7cf6b82f5ffa22e01bd6740a0ad5270caa61684",
+      "bytes": 21123
+    },
+    "package-hashes.json": {
+      "sha256": "1761ae970b5f692681a3eebfe9aeff1e172aa93485d890f23d79b7c12961db69",
+      "bytes": 1060
+    },
+    "packaged-main.json": {
+      "sha256": "0e986aa7af3a71bd3736b4883a0fca336d9b316fab7326f0631fb5dc06b58ba3",
+      "bytes": 1152
+    },
+    "packaged-verification.txt": {
+      "sha256": "402fde608e76c03448be8ee2274980cd507f77e99db68900c139b03711066326",
+      "bytes": 906
+    },
+    "related-final.txt": {
+      "sha256": "a5c551bcb211a661bdaced6536d260d62bfc3300cfcfeb1b4f09343a991dccab",
+      "bytes": 1329
+    },
+    "related-j1.txt": {
+      "sha256": "a5c551bcb211a661bdaced6536d260d62bfc3300cfcfeb1b4f09343a991dccab",
+      "bytes": 1329
+    },
+    "related-j2-final.txt": {
+      "sha256": "3be79ae3893a39d79551030b3ed2dbd9d0442b806f181ce524a9fa1bc828663d",
+      "bytes": 2674
+    },
+    "resolver-red-source/src/main/core/applications/__tests__/native-mail-intent.test.ts": {
+      "sha256": "ccbe8746f17575cf771221b2e270572758a5c7be005f8e4be9686256567cceb4",
+      "bytes": 3083
+    },
+    "resolver-red-source/src/main/core/applications/__tests__/native-user-inputs.test.ts": {
+      "sha256": "e00620c36bebce34ba5a0746a5a4cd0a7a778c47f0354517efb0383903c9e290",
+      "bytes": 11470
+    },
+    "resolver-red-source/src/main/core/applications/__tests__/native-user-messages.test.ts": {
+      "sha256": "87b04c6da2c664c1d8c488b79a5a8ff33da33af6955f3763b950680ddd8cfa44",
+      "bytes": 12944
+    },
+    "resolver-red-source/src/main/core/applications/native-mail-intent.ts": {
+      "sha256": "1116897b3a91323c17c99af80a39dbcd3912a8e7018a24b8b6d0f2c249d9f6a9",
+      "bytes": 3247
+    },
+    "resolver-red-source/src/main/core/applications/native-user-inputs.ts": {
+      "sha256": "57910dcd49e088948b94d1349cb37297ad980b5a53566639d78530c0862d33d4",
+      "bytes": 11170
+    },
+    "resolver-red-source/src/main/core/applications/native-user-messages.ts": {
+      "sha256": "5a01daf19a3b336b4e5fa937aebd5655bbb0545a03bbc8a63eb1d77d89ea27ec",
+      "bytes": 16327
+    },
+    "resolver-red-source.json": {
+      "sha256": "03fbb0010638e9a2573377c54b0385625ec62ea0c110c6fd49f43c2113cd0a40",
+      "bytes": 976
+    },
+    "source-manifest.json": {
+      "sha256": "f9b429ec70b6708386c5fc8257fca0cb4872322abbfd8d499785704446f604f6",
+      "bytes": 3924
+    },
+    "typecheck-final.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "typecheck-fixed.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "typecheck-initial.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "typecheck-j-final.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "typecheck-native-first.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "typecheck-policy.txt": {
+      "sha256": "889a4db831ee1d14418699dd8eff468083bac254d7390bf25c5e9ef423e90c11",
+      "bytes": 1023
+    },
+    "typecheck-policy2.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "verify-package.cjs": {
+      "sha256": "929cbeffb4b34c9bdb917e7441d5ecce9fe5890f00e619f1c5da59cf81b7caf6",
+      "bytes": 1097
+    },
+    "validation.json": {
+      "sha256": "971b6b929cf0a10f08338e39cc9397b508c282739ce9f30fd7b0b2b8f2b80685",
+      "bytes": 622
+    }
+  },
+  "documentationValidation": {
+    "recordedAt": "2026-10-20T16:46:23.515566+00:00",
+    "evidenceHashesVerified": 122,
+    "currentSourceHashesVerified": 20,
+    "localLinks": {
+      "current": 606,
+      "all": 1492
+    },
+    "currentChangedDocumentMissingLinks": 0,
+    "preexistingHistoricalMissingLinks": [
+      {
+        "document": "docs/里程碑/M10_三方应用接入/文件索引与开工校验.md",
+        "target": "../../review/evidence/m10-audit-20261017-1559/codex-mcp-test.log",
+        "changedThisBatch": false
+      }
+    ],
+    "caseIds": 72,
+    "completeCaseIds": [
+      "M10-T42"
+    ],
+    "diffCheck": "passed excluding raw evidence bytes; git diff --check"
+  }
+}

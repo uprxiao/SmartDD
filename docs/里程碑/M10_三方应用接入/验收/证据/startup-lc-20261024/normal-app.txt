@@ -1,0 +1,17 @@
+{"case":"incremental","check":"Seven-day and expanded100-day ranges are separately complete on the same actual source"}
+{"case":"incremental","check":"Different fulltext query reuses all five durable message indexes without reparsing unchanged headers"}
+{"case":"incremental","check":"Append/change/move/delete update actual results; exactly three changed identities reparse and two remain reused"}
+{"case":"incremental","check":"New incomplete source preserves the latest unchanged complete refresh across actual normal App restart; current result remains partial"}
+{"case":"incremental","check":"Partial state survives a second restart; restored original source yields complete current data and a newer successful time"}
+{"case":"incremental","check":"Actual cursor continuation and fresh producer safely merge only completion times for the same unchanged checkpoint"}
+{"case":"incremental","check":"No idle Worker/source polling during the explicit1.6-second observation; no remote mailbox sync is claimed"}
+{"case":"checkpoint","check":"First50 actual records are durably checkpointed before the intercepted next batch; no fabricated partial reply"}
+{"case":"checkpoint","check":"Actual SIGKILL/restart resumes original50-record checkpoint at offsets50/100, releases proved exited read consumers and returns120 unique records"}
+{"case":"checkpoint","check":"Second ordinary restart reuses complete persisted checkpoint without rescanning a batch"}
+{"case":"shared-revoke","check":"Two projects share one real producer; revoked project gets no data while still-authorized project finishes"}
+{"case":"shared-revoke","check":"Explicit re-enable permits a new query and all actual index leases release after completion"}
+{"case":"source-faults","check":"Missing single content produces explicit incomplete result; restoring it permits a complete retry"}
+{"case":"source-faults","check":"Whole source disappearance fails explicitly and the identical restored root remains usable"}
+{"case":"source-faults","check":"Actual unsupported metadata format is distinct from empty results; exact in-place controlled DB restoration preserves verified identity"}
+{"case":"source-faults","check":"Actual SQLite writer rollback journal is reported busy; after rollback the original bytes and complete query recover without source writes"}
+{"status":"passed-partial","checks":16,"result":"/private/tmp/willyou-m10-mail-index-app-IhLDnq/result.json"}

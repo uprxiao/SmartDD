@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'T63 refuses cross-project'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (48 tests | 1 failed | 46 skipped) 1244ms
+     × T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities 597ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities
+AssertionError: expected ApplicationError: 旧上下文桥必须沿用原资源及本次上下文，配置不含… { code: '…' } to match object { code: 'SNAPSHOT_CORRUPT' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "SNAPSHOT_CORRUPT",
++ ApplicationError {
++   "code": "HOST_INCOMPATIBLE",
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:67:207
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 46 skipped (48)
+   Start at  09:47:01
+   Duration  2.00s (transform 468ms, setup 0ms, import 679ms, tests 1.24s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

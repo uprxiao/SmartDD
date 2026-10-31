@@ -32,6 +32,35 @@ if (process.platform === 'darwin') {
   assert.equal(execFileSync('/usr/bin/lipo', ['-archs', fileBroker], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'File broker architecture');
   const fileInspection = JSON.parse(execFileSync(fileBroker, [], { input: JSON.stringify({ operation: 'inspect-root', path: resources }), encoding: 'utf8', timeout: 8000 }));
   assert(fileInspection.result?.identity?.inode, 'File broker read-only startup');
+  const processProbe = path.join(resources, 'native/willyou-process-identity');
+  assert(fs.existsSync(processProbe), 'Packaged process identity probe');
+  assert.equal(execFileSync('/usr/bin/lipo', ['-archs', processProbe], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Process identity probe architecture');
+  const ownProcess = JSON.parse(execFileSync(processProbe, [String(process.pid)], { encoding: 'utf8', timeout: 3000 }));
+  assert.equal(ownProcess.state, 'running', 'Read-only own process probe');
+  assert.equal(ownProcess.pid, process.pid, 'Probe matches own PID');
+  assert.match(ownProcess.startedAt, /^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/, 'Kernel process start identity');
+  const mailReader = path.join(resources, 'native/willyou-foxmail');
+  assert(fs.existsSync(mailReader), 'Packaged Foxmail readonly reader');
+  assert.equal(execFileSync('/usr/bin/lipo', ['-archs', mailReader], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Foxmail reader architecture');
+  const mailScratch = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'willyou-packaged-mail-'));
+  try {
+    const mailInspection = JSON.parse(execFileSync(mailReader, [path.join(mailScratch, 'messages.db')], { encoding: 'utf8', timeout: 8000 }));
+    assert.equal(mailInspection.error?.code, 'SOURCE_UNAVAILABLE', 'Mail reader startup on missing source');
+    assert.deepEqual(fs.readdirSync(mailScratch), [], 'Mail reader must not create source files');
+  } finally { fs.rmSync(mailScratch, { recursive: true, force: true }); }
+  assert(fs.existsSync(path.join(asar, 'out/main/m10-mail-reader.js')), 'Packaged mail Worker');
+  assert(fs.existsSync(path.join(asar, 'out/applications/mcp-bridge.cjs')), 'Packaged standalone application MCP bridge');
+  require('../applications/verify-bundles.cjs').verifyCapabilityBundles(path.join(resources, 'capability-bundles'),expectedVersion);
+  const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
+  assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
+  assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
+  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0'], 'Both original and legacy-preserving Agent adapters packaged');
+  assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), ['mail', 'zentao'], 'Both built-in application packages packaged');
+  for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes, ...capabilityIndex.apps]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
+  for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');
+  assert.equal(packagedRequire('nodemailer/package.json').version, '10.1.7', 'Fixed SMTP dependency');
+  assert.equal(packagedRequire('postal-mime/package.json').version, '4.0.11', 'Fixed MIME dependency');
+  for (const notice of ['nodemailer-10.1.7-MIT-0.txt', 'postal-mime-4.0.11-MIT-0.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10', notice)), 'Packaged mail library notice');
   const texRoot = path.join(resources, 'native/tex'), tex = path.join(texRoot, 'tectonic');
   const texManifest = JSON.parse(fs.readFileSync(path.join(texRoot, 'resources.json'), 'utf8'));
   assert.equal(texManifest.arch, expectedArch, 'TeX resource architecture');

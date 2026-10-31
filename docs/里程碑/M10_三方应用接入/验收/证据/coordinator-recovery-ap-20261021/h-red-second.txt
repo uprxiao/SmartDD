@@ -1,0 +1,49 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-crash.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/h-red-second-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/discovery-crash.test.ts (5 tests | 2 failed) 13557ms
+     × restores the original intent-recorded operation after SIGKILL, preserving bytes and references 3584ms
+     ✓ restores the original registered operation after SIGKILL, preserving bytes and references  619ms
+     × restores the original renamed operation after SIGKILL, preserving bytes and references 831ms
+     ✓ restores the original catalog-published operation after SIGKILL, preserving bytes and references  4032ms
+     ✓ restores the original records-committed operation after SIGKILL, preserving bytes and references  4045ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-crash.test.ts > actual H publication termination including pre-C intent and both short locks > restores the original intent-recorded operation after SIGKILL, preserving bytes and references
+ApplicationError: 原H意图与本数据根操作账不同，保留现场
+ ❯ src/main/core/applications/discovery-catalog.ts:381:31
+
+ ❯ signal.signal src/main/core/applications/discovery-catalog.ts:157:119
+ ❯ src/main/core/applications/discovery-catalog-lock.ts:9:110
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:90:130
+ ❯ src/main/core/applications/discovery-catalog-lock.ts:9:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/discovery-crash.test.ts > actual H publication termination including pre-C intent and both short locks > restores the original renamed operation after SIGKILL, preserving bytes and references
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/discovery-crash.test.ts:27:153
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  18:45:45
+   Duration  13.93s (transform 178ms, setup 0ms, import 301ms, tests 13.56s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/h-red-second-report.json
+ ELIFECYCLE  Test failed. See above for more details.

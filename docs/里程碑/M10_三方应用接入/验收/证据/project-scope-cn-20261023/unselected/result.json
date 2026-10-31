@@ -1,0 +1,406 @@
+{
+  "schema": "m10-packaged-native-service-v1",
+  "startedAt": "2026-10-23T17:04:42.496Z",
+  "root": "/private/tmp/willyou-m10-native-service-KJ42Qu",
+  "userData": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata",
+  "home": "/private/tmp/willyou-m10-native-service-KJ42Qu/home",
+  "state": "/private/tmp/willyou-m10-native-service-KJ42Qu/codex",
+  "cwd": "/private/tmp/willyou-m10-native-service-KJ42Qu/project",
+  "branch": "feature/0.0.2",
+  "sourceCommit": "f25b5003f05cdfd65118738f0e39a2150a521229",
+  "sourceDirty": true,
+  "app": "/private/tmp/willyou-m10-br-package-20261023/mac-arm64/WillYou.app",
+  "asarSha256": "68c0a921d6c20a780d0e0e2424b5140e0e024c08b849e2ca5d64b8127a0fd691",
+  "layer": "Packaged service integration: production TaskService IPC -> actual Codex -> actual MCP/local SQLite; synthetic provider;no UI acceptance",
+  "isolation": {
+    "minimalDriverEnv": true,
+    "freshHome": true,
+    "freshCodexHome": true,
+    "freshUserData": true,
+    "noDailyCredentialsCopied": true,
+    "proxy": "unreachable loopback except localhost",
+    "setup": "project, AI profile and application selection via RPC are prerequisites, not UI coverage"
+  },
+  "unselectedProject": true,
+  "marker": "M10_UI_NATIVE_TASK_KJ42Qu",
+  "requests": [
+    {
+      "at": "2026-10-23T17:04:44.415Z",
+      "kind": "profile-health",
+      "model": "m10-ui-profile-model",
+      "requestBytes": 29631,
+      "sha256": "0002903c1c0de30373ae5411c6f588f1e16ed06afa96a6d136176c8891b03b49",
+      "userSkillMarkerPresent": false,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "request_user_input",
+        "view_image",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "response": "SMARTDD-OK-5974f3f3"
+    },
+    {
+      "at": "2026-10-23T17:04:45.799Z",
+      "kind": "ui-task",
+      "model": "m10-ui-profile-model",
+      "requestBytes": 35882,
+      "sha256": "99cd38a8529b7d554f4d3667aa15c1dae95cb932756fa6f2ec98992ae9c69a58",
+      "userSkillMarkerPresent": false,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_b4c7d2a391a3",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "response": "M10_UI_NATIVE_TASK_KJ42Qu_DONE"
+    }
+  ],
+  "checks": [
+    {
+      "name": "Automatic AI-profile health check is separately classified and completed against private provider",
+      "at": "2026-10-23T17:04:44.467Z",
+      "passed": true
+    },
+    {
+      "name": "Production TaskService IPC created exactly one native Task;not composer/UI coverage",
+      "at": "2026-10-23T17:04:45.116Z",
+      "passed": true,
+      "taskId": "efc74c86-541d-4ed1-9076-d1d72f50df52"
+    },
+    {
+      "name": "Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array",
+      "at": "2026-10-23T17:04:45.888Z",
+      "passed": true,
+      "requestCount": 1
+    },
+    {
+      "name": "Production project without selection has empty application snapshot, no native app tools/projections and no drafts",
+      "at": "2026-10-23T17:04:46.007Z",
+      "passed": true
+    },
+    {
+      "name": "Unselected project still completes real native Codex work and binds native session ID",
+      "at": "2026-10-23T17:04:46.662Z",
+      "passed": true
+    },
+    {
+      "name": "Base config bytes and original profile business fields retained; native TUI notice-only mutation recorded separately",
+      "at": "2026-10-23T17:04:46.662Z",
+      "passed": true
+    }
+  ],
+  "status": "passed-partial",
+  "cli": {
+    "path": "/private/tmp/willyou-m10-codex-pin-lq8vtwk1/node_modules/.bin/codex",
+    "version": "codex-cli 0.162.1",
+    "entrySha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70"
+  },
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 87582,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 87582,
+      "checkedInputs": 0
+    }
+  ],
+  "pid": 87582,
+  "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+  "profileId": "ce50f151-cf8d-4b10-aa08-f4f0e2066b9c",
+  "profileHealth": {
+    "status": "ok",
+    "category": "ok",
+    "source": "auto",
+    "message": "",
+    "ms": 110,
+    "at": 1792775084422
+  },
+  "taskId": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+  "session": {
+    "taskId": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+    "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+    "title": "M10_UI_NATIVE_TASK_KJ42Qu: Reply with the completion marker…",
+    "runner": "codex",
+    "selection": "fixed",
+    "snapshotHash": "1282bc2965719f9e20ba9878dd4eb337db4c429a2426d9639e99d160c0969059",
+    "agentState": "running",
+    "canNewSession": true,
+    "createdCliVersion": "0.162.1",
+    "currentRun": {
+      "id": "88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf",
+      "state": "active",
+      "startedAt": "2026-10-23T17:04:44.983Z",
+      "endedAt": null,
+      "current": true,
+      "preparation": {
+        "schema": 2,
+        "runId": "88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf",
+        "selectionHash": "1282bc2965719f9e20ba9878dd4eb337db4c429a2426d9639e99d160c0969059",
+        "cliVersion": "0.162.1",
+        "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+        "state": "prepared",
+        "issueCode": null,
+        "manifestPath": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata/capabilities/runs/00a0c515-63aa-46ce-8cd3-fac488cb3080/efc74c86-541d-4ed1-9076-d1d72f50df52/88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf/manifest.json",
+        "configPaths": [],
+        "preparedAt": "2026-10-23T17:04:45.052Z",
+        "capabilities": [
+          {
+            "kind": "standard-skill",
+            "id": "project-db-diagnostics",
+            "name": "project-db-diagnostics",
+            "selectedHash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+            "paths": [
+              "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md"
+            ],
+            "state": "prepared",
+            "issueCode": null,
+            "sources": []
+          },
+          {
+            "kind": "standard-skill",
+            "id": "remote-password-ssh",
+            "name": "remote-password-ssh",
+            "selectedHash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+            "paths": [
+              "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md"
+            ],
+            "state": "prepared",
+            "issueCode": null,
+            "sources": []
+          },
+          {
+            "kind": "project-mcp",
+            "id": "smartdd_project_b4c7d2a391a3",
+            "name": "smartdd_project_b4c7d2a391a3",
+            "selectedHash": "70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795",
+            "paths": [],
+            "state": "prepared",
+            "issueCode": null,
+            "sources": []
+          }
+        ]
+      },
+      "preparationIssue": null,
+      "restriction": null,
+      "restrictionIssue": null,
+      "bridge": {
+        "connected": false,
+        "observedAt": null,
+        "issueCode": null
+      }
+    },
+    "recentRuns": [],
+    "applications": [],
+    "deliveryCopies": null,
+    "issues": [],
+    "checkedAt": "2026-10-23T17:04:45.903Z"
+  },
+  "finalTask": {
+    "id": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+    "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+    "projectName": "M10 原生 CLI 隔离项目",
+    "dirId": "e526f19b-1a18-4d84-a914-282193ecd38c",
+    "cwd": "/private/tmp/willyou-m10-native-service-KJ42Qu/project",
+    "aiProfileId": "ce50f151-cf8d-4b10-aa08-f4f0e2066b9c",
+    "aiProfileName": "M10 私有 Codex 0.162.1",
+    "aiProfileColor": null,
+    "runner": "codex",
+    "nativeSessionId": null,
+    "title": "M10_UI_NATIVE_TASK_KJ42Qu: Reply with the completion marker…",
+    "firstMessage": "M10_UI_NATIVE_TASK_KJ42Qu: Reply with the completion marker only. Do not invoke tools, read files, create drafts or send mail.",
+    "injectedEnvNames": [
+      "ALL_PROXY",
+      "CODEX_HOME",
+      "HOME",
+      "HTTPS_PROXY",
+      "HTTP_PROXY",
+      "NO_PROXY",
+      "PROJECT_DB_CONFIG",
+      "REMOTE_SERVERS_CONFIG",
+      "SHELL",
+      "SMARTDD_CONFIG_VERSION",
+      "SMARTDD_PROJECT_CONTEXT",
+      "SMARTDD_PROJECT_ID",
+      "SMARTDD_RESOURCE_AUDIT",
+      "ZDOTDIR"
+    ],
+    "runtimeSnapshot": {
+      "runId": "88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf",
+      "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+      "configVersion": 1,
+      "configHash": "572ac2fe8177bd19326a6133d9bc9368f1473c4c1de6e8e4b356d88796de21e6",
+      "manifestPath": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata/capabilities/runs/00a0c515-63aa-46ce-8cd3-fac488cb3080/efc74c86-541d-4ed1-9076-d1d72f50df52/88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf/manifest.json",
+      "auditPath": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata/capabilities/resource-audit/00a0c515-63aa-46ce-8cd3-fac488cb3080/efc74c86-541d-4ed1-9076-d1d72f50df52.jsonl",
+      "skills": [
+        {
+          "skillId": "project-db-diagnostics",
+          "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
+          "version": "1.0.0",
+          "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "path": "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        },
+        {
+          "skillId": "remote-password-ssh",
+          "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
+          "version": "1.0.0",
+          "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "path": "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        }
+      ],
+      "mcp": [
+        {
+          "name": "smartdd_project_b4c7d2a391a3",
+          "loaded": "unverified"
+        }
+      ],
+      "selfCheck": {
+        "status": "passed",
+        "issues": [],
+        "at": 1792775085413
+      },
+      "sessionCapabilities": {
+        "schema": 2,
+        "taskId": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+        "snapshotHash": "1282bc2965719f9e20ba9878dd4eb337db4c429a2426d9639e99d160c0969059"
+      }
+    },
+    "configVersion": 1,
+    "projectConfigVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1792775084469,
+    "updatedAt": 1792775084469,
+    "lastLaunchedAt": 1792775085097,
+    "ptyId": "a743494d-a5c5-435e-aa36-946f206a2c03",
+    "recovery": "not-started",
+    "recoveryReason": "还没有发过消息，Codex 未生成会话；打开时会新开一个"
+  },
+  "unselectedDraftListResponse": {
+    "ok": false,
+    "code": "SCOPE_DENIED",
+    "message": "当前项目未启用此应用"
+  },
+  "unselectedStoredData": {
+    "draftCount": 0
+  },
+  "unselectedProjections": [],
+  "nativeBoundTask": {
+    "id": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+    "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+    "projectName": "M10 原生 CLI 隔离项目",
+    "dirId": "e526f19b-1a18-4d84-a914-282193ecd38c",
+    "cwd": "/private/tmp/willyou-m10-native-service-KJ42Qu/project",
+    "aiProfileId": "ce50f151-cf8d-4b10-aa08-f4f0e2066b9c",
+    "aiProfileName": "M10 私有 Codex 0.162.1",
+    "aiProfileColor": null,
+    "runner": "codex",
+    "nativeSessionId": "01a169b8-dec3-7ea3-8000-5aa7cd3da00d",
+    "title": "M10_UI_NATIVE_TASK_KJ42Qu: Reply with the completion marker…",
+    "firstMessage": "M10_UI_NATIVE_TASK_KJ42Qu: Reply with the completion marker only. Do not invoke tools, read files, create drafts or send mail.",
+    "injectedEnvNames": [
+      "ALL_PROXY",
+      "CODEX_HOME",
+      "HOME",
+      "HTTPS_PROXY",
+      "HTTP_PROXY",
+      "NO_PROXY",
+      "PROJECT_DB_CONFIG",
+      "REMOTE_SERVERS_CONFIG",
+      "SHELL",
+      "SMARTDD_CONFIG_VERSION",
+      "SMARTDD_PROJECT_CONTEXT",
+      "SMARTDD_PROJECT_ID",
+      "SMARTDD_RESOURCE_AUDIT",
+      "ZDOTDIR"
+    ],
+    "runtimeSnapshot": {
+      "runId": "88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf",
+      "projectId": "00a0c515-63aa-46ce-8cd3-fac488cb3080",
+      "configVersion": 1,
+      "configHash": "572ac2fe8177bd19326a6133d9bc9368f1473c4c1de6e8e4b356d88796de21e6",
+      "manifestPath": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata/capabilities/runs/00a0c515-63aa-46ce-8cd3-fac488cb3080/efc74c86-541d-4ed1-9076-d1d72f50df52/88f2f76b-33c9-4a4b-8cb3-6aaa68f39acf/manifest.json",
+      "auditPath": "/private/tmp/willyou-m10-native-service-KJ42Qu/userdata/capabilities/resource-audit/00a0c515-63aa-46ce-8cd3-fac488cb3080/efc74c86-541d-4ed1-9076-d1d72f50df52.jsonl",
+      "skills": [
+        {
+          "skillId": "project-db-diagnostics",
+          "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
+          "version": "1.0.0",
+          "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "path": "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        },
+        {
+          "skillId": "remote-password-ssh",
+          "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
+          "version": "1.0.0",
+          "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "path": "/private/tmp/willyou-m10-native-service-KJ42Qu/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        }
+      ],
+      "mcp": [
+        {
+          "name": "smartdd_project_b4c7d2a391a3",
+          "loaded": "unverified"
+        }
+      ],
+      "selfCheck": {
+        "status": "passed",
+        "issues": [],
+        "at": 1792775085413
+      },
+      "sessionCapabilities": {
+        "schema": 2,
+        "taskId": "efc74c86-541d-4ed1-9076-d1d72f50df52",
+        "snapshotHash": "48abecf665a22d53a6d717bc279e01f6d68e0f5cac2d25f7339f17f521072f2c"
+      }
+    },
+    "configVersion": 1,
+    "projectConfigVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1792775084469,
+    "updatedAt": 1792775086660,
+    "lastLaunchedAt": 1792775085097,
+    "ptyId": "a743494d-a5c5-435e-aa36-946f206a2c03",
+    "recovery": "resumable",
+    "recoveryReason": ""
+  },
+  "nativeConfigWrite": {
+    "actor": "actual isolated Codex TUI",
+    "historicalControl": "docs/里程碑/M10_三方应用接入/验收/证据/m10-packaged-native-task-t-20261021.json (prior control only; no new standalone control claimed)",
+    "beforeSha256": "0543b5b1724f951b0e9411b930ec18dc26da213ec135c6b51b2594086354bb0f",
+    "afterSha256": "8813c5e21236c82bfb2f654e56c5c1bb93a781d37f70576f16ee9dda3b9fdcf7",
+    "delta": "\n[tui]\nscreen_reader_detection_done = true\n\n[tui.model_availability_nux]\n\"gpt-6.1-sol\" = 1\n"
+  },
+  "originalConfigBytesUnchanged": {
+    "base": true,
+    "profile": false,
+    "businessFieldsPreserved": true
+  },
+  "rendererErrors": [],
+  "ownAppCleanupComplete": true,
+  "finishedAt": "2026-10-23T17:04:46.880Z"
+}

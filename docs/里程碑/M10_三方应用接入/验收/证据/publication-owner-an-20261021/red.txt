@@ -1,0 +1,93 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/resource-publication-recovery.test.ts --maxWorkers=1
+
+[1021/171833.979304:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/171835.324172:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (9 tests | 5 failed) 1043ms
+     × restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes 50ms
+     × restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes 80ms
+     × restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes 128ms
+     × does not release an unknown later install resumer even when the original operation says failed 134ms
+     × does not infer stopped from a missing PID or an approximate historical timestamp 122ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes
+ApplicationError: 原发布进程仍存在，保留占用
+ ❯ sqliteTransaction.<anonymous> src/main/core/applications/resource-store.ts:257:48
+
+ ❯ sqliteTransaction node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ signal.signal src/main/core/applications/resource-store.ts:266:8
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ ResourceStore.recover src/main/core/applications/resource-store.ts:249:11
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:29:99
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > does not release an unknown later install resumer even when the original operation says failed
+AssertionError: promise resolved "{ …(11) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "contentHash": "e8e7b4e59920971b08ad054f493c2b356044797f7ea36e15ab619770192ecd2c",
++   "generation": 1,
++   "integrity": "valid",
++   "kind": "legacy-static-plugin",
++   "operationId": "dfe7c31d-0d40-4ed5-9506-56d6348d075e",
++   "ownerStoreId": "1ca20c1b-89b3-4953-89db-c9b76adc40bc",
++   "pathScope": "C",
++   "relativePath": "original-static",
++   "resourceId": "original-c-fixture",
++   "scopeIdentity": "1ca20c1b-89b3-4953-89db-c9b76adc40bc",
++   "state": "ready",
+  }
+
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:38:104
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > C publication recovery uses original kernel identity and every install owner > does not infer stopped from a missing PID or an approximate historical timestamp
+AssertionError: promise resolved "{ …(11) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "contentHash": "e8e7b4e59920971b08ad054f493c2b356044797f7ea36e15ab619770192ecd2c",
++   "generation": 1,
++   "integrity": "valid",
++   "kind": "legacy-static-plugin",
++   "operationId": "b9776ba8-3ba3-447a-b527-0456ce69da72",
++   "ownerStoreId": "cfb366e0-0a4f-489b-a222-851fb6c790ea",
++   "pathScope": "C",
++   "relativePath": "original-static",
++   "resourceId": "original-c-fixture",
++   "scopeIdentity": "cfb366e0-0a4f-489b-a222-851fb6c790ea",
++   "state": "ready",
+  }
+
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:46:104
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 4 passed (9)
+   Start at  17:18:35
+   Duration  2.56s (transform 740ms, setup 0ms, import 1.04s, tests 1.04s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

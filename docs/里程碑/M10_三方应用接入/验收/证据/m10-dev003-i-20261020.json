@@ -1,0 +1,225 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-I",
+  "recordedAt": "2026-10-20T10:59:15.193591+00:00",
+  "requirementBaseline": "R1.6 incl12.21;full M10 remains active",
+  "baseCommit": "6191f0d747750bb3396afb1cc18b4b79565c33a2",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "applicationVersion": "0.0.5",
+  "prototypeBaseline": "8466734",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Native-only schema0 history guards reuse exact run ownership,resource dependency leases,PTY identity/exit and conservative recovery without any business assertActive,input authority or bridge permission",
+    "Complete current Codex managed false list with user configuration preserved;no appended application/legacy MCP;exact H root registration even before an empty catalog consumer",
+    "Original task runtime_snapshot retained verbatim across open,self-check,first native ID and exit;current guard diagnostic stays RAM only",
+    "Unsupported/corrupt nonempty history and missing v2 pointer refuse promotion or demotion;original session evidence unchanged",
+    "Startup run recovery then exact known HOME consumer recovery;only same store/U fingerprint and stopped PID/birth with terminal children/activities can release;foreign/live/unknown records preserved",
+    "Failure of owned PTY stop cannot skip broker/peer closure;actual child and lease retained until true owned exit"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/capabilities/discovery.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects --maxWorkers=2",
+      "status": "failed-retained",
+      "files": 53,
+      "tests": 696,
+      "passed": 693,
+      "failed": 3,
+      "m10AndRelatedRuntimePassed": 617,
+      "projectTestsPassed": 76,
+      "durationSeconds": 211.14,
+      "log": "dev003-i-20261020/related-20261020.json"
+    },
+    {
+      "command": "pnpm test src/main/core/projects --maxWorkers=1",
+      "status": "passed",
+      "files": 6,
+      "tests": 79,
+      "durationSeconds": 39.12,
+      "log": "dev003-i-20261020/projects-isolated-20261020.json",
+      "scope": "After original batch terminal;same original source/assertions/timeouts,isolated from M10 heavy fixture I/O;no proof of shared-machine timing root cause"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-i-20261020/types-final-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev003-i-20261020/build-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "log": "dev003-i-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev003-i-20261020/resources-20261020.json"
+    }
+  ],
+  "testAccounting": {
+    "previousRelated": 686,
+    "newRunGuard": 3,
+    "newProductionHistoryAndClosure": 5,
+    "newHRecovery": 2,
+    "currentUniqueCovered": 696,
+    "finalM10AndRuntimePassed": 617,
+    "finalProjectAndM8Passed": 79,
+    "finalGroupsPassed": 696,
+    "note": "617 from original mixed run +79 isolated complete project group;original693/696 remains failed,not renamed green;repeated45/51/83/84 not accumulated"
+  },
+  "retainedFailures": [
+    {
+      "phase": "types-second",
+      "classification": "development SQL string quotation syntax",
+      "fix": "valid string delimiter;final typecheck passed"
+    },
+    {
+      "phase": "related",
+      "classification": "outer5000ms timeout;unchanged project source",
+      "tests": [
+        "E06 preserves existing destination and removes temporary ciphertext on write failure",
+        "S02/S03 restores a real encrypted SSH key and authenticates only after an explicit connection test",
+        "E03 exports only selected AI secrets, excludes unselected profiles, and leaves the original default unchanged"
+      ],
+      "observedMs": [
+        5348,
+        5653,
+        5170
+      ],
+      "followup": "Original batch ended first;isolated full79 project tests passed with original timeout and assertions",
+      "limitation": "No claim that every shared-machine I/O timing cause is fixed"
+    }
+  ],
+  "immutableResources": {
+    "indexHash": "3f9056e36bcd256e0b4db32e675a7bb5d06e8c6485861f0a594bb1c41c8e0189",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "bridgeSha256": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+  "boundaries": {
+    "historyGuardAndDeadOwners": "controlled process identity/PTY fixtures;actual private SQLite/files/source/services",
+    "normalOsPtyAndOriginalCjs": "actual owned OS chain reexecuted in617 tests,synthetic native CLI;not actual CC/Codex",
+    "noV2Promotion": "schema0 hold retained;transient empty planning request not stored as migrated capability session",
+    "oldSnapshot": "unchanged original database bytes,not reconstructed metadata",
+    "foreignStore": "fixture foreign consumer bytes preserved",
+    "actualCcCodex": "not run",
+    "packagedAppCases": 0,
+    "dailyCredentialsOrMailbox": "not read/copied",
+    "externalMailOrRelease": false
+  },
+  "remaining": [
+    "verified known-M4 original hash/path/alias recovery and one-time v2 migration;guard is not this migration",
+    "complete native configuration/profile/trust precedence and actual CC/Codex validation",
+    "native user role/firstMessage/clear concrete send authority without redundant confirmation",
+    "P01-P09 production UI and all72 packaged App/system cases",
+    "complete maintenance/GC/staleT/dead-lock/publication recovery",
+    "versioned Mail freshness output contract without rewriting1.0.0"
+  ],
+  "formalProductCases": {
+    "total": 72,
+    "packagedAppPassed": 0,
+    "scopeUnchanged": true
+  },
+  "release": {
+    "published": false,
+    "mergedMain": false,
+    "tagged": false
+  },
+  "evidence": [
+    {
+      "path": "dev003-i-20261020/build-20261020.json",
+      "sha256": "0562c3f31735bec5e58d5c5d84e43dcd75c30c19da90e302af66b2fe62209a35"
+    },
+    {
+      "path": "dev003-i-20261020/existing-first-20261020.json",
+      "sha256": "f5551834ec6534476b0452ae69e1573896e5a74454ebe1b3a8718a5db5a03a29"
+    },
+    {
+      "path": "dev003-i-20261020/guards-first-20261020.json",
+      "sha256": "084062a7aacf24ee611cc461411c2274ea83e1d8b2b332686fc883d4d44e185d"
+    },
+    {
+      "path": "dev003-i-20261020/lifecycle-first-20261020.json",
+      "sha256": "37ec2b33617d73fc807e85261a129d0689e12b774386ee337d6f40bf683c6e20"
+    },
+    {
+      "path": "dev003-i-20261020/lifecycle-second-20261020.json",
+      "sha256": "6b9855e00a4198ea868bf9b83c3957e523670465f6ebc2946363bc2a77d0d093"
+    },
+    {
+      "path": "dev003-i-20261020/main-composition-20261020.json",
+      "sha256": "b2ba3823f549601815e421c4493f41000f5bb2b725a80c91590d258a4e799602"
+    },
+    {
+      "path": "dev003-i-20261020/projects-isolated-20261020.json",
+      "sha256": "c52bbac72aa698ec3b0a6b3b952fce771f740780fd559ba39f4da6dcf4502992"
+    },
+    {
+      "path": "dev003-i-20261020/related-20261020.json",
+      "sha256": "f2d3a26de0ffcc2aaaeba605255b09e1ed1c0d022ac652f16ad670ae13c16282"
+    },
+    {
+      "path": "dev003-i-20261020/release-20261020.json",
+      "sha256": "b34dcb777d174b61d9e0ba4c9f604da1a6b325cb41559130a01ef59ff0823813"
+    },
+    {
+      "path": "dev003-i-20261020/resources-20261020.json",
+      "sha256": "d636290293fd0df5809e18f6b765e444129dbc6e5f2d554794639b0439d3cf63"
+    },
+    {
+      "path": "dev003-i-20261020/source-and-build-manifest.json",
+      "sha256": "d241ab189fb67e6186c659ddd61db580107ebfc3c67fb9b938423a6ec0439b23"
+    },
+    {
+      "path": "dev003-i-20261020/types-final-20261020.json",
+      "sha256": "8e1dde9a4caa197a71d1e85ffa95d1377d3fbbedfd573487ecb38fed42ac31e0"
+    },
+    {
+      "path": "dev003-i-20261020/types-first-20261020.json",
+      "sha256": "8e1dde9a4caa197a71d1e85ffa95d1377d3fbbedfd573487ecb38fed42ac31e0"
+    },
+    {
+      "path": "dev003-i-20261020/types-fourth-20261020.json",
+      "sha256": "8e1dde9a4caa197a71d1e85ffa95d1377d3fbbedfd573487ecb38fed42ac31e0"
+    },
+    {
+      "path": "dev003-i-20261020/types-second-20261020.json",
+      "sha256": "20dfcad5899c4fb242e0611ec2199fec1bf0e47747c0c84055365fcc62c1a78c"
+    },
+    {
+      "path": "dev003-i-20261020/types-third-20261020.json",
+      "sha256": "8e1dde9a4caa197a71d1e85ffa95d1377d3fbbedfd573487ecb38fed42ac31e0"
+    }
+  ]
+}

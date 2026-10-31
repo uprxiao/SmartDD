@@ -1,0 +1,11 @@
+// QB/T22. Read-only measurements of the original six diagnostic states.
+import assert from 'node:assert/strict';
+const modes={'unknown':'unknown-history','unsupported':'unsupported-schema','query-loading':'reading','query-error':'read-error'};
+const props=['display','width','height','paddingTop','paddingRight','paddingBottom','paddingLeft','marginTop','marginRight','marginBottom','marginLeft','gap','alignItems','textAlign','fontFamily','fontSize','fontWeight','lineHeight','color','backgroundColor','borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth','borderTopColor','borderRadius','maxWidth','overflowWrap'];
+export async function observeSessionStatus({app,result,mode,theme,size,layer}){
+ const state=modes[mode]??mode;
+ if(!['unknown-history','not-recorded','corrupt','unsupported-schema','reading','read-error'].includes(state))return;
+ const status=await app.evaluate(`(()=>{const d=document.querySelector('dialog[open]'),empty=d.querySelector('.m10-empty'),note=d.querySelector('[role="status"].m10-note'),paint=e=>e?Object.fromEntries(${JSON.stringify(props)}.map(k=>[k,getComputedStyle(e)[k]])):null,rect=e=>{if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}};return{state:${JSON.stringify(state)},theme:${JSON.stringify(theme)}.replace(/^y/,''),size:${JSON.stringify(size)},layer:${JSON.stringify(layer)},role:(empty||note)?.getAttribute('role'),empty:paint(empty),heading:paint(empty?.querySelector('h3')),paragraph:paint(empty?.querySelector('p')),button:paint(empty?.querySelector('button')),note:paint(note),headingText:empty?.querySelector('h3')?.textContent,paragraphText:empty?.querySelector('p')?.textContent,noteText:note?.textContent,icons:empty?[...empty.querySelectorAll(':scope>svg')].map(e=>({visible:getComputedStyle(e).display!=='none',style:paint(e),svg:e.outerHTML})):[],emptyRect:rect(empty),noteRect:rect(note)}})()`);
+ assert(status.empty||status.note,'The original state has its diagnostic surface');
+ const record=result.sessionStatusPaint??={boundary:'Read-only original DOM and computed styles; P simulated scenarios and A declared private I prerequisites remain separate',scopes:[]};record.scopes.push(status);
+}

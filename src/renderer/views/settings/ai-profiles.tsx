@@ -169,7 +169,7 @@ function ProfileDialog({ profile, onClose }: { profile: AiProfileView | null; on
   const [runner, setRunner] = useState<Runner>(profile?.runner ?? 'claude');
   const [executable, setExecutable] = useState(profile?.executable ?? '');
   const [args, setArgs] = useState(profile ? joinArgs(profile.args) : '');
-  const [color, setColor] = useState<string | null>(profile?.color ?? PROFILE_COLORS[0]);
+  const [color, setColor] = useState<string | null>(profile ? profile.color : PROFILE_COLORS[0]);
   const [isDefault, setIsDefault] = useState(profile?.isDefault ?? false);
   const [rows, setRows] = useState<EnvRow[]>(
     profile?.env.map((e) => ({

@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/terminal-insertion.test.ts src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/zentao-data.test.ts src/renderer/features/applications src/renderer/views/task-project-version.test.tsx src/renderer/views/task-terminal-focus.test.tsx --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/terminal-insertion.test.ts (11 tests | 2 failed) 59ms
+     × formats a bounded paste,never writes an Enter,and reuses the same operation exactly once 2ms
+     × expires prepared sources and rejects oversized or empty host text before transport 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/terminal-insertion.test.ts > sender-owned application terminal insertion > formats a bounded paste,never writes an Enter,and reuses the same operation exactly once
+ApplicationError: 本次引用已经投递，不自动重复插入
+ ❯ ApplicationTerminalInsertion.insert src/main/core/applications/terminal-insertion.ts:26:255
+
+ ❯ src/main/core/applications/__tests__/terminal-insertion.test.ts:14:460
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/terminal-insertion.test.ts > sender-owned application terminal insertion > expires prepared sources and rejects oversized or empty host text before transport
+ApplicationError: 原终端投递已失效，请重新选择
+ ❯ ApplicationTerminalInsertion.require src/main/core/applications/terminal-insertion.ts:16:183
+
+ ❯ ApplicationTerminalInsertion.insert src/main/core/applications/terminal-insertion.ts:26:163
+ ❯ src/main/core/applications/__tests__/terminal-insertion.test.ts:20:175
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  2 failed | 95 passed (97)
+   Start at  22:33:47
+   Duration  7.03s (transform 604ms, setup 0ms, import 2.14s, tests 7.54s, environment 1.68s)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,474 @@
+diff --git a/drizzle/meta/_journal.json b/drizzle/meta/_journal.json
+index d1aec0e3..86f45e57 100644
+--- a/drizzle/meta/_journal.json
++++ b/drizzle/meta/_journal.json
+@@ -148,6 +148,13 @@
+       "when": 1792498800000,
+       "tag": "0020_application_activity_subjects",
+       "breakpoints": true
++    },
++    {
++      "idx": 21,
++      "version": "6",
++      "when": 1792506000000,
++      "tag": "0021_capability_run_evidence",
++      "breakpoints": true
+     }
+   ]
+ }
+diff --git a/src/main/core/applications/__tests__/application-controller.test.ts b/src/main/core/applications/__tests__/application-controller.test.ts
+index 0aec9f70..4df74cc9 100644
+--- a/src/main/core/applications/__tests__/application-controller.test.ts
++++ b/src/main/core/applications/__tests__/application-controller.test.ts
+@@ -8,7 +8,7 @@ import { PtyAccess } from '../../../pty-access';
+ import { createApplicationController } from '../controller';
+ import type { ApplicationService } from '../application-service';
+ let handlers:Map<string,(...args:any[])=>any>,sender:IpcMainInvokeEvent,access:PtyAccess,service:ReturnType<typeof fakeService>;
+-function fakeService(){return{listVersions:vi.fn(),cleanupVersion:vi.fn(),listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
++function fakeService(){return{diagnoseSession:vi.fn(),listVersions:vi.fn(),cleanupVersion:vi.fn(),listActivity:vi.fn(),activityDetail:vi.fn(),prepareSend:vi.fn(),executeSend:vi.fn(),mailStatus:vi.fn(),viewSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),cancelSend:vi.fn(),captureAttachment:vi.fn(),replyDraft:vi.fn(),importAttachment:vi.fn(),mailQuery:vi.fn(),mailMessage:vi.fn(),mailResource:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),catalog:vi.fn(()=>[{appId:'mail',added:false}]),setAdded:vi.fn(),setEnabled:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),listConnections:vi.fn(),testConnection:vi.fn(),discardConnectionTest:vi.fn(),saveConnection:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),viewDrafts:vi.fn(),viewDraft:vi.fn(),readBusinessResource:vi.fn()};}
+ const event=(id:number)=>{const wc=Object.assign(new EventEmitter(),{id,mainFrame:{},isDestroyed:()=>false});return{sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;};
+ function register(current:ApplicationService|undefined){handlers=new Map();registerRPCRouter({applications:createApplicationController(current,e=>access.requireSender(e))},{handle:(name:string,handler:(...args:any[])=>any)=>handlers.set(name,handler)} as never);}
+ const invoke=(name:string,e=sender,...args:unknown[])=>handlers.get('applications.'+name)!(e,...args);
+@@ -27,7 +27,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+   service.setAdded.mockRejectedValueOnce(new ApplicationError('REVISION_CONFLICT','应用状态已变化，请重新载入'));expect(await invoke('setAdded',sender,'mail',true,0)).toEqual({ok:false,code:'REVISION_CONFLICT',message:'应用状态已变化，请重新载入'});
+  });
+  it('exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags',()=>{
+-  expect([...handlers.keys()].sort()).toEqual(['versions','cleanupVersion','activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
++  expect([...handlers.keys()].sort()).toEqual(['session','versions','cleanupVersion','activity','activityDetail','prepareSend','executeSend','send','reviewSend','authorizeSend','cancelSend','catalog','setAdded','setEnabled','projectSettings','select','connections','testConnection','discardConnectionTest','saveConnection','setConnectionEnabled','disconnect','drafts','draft','resource','captureAttachment','replyDraft','importAttachment','mailQuery','mailStatus','mailRead','mailResource','mailCacheStatus','clearMailCache','zentaoWork','zentaoObject','zentaoResource'].map(n=>'applications.'+n).sort());
+  });
+  it('keeps cache inspection and reclamation as explicit main-frame-only management endpoints',async()=>{
+   service.mailCacheStatus.mockResolvedValueOnce({limit:500000000});service.clearMailCache.mockResolvedValueOnce({activeLeases:1});
+@@ -51,6 +51,7 @@ describe('main-renderer application RPC authority and safe replies',()=>{
+  it('keeps history metadata and frozen results behind the main-frame gate without enabling an app',async()=>{
+   for(const[name,method]of[['activity','listActivity'],['activityDetail','activityDetail']] as const){expect(await invoke(name,event(82),{})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockReturnValueOnce({items:[]});expect(await invoke(name,sender,{})).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,{},...(name==='activityDetail'?[undefined]:[]));}
+  });
++ it('allows read-only session diagnostics only from the real main frame',async()=>{expect(await invoke('session',event(82),'t1')).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service.diagnoseSession).not.toHaveBeenCalled();service.diagnoseSession.mockResolvedValueOnce({selection:'unknown-history'});expect(await invoke('session',sender,'t1')).toEqual({ok:true,value:{selection:'unknown-history'}});expect(service.diagnoseSession).toHaveBeenCalledWith(sender,'t1');});
+  it('gates version inspection and cleanup before parsing any renderer plan',async()=>{
+   for(const[name,method]of[['versions','listVersions'],['cleanupVersion','cleanupVersion']] as const){expect(await invoke(name,event(82),{sql:'invalid'})).toMatchObject({ok:false,code:'SCOPE_DENIED'});expect(service[method]).not.toHaveBeenCalled();service[method].mockResolvedValueOnce({items:[]});expect(await invoke(name,sender,'mail')).toMatchObject({ok:true,value:{items:[]}});expect(service[method]).toHaveBeenCalledWith(sender,'mail');}
+  });
+diff --git a/src/main/core/applications/__tests__/mail-send-data.test.ts b/src/main/core/applications/__tests__/mail-send-data.test.ts
+index 52c9bb15..516c6723 100644
+--- a/src/main/core/applications/__tests__/mail-send-data.test.ts
++++ b/src/main/core/applications/__tests__/mail-send-data.test.ts
+@@ -97,7 +97,7 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+  });
+  it('migrates only the provable original prepare identity and leaves frozen sends unchanged on replay',async()=>{
+   const intent=await prepare();const before=f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id);
+-  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects']);
++  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence']);
+   expect(f.sqlite.prepare('SELECT kind,subject_id FROM application_activity_subjects').all()).toEqual([{kind:'mail-send',subject_id:intent.id}]);expect(f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);
+   f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>20');runBundledMigrations(f.sqlite);expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_activity_subjects').get()).toEqual({n:1});expect(messages).toHaveLength(0);
+  });
+@@ -163,8 +163,8 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+  });
+  it('upgrades v18 send records and retains metadata-only user-source provenance on migration replay',async()=>{
+   const intent=await prepare();await confirm(intent);const before=f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id),source=f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get() as Record<string,string>;
+-  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+-  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
++  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
++  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
+   expect(()=>f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(randomUUID(),randomUUID(),'renderer-confirmation','hash','metadata','now')).toThrow(/FOREIGN KEY/);expect(()=>f.sqlite.exec("UPDATE mail_user_action_sources SET source_kind='model-approved'")).toThrow(/CHECK/);expect(f.sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(messages).toHaveLength(0);
+  });
+  it('uses the current rotated secret for the same identity without changing the reviewed bytes',async()=>{
+diff --git a/src/main/core/applications/__tests__/run-fixture.ts b/src/main/core/applications/__tests__/run-fixture.ts
+index bfea6dc4..82b2211c 100644
+--- a/src/main/core/applications/__tests__/run-fixture.ts
++++ b/src/main/core/applications/__tests__/run-fixture.ts
+@@ -1,3 +1,4 @@
++import {SessionCapabilityProjector} from '../session-projector';
+ import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+ import { join } from 'node:path';
+ import { tmpdir } from 'node:os';
+@@ -23,7 +24,7 @@ export class FixtureProcessReader implements ProcessIdentityReader {
+   read(pid: number): ProcessIdentity | null { const startedAt = this.identities.get(pid); return startedAt && !this.unknown.has(pid) ? { pid,startedAt } : null; }
+   state(identity: ProcessIdentity) { if (this.unknown.has(identity.pid)) return 'unknown' as const; return this.identities.get(identity.pid) === identity.startedAt ? 'running' as const : 'stopped' as const; }
+ }
+-export async function runFixture(reader: ProcessIdentityReader = new FixtureProcessReader(),options: { application?: boolean;runtime?: Buffer;allowedOperations?: string[];applicationBundle?: {manifest:ApplicationManifest;files:Record<string,Buffer>} } = {}) {
++export async function runFixture(reader: ProcessIdentityReader = new FixtureProcessReader(),options: { application?: boolean;fullProjection?:boolean;runtime?: Buffer;allowedOperations?: string[];applicationBundle?: {manifest:ApplicationManifest;files:Record<string,Buffer>} } = {}) {
+   const root = realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-runs-'))), sqlite = new Database(join(root,'state.sqlite'));
+   sqlite.pragma('foreign_keys=ON'); runBundledMigrations(sqlite); sqlite.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p1','isolated run fixture',1,1)");
+   const store = new ResourceStore(sqlite,root), entries = new Map<string,Buffer>(); let onVerify: ((resource: ResourceRecord) => void) | undefined;
+@@ -33,7 +34,8 @@ export async function runFixture(reader: ProcessIdentityReader = new FixtureProc
+     entries.set(id,bytes); return store.publish(spec);
+   };
+   const child = await resource('fixture-dependency','1'), parent = await resource('fixture-dependency','2',[child.resourceId]), adapter = await resource('agent-adapter','1',[parent.resourceId]);
+-  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { if ((!options.application && snapshot.packages.length) || snapshot.adapterBinding.hash !== adapter.contentHash) throw new Error('fixture host selection'); },verifyExtraResource: (r) => { const dir = join(store.root,r.relativePath), bytes = readFileSync(join(dir,'entry.cjs')); if (!bytes.equals(entries.get(r.resourceId)!) || digest(bytes) !== r.contentHash || fileNames(dir).length !== 2 || JSON.parse(readFileSync(join(dir,'.smartdd-owned.json'),'utf8')).storeId !== store.storeId) throw new ApplicationError('HASH_MISMATCH','fixture whole tree changed'); onVerify?.(r); } });
++  let projector:SessionCapabilityProjector|undefined;
++  const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { if ((!options.application && snapshot.packages.length) || snapshot.adapterBinding.hash !== adapter.contentHash) throw new Error('fixture host selection'); },verifyExtraResource: (r,snapshot) => { if(options.fullProjection&&r.kind==='session-projection'){projector!.verify(r,snapshot);return;}const dir = join(store.root,r.relativePath), bytes = readFileSync(join(dir,'entry.cjs')); if (!bytes.equals(entries.get(r.resourceId)!) || digest(bytes) !== r.contentHash || fileNames(dir).length !== 2 || JSON.parse(readFileSync(join(dir,'.smartdd-owned.json'),'utf8')).storeId !== store.storeId) throw new ApplicationError('HASH_MISMATCH','fixture whole tree changed'); onVerify?.(r); } });
+   const home = join(root,'home'), cwd = join(root,'project'); mkdirSync(home); mkdirSync(cwd);
+   const snapshot: CapabilitySessionSnapshotV2 = { schema: 2,taskId: randomUUID(),projectId: 'p1',runner: 'claude-code',createdAt: new Date().toISOString(),native: { sessionId: null,stateRoot: join(home,'.claude'),cwd },adapterBinding: { id: 'claude-code',version: '1.0.0',hash: adapter.contentHash,projectionFormatVersion: 1,nativeToolNames: {} },agentAtCreation: { version: 'controlled-fixture',adapterRevision: 1 },catalogGeneration: 'isolated-fixture',packages: [],standardSkills: [],mcp: [],provenance: 'created' };
+   let application: ReturnType<PackageRegistry['get']> | undefined, applicationSource: ReturnType<typeof fixtureBundle> | undefined;
+@@ -55,7 +57,7 @@ export async function runFixture(reader: ProcessIdentityReader = new FixtureProc
+     snapshot.packages = [{ appId: application.appId,version: application.version,packageHash: application.packageHash,hashAlgorithm: 'app-manifest-v1',hostApi: manifest.hostApi,dataApi: manifest.dataApi,runtimeHash: runtime.contentHash,toolContractMajors: Object.fromEntries(manifest.tools.map(tool => [tool.name,tool.contractMajor])),skills: manifest.skills.map(skill=>{const native=applicationNativeSkillName(manifest.appId,skill.id,packageHash);return{skillId:skill.id,nativeName:native,contentHash:applicationSkillContentHash(manifest,skill.path),sourceRelativePath:skill.path,projectionPath:join(store.root,'sessions',snapshot.taskId,'claude/plugin/skills',native,'SKILL.md')};}),bindings: [],allowedOperations: options.allowedOperations ?? manifest.permissions }];
+     snapshot.mcp = [{ kind: 'applications',serverName: mcpName,protocolMajor: 1,runtimeHash: runtime.contentHash }]; snapshot.adapterBinding.nativeToolNames = Object.fromEntries(manifest.tools.map(tool => [tool.name,'mcp__' + mcpName + '__' + tool.name]));
+   }
+-  const session = await sessions.create(snapshot,home); let allowed = true, revocations = 0, revoke: (() => void | Promise<void>) | undefined;
++  const session = await sessions.create(snapshot,home);if(options.fullProjection){projector=new SessionCapabilityProjector(store,sessions);await projector.claude(snapshot.taskId);} let allowed = true, revocations = 0, revoke: (() => void | Promise<void>) | undefined;
+   const registry = () => new CapabilityRunRegistry(store,sessions,{ processes: reader,assertCurrent: () => { if (!allowed) throw new ApplicationError('SCOPE_DENIED','fixture current policy revoked'); },revoke: async () => { revocations++; await revoke?.(); },revocationTimeoutMs: 30 });
+   const runs = registry();
+   return { root,sqlite,store,sessions,snapshot,session,home,reader,runs,registry,resource,adapter,parent,child,application,applicationSource,packageRegistry,create: () => runs.reserve({ taskId: snapshot.taskId,snapshotHash: session.pointer.snapshotHash,bindings: [] }),setAllowed: (value: boolean) => { allowed = value; },setRevoke: (value: () => void | Promise<void>) => { revoke = value; },revocations: () => revocations,setVerify: (value: (r: ResourceRecord) => void) => { onVerify = value; },cleanup: () => { sqlite.close(); rmSync(root,{ recursive: true,force: true }); } };
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index 02b2ff37..17956acd 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -40,7 +40,7 @@ beforeEach(async()=>{
+  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
+  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
+  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{}});
+- applications=new ApplicationService(support.store,{secrets,projects,tasks,requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
++ applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ });
+ afterEach(async()=>{tasks?.dispose();for(const id of ptys?.live?.keys()??[])ptys.kill(id);await applications?.dispose();try{await managed?.dispose();}catch(error){if(error!==expectedDisposeError)throw error;}capabilities?.dispose();sqlite?.close();rmSync(root,{recursive:true,force:true});});
+ const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
+@@ -89,7 +89,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
+   const profile=profiles.create({name:'private actual process fixture',runner:'codex',executable:command,args:[],env:[{name:'ELECTRON_RUN_AS_NODE',value:'1',secret:false},{name:'WY_M10_TEST_REPORT',value:report,secret:false},{name:'WY_M10_TEST_STOP',value:stop,secret:false}],color:null,isDefault:false});
+   for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
+   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
+-  applications=new ApplicationService(support.store,{secrets,projects,tasks,requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
++  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
+   managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
+@@ -97,6 +97,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
+    const first=await create(profile.id),runId=first.task.runtimeSnapshot!.runId;
+    await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {cliPid:number;bridgePid:number;result:{isError?:boolean}};
+    expect(observed.result.isError).not.toBe(true);expect(managed.runs.get(runId).pid).toBe(observed.cliPid);const child=sqlite.prepare("SELECT state,pid FROM capability_run_processes WHERE run_id=? AND kind='bridge'").get(runId);expect(child).toEqual({state:'active',pid:observed.bridgePid});expect(consumers()).toHaveLength(1);
++   const diagnostic=await applications.sessionDiagnostics.inspect(first.task.id);expect(diagnostic.currentRun).toMatchObject({id:runId,current:true,preparation:{state:'prepared',cliVersion:'0.162.1'},bridge:{connected:true,observedAt:expect.any(String)}});expect(diagnostic.applications.find(a=>a.appId==='mail')).toMatchObject({fixedVersion:'1.0.0',resourceState:'verified',evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:1,successfulToolRequests:1}});
+    writeFileSync(stop,'owned fixture exit');await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'),{timeout:10000});await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(existsSync(first.task.runtimeSnapshot!.manifestPath)).toBe(false);
+   }finally{tasks.dispose();real.killAll();if(oldShell===undefined)delete process.env.SHELL;else process.env.SHELL=oldShell;}
+  },20000);
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 1191c8ab..2fff941c 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -1,3 +1,4 @@
++import {ApplicationSessionDiagnostics} from './session-diagnostics';
+ import {ApplicationVersionMaintenance} from './version-maintenance';
+ import type {ApplicationVersionCleanup} from '@shared/application-maintenance';
+ import type {ApplicationActivityQuery} from '@shared/application-activity';
+@@ -37,6 +38,7 @@ import type { CapabilityRunRegistry } from './run-registry';
+ const uuid=z.uuid();
+ /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
+ export class ApplicationService {
++  readonly sessionDiagnostics:ApplicationSessionDiagnostics;
+   readonly versions:ApplicationVersionMaintenance;
+   readonly activity:ApplicationActivityService;
+   readonly connections:ApplicationConnectionService;
+@@ -59,7 +61,7 @@ export class ApplicationService {
+   private closed=false;private closing?:Promise<void>;
+   constructor(readonly store:ResourceStore,private readonly options:{
+     secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
+-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};changed?():void;
++    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?():void;
+   }){
+     this.versions=new ApplicationVersionMaintenance(store,options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')));
+     this.activity=new ApplicationActivityService(store);
+@@ -67,6 +69,7 @@ export class ApplicationService {
+     this.builtin=new BuiltinPackageRegistry(store);
+     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
+     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id),runningInProject:id=>options.tasks.runningInProject(id)});
++    this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty});
+     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,assertRun:id=>{
+       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
+     }});
+@@ -80,6 +83,7 @@ export class ApplicationService {
+     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
+     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
+   }
++  diagnoseSession(sender:ApplicationUiSender,taskId:string){this.options.requireSender(sender);return this.sessionDiagnostics.inspect(taskId);}
+   listVersions(sender:ApplicationUiSender,appId:ApplicationId){this.options.requireSender(sender);return this.versions.list(appId);}
+   async cleanupVersion(sender:ApplicationUiSender,input:ApplicationVersionCleanup){this.options.requireSender(sender);const result=await this.versions.cleanup(input);this.options.changed?.();return result;}
+   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+index 787b0ec5..a5d871c9 100644
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -21,6 +21,7 @@ export function createApplicationController(service:ApplicationService|undefined
+     }
+   };
+   return createScopedRPCController({
++    session:(event,taskId:string)=>run(event,current=>current.diagnoseSession(event,taskId)),
+     versions:(event,appId:ApplicationId)=>run(event,current=>current.listVersions(event,appId)),
+     cleanupVersion:(event,input:ApplicationVersionCleanup)=>run(event,current=>current.cleanupVersion(event,input)),
+     activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),
+diff --git a/src/main/core/applications/package-config-views.ts b/src/main/core/applications/package-config-views.ts
+index 15beedab..44f2a4cb 100644
+--- a/src/main/core/applications/package-config-views.ts
++++ b/src/main/core/applications/package-config-views.ts
+@@ -3,25 +3,30 @@ import { join } from 'node:path';
+ import { AjvJsonSchemaValidator } from '@modelcontextprotocol/server/validators/ajv';
+ import type { JsonSchemaType } from '@modelcontextprotocol/server';
+ import { ApplicationError } from '@shared/applications';
++import type { ResourceStore } from './resource-store';
+ import type { ApplicationConnection,ConnectionConfig } from '@shared/application-connections';
+ import type { ApplicationExecutionContexts,ApplicationExecutionContext } from './execution-context';
+ import { BuiltinPackageRegistry } from './builtin-package-registry';
+ import { digest } from './manifest';
+ /** Physical configuration is projected through known configApi1 fields and the original package schema. */
+ export class PackageConfigViews {
+-  private readonly builtin:BuiltinPackageRegistry;
+   private readonly validator=new AjvJsonSchemaValidator();
+-  constructor(private readonly contexts:ApplicationExecutionContexts){this.builtin=new BuiltinPackageRegistry(contexts.store);}
++  constructor(private readonly contexts:ApplicationExecutionContexts){}
+   get(context:ApplicationExecutionContext,connection:ApplicationConnection):ConnectionConfig{
+-    this.contexts.assertActive(context);const pack=this.builtin.assertTrusted(context.packageHash),contract=pack.manifest.connectionContracts.find(c=>c.providerId===connection.providerId);
+-    if(pack.appId!==connection.appId||context.appId!==connection.appId||!contract||contract.configApiMajor!==1||contract.identityContractMajor!==1)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','原包连接视图尚未有兼容转换依据');
+-    const config=connection.config,authMode=config.kind==='foxmail'?'local-readonly':config.authMode;if(!contract.authModes.includes(authMode))throw new ApplicationError('CONFIG_INCOMPATIBLE','原包不支持当前连接认证方式');
+-    let view:ConnectionConfig;
+-    if(config.kind==='zentao')view={kind:'zentao',baseUrl:config.baseUrl,username:config.username,authMode:config.authMode};
+-    else if(config.kind==='foxmail')view={kind:'foxmail',sourcePath:config.sourcePath,account:config.account,queryDays:config.queryDays};
+-    else view={kind:'smtp',host:config.host,port:config.port,username:config.username,fromAddress:config.fromAddress,authMode:config.authMode,mode:config.mode};
+-    const bytes=readFileSync(join(this.contexts.store.root,pack.relativePath,contract.inputSchemaPath)),declared=pack.manifest.files.find(f=>f.path===contract.inputSchemaPath);
+-    if(!declared||bytes.length!==declared.size||digest(bytes)!==declared.sha256)throw new ApplicationError('HASH_MISMATCH','原包连接Schema内容不符');
+-    if(!this.validator.getValidator(JSON.parse(bytes.toString('utf8')) as JsonSchemaType)(view).valid)throw new ApplicationError('CONFIG_INCOMPATIBLE','当前连接不能转换为原包所需配置');return Object.freeze(view);
++    this.contexts.assertActive(context);if(context.appId!==connection.appId)throw new ApplicationError('SCOPE_DENIED','连接不属于当前应用');
++    return packageConnectionView(this.contexts.store,context.packageHash,connection,this.validator);
+   }
+ }
++/** Local compatibility only; neither a network health check nor a new permission. */
++export function packageConnectionView(store:ResourceStore,packageHash:string,connection:ApplicationConnection,validator=new AjvJsonSchemaValidator()):ConnectionConfig{
++ const pack=new BuiltinPackageRegistry(store).assertTrusted(packageHash),contract=pack.manifest.connectionContracts.find(c=>c.providerId===connection.providerId);
++ if(pack.appId!==connection.appId||!contract||contract.configApiMajor!==1||contract.identityContractMajor!==1)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','原包连接视图尚未有兼容转换依据');
++ const config=connection.config,authMode=config.kind==='foxmail'?'local-readonly':config.authMode;if(!contract.authModes.includes(authMode))throw new ApplicationError('CONFIG_INCOMPATIBLE','原包不支持当前连接认证方式');
++ let view:ConnectionConfig;
++ if(config.kind==='zentao')view={kind:'zentao',baseUrl:config.baseUrl,username:config.username,authMode:config.authMode};
++ else if(config.kind==='foxmail')view={kind:'foxmail',sourcePath:config.sourcePath,account:config.account,queryDays:config.queryDays};
++ else view={kind:'smtp',host:config.host,port:config.port,username:config.username,fromAddress:config.fromAddress,authMode:config.authMode,mode:config.mode};
++ const bytes=readFileSync(join(store.root,pack.relativePath,contract.inputSchemaPath)),declared=pack.manifest.files.find(f=>f.path===contract.inputSchemaPath);
++ if(!declared||bytes.length!==declared.size||digest(bytes)!==declared.sha256)throw new ApplicationError('HASH_MISMATCH','原包连接Schema内容不符');
++ if(!validator.getValidator(JSON.parse(bytes.toString('utf8')) as JsonSchemaType)(view).valid)throw new ApplicationError('CONFIG_INCOMPATIBLE','当前连接不能转换为原包所需配置');return Object.freeze(view);
++}
+diff --git a/src/main/core/applications/private-broker.ts b/src/main/core/applications/private-broker.ts
+index 42e12b8f..6cf69c8d 100644
+--- a/src/main/core/applications/private-broker.ts
++++ b/src/main/core/applications/private-broker.ts
+@@ -21,7 +21,7 @@ export class PrivateApplicationBroker {
+   private readonly bindings = new Map<string,Binding>();
+   private readonly peers = new Set<Peer>();
+   private closed = false;
+-  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
++  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
+   private clock(): number { return this.options.now?.() ?? Date.now(); }
+   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
+   async start(): Promise<void> {
+@@ -103,8 +103,10 @@ export class PrivateApplicationBroker {
+     try{await this.options.attachPeer?.(peer.socket,ticket.runId,ticket.bridge);if(this.closed||peer.socket.destroyed||this.tickets.get(hash)!==ticket||ticket.expiresAt<=this.clock())throw new ApplicationError('AUTH_REQUIRED','启动核验期间票据已撤销或失效');this.runs.assertBridge(ticket.runId,ticket.bridge.processId);this.tickets.delete(hash);this.cleanupTicket(ticket);}finally{ticket.claiming=false;}
+     const token = randomBytes(32).toString('hex'), binding: Binding = { runId: ticket.runId,bridgeId: ticket.bridge.processId,digest: digest(token),expiresAt: this.clock() + Math.min(900000,Math.max(1,this.options.tokenTtlMs ?? 900000)),revoked: false };
+     peer.binding = binding; this.bindings.set(binding.digest,binding); peer.socket.setTimeout(0);
++    if(this.options.attachPeer&&this.options.authenticated)try{await this.options.authenticated(ticket.runId,ticket.bridge.processId);}catch{/* Missing diagnostic evidence does not grant authority or block the Agent. */}
+     return { schema: 1,id: request.id,status: 'ok',value: { token,expiresAt: binding.expiresAt,hostGeneration: this.hostGeneration } };
+   }
++  hasAuthenticated(runId:string):boolean{for(const peer of this.peers)if(peer.binding?.runId===runId&&!peer.socket.destroyed)try{this.checkBinding(peer,peer.binding);return true;}catch{/* stale is not connected */}return false;}
+   private revokePeer(peer: Peer): void { if (peer.binding) { peer.binding.revoked = true; this.bindings.delete(peer.binding.digest); } for (const controller of peer.controllers.values()) controller.abort(); }
+   revokeRun(runId: string): void { for (const peer of this.peers) if (peer.binding?.runId === runId) { this.revokePeer(peer); peer.socket.destroy(); } for (const [hash,ticket] of this.tickets) if (ticket.runId === runId) { this.tickets.delete(hash); this.cleanupTicket(ticket); } this.tools.clearMemory(runId); }
+   async close(): Promise<void> {
+diff --git a/src/main/core/applications/task-capability-launcher.ts b/src/main/core/applications/task-capability-launcher.ts
+index 9886e0ff..2b01e1da 100644
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -60,7 +60,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
+     },revoke:runId=>{this.broker?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
+     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
+-    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge)});
++    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId)});
++    applications.sessionDiagnostics.attach({channelConnected:id=>this.broker.hasAuthenticated(id),verify:(resource,snapshot,home)=>{
++      if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
++      else if(resource.kind==='session-projection')this.projector.verify(resource,snapshot);
++      else if(resource.kind==='agent-projection'){const catalog=this.catalogs.get(home);if(!catalog)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享发现目录尚未核查');catalog.verifyReference(resource,snapshot);}
++      else support.legacy.verify(resource);
++    }});
+     this.timer=setInterval(()=>{void this.sweep();},Math.max(20,options.pollMs??500));this.timer.unref();
+   }
+   static async open(support:AgentSupportService,capabilities:CapabilityService,applications:ApplicationService,options:TaskCapabilityLauncherOptions):Promise<ManagedTaskCapabilities>{
+@@ -155,8 +161,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
+       }
+       const runtime=unavailable?this.unavailableRuntime(input,current,run.runId,unavailable):this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills,projections}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=current.pointer;
+-      await run.prepare();let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
+-      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}const plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});}}
++      await run.prepare();const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
++      if(request){const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}const plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
++      try{await this.applications.sessionDiagnostics.prepared({schema:1,runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
+       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
+       return{ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,beforeSpawn:async()=>{if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','启动已取消');await hold?.activate();await bridge?.bridge.arm();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
+     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+diff --git a/src/main/db/migrations.test.ts b/src/main/db/migrations.test.ts
+index c0517586..f8d5698c 100644
+--- a/src/main/db/migrations.test.ts
++++ b/src/main/db/migrations.test.ts
+@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
+ }
+ afterEach(() => open.splice(0).forEach((db) => db.close()));
+ 
+-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects'];
++const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence'];
+ 
+ const tables = (db: Database.Database) =>
+   (
+@@ -27,20 +27,20 @@ describe('bundled migrations', () => {
+   it('adds canonical H locations without changing existing C resource IDs, paths or foreign-key references', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,14));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('original','runtime','original-hash','original-store','C','runtime/original','ready',1,'valid'); INSERT INTO capability_agent_adapters VALUES('codex','1.0.0','original-hash','original','{}');");
+-    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT resource_id,relative_path,scope_identity,scope_relative_path FROM capability_resources').get()).toEqual({resource_id:'original',relative_path:'runtime/original',scope_identity:'original-store',scope_relative_path:null});
+     expect(db.prepare('SELECT resource_id FROM capability_agent_adapters').get()).toEqual({resource_id:'original'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+-    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+   });
+ 
+   it('adds builtin-source provenance without approving historical packages and preserves proofs on replay', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,15));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('old-package-resource','application-package','old-package','owned-store','C','apps/mail/0.9.0/old-package','ready',1,'valid'); INSERT INTO capability_packages VALUES('old-package','mail','0.9.0','app-manifest-v1','apps/mail/0.9.0/old-package','{}','old-package-resource','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT package_hash,version FROM capability_packages').get()).toEqual({package_hash:'old-package',version:'0.9.0'});
+     expect(db.prepare('SELECT * FROM capability_builtin_package_sources').all()).toEqual([]);
+     db.prepare('INSERT INTO capability_builtin_package_sources VALUES(?,?,?,?)').run('old-package','test-proof-hash','test proof retained','2026-10-20T00:00:00Z');
+-    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT source_index_json FROM capability_builtin_package_sources').get()).toEqual({source_index_json:'test proof retained'});
+     expect(()=>db.prepare('DELETE FROM capability_packages WHERE package_hash=?').run('old-package')).toThrow(/FOREIGN KEY/);
+     expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -49,10 +49,10 @@ describe('bundled migrations', () => {
+   it('adds scoped business operations without rewriting old project selection,drafts or retained resources on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,16));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained business',1,1); INSERT INTO application_project_settings VALUES('p','mail',1,9,NULL,'2026-10-20T00:00:00Z'); INSERT INTO mail_drafts(id,project_id,source_task_id,subject,attachment_count,current_revision,state,created_at,updated_at) VALUES('d','p','old-task','retained',0,1,'draft','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z'); INSERT INTO mail_draft_revisions VALUES('d',1,'original body JSON','original-content-hash','old-task','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:0});
+     db.exec("UPDATE application_project_settings SET policy_revision=7; INSERT INTO application_data_resources VALUES('r','p','mail','mail-draft-v1','d','1','text',1,'mail.draft','hash',1,'text/plain','retained-package','original-operation','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=17");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:7});expect(db.prepare('SELECT content_json,content_hash FROM mail_draft_revisions').get()).toEqual({content_json:'original body JSON',content_hash:'original-content-hash'});
+     expect(db.prepare('SELECT resource_id,minted_package_hash FROM application_data_resources').get()).toEqual({resource_id:'r',minted_package_hash:'retained-package'});
+     db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT id,project_id FROM mail_drafts').get()).toEqual({id:'d',project_id:'p'});expect(db.prepare('SELECT resource_id FROM application_data_resources').get()).toEqual({resource_id:'r'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -69,10 +69,10 @@ describe('bundled migrations', () => {
+   it('adds source-scoped ZenTao reads and preserves fetched revisions,binary files and receipt provenance on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,17));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained Zentao',1,1); INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,updated_at) VALUES('p','zentao',1,5,3,'2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     db.prepare('INSERT INTO application_zentao_revisions VALUES(?,?,?,?,?,?,?,?,?,?)').run('owned-object','p','source-connection',1,'story','9007199254740997','revision','detail','original JSON','2026-10-20T00:00:00Z');
+     db.prepare('INSERT INTO application_zentao_files VALUES(?,?,?,?,?,?,?)').run('owned-object','7','binary-hash',Buffer.from([0,255]),'application/octet-stream',2,'2026-10-20T00:00:00Z');
+-    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT native_id,payload_json FROM application_zentao_revisions').get()).toEqual({native_id:'9007199254740997',payload_json:'original JSON'});expect(db.prepare('SELECT bytes FROM application_zentao_files').get()).toEqual({bytes:Buffer.from([0,255])});
+     expect(db.prepare('SELECT check_operation_id,original_operation_id FROM application_read_receipt_checks').get()).toEqual({check_operation_id:'check',original_operation_id:'original'});
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:5,policy_revision:3});db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT project_id FROM application_zentao_revisions').get()).toEqual({project_id:'p'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -81,8 +81,8 @@ describe('bundled migrations', () => {
+   it('adds mail shared-index lineage and receipt proofs without rewriting original operations or their real caller roles',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,18));
+     db.exec("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES('ui','ui','project','p',NULL,NULL,NULL,NULL,'mail','original',1,'mail.query','read','scope','succeeded','2026-10-20T00:00:00Z'),('index','index-job','internal-index','p',NULL,NULL,'index','ui','mail','original',1,'mail.refresh','read','scope','succeeded','2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+     expect(()=>db.exec("INSERT INTO application_index_waiters VALUES('index','forged','source','2026-10-20T00:00:00Z',NULL,'waiting')")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_index_waiters SET state='invented'")).toThrow(/CHECK/);
+   });
+ 
+@@ -125,6 +125,7 @@ describe('bundled migrations', () => {
+       'application_zentao_revisions',
+       'capability_active_packages',
+       'capability_agent_adapters',
++      'capability_bridge_observations',
+       'capability_builtin_package_sources',
+       'capability_discovery_roots',
+       'capability_install_journal',
+@@ -136,6 +137,7 @@ describe('bundled migrations', () => {
+       'capability_resource_operations',
+       'capability_resources',
+       'capability_run_activities',
++      'capability_run_preparations',
+       'capability_run_processes',
+       'capability_runs',
+       'capability_schema_migrations',
+@@ -175,7 +177,7 @@ describe('bundled migrations', () => {
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('old-project','kept',1,1)");
+     db.exec("INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at) VALUES('old-project','mail',1,7,'2026-10-20T00:00:00Z')");
+     db.exec("INSERT INTO mail_blob_objects VALUES('old-content',3,'2026-10-20T00:00:00Z'); INSERT INTO mail_attachment_objects(id,project_id,content_hash,filename,content_type,byte_size,created_at) VALUES('old-attachment','old-project','old-content','old.txt','text/plain',3,'2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects']);
++    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence']);
+     expect(db.prepare('SELECT id,kind,filename FROM mail_attachment_objects').all()).toEqual([{ id: 'old-attachment',kind: 'attachment',filename: 'old.txt' }]);
+     expect(db.prepare('SELECT slot,revision FROM application_binding_slot_revisions ORDER BY slot').all()).toEqual([{ slot: 'foxmail',revision: 7 },{ slot: 'smtp',revision: 7 }]);
+     db.exec('DELETE FROM __drizzle_migrations WHERE id>=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });
+diff --git a/src/main/db/schema.ts b/src/main/db/schema.ts
+index 797a968d..c5f52ddb 100644
+--- a/src/main/db/schema.ts
++++ b/src/main/db/schema.ts
+@@ -425,3 +425,11 @@ export const mailUserActionSources=sqliteTable('mail_user_action_sources',{
+ export const applicationActivitySubjects=sqliteTable('application_activity_subjects',{
+  operationId:text('operation_id').notNull().references(()=>applicationDataOperations.operationId,{onDelete:'cascade'}),kind:text('kind').notNull(),subjectId:text('subject_id').notNull(),
+ },t=>({pk:primaryKey({columns:[t.operationId,t.kind,t.subjectId]}),lookup:index('application_activity_subjects_lookup').on(t.kind,t.subjectId,t.operationId)}));
++
++// Fixed host preparation and kernel-verified bridge observations, scoped per run.
++export const capabilityRunPreparations = sqliteTable('capability_run_preparations', {
++ runId:text('run_id').primaryKey().references(()=>capabilityRuns.runId),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),preparedAt:text('prepared_at').notNull(),
++},t=>({time:index('capability_run_evidence_time').on(t.preparedAt,t.runId)}));
++export const capabilityBridgeObservations = sqliteTable('capability_bridge_observations', {
++ runId:text('run_id').notNull().references(()=>capabilityRuns.runId),bridgeId:text('bridge_id').notNull().references(()=>capabilityRunProcesses.processId),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),observedAt:text('observed_at').notNull(),
++},t=>({pk:primaryKey({columns:[t.runId,t.bridgeId]})}));
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 9ac41606..cc751d26 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -177,7 +177,7 @@ async function main(): Promise<void> {
+   let managedTasks:ManagedTaskCapabilities|undefined;
+   try {
+     if(agentSupport){
+-      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
++      applications=new ApplicationService(agentSupport.store,{secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:()=>events.emit(applicationsChangedEvent,undefined)});
+       await applications.recover();
+       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
+         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
+diff --git a/src/renderer/features/applications/style.css b/src/renderer/features/applications/style.css
+index 81db911a..aebb37e0 100644
+--- a/src/renderer/features/applications/style.css
++++ b/src/renderer/features/applications/style.css
+@@ -133,3 +133,5 @@
+ .m10-version-row{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border)}.m10-version-summary{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}.m10-version-summary strong{font-size:13px}.m10-version-summary>span,.m10-version-summary>small{color:var(--muted);font-size:12px;line-height:1.6}.m10-version-summary p{margin:2px 0;overflow-wrap:anywhere}.m10-version-actions{display:flex;flex-direction:column;gap:8px}.m10-version-reference{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}.m10-version-reference>span{color:var(--muted);font-size:12px}@media(max-width:1100px){.m10-version-row{flex-direction:column}.m10-version-actions{flex-direction:row;flex-wrap:wrap}}
+ 
+ .m10-version-summary>span{margin-left:0}.m10-version-summary .m10-inline-label{margin-left:8px}
++
++.m10-session-applications{display:flex;flex-direction:column;gap:14px;max-height:62vh;overflow:auto;padding:3px 1px}.m10-session-applications p{margin:6px 0;line-height:1.65;overflow-wrap:anywhere}.m10-session-applications h3{margin:4px 0;font-size:13px;font-weight:600}.m10-session-app{border:1px solid var(--border);border-radius:10px;padding:16px}.m10-session-app>header{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.m10-session-app>button{margin:10px 8px 0 0}.m10-run-evidence{font-size:12px;line-height:1.7}.m10-session-history{border-top:1px solid var(--border);padding:12px 0}.m10-session-applications details>summary{cursor:pointer;color:var(--secondary);font-size:12px}.m10-session-applications small{font-size:11px;color:var(--muted)}
+diff --git a/src/renderer/views/task-chrome.tsx b/src/renderer/views/task-chrome.tsx
+index 590e63f7..cd950b45 100644
+--- a/src/renderer/views/task-chrome.tsx
++++ b/src/renderer/views/task-chrome.tsx
+@@ -1,3 +1,4 @@
++import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
+ // Task details and runtime bar adapted from Yoda (Apache-2.0).
+ // The single window title follows the approved Codex reference; the sidebar switches sessions.
+ import { Ellipsis, Folder, FolderOpen, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert } from 'lucide-react';
+@@ -35,6 +36,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
+   const { t } = useTranslation();
+   const { effectiveTheme, setTheme } = useTheme();
+   const [busy, setBusy] = useState(false);
++  const [sessionApps,setSessionApps]=useState(false);
+   const dark = effectiveTheme === 'ydark';
+   const running = Boolean(task.ptyId);
+   const restart = canRestartInPlace(task) && Boolean(task.aiProfileId);
+@@ -46,11 +48,12 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
+     } catch (e) { toast.error(rpcErrorMessage(e)); }
+     finally { setBusy(false); }
+   };
+-  return <header className="task-window-header app-drag" data-testid="task-header">
++  return <><header className="task-window-header app-drag" data-testid="task-header">
+     <div className="task-window-title" title={`${task.projectName ?? t('task.noProject')} / ${task.title}`}>
+       <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
+     </div>
+     <div className="task-window-actions app-no-drag">
++      <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/>应用</button>
+       <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button>
+       <DropdownMenu>
+         <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
+@@ -70,7 +73,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
+       <span className="task-window-divider" />
+       <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
+     </div>
+-  </header>;
++  </header>{sessionApps&&<SessionApplicationsPanel key={task.id} taskId={task.id} runIdentity={(task.ptyId??'stopped')+':'+(task.runtimeSnapshot?.runId??'unrecorded')} onClose={()=>setSessionApps(false)}/>}</>;
+ });
+ 
+ function InfoRow({ label, children }: { label: string; children: ReactNode }) {

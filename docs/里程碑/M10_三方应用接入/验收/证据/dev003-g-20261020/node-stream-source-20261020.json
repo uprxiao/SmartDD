@@ -1,0 +1,9 @@
+{
+  "schema": "m10-command-evidence-v1",
+  "checkpoint": "DEV003-G",
+  "recordedAt": "2026-10-20T10:01:20.400671+00:00",
+  "exitCode": 0,
+  "status": "passed",
+  "sourceLog": "/private/tmp/m10-dev003-g-node-stream-source-20261020.log",
+  "output": "{\n  \"node\": \"24.19.0\",\n  \"electron\": \"42.11.14\",\n  \"streamStdio\": [\n    \"    // The stream is already cloned and piped, thus stop its readable side,\",\n    \"    // otherwise we might attempt to read from the stream when at the same time\",\n    \"    // the child process does.\",\n    \"    if (stream.type === 'wrap') {\",\n    \"      stream.handle.reading = false;\",\n    \"      stream.handle.readStop();\",\n    \"      stream._stdio.pause();\",\n    \"      stream._stdio.readableFlowing = false;\",\n    \"      stream._stdio._readableState.reading = false;\",\n    \"      stream._stdio[kIsUsedAsStdio] = true;\",\n    \"      continue;\",\n    \"    }\"\n  ]\n}\n"
+}

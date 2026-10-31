@@ -1,0 +1,155 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV004-A",
+  "recordedAt": "2026-10-20T03:51:17.249037+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; runtime design 5.3/6.3/6.4/6.7/7.1/8.3",
+  "baseCommit": "18c352f47cdb096cd2bffd31d87f4c6f3ae0cb4a",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: fixed-session and owned-process run lifecycle committed as 71c2c8b and 18c352f",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "node": "24.19.0",
+      "electron": "42.11.14",
+      "arch": "arm64"
+    }
+  },
+  "implemented": [
+    "short private Unix endpoint with uid-private directory/socket, single-use 32-byte ticket, socket-bound expiring/rotating runtime credentials and host-generation isolation",
+    "strict bounded JSON protocol; host-issued bridge/run context determines project/task and exact package; caller scope fields rejected",
+    "fixed tool input/output schemas retained verbatim in SQLite and checked against original manifest file hashes; source package corruption preserves original tool definitions and reports unavailable, including after service restart",
+    "per-call current policy/binding authorization, original package contract/permission and full source byte verification; permission subset retains allowed tools",
+    "durable invocation ID/hash/attempt/effect ledger without argument or result bodies, concurrent duplicate receipts and no execution replay after memory loss",
+    "one operation deadline and at most two explicitly safe read retries; write operations never use generic retries; bounded wait separates from actual executor activity lifetime",
+    "expiry/revocation withholds protected data while preserving known execution ID/effect metadata; actual write uncertainty is never reported as not-started",
+    "standalone CJS MCP SDK runtime, native stdio cancellation, clean stdout, child-only Electron Node mode, startup-refusal socket cleanup and single-flight credential renewal",
+    "build and packaged-native resource checks include CJS and full upstream license texts; installed SDK license transition text retained as-is"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 23,
+      "tests": 243,
+      "passed": 243,
+      "failed": 0,
+      "log": "dev004-a-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev004-a-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev004-a-20261020/release-rules.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev004-a-20261020/types.txt"
+    },
+    {
+      "command": "node scripts/applications/build-runtime.mjs",
+      "status": "passed",
+      "log": "dev004-a-20261020/runtime-build.txt",
+      "artifact": "out/applications/mcp-bridge.cjs",
+      "bytes": 764761,
+      "sha256": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "warnings": "Two upstream Zod pure-annotation comments removed by Rollup; full warning log retained"
+    }
+  ],
+  "newTests": {
+    "toolContractsExecution": 15,
+    "actualUnixBroker": 9,
+    "standaloneMcpRuntime": 3
+  },
+  "actualTransportBoundary": [
+    "Actual Unix sockets, private-file permissions, token exchange/renewal/revoke and protocol traffic participate",
+    "CJS built using production builder, installed through actual RuntimeRegistry and launched by Electron Node under a private HOME; public MCP SDK initialize, direct pre-list call, list, positive call and denied call participate",
+    "Kernel process identity reader verifies the test-owned synthetic CLI Node and MCP child PIDs; refused handshake child actually exits within bounded wait with no protocol or secret output",
+    "Business execution, current binding authorizer and initial selection use explicit controlled fixtures; no actual Claude Code, Codex, remote service or SMTP submission in this batch"
+  ],
+  "findingsAndCorrections": [
+    {
+      "finding": "Initial SDK cancellation property and TypeScript async-closure/UUID inference were incorrect",
+      "correction": "Use actual v2 ctx.mcpReq.signal and explicit valid annotations; no business validation loosened",
+      "redLogs": [
+        "dev004-a-20261020/red-initial-types.txt",
+        "dev004-a-20261020/red-sdk-types.txt"
+      ]
+    },
+    {
+      "finding": "First transport test run had 2 failures: fixture variable shadowed process, and assertion expected actual executor cleanup immediately after the new bounded waiting receipt",
+      "correction": "Rename fixture identity; explicitly wait for actual executor settlement while retaining stopping/lease assertions",
+      "redLog": "dev004-a-20261020/red-fixture-tests.txt"
+    },
+    {
+      "finding": "Code inspection found that denied startup handshake could retain an open client socket",
+      "correction": "Close socket on all startup failures; actual denied-handshake child test exits with static stderr and empty stdout",
+      "observation": "code inspection followed by a green actual-process regression; not presented as an earlier executed red test"
+    },
+    {
+      "finding": "Listing from source bytes alone would remove original tools when a package is damaged",
+      "correction": "Persist exact schemas at trusted install, hash-bind them to immutable manifest; damaged bytes keep definitions with explicit unavailable status; corrupt schema ledger is not overwritten"
+    }
+  ],
+  "boundaries": [
+    "Production main startup/RPC/UI/TaskService and CC/Codex adapter projections are not wired yet",
+    "HostToolOperation executor/authorize dependencies remain explicit fixtures here; actual fixed-version application adapter to shared ZenTao/mail services, native user provenance and renderer confirmation ledger remain required",
+    "No bridge auto-recovery is claimed; new native CLI replacement/reload and PID proof must be verified before enabling it",
+    "No production catalog/H-directory coordination, full startup migration fence or GC acceptance in this checkpoint",
+    "Same-hash verified reinstall can fill missing pre-ledger development contracts; altered existing schema records remain blocked for explicit repair, never replaced from current defaults",
+    "No M10 packaged App, real Agent model turn or product T-case was accepted in this batch",
+    "No external account, daily native session, M9 worktree or real email was used",
+    "No push, main merge, tag or release"
+  ],
+  "sourceHashes": {
+    "drizzle/0012_application_invocations.sql": "af86db1bccbb4ae4bf177f381def368089a481c725050a85748de2040d86a707",
+    "drizzle/meta/_journal.json": "d4f9a8736a2454461b5fe040835a60b8f3fa2a0bc2f6905ced3b38e6ec990fdb",
+    "src/shared/application-bridge.ts": "c08d172b4dbf298d44c150350a27247fcb22b7698568dab5d50be5ade78dd9e5",
+    "src/shared/applications.ts": "36f75933c01cd2ee4a3290c44c7cdcbf0a2056d59d63ed60e6c5b3b95993c120",
+    "src/main/core/applications/tool-service.ts": "42df75225b27cf03cb2743cbd417196e0ddecf2d693befc376e69c02b4c88ca6",
+    "src/main/core/applications/private-broker.ts": "e49bd0f16e853013d606ef70dd11e996cf56a8100886c84a0567e91bf25e9f2d",
+    "src/main/core/applications/bridge-client.ts": "efc02a493369791ac05e20ad5ca92acccf077cedbfb573d52539bd6b6ff30b14",
+    "src/main/core/applications/bridge-runtime.ts": "f991722ce904b4d3c4ebc0d58f721409bae44142f5c88b837f5afe0fae0c5d60",
+    "src/main/core/applications/package-registry.ts": "e7c9a66506bb40febcd29df10515dcb9cba4f275caee4c85d58241795c9e1796",
+    "src/main/core/applications/manifest.ts": "a8a53528cbb33db110177e1a09178c70f3d602669e7969c67f926b944ec94765",
+    "src/main/core/applications/run-registry.ts": "e506372ba79624b34db4b6d7dcf62c54c952d0cabeab410d1e2f14a2ce639431",
+    "src/main/core/applications/__tests__/run-fixture.ts": "042b0b7b8a8f97ea467fc8d70356be6f84a071bdcf31b358a294253fb1860695",
+    "src/main/core/applications/__tests__/tool-service.test.ts": "5fe7e425a3dcb697a1fe3608955296dd9a00a690ffa0380c35f6b9e0ad76987d",
+    "src/main/core/applications/__tests__/private-broker.test.ts": "7ae20e997987b1e641b5542a29366530acfe2bbc8ea52e8af75dda856ef49112",
+    "src/main/core/applications/__tests__/bridge-runtime.test.ts": "513d0be96e39e7b63d756a4c123731945d6a8c1c727126f6ee4e79ee33b1257c",
+    "src/main/db/schema.ts": "d3062bda63dc6f50aaf9024868411b033ab15c40712029c5e57c3902f3586814",
+    "src/main/db/migrations.test.ts": "fb57823b3dd57788985f006dbbbc633024075fdbafefdd2161ba01ec539ece97",
+    "scripts/applications/build-runtime.mjs": "86c3e5447e7e99a8e43a16b407b357731bf361cde1649497e36e01e04901fe57",
+    "scripts/release/native-smoke.cjs": "ee92c1adaa66d79e5cbe471160daa397ea537dcc6103bedf9a622a0b303537f5",
+    "electron.vite.config.ts": "897c32d41c0eb37a9a2ce3b757b0f2563186bf99f9bf54ecd35c400ba0806112",
+    "NOTICE": "7a9639d190b85507faa8239792820b9c4cd71789031ee114356a00b854b5e4d3",
+    "licenses/M10/bridge/mcp-core-LICENSE.txt": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a",
+    "licenses/M10/bridge/mcp-core-package.json": "dc2e8e1fc31878b0b537b0ea034d4a11284cce20fe81f4c6ea823dd6db7e7ad5",
+    "licenses/M10/bridge/mcp-server-LICENSE.txt": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a",
+    "licenses/M10/bridge/mcp-server-package.json": "ff7f23c4a4a3162a34a2cb21087e1844bb8631724d8e43aa14aaa86d3f7e07c2",
+    "licenses/M10/bridge/sources.json": "8590c7c6dd3bc7508c5dd147863e47bb8305f132d568eea4bc7049fa291f1641",
+    "licenses/M10/bridge/zod-LICENSE.txt": "3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8",
+    "licenses/M10/bridge/zod-package.json": "c2d190d9ee4e0bdb60332aaa2130a6a98d65ddb903fe1d29248b15de57832c45"
+  },
+  "logHashes": {
+    "dev004-a-20261020/all-tests.txt": "ad90ea40170b48f3ccacfa20e4ede3f84b17ddf1bf8d9c3c58b05d60fef934cb",
+    "dev004-a-20261020/project-regression.txt": "2db1df590f14b05cfdfdda2a765afba7a2b059de0a0bddc586522ab53c16b70c",
+    "dev004-a-20261020/red-fixture-tests.txt": "da80cc74229fb0d9921e6c5fc97e8cad22a41722e5640fd2e2ed7d0aa83b2a73",
+    "dev004-a-20261020/red-initial-types.txt": "a43042507a917d33add956952dc7af4aa5237c3770ae50e74a020fdd85f834ec",
+    "dev004-a-20261020/red-sdk-types.txt": "4c3e11f4e847259117251b5aa3d46277583c5c5ac85836d7e572c5a8d5ec8863",
+    "dev004-a-20261020/release-rules.txt": "b35020e4b018535e41558d61ac8a96f86e62bb7e5295529feaeb1faf30d1a695",
+    "dev004-a-20261020/runtime-build.txt": "3d468c6d126b74b118676c79bb311f1c521505758d1bcf2ee82f427b1835035b",
+    "dev004-a-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9"
+  },
+  "logEncoding": "Original command stdout/stderr retained with terminal blank lines trimmed only"
+}

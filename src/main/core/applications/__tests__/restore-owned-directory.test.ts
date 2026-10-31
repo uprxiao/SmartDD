@@ -1,0 +1,25 @@
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,realpathSync,mkdirSync,writeFileSync,readFileSync,lstatSync,symlinkSync,rmSync,chmodSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+import {join,resolve} from 'node:path';
+import {tmpdir} from 'node:os';
+import {beforeAll,beforeEach,afterEach,afterAll,describe,it,expect} from 'vitest';
+import {restoreOwnedDirectory,type DirectoryRestoreInput} from '../restore-owned-directory';
+
+describe.skipIf(process.platform!=='darwin')('actual anchored native exclusive directory restoration',()=>{
+ let compiled:string,helper:string,root:string;
+ beforeAll(()=>{compiled=mkdtempSync(join(tmpdir(),'willyou-restore-native-'));helper=join(compiled,'identity');execFileSync('xcrun',['clang++','-std=c++17','-O2','-mmacosx-version-min=12.0','-arch',process.arch==='arm64'?'arm64':'x86_64',resolve('native/applications/process-identity.cc'),'-o',helper],{stdio:'pipe'});});
+ afterAll(()=>rmSync(compiled,{recursive:true,force:true}));
+ beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-restore-owned-')));mkdirSync(join(root,'trash'),{mode:0o700});mkdirSync(join(root,'trash/payload'),{mode:0o700});mkdirSync(join(root,'apps'),{mode:0o700});writeFileSync(join(root,'trash/payload/original'),'original bytes');});
+ afterEach(()=>rmSync(root,{recursive:true,force:true}));
+ const input=():DirectoryRestoreInput=>{const r=lstatSync(root),s=lstatSync(join(root,'trash/payload'));return{root,from:'trash/payload',to:'apps/original',rootIdentity:{dev:r.dev,ino:r.ino},sourceIdentity:{dev:s.dev,ino:s.ino}};};
+ it('preserves source inode and bytes while retaining original PID identity mode',()=>{const i=input();restoreOwnedDirectory(helper,i);expect(lstatSync(join(root,i.to)).ino).toBe(i.sourceIdentity.ino);expect(readFileSync(join(root,i.to,'original'),'utf8')).toBe('original bytes');const identity=JSON.parse(execFileSync(helper,[String(process.pid)],{encoding:'utf8'}));expect(identity).toMatchObject({schema:1,state:'running',pid:process.pid});});
+ it('does not replace even an empty pre-existing user directory',()=>{const i=input();mkdirSync(join(root,i.to),{mode:0o700});const occupied=lstatSync(join(root,i.to));expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(lstatSync(join(root,i.to)).ino).toBe(occupied.ino);expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('original bytes');});
+ it('rejects a replaced destination parent link without touching its external target',()=>{const i=input();rmSync(join(root,'apps'),{recursive:true});mkdirSync(join(root,'outside'),{mode:0o700});writeFileSync(join(root,'outside/user'),'keep');symlinkSync(join(root,'outside'),join(root,'apps'));expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(readFileSync(join(root,'outside/user'),'utf8')).toBe('keep');expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('original bytes');});
+ it.each(['root','source'] as const)('rejects mismatched %s inode pins',which=>{const i=input();if(which==='root')i.rootIdentity.ino++;else i.sourceIdentity.ino++;expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('original bytes');});
+ it('rejects traversal instead of moving outside the anchored store',()=>{const i=input();i.to='../outside';expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('original bytes');});
+ const discovery=():DirectoryRestoreInput=>{chmodSync(root,0o755);const from='.agents/skills/smartdd-a-fixture',to='.agents/smartdd-runtime/trash/'+randomUUID()+'/'+('a'.repeat(64))+'/payload';mkdirSync(join(root,from),{recursive:true,mode:0o755});mkdirSync(join(root,to,'..'),{recursive:true,mode:0o700});writeFileSync(join(root,from,'original'),'H bytes');const r=lstatSync(root),s=lstatSync(join(root,from));return{root,from,to,rootIdentity:{dev:r.dev,ino:r.ino},sourceIdentity:{dev:s.dev,ino:s.ino},scope:'H'};};
+ it('quarantines and restores actual H paths under a non-private but non-writable HOME without changing the inode',()=>{const i=discovery();restoreOwnedDirectory(helper,i);expect(readFileSync(join(root,i.to,'original'),'utf8')).toBe('H bytes');restoreOwnedDirectory(helper,{...i,from:i.to,to:i.from});expect(lstatSync(join(root,i.from)).ino).toBe(i.sourceIdentity.ino);});
+ it('preserves even an empty H trash target when native exclusion refuses the move',()=>{const i=discovery();mkdirSync(join(root,i.to));const occupied=lstatSync(join(root,i.to)).ino;expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(lstatSync(join(root,i.to)).ino).toBe(occupied);expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('H bytes');});
+ it('rejects arbitrary C-like paths in the H-specific native mode',()=>{const i=input();i.scope='H';expect(()=>restoreOwnedDirectory(helper,i)).toThrow('原路径被占用');expect(readFileSync(join(root,i.from,'original'),'utf8')).toBe('original bytes');});
+});

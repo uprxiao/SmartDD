@@ -1,0 +1,127 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts --maxWorkers=1 -t 'unknown install resumer|cancels waiting adoption'
+
+[1021/164005.004844:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/164005.144692:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (93 tests | 1 failed | 92 skipped) 447ms
+     × keeps an unknown install resumer instead of replacing its lease after the original publisher stops 446ms
+[1021/164006.098274:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (32 tests | 1 failed | 31 skipped) 161ms
+     × cancels waiting adoption without changing a preexisting original H tree or the other consumer 160ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > cancels waiting adoption without changing a preexisting original H tree or the other consumer
+AssertionError: expected ApplicationError: 目录已开始物化，须核对原操作后恢复 { code: '…' } to match object { code: 'RESOURCE_BUSY' }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_BUSY",
++ ApplicationError {
++   "code": "RESOURCE_RECOVERY_REQUIRED",
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:94:54
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > coordinated original Codex H migration bindings > keeps an unknown install resumer instead of replacing its lease after the original publisher stops
+AssertionError: promise resolved "{ session: { …(6) }, reused: false }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "reused": false,
++   "session": {
++     "discoveryHome": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-fmVi6h/home",
++     "legacyStatus": "migrated-known-legacy",
++     "pointer": {
++       "schema": 2,
++       "snapshotHash": "eddf75475349d80d717cf755a38e80de68834e0c634102e1fa9be1b96fb52190",
++       "taskId": "cf8fef6b-5480-48c2-bb14-ed86dc8ab2dc",
++     },
++     "retention": "active",
++     "selectionHash": "ef091939e3f9632e4a3798a11b21bed28b7c904096c0ffa13804401ee3593f7f",
++     "snapshot": {
++       "adapterBinding": {
++         "hash": "89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
++         "id": "codex",
++         "nativeToolNames": {},
++         "projectionFormatVersion": 2,
++         "version": "1.1.0",
++       },
++       "agentAtCreation": {
++         "adapterRevision": 2,
++         "version": "0.162.1",
++       },
++       "catalogGeneration": "1dabdcbd93a8a7208530d634fd6df8aa66367f0cb122c3294841d64eef04a517",
++       "createdAt": "2026-10-21T08:40:06.031Z",
++       "legacyBinding": {
++         "identityHash": "9afee1ee9a81944a3e63097561c995fb11e9a4aa97f30ecd6a7effa3e5f6490a",
++         "logicalEvidenceHash": "d5452c1f903bf0c9fc7f062a4f9afd905d9ca9c722da29ef85e2a84dca41d428",
++         "manifestHash": "70a0cf920fa93eb6f5905c4a3c93f8fcd1a24c315685c16d5dde6282ff587194",
++         "sourceRecordHash": "05b9f3d1b94cf8cafe58d3341ea8a17040ce7ad09954e5c5b8a2724b2496413c",
++         "sourceSnapshotHash": "15807ba37d054c0a59d21765b6a66388007d483d60935dcf30b9b2f3c8ba346c",
++       },
++       "mcp": [
++         {
++           "kind": "legacy-project-context",
++           "protocolMajor": 1,
++           "runtimeHash": "70c32e91da49eb11fb26ac32d000a45bd1df1de05cbea8b899ec3fa216ced795",
++           "serverName": "smartdd_project_3e10a895ede1",
++         },
++       ],
++       "native": {
++         "cwd": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-fmVi6h/project",
++         "sessionId": "d8d49a52-0ffa-4814-8fad-0c6bea0c8740",
++         "stateRoot": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-fmVi6h/home/.codex",
++       },
++       "packages": [],
++       "projectId": "05befcf2-f27d-4364-a228-8329a897f6b9",
++       "provenance": "migrated-known-legacy",
++       "runner": "codex",
++       "schema": 2,
++       "standardSkills": [
++         {
++           "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++           "hashAlgorithm": "legacy-tree-v1",
++           "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-fmVi6h/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac/SKILL.md",
++           "skillId": "project-db-diagnostics",
++           "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
++         },
++         {
++           "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++           "hashAlgorithm": "legacy-tree-v1",
++           "projectionPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m4-migration-fmVi6h/home/.agents/skills/smartdd-remote-password-ssh-77df74e9de1a0cc7/SKILL.md",
++           "skillId": "remote-password-ssh",
++           "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
++         },
++       ],
++       "taskId": "cf8fef6b-5480-48c2-bb14-ed86dc8ab2dc",
++     },
++   },
+  }
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:300:103
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 123 skipped (125)
+   Start at  16:40:05
+   Duration  1.27s (transform 299ms, setup 0ms, import 516ms, tests 607ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

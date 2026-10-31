@@ -1,0 +1,28 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-task-retention.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts (20 tests | 1 failed) 570ms
+     × retains first source identity when a previously unknown native ID is observed on the same task 36ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-task-retention.test.ts > durable M4 source retention before schema2 migration, not Agent execution > retains first source identity when a previously unknown native ID is observed on the same task
+ApplicationError: 原历史保留身份与迁移对象不同
+ ❯ LegacyTaskRetention.source src/main/core/applications/legacy-task-retention.ts:28:233
+
+ ❯ LegacyTaskRetention.prepare src/main/core/applications/legacy-task-retention.ts:39:29
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts:82:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  02:17:38
+   Duration  878ms (transform 134ms, setup 0ms, import 240ms, tests 570ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

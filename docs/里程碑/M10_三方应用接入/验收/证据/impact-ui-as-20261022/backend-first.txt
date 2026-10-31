@@ -1,0 +1,52 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-impact.test.ts src/main/core/applications/__tests__/application-controller.test.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-impact-ui-as-20261022/backend-report.json
+
+[1022/010956.159202:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/010956.288878:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > gates read-only impact before parsing renderer scope 2ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > passes the actual Electron sender to a trusted read and wraps the result 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > rejects file-viewer windows,subframes and destroyed senders before any service or candidate parsing 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > preserves controlled error codes and hides raw synchronous or asynchronous provider,SQLite and filesystem errors 1ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > exposes explicit business endpoints without generic SQL,secret,scope or caller-supplied approval flags 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > keeps cache inspection and reclamation as explicit main-frame-only management endpoints 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > routes mail reads through the actual trusted sender and denies alternate windows before business execution 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > protects reply,resource import and workspace capture with actual main-frame authority 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > binds sending review,confirmation and cancellation to the actual main frame 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > keeps history metadata and frozen results behind the main-frame gate without enabling an app 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > protects all terminal reference entrypoints with the actual main frame before source parsing 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > allows read-only session diagnostics only from the real main frame 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > gates version inspection and cleanup before parsing any renderer plan 0ms
+ ✓ src/main/core/applications/__tests__/application-controller.test.ts > main-renderer application RPC authority and safe replies > checks sender authority even when the optional service is unavailable 0ms
+[1022/010956.415366:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > lists disabled and archived references, emits only non-secret metadata, and does not change any row 261ms
+ × src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > can explain revocation even when an immutable package and the original snapshot are damaged 369ms
+   → no such column: state
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run 507ms
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > refuses unknown switch scope and keeps it intact instead of showing no affected runs 338ms
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > checks exact revisions and pending switch state without selecting or mutating 352ms
+ ✓ src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > distinguishes empty scope and missing targets and rejects caller authority or SQL fields 378ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/application-impact.test.ts > read-only application impact from relational bindings and trusted run scope > can explain revocation even when an immutable package and the original snapshot are damaged
+SqliteError: no such column: state
+ ❯ Database.prepare node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21
+ ❯ src/main/core/applications/__tests__/application-impact.test.ts:12:243
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SQLITE_ERROR' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 19 passed (20)
+   Start at  01:09:56
+   Duration  2.59s (transform 149ms, setup 0ms, import 238ms, tests 2.21s, environment 0ms)
+
+JSON report written to /private/tmp/m10-impact-ui-as-20261022/backend-report.json
+ ELIFECYCLE  Test failed. See above for more details.

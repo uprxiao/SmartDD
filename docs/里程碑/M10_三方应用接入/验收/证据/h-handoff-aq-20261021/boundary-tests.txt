@@ -1,0 +1,25 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/discovery-handoff.test.ts --maxWorkers=1 --testTimeout=15000 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-h-handoff-aq-20261021/boundary-test-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > continues the original operation after two consecutive recovery SIGKILLs before C registration 5928ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved no-proof instead of adopting or releasing it 738ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved proof-hash instead of adopting or releasing it 717ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved proof-owner instead of adopting or releasing it 753ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved changed-ledger instead of adopting or releasing it 1056ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved missing-ledger instead of adopting or releasing it 868ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved unknown-pending instead of adopting or releasing it 1199ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved unknown-ledger instead of adopting or releasing it 909ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > preserves an unresolved foreign-install instead of adopting or releasing it 841ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > rechecks the original C plan after waiting for its coordinator and preserves a concurrent change 920ms
+ ✓ src/main/core/applications/__tests__/discovery-handoff.test.ts > H recovery interrupted between intent ownership and C registration > continues the same operation when a recovering owner is killed after its C ownership commit 1099ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  00:33:15
+   Duration  15.93s (transform 166ms, setup 0ms, import 267ms, tests 15.59s, environment 0ms)
+
+JSON report written to /private/tmp/m10-h-handoff-aq-20261021/boundary-test-report.json

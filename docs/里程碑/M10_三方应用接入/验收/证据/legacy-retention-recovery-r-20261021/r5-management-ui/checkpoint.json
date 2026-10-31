@@ -1,0 +1,129 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T23:12:53.226Z",
+  "branch": "feature/0.0.2",
+  "commit": "2146cf957c7285f591495db7dfbf85cfa302b087",
+  "sourceProvenance": {
+    "canonicalWorktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+    "baseCommit": "2146cf957c7285f591495db7dfbf85cfa302b087",
+    "uncommittedOverlay": "fixture-fix-source.json",
+    "embeddedBuildCommit": null,
+    "embeddedBuildDirty": true
+  },
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-legacy-recovery-r5-package-20261021/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "948e5fe3f282892ee66ba54a0de0486ef7bdf5289110e2145ac329fa13175464",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-l3e9be",
+  "userData": "/private/tmp/willyou-m10-management-ui-l3e9be/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T23:12:55.125Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T23:13:04.699Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T23:13:04.982Z",
+      "passed": true
+    },
+    {
+      "name": "P04 project enabled and explicit single ZenTao source persisted",
+      "at": "2026-10-20T23:13:05.231Z",
+      "passed": true
+    },
+    {
+      "name": "P05 real readonly list and separate detail/body/history through UI",
+      "at": "2026-10-20T23:13:05.726Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/bugs/12"
+    ],
+    "smtpCommands": [],
+    "smtpDataSubmissions": 0,
+    "socketErrors": []
+  },
+  "status": "running",
+  "driverAdaptation": {
+    "scope": "external driver only",
+    "changes": [
+      "explicit canonical source provenance for non-Git private source; embedded null/dirty unmodified",
+      "print own scratch at startup"
+    ],
+    "businessAssertions": "unchanged",
+    "originalDriverSha256": "df7e5c97e737cc8ca809f5da2362d95fa60679240cf9f44b34d5cd4b9ff249d5"
+  },
+  "fixtureTrust": {
+    "scope": "only this isolated App process",
+    "mechanism": "NODE_EXTRA_CA_CERTS for private loopback certificate; production certificate validation stays enabled",
+    "certSha256": "ca685147db18e614ce04ab24f887463925c8a74fb1d54715262197b37210ac82"
+  },
+  "deferred": [
+    {
+      "check": "SMTP plain-mode native dropdown selection",
+      "state": "not passed",
+      "reason": "CDP default selection did not change; CUA frontmostApplicationChanged, retained separate red traces"
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 76815,
+    "checkedInputs": 89
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 76815,
+      "checkedInputs": 89
+    }
+  ],
+  "appPid": 76815,
+  "setup": {
+    "projectId": "2e53294b-5259-4084-997d-928b432154ca",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": ".m10-object-list button"
+  },
+  "choiceTrace": [
+    {
+      "label": "当前应用项目",
+      "keyName": "Home",
+      "value": "2e53294b-5259-4084-997d-928b432154ca",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "ArrowDown",
+      "value": "2e53294b-5259-4084-997d-928b432154ca",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "Enter",
+      "value": "2e53294b-5259-4084-997d-928b432154ca",
+      "active": "SELECT"
+    }
+  ]
+}

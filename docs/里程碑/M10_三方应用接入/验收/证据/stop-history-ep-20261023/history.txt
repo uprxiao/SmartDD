@@ -1,0 +1,38 @@
+
+> smartdd@0.0.5 test /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-diagnostics.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/hx/.codex/worktrees/m10-bridge-shutdown/SmartDD
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts (32 tests | 1 failed) 46740ms
+   × records stop-only Skill evidence under the old run even after a new run starts 1166ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-diagnostics.test.ts > records stop-only Skill evidence under the old run even after a new run starts
+AssertionError: expected [] to match object [ { kind: 'read', …(1) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "kind": "read",
+-     "runId": "e889bc8f-3f5b-4884-b645-321ddf7b3c8e",
+-   },
+- ]
++ []
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts:123:239
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 31 passed (32)
+   Start at  12:28:46
+   Duration  47.19s (transform 305ms, setup 0ms, import 385ms, tests 46.74s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

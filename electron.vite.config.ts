@@ -23,14 +23,17 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), { name: 'smartdd-native-bridges', writeBundle() {
       execFileSync(process.execPath, ['scripts/voice/build.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/files/build.mjs'], { stdio: 'inherit' });
+      execFileSync(process.execPath, ['scripts/applications/build.mjs'], { stdio: 'inherit' });
+      execFileSync(process.execPath, ['scripts/applications/build-runtime.mjs'], { stdio: 'inherit' });
+      execFileSync(process.execPath, ['scripts/applications/build-bundles.mjs'], { stdio: 'inherit' });
       if (process.platform === 'darwin') {
         execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-office.py'], { stdio: 'inherit' });
-        execFileSync('python3', ['scripts/files/prepare-libreoffice.py'], { stdio: 'inherit' });
+        execFileSync('python3', ['scripts/files/prepare-libreoffice.py', '--node-executable', process.execPath], { stdio: 'inherit' });
       }
     } }],
     resolve: { alias },
-    build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), 'm9-html-resources': resolve('src/main/core/files/html/worker.ts'), 'm9-tex-resources': resolve('src/main/core/files/tex/worker.ts'), 'm9-office-document': resolve('src/main/core/files/office/worker.ts'), 'm9-office-pages': resolve('src/main/core/files/office/pages-worker.ts'), 'm9-pptx-document': resolve('src/main/core/files/office/pptx-worker.ts') } } },
+    build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), 'm9-html-resources': resolve('src/main/core/files/html/worker.ts'), 'm9-tex-resources': resolve('src/main/core/files/tex/worker.ts'), 'm9-office-document': resolve('src/main/core/files/office/worker.ts'), 'm9-office-pages': resolve('src/main/core/files/office/pages-worker.ts'), 'm9-pptx-document': resolve('src/main/core/files/office/pptx-worker.ts'), 'm10-mail-reader': resolve('src/main/core/applications/providers/mail-worker.ts') } } },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],

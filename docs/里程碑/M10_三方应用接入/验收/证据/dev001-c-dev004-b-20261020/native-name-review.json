@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "scope": "Static interoperability review,not an observed real-Agent failure or a claim that Codex0.162.1 has a64-byte limit",
+  "before": [
+    {
+      "toolName": "smartdd_zentao_resource_read_v1",
+      "nativeBytes": 65
+    },
+    {
+      "toolName": "smartdd_mail_attachment_import_v1",
+      "nativeBytes": 67
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.162.1/codex-rs/codex-mcp/src/tools.rs",
+      "finding": "Codex0.162.1 uses128 bytes and normalizes names;raw MCP identities are retained separately"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolSpecification.html",
+      "finding": "Bedrock tool names allow at most64;this lookup does not add Bedrock support to M10"
+    }
+  ],
+  "decision": "Keep current fixed server identity;choose shorter names for two not-yet-published built-in tools and a64-byte engineering budget,without changing methods/permissions",
+  "oldSourceHashes": {
+    "resources/applications/definitions.mjs": "573fca4418cc8e1b2530c9444bbb8ce762e1f3ff48afa4b707fd65bdaf3af57c",
+    "resources/applications/zentao/1.0.0/skills/bug-analysis/SKILL.md": "ebf20e37750b50e520dac1bb9701943c175053d4c598dbff3b791dfc6a11da8b",
+    "resources/applications/zentao/1.0.0/skills/story-review/SKILL.md": "709caf7044b9ad0fff96b60c7f1f6a827295a37db5563a928e46ba5082ec9bbb",
+    "resources/applications/mail/1.0.0/skills/work-assistant/SKILL.md": "0874326edf8afc75f481546120dbbc10035cd7356fbc37b1a3ad264c36556cf6"
+  },
+  "after": [
+    {
+      "toolName": "smartdd_zentao_work_list_v1",
+      "nativeBytes": 61
+    },
+    {
+      "toolName": "smartdd_zentao_object_get_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_zentao_resource_v1",
+      "nativeBytes": 60
+    },
+    {
+      "toolName": "smartdd_mail_query_v1",
+      "nativeBytes": 55
+    },
+    {
+      "toolName": "smartdd_mail_read_v1",
+      "nativeBytes": 54
+    },
+    {
+      "toolName": "smartdd_mail_resource_read_v1",
+      "nativeBytes": 63
+    },
+    {
+      "toolName": "smartdd_mail_draft_list_v1",
+      "nativeBytes": 60
+    },
+    {
+      "toolName": "smartdd_mail_draft_get_v1",
+      "nativeBytes": 59
+    },
+    {
+      "toolName": "smartdd_mail_draft_create_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_mail_draft_update_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_mail_draft_copy_v1",
+      "nativeBytes": 60
+    },
+    {
+      "toolName": "smartdd_mail_reply_create_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_mail_attach_import_v1",
+      "nativeBytes": 63
+    },
+    {
+      "toolName": "smartdd_mail_send_prepare_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_mail_send_execute_v1",
+      "nativeBytes": 62
+    },
+    {
+      "toolName": "smartdd_mail_send_get_v1",
+      "nativeBytes": 58
+    },
+    {
+      "toolName": "smartdd_mail_send_cancel_v1",
+      "nativeBytes": 61
+    }
+  ],
+  "afterMaxNativeBytes": 63,
+  "redLog": "red-portable-name-budget.json",
+  "actualAgentExecuted": false
+}

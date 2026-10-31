@@ -1,0 +1,89 @@
+--- a/src/main/core/projects/transfer-service.test.ts
++++ b/src/main/core/projects/transfer-service.test.ts
+@@ -1,3 +1,8 @@
++import { ResourceStore } from '../applications/resource-store';
++import { ApplicationConnectionService } from '../applications/connection-service';
++import { ApplicationSelectionService } from '../applications/selection-service';
++import { MailBlobStore } from '../applications/mail-blob-store';
++import { MailDraftService } from '../applications/mail-draft-service';
+ import { randomUUID } from 'node:crypto';
+ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+ import { join } from 'node:path';
+@@ -14,7 +19,7 @@
+ import { AiProfileService } from '../ai/ai-profile-service';
+ import { ProjectService } from './project-service';
+ import { ProjectTransferService, transferFilename } from './transfer-service';
+-import { decryptProject, encryptProject } from './transfer-format';
++import { decryptProject, encryptProject, validatePayload } from './transfer-format';
+ import { transferFixture } from './transfer-fixtures';
+ import { generateSshTestKey } from '../../test-ssh-keys';
+ import { SSH_TEST_COMMAND, testSsh } from '../connections/ssh-tester';
+@@ -335,3 +340,22 @@
+     expect(existsSync(replacedKey)).toBe(false); expect(readFileSync(external, 'utf8')).toBe('external');
+   });
+ });
++
++describe('M10 application boundaries in real strict v1 project transfer',()=>{
++ async function applicationFixture(a:ReturnType<typeof setup>,projectId:string,suffix:string){
++  const store=new ResourceStore(a.client.sqlite,a.home),connections=new ApplicationConnectionService(store,a.secrets,{verify:async config=>({providerId:config.kind,serviceId:'private-transfer-service-'+suffix,accountId:config.kind==='foxmail'?config.account:config.username,contractMajor:1})}),selections=new ApplicationSelectionService(store,connections,{requireProject:id=>{a.projects.getProject(id);},stopProjectRuns:async()=>true,runningInProject:()=>0});
++  const smtp=await connections.save({name:'M10 SMTP '+suffix,expectedRevision:0,config:{kind:'smtp',host:'fixture.example.test',port:587,username:suffix,fromAddress:suffix+'@example.test',authMode:'password',mode:'starttls'},secret:'M10-SMTP-SECRET-'+suffix}),foxmail=await connections.save({name:'M10 local '+suffix,expectedRevision:0,config:{kind:'foxmail',sourcePath:folder('mail-source-'+suffix),account:suffix,queryDays:30}});
++  await selections.setAdded('mail',true,0);await selections.setAdded('zentao',true,0);await selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:foxmail.id,smtp:smtp.id}});
++  const actor={projectId,taskId:null},policy={requireDrafts:(value:{projectId:string})=>{a.projects.getProject(value.projectId);}},blobs=new MailBlobStore(store,join(a.home,'mail-business'),policy),drafts=new MailDraftService(store,blobs,policy),bytes=Buffer.from('M10-PRIVATE-ATTACHMENT-'+suffix),attachment=await blobs.save(actor,{operationId:randomUUID(),filename:'private-'+suffix+'.txt',contentType:'text/plain'},bytes),draft=await drafts.create(actor,{operationId:randomUUID(),content:{mode:'new',sourceMessageRef:null,senderConnectionId:smtp.id,to:['recipient@example.test'],cc:[],bcc:[],subject:'M10-PRIVATE-SUBJECT-'+suffix,text:'M10-PRIVATE-BODY-'+suffix,html:null,inReplyTo:null,references:[],attachmentIds:[attachment.id]}});
++  return{store,connections,selections,smtp,foxmail,actor,blobs,drafts,draft,attachment,bytes};
++ }
++ it('excludes real App connections,secret,draft and attachment state while importing disabled Apps beside unchanged local selections',async()=>{
++  const a=setup('m10-source'),b=setup('m10-receiver'),pa=await unlock(a.svc),source=a.svc.commit(1,pa.token,randomUUID(),ready(a.svc,pa)),pb=await unlock(b.svc),existing=b.svc.commit(1,pb.token,randomUUID(),ready(b.svc,pb,'Existing local project')),sa=await applicationFixture(a,source.projectId,'source'),sb=await applicationFixture(b,existing.projectId,'receiver');
++  const beforeSelection=sb.selections.projectSettings(existing.projectId,'mail'),beforeConnections=sb.connections.list(),beforeCatalog=sb.selections.catalogState('mail'),beforeDraft=sb.drafts.get(sb.actor,sb.draft.id),beforeSource=sa.drafts.get(sa.actor,sa.draft.id),path=join(root,'m10-v1.willyou');await a.svc.exportTo(path,source.projectId,[],[],'12345678');
++  const payload=await decryptProject(readFileSync(path),'12345678'),json=JSON.stringify(payload);expect(Object.keys(payload).sort()).toEqual(['schemaVersion','exportedAt','producer','project','directories','databases','servers','capabilities','profiles','credentials'].sort());expect(payload.schemaVersion).toBe(1);expect(payload.capabilities.map(c=>c.id).sort()).toEqual(['project-db-diagnostics','remote-password-ssh','smartdd-project-context'].sort());for(const value of [sa.smtp.id,sa.foxmail.id,sa.draft.id,sa.attachment.id,'M10-SMTP-SECRET-source','M10-PRIVATE-BODY-source',sa.foxmail.config.kind==='foxmail'?sa.foxmail.config.sourcePath:'unexpected'])expect(json).not.toContain(value);
++  const file=b.svc.choose(2,path),preview=await b.svc.unlock(2,file.fileToken,'12345678'),received=b.svc.commit(2,preview.token,randomUUID(),ready(b.svc,preview,'Imported without Apps',2));expect(received.projectId).not.toBe(source.projectId);expect(received.projectId).not.toBe(existing.projectId);expect(sb.selections.projectSettings(received.projectId,'mail')).toMatchObject({enabled:false,revision:0,connections:{foxmail:null,smtp:null}});expect(sb.selections.projectSettings(received.projectId,'zentao')).toMatchObject({enabled:false,revision:0,connections:{zentao:null}});expect(sb.connections.list()).toEqual(beforeConnections);expect(sb.selections.catalogState('mail')).toEqual(beforeCatalog);expect(sb.selections.projectSettings(existing.projectId,'mail')).toEqual(beforeSelection);expect(sb.drafts.get(sb.actor,sb.draft.id)).toEqual(beforeDraft);expect(sb.blobs.read(sb.actor,sb.attachment.id)).toEqual(sb.bytes);expect(sa.drafts.get(sa.actor,sa.draft.id)).toEqual(beforeSource);expect(sa.blobs.read(sa.actor,sa.attachment.id)).toEqual(sa.bytes);expect(b.client.sqlite.prepare('SELECT count(*) n FROM mail_drafts WHERE project_id=?').get(received.projectId)).toEqual({n:0});expect(b.client.sqlite.prepare('SELECT count(*) n FROM tasks WHERE project_id=?').get(received.projectId)).toEqual({n:0});
++ });
++ it('rejects application and historical-session additions to strict v1 rather than silently importing them',()=>{
++  for(const key of ['applications','applicationConnections','mailDrafts','capabilitySessionSnapshots'])expect(()=>validatePayload({...transferFixture(),[key]:[{private:'M10 must not migrate'}]})).toThrow();
++ });
++});
+--- a/src/renderer/views/projects/project-transfer.test.tsx
++++ b/src/renderer/views/projects/project-transfer.test.tsx
+@@ -167,3 +167,16 @@
+     await act(async () => resolve(ok(preview()))); expect(mocks.api.dispose).toHaveBeenCalledWith('file'); expect(mocks.api.dispose).toHaveBeenCalledWith('preview');
+   });
+ });
++
++
++describe('M10 existing project transfer application boundary',()=>{
++ it('shows the confirmed application and mail exclusions before exporting',async()=>{
++  render(<ProjectTransfer mode="export" projectId="p" onClose={vi.fn()}/>);await screen.findByText('迁移项目');
++  expect(screen.getByText('应用配置、应用连接与凭据、邮件数据、草稿和发送记录不包含在项目文件中；在目标电脑重新选用本机连接。')).toBeDefined();
++ });
++ it('explains local application selection after import and opens only that new project application page',async()=>{
++  const close=vi.fn();render(<ProjectTransfer mode="import" onClose={close}/>);await unlock();await pick();fireEvent.click(button('导入项目'));await screen.findByRole('heading',{name:'项目已导入'});
++  const explanation=screen.getByText('应用配置与数据不随项目导入。请在项目应用中明确选择这台电脑已有的连接；缺少时再添加，不自动匹配同名账号。');expect(explanation.closest('[role="status"]')).not.toBeNull();expect(explanation.closest('.is-error')).toBeNull();expect(mocks.openProject).not.toHaveBeenCalled();expect(mocks.newTask).not.toHaveBeenCalled();
++  fireEvent.click(button('配置项目应用'));expect(mocks.openProject).toHaveBeenCalledExactlyOnceWith('new-project','applications');expect(mocks.newTask).not.toHaveBeenCalled();expect(close).toHaveBeenCalledOnce();expect(mocks.api.commit).toHaveBeenCalledOnce();
++ });
++});
+--- a/src/renderer/views/projects/project-transfer.tsx
++++ b/src/renderer/views/projects/project-transfer.tsx
+@@ -11,7 +11,7 @@
+ import './project-transfer.css';
+ 
+ type Step = 'choose' | 'unlock' | 'review' | 'export' | 'imported' | 'exported';
+-function Message({ children }: { children: ReactNode }) { return <div className="transfer-message is-error" role="alert"><CircleAlert size={16} /><div>{children}</div></div>; }
++function Message({ children, danger = true }: { children: ReactNode; danger?: boolean }) { return <div className={"transfer-message" + (danger ? " is-error" : "")} role={danger ? "alert" : "status"}><CircleAlert size={16} /><div>{children}</div></div>; }
+ function Summary({ counts }: { counts: TransferCounts }) {
+   return <div className="transfer-summary">{([{ Icon: Folder, label: '代码目录', value: counts.directories }, { Icon: Database, label: '数据库', value: counts.databases }, { Icon: Server, label: '服务器', value: counts.servers }, { Icon: KeyRound, label: 'AI 配置', value: counts.profiles }]).map(({ Icon, label, value }) => <div key={label}><Icon size={17} strokeWidth={1.65} /><span>{label}</span><strong>{value}</strong></div>)}</div>;
+ }
+@@ -171,13 +171,13 @@
+             <div className="dialog-footer"><button className="button secondary" onClick={close}>取消</button><button className="button primary" disabled={validating || !validation?.valid} onClick={importFile}>导入项目</button></div>
+           </>}
+           {step === 'export' && <form onSubmit={exportFile}>
+-            {description ? <><div className="transfer-file-row"><Folder size={23} /><div><strong>{description.project.name}</strong><small>配置、关联资源与凭据</small></div></div><Summary counts={description.counts} /><Resources data={description} /><div className="transfer-credential-line"><LockKeyhole size={17} /><div><strong>包含已保存的密码、私钥及令牌</strong><p>整个文件使用口令加密，接收方在 WillYou 中解锁导入。</p></div></div></> : <p role="status">正在读取项目范围…</p>}
++            {description ? <><div className="transfer-file-row"><Folder size={23} /><div><strong>{description.project.name}</strong><small>配置、关联资源与凭据</small></div></div><Summary counts={description.counts} /><Resources data={description} /><p className="transfer-footnote">应用配置、应用连接与凭据、邮件数据、草稿和发送记录不包含在项目文件中；在目标电脑重新选用本机连接。</p><div className="transfer-credential-line"><LockKeyhole size={17} /><div><strong>包含已保存的密码、私钥及令牌</strong><p>整个文件使用口令加密，接收方在 WillYou 中解锁导入。</p></div></div></> : <p role="status">正在读取项目范围…</p>}
+             <details className="transfer-details"><summary>附带 AI 配置（可选）</summary><p>仅导出选中的配置及其已保存的凭据，不包含 CLI 登录会话。</p>{profiles.length ? profiles.map(p => <label className="checkbox-line" key={p.id}><input type="checkbox" aria-label={`导出 AI 配置：${p.name}`} checked={exportProfiles.includes(p.id)} onChange={e => setExportProfiles(e.target.checked ? [...exportProfiles, p.id] : exportProfiles.filter(id => id !== p.id))} /><span>{p.name}</span><span className="tag">{p.runner === 'codex' ? 'Codex' : 'Claude Code'}</span></label>) : <p>还没有可附带的 AI 配置。</p>}</details>
+             {description?.missing.length ? <div className="transfer-missing"><Message>以下资源缺少凭据，请先补齐；仅确实不需要密码的资源可明确选择“无密码”。</Message>{description.missing.map(m => <div className="transfer-resource" key={`${m.ref}-${m.kind}`}><span>{m.label} · {m.kind}</span>{m.allowEmpty ? <label className="checkbox-line"><input type="checkbox" aria-label={`确认无密码：${m.label}`} checked={emptyRefs.includes(m.ref)} onChange={e => setEmptyRefs(e.target.checked ? [...emptyRefs, m.ref] : emptyRefs.filter(r => r !== m.ref))} /><span>确认此资源无密码</span></label> : <span className="transfer-warn">请补齐后重新打开导出</span>}</div>)}</div> : null}
+             <div className="transfer-passwords"><label className="field">设置导出口令<input aria-label="设置导出口令" type="password" autoComplete="new-password" placeholder="至少 8 个字符" value={password} onChange={e => setPassword(e.target.value)} /></label><label className="field">再次输入口令<input aria-label="再次输入口令" type="password" autoComplete="new-password" value={confirmation} onChange={e => setConfirmation(e.target.value)} /></label></div><p className="transfer-footnote">请将口令与项目文件分开交给接收方。</p>{password && passphraseIssue(password, confirmation) && <p className="transfer-warn">{passphraseIssue(password, confirmation)}</p>}
+             <div className="dialog-footer"><button type="button" className="button secondary" onClick={close}>取消</button><button className="button primary" disabled={descriptionPending || !description || !!passphraseIssue(password, confirmation) || !!missing.length}><LockKeyhole size={14} />加密并导出</button></div>
+           </form>}
+-          {step === 'imported' && importResult && <div className="transfer-success"><div className="transfer-success-icon"><Check size={24} /></div><h3>项目已导入</h3><p>{importResult.name}</p><Summary counts={importResult.counts} /><p className="transfer-footnote">项目配置与凭据已保存。连接尚未测试，没有导入历史会话。</p>{importResult.warnings.map((text, i) => <Message key={i}>{text}</Message>)}<div className="dialog-footer"><button className="button secondary" onClick={() => { navigation.openProject(importResult.projectId); onClose(); }}>查看项目</button><button className="button primary" onClick={() => { navigation.newTask(importResult.projectId); onClose(); }}>新建任务<ArrowRight size={15} /></button></div></div>}
++          {step === 'imported' && importResult && <div className="transfer-success"><div className="transfer-success-icon"><Check size={24} /></div><h3>项目已导入</h3><p>{importResult.name}</p><Summary counts={importResult.counts} /><Message danger={false}>应用配置与数据不随项目导入。请在项目应用中明确选择这台电脑已有的连接；缺少时再添加，不自动匹配同名账号。</Message><p className="transfer-footnote">项目配置与凭据已保存。连接尚未测试，没有导入历史会话。</p>{importResult.warnings.map((text, i) => <Message key={i}>{text}</Message>)}<div className="dialog-footer"><button className="button secondary" onClick={() => { navigation.openProject(importResult.projectId); onClose(); }}>查看项目</button><button className="button secondary" onClick={() => { navigation.openProject(importResult.projectId, 'applications'); onClose(); }}>配置项目应用</button><button className="button primary" onClick={() => { navigation.newTask(importResult.projectId); onClose(); }}>新建任务<ArrowRight size={15} /></button></div></div>}
+           {step === 'exported' && exportResult && <div className="transfer-success"><div className="transfer-success-icon"><Check size={24} /></div><h3>项目已导出</h3><p className="transfer-source-path">{exportResult.path}</p><p className="transfer-footnote">接收方在 WillYou 中选择“导入项目”，使用你单独提供的口令解锁。</p><div className="dialog-footer"><button className="button secondary" onClick={() => void operation('正在显示文件…', async () => { accept(await rpc.projectTransfer.revealExport(exportResult.path)); })}><Download size={15} />在 Finder 中显示</button><button className="button primary" onClick={onClose}>完成</button></div></div>}
+           {error && <Message>{error}</Message>}
+         </>}

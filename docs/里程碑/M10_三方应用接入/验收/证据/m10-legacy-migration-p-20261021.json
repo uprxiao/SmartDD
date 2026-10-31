@@ -1,0 +1,580 @@
+{
+  "schema": "m10-execution-checkpoint-v1",
+  "checkpoint": "LEGACY-P",
+  "recordedAt": "2026-10-20T19:15:17.710870+00:00",
+  "requirementBaseline": "R1.6 including12.21",
+  "requirementIds": [
+    "M10-R10-06",
+    "M10-R10-09",
+    "M10-R10-10",
+    "M10-R07-11"
+  ],
+  "formalCases": [
+    "M10-T61",
+    "M10-T67"
+  ],
+  "branch": "feature/0.0.2",
+  "baseCommit": "f92d7db0f93459c7b0793bb9df437f1f6606f59e",
+  "workspace": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "status": "development; persistent schema2 migration implemented and constructed in production host; original ownership/repair/automatic activation still pending",
+  "goalStatus": "active",
+  "scopeReduced": false,
+  "operationBoundary": [
+    "Host-only persistent schema0-to-schema2 transaction; no new selection/applications",
+    "Preserves original JSON/manifest/identity plus disabled C refs via strict legacyBinding",
+    "Atomically writes snapshot, version history, source state, refs, identity, MCP names and task pointer",
+    "Creates only new S snapshot mirror; does not modify original T/H/C source bytes",
+    "Conversion is not automatically invoked by ordinary legacy startup yet",
+    "Converted TaskService resume remains ordinary Agent with RESOURCE_RECOVERY_REQUIRED until original owner/path activation is implemented",
+    "No claim of native legacy restored; no old-owner stopped proof or old alias repair is supplied by this API",
+    "legacyBinding independently pins canonical old snapshot, exact raw source record bytes, first identity bytes, original manifest and logical evidence"
+  ],
+  "tests": {
+    "first": {
+      "files": 1,
+      "passed": 22,
+      "failed": 3,
+      "details": [
+        "2 fixture assertions expected bare snapshot instead of existing mirror envelope; corrected to exact envelope",
+        "1 real migrated-source planning integration failed because reader accepted only prepared; fixed with exact binding/pointer checks"
+      ]
+    },
+    "firstFixed": {
+      "files": 4,
+      "passed": 89,
+      "failed": 0,
+      "overlapsFinal": true
+    },
+    "broadBeforeHost": {
+      "files": 9,
+      "passed": 178,
+      "failed": 0,
+      "overlapsFinal": true
+    },
+    "hostRed": {
+      "files": 1,
+      "passed": 27,
+      "failed": 2,
+      "details": [
+        "Claude converted source incorrectly used new-session projection entry",
+        "Codex converted source incorrectly tried new-format shared projection registration"
+      ]
+    },
+    "finalRelated": {
+      "files": 9,
+      "passed": 183,
+      "failed": 0,
+      "includesNewMigrationTests": 31,
+      "includesNewHostCases": 2
+    },
+    "typecheck": "final identity binding typecheck passed; preceding readonly/narrowing diagnostics retained",
+    "packagedNativeSmoke": "passed",
+    "packagedMainAnd320Renderer": "passed",
+    "gui": "not executed; K timeout remains unresolved",
+    "beforeIdentityFix": {
+      "files": 9,
+      "passed": 181,
+      "failed": 0,
+      "overlapsFinal": true
+    },
+    "identityRed": {
+      "files": 1,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 29,
+      "purpose": "independent pin of original source_identity_json and source_record_json bytes; resolved after final explicit hashes"
+    }
+  },
+  "evidenceLayer": "real CapabilityService M4 trees, real SQLite and production host/TaskService; private/synthetic PTY and native CLI records, no actual CC/Codex model or GUI",
+  "package": {
+    "path": "/private/tmp/m10-legacy-migration-p2-package-20261021/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "asarSha256": "9e8d4546c3a6d7926934dc0808c9ebdaa43e7d6ac28fe892935503b67b0ee080",
+    "mainSha256": "8d43096713628830b82ecc8f3a28a1acfa79bcce906c192b1f3120f14fb78faf",
+    "rendererFileCount": 320,
+    "resourceSetHash": "deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394",
+    "indexHash": "6fdcbe68dd02bd8f9bb850e2ae43c34e1f61de9ab3397948a9e08ef44a176e90",
+    "buildMetadata": {
+      "appVersion": "0.0.5",
+      "commit": "f92d7db0f93459c7b0793bb9df437f1f6606f59e",
+      "dirty": true,
+      "resourceSetHash": "deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394"
+    },
+    "nativeHashes": {
+      "native/smartdd-voice": "0c2480cfcce5516e7cd92bb7112b5670b672fb524bcc10c1dcabaedb6bae7bfd",
+      "native/willyou-files": "75049c1606d6303f8bf37df829740440a18c5f67d2765b74ce6afdae695d8b82",
+      "native/willyou-foxmail": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+      "native/willyou-process-identity": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0"
+    },
+    "buildCommandExit": 0,
+    "packagedNativeSmoke": "passed",
+    "packagedCodeMatchesCurrentOut": true,
+    "migrationImplementationInProductionMain": true,
+    "guiExecuted": false,
+    "frozenSourceFileCount": 9,
+    "sourceRecovery": "legacy-migration-p-20261021/build-source.json",
+    "originalResourcesUnchanged": true,
+    "rebuildReason": "Identity/raw original record hash binding changed production inputs; earlier P1 retained as history, final P2 rebuilt"
+  },
+  "environment": {
+    "os": "macOS-26.6.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "dailyCredentialsUsed": false,
+    "externalBusinessMailSent": false,
+    "M9Modified": false,
+    "nativeFocusUsed": false,
+    "diskCleanupThisCheckpoint": false
+  },
+  "formalUniqueFullPass": 1,
+  "formalTotal": 72,
+  "fullPassIds": [
+    "M10-T42"
+  ],
+  "notCompleted": [
+    "Original T/H owner identity and exit proof",
+    "Exact original legacy aliases and repair after T deletion",
+    "Automatic migration and fixed API2 activation from ordinary old-task path",
+    "Actual legacy Claude Code/Codex resume",
+    "Full effective config/shared maintenance",
+    "Actual Foxmail and complete packaged App/system cases, K timeout/P07"
+  ],
+  "nextNotes": "legacy-migration-p-20261021/next-integration-notes.txt",
+  "releaseStatus": "not released; no merge, push or tag",
+  "evidenceFiles": [
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "3795befc0275e8cfb054bf2a0b3292067df4e6e84c995a687089fe0ee3fd6c02",
+      "bytes": 21705
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "sha256": "0bca243550596ee5a66a87996fdf1ca6ab22abad54afb12f6b6490c013e7afe7",
+      "bytes": 46018
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "96be904967b2cabf1788649687a9cc2409a085142dc6aa92f2459a6c2148b525",
+      "bytes": 13966
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "3957849415526f3293d48c247dd5045e90c347d3ed9e5787f5aae780415db804",
+      "bytes": 14670
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/legacy-session-migration.ts",
+      "sha256": "9eda1b291e4276577b1bc13db405c94ef11042950e3a0592ecbf4d7f42eaaff2",
+      "bytes": 12641
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "e65b8e59414c49c01ec845f1bd05da4b75b1734aaa11bc0256a7ccc7b590f803",
+      "bytes": 6699
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b34bcaaa9a3806e0b059573a4173b47c49badb1bdfcb8935e84abed674cf5952",
+      "bytes": 30685
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "d425499e330d77df18b24b203fa18fab1372a1e56971a8b45115191ffef784c4",
+      "bytes": 32481
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source/src/shared/application-session.ts",
+      "sha256": "6f1a099d3ee8b48ab242881340c5899555afc560518837885fe095b128020a0c",
+      "bytes": 6286
+    },
+    {
+      "path": "legacy-migration-p-20261021/build-source.json",
+      "sha256": "bf804dcf9c5cc7aa83083b6c5b965f93c4203f84d6f3fec779766439f772aaa0",
+      "bytes": 1965
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "245f51a3df28e484cb62078427210ac52a1ec09104d7169b2b150ebfb2f418cf",
+      "bytes": 17678
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "96be904967b2cabf1788649687a9cc2409a085142dc6aa92f2459a6c2148b525",
+      "bytes": 13966
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "21f3b053fd87247c655d118e9dce90a67f90a73b7baf6d06ab0ef7987d76e47b",
+      "bytes": 14656
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/legacy-session-migration.ts",
+      "sha256": "9eda1b291e4276577b1bc13db405c94ef11042950e3a0592ecbf4d7f42eaaff2",
+      "bytes": 12641
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "1c024148fe9ee5445a01e1c02b0250d937513e692a2db2aafa3b369d76b54df2",
+      "bytes": 6309
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b34bcaaa9a3806e0b059573a4173b47c49badb1bdfcb8935e84abed674cf5952",
+      "bytes": 30685
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source/src/shared/application-session.ts",
+      "sha256": "d4d10f6f5770b1265adf35fe91fd7bfe73b6249252ac9cd7d21b27b9f2d87e75",
+      "bytes": 6244
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-green-source.json",
+      "sha256": "e1dd9ecb02c5ddb9c9c04e9c52fde1a3fc50bdc16d259628ab4752fa450b117d",
+      "bytes": 1434
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "0f9b6e773c9b48266c48e715899c18c4f61e88ddf3c97a3bf3437016c69aed8e",
+      "bytes": 17580
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "266e07f1900809020c54e0b87091dc8acbc60998c42a22ee117e989b0404380c",
+      "bytes": 13951
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "e4b7874b8302537587dc88fea05171f88dcb033952457c40701d624b999269aa",
+      "bytes": 12956
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/legacy-session-migration.ts",
+      "sha256": "e7678cdbcd45b133818b0ee0b463d1899298f76e516621b962a6b61f669341e5",
+      "bytes": 12706
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "783a927a53eadfb7b7d829bedfea1a3caddacbaff5b0362b28a54c8d3c232d44",
+      "bytes": 6297
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b34bcaaa9a3806e0b059573a4173b47c49badb1bdfcb8935e84abed674cf5952",
+      "bytes": 30685
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source/src/shared/application-session.ts",
+      "sha256": "d4d10f6f5770b1265adf35fe91fd7bfe73b6249252ac9cd7d21b27b9f2d87e75",
+      "bytes": 6244
+    },
+    {
+      "path": "legacy-migration-p-20261021/first-source.json",
+      "sha256": "c4ab80d4c16cfe283e317e3ccb912ced163ea264aa2217319d98740edee267d1",
+      "bytes": 1434
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "ad8c3122a9f173a9973566f4f9448d2c9c09c337e1062addcfb9f4735ec53836",
+      "bytes": 20136
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "sha256": "a393d4154c6674141731c708d9c42ba58c9553a7c5bf0e28c1dfaec8f32d9254",
+      "bytes": 46121
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "96be904967b2cabf1788649687a9cc2409a085142dc6aa92f2459a6c2148b525",
+      "bytes": 13966
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "3957849415526f3293d48c247dd5045e90c347d3ed9e5787f5aae780415db804",
+      "bytes": 14670
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/legacy-session-migration.ts",
+      "sha256": "9eda1b291e4276577b1bc13db405c94ef11042950e3a0592ecbf4d7f42eaaff2",
+      "bytes": 12641
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "1c024148fe9ee5445a01e1c02b0250d937513e692a2db2aafa3b369d76b54df2",
+      "bytes": 6309
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b34bcaaa9a3806e0b059573a4173b47c49badb1bdfcb8935e84abed674cf5952",
+      "bytes": 30685
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "98480730cb53b4ba68096e5a5e0bff57b7521ec3208560e8d9bf50100529cae2",
+      "bytes": 31986
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source/src/shared/application-session.ts",
+      "sha256": "d4d10f6f5770b1265adf35fe91fd7bfe73b6249252ac9cd7d21b27b9f2d87e75",
+      "bytes": 6244
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red-source.json",
+      "sha256": "1e1f09534c588650e4b51270c0b9aa2f35d042a69c680ed03caf2cd31f11031a",
+      "bytes": 1777
+    },
+    {
+      "path": "legacy-migration-p-20261021/host-red.txt",
+      "sha256": "c9136d22b61b114b6b4a218c12caacbebd1e0347254230fdc87802f0dac66458",
+      "bytes": 2119
+    },
+    {
+      "path": "legacy-migration-p-20261021/identity-red-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "3795befc0275e8cfb054bf2a0b3292067df4e6e84c995a687089fe0ee3fd6c02",
+      "bytes": 21705
+    },
+    {
+      "path": "legacy-migration-p-20261021/identity-red-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "fa50b2e196f06251f4f46acc475e14939313e8ce7a16d0a01f94a5656ff32ed0",
+      "bytes": 6553
+    },
+    {
+      "path": "legacy-migration-p-20261021/identity-red-source/src/shared/application-session.ts",
+      "sha256": "d4d10f6f5770b1265adf35fe91fd7bfe73b6249252ac9cd7d21b27b9f2d87e75",
+      "bytes": 6244
+    },
+    {
+      "path": "legacy-migration-p-20261021/identity-red-source.json",
+      "sha256": "ba92f60107fc18e0ea93fe0fa09b2d051ca655c31202d8519998c6346a92200d",
+      "bytes": 639
+    },
+    {
+      "path": "legacy-migration-p-20261021/identity-red.txt",
+      "sha256": "529318022094eb93dee67f72f22b714bf152b1c5eb53c6df4b7d830a080ca790",
+      "bytes": 8749
+    },
+    {
+      "path": "legacy-migration-p-20261021/immutable-resources.json",
+      "sha256": "846d8c2d46a20bf9e552d4be149f3eddeaef2d8600fd189c6ec029aa3b9df7c5",
+      "bytes": 5432
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "sha256": "6ef3a81111eb5e38cb674a08aeee096ec5b1eff4e39cd5833a96f9dd786cf1e4",
+      "bytes": 43457
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "266e07f1900809020c54e0b87091dc8acbc60998c42a22ee117e989b0404380c",
+      "bytes": 13951
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "e4b7874b8302537587dc88fea05171f88dcb033952457c40701d624b999269aa",
+      "bytes": 12956
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b645319ea876ad15a3d0758691d79b2f39638f00cd426f0fe01b5b714e9887e9",
+      "bytes": 29610
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "98480730cb53b4ba68096e5a5e0bff57b7521ec3208560e8d9bf50100529cae2",
+      "bytes": 31986
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source/src/shared/application-session.ts",
+      "sha256": "4fec568e84f9fef38a32c961c2b39d297dacd86cceb5a9cff5dfbc75ded0baf6",
+      "bytes": 5792
+    },
+    {
+      "path": "legacy-migration-p-20261021/initial-source.json",
+      "sha256": "e5da9df358943dbdee3fcef485e65e3d6f7706e671179bb2345fc30deae9676a",
+      "bytes": 1248
+    },
+    {
+      "path": "legacy-migration-p-20261021/migration-first.txt",
+      "sha256": "cbb85f1318328658c77f190b1ae197ef6e4746bb84271015ff7d6f2144b7715f",
+      "bytes": 4152
+    },
+    {
+      "path": "legacy-migration-p-20261021/migration-fixed.txt",
+      "sha256": "5c17cde9f65c4a963b0c851ef6f1aa26a798a7d0fb31e1ec27a2b268d8b362a8",
+      "bytes": 601
+    },
+    {
+      "path": "legacy-migration-p-20261021/next-integration-notes.txt",
+      "sha256": "48e2b79a854d8556b42ce137814ad2761a6e48b5fc7f640471f114ae85d8b65a",
+      "bytes": 2938
+    },
+    {
+      "path": "legacy-migration-p-20261021/package-final.txt",
+      "sha256": "5fad7a2ed4635fd3c801cfaee5511b7ed792cea6607945c908b2d9aa53db388e",
+      "bytes": 21440
+    },
+    {
+      "path": "legacy-migration-p-20261021/package-first-hashes.json",
+      "sha256": "dd83bad63515e263a673534b8e50c702cba845c0e2f21a64e0051d0445310621",
+      "bytes": 1478
+    },
+    {
+      "path": "legacy-migration-p-20261021/package-first.txt",
+      "sha256": "147870e1947c15c2e5644f594de84fbf216d1530b7c273fb4c9c179a48aa8f9e",
+      "bytes": 21430
+    },
+    {
+      "path": "legacy-migration-p-20261021/package-hashes.json",
+      "sha256": "795f4958aca61e3b9da5a6ffc09980107e785821cf2114df0a45c129e16b9593",
+      "bytes": 1619
+    },
+    {
+      "path": "legacy-migration-p-20261021/packaged-first-main.json",
+      "sha256": "7d13b0833a82aa58deb48709daa50d1439fe1ed9e14542fe620d04ba955b981e",
+      "bytes": 55807
+    },
+    {
+      "path": "legacy-migration-p-20261021/packaged-main.json",
+      "sha256": "fe950860234a9fee01a9631d8ad85507362b34202c39ed80251eb06b1fe86d32",
+      "bytes": 55807
+    },
+    {
+      "path": "legacy-migration-p-20261021/packaged-verification.txt",
+      "sha256": "9ab579dee7d4515e15723ed2780206a5657833d2a77c6d4c1c84512d1c3b4e2f",
+      "bytes": 44670
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/__tests__/legacy-session-migration.test.ts",
+      "sha256": "ba9924b59cc2490c73ee59b337703a823f8a4fcc8ece2eb26061ea00ca7ea2ce",
+      "bytes": 20696
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "sha256": "0bca243550596ee5a66a87996fdf1ca6ab22abad54afb12f6b6490c013e7afe7",
+      "bytes": 46018
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "96be904967b2cabf1788649687a9cc2409a085142dc6aa92f2459a6c2148b525",
+      "bytes": 13966
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "3957849415526f3293d48c247dd5045e90c347d3ed9e5787f5aae780415db804",
+      "bytes": 14670
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/legacy-session-migration.ts",
+      "sha256": "9eda1b291e4276577b1bc13db405c94ef11042950e3a0592ecbf4d7f42eaaff2",
+      "bytes": 12641
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/legacy-session-source.ts",
+      "sha256": "fa50b2e196f06251f4f46acc475e14939313e8ce7a16d0a01f94a5656ff32ed0",
+      "bytes": 6553
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/session-registry.ts",
+      "sha256": "b34bcaaa9a3806e0b059573a4173b47c49badb1bdfcb8935e84abed674cf5952",
+      "bytes": 30685
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "d425499e330d77df18b24b203fa18fab1372a1e56971a8b45115191ffef784c4",
+      "bytes": 32481
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source/src/shared/application-session.ts",
+      "sha256": "d4d10f6f5770b1265adf35fe91fd7bfe73b6249252ac9cd7d21b27b9f2d87e75",
+      "bytes": 6244
+    },
+    {
+      "path": "legacy-migration-p-20261021/pre-identity-build-source.json",
+      "sha256": "66f95d745db9a317146276e578981dc17eb35b1134dc209c8d528d48dd1be54a",
+      "bytes": 1829
+    },
+    {
+      "path": "legacy-migration-p-20261021/related-before-host.txt",
+      "sha256": "dfc2c5c349e5d1f4ddaeca757be73843075b9f97c04eccbdae078874776026d4",
+      "bytes": 926
+    },
+    {
+      "path": "legacy-migration-p-20261021/related-before-identity.txt",
+      "sha256": "88aabcf97f69aded89c952c30d4a82af6a304cc9670e2667a9f4807580b7f833",
+      "bytes": 926
+    },
+    {
+      "path": "legacy-migration-p-20261021/related-final.txt",
+      "sha256": "be382e7fdef57c4d864c1acbd01681545641562fd4eacd59e0f7e6e46a5354ff",
+      "bytes": 926
+    },
+    {
+      "path": "legacy-migration-p-20261021/typecheck-final.txt",
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    {
+      "path": "legacy-migration-p-20261021/typecheck-first.txt",
+      "sha256": "93ffcf031c53044804c649c75a9268fae78b14f4b3b55ae30062fd28c128f468",
+      "bytes": 773
+    },
+    {
+      "path": "legacy-migration-p-20261021/typecheck-fixed.txt",
+      "sha256": "695b7797a37ce08514eecd9a8116e208e036fe63af61fcccf11a651857430cea",
+      "bytes": 613
+    },
+    {
+      "path": "legacy-migration-p-20261021/typecheck-host-final.txt",
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    {
+      "path": "legacy-migration-p-20261021/typecheck-identity-final.txt",
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    {
+      "path": "legacy-migration-p-20261021/verify-package.cjs",
+      "sha256": "1f50babe16efaa9da47942e1a1166f038888906e4f257e5cdd725eec33d37524",
+      "bytes": 1976
+    }
+  ],
+  "earlierPackageBeforeIdentityFix": {
+    "path": "/private/tmp/m10-legacy-migration-p-package-20261021/mac-arm64/WillYou.app",
+    "version": "0.0.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "asarSha256": "517f7c30fb4270084bf50c127c417b39948c7f16565784b6508ae0bbfc42b120",
+    "mainSha256": "12a5a4d538edf14c3e9bd55c51870a395d8732d89fd9a1e98be59b113cc49163",
+    "rendererFileCount": 320,
+    "resourceSetHash": "deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394",
+    "indexHash": "6fdcbe68dd02bd8f9bb850e2ae43c34e1f61de9ab3397948a9e08ef44a176e90",
+    "buildMetadata": {
+      "appVersion": "0.0.5",
+      "commit": "f92d7db0f93459c7b0793bb9df437f1f6606f59e",
+      "dirty": true,
+      "resourceSetHash": "deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394"
+    },
+    "nativeHashes": {
+      "native/smartdd-voice": "0c2480cfcce5516e7cd92bb7112b5670b672fb524bcc10c1dcabaedb6bae7bfd",
+      "native/willyou-files": "75049c1606d6303f8bf37df829740440a18c5f67d2765b74ce6afdae695d8b82",
+      "native/willyou-foxmail": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+      "native/willyou-process-identity": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0"
+    },
+    "buildCommandExit": 0,
+    "packagedNativeSmoke": "passed",
+    "packagedCodeMatchesCurrentOut": true,
+    "migrationImplementationInProductionMain": true,
+    "guiExecuted": false,
+    "frozenSourceFileCount": 9,
+    "sourceRecovery": "legacy-migration-p-20261021/build-source.json",
+    "originalResourcesUnchanged": true
+  },
+  "binaryRetentionFollowup": {
+    "recordedAt": "2026-10-20T22:20:04.181135+00:00",
+    "state": "P2 binary retired after inactivity/hash/version checks for R build disk budget; historical acceptance unchanged",
+    "path": "/private/tmp/m10-legacy-migration-p2-package-20261021/mac-arm64/WillYou.app",
+    "receipt": "legacy-retention-recovery-r-20261021/old-binary-retirement.json",
+    "sourceAndEvidencePreserved": true
+  }
+}

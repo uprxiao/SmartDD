@@ -1,0 +1,221 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-races.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/tasks/task-service.test.ts src/main/core/tasks/task-capabilities.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts src/main/core/applications/__tests__/run-registry.test.ts src/main/core/applications/__tests__/mail-read-data.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts src/main/core/tasks/native-sessions.test.ts src/main/core/tasks/session-health.test.ts src/main/db/migrations.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-native-history-ah-20261021/final-test-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts (57 tests) 62887ms
+     ✓ T63 refuses bad-json resume and keeps history,diagnostics and original source identities  2159ms
+     ✓ T63 refuses unknown-schema resume and keeps history,diagnostics and original source identities  2044ms
+     ✓ T63 refuses bad-hash resume and keeps history,diagnostics and original source identities  1952ms
+     ✓ T63 refuses cross-project-snapshot resume and keeps history,diagnostics and original source identities  1941ms
+     ✓ T63 refuses cross-project-task resume and keeps history,diagnostics and original source identities  1980ms
+     ✓ T64 blocks claude-code resume from a missing recorded state root before new run/fork, while independent new tasks remain available  388ms
+     ✓ T64 blocks codex resume from a missing recorded state root before new run/fork, while independent new tasks remain available  2004ms
+     ✓ T64 continues the original claude-code session without application authority while its fixed package is unavailable  481ms
+     ✓ T64 continues the original codex session without application authority while its fixed package is unavailable  2224ms
+     ✓ withdraws oversized claude-code injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2401ms
+     ✓ withdraws oversized codex injection before fork, preserves fixed selection and resumes capabilities after capacity recovers  2618ms
+     ✓ fails an oversized original native payload before arming and never retries a fork  326ms
+     ✓ never falls back or retries after an uncertain native fork failure  2360ms
+     ✓ registers native input provenance using the current verified claude-code launch version and owned run signal  315ms
+     ✓ registers native input provenance using the current verified codex launch version and owned run signal  385ms
+     ✓ joins the trusted home prompt to native claude-code user records only after owned spawn and invalidates it on stop  2326ms
+     ✓ joins the trusted home prompt to native codex user records only after owned spawn and invalidates it on stop  3936ms
+     ✓ does not assign home-user origin to an internal task creation without a trusted sender  2288ms
+     ✓ does not capture a launch argument when native spawning fails  2256ms
+     ✓ clears a captured launch origin if the new task cannot be committed to SQLite  2292ms
+     ✓ registers all no-application Codex runs, retains fixed sources, and releases only after the owned PTY exit  456ms
+     ✓ uses the same session selection and paths when project defaults change between runs  455ms
+     ✓ retains user Skill flags and MCP names while adding a full managed selection  365ms
+     ✓ gives Claude one stable complete plugin without registering a Codex consumer  646ms
+     ✓ keeps the old launcher runtime occupied even with the project-context MCP disabled  356ms
+     ✓ preserves selected independent Codex profile flags through the actual TaskService host composition  362ms
+     ✓ preserves lower-layer native Skill flags when a selected profile and CLI contain empty arrays  357ms
+     ✓ keeps the native Agent available when effective Skill flags are over-count  321ms
+     ✓ keeps original Mail tool contracts callable without SMTP and rejects later policy revocation without stopping the CLI  2502ms
+     ✓ connects the complete production launcher through a real OS PTY, kernel-owned CLI and original CJS MCP child  2968ms
+     ✓ opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge  735ms
+     ✓ continues known native history when its disable-list injection exceeds capacity without rewriting the old record  478ms
+     ✓ continues ordinary native history with a populated shared catalog and unknown-cli, without granting application access  540ms
+     ✓ continues ordinary native history with a populated shared catalog and unverified-config, without granting application access  512ms
+     ✓ runs an unverified history CLI through a real OS PTY while keeping its catalog consumer and refusing every application grant  685ms
+     ✓ preserves old M4 metadata byte-for-byte during a guarded open, self-check, native ID discovery and exit  1851ms
+     ✓ retains verified original claude-code M4 sources during guarded resume without claiming migration complete  338ms
+     ✓ retains verified original codex M4 sources during guarded resume without claiming migration complete  334ms
+     ✓ recovers captured claude-code sources through the actual TaskService resume hook after an interrupted receipt and original T removal  403ms
+     ✓ recovers captured codex sources through the actual TaskService resume hook after an interrupted receipt and original T removal  394ms
+     ✓ keeps the first retained M4 identity while native discovery binds a missing ID before the next resume  1923ms
+     ✓ keeps converted claude-code source paths fixed and ordinary Agent available while original ownership activation is pending  476ms
+     ✓ keeps converted codex source paths fixed and ordinary Agent available while original ownership activation is pending  417ms
+     ✓ does not demote a recorded v2 session when the task loses its capability pointer  434ms
+     ✓ revokes the private broker even if an owned PTY stop fails and retains the actual child lease  2452ms
+     ✓ rejects replacing the registry after a task has begun and does not fork after an invalid pointer  460ms
+     ✓ refuses a late claude-code history loss before fork and cancels the known unspawned run  442ms
+     ✓ refuses a late codex history loss before fork and cancels the known unspawned run  2020ms
+     ✓ does not reopen a fresh Claude UUID after its original history appears during preparation  447ms
+ ✓ src/main/core/applications/__tests__/mail-read-data.test.ts (27 tests) 48894ms
+     ✓ exposes actual scan progress and last complete refresh to UI without extending the original v1 tool result  1355ms
+     ✓ uses real CJS contracts for current-source search,read,UTF-8 chunks and exact attachment bytes without modifying the source  1663ms
+     ✓ paginates more than200 matches without omission and reuses completed persistent checks without reparsing unchanged messages  3926ms
+     ✓ persists partial scan checkpoints and resumes after service reconstruction without inventing a complete empty query  2650ms
+     ✓ distinguishes source deletion from a missing local file and never serves old cached bodies as current mail  2393ms
+     ✓ rechecks current source existence before delivering a cached ToolService query receipt  1304ms
+     ✓ rejects changed source bytes,forged identity or expanded model scope before returning resources  1653ms
+     ✓ uses independent project cursors and resource authorization even when two projects explicitly share the same connection  1548ms
+     ✓ rebuilds resources after deliberate cache clear using the original source reference and keeps stable IDs  2235ms
+     ✓ shares an in-flight check while cancellation of one waiter leaves the other authorized project running  1240ms
+     ✓ reuses durable per-message fulltext across queries and reparses only added,changed or moved files  2700ms
+     ✓ rejects a source that changes after a batch and retries a transient incomplete check on a fresh query  2092ms
+     ✓ retains the last cancelled shared producer and its package lease until its actual work settles  473ms
+     ✓ keeps a shared check alive when one project revokes its selection  1202ms
+     ✓ pins the full original mail revision during the separate attachment read even if attachment bytes are unchanged  1493ms
+     ✓ encodes chunks that split multibyte UTF-8 as exact base64 bytes  2964ms
+     ✓ derives reply/reply-all from real headers and the explicitly selected SMTP identity without retrieving its secret  1422ms
+     ✓ creates replies with no SMTP and preserves their independent content after source deletion and reconnection loss  1772ms
+     ✓ refuses invalid reply links,missing addresses and a sender outside the current SMTP slot  2328ms
+     ✓ copies exact MIME attachment bytes to persistent business storage once and keeps them after cache/source loss  2607ms
+     ✓ rejects cross-project,modified and oversized resource imports and does not accept model-supplied filesystem paths  1823ms
+     ✓ captures current-workspace capabilities and imports real native file bytes without granting arbitrary paths  1335ms
+     ✓ denies a workspace reference in another project and after the original file root closes  551ms
+     ✓ refuses replacement by a symlink and capture of a real file above the attachment budget  497ms
+     ✓ does not commit an attachment when cancellation arrives while actual source work is pending  617ms
+     ✓ rejects a file modified between native chunks without saving a mixed attachment  446ms
+     ✓ denies the configured date boundary even when a caller knows the exact old file hash  1158ms
+ ✓ src/main/core/applications/__tests__/mail-send-data.test.ts (74 tests) 69997ms
+     ✓ checks old send ownership on App startup without network replay: stopped  700ms
+     ✓ checks old send ownership on App startup without network replay: unknown  716ms
+     ✓ refuses to display success when a persisted execution and its send intent disagree  862ms
+     ✓ reads unknown SMTP history with original frozen content after app removal and never replays a send  483ms
+     ✓ rejects a corrupted frozen review instead of showing the current draft as the historical send  505ms
+     ✓ migrates only the provable original prepare identity and leaves frozen sends unchanged on replay  345ms
+     ✓ uses the same frozen send engine from explicit trusted UI preparation,review and execution  689ms
+     ✓ confirms an existing claude-code intent in UI and executes only through its original run once  808ms
+     ✓ confirms an existing codex intent in UI and executes only through its original run once  769ms
+     ✓ records only the trusted owned PTY input across first native binding and never turns origin evidence into a send grant  626ms
+     ✓ matches actual native user-file records on claude-code send preparation without minting semantic permission  681ms
+     ✓ matches actual native user-file records on codex send preparation without minting semantic permission  534ms
+     ✓ uses a matched claude-code explicit fixed-revision instruction without a redundant UI confirmation  790ms
+     ✓ uses a matched codex explicit fixed-revision instruction without a redundant UI confirmation  859ms
+     ✓ authorizes an already frozen intent when the subsequent exact native user instruction arrives  803ms
+     ✓ does not mint a native grant for default evidence  1076ms
+     ✓ does not mint a native grant for analysis evidence  977ms
+     ✓ does not mint a native grant for stale evidence  972ms
+     ✓ does not mint a native grant for other-run evidence  849ms
+     ✓ invalidates a native send authorization before SMTP on cancel  1044ms
+     ✓ invalidates a native send authorization before SMTP on new-input  1231ms
+     ✓ invalidates a native send authorization before SMTP on unknown-input  2897ms
+     ✓ invalidates a native send authorization before SMTP on tampered-file  660ms
+     ✓ retains explicit UI authorization after an earlier native source has been superseded  1016ms
+     ✓ keeps the existing draft lock when two different prepare operations race  1491ms
+     ✓ deduplicates concurrent late native authorization and execute for one existing intent  1122ms
+     ✓ returns the existing execution when a second source claim completes after SMTP has settled  919ms
+     ✓ rechecks the latest user turn synchronously in C while all native file verification stays outside C  658ms
+     ✓ cannot reuse the same native turn for a second send intent after canceling the first  651ms
+     ✓ never autoauthorizes an unknown send ancestry from a simple repeated native send instruction  1062ms
+     ✓ cannot revive a persistent native source after run-exit  736ms
+     ✓ cannot revive a persistent native source after restart  796ms
+     ✓ cannot revive a persistent native source after expiry  719ms
+     ✓ revokes native authority if cancellation arrives after file verification but before the send transaction  1562ms
+     ✓ does not accept modified persistent native provenance as a live authorization  902ms
+     ✓ binds native approval to the whole frozen draft including stable attachment bytes and BCC envelope  786ms
+     ✓ does not authorize an old native instruction after binding-roundtrip before prepare  979ms
+     ✓ does not authorize an old native instruction after policy-roundtrip before prepare  620ms
+     ✓ reports a superseded native grant as awaiting authorization in the shared UI and agent data view  654ms
+     ✓ resolves the immediately preceding genuine claude-code draft reference for a later explicit send command  812ms
+     ✓ resolves the immediately preceding genuine codex draft reference for a later explicit send command  707ms
+     ✓ refuses to infer a contextual send from missing history  853ms
+     ✓ refuses to infer a contextual send from other-run history  948ms
+     ✓ refuses to infer a contextual send from multiple history  962ms
+     ✓ refuses to infer a contextual send from stale history  941ms
+     ✓ refuses to infer a contextual send from intervening history  781ms
+     ✓ refuses to infer a contextual send from cancel-gap history  749ms
+     ✓ refuses to infer a contextual send from history-gap history  1189ms
+     ✓ refuses to infer a contextual send from policy-change history  935ms
+     ✓ refuses to infer a contextual send from binding-change history  1177ms
+     ✓ refuses to infer a contextual send from unobserved history  4666ms
+     ✓ rechecks the previous claude-code user row even when the latest command row is still authentic  3524ms
+     ✓ rechecks the previous codex user row even when the latest command row is still authentic  647ms
+     ✓ checks both source objects in C and verifies both original rows outside C for contextual authorization  893ms
+     ✓ does not grant contextual authority if cancel arrives immediately after the previous row is verified  400ms
+     ✓ binds contextual explicit recipient requests to the original exact frozen message and envelope  709ms
+     ✓ notifies the UI when a user cancellation invalidates native authority without emitting on every keystroke  545ms
+     ✓ deduplicates contextual provenance and returns the existing SMTP execution when a second claim arrives late  853ms
+     ✓ freezes without decrypting SMTP secrets and rejects fabricated model approval before network work  1069ms
+     ✓ executes one actual frozen SMTP submission for claude-code and shares the durable result  861ms
+     ✓ executes one actual frozen SMTP submission for codex and shares the durable result  666ms
+     ✓ binds each UI display receipt to sender,frame,project,intent and hash and consumes it once  815ms
+     ✓ consumes a display receipt atomically under concurrent confirmations  500ms
+     ✓ sends the exact stable attachment bytes,without adding paths or changing the frozen message  620ms
+     ✓ does not let another Agent execute the original run intent or reuse it in a different project  623ms
+     ✓ releases a canceled unsubmitted draft and never accepts its old confirmation  578ms
+     ✓ rejects confirmation after origin exit and invalidates outstanding grants on host close  748ms
+     ✓ revokes old intents immediately on SMTP policy change while retaining independently editable drafts  762ms
+     ✓ keeps a lost SMTP receipt unknown and never automatically submits that intent again  1185ms
+     ✓ denies a disk-only or stale RAM source record as authority for actual execution  480ms
+     ✓ retains actual producer lease and waits for settlement after cancellation returns unknown  796ms
+     ✓ upgrades v18 send records and retains metadata-only user-source provenance on migration replay  628ms
+     ✓ uses the current rotated secret for the same identity without changing the reviewed bytes  1087ms
+     ✓ does not turn send-only internal access into permission to mutate another draft  827ms
+ ✓ src/main/core/applications/__tests__/business-data.test.ts (30 tests) 19868ms
+     ✓ creates without either external slot and lets the other supported Agent and UI read the same business object  602ms
+     ✓ continues across Agents with CAS and preserves revision-bound original body resources  734ms
+     ✓ keeps immutable resource identities across a business-service restart and expires old actor capabilities  416ms
+     ✓ copies an owned draft to a distinct object without new source access  680ms
+     ✓ cannot fake reply provenance or silently substitute a model-supplied project or approval  477ms
+     ✓ rejects cross-project drafts and references even when their valid IDs and hashes are known  615ms
+     ✓ rejects changed resource metadata, oversized chunks and offsets past the original length  537ms
+     ✓ chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text  535ms
+     ✓ does not trust JSON copies of host scopes or callers  416ms
+     ✓ records UI and Agent roles separately without inventing tasks for UI reads  434ms
+     ✓ permits configuration while project use is off but cannot upgrade configuration scope to reading or sending  358ms
+     ✓ gives an index child its own read-only identity and parent reference without a fake model task  351ms
+     ✓ rejects an in-flight result after global disable and reenable, preserving the original operation record  379ms
+     ✓ changes source and SMTP slots without invalidating independent local draft operations  410ms
+     ✓ pins the exact source of an in-flight read and denies source ABA even when the original account is selected again  448ms
+     ✓ uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit  431ms
+     ✓ returns cached business receipts only while the original authorization generation remains valid and never duplicates writes  520ms
+     ✓ keeps pending UI resource leases until ignored cancellation actually settles  441ms
+     ✓ keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown  412ms
+     ✓ waits for actual UI work on service shutdown and rejects its eventual result  460ms
+     ✓ returns stable,lossless binary attachment chunks from the durable copy rather than a source path  788ms
+     ✓ keeps an existing reference unchanged when the same logical revision is offered different content  466ms
+     ✓ paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor  973ms
+     ✓ invalidates old local operations when project enablement changes off and on even without changing any external slot  628ms
+   ✓ does not begin a queued configuration provider after host shutdown while C acquisition was pending  396ms
+     ✓ leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests  696ms
+     ✓ lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts  980ms
+     ✓ does not create a cache for forged or destroyed UI senders  477ms
+     ✓ preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown  2824ms
+     ✓ discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection  864ms
+ ✓ src/main/core/tasks/task-capabilities.test.ts (12 tests) 6811ms
+     ✓ reserves one authoritative identity before forking and releases transient files only after the owned exit  671ms
+     ✓ joins concurrent resume requests and refuses a competing profile while preparation is pending  617ms
+     ✓ cancels a preparing resume without forking or releasing the fixed session source references  731ms
+     ✓ does not show a dead PTY as running when the owned exit wins the PID-attachment race  479ms
+     ✓ retains an armed fork-failure window instead of claiming an unknown child never existed  406ms
+     ✓ keeps transient resources while disposal waits for the actual native exit  590ms
+     ✓ completes the first native ID in the authoritative registry and persists the new pointer without losing it to self-check writes  621ms
+     ✓ stops its own native child if task persistence fails after the fork  468ms
+     ✓ does not leave a process or create a task when shutdown arrives while PID attachment is completing  480ms
+     ✓ does not bind two different rollouts while the first authoritative native identity is pending  641ms
+     ✓ discovers a native session flushed before a slow PID attachment completes by using the actual fork time  550ms
+     ✓ aborts the owned preparation and waits for its real settlement before reporting stopped  555ms
+ ✓ src/main/core/applications/__tests__/session-diagnostics.test.ts (14 tests) 3065ms
+     ✓ finds the owned current run even when a clock rollback leaves more than six future-dated history rows  460ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts (37 tests) 5406ms
+     ✓ cancels both armed windows and releases after a verified no-fork receipt  1523ms
+ ✓ src/main/core/tasks/task-service.test.ts (40 tests) 1297ms
+ ✓ src/main/core/capabilities/task-runtime.test.ts (6 tests) 604ms
+ ✓ src/main/core/tasks/task-races.test.ts (6 tests) 235ms
+ ✓ src/main/db/migrations.test.ts (21 tests) 213ms
+ ✓ src/main/core/tasks/native-sessions.test.ts (5 tests) 39ms
+ ✓ src/main/core/tasks/session-health.test.ts (4 tests) 18ms
+
+ Test Files  13 passed (13)
+      Tests  333 passed (333)
+   Start at  14:21:06
+   Duration  224.70s (transform 1.02s, setup 0ms, import 3.60s, tests 219.33s, environment 1ms)
+
+JSON report written to /private/tmp/m10-native-history-ah-20261021/final-test-report.json

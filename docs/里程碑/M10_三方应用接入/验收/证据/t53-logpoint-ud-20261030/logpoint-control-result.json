@@ -1,0 +1,105 @@
+{
+  "startedAt": "2026-10-30T06:13:12.101Z",
+  "root": "/private/tmp/willyou-m10-ud-control-g6AtFz",
+  "userData": "/private/tmp/willyou-m10-ud-control-g6AtFz/userdata",
+  "home": "/private/tmp/willyou-m10-ud-control-g6AtFz/home",
+  "state": "/private/tmp/willyou-m10-ud-control-g6AtFz/agent-state",
+  "cwd": "/private/tmp/willyou-m10-ud-control-g6AtFz/project",
+  "app": "/private/tmp/willyou-m10-nb-package-20261027/mac-arm64/WillYou.app",
+  "layer": "Diagnostic negative control;not a T53 business execution or formal case pass",
+  "checks": [
+    "Two original missing-task failures remain failures;task list stays empty",
+    "Two matching original invocation IDs;unrelated list calls excluded",
+    "Renderer function source appears in stack;zero Debugger.paused events"
+  ],
+  "pid": 47597,
+  "driverError": "Error: Error: Error invoking remote method 'tasks.open': Error: 任务不存在或已被删除",
+  "rendererError": "Error: Error invoking remote method 'tasks.open': Error: 任务不存在或已被删除",
+  "trace": {
+    "scope": "Own isolated renderer;false function-breakpoint condition;no argument/return replacement",
+    "calls": [
+      {
+        "at": "2026-10-30T06:13:15.156Z",
+        "metadata": {
+          "channel": "tasks.open",
+          "taskId": "UD-absent-driver-task",
+          "at": 1793340795155
+        },
+        "stack": "Error: UD original invocation\n    at eval (eval at <anonymous> (:1:20), <anonymous>:1:198)\n    at <anonymous>:1:20",
+        "protocolStack": {
+          "callFrames": [
+            {
+              "functionName": "eval",
+              "scriptId": "140",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 49
+            },
+            {
+              "functionName": "",
+              "scriptId": "139",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 19
+            }
+          ]
+        },
+        "context": 1
+      },
+      {
+        "at": "2026-10-30T06:13:15.160Z",
+        "metadata": {
+          "channel": "tasks.open",
+          "taskId": "UD-absent-renderer-function-task",
+          "at": 1793340795160
+        },
+        "stack": "Error: UD original invocation\n    at eval (eval at udRendererFunctionControl (:1:81), <anonymous>:1:198)\n    at udRendererFunctionControl (willyou-ud-renderer-call-control.js:1:81)\n    at willyou-ud-renderer-call-control.js:1:172\n    at willyou-ud-renderer-call-control.js:1:274",
+        "protocolStack": {
+          "callFrames": [
+            {
+              "functionName": "eval",
+              "scriptId": "142",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 49
+            },
+            {
+              "functionName": "udRendererFunctionControl",
+              "scriptId": "141",
+              "url": "willyou-ud-renderer-call-control.js",
+              "lineNumber": 0,
+              "columnNumber": 80
+            },
+            {
+              "functionName": "",
+              "scriptId": "141",
+              "url": "willyou-ud-renderer-call-control.js",
+              "lineNumber": 0,
+              "columnNumber": 171
+            },
+            {
+              "functionName": "",
+              "scriptId": "141",
+              "url": "willyou-ud-renderer-call-control.js",
+              "lineNumber": 0,
+              "columnNumber": 273
+            }
+          ]
+        },
+        "context": 1
+      }
+    ],
+    "unexpectedPauses": [],
+    "errors": [],
+    "conditionSha256": "59bd987fee255a81359d44be7c161e111aa2173328f23ac27043eea3ba194572",
+    "installedAt": "2026-10-30T06:13:15.155Z",
+    "closedAt": "2026-10-30T06:13:15.162Z"
+  },
+  "status": "passed-diagnostic-control-only",
+  "exit": {
+    "pid": 47597,
+    "code": 0,
+    "signal": null
+  },
+  "finishedAt": "2026-10-30T06:13:15.400Z"
+}

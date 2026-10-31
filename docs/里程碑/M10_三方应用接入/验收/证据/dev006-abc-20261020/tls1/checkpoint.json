@@ -1,0 +1,111 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T12:02:42.906Z",
+  "branch": "feature/0.0.2",
+  "commit": "43d7cb389104bb42218c8ef1c0c0e44393a34a08",
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-dev006-c-package-20261020/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "010121542dfebf3b2ab4cd7d13c4099ebaa6768e906d7fb6ee8791b29c632028",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-g3sCbC",
+  "userData": "/private/tmp/willyou-m10-management-ui-g3sCbC/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T12:02:45.017Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T12:02:45.347Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T12:02:45.534Z",
+      "passed": true
+    },
+    {
+      "name": "P04 project enabled and explicit single ZenTao source persisted",
+      "at": "2026-10-20T12:02:46.115Z",
+      "passed": true
+    },
+    {
+      "name": "P05 real readonly list and separate detail/body/history through UI",
+      "at": "2026-10-20T12:02:46.456Z",
+      "passed": true
+    },
+    {
+      "name": "P03 SMTP verify and save does not submit DATA",
+      "at": "2026-10-20T12:02:47.065Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/bugs/12"
+    ],
+    "smtpCommands": [
+      "EHLO",
+      "AUTH",
+      "QUIT"
+    ],
+    "smtpDataSubmissions": 0,
+    "socketErrors": []
+  },
+  "status": "running",
+  "fixtureTrust": {
+    "scope": "only this isolated App process",
+    "mechanism": "NODE_EXTRA_CA_CERTS for private loopback certificate; production certificate validation stays enabled",
+    "certSha256": "a772f917128b73ec44bd18b035ee51e7d3349de484c2222e0f845c2ca63af6cc"
+  },
+  "deferred": [
+    {
+      "check": "SMTP plain-mode native dropdown selection",
+      "state": "not passed",
+      "reason": "CDP default selection did not change; CUA frontmostApplicationChanged, retained separate red traces"
+    }
+  ],
+  "appPid": 32531,
+  "setup": {
+    "projectId": "8194f82d-7c28-4244-b15e-bf6f61fbf117",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": "button",
+    "text": "保存连接"
+  },
+  "choiceTrace": [
+    {
+      "label": "当前应用项目",
+      "keyName": "Home",
+      "value": "8194f82d-7c28-4244-b15e-bf6f61fbf117",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "ArrowDown",
+      "value": "8194f82d-7c28-4244-b15e-bf6f61fbf117",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "Enter",
+      "value": "8194f82d-7c28-4244-b15e-bf6f61fbf117",
+      "active": "SELECT"
+    }
+  ]
+}

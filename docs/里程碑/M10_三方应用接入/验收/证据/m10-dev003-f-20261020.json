@@ -1,0 +1,218 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-F",
+  "recordedAt": "2026-10-20T09:30:29.226541+00:00",
+  "requirementBaseline": "R1.6 incl12.21;R08-01/02/03 andR07-08/11;origin primitive only,not native semantic authorization completion",
+  "baseCommit": "5362772389ffe73516510fda09d65299d9399290",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "applicationVersion": "0.0.5",
+  "prototypeBaseline": "8466734",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "PtyAccess main-only observer only after actual owned write success;does not report accepted input as failed if observer fails",
+    "No observer on resize/context authorization/failed write/unauthorized sender;renderer extra run fields stripped",
+    "Input joins unique actual active task/PTY/owner registry row plus original session/resource checks",
+    "RAM-only bounded text origin tied to project/task/run/PTY,selection hash and original Electron frame IDs;not exported as RPC",
+    "Submitted exact text/time and private object receipt identity;first native session binding supported then fixed;one source cannot claim another intent",
+    "Conservative editor handling,split bracketed multiline paste,CRLF,Unicode/surrogates,clear/backspace/word delete/cancel;unknown editing state not guessed",
+    "Submission bursts use a bounded256-entry ring before allocating receipts;budget covers pending editors plus completed text;stop/replaced run/selection/expiry/dispose clears corresponding origins",
+    "ApplicationService/index production seam connected;unattached run registry returns no source and no send grant is minted"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects --maxWorkers=2",
+      "status": "passed",
+      "files": 50,
+      "tests": 653,
+      "passed": 653,
+      "failed": 0,
+      "m10AndRelatedRuntime": 574,
+      "projectsAndM8": 79,
+      "log": "dev003-f-20261020/related-final-20261020.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-f-20261020/types-validated-20261020.json"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev003-f-20261020/build-final-20261020.json"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed",
+      "tests": 14,
+      "log": "dev003-f-20261020/release-20261020.json"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev003-f-20261020/resources-validated-20261020.json"
+    }
+  ],
+  "testAccounting": {
+    "previousM10RelatedBaseline": 635,
+    "currentM10RelatedWithProjects": 653,
+    "newInputUnitBoundaries": 14,
+    "newPtyAccessOwnershipAndOrder": 2,
+    "newActualRegistryJoin": 1,
+    "newFixedPackageIntegration": 1,
+    "newTestsIncludedIn653": 18,
+    "note": "635+14+2+1+1=653;subset/repeated runs and release checks not accumulated"
+  },
+  "retainedFailure": {
+    "log": "dev003-f-20261020/input-first-20261020.json",
+    "passed": 59,
+    "failed": 1,
+    "cause": "Ctrl+W reconstruction removed the preceding space;production origin reconstruction fixed,originalexpected send-right text retained"
+  },
+  "immutableResourceVerification": {
+    "indexHash": "47f9d6dc7b4350adbe82a70ef92b4f711373b8768360cbf80b3779575c885717",
+    "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+    "adapters": 2,
+    "runtimes": 1,
+    "apps": [
+      {
+        "appId": "zentao",
+        "version": "1.0.0",
+        "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+        "skills": 2,
+        "tools": 3,
+        "files": 13
+      },
+      {
+        "appId": "mail",
+        "version": "1.0.0",
+        "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+        "skills": 1,
+        "tools": 14,
+        "files": 34
+      }
+    ]
+  },
+  "engineeringBounds": {
+    "editorContexts": 128,
+    "completedReceipts": 256,
+    "combinedUtf8TextBytes": 16777216,
+    "inputAndLineBytes": 1048576,
+    "completedReceiptTtlMs": 600000,
+    "nativeTimestampBeforeInputMs": 5000,
+    "nativeTimestampAfterInputMs": 120000,
+    "futureNativeTimestampMs": 5000
+  },
+  "evidenceBoundary": {
+    "actualComponents": [
+      "PtyAccess implementation and owned write ordering",
+      "Private business SQLite,Session/Run registry and original fixed CJS chain",
+      "Production-source build and fixed resource verifier"
+    ],
+    "explicitFixtures": [
+      "WebContents/frame,CLI PID/start identities and reversible cipher",
+      "Unit RunContext and deterministic clock;not actual native editor behavior"
+    ],
+    "noSendAuthorityFromLedger": true,
+    "dailyDataRead": false,
+    "actualAgentRun": false,
+    "externalMailSent": false,
+    "packagedAppExecuted": false,
+    "formalM10Cases": 72,
+    "newFormalProductPasses": 0,
+    "formalProductCasesPassed": 0
+  },
+  "remaining": [
+    "Match actual native user messages to host-observed input;this internal matching primitive alone does not prove native delivery",
+    "Trusted create-task firstMessage provenance;currently native CLI launch argument path bypasses PTY keyboard observer",
+    "Resolve unique context draft/target/content and concrete intent authorization without redundant approval;UI path alone does not fulfill12.5",
+    "Production TaskCapabilityLauncher,effective native configuration/name conflicts,Agent-spawned bridge and actual CC/Codex acceptance",
+    "Full maintenance/recovery/GC,mail health/completeness/last-success,P01-P09 and72 packaged App/system/manual cases and final delivery"
+  ],
+  "sourceInspectionFinding": "Before staging,receipt allocation within a single multiline chunk was changed to a bounded ring;prior end-of-chunk pruning alone could transiently create unbounded receipts.No earlier business red is claimed;20,000-line public match stress test and final related run retained.",
+  "sourceManifest": "dev003-f-20261020/source-and-build-manifest.json",
+  "evidenceFiles": [
+    {
+      "path": "dev003-f-20261020/build-20261020.json",
+      "bytes": 18402,
+      "sha256": "012b5a6ebcd6692aa695a9322efff556ad355307ae9df2dddb44dfcfa1f3e3e4"
+    },
+    {
+      "path": "dev003-f-20261020/build-final-20261020.json",
+      "bytes": 18683,
+      "sha256": "7a95a446fb2bd8ee72299a18071614a21c2fbb76c162270889534c868a8923ac"
+    },
+    {
+      "path": "dev003-f-20261020/input-burst-20261020.json",
+      "bytes": 674,
+      "sha256": "dde27c6a0f8e123012cb144f17ef88fab3b2cfc937e16d3e562266cc755571e7"
+    },
+    {
+      "path": "dev003-f-20261020/input-first-20261020.json",
+      "bytes": 1578,
+      "sha256": "b0c4ca158aee8aef32225f0080b401a190d184620e6d1819af89b5c6b4824484"
+    },
+    {
+      "path": "dev003-f-20261020/input-fixed-20261020.json",
+      "bytes": 931,
+      "sha256": "25fbc60aa6a543e6f27646a163a15b6706f84a1c035b87515e046f6d993e0d1c"
+    },
+    {
+      "path": "dev003-f-20261020/related-20261020.json",
+      "bytes": 940,
+      "sha256": "a9b42fa6174d17a560e86b6c8c52ee58410bff25f6e9d25694bebcb086a08f2d"
+    },
+    {
+      "path": "dev003-f-20261020/related-final-20261020.json",
+      "bytes": 945,
+      "sha256": "705aed06e6c42603713f150df90f316db142357fd08d5298fd20dfc4e85cbfcc"
+    },
+    {
+      "path": "dev003-f-20261020/release-20261020.json",
+      "bytes": 3575,
+      "sha256": "72af88b0ac3a8803ca78e89b7aa98bba5749a848a73a02f84433fbfe9801d323"
+    },
+    {
+      "path": "dev003-f-20261020/resources-20261020.json",
+      "bytes": 795,
+      "sha256": "1a651610bb6956e3aa9a0dbff483650c5f37c3b99adf7dc7883e54cf22ca54d5"
+    },
+    {
+      "path": "dev003-f-20261020/resources-validated-20261020.json",
+      "bytes": 805,
+      "sha256": "fbe2a562101812e9498c277164c1c2497aecd5b41d0b7b03eb35f1a0340e0d79"
+    },
+    {
+      "path": "dev003-f-20261020/source-and-build-manifest.json",
+      "bytes": 3137,
+      "sha256": "d30f5b0d70020e3f460f46199c68dffd44484bf1e347ada92328b2d6b2d6c0d6"
+    },
+    {
+      "path": "dev003-f-20261020/types-final-20261020.json",
+      "bytes": 409,
+      "sha256": "38442bc60084f7b0f31f536b11e31d6ec84b0c63408e455ee9ba994dc46366f5"
+    },
+    {
+      "path": "dev003-f-20261020/types-first-20261020.json",
+      "bytes": 409,
+      "sha256": "54f47896367ccee83dba41d257d21d0a306dd8df1691ab7abc83e015dfc09f98"
+    },
+    {
+      "path": "dev003-f-20261020/types-second-20261020.json",
+      "bytes": 410,
+      "sha256": "f71ad0bbb9c1c02c31d09af7690287ebeffa44bf30f5e4da12bb63082445ff37"
+    },
+    {
+      "path": "dev003-f-20261020/types-validated-20261020.json",
+      "bytes": 413,
+      "sha256": "85c77678b22829999dafe2e32cfc762d58688e13a3edcdb539ab3214b70e4382"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts src/main/core/applications/__tests__/discovery-catalog.test.ts src/main/core/applications/__tests__/agent-adapters.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-legacy-catalog-al-20261021/second-report.json
+
+[1021/160209.468446:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/160210.150429:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts (21 tests | 1 failed) 4516ms
+     ✓ restores the exact original path, full source and legacy marker without renaming the Skill 294ms
+     ✓ adopts an unchanged original tree without writing any of its files or marker 275ms
+     ✓ keeps the original projection disabled in a new session and preserves user Skill configuration  498ms
+     ✓ waits for Claude consumers too and cancels before changing the original discovery set  308ms
+     ✓ repairs a missing registered original tree at the same hash and path, retaining the catalog identity 260ms
+     ✓ preserves an occupied original empty tree instead of overwriting it 136ms
+     ✓ preserves an occupied original extra-file tree instead of overwriting it 132ms
+     ✓ preserves an occupied original extra-empty-dir tree instead of overwriting it 131ms
+     ✓ preserves an occupied original marker tree instead of overwriting it 120ms
+     ✓ preserves an occupied original link tree instead of overwriting it 130ms
+     ✓ preserves an occupied original hardlink tree instead of overwriting it 135ms
+     ✓ replays the exact registered operation after its original host is proved stopped 184ms
+     ✓ replays the exact materialized operation after its original host is proved stopped 205ms
+     ✓ replays the exact renamed operation after its original host is proved stopped 246ms
+     ✓ replays the exact catalog-published operation after its original host is proved stopped 237ms
+     ✓ does not recover a living or unknown publisher and retains its exact operation and lease 154ms
+     ✓ rechecks a late source change before making the H catalog visible  362ms
+     × rechecks a late dangling-target change before making the H catalog visible 166ms
+     ✓ rechecks a late staging change before making the H catalog visible 165ms
+     ✓ retains a missing original dependency ledger instead of manufacturing one while repairing H 199ms
+     ✓ does not reassign another store’s registered original H path 177ms
+[1021/160215.667282:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/discovery-catalog.test.ts (31 tests) 8915ms
+     ✓ uses one canonical HOME lock/catalog through aliases and distinct identities across two real HOMEs  436ms
+     ✓ builds a real complete native disable list from the coordinated catalog without changing the fixed snapshot  436ms
+     ✓ blocks new consumers during pending publication and waits for actual CLI exit rather than stop intent  496ms
+     ✓ keeps a live executor protected after all child processes have exited  320ms
+     ✓ rolls back only its reservation when the C registration transaction fails  305ms
+     ✓ holds a reservation when C committed but its callback failed before returning  300ms
+     ✓ cancels an unpublished waiting intent on cancel and allows exact-content retry  440ms
+     ✓ cancels an unpublished waiting intent on timeout and allows exact-content retry  485ms
+     ✓ does not adopt or overwrite an identical namesake belonging to another store  367ms
+     ✓ respects a different store consumer and never removes its reservation from this database  533ms
+     ✓ recovers exact original bytes after a controlled catalog-published interruption  302ms
+     ✓ checks supplied projected bytes against the original source, then safely cancels an unpublished materialization  362ms
+[1021/160224.719209:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/legacy-agent-load.test.ts (29 tests) 5941ms
+     ✓ does not replace or rename a colliding user plugin  343ms
+[1021/160230.914269:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/agent-adapters.test.ts (12 tests) 2214ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts > original schema1 Codex paths in the shared discovery catalog > rechecks a late dangling-target change before making the H catalog visible
+Error: ENOENT: no such file or directory, lstat '/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-agent-MgIIxq/home/.agents/skills/smartdd-project-db-diagnostics-e35d11cc0f884fac'
+ ❯ src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts:63:153
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 92 passed (93)
+   Start at  16:02:10
+   Duration  23.19s (transform 621ms, setup 0ms, import 1.09s, tests 21.59s, environment 0ms)
+
+JSON report written to /private/tmp/m10-legacy-catalog-al-20261021/second-report.json
+ ELIFECYCLE  Test failed. See above for more details.

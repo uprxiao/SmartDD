@@ -1,0 +1,37 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-service.test.ts src/main/db/migrations.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (56 tests | 2 failed) 69742ms
+     × refuses a late claude-code history loss before fork and cancels the known unspawned run 3333ms
+     × refuses a late codex history loss before fork and cancels the known unspawned run 5015ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late claude-code history loss before fork and cancels the known unspawned run
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late codex history loss before fork and cancels the known unspawned run
+AssertionError: expected { n: 1 } to deeply equal { n: +0 }
+
+- Expected
++ Received
+
+  {
+-   "n": 0,
++   "n": 1,
+  }
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:412:145
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 113 passed (115)
+   Start at  14:08:17
+   Duration  71.84s (transform 430ms, setup 0ms, import 748ms, tests 70.87s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

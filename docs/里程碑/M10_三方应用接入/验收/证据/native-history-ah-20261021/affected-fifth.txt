@@ -1,0 +1,29 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/tasks/task-service.test.ts src/main/db/migrations.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/applications/__tests__/run-registry.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (56 tests | 2 failed) 63628ms
+     × refuses a late claude-code history loss before fork and cancels the known unspawned run 338ms
+     × refuses a late codex history loss before fork and cancels the known unspawned run 2145ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late claude-code history loss before fork and cancels the known unspawned run
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late codex history loss before fork and cancels the known unspawned run
+SqliteError: no such column: task_id
+ ❯ Database.prepare node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:414:17
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  2 failed | 150 passed (152)
+   Start at  14:10:52
+   Duration  67.52s (transform 501ms, setup 0ms, import 887ms, tests 66.35s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

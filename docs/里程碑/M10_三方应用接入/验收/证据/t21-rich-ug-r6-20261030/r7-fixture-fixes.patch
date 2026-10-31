@@ -1,0 +1,66 @@
+--- r6
++++ r7
+@@ -41,6 +41,7 @@
+  }return true};
+  for(const name of ['showOpenDialog','showSaveDialog']){const original=E.dialog[name];g.nativeDialogs.push([name,original]);E.dialog[name]=async function(...args){const result=await original.apply(this,args);if(!result.canceled)g.checkPaths(name==='showOpenDialog'?result.filePaths:[result.filePath],name==='showSaveDialog');return result}};
+  for(const name of ['databases.test','databases.testDraft','servers.test','servers.testDraft'])if(typeof map.get(name)!=='function')throw Error('UG resource guard handler missing:'+name);
++ if(cfg.maxTaskCreates===2){if(cfg.taskOrdinalOffset!==1||cfg.globalMaxTaskCreates!==3||process.getBuiltinModule('crypto').createHash('sha256').update(fs.readFileSync(cfg.audit+'/task-attempt-1.json')).digest('hex')!==cfg.priorAttemptSha256)throw Error('UG exact prior consumed create and extra permission required')}
+  const originalGet=map.get('tasks.get');
+  const wrap=(name,fn)=>{const original=map.get(name);if(typeof original!=='function')throw Error('UG required original handler:'+name);g.originals.push([name,original]);map.set(name,fn(original))};
+  wrap('aiProfiles.create',original=>async function(event,...args){checkProfile(args[0],cfg);return original.call(this,event,...args)});
+@@ -52,7 +53,7 @@
+   const expectedProject=index===0?g.sourceId:g.imported?.projectId,expectedPrompt=index===0?cfg.oldPrompt:cfg.newPrompt;
+   if(!expectedProject||input.projectId!==expectedProject||input.firstMessage!==expectedPrompt||index===1&&!g.imported.profileIds.includes(profileId))throw Error('UG exact project/profile/prompt required');
+   if(index===1){const old=await originalGet(event,g.taskIds[0]);if(old.ptyId||!old.nativeSessionId)throw Error('UG old native task must stop before imported task')}
+-  fs.writeFileSync(cfg.audit+'/task-attempt-'+(index+1)+'.json',JSON.stringify({at:new Date().toISOString(),projectId:input.projectId,profileId,index:index+1}),{flag:'wx',mode:0o600});
++  fs.writeFileSync(cfg.audit+'/task-attempt-'+(index+1+(cfg.taskOrdinalOffset??0))+'.json',JSON.stringify({at:new Date().toISOString(),projectId:input.projectId,profileId,index:index+1}),{flag:'wx',mode:0o600});
+   g.attempts.push({at:Date.now(),projectId:input.projectId,profileId});const result=await original.call(this,event,...args);g.taskIds.push(result.task.id);return result;
+  });
+  for(const name of ['projectTransfer.export','projectTransfer.commit'])wrap(name,original=>async function(event,...args){
+@@ -94,7 +95,7 @@
+  }
+  const filled=new Set();
+  async function control(kind,data={}){
+-  const n=result.controls.length,ack=join(root,'ack-r6-'+n+'.json'),entry={kind,sequence:n,ack,pid:app.processId,root,...data,at:new Date().toISOString()};result.controls.push(entry);await writeFile(join(root,'progress.json'),JSON.stringify(entry,null,2));console.log(JSON.stringify({root,control:entry}));
++  const n=result.controls.length,ack=join(root,'ack-r7-'+n+'.json'),entry={kind,sequence:n,ack,pid:app.processId,root,...data,at:new Date().toISOString()};result.controls.push(entry);await writeFile(join(root,'progress.json'),JSON.stringify(entry,null,2));console.log(JSON.stringify({root,control:entry}));
+   const end=Date.now()+900000;
+   while(Date.now()<end){
+    for(const phase of ['export','import'])if(!filled.has(phase)&&await readFile(join(root,'fill-'+phase+'.json'),'utf8').then(JSON.parse,()=>null)){
+@@ -118,9 +119,9 @@
+  async function stopped(taskId){
+   await poll(async()=>{
+    if((await app.invoke('tasks.get',taskId)).ptyId)return false;
+-   const runs=sql("SELECT id,state FROM capability_runs WHERE task_id='"+taskId+"'");
++   const runs=sql("SELECT run_id,state FROM capability_runs WHERE task_id='"+taskId+"'");
+    if(!runs.length||runs.some(x=>x.state!=='stopped'))return false;
+-   const processes=sql("SELECT p.state FROM capability_run_processes p JOIN capability_runs r ON r.id=p.run_id WHERE r.task_id='"+taskId+"'");
++   const processes=sql("SELECT p.state FROM capability_run_processes p JOIN capability_runs r ON r.run_id=p.run_id WHERE r.task_id='"+taskId+"'");
+    return processes.length>0&&processes.every(x=>['exited','canceled'].includes(x.state))&&sql("SELECT count(*) n FROM capability_resource_leases WHERE state<>'released'")[0].n===0;
+   });
+  }
+@@ -132,7 +133,7 @@
+   const env={HOME:home,ZDOTDIR:home,CODEX_HOME:state,CLAUDE_CONFIG_DIR:claude,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost',SHELL:'/bin/zsh'};
+   app=await openElectron({executable:join(pins.app,'Contents/MacOS/WillYou'),userData,cwd:sourceCode,inspectMain:true,env:{...env,HOME:'/Users/hx'}});result.pid=app.processId;
+   const originalInvoke=app.invoke.bind(app);app.invoke=(channel,...args)=>['databases.create','servers.create'].includes(channel)?app.evaluate('window.electronAPI.invoke('+JSON.stringify(channel)+', ...'+JSON.stringify(args)+')',600000):originalInvoke(channel,...args);
+-  const cfg={root,userData,audit:DIR,env,cli:pins.cli,args:nativeArgs,oldPrompt,newPrompt,maxTaskCreates:2};await app.mainEvaluate('('+mainGuard.toString()+')('+JSON.stringify(cfg)+','+assertPrivateProfile.toString()+')',{label:'ug-install-reviewed-private-task-guard'});
++  const cfg={root,userData,audit:DIR,env,cli:pins.cli,args:nativeArgs,oldPrompt,newPrompt,maxTaskCreates:2,taskOrdinalOffset:1,globalMaxTaskCreates:3,priorAttemptSha256:pins.priorAttemptSha256};await app.mainEvaluate('('+mainGuard.toString()+')('+JSON.stringify(cfg)+','+assertPrivateProfile.toString()+')',{label:'ug-install-reviewed-private-task-guard'});
+   await control('attach-and-focus-before-native-storage',{instructions:'Bind this exact current App before storage calls;click empty composer to focus,no task input/launch;ack only after observed own window focus'});
+   console.log(JSON.stringify({root,pid:app.processId,stage:'prepare-own-projects-configs-profile;system-keychain-may-request-confirmation'}));
+   const source=pins.resumeSetup?await app.invoke('projects.get',pins.resumeSetup.sourceId):await app.invoke('projects.create',{name:'UG rich source',aliases:['UG-SOURCE'],description:'UG synthetic rich M8/M10 source',rulesPath:null},[{label:'main',path:sourceCode}]);result.source={id:source.id,name:source.name};
+@@ -142,6 +143,8 @@
+   const mailSource=join(root,'synthetic-foxmail');await mkdir(join(mailSource,'Mail/Inbox'),{recursive:true});await writeFile(join(mailSource,'Mail/Inbox/1.mail'),'From: sender@example.test\r\nTo: receiver@example.test\r\nSubject: UG fixture\r\nMessage-ID: <ug@example.test>\r\n\r\nUG_M10_BODY_NOT_PORTABLE\r\n');execFileSync('/usr/bin/sqlite3',[join(mailSource,'messages.db'),"CREATE TABLE mailinfo(mailid INTEGER PRIMARY KEY,subject TEXT,from_ TEXT,to_ TEXT,messageid TEXT,date INTEGER,mail_receivedate INTEGER,fileexist INTEGER,attachment INTEGER);INSERT INTO mailinfo VALUES(1,'UG fixture','sender@example.test','receiver@example.test','<ug@example.test>',0,0,1,0)"]);
+   const mail=unwrap(await app.invoke('applications.catalog')).find(x=>x.appId==='mail');unwrap(await app.invoke('applications.setAdded','mail',true,mail.revision));const tested=unwrap(await app.invoke('applications.testConnection',{name:'UG existing local source',expectedRevision:0,config:{kind:'foxmail',sourcePath:mailSource,account:'receiver@example.test',queryDays:7}}));const connection=unwrap(await app.invoke('applications.saveConnection','mail',tested.operationId,tested.candidateHash));result.connection={id:connection.id,name:connection.name};unwrap(await app.invoke('applications.select',{projectId:source.id,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:connection.id,smtp:null}}));
+   const profile=await app.invoke('aiProfiles.create',{name:'UG private Codex',runner:'codex',executable:pins.cli,args:nativeArgs,env:Object.entries(env).map(([name,value])=>({name,value,secret:false})),color:null,isDefault:true});result.profile={id:profile.id,name:profile.name};await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);if(p.check&&!p.checking){assert.equal(p.check.status,'ok');return true}},45000);
++  for(const capabilityId of ['project-db-diagnostics','remote-password-ssh','smartdd-project-context'])await app.invoke('capabilities.setEnabled',source.id,capabilityId,false);
++  const fixtureSettings=await app.invoke('capabilities.projectSettings',source.id);assert(!fixtureSettings.mcpEnabled&&fixtureSettings.skills.every(s=>!s.enabled));result.m4FixtureInjectionDisabled=true;
+   const content=name=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:[],cc:[],bcc:[],subject:marker+'_'+name,text:marker+'_M10_PRIVATE_'+name,html:null,inReplyTo:null,references:[],attachmentIds:[]});
+   const oldPhase=probe.select('old-target',{content:content('OLD_DRAFT')},'smartdd_mail_draft_create_v1');assert(oldPrompt.startsWith(oldPhase.token));await control('create-and-stop-old-source-task-via-real-ui',{projectId:source.id,projectName:source.name,profileName:profile.name,prompt:oldPrompt});await poll(()=>oldPhase.done);const old=await nativeTask(oldPhase,source.id);await stopped(old.task.id);old.task=await app.invoke('tasks.get',old.task.id);const oldHistory=await history(old.task);probe.clear(oldPhase);note('Old source task is a real stopped native Codex session with a local draft and fixed own snapshot');
+   const preserveTables=['tasks','mail_drafts','mail_draft_revisions','mail_attachment_objects','mail_send_intents','mail_send_executions','capability_session_snapshots','capability_session_refs','application_project_settings','application_project_bindings','app_secrets'];const before=Object.fromEntries(preserveTables.map(t=>[t,sql('SELECT * FROM '+t+' ORDER BY rowid')]));const sourceBefore=await app.invoke('projects.get',source.id),peerBefore=await app.invoke('projects.get',peer.id),connectionBefore=sql('SELECT id,name,config_json,enabled,revision FROM application_connections');
+@@ -157,6 +160,6 @@
+  }catch(error){result.status='failed';result.error=String(error);result.stack=error.stack;process.exitCode=2;}
+  finally{
+   probe.clearAll();if(app){try{const g=await app.mainEvaluate('({taskIds:globalThis.__ugRich.taskIds,attempts:globalThis.__ugRich.attempts,forbidden:globalThis.__ugRich.forbidden,records:globalThis.__ugRich.records.map(x=>({name:x.name,at:x.at,returnedAt:x.returnedAt,ok:x.reply?.ok,code:x.reply?.code}))})',{label:'ug-own-guard-results'});result.guard=g;for(const id of g.taskIds)await app.invoke('tasks.kill',id);assert(g.attempts.length<=2&&!g.forbidden.length);await app.mainEvaluate('globalThis.__ugRich.restore();true',{label:'ug-restore-own-guard'});result.guardRestored=true;await app.mainEvaluate("(()=>{setTimeout(()=>process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron').app.quit(),30);return true})()",{label:'ug-own-normal-quit'});result.exit=await app.waitForExit(5000)}catch(error){result.cleanupError=String(error)}await app.close()}
+-  for(const socket of sockets)socket.destroy();if(server)await new Promise(resolve=>server.close(resolve));result.finishedAt=new Date().toISOString();const serialized=JSON.stringify(result,null,2);for(const v of Object.values(secrets))assert(!serialized.includes(v),'Private generated fixture secret must not enter result');await writeFile(join(root,'result-r6.json'),serialized,{mode:0o600});await writeFile(DIR+'/last-root.json',JSON.stringify({root,status:result.status,finishedAt:result.finishedAt}));console.log(JSON.stringify({root,status:result.status,checks:result.checks.length,error:result.error}));
++  for(const socket of sockets)socket.destroy();if(server)await new Promise(resolve=>server.close(resolve));result.finishedAt=new Date().toISOString();const serialized=JSON.stringify(result,null,2);for(const v of Object.values(secrets))assert(!serialized.includes(v),'Private generated fixture secret must not enter result');await writeFile(join(root,'result-r7.json'),serialized,{mode:0o600});await writeFile(DIR+'/last-root.json',JSON.stringify({root,status:result.status,finishedAt:result.finishedAt}));console.log(JSON.stringify({root,status:result.status,checks:result.checks.length,error:result.error}));
+  }
+ }

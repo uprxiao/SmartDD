@@ -1,3 +1,5 @@
+import {parseDocument} from 'yaml';
+import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,7 +15,9 @@ import { PtyManager } from '../../pty-manager';
 import { SecretsStore } from '../../secrets';
 import { ProjectService } from '../projects/project-service';
 import { BUNDLED_SKILLS, treeHash } from './assets';
-import { CapabilityService, RUNTIME_ISOLATION, type PreparedRuntime } from './capability-service';
+import { CapabilityService, RUNTIME_ISOLATION, type PreparedRuntime, type ManagedCapabilityPlacement } from './capability-service';
+import { readOwnedTree, writeOwnedTree } from './files';
+import { projectSkillName, standardNativeSkillName } from '../applications/session-projector';
 
 let tmp: string;
 let sqlite: Database.Database;
@@ -55,6 +59,29 @@ function runGuard(run: PreparedRuntime, changes: Record<string, string | undefin
 }
 
 describe('project runtime projection', () => {
+  it('M10-UG-01 reads legacy random-id imported settings without rewriting them or injecting resources', () => {
+    projects.createDatabase(a.id, dbInput('legacy-disabled-password'));
+    db.insert(schema.projectCapabilities).values(['project-db-diagnostics', 'remote-password-ssh', 'smartdd-project-context'].map(capabilityId => ({ id: randomUUID(), projectId: a.id, capabilityId, enabled: false }))).run();
+    const before = db.select().from(schema.projectCapabilities).all();
+    expect(svc.list(a.id).every(s => !s.enabled)).toBe(true);
+    expect(svc.enabled(a.id, 'smartdd-project-context')).toBe(false);
+    const run = prepare();
+    expect(run.env.PROJECT_DB_CONFIG).toBeUndefined();
+    expect(Object.values(run.env)).not.toContain('legacy-disabled-password');
+    expect(JSON.parse(readFileSync(run.snapshot.manifestPath, 'utf8')).pythonModules).toEqual([]);
+    expect(db.select().from(schema.projectCapabilities).all()).toEqual(before);
+    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
+  });
+  it('M10-UG-01 normalizes legacy rows only when that project setting is explicitly saved', () => {
+    db.insert(schema.projectCapabilities).values({ id: randomUUID(), projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: false }).run();
+    svc.setEnabled(a.id, 'project-db-diagnostics', true);
+    const matching = db.select().from(schema.projectCapabilities).all().filter(row => row.projectId === a.id && row.capabilityId === 'project-db-diagnostics');
+    expect(matching).toEqual([{ id: `${a.id}:project-db-diagnostics`, projectId: a.id, capabilityId: 'project-db-diagnostics', enabled: true }]);
+    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(true);
+    svc.setEnabled(a.id, 'project-db-diagnostics', false);
+    expect(svc.enabled(a.id, 'project-db-diagnostics')).toBe(false);
+    expect(svc.list(b.id).every(s => s.enabled)).toBe(true);
+  });
   it('projects only the selected project, no raw credentials on disk/argv, with a matching config version', () => {
     const da = projects.createDatabase(a.id, dbInput('alpha-password'));
     projects.createDatabase(b.id, dbInput('beta-password', { database: 'beta' }));
@@ -210,14 +237,62 @@ describe('terminal self-check and MCP', () => {
     projects.createDatabase(a.id, dbInput('never-in-mcp'));
     const run = prepare();
     const mcp = JSON.parse(readFileSync(join(dirname(run.snapshot.manifestPath), 'mcp.json'), 'utf8')).mcpServers[run.snapshot.mcp[0].name];
+    const publicBytes = readFileSync(mcp.args[1]);
     const requests = [{ id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05' } }, { method: 'notifications/initialized' }, { id: 2, method: 'tools/list' }, { id: 3, method: 'tools/call', params: { name: 'project_context' } }];
     const result = spawnSync(mcp.command, mcp.args, { input: requests.map((r) => JSON.stringify({ jsonrpc: '2.0', ...r })).join('\n') + '\n', encoding: 'utf8', timeout: 5000 });
     expect(result.status, result.stderr).toBe(0);
     const replies = result.stdout.trim().split('\n').map((line) => JSON.parse(line));
     expect(replies).toHaveLength(3);
     expect(replies[1].result.tools[0].name).toBe('project_context');
+    expect(replies[1].result.tools[0].annotations).toEqual({ readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
     const context = JSON.parse(replies[2].result.content[0].text);
     expect(context.projectId).toBe(a.id); expect(context.configVersion).toBe(projects.getProject(a.id).configVersion);
     expect(result.stdout).not.toContain('never-in-mcp'); expect(result.stdout).not.toContain(b.id);
+    expect(readFileSync(mcp.args[1])).toEqual(publicBytes);
   });
+});
+
+function managedPlacement(service = svc): ManagedCapabilityPlacement {
+  const skills = service.selection(a.id), projections: ManagedCapabilityPlacement['projections'] = {};
+  for (const skill of skills) {
+    const source = readOwnedTree(join(tmp,'data/capabilities/packages',skill.skillId,skill.hash)), nativeName = standardNativeSkillName(skill.skillId,skill.hash), files = Object.fromEntries(Object.entries(source).map(([path,text]) => [path,path === 'SKILL.md' ? projectSkillName(Buffer.from(text),nativeName) : Buffer.from(text)])), root = join(tmp,'stable-capabilities',nativeName);
+    writeOwnedTree(root,Object.fromEntries(Object.entries(files).map(([path,bytes]) => [path,bytes.toString('utf8')])),join(tmp,'conflicts')); projections[skill.versionId] = { path: join(root,'SKILL.md'),nativeName,files };
+  }
+  return { runId: randomUUID(),runtimeHash: service.runtimeIdentity().hash,mcpName: 'smartdd_project_original_name',skills,projections };
+}
+describe('M10 managed placement through the existing production project runtime', () => {
+  it.each(['claude','codex'] as const)('uses fixed complete paths for %s without writing discovery directories or replacing user overrides', runner => {
+    const placement = managedPlacement(), home = join(tmp,'home'), userConfig = join(home,'user-config.txt'); writeFileSync(userConfig,'existing user configuration');
+    const run = svc.prepare({ projectId: a.id,taskId: 'task',runner,cwd: a.dirs[0].path,home,profileArgs: ['-c','skills.config=[{path="user",enabled=true}]'],managed: placement });
+    expect(run.snapshot.runId).toBe(placement.runId); expect(run.snapshot.mcp[0].name).toBe(placement.mcpName); expect(run.args).toEqual([]); expect(existsSync(join(home,'.agents'))).toBe(false); expect(readFileSync(userConfig,'utf8')).toBe('existing user configuration');
+    const context = JSON.parse(readFileSync(run.env.SMARTDD_PROJECT_CONTEXT,'utf8')); expect(context.skills.map((s: { path: string }) => s.path)).toEqual(placement.skills.map(s => placement.projections[s.versionId].path));
+    const manifest = JSON.parse(readFileSync(run.snapshot.manifestPath,'utf8')); for (const p of Object.values(placement.projections)) expect(Object.keys(manifest.files)).toContain(p.path); expect(runGuard(run).stdout).toContain('RUNNER_REACHED'); expect(run.check()?.status).toBe('passed');
+    run.release(); for (const p of Object.values(placement.projections)) expect(existsSync(p.path)).toBe(true);
+  });
+  it('does not let ordinary service disposal remove managed transient files before an owned exit releases them', () => {
+    const placement = managedPlacement(), run = svc.prepare({ projectId: a.id,taskId: 'task',runner: 'claude',cwd: a.dirs[0].path,home: join(tmp,'home'),profileArgs: [],managed: placement }); svc.dispose(); expect(existsSync(run.snapshot.manifestPath)).toBe(true); run.release(); expect(existsSync(run.snapshot.manifestPath)).toBe(false); expect(existsSync(Object.values(placement.projections)[0].path)).toBe(true);
+  });
+  it('rejects incomplete or changed projected standard bytes before a native launch', () => {
+    const placement = managedPlacement(), first = Object.values(placement.projections)[0]; writeFileSync(first.path,'changed'); expect(() => svc.prepare({ projectId: a.id,taskId: 'task',runner: 'claude',cwd: a.dirs[0].path,home: join(tmp,'home'),profileArgs: [],managed: placement })).toThrow('投影内容不同');
+  });
+  it('uses the recorded legacy runtime hash rather than the current bundled default', () => {
+    const placement = managedPlacement(), original = svc.runtimeIdentity(), scripts = readOwnedTree(original.path), oldFiles = { ...scripts,'legacy-fixture-version.txt': 'controlled retained legacy code variant' }, oldHash = treeHash(oldFiles), root = join(tmp,'data/capabilities/runtime',oldHash); writeOwnedTree(root,oldFiles,join(tmp,'conflicts')); placement.runtimeHash = oldHash;
+    const run = svc.prepare({ projectId: a.id,taskId: 'task',runner: 'claude',cwd: a.dirs[0].path,home: join(tmp,'home'),profileArgs: [],managed: placement }); expect(run.wrap('/usr/bin/printf',['x']).args[0]).toContain(oldHash); expect(run.wrap('/usr/bin/printf',['x']).args[0]).not.toContain(original.hash); expect(runGuard(run).stdout).toContain('RUNNER_REACHED');
+  });
+  it('preserves an already-recorded MCP name when an unmanaged legacy task resumes under a new run ID', () => {
+    const first = prepare(), oldName = first.snapshot.mcp[0].name; first.release(); const second = prepare(a,'claude',first.snapshot); expect(second.snapshot.runId).not.toBe(first.snapshot.runId); expect(second.snapshot.mcp[0].name).toBe(oldName); expect(Object.keys(JSON.parse(readFileSync(join(dirname(second.snapshot.manifestPath),'mcp.json'),'utf8')).mcpServers)).toEqual([oldName]);
+  });
+});
+
+
+function originalManagedPlacement(){
+ const placement=managedPlacement();for(const skill of placement.skills){const source=readOwnedTree(join(tmp,'data/capabilities/packages',skill.skillId,skill.hash)),front=/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(source['SKILL.md'])!,nativeName=parseDocument(front[1]).get('name') as string,dir=join(tmp,'original-static',skill.skillId);writeOwnedTree(dir,source,join(tmp,'conflicts'));placement.projections[skill.versionId]={path:join(dir,'SKILL.md'),nativeName,format:'legacy-tree-v1',files:Object.fromEntries(Object.entries(source).map(([p,t])=>[p,Buffer.from(t)]))};}return placement;
+}
+describe('M4 original complete source placement',()=>{
+ it.each(['claude','codex'] as const)('keeps original %s Skill bytes and names while building a new current-policy transient context',runner=>{
+  const placement=originalManagedPlacement(),before=Object.values(placement.projections).map(p=>readFileSync(p.path)),run=svc.prepare({projectId:a.id,taskId:'task',runner,cwd:a.dirs[0].path,home:join(tmp,'home'),profileArgs:[],managed:placement});expect(run.snapshot.skills.map(s=>s.path)).toEqual(Object.values(placement.projections).map(p=>p.path));Object.values(placement.projections).forEach((p,i)=>{expect(readFileSync(p.path)).toEqual(before[i]);expect(p.files['SKILL.md']).toEqual(before[i]);});expect(runGuard(run).stdout).toContain('RUNNER_REACHED');run.release();
+ });
+ it.each(['name','bytes'] as const)('rejects altered original projection %s without rewriting the source or target',kind=>{
+  const placement=originalManagedPlacement(),p=Object.values(placement.projections)[0],bytes=readFileSync(p.path);if(kind==='name')p.nativeName='different-original-name';else p.files={...p.files,'SKILL.md':Buffer.from('different original bytes')};expect(()=>svc.prepare({projectId:a.id,taskId:'task',runner:'claude',cwd:a.dirs[0].path,home:join(tmp,'home'),profileArgs:[],managed:placement})).toThrow(kind==='name'?'名称':'内容不同');expect(readFileSync(p.path)).toEqual(bytes);
+ });
 });

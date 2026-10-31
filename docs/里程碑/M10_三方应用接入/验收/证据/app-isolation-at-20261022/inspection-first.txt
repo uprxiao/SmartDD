@@ -1,0 +1,56 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/application-resource-availability.test.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=/private/tmp/m10-app-isolation-at-20261022/inspection-report.json
+
+[1022/012444.831340:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1022/012445.218952:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > checks exactly selected identities without changing SQL or the selection 707ms
+ × src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps Mail ready when only the fixed ZenTao package directory is absent 588ms
+   → ENOENT: no such file or directory, lstat '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-SLdLRc/apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5'
+ × src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps ZenTao ready when only the fixed Mail package contents are corrupted 313ms
+   → ENOENT: no such file or directory, open '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-1q8y9B/apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971/adapter/index.cjs'
+ × src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > reports shared runtime absence for every dependent app without dropping the fixed packages 294ms
+   → ENOENT: no such file or directory, lstat '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-JnRMIk/runtime/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999'
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not substitute another app or version for a mismatched original identity 338ms
+ ✓ src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > does not swallow cancellation or unexpected inspector errors as an ordinary unavailable app 321ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps Mail ready when only the fixed ZenTao package directory is absent
+Error: ENOENT: no such file or directory, lstat '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-SLdLRc/apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5'
+ ❯ src/main/core/applications/__tests__/application-resource-availability.test.ts:19:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'lstat', path: '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-SLdLRc/apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > keeps ZenTao ready when only the fixed Mail package contents are corrupted
+Error: ENOENT: no such file or directory, open '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-1q8y9B/apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971/adapter/index.cjs'
+ ❯ src/main/core/applications/__tests__/application-resource-availability.test.ts:20:241
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'open', path: '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-1q8y9B/apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971/adapter/index.cjs' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/application-resource-availability.test.ts > fixed application resource availability is independent and read-only > reports shared runtime absence for every dependent app without dropping the fixed packages
+Error: ENOENT: no such file or directory, lstat '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-JnRMIk/runtime/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999'
+ ❯ src/main/core/applications/__tests__/application-resource-availability.test.ts:21:268
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'lstat', path: '/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-app-availability-JnRMIk/runtime/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  01:24:45
+   Duration  3.56s (transform 580ms, setup 0ms, import 791ms, tests 2.56s, environment 0ms)
+
+JSON report written to /private/tmp/m10-app-isolation-at-20261022/inspection-report.json
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,62 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-agent-load.test.ts src/main/core/applications/__tests__/agent-adapters.test.ts src/main/core/applications/__tests__/legacy-task-retention.test.ts src/main/core/applications/__tests__/session-projector.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts (24 tests | 3 failed) 4666ms
+     × retains original codex names, paths and MCP keys without rewriting any data 201ms
+     × keeps old selected Codex paths enabled while disabling other original versions and current-format projections 343ms
+     × rejects conflicting or duplicate managed flags without rewriting user settings 170ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > retains original codex names, paths and MCP keys without rewriting any data
+ApplicationError: 规范化摘要只接受JSON值
+ ❯ canonicalJson src/main/core/applications/manifest.ts:22:9
+     20|     return '{' + Object.keys(value).sort(compareCodePoints).map(k => J…
+     21|   }
+     22|   throw new ApplicationError('INVALID_PACKAGE', '规范化摘要只接受JSON值');
+       |         ^
+     23| }
+     24| export function parseManifest(value: unknown): ApplicationManifest {
+ ❯ legacyPlannerInput src/main/core/applications/legacy-agent-load.ts:49:664
+ ❯ AgentAdapterRegistry.planLegacy src/main/core/applications/agent-adapter-registry.ts:96:20
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:40:68
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > keeps old selected Codex paths enabled while disabling other original versions and current-format projections
+ApplicationError: 规范化摘要只接受JSON值
+ ❯ canonicalJson src/main/core/applications/manifest.ts:22:9
+     20|     return '{' + Object.keys(value).sort(compareCodePoints).map(k => J…
+     21|   }
+     22|   throw new ApplicationError('INVALID_PACKAGE', '规范化摘要只接受JSON值');
+       |         ^
+     23| }
+     24| export function parseManifest(value: unknown): ApplicationManifest {
+ ❯ legacyPlannerInput src/main/core/applications/legacy-agent-load.ts:49:664
+ ❯ AgentAdapterRegistry.planLegacy src/main/core/applications/agent-adapter-registry.ts:96:20
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:48:693
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > API2 legacy load planning from actually retained M4 source; no Agent launch > rejects conflicting or duplicate managed flags without rewriting user settings
+AssertionError: expected [Function] to throw error including '启停配置' but got '规范化摘要只接受JSON值'
+
+Expected: "启停配置"
+Received: "规范化摘要只接受JSON值"
+
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:58:205
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  3 failed | 59 passed (62)
+   Start at  02:37:48
+   Duration  8.88s (transform 186ms, setup 0ms, import 533ms, tests 8.07s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

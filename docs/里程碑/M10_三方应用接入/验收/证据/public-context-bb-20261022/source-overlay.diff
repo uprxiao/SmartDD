@@ -1,0 +1,345 @@
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -11,6 +11,7 @@
+   native: z.object({ runner: z.enum(['claude-code','codex']),sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
+   pluginRoot: absolute.nullable(),pluginHash: hash.nullable(),
+   catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict()).max(4096) }).strict().nullable(),
++  catalogExclusions:z.object({schema:z.literal('native-discovery-exclusions-v1'),generation:hash,paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict().optional(),
+   userSkillConfig: z.array(z.record(z.string(),z.unknown()).refine(boundedJson)).max(4096),
+   inventory: z.array(z.object({ kind: z.enum(['plugin','skill','mcp','native-tool']),name: z.string().min(1).max(256),path: z.string().max(4096),ownerStoreId: z.uuid().nullable(),contentHash: hash.nullable() }).strict()).max(12000),
+   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: name,command: z.string().min(1).max(4096).refine(s => !/[\x00\r\n]/.test(s)),args: z.array(z.string().max(4096).refine(s => !/[\x00\r\n]/.test(s))).max(32),env: z.record(z.string().regex(/^[A-Z_][A-Z0-9_]*$/),z.string().max(4096)) }).strict()).max(2),
+--- a/src/main/core/applications/native-application-conflicts.ts
++++ b/src/main/core/applications/native-application-conflicts.ts
+@@ -6,18 +6,18 @@
+ /** Read-only attribution before publishing. This narrows per-run native loading only; it
+  * does not prove filesystem ownership. Publication and adapter preflight must
+  * still verify the actual managed trees and all shared capability conflicts. */
+-export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):{applications:Set<string>;standardSkills:Set<string>;projectMcp:boolean}{
++export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>}):{applications:Set<string>;standardSkills:Set<string>;projectMcp:boolean}{
+  const conflicts=new Set<string>(),standards=new Set<string>();let projectMcp=false;
+  const ownPaths=new Set([...snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath)),...snapshot.standardSkills.map(s=>s.projectionPath)]);
+  const applicationMcp=snapshot.mcp.find(m=>m.kind==='applications')?.serverName;
+  for(const item of native.inventory){
+-  if(item.kind==='skill'&&ownPaths.has(item.path))continue;
++  if(item.kind==='skill'&&(physical?physical.owned.has(item.path):ownPaths.has(item.path)))continue;
+   if(item.kind==='mcp'&&snapshot.mcp.some(m=>m.kind==='legacy-project-context'&&m.serverName===item.name))projectMcp=true;
+   if(item.kind==='plugin'&&snapshot.runner==='claude-code'&&item.name==='smartdd-session'){for(const p of snapshot.packages)conflicts.add(p.appId);for(const s of snapshot.standardSkills)standards.add(s.projectionPath);continue;}
+-  if(item.kind==='skill')for(const s of snapshot.standardSkills){const name=dirname(s.projectionPath).split('/').at(-1);if(item.name===name||item.name==='smartdd-session:'+name)standards.add(s.projectionPath);}
++  if(item.kind==='skill')for(const s of snapshot.standardSkills){const name=dirname(s.projectionPath).split('/').at(-1);if(item.path===s.projectionPath||item.name===name||item.name==='smartdd-session:'+name)standards.add(s.projectionPath);}
+   if(item.kind==='mcp'&&item.name===applicationMcp){for(const p of snapshot.packages)conflicts.add(p.appId);continue;}
+   for(const p of snapshot.packages){
+-   if(item.kind==='skill'&&p.skills.some(s=>item.name===s.nativeName||item.name==='smartdd-session:'+s.nativeName)||item.kind==='native-tool'&&Object.keys(p.toolContractMajors).some(op=>snapshot.adapterBinding.nativeToolNames[op]===item.name))conflicts.add(p.appId);
++   if(item.kind==='skill'&&p.skills.some(s=>item.path===s.projectionPath||item.name===s.nativeName||item.name==='smartdd-session:'+s.nativeName)||item.kind==='native-tool'&&Object.keys(p.toolContractMajors).some(op=>snapshot.adapterBinding.nativeToolNames[op]===item.name))conflicts.add(p.appId);
+   }
+  }
+  if(snapshot.runner==='codex')for(const item of native.userSkillConfig){
+@@ -26,6 +26,7 @@
+   for(const p of snapshot.packages)if(p.skills.some(s=>path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath))))conflicts.add(p.appId);
+   for(const s of snapshot.standardSkills)if(path===canonicalFuturePath(s.projectionPath)||path===canonicalFuturePath(dirname(s.projectionPath)))standards.add(s.projectionPath);
+  }
++ if(physical)for(const path of physical.occupied){for(const p of snapshot.packages)if(p.skills.some(s=>s.projectionPath===path))conflicts.add(p.appId);for(const s of snapshot.standardSkills)if(s.projectionPath===path)standards.add(path);}
+  return{applications:conflicts,standardSkills:standards,projectMcp};
+ }
+ /** Compatibility helper for callers that only need per-App attribution. */
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -1,3 +1,4 @@
++import {verifyModernDiscoveryProjection} from './native-discovery-exclusions';
+ import { randomUUID } from 'node:crypto';
+ import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+@@ -54,6 +55,8 @@
+ }
+ export interface DiscoveryPublicationOptions {
+  signal?:AbortSignal;waitMs?:number;
++ /** Verify reuse of requested sources only;the returned raw catalog grants no loading. */
++ requestedOnly?:true;
+  /** Host-only metadata guard. Called before registration and final publication under H/C. */
+  assertPublish?:(operationId:string|null)=>void;
+  /** Synchronous C SQLite writes only; part of the resource registration transaction. */
+@@ -186,6 +189,14 @@
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录消费者身份不同'); return value; }); }
+     private consumerName(c: Consumer): string { return c.owner.storeId + '-' + c.runId + '.json'; }
+     async snapshot(): Promise<NonNullable<AgentLoadRequest['catalog']>> { return this.lock(() => { const c = this.catalog(); return structuredClone({ generation: c.generation, entries: c.entries }); }); }
++    /** Read-only attribution,not a publication or file-readiness receipt. */
++    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
++        const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>();
++        for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&['OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))excludedPaths.push(entry.path);else throw error;}}
++        const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash}))];
++        for(const skill of selected){const entry=raw.entries.find(e=>e.path===skill.path);if(entry&&entry.storeId===this.store.storeId&&entry.sourceHash===skill.hash&&valid.has(skill.path)){this.verifyReference(this.store.get(entry.resourceId),snapshot);owned.add(skill.path);}else if(entry&&(entry.storeId!==this.store.storeId||entry.sourceHash!==skill.hash)||present(dirname(skill.path)))occupied.add(skill.path);}
++        return{owned,occupied,generation:raw.generation,excludedPaths};
++    });}
+     verify(snapshot:NonNullable<AgentLoadRequest['catalog']>):void{this.verifyCatalog(snapshot,true);}
+     /** Only for a no-authority native guard: verify complete H bytes/metadata,
+      * not C source bytes that the guarded native process will not consume. */
+@@ -301,7 +312,8 @@
+                         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影资源记录身份不同');
+                     if(p.entry.format==='legacy-tree-v1'){const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
+                         if(r.kind!=='legacy-agent-projection'||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记或依赖缺失，不重新签认');}
+-                    if(p.entry.format==='legacy-tree-v1'&&r.state==='ready'&&!present(dirname(p.entry.path))){
++                    if(r.state==='ready'&&!present(dirname(p.entry.path))){
++                        const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(r.kind!==(p.entry.format?'legacy-agent-projection':'agent-projection')||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记及完整来源不同，不能重建原路径');
+                         if(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources lr WHERE lr.lease_id=l.lease_id AND lr.resource_id=?)) LIMIT 1").get(r.resourceId,r.resourceId))throw new ApplicationError('RESOURCE_BUSY','原H路径仍有未知或活动占用');
+                         this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
+                         const key=digest(pending.operationId+':'+r.resourceId),held=this.store.sqlite.prepare('SELECT content_hash,generation FROM capability_lease_resources WHERE lease_id=? AND resource_id=?').get(key,r.resourceId) as {content_hash:string;generation:number}|undefined;
+@@ -432,7 +444,7 @@
+                         if (old && canonicalJson(old) !== canonicalJson(p.entry))
+                             throw new ApplicationError('OWNERSHIP_CONFLICT', '同名共享投影属于其他数据根或版本，不能改签');
+                     }
+-                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&!(p.entry.format==='legacy-tree-v1'&&!present(dirname(p.entry.path))))) {
++                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&present(dirname(p.entry.path)))) {
+                         reuse = true;
+                         return;
+                     }
+@@ -444,7 +456,7 @@
+             }, options.signal);
+             if (reuse) {
+                 const snapshot = await this.snapshot();
+-                this.verify(snapshot);
++                if(options.requestedOnly){for(const p of plans)this.verifyProjection(p,dirname(p.entry.path));}else this.verify(snapshot);
+                 for (const p of plans) {
+                     this.verifySource(p);
+                     const r = this.store.get(p.entry.resourceId);
+--- a/src/main/core/applications/legacy-discovery-inventory.ts
++++ b/src/main/core/applications/legacy-discovery-inventory.ts
+@@ -43,5 +43,5 @@
+   }
+   return[...result.values()];
+  }
+- async prepare(signal?:AbortSignal){try{return await this.catalog.publishOrRecover(await this.sources(signal),{signal});}catch(error){if(!(error instanceof ApplicationError)&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','历史Skill目录暂不可核验，保留原路径');throw error;}}
++ async prepare(signal?:AbortSignal){try{const sources=await this.sources(signal);return sources.length?await this.catalog.publishOrRecover(sources,{signal,requestedOnly:true}):await this.catalog.snapshot();}catch(error){if(!(error instanceof ApplicationError)&&['ENOENT','ENOTDIR','EACCES','EPERM','ELOOP'].includes((error as NodeJS.ErrnoException).code??''))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','历史Skill目录暂不可核验，保留原路径');throw error;}}
+ }
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -1,3 +1,4 @@
++import {validateNativeDiscoveryExclusions} from './native-discovery-exclusions';
+ import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
+ import {assertClaudeRunDelivery,verifyClaudeDelivery} from './claude-delivery-state';
+ import { createRequire } from 'node:module';
+@@ -52,6 +53,7 @@
+     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
+     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
+     const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
++    const excludedH=validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
+     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
+       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
+       if (input.pluginRoot !== expected || !input.pluginHash || allSkills.some(s => !within(join(expected,'skills'),s.path))) throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude必须沿用原会话稳定插件路径');
+@@ -65,6 +67,7 @@
+       const catalog = input.catalog; if (!catalog) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','Codex受管目录清单尚未核验');
+       if (new Set(catalog.entries.map(e => e.path)).size !== catalog.entries.length || new Set(catalog.entries.map(e => e.nativeName)).size !== catalog.entries.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','Codex受管目录或名称冲突');
+       for (const entry of catalog.entries) {
++        if(excludedH.has(entry.path))continue;
+         if (entry.path !== join(input.native.home,'.agents','skills',entry.nativeName,'SKILL.md')) throw new ApplicationError('OWNERSHIP_CONFLICT','目录清单越过实际HOME的受管发现根');
+         if(entry.format==='legacy-tree-v1'){verifyLegacyDiscoveryEntry(entry,input.native.home);continue;}
+         const projection = verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);
+@@ -97,7 +100,7 @@
+     try {
+       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
+       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
+-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
++      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&input.catalogExclusions?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!input.catalogExclusions!.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner) throw new Error(); return plan; }
+     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
+   }
+   planLegacy(hash:string,value:unknown):AgentLoadPlan {
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -182,12 +182,12 @@
+         if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);
+       }else{
+       const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);
+-      const plannedFacets=native?nativeCapabilityConflicts(planned,native):undefined,plannedStandards=plannedFacets?.standardSkills.size?planned.standardSkills.filter(s=>!plannedFacets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready'&&!plannedConflicts.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
++      const plannedPhysical=planned.runner==='codex'?await catalog.inspectPhysical(planned):undefined,plannedFacets=native?nativeCapabilityConflicts(planned,native,plannedPhysical):undefined,plannedStandards=plannedFacets?.standardSkills.size?planned.standardSkills.filter(s=>!plannedFacets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>p.state==='ready'&&!plannedConflicts.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;
+       assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);
+       const adapter=this.support.adapters.get(planned.adapterBinding.hash);
+       if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+       if(planned.runner==='codex'&&!unavailable){
+-        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0,plannedStandards),{signal:input.signal})).generation;}
++        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0,plannedStandards),{signal:input.signal,requestedOnly:true})).generation;}
+         catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else throw error;}
+       }
+       if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});
+@@ -206,7 +206,7 @@
+     }
+     const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);
+     if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';
+-    const facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native):undefined,standardSkillScope=facets?.standardSkills.size?snapshot.standardSkills.filter(s=>!facets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||snapshot.runner==='claude-code'&&(this.claudeDelivery.has(snapshot.taskId)||standardSkillScope!==undefined))?ready:undefined;
++    const physical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native,physical):undefined,standardSkillScope=facets?.standardSkills.size?snapshot.standardSkills.filter(s=>!facets.standardSkills.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>p.state==='ready'&&!conflicts.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||standardSkillScope!==undefined||snapshot.runner==='codex'&&!!physical?.excludedPaths.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;
+     if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);
+     const excludedApplications=snapshot.packages.filter(p=>!ready.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash,code:conflicts.has(p.appId)?'AGENT_CAPABILITY_NAME_CONFLICT' as const:'CAPABILITY_UNAVAILABLE' as const}));
+@@ -215,10 +215,11 @@
+     assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);const projectionIds:string[]=[];
+     let pluginRoot:string|null=null,pluginHash:string|null=null,deliveryToken:ClaudeDeliveryToken|undefined,deliveryProof:ClaudeRunDelivery|undefined;
+     if(!unavailable&&!snapshot.legacyBinding){
+-      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),published=await catalog.publish(sources,{signal:input.signal});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
++      if(snapshot.runner==='codex'){const sources=this.projector.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),published=await catalog.publish(sources,{signal:input.signal,requestedOnly:true});for(const source of sources){const entry=published.entries.find(e=>e.path===source.path&&e.storeId===this.support.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享投影未按相同身份登记');await this.sessions.addProjectionReference(input.taskId,current.pointer.snapshotHash,entry.resourceId);projectionIds.push(entry.resourceId);}}
+       else if(applicationScope){try{deliveryToken=independent?await this.claudeDelivery.prepareIndependent(input.taskId,standardSkillScope):await this.claudeDelivery.prepare(input.taskId,applicationScope,standardSkillScope);}catch(error){if(!(error instanceof ApplicationError)||!['RESOURCE_BUSY','RESOURCE_RECOVERY_REQUIRED','OWNERSHIP_CONFLICT','HASH_MISMATCH'].includes(error.code))throw error;return this.prepareUnavailableSession(input,current,native,error.code,catalog);}pluginRoot=join(this.support.store.root,'sessions',input.taskId,'claude/plugin');pluginHash=deliveryToken.hash;projectionIds.push(deliveryToken.resourceId);}
+       else{const plugin=await this.projector.claude(input.taskId);pluginRoot=plugin.root;pluginHash=plugin.resource.contentHash;}
+     }
++    const finalPhysical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,catalogExclusions=finalPhysical?.excludedPaths.length?{schema:'native-discovery-exclusions-v1' as const,generation:finalPhysical.generation,paths:finalPhysical.excludedPaths}:undefined;
+     const hold=snapshot.runner==='codex'?await catalog.reserveRun((await catalog.snapshot()).generation,'codex',ids=>independent?this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,ids,undefined,excludedApplications):applicationScope?this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope,projectionIds,ids,undefined,excludedApplications):this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},ids)):undefined;
+     let run:OwnedCapabilityRun;
+     try{run=hold?.run??(independent?await this.runs.reserveIndependent({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},projectionIds,undefined,deliveryToken,excludedApplications):deliveryToken?await this.runs.reserveScoped({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]},applicationScope!,projectionIds,undefined,deliveryToken,excludedApplications):await this.runs.reserve({taskId:input.taskId,snapshotHash:current.pointer.snapshotHash,bindings:[]}));}
+@@ -236,12 +237,12 @@
+       if(!unavailable&&native){
+         const collection=hold?.catalog??null;
+         const inventory=native.inventory.map(item=>{const source=sources.find(s=>s.path===item.path);return source?{...item,ownerStoreId:this.support.store.storeId,contentHash:source.sourceHash}:item;});
+-        const flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path));const known=collection?.entries.find(e=>canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path);return known?{...item,path:known.path}:item;});
++        const flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path));const known=collection?.entries.find(e=>!catalogExclusions?.paths.includes(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+         if(original){
+           legacyRequest={schema:'m4-legacy-load-request-v1',taskId:input.taskId,projectId:input.projectId,sourceSnapshotHash:original.row.source_snapshot_hash,runId:run.runId,cliVersion:native.version,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},catalog:collection,userSkillConfig:flags,inventory};
+           try{legacyPlan();}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT','RESOURCE_RECOVERY_REQUIRED'].includes(error.code)){unavailable=error.code;legacyRequest=undefined;}else throw error;}
+         }else{
+-        request={snapshot,...(standardSkillScope?{standardSkillScope}:{}),...(independent?{independentCapabilities:true as const}:{}),...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.filter(m=>m.kind==='applications'?!independent:!facets?.projectMcp&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY)).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
++        request={snapshot,...(catalogExclusions?{catalogExclusions}:{}),...(standardSkillScope?{standardSkillScope}:{}),...(independent?{independentCapabilities:true as const}:{}),...(applicationScope?{applicationScope}:{}),...(deliveryProof?{claudeDelivery:deliveryProof}:{}),runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot,pluginHash,catalog:collection,userSkillConfig:flags,inventory,mcp:snapshot.mcp.filter(m=>m.kind==='applications'?!independent:!facets?.projectMcp&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY)).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}))};
+         try{this.support.adapters.plan(snapshot.adapterBinding.hash,request);}catch(error){if(error instanceof ApplicationError&&['AGENT_ADAPTER_UNSUPPORTED','AGENT_CAPABILITY_NAME_CONFLICT'].includes(error.code)){unavailable=error.code;request=undefined;}else throw error;}
+       }
+       }
+@@ -259,7 +260,7 @@
+       let effectiveApplications=!unavailable;
+       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
+       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:runtime.env,command:native?.command,
+-        assertBeforeFork:()=>{if(effectiveApplications){assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);if(deliveryProof)this.claudeDelivery.assertRun(run.runId,deliveryProof);}},
++        assertBeforeFork:()=>{if(effectiveApplications){assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);if(deliveryProof)this.claudeDelivery.assertRun(run.runId,deliveryProof);if(request?.catalogExclusions){const checked=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(canonicalJson(checked.args)!==canonicalJson(args))throw new ApplicationError('RESOURCE_STATE_CHANGED','原生加载参数在启动前已变化');}}},
+         nativeOnly:async reason=>{
+           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
+           if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
+--- /dev/null
++++ b/src/main/core/applications/native-discovery-exclusions.ts
+@@ -0,0 +1,40 @@
++import {constants,closeSync,fstatSync,lstatSync,openSync,readFileSync} from 'node:fs';
++import {dirname,join} from 'node:path';
++import {ApplicationError} from '@shared/applications';
++import type {AgentLoadRequest} from '@shared/agent-adapters';
++import {canonicalJson,digest} from './manifest';
++import {assertDiscoveryPath} from './legacy-discovery';
++import {verifyOwnedBundle} from './owned-bundle';
++import type {ResourceStore} from './resource-store';
++type Entry=NonNullable<AgentLoadRequest['catalog']>['entries'][number];
++const recovery=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','共享发现目录的当前占用或加载依据已变化');
++function boundedJson(home:string,path:string,max=4*1024*1024):Record<string,unknown>{
++ try{assertDiscoveryPath(home,path);const st=lstatSync(path);if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||st.size>max)throw recovery();const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);
++  try{const before=fstatSync(fd),bytes=readFileSync(fd),after=fstatSync(fd),current=lstatSync(path);if(before.dev!==st.dev||before.ino!==st.ino||before.size!==st.size||bytes.length!==st.size||after.ctimeMs!==before.ctimeMs||after.mtimeMs!==before.mtimeMs||after.size!==before.size||current.dev!==before.dev||current.ino!==before.ino||current.ctimeMs!==before.ctimeMs)throw recovery();const value=JSON.parse(bytes.toString('utf8'));if(!value||typeof value!=='object'||Array.isArray(value))throw recovery();return value;}finally{closeSync(fd);}
++ }catch{throw recovery();}
++}
++/** Physical ownership only.No source readiness or execution grant is inferred. */
++export function verifyModernDiscoveryProjection(entry:Entry,home:string):void{
++ if(entry.format)throw new ApplicationError('HOST_INCOMPATIBLE','旧投影沿用原格式核验，不参与新格式排除');
++ if(entry.path!==join(home,'.agents/skills',entry.nativeName,'SKILL.md'))throw new ApplicationError('OWNERSHIP_CONFLICT','投影越过实际发现根');
++ try{const marker=boundedJson(home,join(dirname(entry.path),'.willyou-owned-bundle.json'),4096);if(marker.schema!==1||marker.storeId!==entry.storeId||marker.hash!==entry.projectionHash)throw Error('unknown owner');}
++ catch{throw new ApplicationError('OWNERSHIP_CONFLICT','原投影路径当前不具有原受管归属');}
++ const manifest=verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);
++ if(manifest.metadata.kind!=='codex-agent-projection-v1'||manifest.metadata.homeId!==digest(home)||manifest.metadata.nativeName!==entry.nativeName||manifest.metadata.sourceHash!==entry.sourceHash)throw new ApplicationError('HASH_MISMATCH','原投影内容或原生身份不同');
++}
++/** Explicit host-only omission of physically unverified modern entries.The raw
++ * catalog and its generation stay complete;user paths are neither disabled nor
++ * adopted.App authority still comes exclusively from the owned C run scope. */
++export function validateNativeDiscoveryExclusions(store:ResourceStore,input:AgentLoadRequest,selectedPaths:readonly string[]):Set<string>{
++ const proof=input.catalogExclusions;if(!proof)return new Set();const catalog=input.catalog,home=input.native.home,homeId=digest(home);
++ if(input.snapshot.runner!=='codex'||input.snapshot.legacyBinding||!catalog||proof.generation!==catalog.generation||digest(canonicalJson({homeId,entries:catalog.entries}))!==catalog.generation)throw recovery();
++ const root=join(home,'.agents/smartdd-runtime'),marker=boundedJson(home,join(root,'.willyou-catalog-root.json'),4096),raw=boundedJson(home,join(root,'catalog.json'));
++ if(marker.schema!==1||marker.owner!=='SmartDD'||marker.homeId!==homeId||marker.initialized!==true||raw.schema!==1||raw.homeId!==homeId||raw.generation!==catalog.generation||canonicalJson(raw.entries)!==canonicalJson(catalog.entries))throw recovery();
++ const run=store.sqlite.prepare('SELECT task_id,project_id,runner,owner_instance_id,owner_pid,owner_started_at,pty_id,state,revocation_state FROM capability_runs WHERE run_id=?').get(input.runId) as {task_id:string;project_id:string;runner:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;pty_id:string;state:string;revocation_state:string}|undefined;
++ if(!run||run.task_id!==input.snapshot.taskId||run.project_id!==input.snapshot.projectId||run.runner!=='codex'||run.owner_pid!==process.pid||!['preparing','prepared','active'].includes(run.state)||run.revocation_state!=='open')throw recovery();
++ const consumer=boundedJson(home,join(root,'catalog-consumers',store.storeId+'-'+input.runId+'.json'),16384),owner=consumer.owner as Record<string,unknown>|undefined;
++ if(consumer.schema!==1||consumer.homeId!==homeId||consumer.generation!==catalog.generation||consumer.runner!=='codex'||consumer.runId!==input.runId||consumer.ptyId!==run.pty_id||!['preparing','active'].includes(String(consumer.phase))||!owner||owner.storeId!==store.storeId||owner.uFingerprint!==digest(dirname(store.root))||owner.instanceId!==run.owner_instance_id||owner.pid!==run.owner_pid||owner.startedAt!==run.owner_started_at)throw recovery();
++ const paths=new Set(proof.paths);
++ for(const path of paths){const entry=catalog.entries.find(e=>e.path===path);if(!entry||entry.format||selectedPaths.includes(path))throw new ApplicationError('SCOPE_DENIED','不能排除旧格式、未知路径或本轮启用的受管Skill');let unavailable=false;try{verifyModernDiscoveryProjection(entry,home);}catch(error){if(error instanceof ApplicationError&&['HASH_MISMATCH','OWNERSHIP_CONFLICT'].includes(error.code))unavailable=true;else throw error;}if(!unavailable)throw new ApplicationError('RESOURCE_STATE_CHANGED','原目录已恢复受管归属，须重新准备而非扩大本轮加载');}
++ return paths;
++}
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -1,5 +1,7 @@
++import {spawnSync} from 'node:child_process';
++import {secretKeys} from '../../projects/secret-keys';
+ import {SessionCapabilityProjector} from '../session-projector';
+-import {applicationMcpServerName} from '@shared/application-session';
++import {applicationNativeSkillName,applicationMcpServerName} from '@shared/application-session';
+ import {readClaudeSlot,writeClaudeSlot} from '../claude-delivery-state';
+ import {ApplicationConnectionService} from '../connection-service';
+ import {PtyAccess} from '../../../pty-access';
+@@ -556,6 +558,73 @@
+ 
+ 
+ describe('per-application availability does not withdraw healthy fixed tools',()=>{
++
++ it.each(['remove-user-tree','restore-original-bytes'] as const)('restores the original H identity only after stopped resume: %s',async mode=>{
++  await selectBoth();const first=await create(codexId),nativeId=await stopForSwitchFixture(first,'codex'),fixed=await managed.sessions.get(first.task.id),refs=await managed.sessions.references(first.task.id),zen=fixed.snapshot.packages.find(p=>p.appId==='zentao')!,folder=dirname(zen.skills[0].projectionPath),backup=join(root,'retained-original-H');renameSync(folder,backup);mkdirSync(folder);const user='---\nname: '+zen.skills[0].nativeName+'\ndescription: user replacement\n---\nuser content\n';writeFileSync(join(folder,'SKILL.md'),user);const catalogFile=join(home,'.agents/smartdd-runtime/catalog.json'),catalogBytes=readFileSync(catalogFile),partial=await tasks.open({taskId:first.task.id}),partialRun=partial.task.runtimeSnapshot!.runId;
++  try{expect(managed.runs.assertActive(partialRun).applicationScope).toEqual(['mail']);const diagnostic=await applications.sessionDiagnostics.inspect(first.task.id);expect(diagnostic.applications.find(a=>a.appId==='mail')).toMatchObject({resourceState:'verified',issueCode:null});expect(diagnostic.applications.find(a=>a.appId==='zentao')?.issueCode).toBe('AGENT_CAPABILITY_NAME_CONFLICT');rmSync(folder,{recursive:true});if(mode==='restore-original-bytes')renameSync(backup,folder);expect(managed.runs.assertActive(partialRun).applicationScope).toEqual(['mail']);expect((await appTools().list(partialRun)).unavailable).toContainEqual({appId:'zentao',code:'AGENT_CAPABILITY_NAME_CONFLICT'});expect(await appTools().call(partialRun,randomUUID(),{operation:Object.keys(zen.toolContractMajors)[0],contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'AGENT_CAPABILITY_NAME_CONFLICT'}});expect(readFileSync(catalogFile)).toEqual(catalogBytes);}
++  finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(partialRun).state).toBe('stopped'));}
++  const restored=await tasks.open({taskId:first.task.id}),run=restored.task.runtimeSnapshot!.runId;
++  try{expect((await appTools().list(run)).tools).toHaveLength(17);expect(launchFlags()).toContainEqual({path:zen.skills[0].projectionPath,enabled:true});expect(readFileSync(catalogFile)).toEqual(catalogBytes);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);expect(restored.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(first.task.id)).toContainEqual(ref);expect((await applications.sessionDiagnostics.inspect(first.task.id)).applications.every(a=>a.issueCode===null)).toBe(true);}
++  finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));}
++ },30000);
++ it('keeps both original Apps and healthy standards when only an original H standard path is user-owned',async()=>{
++  await selectBoth();const first=await create(codexId),nativeId=await stopForSwitchFixture(first,'codex'),fixed=await managed.sessions.get(first.task.id),target=fixed.snapshot.standardSkills[0],folder=dirname(target.projectionPath);rmSync(folder,{recursive:true});mkdirSync(folder);const user='---\nname: '+folder.split('/').at(-1)+'\ndescription: user standard replacement\n---\n';writeFileSync(target.projectionPath,user);let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=await tasks.open({taskId:first.task.id});const run=running.task.runtimeSnapshot!.runId;expect((await appTools().list(run)).tools).toHaveLength(17);expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path)).toEqual(fixed.snapshot.standardSkills.filter(s=>s.projectionPath!==target.projectionPath).map(s=>s.projectionPath));expect(launchFlags().some(f=>f.path===target.projectionPath)).toBe(false);expect(readFileSync(target.projectionPath,'utf8')).toBe(user);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);expect((await applications.sessionDiagnostics.inspect(first.task.id)).applications.every(a=>a.issueCode===null)).toBe(true);}
++  finally{if(running){tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++ it.each(['absent-proof','selected-path','valid-owned-path','unknown-path','duplicate-path','wrong-generation','raw-catalog-omission','missing-consumer','foreign-consumer','wrong-pty','revoked-run','restored-original'] as const)('rejects forged or stale H omission proof with actual C and H occupancy: %s',async fault=>{
++  await selectBoth();const first=await create(codexId);await stopForSwitchFixture(first,'codex');const fixed=await managed.sessions.get(first.task.id),zen=fixed.snapshot.packages.find(p=>p.appId==='zentao')!,folder=dirname(zen.skills[0].projectionPath),backup=join(root,'proof-original-H');renameSync(folder,backup);mkdirSync(folder);writeFileSync(join(folder,'SKILL.md'),'---\nname: '+zen.skills[0].nativeName+'\ndescription: user\n---\n');const plan=support.adapters.plan.bind(support.adapters);let request:Parameters<typeof plan>[1]|undefined;const spy=vi.spyOn(support.adapters,'plan').mockImplementation((hash,input)=>{if(input.catalogExclusions)request=structuredClone(input);return plan(hash,input);});const partial=await tasks.open({taskId:first.task.id});spy.mockRestore();const input=structuredClone(request!),run=partial.task.runtimeSnapshot!.runId,consumerPath=join(home,'.agents/smartdd-runtime/catalog-consumers',support.store.storeId+'-'+run+'.json'),consumer=readFileSync(consumerPath),revocation=sqlite.prepare('SELECT revocation_state FROM capability_runs WHERE run_id=?').get(run) as {revocation_state:string};
++  try{expect(input.catalogExclusions?.paths).toContain(zen.skills[0].projectionPath);expect(()=>plan(fixed.snapshot.adapterBinding.hash,input)).not.toThrow();switch(fault){case 'absent-proof':delete input.catalogExclusions;break;case 'selected-path':input.catalogExclusions!.paths=[fixed.snapshot.packages.find(p=>p.appId==='mail')!.skills[0].projectionPath];break;case 'valid-owned-path':input.catalogExclusions!.paths=[fixed.snapshot.standardSkills[0].projectionPath];input.standardSkillScope=fixed.snapshot.standardSkills.slice(1).map(s=>s.projectionPath);break;case 'unknown-path':input.catalogExclusions!.paths=[join(home,'.agents/skills/user-unknown/SKILL.md')];break;case 'duplicate-path':input.catalogExclusions!.paths.push(input.catalogExclusions!.paths[0]);break;case 'wrong-generation':input.catalogExclusions!.generation='0'.repeat(64);break;case 'raw-catalog-omission':input.catalog!.entries=input.catalog!.entries.filter(e=>e.path!==zen.skills[0].projectionPath);input.catalog!.generation=digest(canonicalJson({homeId:digest(home),entries:input.catalog!.entries}));input.catalogExclusions!.generation=input.catalog!.generation;break;case 'missing-consumer':rmSync(consumerPath);break;case 'foreign-consumer':{const c=JSON.parse(consumer.toString());c.owner.storeId=randomUUID();writeFileSync(consumerPath,JSON.stringify(c));break;}case 'wrong-pty':{const c=JSON.parse(consumer.toString());c.ptyId=randomUUID();writeFileSync(consumerPath,JSON.stringify(c));break;}case 'revoked-run':sqlite.prepare("UPDATE capability_runs SET revocation_state='closed' WHERE run_id=?").run(run);break;case 'restored-original':rmSync(folder,{recursive:true});renameSync(backup,folder);break;}
++   expect(()=>plan(fixed.snapshot.adapterBinding.hash,input)).toThrow();expect(JSON.parse((sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get('application-run-scope:'+run) as {plan_json:string}).plan_json).applications.map((a:{appId:string})=>a.appId)).toEqual(['mail']);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);}
++  finally{writeFileSync(consumerPath,consumer);sqlite.prepare('UPDATE capability_runs SET revocation_state=? WHERE run_id=?').run(revocation.revocation_state,run);tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));}
++ },30000);
++ it('refuses late H ownership restoration before fork without widening or changing the original session',async()=>{
++  await selectBoth();const first=await create(codexId);await stopForSwitchFixture(first,'codex');const fixed=await managed.sessions.get(first.task.id),folder=dirname(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills[0].projectionPath),backup=join(root,'last-fork-original-H');renameSync(folder,backup);mkdirSync(folder);writeFileSync(join(folder,'SKILL.md'),'---\nname: user\ndescription: user\n---\n');const count=ptys.launches.length,prepare=managed.prepare.bind(managed),spy=vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input),before=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await before();rmSync(folder,{recursive:true});renameSync(backup,folder);};return launch;});
++  try{await expect(tasks.open({taskId:first.task.id})).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(ptys.launches).toHaveLength(count);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);expect(sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state NOT IN ('failed','stopped')").get()).toEqual({n:0});}
++  finally{spy.mockRestore();}
++ },30000);
++
++
++ it('reuses only healthy H trees under another active consumer without changing the full catalog or user occupant',async()=>{
++  await selectBoth();const seed=await create(codexId);await stopForSwitchFixture(seed,'codex');const fixed=await managed.sessions.get(seed.task.id),other=await create(codexId),otherRun=other.task.runtimeSnapshot!.runId,otherPty=tasks.activePty(other.task.id)!,zen=fixed.snapshot.packages.find(p=>p.appId==='zentao')!,folder=dirname(zen.skills[0].projectionPath),backup=join(root,'active-consumer-original-H');renameSync(folder,backup);mkdirSync(folder);const user='---\nname: '+zen.skills[0].nativeName+'\ndescription: user active-consumer occupant\n---\n';writeFileSync(join(folder,'SKILL.md'),user);const catalogFile=join(home,'.agents/smartdd-runtime/catalog.json'),catalog=readFileSync(catalogFile),consumerFile=join(home,'.agents/smartdd-runtime/catalog-consumers',support.store.storeId+'-'+otherRun+'.json'),consumer=readFileSync(consumerFile);let partial:Awaited<ReturnType<typeof create>>|undefined;
++  try{partial=await tasks.open({taskId:seed.task.id});expect(managed.runs.assertActive(partial.task.runtimeSnapshot!.runId).applicationScope).toEqual(['mail']);expect(await appTools().call(partial.task.runtimeSnapshot!.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});expect(readFileSync(catalogFile)).toEqual(catalog);expect(readFileSync(consumerFile)).toEqual(consumer);expect(ptys.live.has(otherPty)).toBe(true);expect(readFileSync(join(folder,'SKILL.md'),'utf8')).toBe(user);expect(launchFlags().some(f=>f.path===zen.skills[0].projectionPath)).toBe(false);expect(existsSync(join(home,'.agents/smartdd-runtime/pending.json'))).toBe(false);}
++  finally{if(partial){tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(partial!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}expect(ptys.live.has(otherPty)).toBe(true);expect(readFileSync(consumerFile)).toEqual(consumer);tasks.kill(other.task.id);await vi.waitFor(()=>expect(managed.runs.get(otherRun).state).toBe('stopped'));}
++ },30000);
++ it('keeps public standards and context with zero App grant when both original H App paths are user-owned',async()=>{
++  await selectBoth();const seed=await create(codexId),nativeId=await stopForSwitchFixture(seed,'codex'),fixed=await managed.sessions.get(seed.task.id),users=new Map<string,string>();for(const app of fixed.snapshot.packages)for(const skill of app.skills){const folder=dirname(skill.projectionPath);rmSync(folder,{recursive:true});mkdirSync(folder);const text='---\nname: '+skill.nativeName+'\ndescription: user all-app occupant\n---\n';writeFileSync(skill.projectionPath,text);users.set(skill.projectionPath,text);}const running=await tasks.open({taskId:seed.task.id}),run=running.task.runtimeSnapshot!.runId;
++  try{expect(managed.runs.assertActive(run).applicationScope).toEqual([]);expect((await appTools().list(run)).tools).toEqual([]);expect((await appTools().list(run)).unavailable).toEqual(expect.arrayContaining(fixed.snapshot.packages.map(p=>({appId:p.appId,code:'AGENT_CAPABILITY_NAME_CONFLICT'}))));expect(running.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path)).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath));expect(running.task.runtimeSnapshot!.mcp.map(m=>m.name)).toEqual(fixed.snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>m.serverName));for(const[path,text]of users){expect(readFileSync(path,'utf8')).toBe(text);expect(launchFlags().some(f=>f.path===path)).toBe(false);}expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed.snapshot);expect(running.task.nativeSessionId).toBe(nativeId);}
++  finally{tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(run).state).toBe('stopped'));}
++ },30000);
++
++ it.each(['first-publication','replacement-new','replacement-resume'] as const)('keeps unrelated managed abilities and user H bytes for actual physical occupancy: %s',async mode=>{
++  const builtin=await selectBoth();let seed:Awaited<ReturnType<typeof create>>|undefined,nativeId:string|undefined,original:Awaited<ReturnType<typeof managed.sessions.get>>|undefined,refs:Awaited<ReturnType<typeof managed.sessions.references>>=[];const active=builtin.packages.active('zentao')!,metadata=builtin.retainedMetadata(active.packageHash),name=applicationNativeSkillName('zentao',metadata.manifest.skills[0].id,active.packageHash),folder=join(home,'.agents/skills',name),path=join(folder,'SKILL.md'),text='---\nname: '+name+'\ndescription: User-owned H occupant.\n---\nThis user file must remain unchanged.\n',canary=Buffer.from([0,255,192,10]);
++  if(mode!=='first-publication'){seed=await create(codexId);nativeId=await stopForSwitchFixture(seed,'codex');original=await managed.sessions.get(seed.task.id);refs=await managed.sessions.references(seed.task.id);rmSync(folder,{recursive:true});}
++  mkdirSync(folder,{recursive:true});writeFileSync(path,text);writeFileSync(join(folder,'user-canary.bin'),canary);let running:Awaited<ReturnType<typeof create>>|undefined;
++  try{running=mode==='replacement-resume'?await tasks.open({taskId:seed!.task.id}):await create(codexId);const fixed=await managed.sessions.get(running.task.id),runtime=running.task.runtimeSnapshot!,runId=runtime.runId,listed=await appTools().list(runId);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);expect(listed.tools.map(t=>t.name).sort()).toEqual(Object.keys(fixed.snapshot.packages.find(p=>p.appId==='mail')!.toolContractMajors).sort());expect(listed.unavailable).toContainEqual({appId:'zentao',code:'AGENT_CAPABILITY_NAME_CONFLICT'});expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});expect(runtime.skills.filter(s=>s.enabled).map(s=>s.path).sort()).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath).sort());expect(runtime.mcp.map(m=>m.name)).toEqual(fixed.snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>m.serverName));expect(launchFlags().some(f=>f.path===path)).toBe(false);expect(readFileSync(path,'utf8')).toBe(text);expect(readFileSync(join(folder,'user-canary.bin'))).toEqual(canary);expect(fixed.snapshot.packages.map(p=>p.appId)).toContain('zentao');if(original){expect((await managed.sessions.get(seed!.task.id)).snapshot).toEqual(original.snapshot);for(const ref of refs)expect(await managed.sessions.references(seed!.task.id)).toContainEqual(ref);}if(mode==='replacement-resume')expect(running.task.nativeSessionId).toBe(nativeId);}
++  finally{if(running){tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(running!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['app-source','db-skill-name',...(runner==='claude-code'?['claude-plugin'] as const:[])] as const).map(kind=>({runner,kind}))))('reads actual original project_context with resource and secret boundaries after $kind failure: $runner',async({runner,kind})=>{
++  const markers={db:'only-BB-db-'+randomUUID(),ssh:'only-BB-ssh-'+randomUUID()},database=projects.createDatabase(projectId,{env:'dev',label:'Private database',aliases:[],vendor:'mysql',host:'127.0.0.1',port:1,database:'private_only',schema:null,username:'private',accessLevel:'readonly',isDefault:true,note:'',password:markers.db}),server=projects.createServer(projectId,{env:'dev',label:'Private server',aliases:[],host:'127.0.0.1',port:1,username:'private',authType:'password',privateKeyPath:null,defaultRoot:false,sudoPolicy:'none',appRoot:null,logsPath:null,note:'',password:markers.ssh});
++  await selectBoth();const spy=vi.spyOn(SecretsStore.prototype,'get'),seed=await create(runner==='codex'?codexId:claudeId);let current=seed;
++  const context=(task:Awaited<ReturnType<typeof create>>)=>{
++   const runtime=task.task.runtimeSnapshot!,name=runtime.mcp[0].name,args=ptys.launches.at(-1)!.args;let command='',argv:string[]=[];
++   if(runner==='claude-code'){const config=JSON.parse(readFileSync(args[args.indexOf('--mcp-config')+1],'utf8')).mcpServers[name];command=config.command;argv=config.args;}
++   else for(let i=0;i<args.length;i++)if(args[i]==='-c'){const item=parseToml(args[++i]).mcp_servers as Record<string,{command?:string;args?:string[]}>|undefined,entry=item?.[name];if(entry?.command)command=entry.command;if(entry?.args)argv=entry.args;}
++   const fixed=managed.runs.assertActive(runtime.runId).snapshot,mcp=fixed.mcp.find(m=>m.kind==='legacy-project-context')!;expect(name).toBe(mcp.serverName);expect(command).toBe('python3');expect(argv).toEqual([join(support.store.root,'runtime',mcp.runtimeHash,'context_mcp.py'),join(dirname(runtime.manifestPath),'context.json')]);
++   const requests=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2024-11-05'}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/list'},{jsonrpc:'2.0',id:3,method:'tools/call',params:{name:'project_context',arguments:{}}}],child=spawnSync(command,argv,{input:requests.map(r=>JSON.stringify(r)).join('\n')+'\n',encoding:'utf8',timeout:5000,maxBuffer:1024*1024,env:{PATH:'/usr/bin:/bin',PYTHONIOENCODING:'utf-8'}});expect(child.error).toBeUndefined();expect(child.status).toBe(0);expect(child.stderr).toBe('');const replies=child.stdout.trim().split('\n').map(line=>JSON.parse(line));expect(replies.map(r=>r.id)).toEqual([1,2,3]);expect(replies[1].result.tools.map((t:{name:string})=>t.name)).toEqual(['project_context']);for(const value of Object.values(markers))expect(child.stdout).not.toContain(value);return JSON.parse(replies[2].result.content[0].text) as {projectId:string;name:string;configVersion:number;databases:{resourceId:string}[];servers:{resourceId:string}[];skills:{path:string}[];configPaths:Record<string,string>};
++  };
++  try{const healthy=context(seed);expect(healthy.projectId).toBe(projectId);expect(healthy.databases.map(d=>d.resourceId)).toEqual([database.id]);expect(healthy.servers.map(s=>s.resourceId)).toEqual([server.id]);const nativeId=await stopForSwitchFixture(seed,runner),fixed=await managed.sessions.get(seed.task.id);spy.mockClear();
++   if(kind==='app-source'){const pkg=fixed.snapshot.packages.find(p=>p.appId==='zentao')!;rmSync(support.store.directory(support.store.get('app:'+pkg.packageHash)),{recursive:true});}
++   else if(kind==='db-skill-name'){const target=fixed.snapshot.standardSkills.find(s=>s.skillId==='project-db-diagnostics')!,name=dirname(target.projectionPath).split('/').at(-1),file=join(cwd,runner==='codex'?'.agents':'.claude','skills','private-user-db-conflict','SKILL.md');mkdirSync(dirname(file),{recursive:true});writeFileSync(file,'---\nname: '+name+'\ndescription: User-owned database name.\n---\n');}
++   else{const plugin=join(root,'private-user-context-plugin');mkdirSync(join(plugin,'.claude-plugin'),{recursive:true});writeFileSync(join(plugin,'.claude-plugin/plugin.json'),JSON.stringify({name:'smartdd-session'}));profiles.update(claudeId,{name:profiles.get(claudeId).name,runner:'claude',executable:profiles.resolve(claudeId).command,args:['--plugin-dir',plugin],env:[],color:null,isDefault:false});}
++   current=await tasks.open({taskId:seed.task.id});const value=context(current),env=ptys.launches.at(-1)!.env??{};expect(value.projectId).toBe(healthy.projectId);expect(value.configVersion).toBe(healthy.configVersion);expect(value.name).toBe(healthy.name);if(kind==='claude-plugin'){expect(value.servers).toEqual([]);expect(value.skills).toEqual([]);expect(value.configPaths.REMOTE_SERVERS_CONFIG).toBeUndefined();expect(spy.mock.calls.map(c=>c[0])).not.toContain(secretKeys.serverKeys(server.id).password);expect(Object.values(env)).not.toContain(markers.ssh);}else{expect(value.servers.map(s=>s.resourceId)).toEqual([server.id]);expect(spy.mock.calls.map(c=>c[0])).toContain(secretKeys.serverKeys(server.id).password);expect(Object.values(env)).toContain(markers.ssh);}
++   if(kind==='app-source'){expect(value.databases.map(d=>d.resourceId)).toEqual([database.id]);expect(spy.mock.calls.map(c=>c[0])).toContain(secretKeys.databasePassword(database.id));expect(Object.values(env)).toContain(markers.db);}
++   else{expect(value.databases).toEqual([]);expect(value.configPaths.PROJECT_DB_CONFIG).toBeUndefined();expect(spy.mock.calls.map(c=>c[0])).not.toContain(secretKeys.databasePassword(database.id));expect(Object.values(env)).not.toContain(markers.db);expect(value.skills.map(s=>s.path)).not.toContain(fixed.snapshot.standardSkills.find(s=>s.skillId==='project-db-diagnostics')!.projectionPath);}
++   expect(value.skills.map(s=>s.path).sort()).toEqual(current.task.runtimeSnapshot!.skills.filter(s=>s.enabled).map(s=>s.path).sort());expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed.snapshot);expect(current.task.nativeSessionId).toBe(nativeId);
++  }finally{spy.mockRestore();tasks.kill(current.task.id);await vi.waitFor(()=>expect(managed.runs.get(current.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ },30000);
++
+  it.each((['claude-code','codex'] as const).flatMap(runner=>(['project-mcp','standard-skill'] as const).map(kind=>({runner,kind}))))('keeps the live loading scope fixed and restores original capability only after stopping: $runner $kind',async({runner,kind})=>{
+   await selectBoth();const profile=runner==='codex'?codexId:claudeId,started=await create(profile),nativeId=await stopForSwitchFixture(started,runner);const original=await managed.sessions.get(started.task.id),target=original.snapshot.standardSkills[0],name=dirname(target.projectionPath).split('/').at(-1)!,mcp=original.snapshot.mcp.find(m=>m.kind==='legacy-project-context')!,file=kind==='project-mcp'?join(cwd,runner==='codex'?'.codex/config.toml':'.mcp.json'):join(cwd,runner==='codex'?'.agents':'.claude','skills','user-owned-standard-conflict','SKILL.md'),text=kind==='project-mcp'?(runner==='codex'?'[mcp_servers.'+mcp.serverName+']\ncommand="python3"\nargs=["-c","pass"]\n':JSON.stringify({mcpServers:{[mcp.serverName]:{command:'python3',args:['-c','pass']}}})):'---\nname: '+name+'\ndescription: User owned.\n---\n';mkdirSync(dirname(file),{recursive:true});writeFileSync(file,text);
+   let running:Awaited<ReturnType<typeof create>>|undefined;
+--- a/src/main/core/applications/session-diagnostics.ts
++++ b/src/main/core/applications/session-diagnostics.ts
+@@ -67,7 +67,7 @@
+   try{
+   const delivery=session.snapshot.runner==='claude-code'&&!session.snapshot.legacyBinding?readClaudeSlot(this.store,session.snapshot.taskId):null;
+   const scoped=!!delivery?.current||appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding;
+-  const skills=[...session.snapshot.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...session.snapshot.standardSkills];
++  const skills=[...session.snapshot.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
+    if(scoped){
+     const projectionIds=delivery?.current?[delivery.current.resourceId]:refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
+     refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,appId?[appId]:session.snapshot.packages.map(p=>p.appId),projectionIds).map(r=>({ref_id:r.refId}));

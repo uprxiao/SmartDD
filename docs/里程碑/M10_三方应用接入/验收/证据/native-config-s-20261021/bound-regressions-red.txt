@@ -1,0 +1,29 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'keeps the native Agent available when effective Skill flags'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (35 tests | 2 failed | 33 skipped) 1330ms
+     × keeps the native Agent available when effective Skill flags are over-count 943ms
+     × keeps the native Agent available when effective Skill flags are non-json 386ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps the native Agent available when effective Skill flags are over-count
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > production ManagedTaskCapabilities composed with actual TaskService and local services > keeps the native Agent available when effective Skill flags are non-json
+ApplicationError: Agent加载计划包含未允许字段或格式错误
+ ❯ AgentAdapterRegistry.plan src/main/core/applications/agent-adapter-registry.ts:83:88
+
+ ❯ ManagedTaskCapabilities.prepareOnce src/main/core/applications/task-capability-launcher.ts:177:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 33 skipped (35)
+   Start at  07:57:28
+   Duration  2.46s (transform 644ms, setup 0ms, import 1.01s, tests 1.33s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

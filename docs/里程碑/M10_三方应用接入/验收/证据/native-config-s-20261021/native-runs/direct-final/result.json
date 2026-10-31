@@ -1,0 +1,137 @@
+{
+  "schema": "m10-native-config-direct-observer-v1",
+  "startedAt": "2026-10-20T23:38:33.893Z",
+  "root": "/private/tmp/m10-codex-native-config-s-9UpaOD",
+  "version": "codex-cli 0.162.1",
+  "layer": "actual Codex app-server config/read and skills/list; isolated files only; no thread,turn,model,tool or business request;not packaged App/TUI/resume proof",
+  "cases": [
+    {
+      "name": "base-disabled",
+      "extra": [],
+      "effectiveSkillConfig": [
+        {
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false
+        }
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "passed",
+      "emptyArraySerializationOmitted": false
+    },
+    {
+      "name": "whole-array-empty",
+      "extra": [
+        "--config",
+        "skills.config=[]"
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "passed",
+      "emptyArraySerializationOmitted": true
+    },
+    {
+      "name": "inline-long",
+      "extra": [
+        "--config=skills.config=[{path=\"/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md\",enabled=true}]"
+      ],
+      "effectiveSkillConfig": [
+        {
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": true
+        }
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": true,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "passed",
+      "emptyArraySerializationOmitted": false
+    },
+    {
+      "name": "inline-short",
+      "extra": [
+        "-cskills.config=[]"
+      ],
+      "ownSkills": [
+        {
+          "name": "m10-profile-owned",
+          "path": "/private/tmp/m10-codex-native-config-s-9UpaOD/home/.agents/skills/m10-profile-owned/SKILL.md",
+          "enabled": false,
+          "scope": "user"
+        }
+      ],
+      "errors": [],
+      "status": "passed",
+      "emptyArraySerializationOmitted": true
+    }
+  ],
+  "status": "passed-with-boundaries",
+  "originalConfigUnchanged": true,
+  "clients": [
+    {
+      "name": "base-disabled",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    },
+    {
+      "name": "whole-array-empty",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    },
+    {
+      "name": "inline-long",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    },
+    {
+      "name": "inline-short",
+      "methods": [
+        "initialize",
+        "config/read",
+        "skills/list"
+      ],
+      "unexpectedRequests": [],
+      "stderrTail": "",
+      "terminal": true
+    }
+  ],
+  "finishedAt": "2026-10-20T23:38:34.184Z"
+}

@@ -1,0 +1,32 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=1 -t 'automatically restores original'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (63 tests | 2 failed | 61 skipped) 3838ms
+     × automatically restores original claude-code paths and MCP names after transient cleanup without adopting current project Apps 1987ms
+     × automatically restores original codex paths and MCP names after transient cleanup without adopting current project Apps 1848ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > automatic original M4 activation through the real TaskService composition > automatically restores original claude-code paths and MCP names after transient cleanup without adopting current project Apps
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > automatic original M4 activation through the real TaskService composition > automatically restores original codex paths and MCP names after transient cleanup without adopting current project Apps
+ApplicationError: 历史能力未知，不能自动补入当前应用
+ ❯ CapabilitySessionRegistry.read src/main/core/applications/session-registry.ts:75:79
+
+ ❯ src/main/core/applications/session-registry.ts:104:25
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:28:19
+ ❯ CapabilitySessionRegistry.get src/main/core/applications/session-registry.ts:103:12
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:457:130
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 61 skipped (63)
+   Start at  17:37:06
+   Duration  6.49s (transform 1.68s, setup 0ms, import 2.47s, tests 3.84s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

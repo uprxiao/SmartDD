@@ -1,0 +1,78 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/session-diagnostics.test.ts --maxWorkers=1 -t 'live native-only capacity|original capacity restriction'
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts (13 tests | 2 failed | 11 skipped) 222ms
+     × identifies a live native-only capacity run without restoring business authority or rewriting initial preparation 111ms
+     × keeps the original capacity restriction in history and never applies it to a resumed independent run 111ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/session-diagnostics.test.ts > run-scoped read-only session diagnostics > identifies a live native-only capacity run without restoring business authority or rewriting initial preparation
+AssertionError: expected null to match object { …(7) }
+
+- Expected:
+{
+  "bridge": {
+    "connected": false,
+  },
+  "current": true,
+  "id": "e52e0734-e60e-442a-87bb-b10079a5af87",
+  "preparation": {
+    "adapterHash": "b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e",
+    "cliVersion": "fixture-cli-1",
+    "configPaths": [
+      "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-runs-hyER8E/host/mcp.json",
+    ],
+    "issueCode": null,
+    "manifestPath": "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-runs-hyER8E/host/manifest.json",
+    "preparedAt": "2026-10-21T01:24:43.116Z",
+    "runId": "e52e0734-e60e-442a-87bb-b10079a5af87",
+    "schema": 1,
+    "selectionHash": "d9d72ee893a0c967e46d8e0fa54e478245688e3c481e6729bb492a2c53c4f9a6",
+    "state": "prepared",
+  },
+  "restriction": {
+    "issueCode": "AGENT_ADAPTER_UNSUPPORTED",
+    "reason": "managed_launch_payload_too_large",
+  },
+  "restrictionIssue": null,
+  "state": "active",
+}
+
++ Received:
+null
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts:25:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/session-diagnostics.test.ts > run-scoped read-only session diagnostics > keeps the original capacity restriction in history and never applies it to a resumed independent run
+AssertionError: expected { …(8) } to match object { …(3) }
+(20 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "id": "563fd083-37c5-4176-901d-d1e08f8d7652",
+-   "restriction": null,
+-   "restrictionIssue": null,
+  }
+
+ ❯ src/main/core/applications/__tests__/session-diagnostics.test.ts:30:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 11 skipped (13)
+   Start at  09:24:42
+   Duration  565ms (transform 154ms, setup 0ms, import 257ms, tests 222ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

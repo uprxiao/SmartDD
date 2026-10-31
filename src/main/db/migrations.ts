@@ -29,15 +29,10 @@ export function bundledMigrations(): MigrationRecord[] {
   });
 }
 
-function appliedCount(connection: BetterSqlite3.Database): number {
-  connection.exec(`
-    CREATE TABLE IF NOT EXISTS __drizzle_migrations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      hash TEXT NOT NULL,
-      created_at NUMERIC
-    )
-  `);
-  return (connection.prepare('SELECT COUNT(*) AS n FROM __drizzle_migrations').get() as { n: number }).n;
+type AppliedMigration = { hash: string; created_at: number | null };
+function appliedRecords(connection: BetterSqlite3.Database): AppliedMigration[] {
+  if (!connection.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'").get()) return [];
+  return connection.prepare('SELECT hash, created_at FROM __drizzle_migrations ORDER BY id').all() as AppliedMigration[];
 }
 
 // SQLite has no `ADD COLUMN IF NOT EXISTS`; drizzle-kit writes `ALTER TABLE `t` ADD `c` ...`.
@@ -51,27 +46,62 @@ export function columnAlreadyExists(connection: BetterSqlite3.Database, stmt: st
   return cols.some((c) => c.name.toLowerCase() === m[2].toLowerCase());
 }
 
-/**
- * Applies every migration past the recorded count, all inside one transaction: either the
- * whole batch lands or the database is left exactly as it was. Returns the applied tags.
- */
-export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[]): string[] {
-  const done = appliedCount(connection);
+/** A guarded table rebuild is replayed only while the old foreign key still exists. */
+export function guardedRebuildAlreadyApplied(connection: BetterSqlite3.Database,statement: string): boolean {
+  const guard = /^-- @smartdd-rebuild-if-foreign-key (\w+) (\w+)\s*$/m.exec(statement);
+  if (!guard) return false;
+  const keys = connection.prepare('SELECT "from" AS source FROM pragma_foreign_key_list(?)').all(guard[1]) as { source: string }[];
+  return !keys.some(key => key.source === guard[2]);
+}
+
+/** Read-only preflight: do not create even the migration table before backup. */
+export function planMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[]) {
+  const recorded = appliedRecords(connection), done = recorded.length;
   if (done > migrations.length) {
     // A newer SmartDD already migrated this database; running older code on it is unsafe.
     throw new Error(`数据库已执行 ${done} 个迁移，当前版本只包含 ${migrations.length} 个，请使用更新版本的 WillYou`);
   }
-  const pending = migrations.slice(done);
-  connection.transaction(() => {
+  for (const [index, row] of recorded.entries()) {
+    const expected = migrations[index];
+    if (row.hash !== expected.hash || row.created_at !== expected.when) {
+      throw new Error(`迁移记录与当前程序不一致（${expected.tag}），已保留原数据库，请核查原版本`);
+    }
+  }
+  return { recorded, before: migrations.slice(0, done), pending: migrations.slice(done) };
+}
+
+/**
+ * Applies every migration past the recorded count, all inside one transaction: either the
+ * whole batch lands or the database is left exactly as it was. Returns the applied tags.
+ */
+export function runMigrations(connection: BetterSqlite3.Database, migrations: MigrationRecord[], options: { recordCommit?: (applied: readonly string[]) => void } = {}): string[] {
+  const { recorded, pending } = planMigrations(connection, migrations);
+  const rebuilding=pending.some(m=>/^-- @smartdd-foreign-key-rebuild$/m.test(m.sql));
+  if(rebuilding&&connection.inTransaction)throw new Error('宿主连接表重建需要在独立迁移事务中执行');
+  const foreignKeys=connection.pragma('foreign_keys',{simple:true});
+  if(rebuilding)connection.pragma('foreign_keys=OFF');
+  try { connection.transaction(() => {
+    // Recheck under the transaction before applying the previously planned suffix.
+    const current = appliedRecords(connection);
+    if (JSON.stringify(current) !== JSON.stringify(recorded)) throw new Error('迁移记录在预检后变化，已保留原数据库，请重新预检');
+    connection.exec(`CREATE TABLE IF NOT EXISTS __drizzle_migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash TEXT NOT NULL,
+      created_at NUMERIC
+    )`);
     const record = connection.prepare('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)');
     for (const m of pending) {
       for (const stmt of m.sql.split('--> statement-breakpoint')) {
         const trimmed = stmt.trim();
-        if (trimmed && !columnAlreadyExists(connection, trimmed)) connection.exec(trimmed);
+        if (trimmed && !columnAlreadyExists(connection, trimmed) && !guardedRebuildAlreadyApplied(connection,trimmed)) connection.exec(trimmed);
       }
       record.run(m.hash, m.when);
     }
-  })();
+    if(rebuilding){const violations=connection.pragma('foreign_key_check');if(!Array.isArray(violations)||violations.length)throw new Error('宿主连接迁移外键核验失败，已保留原数据');}
+    // The startup coordinator records its operation in this same transaction.
+    // A failed receipt must roll back the schema and migration watermark too.
+    options.recordCommit?.(pending.map(m => m.tag));
+  })(); } finally {if(rebuilding)connection.pragma('foreign_keys='+(foreignKeys?'ON':'OFF'));}
   return pending.map((m) => m.tag);
 }
 

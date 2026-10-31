@@ -1,0 +1,402 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV001-C / DEV004-B",
+  "recordedAt": "2026-10-20T05:38:23.868641+00:00",
+  "requirementBaseline": "R1.6 incl12.21; same three approved Skill roles and read/draft/send scope; no product scope expansion",
+  "baseCommit": "d10c01d462131839b2ce05705a722e539c46eba8",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "previousGoalTurnClassification": "progress: actual asynchronous TaskService lifecycle and native PTY identity checks committed as d10c01d; full M10 goal remains active",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "Two complete built-in applications version1.0.0,three original Skill trees and17 fixed JSON tool/connection contracts; one source definition builds both manifests and dispatch tables",
+    "Original MCP runtime hash is pinned in each application version; changing it cannot silently rewrite the same application version",
+    "Distribution source checks complete file content, package identity and runtime dependency; build and packaged-native checks share exact index/inventory/hash/permission/route validation",
+    "Main startup now prepares actual built-in packages and first defaults locally,isolates per-package failures,and reports prepared assets separately from native discovery; it does not add applications/accounts/project bindings",
+    "0015 stores original approved distribution index per exact package hash; historical proofs survive App replacement and are not inferred from latest defaults or existing unapproved package rows",
+    "Original-hash CJS adapter uses only a bounded verified operation table and injected versioned Data API,retains fixed read/write/retry semantics,derives scope from host RunContext,rechecks cached source and permits only its single selected business invocation",
+    "Tool descriptions come from the original hashed input schema,retaining the exact previous MCP runtime bytes and old schema fallback"
+  ],
+  "applicationPackages": [
+    {
+      "appId": "zentao",
+      "version": "1.0.0",
+      "packageHash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+      "skills": [
+        "bug-analysis",
+        "story-review"
+      ],
+      "files": 13,
+      "tools": [
+        {
+          "name": "smartdd_zentao_work_list_v1",
+          "permission": "zentao.read",
+          "method": "zentao.work.list",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_zentao_object_get_v1",
+          "permission": "zentao.read",
+          "method": "zentao.object.get",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_zentao_resource_v1",
+          "permission": "zentao.read",
+          "method": "zentao.resource.read",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        }
+      ]
+    },
+    {
+      "appId": "mail",
+      "version": "1.0.0",
+      "packageHash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+      "skills": [
+        "work-assistant"
+      ],
+      "files": 34,
+      "tools": [
+        {
+          "name": "smartdd_mail_query_v1",
+          "permission": "mail.read",
+          "method": "mail.query",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_read_v1",
+          "permission": "mail.read",
+          "method": "mail.read",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_resource_read_v1",
+          "permission": "mail.read",
+          "method": "mail.resource.read",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_draft_list_v1",
+          "permission": "mail.draft",
+          "method": "mail.draft.list",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_draft_get_v1",
+          "permission": "mail.draft",
+          "method": "mail.draft.get",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_draft_create_v1",
+          "permission": "mail.draft",
+          "method": "mail.draft.create",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_draft_update_v1",
+          "permission": "mail.draft",
+          "method": "mail.draft.update",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_draft_copy_v1",
+          "permission": "mail.draft",
+          "method": "mail.draft.copy",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_reply_create_v1",
+          "permission": "mail.draft",
+          "method": "mail.reply.create",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_attach_import_v1",
+          "permission": "mail.draft",
+          "method": "mail.attachment.import",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_send_prepare_v1",
+          "permission": "mail.send",
+          "method": "mail.send.prepare",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 60000
+        },
+        {
+          "name": "smartdd_mail_send_execute_v1",
+          "permission": "mail.send",
+          "method": "mail.send.execute",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 60000
+        },
+        {
+          "name": "smartdd_mail_send_get_v1",
+          "permission": "mail.draft",
+          "method": "mail.send.get",
+          "retry": "safe-read",
+          "semantics": "read",
+          "timeoutMs": 30000
+        },
+        {
+          "name": "smartdd_mail_send_cancel_v1",
+          "permission": "mail.draft",
+          "method": "mail.send.cancel",
+          "retry": "never",
+          "semantics": "write",
+          "timeoutMs": 30000
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts",
+      "files": 35,
+      "tests": 384,
+      "passed": 384,
+      "failed": 0,
+      "log": "dev001-c-dev004-b-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev001-c-dev004-b-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev001-c-dev004-b-20261020/release-rules.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev001-c-dev004-b-20261020/types.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev001-c-dev004-b-20261020/build.txt"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "log": "dev001-c-dev004-b-20261020/resource-verification.json",
+      "scope": "Actual production resource output; same verifier wired into packaged probe,but this invocation is not a packaged App test"
+    }
+  ],
+  "newTests": {
+    "builtinPackagesAndAdapterIntegration": 20,
+    "preservedHistoricalPackageUpgradeAndProofReplay": 1,
+    "note": "These21 are included in384; repeated and earlier382-case rounds are not added"
+  },
+  "findingsAndCorrections": [
+    {
+      "finding": "A first attempt added descriptions to the shared manifest schema;because the bridge imports the same module,its independently built CJS changed and the new application runtime pin rejected it",
+      "correction": "Keep descriptions in already-hashed original input schemas and preserve the previous manifest/bridge bytes; no runtime-pin check relaxed",
+      "redLog": "dev001-c-dev004-b-20261020/red-runtime-pin.json"
+    },
+    {
+      "finding": "The typed unavailable RPC fallback omitted the new application status array",
+      "correction": "Add an empty applications array to the controlled fallback",
+      "redLog": "dev001-c-dev004-b-20261020/red-status-types.json"
+    },
+    {
+      "finding": "Nine existing migration assertions still listed15 journal entries after adding0015;new tool description test assumed first insertion order after canonical snapshot keys were sorted",
+      "correction": "Explicitly add the actual0015 journal expectation,keep all original data/FK/replay assertions and add no-implicit-approval upgrade test;find tool by its fixed name",
+      "redLog": "dev001-c-dev004-b-20261020/red-migration-expectations-and-tool-order.json"
+    },
+    {
+      "finding": "The expanded test fixture captured a mutable optional application variable in a new complete-Skill map",
+      "correction": "Capture the already-known immutable packageHash before the callback;expected package identity and source data are unchanged",
+      "redLog": "dev001-c-dev004-b-20261020/red-fixture-capture-types.json"
+    },
+    {
+      "finding": "Static portable-name review found65/67-byte fully qualified names for two not-yet-published tool candidates;this was not a real-Agent failure and Codex0.162.1 itself allows128",
+      "correction": "Use shorter original names before first publication,retain current27-byte server identity and business Data API methods/permissions,add a64-byte built-in engineering budget and verify all17 now fit within63;no new provider support claimed",
+      "redLog": "dev001-c-dev004-b-20261020/red-portable-name-budget.json",
+      "review": "dev001-c-dev004-b-20261020/native-name-review.json"
+    }
+  ],
+  "actualBoundary": [
+    "Independent fresh production builders,real bundle file trees,SQLite/resource references,source provenance,package/CJS validation,original session/run/tool pipeline and durable invocation ledger participate",
+    "New Data API business methods,authorization/current connection decisions and native process identities are explicit controlled fixtures;the new CJS calls were not a live SMTP/Foxmail/ZenTao/Agent end-to-end result",
+    "The aggregate retains earlier native/protocol tests under their original boundaries;this batch makes no new UI observation or packaged App business acceptance claim",
+    "A controlled mail send executor additionally exercises the original write adapter,unknown effect receipt,single attempt and duplicate receipt reuse;no SMTP server or actual email submission is involved in this new case"
+  ],
+  "remaining": [
+    "Production ApplicationDataHost and common UI/index/Agent execution contexts,real resource DTO/chunk backing,mail cache/quota/refresh,reply/attachment integration and trusted user authorization provenance remain required",
+    "Main does not yet instantiate ApplicationAdapterRegistry with real business executors or a production TaskCapabilityLauncher;CC/Codex actual scope/config resolution and Agent-spawned bridge process proof remain incomplete",
+    "Existing default changes wait for complete upgrade preflight;startup migration fence,old-H-lock recovery,GC,full multi-process crash recovery and native-ID/Task pointer reconciliation remain pending",
+    "All application pages,actual two-Agent runs and72 formal product-case acceptance plus delivery archival remain incomplete;M10 has not been marked complete",
+    "No real accounts or daily HOME/native sessions were used;no external business action,email send,M9 edit/process operation,main merge,push,tag or release"
+  ],
+  "build": {
+    "appVersion": "0.0.5",
+    "index": {
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "apps": [
+        {
+          "appId": "zentao",
+          "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "path": "apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "version": "1.0.0"
+        },
+        {
+          "appId": "mail",
+          "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "path": "apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "version": "1.0.0"
+        }
+      ],
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "d10c01d462131839b2ce05705a722e539c46eba8",
+        "dirty": true,
+        "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d"
+      },
+      "indexHash": "6cd6e8186c6fac8d6c2a45e2e219ecf7d035a24c797d408106b9e4663a1c622c",
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "schema": "willyou-capability-bundles-v1"
+    },
+    "artifacts": {
+      "out/main/index.js": "79612bac7bb3ead9b69104ac8f36117caa8cac73eeb777c0236a174285332b14",
+      "out/preload/index.js": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908",
+      "out/applications/mcp-bridge.cjs": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "out/capability-bundles/index.json": "3e67acb4056c1920b5fb84a61fda40b8afd0fac1b5ad1e18cb9b0adbfd8286f7",
+      "out/native/willyou-process-identity": "29e6e838c5a221beaa6dc4ba342465993274451595f349944d69c0738d5e92d5",
+      "out/native/willyou-foxmail": "483678fb21961b724917f0bdbc754da026708af4ed16abc9836d5aa151d9bfde"
+    },
+    "note": "Final production build and384-case/type/release checks include the name review;project79-case source scope was unchanged by the later resource-name/test-only refinement"
+  },
+  "sourceHashes": {
+    "drizzle/0015_builtin_package_sources.sql": "9ab0392e2b85a38631dfbb0c1bd394553f9e500b19c31d05abafab8bc4fc973f",
+    "drizzle/meta/_journal.json": "b850e753af397c1c5ed678c938b4a569efc8dd3d2b896d72242b3d67fa8f8e57",
+    "resources/applications/README.md": "6b62cb5f929df544b751073c798491a5942fa43bfc6df6e56f0ac4b38e6e6245",
+    "resources/applications/adapter.cjs": "53003602b4995129aa46aa282dfd58715582b8428c9e25fbb159ee95c3b6cd4d",
+    "resources/applications/definitions.mjs": "63c19adc5f8247c3e57c52c6a36794184ca01153ac0b2b77721be0c4ee22cfb8",
+    "resources/applications/mail/1.0.0/skills/work-assistant/SKILL.md": "36d39c46fd875df300c4461ac3ce986dcccff36ad1b674ea0d90bf41d4839fc2",
+    "resources/applications/mail/1.0.0/skills/work-assistant/references/sending.md": "63df45b8bb983fd2e408a3672344be2de4149d066405d3b8ffcaf235646d3123",
+    "resources/applications/zentao/1.0.0/skills/bug-analysis/SKILL.md": "7f2e3a2d6b930ab030b762534c2ae999bd73db17a9db9c9989512abbb46f8a8e",
+    "resources/applications/zentao/1.0.0/skills/bug-analysis/references/scope.md": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+    "resources/applications/zentao/1.0.0/skills/story-review/SKILL.md": "e6e071ce06ead3c6620101d160f917116c32d4eba332ec2ea35ecfc4c0c2b4c8",
+    "resources/applications/zentao/1.0.0/skills/story-review/references/scope.md": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+    "scripts/applications/build-bundles.mjs": "a0037bfa33e6b09ccc4052b8aa37f4bba7e5149d4bbb83c1f52cc32e79ca13b6",
+    "scripts/applications/verify-bundles.cjs": "cfb60e846f1d42c79e133df824fe4a27230cf4a472acba0f2a22519d02fcfe79",
+    "scripts/release/native-smoke.cjs": "e627e42e03fc51e6ef438ee1d3c2bb702f2c0b64d979a96d02f583d7fdd16293",
+    "src/main/core/applications/__tests__/agent-fixture.ts": "dc45a1f1a2fab29494afe36d36e2bba123468d82e28de5603115854694b153f6",
+    "src/main/core/applications/__tests__/agent-support.test.ts": "96f733cf185b20d6dd51e5067975bdb4a7059fd08ae51dfcf5276b6c4b22b1d9",
+    "src/main/core/applications/__tests__/builtin-packages.test.ts": "fb9c37607503b6ec3e1e896e2dbbbc5deedd5465a19f22d592330b6407beb7be",
+    "src/main/core/applications/__tests__/run-fixture.ts": "45e5d9574653c76cd53ec92ba263ed6f4689234b726e82333c42206f8c401c63",
+    "src/main/core/applications/agent-support-service.ts": "ebc31595d80c361bd174c6c49e24d545261bb2b185b74a548e7bea91cc6788fd",
+    "src/main/core/applications/application-adapter-registry.ts": "bd3a75d1f0f42d6d489d6ea79da9a123cc03b9672204a833ba45d35aaa27628f",
+    "src/main/core/applications/builtin-package-registry.ts": "ddb13bbafb042a3fafeb94a8584f3e823bb1b793774fd079fcc2bad57ed96e0f",
+    "src/main/core/applications/bundle-source.ts": "0ae306b5edfd35b4a29cd9f538ea448aa867e97b4079ff86a7cfcd864079ecc5",
+    "src/main/core/applications/tool-service.ts": "b464fe68e212901035aa114e93d4a2540a3bf54b805735ba7f7d3e88ea249bdb",
+    "src/main/db/migrations.test.ts": "50ff77168ce7c2c7ca09e2e5038f33ed95971ee9aa52cf137c56fcac804d5bd5",
+    "src/main/db/schema.ts": "b314137ac29bfd48e1eb176e9901fdad857c1ed6be3e6a7e59a5c30d4df7552c",
+    "src/main/rpc.ts": "c79f2924842d9342a9b50fe57a9482e45e9328d51eca007edb1d28716d89dcf6",
+    "src/shared/capability-bundles.ts": "e984b099667a8cd0562e3b4bc981254fc577e1e005e52bb3c9aa2f1eac06ff65"
+  },
+  "logHashes": {
+    "dev001-c-dev004-b-20261020/all-tests.txt": "16fe4139e9e97068fac18be1bfb5cfff2b5487fa839365f38f70250400926dab",
+    "dev001-c-dev004-b-20261020/build.txt": "c58e0e1382fa00ad138394e98bb8bca3a07b5ee4ae5d2ab1cc3ca24fd072acd6",
+    "dev001-c-dev004-b-20261020/capability-bundle-index.json": "3dcdbd64f43b9b553c302ceceeb1151d7722a3ffedca2e49fcb932eb86a24b08",
+    "dev001-c-dev004-b-20261020/mail-1.0.0-manifest.json": "17b56fe81aa2cc60cde34fc10ec9b824b584fd3462b92e0e8187890220c2dbee",
+    "dev001-c-dev004-b-20261020/native-name-review.json": "aec340221adce73d81893628b6f8e9fd8e8d0d872c03532332e1b0b7058ada32",
+    "dev001-c-dev004-b-20261020/pre-name-review/all-tests.txt": "5afd6e5e07efc8fcd1698509489774688a59a2a80b3e83964abd024a96ace10c",
+    "dev001-c-dev004-b-20261020/pre-name-review/build.txt": "d572c17245001b5bbed2c11c3e354f132ef4acf89d07ccc1072f678717786f97",
+    "dev001-c-dev004-b-20261020/pre-name-review/capability-bundle-index.json": "c0d119d722aef41439f8593b393e0645a9d9c1b13e18d4872a54a318d5189060",
+    "dev001-c-dev004-b-20261020/pre-name-review/checkpoint-before-name-review.json": "773846876a9f17e79a13391dab1ea5996564f3f03c793180824d672c6cd99d27",
+    "dev001-c-dev004-b-20261020/pre-name-review/mail-1.0.0-manifest.json": "dc30eef495ba43f1a91d035c41ba648b09afe2fa0e7fe83612aa44f4e80db3c2",
+    "dev001-c-dev004-b-20261020/pre-name-review/project-regression.txt": "25618bdc463716515c27d0cd79d617e16c321bde67cae8f12b3576c99effb967",
+    "dev001-c-dev004-b-20261020/pre-name-review/red-fixture-capture-types.json": "cdccd6e6727a4c89c39ab41a1b142198e36c91b721c9c11fb7186b709d8b0d7b",
+    "dev001-c-dev004-b-20261020/pre-name-review/red-migration-expectations-and-tool-order.json": "54338ec89cd49467133322a1af7db9adc6601a44f9ff6e69bb75c7feded5f203",
+    "dev001-c-dev004-b-20261020/pre-name-review/red-runtime-pin.json": "4e3c458d08c5c93ec5c5e7ca017d758b9c563d71afe1449238582952a9fad2da",
+    "dev001-c-dev004-b-20261020/pre-name-review/red-status-types.json": "a44667e6f4452ca297fe2db31874b6d75f8143052dbb09fda078764c3e4873dd",
+    "dev001-c-dev004-b-20261020/pre-name-review/release-rules.txt": "c3c3e0ac3410c39838aca6956e88ae82cf608301934a2ee2702d3d7f184e4f00",
+    "dev001-c-dev004-b-20261020/pre-name-review/resource-verification.json": "e9cf86d7dd29436a630281cf251c74fadb709fb2173e68f2984a6e74ccef1264",
+    "dev001-c-dev004-b-20261020/pre-name-review/subset-final-before-type-capture.txt": "34f017fc10871604fe0d292d1a7baaaa214e1fd83a7a5a4b0ce4875ae0d3f1d5",
+    "dev001-c-dev004-b-20261020/pre-name-review/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "dev001-c-dev004-b-20261020/pre-name-review/zentao-1.0.0-manifest.json": "37da05ee976a8a074fcbfc5936b67272e85c5c911a142daf8e1472e546a6faee",
+    "dev001-c-dev004-b-20261020/project-regression.txt": "25618bdc463716515c27d0cd79d617e16c321bde67cae8f12b3576c99effb967",
+    "dev001-c-dev004-b-20261020/red-fixture-capture-types.json": "cdccd6e6727a4c89c39ab41a1b142198e36c91b721c9c11fb7186b709d8b0d7b",
+    "dev001-c-dev004-b-20261020/red-migration-expectations-and-tool-order.json": "54338ec89cd49467133322a1af7db9adc6601a44f9ff6e69bb75c7feded5f203",
+    "dev001-c-dev004-b-20261020/red-portable-name-budget.json": "5234dfc7f50ed9113321f3d950de6d2cf1169b0322f9bb0153fbb78e6895d2f5",
+    "dev001-c-dev004-b-20261020/red-runtime-pin.json": "4e3c458d08c5c93ec5c5e7ca017d758b9c563d71afe1449238582952a9fad2da",
+    "dev001-c-dev004-b-20261020/red-status-types.json": "a44667e6f4452ca297fe2db31874b6d75f8143052dbb09fda078764c3e4873dd",
+    "dev001-c-dev004-b-20261020/release-rules.txt": "52073f75b64f5c579712274c4d6d6b85b2cf28db15bcd60aa04b52fb1aff18bc",
+    "dev001-c-dev004-b-20261020/resource-verification.json": "7a25848606a173ceee18956b9cacd73df136baa973deff021a44e3c5f08a3d9d",
+    "dev001-c-dev004-b-20261020/subset-final-before-type-capture.txt": "34f017fc10871604fe0d292d1a7baaaa214e1fd83a7a5a4b0ce4875ae0d3f1d5",
+    "dev001-c-dev004-b-20261020/types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "dev001-c-dev004-b-20261020/zentao-1.0.0-manifest.json": "745a35778b204d5f4ddcedc14fbcfcb73d61fab5996d2829378dbd3630882faa"
+  },
+  "logEncoding": "Text logs retain stdout/stderr with terminal trailing blank lines trimmed only;red diagnostics are losslessly JSON-wrapped with original raw SHA256. Generated manifests/index are immutable evidence copies,not a second editable source.",
+  "earlierCandidateEvidence": {
+    "path": "dev001-c-dev004-b-20261020/pre-name-review",
+    "status": "Superseded uncommitted candidate outputs and original observation record before two native tool names were shortened",
+    "interpretation": "The contained checkpoint keeps its original source hashes and log path text;for its historical logs interpret the original dev001-c-dev004-b-20261020 prefix as this pre-name-review folder. Current authoritative source/results are the outer record and final384-case logs."
+  }
+}

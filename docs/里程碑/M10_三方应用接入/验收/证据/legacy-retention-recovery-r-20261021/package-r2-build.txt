@@ -1,0 +1,82 @@
+
+> smartdd@0.0.5 package /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/release/build.mjs --dir --output-dir /private/tmp/m10-legacy-recovery-r2-package-20261021
+
+Building WillYou 0.0.5: mac/arm64, unsigned trial
+vite v6.4.4 building SSR bundle for production...
+transforming...
+✓ 623 modules transformed.
+rendering chunks...
+vite v6.4.4 building SSR bundle for production...
+transforming...
+../../m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 111 modules transformed.
+rendering chunks...
+out/applications/mcp-bridge.cjs  764.76 kB
+✓ built in 441ms
+fatal: not a git repository (or any of the parent directories): .git
+{"adapters":4,"runtimes":1,"apps":2,"indexHash":"eb3a76e9b9b39e20997ba21637fdd9e184531e8f2b6f4e41cfab7283bc536ebf","resourceSetHash":"deff74e8da62ad47b4a6ea7350e8ee3cc04ab3ace0101db4c3981a8fe1a13394"}
+Traceback (most recent call last):
+  File "/private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/files/prepare-tex.py", line 29, in <module>
+    lock = json.loads((EVIDENCE / 'predev-tex-resource-manifest.json').read_text())
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/m10-legacy-recovery-r-20261021/work-r4/docs/里程碑/M9_文件浏览工作区/验收/证据/predev-resources/predev-tex-resource-manifest.json'
+out/main/chunks/app-icon-DeEYHTMt.png             1,015.88 kB
+out/main/chunks/_commonjsHelpers-DHfMLFPC.js          0.21 kB
+out/main/chunks/file-tex-XtlfrUxG.js                  0.58 kB
+out/main/chunks/file-html-DfV4zpdU.js                 0.93 kB
+out/main/m9-office-pages.js                           2.30 kB
+out/main/m10-mail-reader.js                           5.58 kB
+out/main/chunks/pptx-chartex-preview-68NoyiEU.js      6.54 kB
+out/main/chunks/files-6Ja02Pvv.js                     7.14 kB
+out/main/chunks/cell-edit-Bk1ysozS.js                11.08 kB
+out/main/chunks/pptx-image-BIlCHTHk.js               21.01 kB
+out/main/chunks/foxmail-source-CjP4LRih.js           37.76 kB
+out/main/m9-office-document.js                       49.67 kB
+out/main/m9-pptx-document.js                         58.14 kB
+out/main/chunks/pages-model--LuG37hY.js             141.36 kB
+out/main/chunks/sheet-edit-CvaLfcmg.js              350.34 kB
+out/main/m9-html-resources.js                       473.55 kB
+out/main/m9-tex-resources.js                        792.94 kB
+out/main/index.js                                 1,974.47 kB
+✗ Build failed in 5.01s
+error during build:
+[smartdd-native-bridges] Command failed: python3 scripts/files/prepare-tex.py
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:916:11)
+    at execFileSync (node:child_process:952:15)
+    at Object.writeBundle (file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/electron.vite.config.1792535235580.mjs:29:9)
+    at Object.handler (file:///private/tmp/m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:46876:15)
+    at file:///private/tmp/m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:23609:40
+    at async Promise.all (index 0)
+    at async PluginDriver.hookParallel (file:///private/tmp/m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:23519:9)
+    at async file:///private/tmp/m10-test-dependencies-r4-offline-20261021/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:24605:13
+file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/release/common.mjs:17
+  if (result.status !== 0) throw new Error(`${command} exited with ${result.status ?? result.signal}`);
+                                 ^
+
+Error: /Users/liubu/.hermes/node/bin/node exited with 1
+    at run (file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/release/common.mjs:17:34)
+    at runBin (file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/release/common.mjs:24:10)
+    at file:///private/tmp/m10-legacy-recovery-r-20261021/work-r4/scripts/release/build.mjs:51:1
+
+Node.js v22.23.1
+ ELIFECYCLE  Command failed with exit code 1.

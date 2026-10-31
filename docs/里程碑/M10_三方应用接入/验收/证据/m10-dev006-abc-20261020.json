@@ -1,0 +1,503 @@
+{
+  "schema": "m10-dev006-ui-checkpoint-v1",
+  "at": "2026-10-20T12:06:56.983707+00:00",
+  "requirement": "R1.6 including12.21",
+  "state": "开发中，未完成M10",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "baseCommit": "43d7cb389104bb42218c8ef1c0c0e44393a34a08",
+  "sourceManifestHash": "b79de7c6a7068c5133e80c96724cea490863909ce194b3926767dfe164b8c0a8",
+  "sourceManifest": "dev006-abc-20261020/source-manifest.json",
+  "prototypeCommit": "846673415290d395d0ab662880e8c0c44bb42f40",
+  "appVersion": "0.0.5",
+  "builtApp": "/private/tmp/m10-dev006-c-package-20261020/mac-arm64/WillYou.app",
+  "appHashes": {
+    "asar": "010121542dfebf3b2ab4cd7d13c4099ebaa6768e906d7fb6ee8791b29c632028",
+    "foxmail": "afa916c9b90304768df5a17e1e63142e940f8e0b946bfc3724735f716d281a80",
+    "processIdentity": "fac5446e2c21bfb71888c5f69b36321e512e65999901fb745558a69b268fc9a0"
+  },
+  "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d",
+  "packages": [
+    {
+      "appId": "zentao",
+      "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+      "path": "apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+      "version": "1.0.0"
+    },
+    {
+      "appId": "mail",
+      "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+      "path": "apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+      "version": "1.0.0"
+    }
+  ],
+  "runtimeResourcesUnchanged": true,
+  "validation": {
+    "phaseB": {
+      "files": 8,
+      "tests": 123,
+      "status": "passed"
+    },
+    "finalAffectedC": {
+      "files": 5,
+      "tests": 71,
+      "status": "passed",
+      "note": "overlaps phase B; includes three new UI/status tests; do not add counts"
+    },
+    "projectsM8": {
+      "files": 6,
+      "tests": 79,
+      "status": "passed"
+    },
+    "types": "passed after final production edits",
+    "packageNativeSmoke": "passed macOS arm64",
+    "packagedUi": {
+      "checks": 10,
+      "status": "passed-partial",
+      "evidence": "dev006-abc-20261020/tls2-green/result.json",
+      "scope": "真实打包UI＋私有loopback禅道／SMTP；SMTP隐式TLS使用仅测试进程私有证书信任；无DATA发送；重启为测试清理后新启，不计正常退出用例"
+    },
+    "fullProductCasesPassed": 0,
+    "fullProductCasesTotal": 72
+  },
+  "newUi": [
+    "P01目录添加搜索筛选",
+    "P02真实应用与连接详情",
+    "P03测试回执、字段失效、保存与取消",
+    "P04项目独立来源单选与禅道停止切换提示",
+    "P05本人Bug／Story列表和详情正文历史",
+    "P06实际扫描进度／最近完整更新／缓存状态和清理",
+    "P07项目轻量草稿及冻结发送审阅／结果"
+  ],
+  "notComplete": [
+    "P08调用记录",
+    "P02版本占用与维护操作",
+    "P09会话诊断与受控终端引用插入",
+    "已知M4保真迁移、完整用户配置优先级及维护",
+    "原生user消息与明确指令直接授权",
+    "真实CC／Codex业务端到端",
+    "72条产品用例全部约定层级",
+    "Foxmail真实UI、非空草稿／发送真实UI、浅色与完整视觉及系统层"
+  ],
+  "redAndLimits": [
+    "初始jsdom缺少dialog方法：夹具修正，红测保留",
+    "候选取消遗漏management白名单：产品修正并复验",
+    "新增RPC测试接线类型错误：修正并复验",
+    "详情原始JSON／哈希呈现：产品修正，新包复验截图",
+    "重载旧DOM、底部radio命中、原生下拉：驱动失败保留，未通过修改业务预期消除",
+    "私有SMTP socket ECONNRESET未监听导致驱动退出：已修正；遗留自有App核对为已退出",
+    "CUA规范路径绑定一次可选plain，但夹具随后退出；后轮frontmostApplicationChanged，plain端到端仍未通过",
+    "TLS独立路径通过不抵扣原生plain下拉欠验"
+  ],
+  "boundaries": [
+    "不访问日常账号／凭据／Foxmail来源；仅本次测试数据",
+    "M9原目录保持feature/0.0.1及18efa6a，未写入／提交／打包",
+    "未合并main，未push/tag/release"
+  ],
+  "evidenceFiles": {
+    "dev006-abc-20261020/b1/electron-last.txt": {
+      "sha256": "2aca7c6e6a0fafe97d2e5eb2df7c8810e29c96608cc733d2d5e47e30ff02a959",
+      "bytes": 748
+    },
+    "dev006-abc-20261020/b1/result.json": {
+      "sha256": "2ed5bf4e7224aedbc795049a91a87d8fb03e41f7342878e6623b113035f41d86",
+      "bytes": 1654
+    },
+    "dev006-abc-20261020/b2/electron-last.txt": {
+      "sha256": "1aa107659f7b05a75ff664c6e781c0020d374a11a9d8a3c31ed542611f805232",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/b2/failure.png": {
+      "sha256": "ec99427ec99b8e3134e644cc6acb9c0341482a3901d625a186aee2f857d3fb36",
+      "bytes": 110504
+    },
+    "dev006-abc-20261020/b2/result.json": {
+      "sha256": "bed814e2ec992b9c90284607cad7d7596cec6b06b39de87873bd4722bcf7c259",
+      "bytes": 3722
+    },
+    "dev006-abc-20261020/b3/electron-last.txt": {
+      "sha256": "fcdd9baaf30947ddb60f2bf63c5d40d774168e9f856cabed3e2132966c58d4ae",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/b3/failure.png": {
+      "sha256": "a81e2fe0c67b83f9271173883c9b91023a5ed0071ceacb0ed02c0b501befc171",
+      "bytes": 130339
+    },
+    "dev006-abc-20261020/b3/result.json": {
+      "sha256": "fb61923917f9e89acd54eb45624421fcf6c99d74dd6efc812b4b56850885357c",
+      "bytes": 15471
+    },
+    "dev006-abc-20261020/b3/zentao-detail.png": {
+      "sha256": "f775b618688becb82a8ec1f3c1a4cc93083a448ad2b89bb5463f073c05f46df2",
+      "bytes": 118140
+    },
+    "dev006-abc-20261020/b4/electron-last.txt": {
+      "sha256": "e79b0891a9b9d9bc0a9927f2c790886ee60a1a6c73760b2a7ec0f1bb656d9208",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/b4/failure.png": {
+      "sha256": "e2ce940582b2c7e5b7bab478a8c1ca50c57022017ae5baddc211c8d85f0c4cce",
+      "bytes": 138333
+    },
+    "dev006-abc-20261020/b4/result.json": {
+      "sha256": "ca3fbf2060a230590639db2ec6801d7c5ccb0a5646882e2b18c13ee83f2079ea",
+      "bytes": 15906
+    },
+    "dev006-abc-20261020/b4/zentao-detail.png": {
+      "sha256": "eb619a280f6bcfe93b68c3356a7684cdf2b52856259b4a77ff19551b85ae4ad7",
+      "bytes": 117895
+    },
+    "dev006-abc-20261020/b5/electron-last.txt": {
+      "sha256": "0db37ca32cfb04087d85cf55523272576f7e3bb4651d8a2d0329c04d2262850c",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/b5/failure.png": {
+      "sha256": "94231044cde509adb071d5712095d08a797410553fe028298e8c6f493e2faac2",
+      "bytes": 138251
+    },
+    "dev006-abc-20261020/b5/result.json": {
+      "sha256": "b5c74afcaf9729ccd4f3b8d205dcb4eae0903690d940b5e1c2d57864cff96e26",
+      "bytes": 16587
+    },
+    "dev006-abc-20261020/b5/zentao-detail.png": {
+      "sha256": "26876588947be2b0232b5dca490a04d339504fe111ebc7900c46b9a238233a6d",
+      "bytes": 118012
+    },
+    "dev006-abc-20261020/b6/electron-last.txt": {
+      "sha256": "90f2c3f76dc25ac71a0aead22dabc4f8704e354afc856bd32999999854f647a3",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/b6/failure.png": {
+      "sha256": "84332848c46419cf1b4257a29f8106a680cb59acd8a5be22501c31416602e5ca",
+      "bytes": 137984
+    },
+    "dev006-abc-20261020/b6/result.json": {
+      "sha256": "8810b754bc8927215e55bd7b8fa3b1a01136429d3417167f84a85eff6eae0ce4",
+      "bytes": 16588
+    },
+    "dev006-abc-20261020/b6/zentao-detail.png": {
+      "sha256": "7113ef9d76672e456a6df69fa6d6db6ca724ed4e29a3d3e569629ba3b120f979",
+      "bytes": 118290
+    },
+    "dev006-abc-20261020/c1/electron-last.txt": {
+      "sha256": "03e34fc40b048138b6732c55958e09ad81d6d6f66d2ba6afeb70c5b94f36237c",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/c1/failure.png": {
+      "sha256": "ca1749af6227d50cf7151d3ea69d0a45758ac0549b61d6e598ce92ae7fc62081",
+      "bytes": 129083
+    },
+    "dev006-abc-20261020/c1/native-selection-ready.json": {
+      "sha256": "ce2fbfbd9f2cf58e9f43e99e5e8b039ac1d9c14b73e4e89134d5f81e12836c48",
+      "bytes": 199
+    },
+    "dev006-abc-20261020/c1/result.json": {
+      "sha256": "a1488d00d4592d8339ecd0a797f34b98deb896c5fa739903c4fd2264f18e332f",
+      "bytes": 15942
+    },
+    "dev006-abc-20261020/c1/zentao-detail.png": {
+      "sha256": "1532cefb2419495640904becf72b369bb2dbc412960ec65c1a332463fc3f6973",
+      "bytes": 108920
+    },
+    "dev006-abc-20261020/c2-driver-crash/native-selection-ready.json": {
+      "sha256": "3977dc479185a6905b2fab210965a9935466716d0bfc0e702f90a24610c2e11e",
+      "bytes": 199
+    },
+    "dev006-abc-20261020/c2-driver-crash/zentao-detail.png": {
+      "sha256": "ba72882542df35e5960f05f0850ea9a8fb9e53244522e47af6f61fd6a656cb6c",
+      "bytes": 108919
+    },
+    "dev006-abc-20261020/c3/checkpoint.json": {
+      "sha256": "66da9a3e70294205187b3d6e6284e3f1385ac6a96d52a2fcfa1a10d69b4f5d3b",
+      "bytes": 2734
+    },
+    "dev006-abc-20261020/c3/electron-last.txt": {
+      "sha256": "2e968f5ebd6daf8cae532ce28c4749b6752c4182cfe2ad116035f96a521d31eb",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/c3/failure.png": {
+      "sha256": "aff4856b0e1ca341bd094b5a02512c6976236b5a4eb904d04aa99f04ca6e27f2",
+      "bytes": 138038
+    },
+    "dev006-abc-20261020/c3/native-selection-ready.json": {
+      "sha256": "0b19d172725350c7bfeea480fa964c49186080e8da6975b0fc741961192451c2",
+      "bytes": 199
+    },
+    "dev006-abc-20261020/c3/result.json": {
+      "sha256": "b5b84bf3165d9a3073ddd2e5314f5a867fbc286585f9d44a5e12aead6014a40d",
+      "bytes": 16258
+    },
+    "dev006-abc-20261020/c3/zentao-detail.png": {
+      "sha256": "ba72882542df35e5960f05f0850ea9a8fb9e53244522e47af6f61fd6a656cb6c",
+      "bytes": 108919
+    },
+    "dev006-abc-20261020/capability-bundle-index.json": {
+      "sha256": "437edaccdbe97d00effe166b43556cc47c6a119de5d97d6088de111b8d142c78",
+      "bytes": 1394
+    },
+    "dev006-abc-20261020/m10-dev006-a-ui-first.txt": {
+      "sha256": "1fc589a473032c6f9e50602529e73f006ab2d2e7839322b68898db88d3e06d9a",
+      "bytes": 3455
+    },
+    "dev006-abc-20261020/m10-dev006-a-ui-second.txt": {
+      "sha256": "c294bd632924ee6491b91612e0c5fede6fb7cca1404920f0665b8afa9a02eaf7",
+      "bytes": 1655
+    },
+    "dev006-abc-20261020/m10-dev006-a-ui-third.txt": {
+      "sha256": "9e67fbd9f2c735d1a69aeae4c095b86c41790103f007d09fccdd6f643d3d0d0d",
+      "bytes": 562
+    },
+    "dev006-abc-20261020/m10-dev006-b-package.txt": {
+      "sha256": "86d5bf02e66036ef662c7fbeba78ac53ba4b9345d6ba9ade3940f990ff3b0dd3",
+      "bytes": 21330
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-fifth.txt": {
+      "sha256": "7b13c2236449fa5b9817cc717ba9d8ebd00610fc31e79936e703d1fecfe9547a",
+      "bytes": 255
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-first.txt": {
+      "sha256": "7bd030b040dbfac27d31f0dc32b0e8eefd649d2a3bb6e6203b349249ab736bd2",
+      "bytes": 215
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-fourth.txt": {
+      "sha256": "10bcab10c6a10076fe3c5767c1b79107219d38a2a3af2875cf3d40052908367a",
+      "bytes": 255
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-second.txt": {
+      "sha256": "9de9e0157487780ffd56205e2a72be8073ba31e83802c47771b9120a9725b232",
+      "bytes": 177
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-sixth.txt": {
+      "sha256": "774ab267a2a92188b500cf74ecbe4a6e460cd009d5f45efc4c4fa9166daef6dd",
+      "bytes": 255
+    },
+    "dev006-abc-20261020/m10-dev006-b-packaged-ui-third.txt": {
+      "sha256": "580afe90e1df62b3dc01d0cdbc3c92e075b55a3518b6bb80973ac7c2b4934876",
+      "bytes": 223
+    },
+    "dev006-abc-20261020/m10-dev006-b-tests.txt": {
+      "sha256": "fcf7c06d6f59e4730deeb14db593a94d9d6bdf53f0ddff02a6e8a4d4a378b997",
+      "bytes": 792
+    },
+    "dev006-abc-20261020/m10-dev006-b-types-final.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-abc-20261020/m10-dev006-b-types-second.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-abc-20261020/m10-dev006-b-types.txt": {
+      "sha256": "72cc9a16bc53fa099e33db651ccb3bfb6f231b8f10cd979a67ea19fce33b8b9b",
+      "bytes": 2073
+    },
+    "dev006-abc-20261020/m10-dev006-c-package.txt": {
+      "sha256": "308d3e1235010a928a690add8121a7c85f950374e6b5369e362fd0d592592663",
+      "bytes": 21330
+    },
+    "dev006-abc-20261020/m10-dev006-c-packaged-ui-first.txt": {
+      "sha256": "eb9cba74a44bda6ee277740337e13f618f9efd5c4149eafee291002304a61941",
+      "bytes": 397
+    },
+    "dev006-abc-20261020/m10-dev006-c-packaged-ui-second.txt": {
+      "sha256": "ee93848c8418175473233283cf1d3c05c89edfff893c2623bc683212932400b5",
+      "bytes": 706
+    },
+    "dev006-abc-20261020/m10-dev006-c-packaged-ui-third.txt": {
+      "sha256": "02ea7d0bf9e713b2f15ab46550626d41174803e70e10ecaa81c7f1f1980abfc5",
+      "bytes": 397
+    },
+    "dev006-abc-20261020/m10-dev006-c-packaged-ui-tls-second.txt": {
+      "sha256": "13810c3f22d62fc5533486bbe7799145df5c3df859dd3bdf92f2a3c741671eb3",
+      "bytes": 100
+    },
+    "dev006-abc-20261020/m10-dev006-c-packaged-ui-tls.txt": {
+      "sha256": "76c042ea22f5b51d2eaf16d1c8a007da6ff77e68fe66099e012f2a4c3290c0c8",
+      "bytes": 224
+    },
+    "dev006-abc-20261020/m10-dev006-c-project-regression.txt": {
+      "sha256": "0841c5c3ef4eaad87190794e0c8e0b4a8534de31e8dfb1a187dcd4e874119a82",
+      "bytes": 364
+    },
+    "dev006-abc-20261020/m10-dev006-c-tests.txt": {
+      "sha256": "41ce1361729c1eebf886fbf355956ba637b081094292e8e6c16c7d990b3156eb",
+      "bytes": 566
+    },
+    "dev006-abc-20261020/m10-dev006-c-types.txt": {
+      "sha256": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e",
+      "bytes": 145
+    },
+    "dev006-abc-20261020/source/scripts/applications/management-ui.mjs": {
+      "sha256": "4225d64ad7104d3d3ba7d42faf2f81bf53dddac5edddd9a8eaa261853d33d7be",
+      "bytes": 17178
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/__tests__/application-controller.test.ts": {
+      "sha256": "92c0a2ff7892b9133c254391e096c7c6e974f3298dcb49ad98b603ab2ca8ffec",
+      "bytes": 7612
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/__tests__/business-data.test.ts": {
+      "sha256": "ea5c637b3fe68f16a8de354d3432aff163fd756f2eeac32b0685817c63428c49",
+      "bytes": 31654
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/__tests__/mail-read-data.test.ts": {
+      "sha256": "1fd796d455b44d767d6e349d45bde9075b613b1f1cff7d476f7625b6198137f7",
+      "bytes": 41680
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/__tests__/mail-send-data.test.ts": {
+      "sha256": "d1b6bb0349d1810e6846dab2ba2dd9d0808264b9597e55c3da61f6b5c8521d02",
+      "bytes": 28034
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/application-service.ts": {
+      "sha256": "12e16187bda833ec7f566a82940f4756f77db041d33fa7a0b7f9d420f4ed37fa",
+      "bytes": 20287
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/controller.ts": {
+      "sha256": "4574e49bda80ca5c2605df43ca9c5972b61846342f6c9b6090ba77dcf9b92927",
+      "bytes": 5684
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/execution-context.ts": {
+      "sha256": "a64cb4beb8aa7971c210dbf221cfa664017bb54bd451bd32341a34c524de055c",
+      "bytes": 29179
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/mail-read-data-service.ts": {
+      "sha256": "951242a7b124d6f0bd18fc9de1a9a19b32d385a22e2367a2e755bd33198d4df0",
+      "bytes": 20421
+    },
+    "dev006-abc-20261020/source/src/main/core/applications/mail-send-data-service.ts": {
+      "sha256": "7a4c920dd6a86da6ae956f0b6ffb713c93dd99dbefa68c26ac6b1f268123adb6",
+      "bytes": 6638
+    },
+    "dev006-abc-20261020/source/src/renderer/core/navigation.ts": {
+      "sha256": "48f579370d85920daf52832b7b1b4e7709c6f3f2fdee96cdf55ed80f308e85a4",
+      "bytes": 4390
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/api.ts": {
+      "sha256": "cc8536d12ff63b13d1ce3463d480530a5b6710f39257564b5e8f75ce9a0e7398",
+      "bytes": 2250
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/connection-form.tsx": {
+      "sha256": "2a803e17f2b0759971607eb5f1bfa3f0d4d82e429ae359cd71105b812d149287",
+      "bytes": 9601
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/controls.tsx": {
+      "sha256": "ca5084f80d2e92141756b303a138daf3d33875aca95cba56b2fbe412f705b2d5",
+      "bytes": 4951
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/mail-panel.tsx": {
+      "sha256": "ac0cad440a7d3de76744a48b6b10135b351e4574aaae29d09fa1df1a6a8b6cc6",
+      "bytes": 15616
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/panels.test.tsx": {
+      "sha256": "d73949fe39e233f7db63b1fd1fef06ba5ff0384149a6d63fbd2078a8d28b1e7a",
+      "bytes": 10144
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/project-applications.tsx": {
+      "sha256": "dc5762d7ec8d32f8592fee48590b2331dd8aa03519fd96c3812e053a7ebf5c02",
+      "bytes": 8181
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/resource-view.tsx": {
+      "sha256": "820f9911dbfabe82f14e91fbf507f2d1c17bb2ae2ef9d60233e6bce8c1679f31",
+      "bytes": 3255
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/style.css": {
+      "sha256": "64922de27f72df2408f9d7dc6b7b3bf59a01fac169a39c586ef51180f6276cb4",
+      "bytes": 32777
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/workspace.test.tsx": {
+      "sha256": "3f5ffcefd0a2cc49811b06cfb236d6577b2fa4c949462a06e6b531e768eabcf0",
+      "bytes": 14195
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/workspace.tsx": {
+      "sha256": "1b62b66327e10772cb85fee9fc389a520cc76798df19d7e274b0b027a5ef30af",
+      "bytes": 16988
+    },
+    "dev006-abc-20261020/source/src/renderer/features/applications/zentao-panel.tsx": {
+      "sha256": "ee39a37130457c857cbd0e99720d7fd245b5d063b5037edc5d5a520ecc1c7740",
+      "bytes": 7108
+    },
+    "dev006-abc-20261020/source/src/renderer/lib/i18n/locales.ts": {
+      "sha256": "ece0bc5a0910530f635b82e6338d27ba8f720ce87610d5d03db89109d584c4e6",
+      "bytes": 34764
+    },
+    "dev006-abc-20261020/source/src/renderer/lib/layout/left-sidebar.tsx": {
+      "sha256": "dfbba539748bd0689cba68a57ba3ad3311831da893b57d4a0c81d5b0faeed41a",
+      "bytes": 1910
+    },
+    "dev006-abc-20261020/source/src/renderer/lib/layout/workspace.tsx": {
+      "sha256": "059e0d3877bcae87a0e0d57f236e0c56bdec8976a4f36b980b88eca92b53f1eb",
+      "bytes": 10808
+    },
+    "dev006-abc-20261020/source/src/renderer/views/project-view.tsx": {
+      "sha256": "bb18ed932e1d731d812b327d73903c6ea7487346e3f3f49743a89074dc646b57",
+      "bytes": 20774
+    },
+    "dev006-abc-20261020/source/src/renderer/views/settings-view.tsx": {
+      "sha256": "b7395036835eab0f2c59321f48b6ac303f4b9bacefba5ae9b1c69440093aa6e2",
+      "bytes": 13204
+    },
+    "dev006-abc-20261020/source/src/shared/application-data.ts": {
+      "sha256": "9bcec1b29c9fff7c12da60751e3884e10041f699675325e4f463cc61934f323d",
+      "bytes": 1962
+    },
+    "dev006-abc-20261020/source/src/shared/mail-execution.ts": {
+      "sha256": "ebd6a3905068a699e6f7c0bac7df1bbc9f51e75cd8ac446946993f9fed3d8627",
+      "bytes": 2420
+    },
+    "dev006-abc-20261020/source-manifest.json": {
+      "sha256": "42e79fb55f0b54b3a8de8773a0a81608026b00740f0b5b3694c5178203f0f271",
+      "bytes": 4634
+    },
+    "dev006-abc-20261020/tls1/checkpoint.json": {
+      "sha256": "e74ded6ac0bb218b64b97d856b02cb5aced2a49e86475827cd8369d76b363193",
+      "bytes": 3447
+    },
+    "dev006-abc-20261020/tls1/electron-last.txt": {
+      "sha256": "38cf2bf1fad431e14a75aa1995cde1961ce695665b25733f4281e041d104dc0d",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/tls1/failure.png": {
+      "sha256": "f107b5abf6605863e429bf1772c3635c1040eda342f3752375bcf4bede181a6b",
+      "bytes": 111403
+    },
+    "dev006-abc-20261020/tls1/result.json": {
+      "sha256": "37a6cfd81bfe86d6d2aa938d06d45a321be59b917384ed1902f57c3d135760e3",
+      "bytes": 18206
+    },
+    "dev006-abc-20261020/tls1/zentao-detail.png": {
+      "sha256": "ba72882542df35e5960f05f0850ea9a8fb9e53244522e47af6f61fd6a656cb6c",
+      "bytes": 108919
+    },
+    "dev006-abc-20261020/tls2-green/catalog-restarted.png": {
+      "sha256": "fe7dd684dd91dc672dd0c51746ff144c1d27c2a1f7f83f1f9117336371c089c2",
+      "bytes": 171211
+    },
+    "dev006-abc-20261020/tls2-green/checkpoint.json": {
+      "sha256": "b4badbe3896cf2ec77e46450d4680219d44e687994ddbac30f902ecc62498c08",
+      "bytes": 4086
+    },
+    "dev006-abc-20261020/tls2-green/electron-first.txt": {
+      "sha256": "33229adda6bed1cea951daf05f4f5e424f7c33d6f3a92faf7ca1afae91e1d32d",
+      "bytes": 612
+    },
+    "dev006-abc-20261020/tls2-green/electron-last.txt": {
+      "sha256": "979633c7b7977ecc89375e2ebd80c664a67a4b7a17ad41a50f090fa235aacbeb",
+      "bytes": 98
+    },
+    "dev006-abc-20261020/tls2-green/mail-status.png": {
+      "sha256": "d45504ed7f87628df2a6131903cb5fb8c4864656ea2b5760bdc7d78a6a01bacb",
+      "bytes": 121046
+    },
+    "dev006-abc-20261020/tls2-green/result.json": {
+      "sha256": "6a02a1e3a649673d3b24cb3df19dadf37eb02d329a30ad44f8294b25f7626c3e",
+      "bytes": 4161
+    },
+    "dev006-abc-20261020/tls2-green/zentao-detail.png": {
+      "sha256": "79b63eb98d746c0b261afc8ac3a5d43fdedecc4bbeba05fcaa3ac9908698f613",
+      "bytes": 99777
+    },
+    "dev006-abc-20261020/tracked-changes.patch": {
+      "sha256": "4ff52f4bdf0922efe7dad37f9b060c2dbcd7db71eff2b229fe2fc0e5c65040a5",
+      "bytes": 54406
+    }
+  }
+}

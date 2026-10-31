@@ -1,0 +1,158 @@
+{
+  "schema": "m10-packaged-mail-index-v1",
+  "root": "/private/tmp/willyou-m10-mail-index-app-DRteou",
+  "startedAt": "2026-10-24T12:42:29.083Z",
+  "branch": "feature/0.0.2",
+  "head": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "dirty": true,
+  "app": "/private/tmp/willyou-m10-ky-package-20261024/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "5837165187ab61c015148155558e834d5b0d3ddcd00febdbd39a5539eaa3d940",
+  "driverSha256": "032824e0c58b25ce7352d2a85e30a7f4b05f58e1e381245842daf6764d20eb8f",
+  "nativeSha256": "5653a39892942354174f96583b3678c7c8285ff0d5343bcfe97364f0e0f18e17",
+  "layer": "I: actual packaged service IPC -> Worker -> native read-only SQLite/MIME -> durable cache; synthetic sources; no UI/CLI/model/SMTP",
+  "cases": [
+    {
+      "mode": "incremental",
+      "dir": "/private/tmp/willyou-m10-mail-index-app-DRteou/incremental",
+      "checks": [
+        "Seven-day and expanded100-day ranges are separately complete on the same actual source",
+        "Different fulltext query reuses all five durable message indexes without reparsing unchanged headers",
+        "Append/change/move/delete update actual results; exactly three changed identities reparse and two remain reused"
+      ],
+      "appPids": [
+        71161,
+        71355
+      ],
+      "projectId": "ac582baf-0727-400a-8f28-7405f42f8b95",
+      "connectionId": "4177e21b-9a45-411a-bc5f-cdf4e637a1ce",
+      "latestSuccess": "2026-10-24T12:42:40.029Z",
+      "status": "failed",
+      "events": [
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.begin",
+          "offset": null
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.begin",
+          "offset": null,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        },
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.entries",
+          "offset": 0
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.entries",
+          "offset": 0,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        },
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.batch",
+          "offset": 0
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.batch",
+          "offset": 0,
+          "error": null,
+          "readHeaders": 0,
+          "reusedHeaders": 4
+        },
+        {
+          "type": "request",
+          "worker": 1,
+          "method": "scan.finish",
+          "offset": null
+        },
+        {
+          "type": "result",
+          "worker": 1,
+          "method": "scan.finish",
+          "offset": null,
+          "error": null,
+          "readHeaders": null,
+          "reusedHeaders": null
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "case": "incremental",
+      "name": "Seven-day and expanded100-day ranges are separately complete on the same actual source",
+      "at": "2026-10-24T12:42:35.679Z"
+    },
+    {
+      "case": "incremental",
+      "name": "Different fulltext query reuses all five durable message indexes without reparsing unchanged headers",
+      "at": "2026-10-24T12:42:36.703Z",
+      "batch": [
+        {
+          "type": "result",
+          "worker": 4,
+          "method": "scan.batch",
+          "offset": 0,
+          "error": null,
+          "readHeaders": 0,
+          "reusedHeaders": 5
+        }
+      ]
+    },
+    {
+      "case": "incremental",
+      "name": "Append/change/move/delete update actual results; exactly three changed identities reparse and two remain reused",
+      "at": "2026-10-24T12:42:38.344Z",
+      "batch": [
+        {
+          "type": "result",
+          "worker": 5,
+          "method": "scan.batch",
+          "offset": 0,
+          "error": null,
+          "readHeaders": 3,
+          "reusedHeaders": 2
+        }
+      ]
+    }
+  ],
+  "appPids": [
+    71161,
+    71355
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 71355,
+    "checkedInputs": 0
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 71161,
+      "checkedInputs": 0
+    },
+    {
+      "enabled": true,
+      "appPid": 71355,
+      "checkedInputs": 0
+    }
+  ],
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ null\n- '2026-10-24T12:42:40.029Z'\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ null\n- '2026-10-24T12:42:40.029Z'\n\n    at file:///Users/hx/hx/hxWork/SmartDD/scripts/applications/mail-index-app.mjs:58:300",
+  "finishedAt": "2026-10-24T12:42:43.753Z"
+}

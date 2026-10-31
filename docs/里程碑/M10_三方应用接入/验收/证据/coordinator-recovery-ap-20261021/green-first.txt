@@ -1,0 +1,147 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/coordinator-crash.test.ts src/main/core/applications/__tests__/resource-lock.test.ts src/main/core/applications/__tests__/resource-publication-recovery.test.ts --maxWorkers=1 --reporter=default --reporter=json --outputFile=/private/tmp/m10-coordinator-recovery-ap-20261021/green-first-report.json
+
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts (14 tests | 1 failed) 4695ms
+     ✓ does not publish ready when target bytes change after rename and before the final transaction 135ms
+     ✓ does not publish ready when the recorded dependency set changes after rename 108ms
+     ✓ restores registered only after the original kernel identity has stopped, keeping the exact operation and bytes 130ms
+     ✓ restores materialized only after the original kernel identity has stopped, keeping the exact operation and bytes 104ms
+     ✓ restores renamed only after the original kernel identity has stopped, keeping the exact operation and bytes 138ms
+     ✓ retains running original owner and unchanged resources, plan and install leases 49ms
+     ✓ retains unknown original owner and unchanged resources, plan and install leases 61ms
+     ✓ does not release an unknown later install resumer even when the original operation says failed 49ms
+     ✓ preserves unrelated unknown resource readers instead of completing a half-published resource 66ms
+     ✓ does not infer stopped from a missing PID or an approximate historical timestamp 65ms
+     ✓ retains an active second resumer after the original publisher is proven stopped 43ms
+     ✓ keeps a living registered publisher, then restores the same operation after actual SIGKILL 183ms
+     ✓ keeps a living materialized publisher, then restores the same operation after actual SIGKILL 204ms
+     × keeps a living renamed publisher, then restores the same operation after actual SIGKILL 3130ms
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts (6 tests | 4 failed) 616ms
+     × keeps a live C owner then reacquires after SIGKILL without changing the business ledger 114ms
+     × keeps a live H owner then reacquires after SIGKILL without changing the business ledger 112ms
+     × serializes concurrent C recovery contenders after the original owner stops 70ms
+     × serializes concurrent H recovery contenders after the original owner stops 65ms
+     ✓ preserves unrecognized legacy C owners even with an absent PID 23ms
+     ✓ preserves unrecognized legacy H owners even with an absent PID 22ms
+ ❯ src/main/core/applications/__tests__/resource-lock.test.ts (4 tests | 1 failed) 126ms
+     ✓ releases its own lock on success and on a failed transaction 78ms
+     ✓ times out without stealing another owner lock even if its timestamp is old 28ms
+     × preserves incomplete ownership for recovery and respects cancellation 5ms
+     ✓ does not remove a lock whose owner changed before release 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live C owner then reacquires after SIGKILL without changing the business ledger
+ApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场
+ ❯ recovery src/main/core/applications/coordinator-lock.ts:16:24
+     14| }).strict();
+     15| const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b…
+     16| const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRE…
+       |                        ^
+     17| const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includ…
+     18| const present = (path:string) => { try{return lstatSync(path);}catch(e…
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:75:163
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:5:10
+ ❯ lock src/main/core/applications/__tests__/coordinator-crash.test.ts:15:113
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:36:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > keeps a live H owner then reacquires after SIGKILL without changing the business ledger
+ApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场
+ ❯ recovery src/main/core/applications/coordinator-lock.ts:16:24
+     14| }).strict();
+     15| const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b…
+     16| const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRE…
+       |                        ^
+     17| const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includ…
+     18| const present = (path:string) => { try{return lstatSync(path);}catch(e…
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:75:163
+ ❯ src/main/core/applications/discovery-catalog-lock.ts:9:54
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:36:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent C recovery contenders after the original owner stops
+ApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场
+ ❯ recovery src/main/core/applications/coordinator-lock.ts:16:24
+     14| }).strict();
+     15| const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b…
+     16| const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRE…
+       |                        ^
+     17| const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includ…
+     18| const present = (path:string) => { try{return lstatSync(path);}catch(e…
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:75:163
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:5:10
+ ❯ lock src/main/core/applications/__tests__/coordinator-crash.test.ts:15:113
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:49
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/coordinator-crash.test.ts > C/H actual critical-section termination and exclusive handoff > serializes concurrent H recovery contenders after the original owner stops
+ApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场
+ ❯ recovery src/main/core/applications/coordinator-lock.ts:16:24
+     14| }).strict();
+     15| const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b…
+     16| const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRE…
+       |                        ^
+     17| const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includ…
+     18| const present = (path:string) => { try{return lstatSync(path);}catch(e…
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:75:163
+ ❯ src/main/core/applications/discovery-catalog-lock.ts:9:54
+ ❯ src/main/core/applications/__tests__/coordinator-crash.test.ts:41:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-lock.test.ts > resource coordinator ownership and bounded waits > preserves incomplete ownership for recovery and respects cancellation
+AssertionError: expected Error: ENOENT: no such file or directory,… { …(4) } to match object { code: 'RESOURCE_RECOVERY_REQUIRED' }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "RESOURCE_RECOVERY_REQUIRED",
++ Error {
++   "code": "ENOENT",
+  }
+
+ ❯ src/main/core/applications/__tests__/resource-lock.test.ts:23:74
+     21|   it('preserves incomplete ownership for recovery and respects cancell…
+     22|     ensureStoreDirectory(root, 'locks/resource.lock');
+     23|     await expect(withResourceLock(root, () => 'never', { timeoutMs: 10…
+       |                                                                          ^
+     24|     const c = new AbortController(); c.abort(); await expect(withResou…
+     25|     expect(existsSync(join(root, 'locks/resource.lock'))).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/resource-publication-recovery.test.ts > actual private C publisher termination at original publication checkpoints > keeps a living renamed publisher, then restores the same operation after actual SIGKILL
+ApplicationError: 协调锁归属或内核门闩身份不能核验，保留现场
+ ❯ recovery src/main/core/applications/coordinator-lock.ts:16:24
+     14| }).strict();
+     15| const same = (a:Identity,b:Identity) => a.dev === b.dev && a.ino === b…
+     16| const recovery = () => new ApplicationError('RESOURCE_RECOVERY_REQUIRE…
+       |                        ^
+     17| const busy = (error:unknown) => ['SQLITE_BUSY','SQLITE_LOCKED'].includ…
+     18| const present = (path:string) => { try{return lstatSync(path);}catch(e…
+ ❯ withCoordinatorLock src/main/core/applications/coordinator-lock.ts:75:163
+ ❯ withResourceLock src/main/core/applications/resource-lock.ts:5:10
+ ❯ ResourceStore.recover src/main/core/applications/resource-store.ts:265:11
+ ❯ src/main/core/applications/__tests__/resource-publication-recovery.test.ts:78:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  6 failed | 18 passed (24)
+   Start at  18:42:49
+   Duration  5.94s (transform 136ms, setup 0ms, import 300ms, tests 5.44s, environment 0ms)
+
+JSON report written to /private/tmp/m10-coordinator-recovery-ap-20261021/green-first-report.json
+ ELIFECYCLE  Test failed. See above for more details.

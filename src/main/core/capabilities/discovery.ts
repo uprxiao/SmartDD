@@ -13,6 +13,15 @@ const object = (v: unknown): Obj => isObject(v) ? v : {};
 const strings = (v: unknown): string[] => Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string') : [];
 const LIMIT = 1024 * 1024;
 
+export interface NativeDiscoveryDetails {
+  userSkillConfig: Obj[];
+  plugins: { name: string; path: string }[];
+  issues: string[];
+  /** Native per-path flags include lower-layer paths absent from the final raw array. Host only. */
+  effectiveSkillConfig?: Obj[];
+  skillConfigSources?: {path:string;configurationPath:string|null;location:'file'|'profile-arguments'}[];
+}
+
 export interface DiscoveryContext {
   runner: Runner;
   cwd: string;
@@ -22,6 +31,10 @@ export interface DiscoveryContext {
   claudeConfigExplicit?: boolean;
   path: string;
   args?: string[];
+  /** Main-process only: raw Skill flags never enter the renderer discovery result. */
+  details?: NativeDiscoveryDetails;
+  /** Exact version from the host-only --version probe; absent in generic UI discovery. */
+  nativeVersion?: string;
 }
 
 function textFile(path: string): string {
@@ -47,6 +60,43 @@ export function projectLayers(cwd: string, home: string): string[] {
   return layers.reverse();
 }
 
+/** Parse only configuration arguments. Never evaluate a shell or expose parser excerpts. */
+function codexConfigurationArgs(args: string[], issue: () => void): { profile: string | null; overrides: Obj[] } {
+  let profile: string | null = null, profileSeen = false;
+  const overrides: Obj[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    // Managed argv is appended by the host. It cannot safely follow a user's --.
+    if (arg === '--') { issue(); break; }
+    let selected: string | undefined, assignment: string | undefined;
+    if (arg === '--profile' || arg === '-p') selected = args[++i] ?? '';
+    else if (arg.startsWith('--profile=')) selected = arg.slice('--profile='.length);
+    else if (/^-p.+/.test(arg)) { issue(); continue; }
+    else if (arg === '--config' || arg === '-c') assignment = args[++i] ?? '';
+    else if (arg.startsWith('--config=')) assignment = arg.slice('--config='.length);
+    else if (arg.startsWith('-c') && arg.length > 2) assignment = arg.slice(2).replace(/^=/, '');
+    if (selected !== undefined) {
+      if (profileSeen || !/^[A-Za-z0-9_-]+$/.test(selected)) { issue(); profile = null; }
+      else profile = selected;
+      profileSeen = true;
+    }
+    if (assignment !== undefined) {
+      const equal = assignment.indexOf('=');
+      if (equal <= 0) { issue(); continue; }
+      const key = assignment.slice(0, equal), value = assignment.slice(equal + 1);
+      try {
+        // Codex treats non-TOML values as literal strings. Parsing a value wrapper
+        // also prevents a multiline value from becoming extra configuration keys.
+        let validToml = false;
+        try { const parsed = parseToml('__value__=' + value); validToml = Object.keys(parsed).length === 1 && Object.hasOwn(parsed, '__value__'); } catch { /* native string fallback */ }
+        const parsed = parseToml(key + '=' + (validToml ? value : JSON.stringify(value)));
+        overrides.push(object(parsed));
+      } catch { issue(); }
+    }
+  }
+  return { profile, overrides };
+}
+
 export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[] {
   const rows: DiscoveredCapability[] = [];
   const seen = new Set<string>();
@@ -58,6 +108,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
   const badFile = (kind: 'skill' | 'mcp', path: string, source: string, issue: string) => {
     const r = row(kind, kind === 'mcp' ? 'MCP config' : 'Skill', path, source);
     r.validity = 'invalid'; r.issues = [issue]; rows.push(r);
+    c.details?.issues.push(issue);
   };
   const scanSkill = (file: string, source: string, command = false, enabled: boolean | null = null, version: string | null = null) => {
     if (rows.length >= 2000) return;
@@ -105,6 +156,11 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       return config;
     }
     catch { badFile('mcp', path, 'configuration', 'config_parse_failed'); return null; }
+  };
+  const plugin = (root: string) => {
+    const manifest = readConfig(join(root, '.claude-plugin', 'plugin.json'));
+    if (typeof manifest?.name !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(manifest.name)) { c.details?.issues.push('plugin_namespace_unverified'); return; }
+    c.details?.plugins.push({ name: manifest.name, path: root });
   };
   const addMcp = (servers: unknown, path: string, source: string, enabled: boolean | null = null) => {
     if (servers === undefined) return;
@@ -169,6 +225,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       for (const entry of Array.isArray(entries) ? entries : [entries]) {
         const p = object(entry);
         if (typeof p.installPath !== 'string' || (typeof p.projectPath === 'string' && !layers.includes(p.projectPath))) continue;
+        plugin(p.installPath);
         const enabled = typeof enabledPlugins[name] === 'boolean' ? enabledPlugins[name] as boolean : null;
         const version = typeof p.version === 'string' ? p.version : null;
         scanDir(join(p.installPath, 'skills'), `plugin:${name}`, false, enabled, version);
@@ -181,7 +238,8 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     for (const s of settings) for (const name of strings(s.disabledMcpServers)) for (const r of rows) if (r.kind === 'mcp' && r.name === name) r.enabled = false;
     const args = c.args ?? [];
     for (let i = 0; i < args.length; i++) {
-      if (args[i] === '--plugin-dir' && args[i + 1]) scanDir(join(resolve(c.cwd, args[++i]), 'skills'), 'profile plugin', false, true);
+      if (args[i] === '--plugin-dir' && args[i + 1]) { const root = resolve(c.cwd, args[++i]); plugin(root); scanDir(join(root, 'skills'), 'profile plugin', false, true); }
+      else if (/^--(?:settings|setting-sources|settings-sources|plugin-dir|mcp-config)=|^--(?:settings|setting-sources|settings-sources)$/.test(args[i])) c.details?.issues.push('profile_configuration_unverified');
       else if (args[i] === '--mcp-config' && args[i + 1]) {
         const value = args[++i];
         if (value.trim().startsWith('{')) {
@@ -198,30 +256,69 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     scanDir(join(c.home, '.agents', 'skills'), 'user');
     scanDir(join(c.stateRoot, 'skills'), 'user compatibility');
     scanDir('/etc/codex/skills', 'system');
-    const configs = [{ path: join(c.stateRoot, 'config.toml'), source: 'user' }, ...layers.map((p) => ({ path: join(p, '.codex', 'config.toml'), source: 'project' }))];
+    const args = codexConfigurationArgs(c.args ?? [], () => c.details?.issues.push('profile_configuration_unverified'));
+    const configs = [{ path: join(c.stateRoot, 'config.toml'), source: 'user' }];
+    if (args.profile !== null) {
+      // The checked adapter currently supports exactly 0.162.1. Since 0.134,
+      // profiles are independent files, not legacy [profiles.*] tables.
+      if (c.nativeVersion !== '0.162.1') c.details?.issues.push('profile_configuration_unverified');
+      else {
+        const path = join(c.stateRoot, args.profile + '.config.toml');
+        if (!existsSync(path)) c.details?.issues.push('profile_configuration_unverified');
+        else configs.push({ path, source: 'profile' });
+      }
+    }
+    configs.push(...layers.map(p => ({ path: join(p, '.codex', 'config.toml'), source: 'project' })));
     for (const p of layers) scanDir(join(p, '.agents', 'skills'), 'project');
-    const overrides: Obj[] = [];
+    const overrides: { config: Obj; base: string;configurationPath:string|null;location:'file'|'profile-arguments' }[] = [];
     for (const file of configs) {
       const config = readConfig(file.path);
       if (!config) continue;
+      if (config.profile !== undefined) c.details?.issues.push('profile_configuration_unverified');
       addMcp(config.mcp_servers, file.path, file.source);
-      overrides.push(config);
+      overrides.push({ config, base: dirname(file.path),configurationPath:file.path,location:'file' });
     }
-    const args = c.args ?? [];
-    for (let i = 0; i < args.length; i++) if ((args[i] === '-c' || args[i] === '--config') && args[i + 1]) {
-      try {
-        const config = object(parseToml(args[++i]));
-        addMcp(config.mcp_servers, 'profile arguments', 'profile');
-        overrides.push(config);
-      } catch { badFile('mcp', 'profile arguments', 'profile', 'config_parse_failed'); }
+    for (const config of args.overrides) {
+      addMcp(config.mcp_servers, 'profile arguments', 'profile');
+      overrides.push({ config, base: c.cwd,configurationPath:null,location:'profile-arguments' });
     }
-    for (const config of overrides) for (const item of Array.isArray(object(config.skills).config) ? object(config.skills).config as unknown[] : []) {
-      const o = object(item);
-      if (typeof o.path !== 'string' || typeof o.enabled !== 'boolean') continue;
-      let canonical = resolve(c.cwd, o.path);
-      try { canonical = realpathSync(canonical); } catch { /* keep the logical path */ }
+    // The raw config field is the last whole array. Codex 0.162.1 Skill discovery
+    // separately keeps lower-layer paths missing from that array; a later explicit
+    // entry for the same path wins. config/read alone does not prove loaded state.
+    let finalFlags: Obj[] = [];
+    const effective = new Map<string, Obj>(),sources=new Map<string,{path:string;configurationPath:string|null;location:'file'|'profile-arguments'}>();
+    for (const { config, base,configurationPath,location } of overrides) {
+      if (config.skills !== undefined && !isObject(config.skills)) c.details?.issues.push('skill_configuration_unverified');
+      const flags = object(config.skills).config;
+      if (flags !== undefined) {
+        if (!Array.isArray(flags) || flags.some(v => !isObject(v) || typeof v.path !== 'string' || typeof v.enabled !== 'boolean')) c.details?.issues.push('skill_configuration_unverified');
+        else {
+          finalFlags = structuredClone(flags) as Obj[];
+          for (const raw of finalFlags) {
+            // File/profile-relative paths use their config directory. A CLI
+            // assignment is based on the native cwd. Forward only absolute paths
+            // so projecting this state into a later CLI array preserves its meaning.
+            const absolute = resolve(base, raw.path as string);
+            let path = absolute;
+            try {
+              path = realpathSync(path);
+              if (statSync(path).isDirectory() && existsSync(join(path, 'SKILL.md'))) path = realpathSync(join(path, 'SKILL.md'));
+            } catch { /* retain the resolved future path; do not invent existence */ }
+            // Canonicalize identity for comparison, preserving the user alias in argv.
+            effective.set(path, { ...raw, path: absolute });
+            sources.set(path,{path:absolute,configurationPath,location});
+          }
+        }
+      }
+    }
+    if (c.details) {
+      c.details.userSkillConfig = finalFlags;
+      c.details.effectiveSkillConfig = [...effective.values()];
+      c.details.skillConfigSources=[...sources.values()];
+    }
+    for (const [canonical, o] of effective) {
       for (const r of rows) if (r.kind === 'skill') {
-        try { if ([realpathSync(r.path), realpathSync(dirname(r.path))].includes(canonical)) r.enabled = o.enabled; } catch { /* unavailable */ }
+        try { if ([realpathSync(r.path), realpathSync(dirname(r.path))].includes(canonical)) r.enabled = o.enabled as boolean; } catch { /* unavailable */ }
       }
     }
   }

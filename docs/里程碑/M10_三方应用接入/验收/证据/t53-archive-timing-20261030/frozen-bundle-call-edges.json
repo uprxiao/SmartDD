@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-30T12:19:53.903Z",
+  "layer": "read-only archived result and frozen production bundle analysis; no App or CLI execution",
+  "app": "/private/tmp/willyou-m10-nb-package-20261027/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+  "asarBefore": "7ff7930e49bf74c9f3f202ab7f10dcc2b1b6b1b4eba8aede4564b601bcdab54f",
+  "asarAfter": "7ff7930e49bf74c9f3f202ab7f10dcc2b1b6b1b4eba8aede4564b601bcdab54f",
+  "main": {
+    "path": "out/main/index.js",
+    "sha256": "b613fb0876ddc616a31f827af51c75743e2ce6aec2eae726c3263dc17ab619b6"
+  },
+  "renderer": {
+    "path": "/out/renderer/assets/index-BAwYK79S.js",
+    "sha256": "c73e9809372ec031084c5c2a97de1b81e5b976fa9ed53cc8db12d8833d503525"
+  },
+  "observations": {
+    "openOnceSpawnCallCount": 1,
+    "exitHandlerCallsOpenOrSpawn": false,
+    "rendererShowStartsAutoResume": true,
+    "stoppedPanelEffects": [
+      "reactExports.useEffect(() => setProfileId(task.aiProfileId), [task.id, task.aiProfileId])"
+    ]
+  },
+  "sections": {
+    "mainOpenOnce": {
+      "offset": 1927436,
+      "bytes": 3397,
+      "sha256": "0823f2d8d3908d124c61e9e697a0db7adf8c1747f6eadf2105e7d215419359a9",
+      "text": "async openOnce(req) {\n    if (this.closed) throw new Error(\"应用正在退出，不能恢复任务\");\n    await this.bindingNative.get(req.taskId)?.catch(() => void 0);\n    if (this.closed) throw new Error(\"应用正在退出，不能恢复任务\");\n    const row = this.require(req.taskId);\n    if (this.archiving.has(row.id)) throw new Error(\"任务正在结束并归档，请稍后再试\");\n    if (row.archivedAt !== null) throw new Error(\"任务已归档，请先取消归档再启动\");\n    const live = this.running.get(row.id);\n    if (live) {\n      if (req.aiProfileId && req.aiProfileId !== row.aiProfileId) throw new Error(\"任务正在运行，结束后才能换 AI 配置恢复\");\n      return { task: this.get(row.id), ptyId: live };\n    }\n    const profileId = req.aiProfileId ?? row.aiProfileId;\n    if (!profileId) throw new Error(\"原 AI 配置已删除，请选择一个 AI 配置来恢复\");\n    const profile = this.d.profiles.resolve(profileId);\n    if (profile.runner !== row.runner) throw new Error(`不能用 ${profile.runner} 的 AI 配置恢复 ${row.runner} 任务`);\n    if (!fs$1.existsSync(row.cwd) || !fs$1.statSync(row.cwd).isDirectory()) throw new Error(`工作目录不存在：${row.cwd}`);\n    const { recovery: recovery2, reason } = this.recoveryOf(row);\n    if (recovery2 === \"unrecoverable\") throw new foxmailSource.ApplicationError(\"NATIVE_IDENTITY_CONFLICT\", `无法恢复：${reason}`);\n    const mode = recovery2 === \"resumable\" ? \"resume\" : recovery2 === \"fresh\" ? \"reopen\" : \"new\";\n    const keepRoot = (mode === \"resume\" || mode === \"reopen\") && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes(\"CLAUDE_CONFIG_DIR\") } : null;\n    const { ptyId, injectedNames, stateRoot, runtime: runtime2, launchedAt } = await this.spawn(\n      profile,\n      row.cwd,\n      mode,\n      row.nativeSessionId,\n      \"\",\n      req,\n      keepRoot,\n      row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row), newTask: false } : void 0\n    );\n    try {\n      const ts2 = this.now();\n      const project = row.projectId ? this.d.db.select().from(projects).where(drizzleOrm.eq(projects.id, row.projectId)).get() : void 0;\n      this.d.db.update(tasks).set({\n        aiProfileId: profile.id,\n        aiProfileName: profile.name,\n        injectedEnvNames: JSON.stringify(injectedNames),\n        runtimeSnapshot: runtime2?.persistSnapshot === false ? row.runtimeSnapshot : runtime2 ? JSON.stringify(runtime2.snapshot) : null,\n        stateRoot,\n        configVersion: project?.configVersion ?? row.configVersion,\n        lastLaunchedAt: launchedAt,\n        updatedAt: ts2\n      }).where(drizzleOrm.eq(tasks.id, row.id)).run();\n      if (!this.managed.get(ptyId)?.exited) this.running.set(row.id, ptyId);\n      if (runtime2) this.trackRuntime(row.id, ptyId, runtime2);\n      if (row.runner === \"codex\" && mode === \"new\") this.watchCodex(row.id, ptyId, row.cwd, stateRoot, launchedAt, \"\");\n      this.follow(row.id, ptyId, profile, row.cwd, stateRoot, launchedAt, runtime2?.secretValues);\n      const exited = this.managed.get(ptyId);\n      if (exited?.exited) this.onPtyExit(ptyId, exited.exitCode ?? 0);\n      this.d.onChanged();\n      return { task: this.get(row.id), ptyId };\n    } catch (error) {\n      await this.abortSpawn(ptyId, runtime2, \"task-record-failed\");\n      throw error;\n    }\n  }"
+    },
+    "mainPtyExit": {
+      "offset": 1951360,
+      "bytes": 3845,
+      "sha256": "0187162195c7ea9d3b46d4d2f0b4c8ba4634373cf4dcec93e848e0fd808bb934",
+      "text": "onPtyExit = (ptyId, code2) => {\n    const managed = this.managed.get(ptyId);\n    if (managed && !managed.exited) {\n      managed.exited = true;\n      managed.exitCode = code2;\n      void managed.launch.exited().catch(() => void 0);\n    }\n    const run = this.runtimes.get(ptyId);\n    let injectionFailed = false;\n    if (run) {\n      clearInterval(run.timer);\n      const report = run.runtime.check() ?? (run.runtime.snapshot.selfCheck.status !== \"pending\" ? run.runtime.snapshot.selfCheck : { status: \"failed\", issues: [\"self_check_not_received\"], at: Date.now() });\n      const saved = this.d.db.select({ snapshot: tasks.runtimeSnapshot }).from(tasks).where(drizzleOrm.eq(tasks.id, run.taskId)).get();\n      let sameSaved = false;\n      try {\n        sameSaved = !!saved?.snapshot && JSON.parse(saved.snapshot).runId === run.runtime.snapshot.runId;\n      } catch {\n      }\n      if (this.running.get(run.taskId) === ptyId || !this.running.has(run.taskId) && sameSaved) this.saveRuntimeCheck(run.taskId, run.runtime, report);\n      injectionFailed = report.status === \"failed\";\n      if (!managed) run.runtime.release();\n      this.runtimes.delete(ptyId);\n    }\n    for (const [taskId, id2] of this.running) {\n      if (id2 !== ptyId) continue;\n      if (this.freshNativeTasks.delete(taskId)) {\n        const row = this.require(taskId);\n        let file2 = null;\n        try {\n          if (row.stateRoot && row.nativeSessionId) file2 = claudeSessionFile(row.stateRoot, row.cwd, row.nativeSessionId);\n        } catch {\n        }\n        if (!this.observeNativeHistory(row, file2) && file2 === null && row.nativeHistoryObserved !== true) {\n          let readableRoot = false;\n          try {\n            if (row.stateRoot && fs$1.statSync(row.stateRoot).isDirectory()) {\n              fs$1.accessSync(row.stateRoot, fs$1.constants.R_OK | fs$1.constants.X_OK);\n              const directory2 = node_path.join(row.stateRoot, \"projects\");\n              let names = [];\n              try {\n                names = fs$1.readdirSync(directory2);\n              } catch (error) {\n                if (error.code !== \"ENOENT\") throw error;\n              }\n              for (const name2 of names) {\n                const folder = node_path.join(directory2, name2);\n                if (fs$1.statSync(folder).isDirectory()) fs$1.accessSync(folder, fs$1.constants.R_OK | fs$1.constants.X_OK);\n              }\n              readableRoot = true;\n            }\n          } catch {\n          }\n          if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(drizzleOrm.eq(tasks.id, taskId)).run();\n        }\n      }\n      this.running.delete(taskId);\n      this.d.onChanged();\n    }\n    const killed = this.killedPtys.delete(ptyId);\n    for (const [taskId, f] of this.follows) {\n      if (f.ptyId !== ptyId) continue;\n      this.unfollow(taskId);\n      this.pollFollow(f.tail);\n      const w = this.codexWatchers.get(taskId);\n      if (w) w.finalTail = f.tail;\n      const secs = (this.now() - f.launchedAt) / 1e3;\n      if (!killed && !injectionFailed && code2 !== 0 && !f.tail.sawEvent && secs * 1e3 < EARLY_EXIT_MS) {\n        const message = code2 === 127 ? \"找不到 CLI 命令（退出码 127）\" : `CLI 启动后 ${Math.max(1, Math.round(secs))} 秒退出（退出码 ${code2}）`;\n        this.d.health?.report(f.profileId, { category: code2 === 127 ? \"not_found\" : \"other\", message }, `task:${taskId}`);\n      }\n    }\n    if (this.closed && ![...this.managed.values()].some((run2) => !run2.exited)) this.d.ptys.off(\"exit\", this.onPtyExit);\n    const watched = this.watchedPty.get(ptyId);\n    if (watched) {\n      this.watchedPty.delete(ptyId);\n      const w = this.codexWatchers.get(watched);\n      if (w) setTimeout(() => this.codexWatchers.get(watched) === w && this.stopWatch(watched), CODEX_EXIT_GRACE_MS);\n    }\n  };"
+    },
+    "mainOpen": {
+      "offset": 1926720,
+      "bytes": 773,
+      "sha256": "e920a6358ed283ba58752f501960a2de4875fddc92ee09e969ba086efb8d51be",
+      "text": "open(req) {\n    if (this.closed) return Promise.reject(new Error(\"应用正在退出，不能恢复任务\"));\n    const current = this.opening.get(req.taskId);\n    if (current) {\n      if (req.aiProfileId && req.aiProfileId !== current.profileId) return Promise.reject(new Error(\"任务正在准备启动，完成后才能换 AI 配置\"));\n      return current.promise;\n    }\n    const profileId = req.aiProfileId ?? this.d.db.select({ id: tasks.aiProfileId }).from(tasks).where(drizzleOrm.eq(tasks.id, req.taskId)).get()?.id ?? null;\n    const promise = this.openOnce(req).finally(() => {\n      if (this.opening.get(req.taskId)?.promise === promise) this.opening.delete(req.taskId);\n    });\n    this.opening.set(req.taskId, { profileId, promise });\n    return promise;\n  }"
+    },
+    "mainKill": {
+      "offset": 1933158,
+      "bytes": 480,
+      "sha256": "c2d775324a3eaf19bf2d9a3b48e434516caf274b0c119d41d21d13571b438ed5",
+      "text": "kill(id2) {\n    this.launching.get(id2)?.abort.abort();\n    const ptyId = this.running.get(id2);\n    if (!ptyId) return;\n    const alreadyStopping = this.killedPtys.has(ptyId);\n    this.killedPtys.add(ptyId);\n    const managed = this.managed.get(ptyId);\n    if (managed) void managed.launch.stop(\"user-stop\").catch(() => void 0);\n    try {\n      this.d.ptys.kill(ptyId);\n    } catch (error) {\n      if (!alreadyStopping) this.killedPtys.delete(ptyId);\n      throw error;\n    }\n  }"
+    },
+    "rendererShow": {
+      "offset": 1357468,
+      "bytes": 285,
+      "sha256": "121a15c6c78ea5bf69a02cfb5c366483092115cf8266731ee536c1c20885fa19",
+      "text": "show(taskId) {\n    this.tabs = withTab(this.tabs, taskId, navigation$1.currentViewId === \"task\" ? navigation$1.currentTaskId : null);\n    navigation$1.openTask(taskId);\n    const task = this.byId.get(taskId);\n    if (task && !this.terminals.has(taskId)) void this.autoResume(task);\n  }"
+    },
+    "rendererAutoResume": {
+      "offset": 1357851,
+      "bytes": 445,
+      "sha256": "f4dd63552e67d0f86ea8f2f04b5eeff74a786bbde9a3b7cb4a424783d7fa047e",
+      "text": "async autoResume(task) {\n    if (!shouldAutoResume(task, this.autoResumed)) return false;\n    this.autoResumed.add(task.id);\n    this.resuming.add(task.id);\n    this.resumeErrors.delete(task.id);\n    try {\n      await this.resume({ taskId: task.id });\n    } catch (e) {\n      runInAction(() => this.resumeErrors.set(task.id, rpcErrorMessage(e)));\n    } finally {\n      runInAction(() => this.resuming.delete(task.id));\n    }\n    return true;\n  }"
+    },
+    "rendererResume": {
+      "offset": 1358299,
+      "bytes": 475,
+      "sha256": "5ad66b48b2e3e111693ff993073fe658d3f461aa635c1f403c93f79016178016",
+      "text": "async resume(req) {\n    const hadTab = this.tabs.includes(req.taskId);\n    const res = await rpc.tasks.open({ ...terminalSize(), ...req });\n    if (hadTab && !this.tabs.includes(req.taskId)) {\n      await rpc.tasks.kill(req.taskId);\n      await this.refresh();\n      return;\n    }\n    runInAction(() => {\n      this.terminals.set(req.taskId, res.ptyId);\n      this.autoResumed.add(req.taskId);\n      this.resumeErrors.delete(req.taskId);\n    });\n    await this.refresh();\n  }"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV003-A",
+  "recordedAt": "2026-10-20T03:23:24.049495+00:00",
+  "requirementBaseline": "R1.6 incl 12.21; fixed-session design 5.2/6/8.3",
+  "baseCommit": "92b3f393816f68aaac1c1bc53044428e0601a5e7",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "implemented": [
+    "strict fixed-session snapshot v2, original package/tool/Skill/adapter/native identity and long-term references",
+    "original native ID reserved per runner/root; fill-once discovered ID with CAS, stable MCP name reservation, no current-default substitution on resume",
+    "full source tree and projection verification boundary; immutable selection digest excludes only first native ID fill",
+    "durable exact snapshot versions; corrupt/unknown history hold, tombstone retention and mirror backup/rebuild from authoritative exact recorded version",
+    "migration 0010 retains historical run project identity without blocking project deletion; guarded transactional FK rebuild is replay-safe"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts",
+      "files": 18,
+      "tests": 192,
+      "passed": 192,
+      "failed": 0,
+      "log": "dev003-a-20261020/all-tests.txt"
+    },
+    {
+      "command": "pnpm test src/main/core/projects",
+      "files": 6,
+      "tests": 79,
+      "passed": 79,
+      "failed": 0,
+      "log": "dev003-a-20261020/project-regression.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev003-a-20261020/types.txt"
+    }
+  ],
+  "newSessionTests": 17,
+  "newMigrationRegression": 1,
+  "findingsAndCorrections": [
+    {
+      "finding": "UUID default parameter inferred a UUID template type, rejecting intentional plain string task test IDs during typecheck",
+      "correction": "Explicit string parameter annotation; unchanged validation and behavioral expectations",
+      "redLog": "dev003-a-20261020/red-uuid-type.txt"
+    },
+    {
+      "finding": "Original capability_runs project FK would prevent deletion once run history exists",
+      "correction": "Retain project ID as history without FK; migration checks prior FK before rebuild and preserves rows across replay",
+      "evidence": "Migration regression plus 79 existing project transfer/service/crash tests passed"
+    }
+  ],
+  "boundaries": [
+    "Real SQLite, owned private trees and package/runtime registry participate; trusted initial-selection and extra adapter/legacy/projection verification callbacks use explicit controlled fixtures in this batch",
+    "Actual adapter publishing, legacy adoption and production initial selection planner still pending",
+    "capability_runs metadata added only; actual run lifecycle, PID/start identity, leases, broker and TaskService hooks not implemented by this checkpoint",
+    "No native CC/Codex launch, production RPC/UI, real user authorization source or packaged App product acceptance in this batch",
+    "Mirror repair restores only exact authoritative recorded metadata; missing/corrupt reference identity stays held, never inferred from defaults",
+    "No external email/ZenTao service, daily native session or M9 worktree touched",
+    "No push, main merge, tag or release"
+  ],
+  "sourceHashes": {
+    "drizzle/0010_capability_session_identity.sql": "fdff765aab04d6690b5ab16ad0c7fc6d66719f29824bc23f1c4642184405de64",
+    "drizzle/meta/_journal.json": "3dbdca542c90adabab008caa5c956abed7cec3f474e7d4525a519ae97a63cd31",
+    "src/shared/application-session.ts": "39a7faf86085f05ecd2a319cffbe7fa6c85a79ca523ac997e97f089ce8305f3e",
+    "src/shared/applications.ts": "b89107175beff6e1800cfbe4f6c3269241b1dfb716c7560f751e66ee88d2d9b4",
+    "src/shared/capabilities.ts": "9e0a25fb6d39792c12fd0102fd301b72c13b15180d89a6b9a9d32572c90875ad",
+    "src/main/core/applications/session-registry.ts": "54ff78d096f06b9581824f77d502ee3ced8cad56599b3ccc999d3fa8b3022a02",
+    "src/main/core/applications/__tests__/session-registry.test.ts": "0e413795068e63bf03bec730429d18c0312623fdb9a92ce898d82c0847c47047",
+    "src/main/db/schema.ts": "9ba7345b30f909d776c239d6ae3cedca9b14a8b4fde4ec10d08454395ea238ca",
+    "src/main/db/migrations.ts": "de3a6ef79346e76ce695af30ceb87232acc5d794a79d6e682709bced0d2bf3ec",
+    "src/main/db/migrations.test.ts": "6553fc2bb8859657c91d9501975d86ed0f09640cd79e372c865757c48c2dba72"
+  },
+  "logHashes": {
+    "dev003-a-20261020/all-tests.txt": "d56e612578426f2a447e4def47e6a0ecc32ebbac95119bbca8a6c1bce24a324c",
+    "dev003-a-20261020/project-regression.txt": "65d5820567e22707be16b22bb6146530cfe80476800b12a2a4df51479d91f76f",
+    "dev003-a-20261020/red-uuid-type.txt": "930b4d2c1069da86259c87e36862b6d70d0c16aab811f404ab35699ae4a46dda",
+    "dev003-a-20261020/types.txt": "415734af21218bee920121ff46f9a6d4ca7189c082b21abd23702aaee15fc21e"
+  }
+}

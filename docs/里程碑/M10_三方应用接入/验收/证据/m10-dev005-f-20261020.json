@@ -1,0 +1,315 @@
+{
+  "schema": "m10-development-checkpoint-v1",
+  "checkpoint": "DEV005-F",
+  "recordedAt": "2026-10-20T07:11:08.083760+00:00",
+  "requirementBaseline": "R1.6 incl12.21; R05-04..07,R06-10,R07-09; no product scope expansion",
+  "baseCommit": "5c9afe10d83a64868631e33dea6f56b16c494f21",
+  "branch": "feature/0.0.2",
+  "worktree": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+  "environment": {
+    "osVersion": "26.6.1",
+    "architecture": "arm64",
+    "testRuntime": {
+      "electron": "42.11.14",
+      "node": "24.19.0"
+    }
+  },
+  "implemented": [
+    "U-local durable mail cache index/objects/staging with immutable source-local bytes and full write reservations shared by all managed processes",
+    "Exact500000000-byte total policy including SQLite and auxiliary space; bounded16MiB index and conservative4x metadata envelope; physical file inventory and unknown-file preservation",
+    "Durable UTC LRU/30day maintenance,clock rollback floor,actual read leases,generation checks,invalidated dependent records and actual file reclamation before quota release",
+    "Independent same-key waiters,last-waiter cancellation preserves actual producer reservation,required lazy loads retain leases until settlement and cannot hide load failure",
+    "Kernel PID/start identity for known-owner crash recovery,claim before async verification,full written/renamed content recovery without false complete query coverage,own settled cleanup retry",
+    "BEGIN contention retries only before entering transaction callback; real external SQLite reader commit contention does not replay filesystem allocation",
+    "Lazy single host engine,explicit trusted-main-frame mailCacheStatus/clearMailCache RPC and management audit; cache and original business contexts wait for actual shutdown settlement"
+  ],
+  "checks": [
+    {
+      "command": "pnpm test src/main/core/applications/__tests__ src/main/db/migrations.test.ts src/main/core/capabilities/capability-service.test.ts src/main/core/capabilities/task-runtime.test.ts src/main/core/capabilities/resource-execution.test.ts src/main/core/tasks src/main/pty-access.test.ts src/main/pty-manager.test.ts src/main/core/projects",
+      "status": "passed",
+      "files": 46,
+      "tests": 574,
+      "passed": 574,
+      "failed": 0,
+      "breakdown": {
+        "m10AndRelatedRuntime": 495,
+        "projectsAndM8": 79
+      },
+      "log": "dev005-f-20261020/final-tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "dev005-f-20261020/final-types.txt"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed",
+      "log": "dev005-f-20261020/final-build.txt"
+    },
+    {
+      "command": "pnpm test:release",
+      "status": "passed; run after heavy test/build completion",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "log": "dev005-f-20261020/release-rules.txt"
+    },
+    {
+      "command": "node scripts/applications/verify-bundles.cjs out/capability-bundles 0.0.5",
+      "status": "passed",
+      "scope": "production resource output,not packaged App acceptance",
+      "log": "dev005-f-20261020/resource-verification.json"
+    }
+  ],
+  "newTests": {
+    "durableCache": 36,
+    "actualNativeProcesses": 7,
+    "actualHostBusinessComposition": 4,
+    "trustedCacheRpc": 1,
+    "totalIncludedIn574": 48,
+    "note": "526 prior plus48 new; overlapping24/35/36/42/43/70/74/571 runs are not added; formal product passes remain unchanged"
+  },
+  "engineeringLimits": {
+    "maxBytes": 500000000,
+    "inactivityMs": 2592000000,
+    "indexBytes": 16777216,
+    "metadataReserved": 67108864,
+    "objectBytes": 33554432,
+    "recordJsonBytes": 262144,
+    "recordReferences": 512,
+    "maintenanceBatch": 50,
+    "beginWaitMs": 3000,
+    "inventoryEntries": 100000,
+    "inventoryDepth": 32,
+    "privateCapacityFixtureDeadlineMs": 30000
+  },
+  "measurements": {
+    "capacity": {
+      "schema": 1,
+      "kind": "real-files-500000000-byte-ceiling",
+      "at": "2026-10-20T07:08:39.085Z",
+      "platform": "darwin",
+      "arch": "arm64",
+      "attemptedSources": 20,
+      "attemptedObjectBytes": 524288000,
+      "phasesObserved": 120,
+      "maximumObservedTotal": 419524669,
+      "beforeClear": {
+        "limit": 500000000,
+        "indexLimit": 16777216,
+        "metadataReserved": 67108864,
+        "chargedObjectBytes": 419430400,
+        "pendingWriteBytes": 0,
+        "readyObjects": 16,
+        "activeLeases": 0,
+        "actual": {
+          "index": 94208,
+          "auxiliary": 0,
+          "objects": 419430400,
+          "staging": 0,
+          "other": 61,
+          "total": 419524669
+        },
+        "unrecognized": [],
+        "overBudget": false,
+        "availableForObjects": 13460736
+      },
+      "afterClear": {
+        "limit": 500000000,
+        "indexLimit": 16777216,
+        "metadataReserved": 67108864,
+        "chargedObjectBytes": 0,
+        "pendingWriteBytes": 0,
+        "readyObjects": 0,
+        "activeLeases": 0,
+        "actual": {
+          "index": 94208,
+          "auxiliary": 0,
+          "objects": 0,
+          "staging": 0,
+          "other": 61,
+          "total": 94269
+        },
+        "unrecognized": [],
+        "overBudget": false,
+        "availableForObjects": 432891136
+      },
+      "reclaimedBytes": 419430400
+    },
+    "journal": {
+      "schema": 1,
+      "kind": "actual-hot-rollback-journal",
+      "at": "2026-10-20T07:08:37.880Z",
+      "platform": "darwin",
+      "arch": "arm64",
+      "scope": "private registered child with original VFS writes paused by test-only delegating extension",
+      "journalMode": "DELETE",
+      "synchronous": "FULL",
+      "cacheSpill": false,
+      "indexLimit": 1048576,
+      "metadataEnvelope": 4194304,
+      "indexBytes": 495616,
+      "journalBytes": 415016,
+      "magic": "d9d505f920a163d7",
+      "registeredChildIdentity": {
+        "pid": 39562,
+        "startedAt": "darwin-proc-v1:1792480117:62610"
+      }
+    },
+    "notes": [
+      "Physical size means file st_size,not APFS allocation blocks; unknown symlink targets are never followed",
+      "Journal measurement captures original hot state before SIGKILL; final test log contains actual recovery assertions",
+      "Hot journal uses a private delegating VFS gate after original main DB write; no production binary includes that extension"
+    ]
+  },
+  "redAndCorrections": [
+    {
+      "finding": "Same fixed clock for all capacity writes did not establish an oldest insertion;23/24 passed",
+      "correction": "Fixture advances its explicit clock before each write; unchanged oldest-use assertion",
+      "log": "dev005-f-20261020/red-lru-equal-times.json"
+    },
+    {
+      "finding": "Hot-journal fixture attempted to reopen an existing256KiB cache with a different policy;35/36 passed",
+      "correction": "Use an independently owned U for the larger journal scenario; policy rejection remains required",
+      "log": "dev005-f-20261020/red-journal-policy-fixture.json"
+    },
+    {
+      "finding": "Apple sqlite extension header linked global SQLite symbols instead of supplied extension API",
+      "correction": "Test extension uses supplied api->vfs_find/register; no system SQLite library linked",
+      "log": "dev005-f-20261020/red-private-vfs-linker.json"
+    },
+    {
+      "finding": "Installed TypeScript declaration allows one loadExtension argument",
+      "correction": "Test extension uses the standard sqlite3_extension_init entry and one-argument loader",
+      "log": "dev005-f-20261020/red-extension-types.json"
+    },
+    {
+      "finding": "Full571-test run had570 passes; new500MiB real IO capacity fixture hit framework default5000ms deadline during concurrent build",
+      "correction": "Only this IO fixture gets an explicit30000ms bounded allowance; no product deadline,quota,assertion or existing release source changed; later full574 run passed",
+      "log": "dev005-f-20261020/red-capacity-default-deadline.json"
+    }
+  ],
+  "actualBoundary": [
+    "Actual local files,SQLite and owner-scoped native PID/start helpers participate; test children launched and killed are owned solely by this run",
+    "Hot rollback gate is a test-only extension delegating original VFS writes and pausing inside actual commit; it is explicit fault injection,not an unmodified-environment claim",
+    "Mail sources and project WebContents/cipher/kernel identity in existing host-composition tests remain explicit fixtures; no daily mailbox or actual Foxmail refresh Data API is exercised",
+    "Main trusted management endpoints are exercised; renderer pages,real supported Agent model paths and packaged App are not exercised",
+    "No external send,real account,model call,daily credentials,M9 mutation/process operation,main merge,push,tag or release"
+  ],
+  "remaining": [
+    "Persistent Foxmail source/range/checkpoint and shared refresh coordinator; actual query/read/reply/attachment-import Data API; current authorization and cached resource handling",
+    "Startup and post-refresh maintenance integration,actual Worker exit waiting,remaining system-call interruption points and real disk exhaustion",
+    "Production TaskCapabilityLauncher,effective native config,Agent-created bridge identity,send Data API and actual authorization provenance",
+    "Lightweight confirmed UI and real packaged App72 formal cases,both real supported Agents/system checks,defect retests and delivery archive",
+    "Full startup/migration/old H-lock recovery/GC and cross-App crash matrix"
+  ],
+  "productAcceptance": {
+    "formalCases": 72,
+    "newPackagedAppPasses": 0,
+    "status": "not executed in this checkpoint; full M10 remains development in progress"
+  },
+  "build": {
+    "appVersion": "0.0.5",
+    "index": {
+      "adapters": [
+        {
+          "agentId": "claude-code",
+          "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+          "version": "1.0.0"
+        },
+        {
+          "agentId": "codex",
+          "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+          "version": "1.0.0"
+        }
+      ],
+      "apps": [
+        {
+          "appId": "zentao",
+          "hash": "0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "path": "apps/zentao/1.0.0/0088f534dff6871ffc4eac79cb275bd2716ffdffbae5ed31dc262318c1febfa5",
+          "version": "1.0.0"
+        },
+        {
+          "appId": "mail",
+          "hash": "ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "path": "apps/mail/1.0.0/ae1206883a003d4d4d79ef29955182738d2c012102ac5a0e2ea47c1635457971",
+          "version": "1.0.0"
+        }
+      ],
+      "build": {
+        "appVersion": "0.0.5",
+        "commit": "5c9afe10d83a64868631e33dea6f56b16c494f21",
+        "dirty": true,
+        "resourceSetHash": "302fc453eea2381540120f79a940aa11a57740a5e55518422157ef053a06313d"
+      },
+      "indexHash": "1d318c51ed85162d48d8bb45c0f137ec8a3451ae99476b4324ca2c6fbeaad359",
+      "runtimes": [
+        {
+          "bridgeEntry": "mcp-bridge.cjs",
+          "hash": "8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "id": "applications",
+          "path": "runtimes/8c8d4aacddd9d9fa2e86ef526ea1251d178d0976b212a7e3dc7902bbd1b9f999",
+          "protocolMajor": 1
+        }
+      ],
+      "schema": "willyou-capability-bundles-v1"
+    },
+    "artifacts": {
+      "out/main/index.js": "ba8886b7c7618188076f4857d31f10e02eaca3432369ae53599a1641a7276796",
+      "out/preload/index.js": "63eedf45352d719515e04c49fb7eb29d57fd99433519fb91e15c44192aa03908",
+      "out/main/m10-mail-reader.js": "f25eed2d3d01fc7955d33337f5f81321650bad81f124c27b2f5aed9211ce942f",
+      "out/applications/mcp-bridge.cjs": "17ff9182ea219d148e189e25d29bba504881230f058de989d005d91f23185428",
+      "out/capability-bundles/index.json": "3e9ccb947d613e01106141d567c4f9cf70359934aa36696d88777d6f7348d1ac",
+      "out/native/willyou-foxmail": "483678fb21961b724917f0bdbc754da026708af4ed16abc9836d5aa151d9bfde",
+      "out/native/willyou-process-identity": "29e6e838c5a221beaa6dc4ba342465993274451595f349944d69c0738d5e92d5"
+    },
+    "notes": "Base5c9afe1 plus exact production sources below. Final rebuild after final production edit; later edits are documentation/evidence only. Original1.0.0 apps/runtime/resourceSetHash unchanged."
+  },
+  "sourceHashes": {
+    "src/main/core/applications/mail-cache.ts": "399cfa8e305fb5577d38195d2c65a3d3490b3f1af92e746a5aa369e2be64b6e5",
+    "src/main/core/applications/application-service.ts": "c96b9ad1d2d8ce54e9175e077f34a123320e9242eb21877f58d712cab6b84923",
+    "src/main/core/applications/execution-context.ts": "9e430fedc09497cb19727c800a7e157dde47ec99a5a61fb42d705f8a1047f76b",
+    "src/main/core/applications/controller.ts": "6cd39e37c8b3c453602274e74d681eb4a8d7eb569b8afb12530d38a722846d21",
+    "src/main/core/applications/__tests__/mail-cache.test.ts": "cc6d9051adf642a2985f1655b75cb2ef608e8ab0574ae923601c08eba90de832",
+    "src/main/core/applications/__tests__/mail-cache-process.test.ts": "7461d33b9d31cbf69ca8fd6d1c6b1585beac3de593a7aef17c2309fe17680ee4",
+    "src/main/core/applications/__tests__/application-controller.test.ts": "3a1a7ed39c88f265398d82f82341a3fe35912ed09a22e96bc2266c3e66ea9f02",
+    "src/main/core/applications/__tests__/business-data.test.ts": "5a33487cab9e5269b96ecd3243700ef81226c65aa4360408b6d38d733f6b73c2",
+    "src/main/core/applications/__tests__/fixtures/mail-cache-process.ts": "cea5ce565304f096ace3518d82fb1c16a75b09f9b79218bb25337e31b75933e0",
+    "src/main/core/applications/__tests__/fixtures/mail-cache-crash-vfs.c": "b0189d8a165c6a187dd8e1c081644d70bf855aede20a5b60ab80d46bc18a3dd5"
+  },
+  "documentationHashes": {
+    "docs/里程碑/M10_三方应用接入/README.md": "08d4a0ab3ed59e10320397d987b3d2f224df32f63dd012c86994bb99364252cc",
+    "docs/里程碑/M10_三方应用接入/实施计划与进度.md": "99be700e87044d010acc53a1c7ac2af1b8777f9352b5d7d89aa0db5eef79c9d4",
+    "docs/里程碑/M10_三方应用接入/验收/执行与缺陷记录.md": "f94d0be41f7a9e918e2778fcba5010e8466d50e61d62cdf231a0593a12268365",
+    "docs/里程碑/M10_三方应用接入/技研/邮件缓存配额与恢复实现检查点_20261020.md": "04564b9af2d56209fb4bdf4213fd6c921feca03aba91271070f574b3d127d499",
+    "docs/里程碑/M10_三方应用接入/技研/应用包与Agent运行时详细设计R1.6.md": "59520aad9fc8788228ff898d2dbcaf99ee45676d44423333b54bc53d7b4a68fc",
+    "docs/里程碑/README.md": "b37b88b04745dfba64482e757b8e5ade57f84fb5cf02a6f844a5d1881d87c383",
+    "docs/需求池.md": "90f6ae3ac7286612e66a114449c3c5e10122a659ab276f0ff322a426b2695ec3"
+  },
+  "unchangedReleaseSources": {
+    "scripts/release/release.test.mjs": "085fb4abf5a7dec02e5f8c2179782ebd89c046235a75c07c1fb5e80551d2cf67",
+    "scripts/release/native-smoke.cjs": "e627e42e03fc51e6ef438ee1d3c2bb702f2c0b64d979a96d02f583d7fdd16293"
+  },
+  "evidenceHashes": {
+    "before-final-recovery-571.txt": "4f1287758ecf4cae4c17ca834d5ae622cb4091957c1b209c518dc979d93c1d6e",
+    "bundle-index.json": "3e9ccb947d613e01106141d567c4f9cf70359934aa36696d88777d6f7348d1ac",
+    "cache-capacity.json": "5c87bf48e37bec5d5929e360b5ebb5a9a1d163e0bcbc39b203d3795bb9f67db9",
+    "cache-journal.json": "41cf8776ecc3b8fddfdf6b1bddc0e28a201c52c9841fd691d917920bd96a1d47",
+    "final-build.txt": "2edbac1952b8bfccdddb4e85ebcbab7970bf66df7585f141e07f620eb5ad8fac",
+    "final-tests.txt": "7ba133b8fb23c71f8c804eb63b8118211d9ed8a701cb4065185b05579bd39c7c",
+    "final-types.txt": "389c2675d58f218fa519810c188f4894739f7398886d290fc065f66c1dbc41d9",
+    "recovery-43.txt": "5c6492c2de5e5533622089c092405dccc2d6a1a82c3fac5c3eb71bb1e0dbf895",
+    "red-capacity-default-deadline.json": "844b9e43e6f541f7b2c5b5e3997ebcdaaa159bc565503206871671f814ab74f1",
+    "red-extension-types.json": "4aac25650b9346c4f00dbf48eb853d61b82f999b9d2358676df747e030a3e9b4",
+    "red-journal-policy-fixture.json": "c5c4317ac49bfd1d40a0c49775b16527fa43911ebbda428b82f8ff9fdd45417b",
+    "red-lru-equal-times.json": "e4fefeb1f8c6f84e0793f8e95e7386fc0f7bd8dc7285baddb6ee60ffd871cad4",
+    "red-private-vfs-linker.json": "4c06ee8f2ae8c3eae286351c1b3e39dcc2f770836a2833fb273090a9fc77bcf7",
+    "related-service-74.txt": "72f57a378a3ec1d5c84d81a33b13cde223787202a0f6c0f3c611498be094e234",
+    "release-rules.txt": "ea2429af86d6a1a876a61a111ce2295e4beaaf885d57c1b768a58039646027f2",
+    "resource-verification.json": "a5a480f00cb69eef9fb83cc84b8e4ec584eac4e81fd5ab9c21b6fe95b524aa14"
+  }
+}

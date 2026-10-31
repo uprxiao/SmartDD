@@ -77,14 +77,51 @@ def validate_bundle(app, arch):
     actual = subprocess.run(['/usr/bin/lipo', '-archs', str(executable)], check=True, capture_output=True, text=True).stdout.split()
     if actual != ['arm64' if arch == 'arm64' else 'x86_64']:
         raise RuntimeError('LibreOffice executable architecture does not match the build target')
-    subprocess.run(['/usr/bin/codesign', '--verify', '--deep', '--strict', str(app)], check=True, timeout=60)
+    subprocess.run(['/usr/bin/codesign', '--verify', '--deep', '--strict', '-R', '=anchor apple generic and identifier \"org.libreoffice.script\" and certificate leaf[subject.OU] = \"7P5S3ZLCN7\"', str(app)], check=True, capture_output=True, timeout=60)
     if not all((app / 'Contents/Resources' / name).is_file() for name in ['LICENSE', 'LICENSE.html', 'NOTICE']):
         raise RuntimeError('LibreOffice original licenses are missing')
     with tempfile.TemporaryDirectory(prefix='willyou-lo-version-') as temporary:
-        result = subprocess.run([str(executable), '-env:UserInstallation=' + pathlib.Path(temporary, 'profile').as_uri(), '--headless', '--version'], check=True, capture_output=True, text=True, timeout=15)
+        result = subprocess.run([str(executable), '-env:UserInstallation=' + pathlib.Path(temporary, 'profile').as_uri(), '--headless', '--version'], check=True, capture_output=True, text=True, timeout=15, env={**os.environ, 'HOME': temporary, 'TMPDIR': temporary})
     if f'LibreOffice {VERSION} {BUILD}' not in result.stdout:
         raise RuntimeError('LibreOffice runtime build identity does not match the lock')
     return result.stdout.strip()
+
+
+def clean_generated_bundle(directory, node_executable):
+    # Reuse the packaging policy on our verified/generated copy only. Never
+    # change the mounted source, code bytes, vendor signature or quarantine.
+    node = str(node_executable) if node_executable else shutil.which('node')
+    if not node:
+        raise RuntimeError('The generated-bundle metadata helper requires the project Node runtime')
+    if directory.is_symlink() or directory.resolve() != directory:
+        raise RuntimeError('Generated bundle staging directory identity changed')
+    script = "Promise.resolve(require(process.argv[1])({electronPlatformName:'darwin',appOutDir:process.argv[2],packager:{appInfo:{productFilename:'LibreOffice'}}})).catch(error=>{console.error(error.message);process.exitCode=1;});"
+    subprocess.run([node, '-e', script, str(REPO / 'scripts/release/mac-bundle-metadata.cjs'), str(directory)], check=True, timeout=60)
+
+
+def validate_generated_bundle(directory, arch, node_executable):
+    clean_generated_bundle(directory, node_executable)
+    try:
+        return validate_bundle(directory / 'LibreOffice.app', arch)
+    except subprocess.CalledProcessError as error:
+        diagnostic = error.stderr.decode('utf-8', 'replace') if isinstance(error.stderr, bytes) else (error.stderr or '')
+        if not error.cmd or error.cmd[0] != '/usr/bin/codesign' or 'resource fork, Finder information, or similar detritus not allowed' not in diagnostic:
+            raise
+        # Some file providers restore FinderInfo while codesign is reading it.
+        # Verify a byte-for-byte independent generated copy outside that provider;
+        # keep every code/signature check and the original security attributes.
+        with tempfile.TemporaryDirectory(prefix='willyou-lo-code-verification-') as temporary:
+            verification = pathlib.Path(temporary).resolve()
+            target = verification / 'LibreOffice.app'
+            subprocess.run(['/usr/bin/ditto', str(directory / 'LibreOffice.app'), str(target)], check=True, timeout=120)
+            original_files, original_size = inventory(directory / 'LibreOffice.app')
+            copied_files, copied_size = inventory(target)
+            if original_files != copied_files or original_size != copied_size:
+                raise RuntimeError('Independent LibreOffice verification copy differs from generated resources')
+            clean_generated_bundle(verification, node_executable)
+            version = validate_bundle(target, arch)
+            print(json.dumps({'signatureVerification': 'independent-private-copy', 'matchedFiles': len(copied_files), 'matchedBytes': copied_size, 'vendorRequirement': 'org.libreoffice.script / 7P5S3ZLCN7', 'sourceMetadata': 'file-provider FinderInfo may be restored; use non-synced package output'}), flush=True)
+            return version
 
 
 def prepare(args):
@@ -121,7 +158,7 @@ def prepare(args):
             if previous.get('arch') == args.arch and previous.get('version') == VERSION and previous.get('source') == asset:
                 files, size = inventory(output / 'LibreOffice.app')
                 if files == previous.get('files') and size == previous.get('totalBytes'):
-                    validate_bundle(output / 'LibreOffice.app', args.arch)
+                    validate_generated_bundle(output, args.arch, args.node_executable)
                     print(f'LibreOffice prepared resources verified: {len(files)} entries, {size} bytes', flush=True)
                     return
         work = pathlib.Path(tempfile.mkdtemp(prefix='.libreoffice-building-', dir=output.parent))
@@ -133,7 +170,7 @@ def prepare(args):
             source = mount / 'LibreOffice.app'
             validate_bundle(source, args.arch)
             subprocess.run(['/usr/bin/ditto', str(source), str(work / 'LibreOffice.app')], check=True, timeout=120)
-            version = validate_bundle(work / 'LibreOffice.app', args.arch)
+            version = validate_generated_bundle(work, args.arch, args.node_executable)
             files, size = inventory(work / 'LibreOffice.app')
             manifest = {'schema': 1, 'component': 'willyou-office-libreoffice', 'platform': 'darwin', 'arch': args.arch,
                         'version': VERSION, 'build': BUILD, 'source': asset, 'runtimeVersion': version,
@@ -178,6 +215,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=pathlib.Path, default=REPO / 'out/native/libreoffice')
     parser.add_argument('--arch', choices=['arm64', 'x64'], default='arm64' if platform.machine() == 'arm64' else 'x64')
     parser.add_argument('--offline', action='store_true')
+    parser.add_argument('--node-executable', type=pathlib.Path, help='Build host Node executable for the shared generated-bundle metadata helper')
     try:
         prepare(parser.parse_args())
     except subprocess.CalledProcessError as error:

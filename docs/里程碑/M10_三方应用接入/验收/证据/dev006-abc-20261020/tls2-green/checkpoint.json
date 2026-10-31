@@ -1,0 +1,130 @@
+{
+  "schema": "m10-partial-packaged-ui-v1",
+  "startedAt": "2026-10-20T12:03:59.296Z",
+  "branch": "feature/0.0.2",
+  "commit": "43d7cb389104bb42218c8ef1c0c0e44393a34a08",
+  "layer": "A: real packaged App, private loopback providers; partial case coverage only",
+  "app": "/private/tmp/m10-dev006-c-package-20261020/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "010121542dfebf3b2ab4cd7d13c4099ebaa6768e906d7fb6ee8791b29c632028",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "25.6.0"
+  },
+  "scratch": "/private/tmp/willyou-m10-management-ui-pPmSJo",
+  "userData": "/private/tmp/willyou-m10-management-ui-pPmSJo/userdata",
+  "checks": [
+    {
+      "name": "P01 catalog add via actual pointer",
+      "at": "2026-10-20T12:04:00.633Z",
+      "passed": true
+    },
+    {
+      "name": "P03 edit invalidates old host test receipt",
+      "at": "2026-10-20T12:04:00.975Z",
+      "passed": true
+    },
+    {
+      "name": "P03 real test and UI save persisted one verified ZenTao connection",
+      "at": "2026-10-20T12:04:01.162Z",
+      "passed": true
+    },
+    {
+      "name": "P04 project enabled and explicit single ZenTao source persisted",
+      "at": "2026-10-20T12:04:01.388Z",
+      "passed": true
+    },
+    {
+      "name": "P05 real readonly list and separate detail/body/history through UI",
+      "at": "2026-10-20T12:04:01.909Z",
+      "passed": true
+    },
+    {
+      "name": "P03 SMTP verify and save does not submit DATA",
+      "at": "2026-10-20T12:04:02.492Z",
+      "passed": true
+    },
+    {
+      "name": "P04 separate SMTP slot without auto selecting a reading source",
+      "at": "2026-10-20T12:04:02.673Z",
+      "passed": true
+    },
+    {
+      "name": "P06 no source and P07 empty real persisted drafts, readable cache usage",
+      "at": "2026-10-20T12:04:02.825Z",
+      "passed": true
+    },
+    {
+      "name": "P06 confirmed real cache clear through UI",
+      "at": "2026-10-20T12:04:03.025Z",
+      "passed": true
+    },
+    {
+      "name": "Restart preserves exact connection and project choices; test cleanup is not counted as normal exit acceptance",
+      "at": "2026-10-20T12:04:04.180Z",
+      "passed": true
+    }
+  ],
+  "providers": {
+    "zentaoRequests": [
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/user",
+      "/biz/api.php/v1/bugs/12",
+      "/biz/api.php/v1/bugs/12"
+    ],
+    "smtpCommands": [
+      "EHLO",
+      "AUTH",
+      "QUIT"
+    ],
+    "smtpDataSubmissions": 0,
+    "socketErrors": []
+  },
+  "status": "running",
+  "fixtureTrust": {
+    "scope": "only this isolated App process",
+    "mechanism": "NODE_EXTRA_CA_CERTS for private loopback certificate; production certificate validation stays enabled",
+    "certSha256": "493b1b3730879e8adf1326d806f9c5b80f8ffee1474d41e3dee25fa6cc36245d"
+  },
+  "deferred": [
+    {
+      "check": "SMTP plain-mode native dropdown selection",
+      "state": "not passed",
+      "reason": "CDP default selection did not change; CUA frontmostApplicationChanged, retained separate red traces"
+    }
+  ],
+  "appPid": 34001,
+  "setup": {
+    "projectId": "c5a59ac7-fca3-47fc-abee-7d96c5170a03",
+    "method": "projects.create only prepares unrelated project prerequisite; not counted as UI project creation"
+  },
+  "lastAction": {
+    "selector": "[data-testid=nav-apps]"
+  },
+  "choiceTrace": [
+    {
+      "label": "当前应用项目",
+      "keyName": "Home",
+      "value": "c5a59ac7-fca3-47fc-abee-7d96c5170a03",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "ArrowDown",
+      "value": "c5a59ac7-fca3-47fc-abee-7d96c5170a03",
+      "active": "SELECT"
+    },
+    {
+      "label": "当前应用项目",
+      "keyName": "Enter",
+      "value": "c5a59ac7-fca3-47fc-abee-7d96c5170a03",
+      "active": "SELECT"
+    }
+  ]
+}

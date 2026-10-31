@@ -59,6 +59,8 @@ class TasksStore {
     });
   }
 
+  cancelCreate(token: string): Promise<boolean> { return rpc.tasks.cancelCreate(token); }
+
   /** Throws so the caller shows the error where the user acted. */
   async create(req: CreateTaskRequest): Promise<TaskView> {
     const res = await rpc.tasks.create({ ...terminalSize(), ...req });
@@ -74,7 +76,8 @@ class TasksStore {
 
   /**
    * Open a task in its tab (a new one if needed) and, when it is stopped, resume it on the
-   * profile it ran on. The stopped panel only stays when there is a real choice to make.
+   * profile it ran on. Unknown native capability history stays read-only until explicit resume,
+   * and the stopped panel also stays when there is a real profile choice to make.
    */
   show(taskId: string): void {
     if (this.closing.has(taskId)) return;

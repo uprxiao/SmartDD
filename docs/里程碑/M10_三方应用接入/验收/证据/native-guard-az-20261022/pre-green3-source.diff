@@ -1,0 +1,256 @@
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index 5bfbaaac..b636559f 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -556,6 +556,39 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
+ 
+ describe('per-application availability does not withdraw healthy fixed tools',()=>{
+ 
++ it.each(['source-state','missing-root'] as const)('restores the same original supported Claude session after stopping a pre-slot ordinary guard: %s',async fault=>{
++  await selectBoth();const first=await create(claudeId),nativeId=await stopForSwitchFixture(first,'claude-code'),fixed=await managed.sessions.get(first.task.id),refs=await managed.sessions.references(first.task.id),source=new BuiltinPackageRegistry(support.store).retainedMetadata(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash).resourceId,command=join(root,'cc-version-fixture');sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(source);writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const ordinary=await tasks.open({taskId:first.task.id});
++  try{const slot=readClaudeSlot(support.store,first.task.id)!;expect(slot.current).toBeNull();expect(slot.consumers.map(c=>c.runId)).toContain(ordinary.task.runtimeSnapshot!.runId);expect(()=>managed.runs.assertActive(ordinary.task.runtimeSnapshot!.runId)).toThrow('不签发');if(fault==='missing-root')rmSync(join(support.store.root,'sessions',first.task.id,'claude/plugin'),{recursive:true});}
++  finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(ordinary.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++  sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid' WHERE resource_id=?").run(source);writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n');const resumed=await tasks.open({taskId:first.task.id});
++  try{expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);expect(resumed.task.nativeSessionId).toBe(nativeId);for(const ref of refs)expect(await managed.sessions.references(first.task.id)).toContainEqual(ref);expect((await appTools().list(resumed.task.runtimeSnapshot!.runId)).tools).toHaveLength(17);expect(await appTools().call(resumed.task.runtimeSnapshot!.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});for(const p of fixed.snapshot.packages)for(const skill of p.skills)expect(existsSync(skill.projectionPath)).toBe(true);}
++  finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(resumed.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ },30000);
++ it('does not invent a Claude canonical occupancy slot when a new ordinary task never had a managed plugin',async()=>{
++  const packages=await selectBoth();for(const id of ['mail','zentao'])sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(packages.retainedMetadata(packages.packages.active(id)!.packageHash).resourceId);writeFileSync(join(root,'cc-version-fixture'),'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const started=await create(claudeId);
++  try{expect(readClaudeSlot(support.store,started.task.id)).toBeNull();expect((await managed.sessions.references(started.task.id)).some(r=>r.refKind==='session-projection')).toBe(false);expect(()=>managed.runs.assertActive(started.task.runtimeSnapshot!.runId)).toThrow('不签发');expect(tasks.activePty(started.task.id)).not.toBeNull();}
++  finally{tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ },30000);
++
++
++ it.each(['lease','missing-root'] as const)('freezes the actual original Claude canonical path before its first delivery slot during ordinary resume: %s',async fault=>{
++  await selectBoth();const first=await create(claudeId),nativeId=await stopForSwitchFixture(first,'claude-code'),fixed=await managed.sessions.get(first.task.id),ref=(await managed.sessions.references(first.task.id)).find(r=>r.refKind==='session-projection')!,rootPath=join(support.store.root,ref.relativePath);expect(readClaudeSlot(support.store,first.task.id)).toBeNull();const source=new BuiltinPackageRegistry(support.store).retainedMetadata(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash).resourceId;sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(source);writeFileSync(join(root,'cc-version-fixture'),'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');const started=await tasks.open({taskId:first.task.id});
++  try{const runId=started.task.runtimeSnapshot!.runId;expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(started.task.nativeSessionId).toBe(nativeId);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);
++   if(fault==='lease'){const leased=sqlite.prepare("SELECT 1 FROM capability_resource_leases l JOIN capability_resources r ON r.resource_id=l.resource_id OR EXISTS(SELECT 1 FROM capability_lease_resources p WHERE p.lease_id=l.lease_id AND p.resource_id=r.resource_id) WHERE l.owner_id=? AND l.state<>'released' AND r.path_scope='C' AND COALESCE(r.scope_relative_path,r.relative_path)=?").get(runId,ref.relativePath);expect(leased).toBeDefined();}
++   else{sqlite.prepare("UPDATE capability_resources SET state='ready',integrity='valid' WHERE resource_id=?").run(source);rmSync(rootPath,{recursive:true});await expect(managed.projector.claude(first.task.id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(existsSync(rootPath)).toBe(false);expect(ptys.live.has(started.ptyId)).toBe(true);}
++  }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(started.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
++ },30000);
++
++
++ it.each((['claude-code','codex'] as const).flatMap(runner=>(['package-state','app-runtime-state'] as const).map(fault=>({runner,fault}))))('keeps ordinary original native continuation with unknown CLI and unready App sources: $runner $fault',async({runner,fault})=>{
++  await selectBoth();const seed=await create(runner==='codex'?codexId:claudeId),nativeId=await stopForSwitchFixture(seed,runner),fixed=await managed.sessions.get(seed.task.id),refs=await managed.sessions.references(seed.task.id),paths=[...fixed.snapshot.standardSkills.map(s=>s.projectionPath),...fixed.snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath))],bytes=paths.map(p=>readFileSync(p)),packages=new BuiltinPackageRegistry(support.store);
++  for(const p of fixed.snapshot.packages){const id=fault==='package-state'?packages.retainedMetadata(p.packageHash).resourceId:'runtime:'+p.runtimeHash;sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(id);}
++  const command=join(root,runner==='codex'?'version-fixture':'cc-version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');let started:Awaited<ReturnType<typeof create>>|undefined;
++  try{started=await tasks.open({taskId:seed.task.id});const runtime=started.task.runtimeSnapshot!,runId=runtime.runId;expect(tasks.activePty(seed.task.id)).not.toBeNull();expect(ptys.live.has(started.ptyId)).toBe(true);expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed.snapshot);expect(started.task.nativeSessionId).toBe(nativeId);expect(runtime.skills).toEqual([]);expect(runtime.mcp).toEqual([]);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(seed.task.id,started.ptyId)).toBeNull();expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});for(const ref of refs)expect(await managed.sessions.references(seed.task.id)).toContainEqual(ref);for(let i=0;i<paths.length;i++)expect(readFileSync(paths[i])).toEqual(bytes[i]);}
++  finally{if(started){tasks.kill(seed.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
++ },30000);
++
++
+  it.each(['new','resume'] as const)('isolates an actual Codex user disable flag to the original App without rewriting native config: %s',async mode=>{
+   await selectBoth();const seed=await create(),nativeId=await stopForSwitchFixture(seed,'codex'),fixed=await managed.sessions.get(seed.task.id),zen=fixed.snapshot.packages.find(p=>p.appId==='zentao')!,file=join(home,'.codex/config.toml'),config='skills.config=[{path='+JSON.stringify(dirname(zen.skills[0].projectionPath))+',enabled=false,note="preserve user choice"}]\n';mkdirSync(dirname(file),{recursive:true});writeFileSync(file,config);const started=mode==='resume'?await tasks.open({taskId:seed.task.id}):await create();
+   try{const runId=started.task.runtimeSnapshot!.runId;expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);expect((await appTools().list(runId)).unavailable).toContainEqual({appId:'zentao',code:'AGENT_CAPABILITY_NAME_CONFLICT'});expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});expect(readFileSync(file,'utf8')).toBe(config);expect(launchFlags()).toContainEqual({path:zen.skills[0].projectionPath,enabled:false,note:'preserve user choice'});if(mode==='resume'){expect((await managed.sessions.get(seed.task.id)).snapshot).toEqual(fixed.snapshot);expect(started.task.nativeSessionId).toBe(nativeId);}}
+diff --git a/src/main/core/applications/claude-delivery-state.ts b/src/main/core/applications/claude-delivery-state.ts
+index ae69c2eb..a273349c 100644
+--- a/src/main/core/applications/claude-delivery-state.ts
++++ b/src/main/core/applications/claude-delivery-state.ts
+@@ -5,7 +5,7 @@ import type {ClaudeRunDelivery} from '@shared/claude-delivery';
+ import {basename,dirname,join} from 'node:path';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
+ import type {ResourceStore,ResourceRecord} from './resource-store';
+ import {canonicalJson,digest} from './manifest';
+ import {verifyOwnedBundle} from './owned-bundle';
+@@ -94,8 +94,24 @@ export function assertClaudeRunDelivery(store:ResourceStore,runId:string,proof:C
+ /** A native-only fixed-history reader also freezes its actual canonical path.
+  * This alias is occupancy on an explicitly unready anchor,not application authority. */
+ export function protectClaudeNativeGuard(store:ResourceStore,taskId:string,runId:string):void{
+- const slot=readClaudeSlot(store,taskId);if(!slot)return;
+- const row=store.sqlite.prepare('SELECT task_id,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
++ let slot=readClaudeSlot(store,taskId);
++ const row=store.sqlite.prepare('SELECT task_id,project_id,runner,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,state FROM capability_runs WHERE run_id=?').get(runId) as {task_id:string;project_id:string;runner:string;snapshot_hash:string;owner_instance_id:string;owner_pid:number;owner_started_at:string;state:string}|undefined;
++ if(!slot){
++  // The first native-only reader may precede any partial-delivery slot. Preserve
++  // its existing canonical namespace without claiming file or App readiness.
++  if(!row||row.task_id!==taskId||row.state!=='preparing')throw fail();
++  if(row.runner!=='claude-code')return;
++  const saved=store.sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;snapshot_json:string}|undefined;
++  if(!saved||saved.schema_version!==2)return;
++  let snapshot:CapabilitySessionSnapshotV2;try{snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(saved.snapshot_json));}catch{throw fail();}
++  if(snapshot.taskId!==taskId||snapshot.projectId!==row.project_id||snapshot.runner!==row.runner||saved.snapshot_hash!==row.snapshot_hash||digest(canonicalJson(snapshot))!==row.snapshot_hash)throw fail();
++  if(snapshot.legacyBinding)return;
++  const root=claudeRoot(taskId),refs=store.sqlite.prepare("SELECT ref_id,ref_hash FROM capability_session_refs WHERE task_id=? AND ref_kind='session-projection'").all(taskId) as {ref_id:string;ref_hash:string}[],original=refs.filter(ref=>{const r=store.get(ref.ref_id);return r.kind==='session-projection'&&r.pathScope==='C'&&r.relativePath===root&&r.resourceId===`session-projection:${taskId}:${r.contentHash}`&&r.contentHash===ref.ref_hash;});
++  if(!original.length)return;if(original.length!==1)throw fail();
++  const selectionHash=normalizedSelection(snapshot),anchorId=claudeAnchor(taskId);
++  slot={schema:1,storeId:store.storeId,taskId,selectionHash,root,anchorId,revision:1,current:null,pending:null,preparation:null,consumers:[]};
++  store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'claude-delivery-root',?,?,'C',?,?,'recovery-required',1,'unknown',?)").run(anchorId,digest(canonicalJson({taskId,selectionHash,root})),store.storeId,`claude-deliveries/${taskId}/anchor`,root,claudeSlotId(taskId));writeClaudeSlot(store,slot);
++ }
+  if(!row||row.task_id!==taskId||row.state!=='preparing')throw fail();const owner=deliveryOwner.parse({instanceId:row.owner_instance_id,pid:row.owner_pid,startedAt:row.owner_started_at}),leaseId=randomUUID(),anchor=store.get(slot.anchorId);
+  store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,slot.anchorId,runId,owner.instanceId,owner.pid,owner.startedAt,new Date().toISOString());
+  slot.consumers.push({runId,leaseId,owner,revision:slot.revision,resourceId:slot.anchorId,hash:anchor.contentHash,generation:anchor.generation});writeClaudeSlot(store,slot);
+diff --git a/src/main/core/applications/discovery-catalog.ts b/src/main/core/applications/discovery-catalog.ts
+index 767c79a4..363b8381 100644
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -200,7 +200,7 @@ export class DiscoveryCatalog {
+             if(entry.format==='legacy-tree-v1'){
+                 const identity=verifyLegacyDiscoveryEntry(entry,this.home);
+                 if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);
+-                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.state!=='ready'||source.integrity!=='valid'||source.pathScope!=='C'||sourceBytes&&canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
++                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.pathScope!=='C'||sourceBytes&&(source.state!=='ready'||source.integrity!=='valid')||sourceBytes&&canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
+                 continue;
+             }
+             assertDiscoveryPath(this.home,entry.path);
+diff --git a/src/main/core/applications/run-registry.ts b/src/main/core/applications/run-registry.ts
+index 2ae5dbdf..b604e594 100644
+--- a/src/main/core/applications/run-registry.ts
++++ b/src/main/core/applications/run-registry.ts
+@@ -1,3 +1,4 @@
++import {captureNativeStaticRoots,nativeStaticSourceIds,verifyNativeStaticRoots,type NativeStaticRoot} from './native-static-roots';
+ import {assertClaudeReservation,bindClaudeDelivery,assertClaudeRunDelivery,protectClaudeNativeGuard,type ClaudeDeliveryToken,type ClaudeRunDelivery} from './claude-delivery-state';
+ import {assertScopeExclusions,assertIndependentRoots,applicationRunScopeSchema,applicationScopeOperationId,readApplicationRunScope,type ApplicationRunScope,type ApplicationScopeExclusion} from './application-run-scope';
+ import { randomUUID } from 'node:crypto';
+@@ -21,7 +22,7 @@ interface RunRow {
+   bindings_json: string;started_at: string;ended_at: string | null;error_code: string | null;revocation_state: 'open' | 'revoking' | 'revoked';
+ }
+ interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
+-interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
++interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
+ interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
+ interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+ export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
+@@ -116,6 +117,7 @@ export class CapabilityRunRegistry {
+   private closure(taskId: string,guard?:NativeGuard,scope?:ApplicationRunScope): ResourceRecord[] {
+     const roots = guard?guard.resources.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):scope?scope.roots.map(r=>({ref_id:r.refId,ref_hash:r.refHash,ref_kind:r.refKind,relative_path:r.relativePath})):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
+     if (!roots.length) throw new ApplicationError('SNAPSHOT_CORRUPT','原会话资源引用缺失');
++    const inert=guard?.staticRoots?nativeStaticSourceIds(this.store,guard.resources,guard.staticRoots):new Set<string>();
+     const visited = new Map<string,ResourceRecord>(), visiting = new Set<string>();
+     const visit = (id: string,depth = 0): void => {
+       if (depth > 256) throw new ApplicationError('INVALID_PACKAGE','资源依赖深度超过预算');
+@@ -123,7 +125,7 @@ export class CapabilityRunRegistry {
+       if (visited.has(id)) return;
+       if (visited.size + visiting.size >= 10000) throw new ApplicationError('INVALID_PACKAGE','资源依赖超过预算');
+       const resource = this.store.get(id);
+-      if (resource.state !== 'ready' || resource.integrity !== 'valid') throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话资源未就绪，不能准备新的运行');
++      if (!inert.has(id)&&(resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('RESOURCE_STATE_CHANGED','原会话资源未就绪，不能准备新的运行');
+       visiting.add(id);
+       for (const dependency of this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=?').all(id) as { dependency_id: string }[]) visit(dependency.dependency_id,depth + 1);
+       visiting.delete(id); visited.set(id,resource);
+@@ -143,7 +145,8 @@ export class CapabilityRunRegistry {
+     if (!lease || lease.owner_id !== row.run_id || lease.host_instance_id !== this.instanceId || !['preparing','active'].includes(lease.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','运行资源占用已改变');
+     const protectedRows = this.store.sqlite.prepare('SELECT resource_id,content_hash,generation FROM capability_lease_resources WHERE lease_id=?').all(owned.leaseId) as { resource_id: string;content_hash: string;generation: number }[];
+     for (const resource of this.closure(row.task_id,owned.guard,owned.scope)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
+-    for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (r.state !== 'ready' || r.integrity !== 'valid' || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
++    const inert=owned.guard?.staticRoots?nativeStaticSourceIds(this.store,owned.guard.resources,owned.guard.staticRoots):new Set<string>();
++    for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (!inert.has(r.resourceId)&&(r.state !== 'ready' || r.integrity !== 'valid') || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
+   }
+   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
+   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
+@@ -191,7 +194,7 @@ export class CapabilityRunRegistry {
+     const parsed=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:z.string().regex(/^[a-f0-9]{64}$/),resourceIds:z.array(z.string().min(1).max(512)).min(1).max(4096)}).strict().safeParse({taskId:input.taskId,projectId:input.projectId,runner:input.runner,snapshotHash:input.snapshotHash,resourceIds:input.resourceIds});
+     if(!parsed.success||typeof input.verify!=='function'||reservation&&(!z.uuid().safeParse(reservation.runId).success||!z.uuid().safeParse(reservation.ptyId).success))throw new ApplicationError('INVALID_INPUT','原生历史守护身份无效');
+     if(this.closed)throw new ApplicationError('CANCELED','运行服务已关闭');const value=parsed.data,runId=reservation?.runId??randomUUID(),ptyId=reservation?.ptyId??randomUUID(),processId=randomUUID(),leaseId=randomUUID();
+-    const guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),verify:input.verify};let selectionHash=value.snapshotHash;
++    const staticRoots=captureNativeStaticRoots(this.store,value.resourceIds),guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),staticRoots,verify:async()=>{verifyNativeStaticRoots(this.store,staticRoots);await input.verify();}};let selectionHash=value.snapshotHash;
+     await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
+       if(this.closed)throw new ApplicationError('CANCELED','守护准备已取消');
+       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId);this.gate();
+diff --git a/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/native-static-roots.ts b/src/main/core/applications/native-static-roots.ts
+new file mode 100644
+index 00000000..96fc2480
+--- /dev/null
++++ b/src/main/core/applications/native-static-roots.ts
+@@ -0,0 +1,53 @@
++import {basename,join} from 'node:path';
++import {ApplicationError} from '@shared/applications';
++import {canonicalJson,digest} from './manifest';
++import {assertDiscoveryPath,verifyLegacyDiscoveryEntry} from './legacy-discovery';
++import {verifyOwnedBundle} from './owned-bundle';
++import type {ResourceRecord,ResourceStore} from './resource-store';
++
++export interface NativeStaticRoot {readonly resource:Readonly<ResourceRecord>;readonly sourceId:string}
++const invalid=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原生静态投影的原身份或依赖无法核验，保留原占用');
++const dependencies=(store:ResourceStore,id:string)=>(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(id) as {dependency_id:string}[]).map(d=>d.dependency_id);
++/** Metadata only, before the run lease. This grants no execution or byte trust.
++ * Actual complete H bytes are checked after retention and before preparation. */
++export function captureNativeStaticRoots(store:ResourceStore,ids:readonly string[]):readonly NativeStaticRoot[]{
++ const roots:NativeStaticRoot[]=[];
++ for(const id of new Set(ids)){
++  const r=store.get(id);if(r.pathScope!=='H'||!['agent-projection','legacy-agent-projection'].includes(r.kind))continue;
++  const name=r.relativePath.slice('.agents/skills/'.length),legacy=r.kind==='legacy-agent-projection';
++  if(r.state!=='ready'||r.integrity!=='valid'||r.relativePath!=='.agents/skills/'+name||name.length>100||!(legacy?/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/:/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/).test(name)||r.resourceId!=='h-projection:'+digest(canonicalJson({homeId:r.scopeIdentity,storeId:store.storeId,nativeName:name,hash:r.contentHash})))throw invalid();
++  const deps=dependencies(store,id);if(deps.length!==1)throw invalid();const source=store.get(deps[0]);
++  if(source.pathScope!=='C'||!['application-package','standard-skill'].includes(source.kind)||legacy&&(source.kind!=='standard-skill'||source.contentHash!==r.contentHash))throw invalid();
++  roots.push(Object.freeze({resource:Object.freeze({...r}),sourceId:source.resourceId}));
++ }
++ return Object.freeze(roots);
++}
++/** Called outside C, only after the ordinary native run holds every source.
++ * A full static copy does not make its C source executable or give App access. */
++export function verifyNativeStaticRoots(store:ResourceStore,roots:readonly NativeStaticRoot[]):void{
++ for(const proof of roots){
++  const [current]=captureNativeStaticRoots(store,[proof.resource.resourceId]);
++  if(!current||canonicalJson(current)!==canonicalJson(proof))throw invalid();
++  const r=proof.resource,home=(store.sqlite.prepare('SELECT canonical_home AS home FROM capability_discovery_roots WHERE home_id=?').get(r.scopeIdentity) as {home:string}|undefined)?.home;
++  if(!home||digest(home)!==r.scopeIdentity)throw invalid();const directory=store.directory(r),name=basename(directory),path=join(directory,'SKILL.md');assertDiscoveryPath(home,path);
++  if(r.kind==='legacy-agent-projection'){
++   const identity=verifyLegacyDiscoveryEntry({resourceId:r.resourceId,storeId:store.storeId,path,nativeName:name,sourceHash:r.contentHash,projectionHash:r.contentHash,format:'legacy-tree-v1'},home);if(identity.sourceResourceId!==proof.sourceId)throw invalid();
++  }else{
++   const manifest=verifyOwnedBundle(directory,r.contentHash,store.storeId),m=manifest.metadata;
++   if(m.kind!=='codex-agent-projection-v1'||m.homeId!==r.scopeIdentity||m.nativeName!==name||m.sourceResourceId!==proof.sourceId||typeof m.sourceHash!=='string'||!/^[a-f0-9]{64}$/.test(m.sourceHash))throw invalid();
++  }
++ }
++}
++/** Keep the entire original C lineage leased. Execution roots always win if a
++ * source is also reached by the actual adapter or another executable root. */
++export function nativeStaticSourceIds(store:ResourceStore,resources:readonly string[],proofs:readonly NativeStaticRoot[]):ReadonlySet<string>{
++ if(!proofs.length)return new Set();
++ const current=captureNativeStaticRoots(store,proofs.map(p=>p.resource.resourceId));if(canonicalJson(current)!==canonicalJson(proofs))throw invalid();
++ const walk=(roots:readonly string[],onlyC:boolean)=>{
++  const seen=new Set<string>(),visiting=new Set<string>();
++  const visit=(id:string,depth:number):void=>{if(visiting.has(id)||depth>256||seen.size+visiting.size>=10000)throw invalid();if(seen.has(id))return;const r=store.get(id);if(onlyC&&r.pathScope!=='C')throw invalid();visiting.add(id);for(const child of dependencies(store,id))visit(child,depth+1);visiting.delete(id);seen.add(id);};
++  for(const root of roots)visit(root,0);return seen;
++ };
++ const inert=walk(proofs.map(p=>p.sourceId),true),staticIds=new Set(proofs.map(p=>p.resource.resourceId)),executed=walk(resources.filter(id=>!staticIds.has(id)),false);
++ for(const id of executed)inert.delete(id);return inert;
++}
+diff --git a/private/tmp/m10-legacy-recovery-r-20261021/work-r4/src/main/core/applications/__tests__/native-static-roots.test.ts b/src/main/core/applications/__tests__/native-static-roots.test.ts
+new file mode 100644
+index 00000000..2c36511c
+--- /dev/null
++++ b/src/main/core/applications/__tests__/native-static-roots.test.ts
+@@ -0,0 +1,40 @@
++import {readFileSync,writeFileSync} from 'node:fs';
++import {afterEach,beforeEach,describe,expect,it} from 'vitest';
++import {agentFixture} from './agent-fixture';
++import {FixtureProcessReader} from './run-fixture';
++import {DiscoveryCatalog,type DiscoveryReservation} from '../discovery-catalog';
++import {CapabilityRunRegistry} from '../run-registry';
++import {captureNativeStaticRoots,nativeStaticSourceIds} from '../native-static-roots';
++let f:Awaited<ReturnType<typeof agentFixture>>,reader:FixtureProcessReader,runs:CapabilityRunRegistry,catalog:DiscoveryCatalog,hold:DiscoveryReservation|undefined;
++let base:Awaited<ReturnType<typeof setup>>;
++async function setup(){const snapshot=f.plan('codex'),prepared=await catalog.publish(f.projector.sourceSkills(snapshot));snapshot.catalogGeneration=prepared.generation;const saved=await f.sessions.create(snapshot,f.home);for(const e of prepared.entries)await f.sessions.addProjectionReference(snapshot.taskId,saved.pointer.snapshotHash,e.resourceId);return{snapshot,prepared,saved};}
++const roots=()=>[f.adapters.get(base.snapshot.adapterBinding.hash).resource.resourceId,...base.prepared.entries.map(e=>e.resourceId)];
++async function reserve(extra:string[]=[]){hold=await catalog.reserveRun(base.prepared.generation,'codex',ids=>runs.reserveFixedNativeGuard({taskId:base.snapshot.taskId,projectId:'p1',runner:'codex',snapshotHash:base.saved.pointer.snapshotHash,resourceIds:[...roots(),...extra],verify:async()=>catalog.verifyNativeIsolation(base.prepared)},ids));return hold.run;}
++const unready=(id:string)=>f.sqlite.prepare("UPDATE capability_resources SET state='recovery-required',integrity='invalid' WHERE resource_id=?").run(id);
++beforeEach(async()=>{f=await agentFixture();reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});f.setExtraVerifier((r,s)=>catalog.verifyReference(r,s));hold=undefined;base=await setup();});
++afterEach(async()=>{if(hold){reader.identities.delete(75123);const state=runs.get(hold.run.runId).state;if(state==='active')await hold.run.cli.exited();else await hold.run.stop('test-owned no-fork cleanup');await hold.release();}f.cleanup();});
++describe('native-only complete static H copies and retained nonexecuted C sources',()=>{
++ it.each(['package','runtime','standard'] as const)('retains every hash/generation in the %s lineage without App or bridge authority',async fault=>{
++  const source=fault==='package'?f.application.resourceId:fault==='runtime'?'runtime:'+base.snapshot.packages[0].runtimeHash:'standard-skill:'+f.standard.id+':'+f.standard.hash;unready(source);const before=f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots').get(),run=await reserve();await run.prepare();await hold!.activate();await run.cli.arm();reader.identities.set(75123,'darwin-proc-v1:700:1');await run.cli.attach(75123);expect(()=>runs.assertActive(run.runId)).toThrow('不签发');await expect(run.reserveBridge()).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(()=>runs.bridgePreparation(run.runId)).toThrow('不签发');const identity=f.store.get(source),leased=f.sqlite.prepare('SELECT content_hash,generation FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_id=? AND r.resource_id=?').get(run.runId,source);expect(leased).toEqual({content_hash:identity.contentHash,generation:identity.generation});expect(f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual(before);expect(runs.currentNativeRun(base.snapshot.taskId,run.ptyId)?.runId).toBe(run.runId);
++ });
++ it('refuses damaged actual H bytes before preparation completes even though C source state is ignored',async()=>{
++  unready(f.application.resourceId);const run=await reserve(),entry=base.prepared.entries.find(e=>e.nativeName===base.snapshot.packages[0].skills[0].nativeName)!;writeFileSync(entry.path,readFileSync(entry.path,'utf8')+'\nchanged user bytes\n');await expect(run.prepare()).rejects.toMatchObject({code:'HASH_MISMATCH'});expect(runs.get(run.runId).state).toBe('preparing');expect(f.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE owner_id=?').get(run.runId)).toEqual({state:'preparing'});
++ });
++ it.each(['h-generation','source-hash','source-generation','dependency'] as const)('refuses changed %s after reservation and retains the original lease',async fault=>{
++  unready(f.application.resourceId);const run=await reserve(),entry=base.prepared.entries.find(e=>e.nativeName===base.snapshot.packages[0].skills[0].nativeName)!,id=fault==='h-generation'?entry.resourceId:f.application.resourceId,old=f.store.get(id),before=f.sqlite.prepare('SELECT * FROM capability_lease_resources ORDER BY resource_id').all();
++  try{if(fault==='dependency')f.sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run(entry.resourceId,'standard-skill:'+f.standard.id+':'+f.standard.hash);else if(fault==='source-hash')f.sqlite.prepare('UPDATE capability_resources SET content_hash=? WHERE resource_id=?').run('a'.repeat(64),id);else f.sqlite.prepare('UPDATE capability_resources SET generation=generation+1 WHERE resource_id=?').run(id);await expect(run.prepare()).rejects.toThrow();expect(runs.get(run.runId).state).toBe('preparing');expect(f.sqlite.prepare('SELECT * FROM capability_lease_resources ORDER BY resource_id').all()).toEqual(before);}
++  finally{if(fault==='dependency')f.sqlite.prepare('DELETE FROM capability_resource_dependencies WHERE resource_id=? AND dependency_id=?').run(entry.resourceId,'standard-skill:'+f.standard.id+':'+f.standard.hash);else f.sqlite.prepare('UPDATE capability_resources SET content_hash=?,generation=? WHERE resource_id=?').run(old.contentHash,old.generation,id);}
++ });
++ it.each(['root','adapter-dependency'] as const)('keeps an unready executable %s strict even if the same resource is a static H source',async mode=>{
++  unready(f.application.resourceId);const adapter=roots()[0];if(mode==='adapter-dependency')f.sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run(adapter,f.application.resourceId);await expect(reserve(mode==='root'?[f.application.resourceId]:[])).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(f.sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
++ });
++ it('does not apply the native-only classification to an ordinary managed application run',async()=>{
++  unready(f.application.resourceId);await expect(runs.reserve({taskId:base.snapshot.taskId,snapshotHash:base.saved.pointer.snapshotHash,bindings:[]})).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(f.sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
++ });
++ it('rejects caller-shaped static C roots and a C-source dependency crossing back into H',async()=>{
++  const source=f.store.get(f.application.resourceId);expect(captureNativeStaticRoots(f.store,[source.resourceId])).toEqual([]);expect(()=>nativeStaticSourceIds(f.store,[source.resourceId],[{resource:source,sourceId:source.resourceId}])).toThrow('无法核验');const entry=base.prepared.entries[0];f.sqlite.prepare('INSERT INTO capability_resource_dependencies VALUES(?,?)').run(source.resourceId,entry.resourceId);await expect(reserve()).rejects.toThrow('无法核验');expect(f.sqlite.prepare('SELECT * FROM capability_runs').all()).toEqual([]);
++ });
++ it('keeps an actual legacy H copy usable as static bytes with its original unready C source and full ownership checks',async()=>{
++  const sourceId='standard-skill:'+f.standard.id+':'+f.standard.hash,name='smartdd-'+f.standard.id+'-'+f.standard.hash.slice(0,16),next=await catalog.publish([{nativeName:name,sourceHash:f.standard.hash,sourceResourceId:sourceId,files:Object.fromEntries(Object.entries(f.standard.files).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set(),format:'legacy-tree-v1'}]);base.prepared=next;unready(sourceId);const run=await reserve();await run.prepare();await hold!.activate();expect(runs.get(run.runId).state).toBe('prepared');expect(()=>runs.assertActive(run.runId)).toThrow('不签发');
++ });
++});

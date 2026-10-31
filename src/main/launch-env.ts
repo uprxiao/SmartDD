@@ -85,5 +85,11 @@ export function planLaunchEnv(
   return { env, scriptArgs, injectedNames: names };
 }
 
+/** Pure shell envelope shared by PTY spawning and launch-capacity checks. */
+export const loginShell = () => process.env.SHELL || '/bin/zsh';
+export function shellWrapped(command: string, args: string[], scriptArgs: string[] = ['--'], shell = loginShell()): { file: string; args: string[] } {
+  return { file: shell, args: ['-l', '-i', '-c', LAUNCH_SCRIPT, 'smartdd', ...scriptArgs, command, ...args] };
+}
+
 /** Variables left by a parent Claude Code (e.g. when SmartDD is started from one) that change CLI behaviour. */
 export const PARENT_AGENT_VARS = ['CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_SSE_PORT'];

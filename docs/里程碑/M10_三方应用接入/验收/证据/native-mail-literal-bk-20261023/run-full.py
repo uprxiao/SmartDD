@@ -1,0 +1,6 @@
+from pathlib import Path
+from datetime import datetime,timezone
+import subprocess,json
+r=Path('/private/tmp/m10-native-mail-literal-bk-20261023');files=['src/main/core/applications/__tests__/mail-send-data.test.ts','src/main/core/applications/__tests__/native-user-messages.test.ts','src/main/core/applications/__tests__/native-user-inputs.test.ts','src/main/core/applications/__tests__/native-mail-context.test.ts','src/main/core/applications/__tests__/native-mail-intent.test.ts','src/main/core/applications/__tests__/ordered-native-mail-context.test.ts','src/main/core/applications/__tests__/native-literal-mail-intent.test.ts'];args=['pnpm','test',*files,'--maxWorkers=1','--testTimeout=15000','--reporter=verbose','--reporter=json','--outputFile='+str(r/'full-report.json')];at=datetime.now(timezone.utc).isoformat()
+with(r/'full.txt').open('w')as out:p=subprocess.run(args,cwd=r/'candidate',stdout=out,stderr=subprocess.STDOUT)
+(r/'full-result.json').write_text(json.dumps({'command':args,'startedAt':at,'endedAt':datetime.now(timezone.utc).isoformat(),'exitCode':p.returncode,'layer':'software actual local host/SQLite/bundles/loopback SMTP;synthetic native user records,not real Agent/App'},indent=2)+'\n');print('full exit',p.returncode,flush=True);raise SystemExit(p.returncode)

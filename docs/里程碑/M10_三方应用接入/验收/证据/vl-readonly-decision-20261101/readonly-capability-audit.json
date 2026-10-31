@@ -1,0 +1,78 @@
+{
+  "schema": "m10-vl-readonly-capability-v1",
+  "appAsar": "cb9e655016e093a5afe4f97a1976c4c6b6bf9831e859433922fa939da39543b9",
+  "package": {
+    "appId": "zentao",
+    "hash": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+    "path": "apps/zentao/1.0.3/c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+    "version": "1.0.3"
+  },
+  "manifestSha256": "ae056da1ebc70239d8b9f8e3e2ebc1e34eeaa373caa23b1a1612b82976ed9466",
+  "operationsSha256": "5191344c8f53e42f865dcfaff693f17fe85b0804290e17a5fd647049c75656db",
+  "permissions": [
+    "zentao.read"
+  ],
+  "tools": [
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "contractMajor": 1,
+      "inputSchemaPath": "schemas/tools/smartdd_zentao_work_list_v1.input.json",
+      "name": "smartdd_zentao_work_list_v1",
+      "outputSchemaPath": "schemas/tools/smartdd_zentao_work_list_v1.output.json",
+      "permission": "zentao.read"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "contractMajor": 1,
+      "inputSchemaPath": "schemas/tools/smartdd_zentao_object_get_v1.input.json",
+      "name": "smartdd_zentao_object_get_v1",
+      "outputSchemaPath": "schemas/tools/smartdd_zentao_object_get_v1.output.json",
+      "permission": "zentao.read"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "contractMajor": 1,
+      "inputSchemaPath": "schemas/tools/smartdd_zentao_resource_v1.input.json",
+      "name": "smartdd_zentao_resource_v1",
+      "outputSchemaPath": "schemas/tools/smartdd_zentao_resource_v1.output.json",
+      "permission": "zentao.read"
+    }
+  ],
+  "operations": {
+    "smartdd_zentao_object_get_v1": {
+      "method": "zentao.object.get",
+      "retry": "safe-read",
+      "semantics": "read",
+      "timeoutMs": 30000
+    },
+    "smartdd_zentao_resource_v1": {
+      "method": "zentao.resource.read",
+      "retry": "safe-read",
+      "semantics": "read",
+      "timeoutMs": 30000
+    },
+    "smartdd_zentao_work_list_v1": {
+      "method": "zentao.work.list",
+      "retry": "safe-read",
+      "semantics": "read",
+      "timeoutMs": 30000
+    }
+  },
+  "allReadonly": true,
+  "method": "Read-only file audit;no new App/CLI/HTTP/write actions"
+}

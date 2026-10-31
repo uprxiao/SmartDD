@@ -1,0 +1,57 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-task-retention.test.ts src/main/core/applications/__tests__/legacy-task-evidence.test.ts src/main/db/migrations.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/db/migrations.test.ts (19 tests | 1 failed) 79ms
+     × creates the schema on an empty database and records the hash 7ms
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts (19 tests | 1 failed) 572ms
+     × does not replace a conflicting existing source reference 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > creates the schema on an empty database and records the hash
+AssertionError: expected [ '__drizzle_migrations', …(68) ] to deeply equal [ '__drizzle_migrations', …(67) ]
+
+- Expected
++ Received
+
+@@ -27,10 +27,11 @@
+    "capability_bridge_observations",
+    "capability_builtin_package_sources",
+    "capability_discovery_roots",
+    "capability_install_journal",
+    "capability_lease_resources",
++   "capability_legacy_migration_preparations",
+    "capability_package_contracts",
+    "capability_packages",
+    "capability_resource_dependencies",
+    "capability_resource_leases",
+    "capability_resource_operations",
+
+ ❯ src/main/db/migrations.test.ts:102:24
+    100|     const db = memoryDb();
+    101|     expect(runBundledMigrations(db)).toEqual(ALL);
+    102|     expect(tables(db)).toEqual([
+       |                        ^
+    103|       '__drizzle_migrations',
+    104|       'ai_profiles',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-task-retention.test.ts > durable M4 source retention before schema2 migration, not Agent execution > does not replace a conflicting existing source reference
+SqliteError: FOREIGN KEY constraint failed
+ ❯ src/main/core/applications/__tests__/legacy-task-retention.test.ts:74:185
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  2 failed | 64 passed (66)
+   Start at  02:14:48
+   Duration  1.80s (transform 165ms, setup 0ms, import 427ms, tests 1.16s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

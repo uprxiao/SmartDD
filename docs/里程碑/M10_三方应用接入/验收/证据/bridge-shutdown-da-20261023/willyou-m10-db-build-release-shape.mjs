@@ -1,0 +1,11 @@
+import {build} from '/Users/hx/hx/hxWork/SmartDD/node_modules/vite/dist/node/index.js';
+import {resolve} from 'node:path';
+import {builtinModules} from 'node:module';
+import {readFileSync,writeFileSync} from 'node:fs';
+const entry=resolve('src/main/core/applications/bridge-runtime.ts');
+const old="const close = () => { client.close(); void server.close().catch(() => undefined); };";
+const replacement="let closing = false;\n  const close = () => {\n    if (closing) return;\n    closing = true;\n    process.stdin.unpipe(input);\n    process.stdin.destroy();\n    input.destroy();\n    client.close();\n    void server.close().catch(() => undefined);\n  };";
+const legal=[...new Set(['licenses/M10/bridge/mcp-server-LICENSE.txt','licenses/M10/bridge/mcp-core-LICENSE.txt','licenses/M10/bridge/zod-LICENSE.txt'].map(path=>readFileSync(path,'utf8')))].join('\n\n');
+let seen=false;
+await build({configFile:false,publicDir:false,resolve:{alias:{'@shared':resolve('src/shared')}},ssr:{noExternal:true},plugins:[{name:'isolated-shutdown-candidate',enforce:'pre',transform(code,id){if(id===entry){if(!code.includes(old))throw Error('source mismatch');seen=true;const fixed=code.replace(old,replacement);writeFileSync('/private/tmp/willyou-m10-da-runtime-candidate.ts',fixed);return fixed;}}}],build:{ssr:entry,target:'node22',outDir:'/private/tmp/willyou-m10-da-runtime',emptyOutDir:false,minify:false,sourcemap:false,rollupOptions:{external:id=>id.startsWith('node:')||builtinModules.includes(id),output:{banner:'/*! WillYou application bridge; bundled upstream license texts follow.\n'+legal.replaceAll('*/','* /')+'\n*/',format:'cjs',entryFileNames:'mcp-bridge.cjs',inlineDynamicImports:true}}}});
+if(!seen)throw Error('candidate was not applied');

@@ -1,0 +1,41 @@
+{
+  "branch": "feature/0.0.2",
+  "commit": "25652b34c43e9ddeaf32740d9bfd9480040b220e",
+  "productionBuild": "GT",
+  "asarSha256": "73a739a8d9233173cae5ca80ae458a3819dc86b568dae2ac04e696a5fd49e36c",
+  "softwareTests": {
+    "privateBrokerAndSupervisor": 38,
+    "connectionScope": 1,
+    "brokerScopePriorHA": 1
+  },
+  "runs": [
+    {
+      "label": "restart",
+      "checks": 13,
+      "validForDual": false,
+      "root": "/private/tmp/willyou-m10-native-service-dg7tBK"
+    },
+    {
+      "label": "dual-misconfigured",
+      "checks": 8,
+      "validForDual": false,
+      "root": "/private/tmp/willyou-m10-native-service-H55D1O"
+    },
+    {
+      "label": "dual",
+      "checks": 11,
+      "validForDual": true,
+      "root": "/private/tmp/willyou-m10-native-service-qVONTu"
+    }
+  ],
+  "hashes": {
+    "scripts/applications/native-codex-service.mjs": "5c39f06ba42d928009c5def2284709502eeff9e40fbf7169b6a849a29856ab93",
+    "scripts/applications/fixtures/external-skill-client.mjs": "4bf8c2c9b6bd36cad00e561ff7833a5cfc83210637ae16f27467848f26fc7475",
+    "scripts/applications/fixtures/broker-replay-observer.mjs": "c5984286555a696f9a07cc2eadcae29c2d15f1fe1f422d342a0737a9ee65cd3a",
+    "scripts/applications/acceptance/broker-scope.test.ts": "f2856088c76e23a8da04f60d9702ecc4e7908f7b2d26254ea795b6297bd331cf",
+    "scripts/applications/acceptance/connection-scope.test.ts": "140126371fcccad0dd65a437a974d8a9539ad4c4bdf380b9baed6552701a6f0d",
+    "src/main/core/applications/__tests__/private-broker.test.ts": "851ed13f6a579196e0b6d15b50f0c4c6b2efbcd14ac3fdbb6fd0bd56f55ab6ed",
+    "src/main/core/applications/__tests__/bridge-supervisor.test.ts": "e2b0a39ecf41dee96a51865ce8d79620caa0ec97827b954451a4869e70d45c26"
+  },
+  "driverNote": "Parameter dependency assertions added after misconfigured dual run; restart run used same behavior before those assertions."
+}

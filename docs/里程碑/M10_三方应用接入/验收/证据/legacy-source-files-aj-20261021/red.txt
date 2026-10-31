@@ -1,0 +1,46 @@
+
+> smartdd@0.0.5 test /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/legacy-session-migration.test.ts src/main/core/applications/__tests__/legacy-agent-load.test.ts -t 'after normal transient cleanup|after ended-run cleanup' --maxWorkers=1
+
+[1021/150012.248323:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/m10-legacy-recovery-r-20261021/work-r4
+
+[1021/150014.313000:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts (29 tests | 2 failed | 27 skipped) 1102ms
+   × plans the original claude-code paths from the durable source after ended-run cleanup 655ms
+   × plans the original codex paths from the durable source after ended-run cleanup 446ms
+[1021/150018.187187:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts (37 tests | 2 failed | 35 skipped) 881ms
+   × converts the retained claude-code source after normal transient cleanup and plans the same original paths 493ms
+   × converts the retained codex source after normal transient cleanup and plans the same original paths 385ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > plans the original claude-code paths from the durable source after ended-run cleanup
+ FAIL  src/main/core/applications/__tests__/legacy-agent-load.test.ts > plans the original codex paths from the durable source after ended-run cleanup
+ApplicationError: 原M4文件仍需核查或修复
+ ❯ problem src/main/core/applications/legacy-agent-load.ts:16:155
+
+ ❯ legacyPlannerInput src/main/core/applications/legacy-agent-load.ts:46:42
+ ❯ AgentAdapterRegistry.planLegacy src/main/core/applications/agent-adapter-registry.ts:96:20
+ ❯ src/main/core/applications/__tests__/legacy-agent-load.test.ts:84:81
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > converts the retained claude-code source after normal transient cleanup and plans the same original paths
+ FAIL  src/main/core/applications/__tests__/legacy-session-migration.test.ts > converts the retained codex source after normal transient cleanup and plans the same original paths
+ApplicationError: 原M4文件未按原依据完整核验，不能迁移
+ ❯ LegacySessionMigration.migrate src/main/core/applications/legacy-session-migration.ts:41:159
+
+ ❯ src/main/core/applications/__tests__/legacy-session-migration.test.ts:124:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 62 skipped (66)
+   Start at  15:00:14
+   Duration  6.06s (transform 1.61s, setup 0ms, import 3.28s, tests 1.98s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

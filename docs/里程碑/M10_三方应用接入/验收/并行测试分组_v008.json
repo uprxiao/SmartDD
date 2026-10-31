@@ -1,0 +1,70 @@
+{
+  "schema": "m10-release-test-groups-v1",
+  "runId": "m10-v008-20261031T170451-4q23",
+  "basis": "用户 2026-11-01 授权六步整合发布；M10 R1.6+12.21+12.22；M9 R3.4-P1 的已发布 v0.0.7 行为",
+  "counting": "Release regression only; no additional milestone cases or changes to existing 69/72 authority. Story T09/T10 stay deferred.",
+  "groups": [
+    {
+      "id": "V008-G001",
+      "owner": "coordinator",
+      "scope": "14 conflicts, semantic integration, source/type/preparation",
+      "status": "completed",
+      "resources": [
+        "production-edits",
+        "build"
+      ]
+    },
+    {
+      "id": "V008-G002",
+      "owner": "test-executor-1",
+      "scope": "full pnpm test, including task/capability/file/application regressions; no real Claude launch",
+      "status": "delivered_with_two_fixture_deadline_failures_then_targeted_calibration_passed",
+      "resources": [
+        "heavy-native-tests"
+      ]
+    },
+    {
+      "id": "V008-G003",
+      "owner": "test-executor-2",
+      "scope": "release helper, checkout path, metadata and workflow checks on same frozen baseline",
+      "status": "completed_released",
+      "resources": [
+        "light-software-tests"
+      ]
+    },
+    {
+      "id": "V008-G004",
+      "owner": "coordinator",
+      "scope": "one rebuilt packaged App, M9/M10 UI and Codex lifecycle, isolated upgrade data preservation",
+      "status": "completed_verified_released",
+      "resources": [
+        "UI",
+        "heavy-native-tests"
+      ],
+      "acceptance": "M9 file edit/save/draft and terminal reference/close; M10 connection/Bug display/Skill-MCP/mail draft/cancel-resume; no Enter on reference; identity and old data preserved. Real-resource outcomes may be reused only with exact unchanged implementation/hash scope; current cross-layer flows must use new package.",
+      "sourceCommit": "52a3ba6b780cb0f93a400de1e931b3549f94a01d",
+      "packageAsar": "409a8714b25de63acfa3fad1df9c28ed453c6b9a15f55ffcf68dc8c402c0da77",
+      "driverManifest": "76369828c6741bfe00771a2e74408943f37e35f9271da9c08e7c75428d6aa6ab",
+      "order": [
+        "Original v007 to original candidate v008 project/save/durable-draft UI migration;normal new quit",
+        "Original P09 real Codex/PTY/MCP UI plus M9 dirty cancel/save-close cross",
+        "Original long-path/detail-Skill native Codex UI plus same-package DMG remove/reinstall/native resume"
+      ],
+      "reuse": "Previous real Bug/Mail proofs only for 471 unchanged application inputs and exact content-verified app/adapter/runtime bundles;no fresh Story/real-model inference claim",
+      "actualSourceCommit": "52a3ba6b780cb0f93a400de1e931b3549f94a01d",
+      "evidence": "证据/vo-v008-20261101/ui-summary.json"
+    },
+    {
+      "id": "V008-G005",
+      "owner": "test-executor-2",
+      "scope": "Merged shared prototype pure model/parity, file model and hosting contract tests; no UI/App/CLI/model/native build",
+      "status": "completed_released",
+      "resources": [
+        "light-software-tests"
+      ],
+      "basis": "Frozen prototype byte inputs from candidate52a; dependencies installed from unchanged package-lock; does not count as packaged App acceptance",
+      "handoffSha256": "35142493ea54ad44e748930e36f5a6b08faf7c360740df8168dac451402f17c2"
+    }
+  ],
+  "updatedAt": "2026-10-31T18:33:29.896326+00:00"
+}

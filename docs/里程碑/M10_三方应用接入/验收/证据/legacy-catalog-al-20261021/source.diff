@@ -1,0 +1,407 @@
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -13,13 +13,16 @@
+ import type { OwnedCapabilityRun } from './run-registry';
+ import { withResourceLock } from './resource-lock';
+ import { withDiscoveryLock } from './discovery-catalog-lock';
+-import { LegacyCapabilityResourceAdopter } from './legacy-resource-adopter';
++import { LegacyCapabilityResourceAdopter,readLegacyOwnedTree } from './legacy-resource-adopter';
++import {writeOwnedTree} from '../capabilities/files';
++import {treeHash} from '../capabilities/assets';
++import {verifyLegacyDiscoveryEntry,assertDiscoveryPath} from './legacy-discovery';
+ import { PackageRegistry } from './package-registry';
+ import { applicationSkillContentHash } from './session-registry';
+ import { projectSkillName, standardNativeSkillName } from './session-projector';
+-const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(64).regex(/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/);
++const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(128).regex(/^smartdd-[a-z0-9]+(?:-[a-z0-9]+)*$/);
+ const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
+-const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash }).strict();
++const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict().refine(e=>e.format?e.projectionHash===e.sourceHash&&/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/.test(e.nativeName)&&e.nativeName.endsWith('-'+e.sourceHash.slice(0,16)):/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e.nativeName)&&e.nativeName.length<=64,'共享目录格式、名称或摘要不同');
+ const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
+ const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: z.enum(['claude-code', 'codex']), phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
+ const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
+@@ -28,6 +31,7 @@
+ type Pending = z.infer<typeof pendingSchema>;
+ type Entry = z.infer<typeof entrySchema>;
+ export interface DiscoveryProjectionSource {
++    format?: 'legacy-tree-v1';
+     nativeName: string;
+     sourceHash: string;
+     sourceResourceId: string;
+@@ -38,7 +42,9 @@
+     entry: Entry;
+     relativePath: string;
+     source: DiscoveryProjectionSource;
+-    bundle: OwnedBundle;
++    hash: string;
++    files: Readonly<Record<string,Uint8Array>>;
++    bundle: OwnedBundle | null;
+ }
+ export interface DiscoveryReservation {
+     run: OwnedCapabilityRun;
+@@ -169,6 +175,13 @@
+         for (const entry of parsed.entries) {
+             if (entry.path !== join(this.home, '.agents/skills', entry.nativeName, 'SKILL.md'))
+                 throw new ApplicationError('OWNERSHIP_CONFLICT', '投影越过实际发现根');
++            if(entry.format==='legacy-tree-v1'){
++                const identity=verifyLegacyDiscoveryEntry(entry,this.home);
++                if(entry.storeId===this.store.storeId){const r=this.store.get(entry.resourceId),deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),source=this.store.get(identity.sourceResourceId);
++                    if(r.kind!=='legacy-agent-projection'||r.pathScope!=='H'||r.scopeIdentity!==this.homeId||r.contentHash!==entry.projectionHash||r.state!=='ready'||r.integrity!=='valid'||this.store.directory(r)!==dirname(entry.path)||canonicalJson(deps)!==canonicalJson([identity.sourceResourceId])||source.state!=='ready'||source.integrity!=='valid'||source.pathScope!=='C'||canonicalJson({...readLegacyOwnedTree(this.store.directory(source),source.contentHash)})!==canonicalJson({...identity.files}))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H投影本机记录或原来源不完整');}
++                continue;
++            }
++            assertDiscoveryPath(this.home,entry.path);
+             const manifest = verifyOwnedBundle(dirname(entry.path), entry.projectionHash, entry.storeId);
+             if (manifest.metadata.kind !== 'codex-agent-projection-v1' || manifest.metadata.homeId !== this.homeId || manifest.metadata.nativeName !== entry.nativeName || manifest.metadata.sourceHash !== entry.sourceHash)
+                 throw new ApplicationError('HASH_MISMATCH', '共享投影的原始身份不同');
+@@ -187,15 +200,25 @@
+         return sources.map(source => {
+             name.parse(source.nativeName);
+             hash.parse(source.sourceHash);
++            if(source.format==='legacy-tree-v1'){
++                const skillId=source.sourceResourceId.slice('standard-skill:'.length).split(':')[0],expected=`smartdd-${skillId}-${source.sourceHash.slice(0,16)}`,files=Object.fromEntries(Object.entries(source.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')]));
++                if(!/^[a-z][a-z0-9-]{0,63}$/.test(skillId)||source.sourceResourceId!==`standard-skill:${skillId}:${source.sourceHash}`||source.nativeName!==expected||source.executables.size||treeHash(files)!==source.sourceHash||Object.entries(files).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(source.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H投影必须沿用完整原标准Skill和名称');
++                const relativePath='.agents/skills/'+expected,entry:Entry={resourceId:'h-projection:'+digest(canonicalJson({homeId:this.homeId,storeId:this.store.storeId,nativeName:expected,hash:source.sourceHash})),storeId:this.store.storeId,path:join(this.home,relativePath,'SKILL.md'),nativeName:expected,sourceHash:source.sourceHash,projectionHash:source.sourceHash,format:'legacy-tree-v1'};return{entry,relativePath,source,hash:source.sourceHash,files:source.files,bundle:null};
++            }
++            if(!/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.nativeName)||source.nativeName.length>64)throw new ApplicationError('INVALID_INPUT','新格式投影名称无效');
+             const bundle = ownedBundle({ kind: 'codex-agent-projection-v1', homeId: this.homeId, nativeName: source.nativeName, sourceHash: source.sourceHash, sourceResourceId: source.sourceResourceId }, source.files, source.executables), relativePath = '.agents/skills/' + source.nativeName;
+             const entry: Entry = { resourceId: 'h-projection:' + digest(canonicalJson({ homeId: this.homeId, storeId: this.store.storeId, nativeName: source.nativeName, hash: bundle.hash })), storeId: this.store.storeId, path: join(this.home, relativePath, 'SKILL.md'), nativeName: source.nativeName, sourceHash: source.sourceHash, projectionHash: bundle.hash };
+-            return { entry, relativePath, source, bundle };
++            return { entry, relativePath, source, hash:bundle.hash,files:bundle.files,bundle };
+         }).sort((a, b) => compareCodePoints(a.entry.nativeName, b.entry.nativeName));
+     }
+     private verifySource(plan: Planned): void {
+         const resource = this.store.get(plan.source.sourceResourceId);
+         if (resource.pathScope !== 'C' || resource.state !== 'ready' || resource.integrity !== 'valid')
+             throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影原资源尚未就绪');
++        if(plan.entry.format==='legacy-tree-v1'){
++            const original=new LegacyCapabilityResourceAdopter(this.store).verify(resource);
++            if(resource.kind!=='standard-skill'||resource.contentHash!==plan.hash||canonicalJson(Object.keys(original).sort())!==canonicalJson(Object.keys(plan.files).sort())||Object.entries(original).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(plan.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H内容与本机完整来源不同');return;
++        }
+         let files: Record<string, Buffer> = {}, executables = new Set<string>();
+         if (resource.kind === 'standard-skill') {
+             const skillId = resource.resourceId.slice('standard-skill:'.length).split(':')[0];
+@@ -222,8 +245,17 @@
+         if (!files['SKILL.md'])
+             throw new ApplicationError('INVALID_PACKAGE', '原Skill入口缺失');
+         files['SKILL.md'] = projectSkillName(files['SKILL.md'], plan.entry.nativeName);
+-        if (canonicalJson(Object.keys(files).sort()) !== canonicalJson(Object.keys(plan.bundle.files).sort()) || Object.keys(files).some(n => !files[n].equals(plan.bundle.files[n])) || canonicalJson([...executables].sort()) !== canonicalJson([...plan.source.executables].sort()))
++        if (canonicalJson(Object.keys(files).sort()) !== canonicalJson(Object.keys(plan.files).sort()) || Object.keys(files).some(n => !files[n].equals(plan.files[n])) || canonicalJson([...executables].sort()) !== canonicalJson([...plan.source.executables].sort()))
+             throw new ApplicationError('HASH_MISMATCH', '共享投影不是原Skill完整内容');
++    }
++    private verifyProjection(plan:Planned,path:string):void{
++        assertDiscoveryPath(this.home,path);
++        if(plan.entry.format==='legacy-tree-v1'){const files=readLegacyOwnedTree(path,plan.hash);if(canonicalJson(Object.keys(files).sort())!==canonicalJson(Object.keys(plan.files).sort())||Object.entries(files).some(([p,t])=>!Buffer.from(t).equals(Buffer.from(plan.files[p]))))throw new ApplicationError('HASH_MISMATCH','原H静态内容不同');}
++        else verifyOwnedBundle(path,plan.hash,this.store.storeId);
++    }
++    private writeProjection(plan:Planned,path:string):void{
++        if(plan.bundle)writeOwnedBundle(path,plan.bundle,this.store.storeId);
++        else writeOwnedTree(path,Object.fromEntries(Object.entries(plan.files).map(([p,b])=>[p,Buffer.from(b).toString('utf8')])),join(this.root,'staging-conflicts'));
+     }
+     private async register(plans: Planned[], pending: Pending): Promise<void> {
+         await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+@@ -242,8 +274,14 @@
+                 const old = this.store.sqlite.prepare('SELECT resource_id FROM capability_resources WHERE resource_id=?').get(p.entry.resourceId);
+                 if (old) {
+                     const r = this.store.get(p.entry.resourceId);
+-                    if (r.pathScope !== 'H' || r.scopeIdentity !== this.homeId || r.relativePath !== p.relativePath || r.contentHash !== p.bundle.hash)
++                    if (r.pathScope !== 'H' || r.scopeIdentity !== this.homeId || r.relativePath !== p.relativePath || r.contentHash !== p.hash)
+                         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影资源记录身份不同');
++                    if(p.entry.format==='legacy-tree-v1'){const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(r.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);
++                        if(r.kind!=='legacy-agent-projection'||r.ownerStoreId!==this.store.storeId||canonicalJson(deps)!==canonicalJson([source.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原H登记或依赖缺失，不重新签认');}
++                    if(p.entry.format==='legacy-tree-v1'&&r.state==='ready'&&!present(dirname(p.entry.path))){
++                        if(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases l WHERE l.state<>'released' AND (l.resource_id=? OR EXISTS(SELECT 1 FROM capability_lease_resources lr WHERE lr.lease_id=l.lease_id AND lr.resource_id=?)) LIMIT 1").get(r.resourceId,r.resourceId))throw new ApplicationError('RESOURCE_BUSY','原H路径仍有未知或活动占用');
++                        this.store.sqlite.prepare("UPDATE capability_resources SET state='staged',integrity='unknown',operation_id=?,generation=generation+1 WHERE resource_id=?").run(pending.operationId,r.resourceId);
++                    }
+                     if (r.state !== 'ready' && r.operationId !== pending.operationId) {
+                         const prior = this.store.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(r.operationId) as {
+                             state: string;
+@@ -254,7 +292,7 @@
+                     }
+                 }
+                 else
+-                    this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_identity,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,'agent-projection',?,?,'H',?,?,?,'staged',1,'unknown',?)").run(p.entry.resourceId, p.bundle.hash, this.store.storeId, 'H/' + this.homeId + '/' + p.relativePath + '/' + p.bundle.hash, this.homeId, p.relativePath, pending.operationId);
++                    this.store.sqlite.prepare("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,scope_identity,scope_relative_path,state,generation,integrity,operation_id) VALUES(?,?,?,?,'H',?,?,?,'staged',1,'unknown',?)").run(p.entry.resourceId,p.entry.format?'legacy-agent-projection':'agent-projection', p.hash, this.store.storeId, 'H/' + this.homeId + '/' + p.relativePath + '/' + p.hash, this.homeId, p.relativePath, pending.operationId);
+                 this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_resource_dependencies VALUES(?,?)').run(p.entry.resourceId, source.resourceId);
+                 const leaseId = digest(pending.operationId + ':' + p.entry.resourceId);
+                 this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'install',?,?,?,?,'active',?) ON CONFLICT(lease_id) DO UPDATE SET state='active',host_instance_id=excluded.host_instance_id,pid=excluded.pid,process_started_at=excluded.process_started_at,ended_at=NULL").run(leaseId, p.entry.resourceId, pending.operationId, this.instanceId, this.host.pid, this.host.startedAt, now);
+@@ -275,8 +313,8 @@
+     private mine(pending: Pending): void { const current = this.pending(); if (!current || current.operationId !== pending.operationId || current.token !== pending.token || canonicalJson(current.owner) !== canonicalJson(this.owner) || canonicalJson(current) !== canonicalJson(pending))
+         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '共享目录维护所有权已改变'); }
+     private async phase(pending: Pending, phase: Pending['phase']): Promise<void> { await this.lock(() => { this.mine(pending); pending.phase = phase; atomicJson(join(this.root, 'pending.json'), pending); }); }
+-    private async finishRecords(pending: Pending, state: 'ready' | 'recovery-required' | 'removed', operationState: string): Promise<void> { await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => { for (const entry of pending.entries)
+-        this.store.sqlite.prepare('UPDATE capability_resources SET state=?,integrity=? WHERE resource_id=? AND operation_id=?').run(state, state === 'ready' ? 'valid' : state === 'removed' ? 'invalid' : 'unknown', entry.resourceId, pending.operationId); this.store.sqlite.prepare('UPDATE capability_resource_operations SET state=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(operationState, timestamp(), pending.operationId, this.store.storeId); this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install'").run(timestamp(), pending.operationId); }).immediate()); }
++    private async finishRecords(pending: Pending, state: 'ready' | 'recovery-required' | 'removed', operationState: string,verify?:()=>void): Promise<void> { await withResourceLock(this.store.root, () => {verify?.();return this.store.sqlite.transaction(() => { for (const entry of pending.entries)
++        this.store.sqlite.prepare('UPDATE capability_resources SET state=?,integrity=? WHERE resource_id=? AND operation_id=?').run(state, state === 'ready' ? 'valid' : state === 'removed' ? 'invalid' : 'unknown', entry.resourceId, pending.operationId); this.store.sqlite.prepare('UPDATE capability_resource_operations SET state=?,updated_at=? WHERE operation_id=? AND owner_store_id=?').run(operationState, timestamp(), pending.operationId, this.store.storeId); this.store.sqlite.prepare("UPDATE capability_resource_leases SET state='released',ended_at=? WHERE owner_id=? AND owner_kind='install'").run(timestamp(), pending.operationId); }).immediate();}); }
+     async publish(sources: readonly DiscoveryProjectionSource[], options: {
+         signal?: AbortSignal;
+         waitMs?: number;
+@@ -319,7 +357,7 @@
+                         if (old && canonicalJson(old) !== canonicalJson(p.entry))
+                             throw new ApplicationError('OWNERSHIP_CONFLICT', '同名共享投影属于其他数据根或版本，不能改签');
+                     }
+-                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry)))) {
++                    if (plans.every(p => current.entries.some(e => canonicalJson(e) === canonicalJson(p.entry))&&!(p.entry.format==='legacy-tree-v1'&&!present(dirname(p.entry.path))))) {
+                         reuse = true;
+                         return;
+                     }
+@@ -332,6 +370,7 @@
+                 const snapshot = await this.snapshot();
+                 this.verify(snapshot);
+                 for (const p of plans) {
++                    this.verifySource(p);
+                     const r = this.store.get(p.entry.resourceId);
+                     if (r.state !== 'ready' || r.integrity !== 'valid')
+                         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原共享资源账尚未完成');
+@@ -361,11 +400,11 @@
+                 this.verifySource(p);
+                 const target = dirname(p.entry.path), stage = join(staging, p.entry.nativeName);
+                 if (present(target))
+-                    verifyOwnedBundle(target, p.bundle.hash, this.store.storeId);
++                    this.verifyProjection(p,target);
+                 else {
+                     if (!present(stage))
+-                        writeOwnedBundle(stage, p.bundle, this.store.storeId);
+-                    verifyOwnedBundle(stage, p.bundle.hash, this.store.storeId);
++                        this.writeProjection(p,stage);
++                    this.verifyProjection(p,stage);
+                 }
+             }
+             this.checkpoint?.('materialized');
+@@ -395,29 +434,34 @@
+                         throw new ApplicationError('RESOURCE_STATE_CHANGED', '原目录发布依赖占用已改变');
+                 } for (const p of plans) {
+                     const r = this.store.get(p.entry.resourceId), source = this.store.get(p.source.sourceResourceId);
+-                    if (r.contentHash !== p.bundle.hash || ['deleting', 'removed'].includes(r.state) || source.state !== 'ready' || source.integrity !== 'valid')
++                    if (r.contentHash !== p.hash || ['deleting', 'removed'].includes(r.state) || source.state !== 'ready' || source.integrity !== 'valid')
+                         throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布前原资源状态已改变');
+                     this.store.sqlite.prepare("UPDATE capability_resources SET state='verified',integrity='valid' WHERE resource_id=? AND state<>'ready'").run(r.resourceId);
+                 } }).immediate());
+                 if (options.signal?.aborted)
+                     throw new ApplicationError('CANCELED', '共享目录发布前已取消');
+                 ensureStoreDirectory(this.home, '.agents/skills');
++                for(const p of plans){this.verifySource(p);const stage=join(staging,p.entry.nativeName);if(!present(dirname(p.entry.path)))this.verifyProjection(p,stage);}
+                 for (const p of plans) {
+                     const target = dirname(p.entry.path);
+                     if (present(target))
+-                        verifyOwnedBundle(target, p.bundle.hash, this.store.storeId);
++                        this.verifyProjection(p,target);
+                     else {
+                         renameSync(join(staging, p.entry.nativeName), target);
+                         durableDirectory(dirname(target));
+                     }
+                     this.checkpoint?.('renamed');
+                 }
++                for(const p of plans){this.verifySource(p);this.verifyProjection(p,dirname(p.entry.path));}
+                 current = { schema: 1, homeId: this.homeId, entries: expectedEntries, generation: this.generation(expectedEntries) };
+                 atomicJson(join(this.root, 'catalog.json'), current);
+                 work.phase = 'catalog-published';
+                 atomicJson(join(this.root, 'pending.json'), work);
+                 this.checkpoint?.('catalog-published');
+-                await this.finishRecords(work, 'ready', 'committed');
++                await this.finishRecords(work, 'ready', 'committed',()=>{
++                    this.mine(work);if(canonicalJson(this.catalog())!==canonicalJson(current))throw new ApplicationError('RESOURCE_STATE_CHANGED','最终共享目录在就绪提交前变化');
++                    for(const p of plans){this.verifySource(p);this.verifyProjection(p,dirname(p.entry.path));}
++                });
+                 unlinkSync(join(this.root, 'pending.json'));
+                 durableDirectory(this.root);
+             });
+--- /dev/null
++++ b/src/main/core/applications/legacy-discovery.ts
+@@ -0,0 +1,25 @@
++import {lstatSync,realpathSync} from 'node:fs';
++import {dirname,join,relative} from 'node:path';
++import {ApplicationError} from '@shared/applications';
++import type {AgentLoadRequest} from '@shared/agent-adapters';
++import {readLegacyOwnedTree} from './legacy-resource-adopter';
++
++/** Read only: never creates parents or treats a matching prefix as ownership. */
++export function assertDiscoveryPath(home:string,path:string):void{
++ if(realpathSync(home)!==home||!path.startsWith(home+'/')||join(home,relative(home,path))!==path)throw new ApplicationError('OWNERSHIP_CONFLICT','发现路径不是原HOME内的规范路径');
++ let at=home;
++ for(const part of relative(home,path).split('/')){
++  at=join(at,part);const stat=lstatSync(at);
++  if(stat.isSymbolicLink())throw new ApplicationError('OWNERSHIP_CONFLICT','发现路径含链接，保留原路径');
++ }
++}
++/** A schema1 marker has no storeId. This proves the exact legacy format/content
++ * for read-only filtering; it never assigns a foreign tree to this store. */
++export function verifyLegacyDiscoveryEntry(entry:NonNullable<AgentLoadRequest['catalog']>['entries'][number],home:string){
++ if(entry.format!=='legacy-tree-v1'||entry.projectionHash!==entry.sourceHash||entry.path!==join(home,'.agents/skills',entry.nativeName,'SKILL.md'))throw new ApplicationError('OWNERSHIP_CONFLICT','原H目录格式、路径或摘要不同');
++ const match=/^smartdd-([a-z][a-z0-9-]{0,63})-([a-f0-9]{16})$/.exec(entry.nativeName);
++ if(!match||match[2]!==entry.sourceHash.slice(0,16))throw new ApplicationError('HASH_MISMATCH','原H目录名与原完整摘要不同');
++ assertDiscoveryPath(home,entry.path);
++ const files=readLegacyOwnedTree(dirname(entry.path),entry.projectionHash);
++ return{skillId:match[1],sourceResourceId:`standard-skill:${match[1]}:${entry.sourceHash}`,files};
++}
+--- a/src/main/core/applications/legacy-resource-adopter.ts
++++ b/src/main/core/applications/legacy-resource-adopter.ts
+@@ -11,7 +11,8 @@
+   const files:Record<string,string>=Object.create(null);let count=0,total=0,visited=0;
+   const walk=(directory:string,depth:number)=>{
+    const dir=lstatSync(directory);if(!dir.isDirectory()||dir.isSymbolicLink()||depth>32||++visited>4096)throw Error('legacy directory');
+-   for(const name of readdirSync(directory)){
++   const names=readdirSync(directory);if(!names.length)throw Error('undeclared empty directory');
++   for(const name of names){
+     const path=join(directory,name),stat=lstatSync(path);if(stat.isSymbolicLink()||(!stat.isDirectory()&&!stat.isFile()))throw Error('legacy file');if(stat.isDirectory()){walk(path,depth+1);continue;}
+     if(++count>4096||stat.nlink!==1||(stat.mode&0o111)!==0||stat.size>4*1024*1024||(total+=stat.size)>32*1024*1024)throw Error('legacy budget/ownership');
+     const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);try{const before=fstatSync(fd);if(before.dev!==stat.dev||before.ino!==stat.ino||before.size!==stat.size||before.ctimeMs!==stat.ctimeMs)throw Error('legacy changed');const buffer=Buffer.alloc(stat.size+1);let length=0;while(length<buffer.length){const n=readSync(fd,buffer,length,buffer.length-length,null);if(!n)break;length+=n;}const bytes=buffer.subarray(0,length),after=fstatSync(fd),text=bytes.toString('utf8');if(length!==stat.size||after.size!==stat.size||after.ino!==stat.ino||after.mtimeMs!==stat.mtimeMs||after.ctimeMs!==stat.ctimeMs||!Buffer.from(text).equals(bytes))throw Error('legacy changed bytes');files[relative(root,path)]=text;}finally{closeSync(fd);}
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -5,6 +5,7 @@
+ import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import { canonicalJson, digest } from './manifest';
+ import {legacyPlannerInput} from './legacy-agent-load';
++import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
+ import { ownedBundle, writeOwnedBundle, verifyOwnedBundle, type OwnedBundleManifest } from './owned-bundle';
+ import type { PublishResource, ResourceRecord, ResourceStore } from './resource-store';
+ interface AdapterRow { agent_id: string;version: string;adapter_hash: string;resource_id: string;manifest_json: string }
+@@ -55,6 +56,7 @@
+       if (new Set(catalog.entries.map(e => e.path)).size !== catalog.entries.length || new Set(catalog.entries.map(e => e.nativeName)).size !== catalog.entries.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','Codex受管目录或名称冲突');
+       for (const entry of catalog.entries) {
+         if (entry.path !== join(input.native.home,'.agents','skills',entry.nativeName,'SKILL.md')) throw new ApplicationError('OWNERSHIP_CONFLICT','目录清单越过实际HOME的受管发现根');
++        if(entry.format==='legacy-tree-v1'){verifyLegacyDiscoveryEntry(entry,input.native.home);continue;}
+         const projection = verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);
+         if (projection.metadata.kind !== 'codex-agent-projection-v1' || projection.metadata.sourceHash !== entry.sourceHash || projection.metadata.nativeName !== entry.nativeName) throw new ApplicationError('HASH_MISMATCH','共享投影来源摘要或原生名称不同');
+       }
+--- a/src/main/core/applications/legacy-agent-load.ts
++++ b/src/main/core/applications/legacy-agent-load.ts
+@@ -11,6 +11,7 @@
+ import {canonicalJson,digest} from './manifest';
+ import {verifyOwnedBundle} from './owned-bundle';
+ import {readLegacyOwnedTree} from './legacy-resource-adopter';
++import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
+ import {legacyRuntimeMetadata,type LegacyTaskEvidence,type LegacySkillVersion} from './legacy-task-evidence';
+ interface Source {source_snapshot_json:string;source_record_json:string;source_snapshot_hash:string;source_identity_json:string;bound_native_session_id:string|null;evidence_json:string;manifest_json:string;manifest_hash:string;state:string}
+ interface ManagedSkill {path:string;nativeName:string;sourceHash:string}
+@@ -54,9 +55,9 @@
+   };
+   if(input.native.runner==='codex'){
+    catalogStamp=checkCatalog();
+-   for(const entry of input.catalog!.entries){if(!/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.nativeName)||entry.path!==join(home,'.agents/skills',entry.nativeName,'SKILL.md'))problem('RESOURCE_RECOVERY_REQUIRED','新格式共享投影路径不符');inside(home,entry.path);const projection=verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);if(projection.metadata.kind!=='codex-agent-projection-v1'||projection.metadata.homeId!==digest(home)||projection.metadata.sourceHash!==entry.sourceHash||projection.metadata.nativeName!==entry.nativeName)problem('RESOURCE_RECOVERY_REQUIRED','新格式共享投影来源不同');if(entry.storeId===store.storeId){const resource=store.get(entry.resourceId),dependencies=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),sourceResource=store.get(String(projection.metadata.sourceResourceId));if(resource.kind!=='agent-projection'||resource.pathScope!=='H'||resource.scopeIdentity!==digest(home)||resource.contentHash!==entry.projectionHash||resource.state!=='ready'||resource.integrity!=='valid'||store.directory(resource)!==dirname(entry.path)||canonicalJson(dependencies)!==canonicalJson([projection.metadata.sourceResourceId])||sourceResource.pathScope!=='C'||sourceResource.state!=='ready'||sourceResource.integrity!=='valid')problem('RESOURCE_RECOVERY_REQUIRED','共享投影的本机权威记录或原依赖缺失');}managedSkills.push({path:entry.path,nativeName:entry.nativeName,sourceHash:entry.sourceHash});}
++   for(const entry of input.catalog!.entries){if(entry.format==='legacy-tree-v1'){const legacy=verifyLegacyDiscoveryEntry(entry,home);managedSkills.push({path:entry.path,nativeName:nativeName(legacy.files),sourceHash:entry.sourceHash});continue;}if(!/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.nativeName)||entry.path!==join(home,'.agents/skills',entry.nativeName,'SKILL.md'))problem('RESOURCE_RECOVERY_REQUIRED','新格式共享投影路径不符');inside(home,entry.path);const projection=verifyOwnedBundle(dirname(entry.path),entry.projectionHash,entry.storeId);if(projection.metadata.kind!=='codex-agent-projection-v1'||projection.metadata.homeId!==digest(home)||projection.metadata.sourceHash!==entry.sourceHash||projection.metadata.nativeName!==entry.nativeName)problem('RESOURCE_RECOVERY_REQUIRED','新格式共享投影来源不同');if(entry.storeId===store.storeId){const resource=store.get(entry.resourceId),dependencies=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id),sourceResource=store.get(String(projection.metadata.sourceResourceId));if(resource.kind!=='agent-projection'||resource.pathScope!=='H'||resource.scopeIdentity!==digest(home)||resource.contentHash!==entry.projectionHash||resource.state!=='ready'||resource.integrity!=='valid'||store.directory(resource)!==dirname(entry.path)||canonicalJson(dependencies)!==canonicalJson([projection.metadata.sourceResourceId])||sourceResource.pathScope!=='C'||sourceResource.state!=='ready'||sourceResource.integrity!=='valid')problem('RESOURCE_RECOVERY_REQUIRED','共享投影的本机权威记录或原依赖缺失');}managedSkills.push({path:entry.path,nativeName:entry.nativeName,sourceHash:entry.sourceHash});}
+    const versions=store.sqlite.prepare('SELECT id,skill_id AS skillId,name,version,hash FROM skill_versions ORDER BY id').all() as LegacySkillVersion[];if(versions.length>4096)problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力版本超过读取预算');
+-   for(const version of versions){if(!/^[a-z][a-z0-9-]{0,63}$/.test(version.skillId)||!/^[a-f0-9]{64}$/.test(version.hash)||version.id!==version.skillId+':'+version.hash)problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力版本记录无效');const dir=join(home,'.agents/skills',`smartdd-${version.skillId}-${version.hash.slice(0,16)}`);try{lstatSync(dir);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')continue;throw error;}inside(home,dir);const originalRoot=join(store.root,'packages',version.skillId,version.hash);inside(store.root,originalRoot);const original=readLegacyOwnedTree(originalRoot,version.hash),projection=readLegacyOwnedTree(dir,version.hash);if(canonicalJson({...original})!==canonicalJson({...projection}))problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力完整投影不符');managedSkills.push({path:join(dir,'SKILL.md'),nativeName:nativeName(original),sourceHash:version.hash});}
++   for(const version of versions){if(!/^[a-z][a-z0-9-]{0,63}$/.test(version.skillId)||!/^[a-f0-9]{64}$/.test(version.hash)||version.id!==version.skillId+':'+version.hash)problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力版本记录无效');const dir=join(home,'.agents/skills',`smartdd-${version.skillId}-${version.hash.slice(0,16)}`);try{lstatSync(dir);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')continue;throw error;}inside(home,dir);const originalRoot=join(store.root,'packages',version.skillId,version.hash);inside(store.root,originalRoot);const original=readLegacyOwnedTree(originalRoot,version.hash),projection=readLegacyOwnedTree(dir,version.hash);if(canonicalJson({...original})!==canonicalJson({...projection}))problem('RESOURCE_RECOVERY_REQUIRED','旧标准能力完整投影不符');const candidate={path:join(dir,'SKILL.md'),nativeName:nativeName(original),sourceHash:version.hash},known=managedSkills.find(s=>s.path===candidate.path);if(known&&canonicalJson(known)!==canonicalJson(candidate))problem('RESOURCE_RECOVERY_REQUIRED','原H目录已有不同来源');if(!known)managedSkills.push(candidate);}
+    if(managedSkills.length>4096||new Set(managedSkills.map(s=>s.path)).size!==managedSkills.length||selectedPaths.some(p=>!managedSkills.some(s=>s.path===p)))problem('RESOURCE_RECOVERY_REQUIRED','旧选择未在完整管理目录中找到');
+   }
+   const contextEnabled=(store.sqlite.prepare('SELECT enabled FROM project_capabilities WHERE id=?').get(input.projectId+':smartdd-project-context') as {enabled:number}|undefined)?.enabled!==0;
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -9,7 +9,7 @@
+   snapshot: capabilitySessionSnapshotSchema,runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
+   native: z.object({ runner: z.enum(['claude-code','codex']),sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
+   pluginRoot: absolute.nullable(),pluginHash: hash.nullable(),
+-  catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash }).strict()).max(4096) }).strict().nullable(),
++  catalog: z.object({ generation: z.string().min(1).max(256),entries: z.array(z.object({ resourceId: z.string().min(1).max(512),storeId: z.uuid(),path: absolute.refine(p => p.endsWith('/SKILL.md')),nativeName: name,sourceHash: hash,projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict()).max(4096) }).strict().nullable(),
+   userSkillConfig: z.array(z.record(z.string(),z.unknown()).refine(boundedJson)).max(4096),
+   inventory: z.array(z.object({ kind: z.enum(['plugin','skill','mcp','native-tool']),name: z.string().min(1).max(256),path: z.string().max(4096),ownerStoreId: z.uuid().nullable(),contentHash: hash.nullable() }).strict()).max(12000),
+   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: name,command: z.string().min(1).max(4096).refine(s => !/[\x00\r\n]/.test(s)),args: z.array(z.string().max(4096).refine(s => !/[\x00\r\n]/.test(s))).max(32),env: z.record(z.string().regex(/^[A-Z_][A-Z0-9_]*$/),z.string().max(4096)) }).strict()).max(2),
+--- /dev/null
++++ b/src/main/core/applications/__tests__/legacy-discovery-catalog.test.ts
+@@ -0,0 +1,88 @@
++import {randomUUID} from 'node:crypto';
++import {existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,rmSync,symlinkSync,writeFileSync} from 'node:fs';
++import {dirname,join} from 'node:path';
++import {parse as toml} from 'smol-toml';
++import {afterEach,beforeEach,describe,expect,it} from 'vitest';
++import {agentFixture} from './agent-fixture';
++import {FixtureProcessReader} from './run-fixture';
++import {DiscoveryCatalog,type DiscoveryProjectionSource} from '../discovery-catalog';
++import {CapabilityRunRegistry} from '../run-registry';
++import {writeOwnedTree} from '../../capabilities/files';
++let f:Awaited<ReturnType<typeof agentFixture>>,catalog:DiscoveryCatalog,reader:FixtureProcessReader;
++beforeEach(async()=>{f=await agentFixture();reader=new FixtureProcessReader();catalog=new DiscoveryCatalog(f.store,f.home,reader);});
++afterEach(()=>f.cleanup());
++function source():DiscoveryProjectionSource{
++ return{format:'legacy-tree-v1',nativeName:`smartdd-${f.standard.id}-${f.standard.hash.slice(0,16)}`,sourceHash:f.standard.hash,sourceResourceId:`standard-skill:${f.standard.id}:${f.standard.hash}`,files:Object.fromEntries(Object.entries(f.standard.files).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set()} as DiscoveryProjectionSource;
++}
++const target=()=>join(f.home,'.agents/skills',source().nativeName);
++const intent=()=>JSON.parse(readFileSync(join(catalog.root,'pending.json'),'utf8'));
++describe('original schema1 Codex paths in the shared discovery catalog',()=>{
++ it('restores the exact original path, full source and legacy marker without renaming the Skill',async()=>{
++  const c=await catalog.publish([source()]),entry=c.entries[0];
++  expect(entry.path).toBe(join(target(),'SKILL.md'));expect(entry.projectionHash).toBe(f.standard.hash);expect(entry.format).toBe('legacy-tree-v1');
++  expect(f.snapshotTree(target())).toEqual(f.snapshotTree(f.standardPath));expect(readFileSync(join(target(),'SKILL.md'),'utf8')).toBe(f.standard.files['SKILL.md']);
++  expect(JSON.parse(readFileSync(join(target(),'.smartdd-owned.json'),'utf8'))).toEqual({owner:'SmartDD',schema:1});catalog.verify(c);
++  const r=f.store.get(entry.resourceId);expect(r).toMatchObject({kind:'legacy-agent-projection',pathScope:'H',scopeIdentity:catalog.homeId,contentHash:f.standard.hash,state:'ready',integrity:'valid'});
++ });
++ it('adopts an unchanged original tree without writing any of its files or marker',async()=>{
++  writeOwnedTree(target(),f.standard.files,join(f.root,'conflicts'));const p=join(target(),'SKILL.md'),old=lstatSync(p),tree=f.snapshotTree(target());
++  const first=await catalog.publish([source()]),second=await catalog.publish([source()]);expect(second).toEqual(first);expect(f.snapshotTree(target())).toEqual(tree);expect(lstatSync(p).ino).toBe(old.ino);expect(lstatSync(p).ctimeMs).toBe(old.ctimeMs);
++ });
++ it('keeps the original projection disabled in a new session and preserves user Skill configuration',async()=>{
++  const legacy=await catalog.publish([source()]),snapshot=f.plan('codex'),c=await catalog.publish(f.projector.sourceSkills(snapshot));await f.sessions.create(snapshot,f.home);
++  const request=await f.request(snapshot,c),user={path:join(f.home,'user-skill/SKILL.md'),enabled:true,note:'user keeps this'};request.userSkillConfig=[user];
++  const plan=f.adapters.plan(snapshot.adapterBinding.hash,request),flag=plan.args.find(a=>a.startsWith('skills.config='))!,config=toml(flag).skills as {config:{path:string;enabled:boolean}[]};
++  expect(config.config).toContainEqual(user);expect(config.config).toContainEqual({path:legacy.entries[0].path,enabled:false});expect(config.config.filter(s=>s.enabled&&s.path!==user.path).map(s=>s.path).sort()).toEqual([...snapshot.standardSkills.map(s=>s.projectionPath),...snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath))].sort());
++ });
++ it('waits for Claude consumers too and cancels before changing the original discovery set',async()=>{
++  const c=await catalog.snapshot(),taskId='old-'+randomUUID(),runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});
++  catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});
++  await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'claude-code',stateRoot:f.home,cwd:f.cwd,sessionId:'original-history',reason:'history-unknown'});const row=f.sqlite.prepare('SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {hash:string};
++  const hold=await catalog.reserveRun(c.generation,'claude-code',ids=>runs.reserveNativeGuard({taskId,projectId:'p1',runner:'claude-code',snapshotHash:row.hash,resourceIds:[f.installedAdapters[0].resource.resourceId],verify:async()=>{}},ids));
++  await expect(catalog.publish([source()],{waitMs:5})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(existsSync(target())).toBe(false);expect((await catalog.snapshot()).entries).toEqual([]);expect(readdirSync(join(catalog.root,'catalog-consumers'))).toHaveLength(1);
++  await hold.run.stop('fixture never forked');await hold.release();expect((await catalog.publish([source()])).entries).toHaveLength(1);
++ });
++ it('repairs a missing registered original tree at the same hash and path, retaining the catalog identity',async()=>{
++  const first=await catalog.publish([source()]),r=f.store.get(first.entries[0].resourceId);rmSync(target(),{recursive:true});const second=await catalog.publish([source()]);expect(second).toEqual(first);catalog.verify(second);expect(f.store.get(r.resourceId).generation).toBe(r.generation+1);expect(f.snapshotTree(target())).toEqual(f.snapshotTree(f.standardPath));
++ });
++ it.each(['empty','extra-file','extra-empty-dir','marker','link','hardlink'] as const)('preserves an occupied original %s tree instead of overwriting it',async kind=>{
++  if(kind==='empty')mkdirSync(target(),{recursive:true});else writeOwnedTree(target(),f.standard.files,join(f.root,'conflicts'));
++  const file=join(target(),'SKILL.md');if(kind==='extra-file')writeFileSync(join(target(),'user.txt'),'user bytes');if(kind==='extra-empty-dir')mkdirSync(join(target(),'user-empty'));if(kind==='marker')writeFileSync(join(target(),'.smartdd-owned.json'),'{}');if(kind==='link'){rmSync(file);symlinkSync(join(f.root,'missing-user-file'),file);}if(kind==='hardlink'){const {linkSync}=await import('node:fs');linkSync(file,join(f.root,'user-hardlink'));}
++  const before=readdirSync(target()).sort();await expect(catalog.publish([source()])).rejects.toThrow();expect(readdirSync(target()).sort()).toEqual(before);expect((await catalog.snapshot()).entries).toEqual([]);if(kind==='link')expect(lstatSync(file).isSymbolicLink()).toBe(true);if(kind==='extra-file')expect(readFileSync(join(target(),'user.txt'),'utf8')).toBe('user bytes');
++ });
++ it.each(['registered','materialized','renamed','catalog-published'] as const)('replays the exact %s operation after its original host is proved stopped',async phase=>{
++  const old=new DiscoveryCatalog(f.store,f.home,reader,{checkpoint:p=>{if(p===phase)throw Error('injected interrupted publisher');}});await expect(old.publish([source()])).rejects.toThrow('interrupted publisher');const pending=intent(),oldInode=existsSync(target())?lstatSync(join(target(),'SKILL.md')).ino:null;
++  reader.identities.set(process.pid,'darwin-proc-v1:999:1');catalog=new DiscoveryCatalog(f.store,f.home,reader);const c=await catalog.recover(pending.operationId,[source()]);catalog.verify(c);if(oldInode!==null)expect(lstatSync(join(target(),'SKILL.md')).ino).toBe(oldInode);expect(existsSync(join(catalog.root,'pending.json'))).toBe(false);expect(f.sqlite.prepare("SELECT state FROM capability_resource_operations WHERE operation_id=?").get(pending.operationId)).toEqual({state:'committed'});
++ });
++ it('does not recover a living or unknown publisher and retains its exact operation and lease',async()=>{
++  const old=new DiscoveryCatalog(f.store,f.home,reader,{checkpoint:()=>{throw Error('interrupted');}});await expect(old.publish([source()])).rejects.toThrow('interrupted');const original=readFileSync(join(catalog.root,'pending.json'),'utf8'),leases=f.sqlite.prepare('SELECT * FROM capability_resource_leases').all();
++  const next=new DiscoveryCatalog(f.store,f.home,reader);await expect(next.recover(intent().operationId,[source()])).rejects.toMatchObject({code:'RESOURCE_BUSY'});reader.unknown.add(process.pid);await expect(next.recover(intent().operationId,[source()])).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(readFileSync(join(catalog.root,'pending.json'),'utf8')).toBe(original);expect(f.sqlite.prepare('SELECT * FROM capability_resource_leases').all()).toEqual(leases);
++ });
++ it.each(['source','dangling-target','staging'] as const)('rechecks a late %s change before making the H catalog visible',async kind=>{
++  const service=new DiscoveryCatalog(f.store,f.home,reader,{checkpoint:p=>{if(p!=='materialized')return;if(kind==='source')writeFileSync(join(f.standardPath,'SKILL.md'),'changed source');if(kind==='dangling-target'){mkdirSync(dirname(target()),{recursive:true});symlinkSync(join(f.root,'missing-user-root'),target());}if(kind==='staging')writeFileSync(join(catalog.root,'staging',intent().operationId,source().nativeName,'SKILL.md'),'changed staging');}});
++  await expect(service.publish([source()])).rejects.toThrow();expect((await catalog.snapshot()).entries).toEqual([]);if(kind==='dangling-target')expect(lstatSync(target()).isSymbolicLink()).toBe(true);expect(existsSync(join(catalog.root,'pending.json'))).toBe(true);
++ });
++ it('retains a missing original dependency ledger instead of manufacturing one while repairing H',async()=>{
++  const c=await catalog.publish([source()]),r=c.entries[0].resourceId;rmSync(target(),{recursive:true});f.sqlite.prepare('DELETE FROM capability_resource_dependencies WHERE resource_id=?').run(r);await expect(catalog.publish([source()])).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(existsSync(target())).toBe(false);expect(f.sqlite.prepare('SELECT * FROM capability_resource_dependencies WHERE resource_id=?').all(r)).toEqual([]);
++ });
++ it('does not reassign another store’s registered original H path',async()=>{
++  const c=await catalog.publish([source()]),file=join(catalog.root,'catalog.json'),raw=JSON.parse(readFileSync(file,'utf8')),oldTree=f.snapshotTree(target());raw.entries[0].storeId=randomUUID();const {canonicalJson,digest}=await import('../manifest');raw.generation=digest(canonicalJson({homeId:raw.homeId,entries:raw.entries}));writeFileSync(file,canonicalJson(raw)+'\n');const before=readFileSync(file,'utf8');await expect(catalog.publish([source()])).rejects.toMatchObject({code:'OWNERSHIP_CONFLICT'});expect(readFileSync(file,'utf8')).toBe(before);expect(f.snapshotTree(target())).toEqual(oldTree);expect(c.entries).toHaveLength(1);
++ });
++ it('preserves a PID-null unknown lease when the registered original directory is missing',async()=>{
++  const c=await catalog.publish([source()]),id=c.entries[0].resourceId,leaseId=randomUUID();rmSync(target(),{recursive:true});f.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,'unknown-old-owner',NULL,NULL,'recovery-required',?)").run(leaseId,id,randomUUID(),new Date().toISOString());const before=f.sqlite.prepare('SELECT * FROM capability_resource_leases WHERE lease_id=?').get(leaseId);
++  await expect(catalog.publish([source()])).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(f.sqlite.prepare('SELECT * FROM capability_resource_leases WHERE lease_id=?').get(leaseId)).toEqual(before);expect(existsSync(target())).toBe(false);
++ });
++ it.each(['rename','truncated-hash','different-body','executable'] as const)('rejects a supplied %s projection instead of changing the legacy selection',async kind=>{
++  const s=source();if(kind==='rename')s.nativeName='smartdd-renamed-'+f.standard.hash.slice(0,16);if(kind==='truncated-hash')s.sourceHash=s.sourceHash.slice(0,16);if(kind==='different-body')s.files={...s.files,'SKILL.md':Buffer.from('different body')};if(kind==='executable')s.executables=new Set(['SKILL.md']);await expect(catalog.publish([s])).rejects.toThrow();expect(existsSync(target())).toBe(false);expect((await catalog.snapshot()).entries).toEqual([]);
++ });
++ it('rejects a linked ancestor on read-only verification and leaves its external target untouched',async()=>{
++  const c=await catalog.publish([source()]),skills=join(f.home,'.agents/skills'),external=join(f.root,'external-user-skills');const {renameSync}=await import('node:fs');renameSync(skills,external);symlinkSync(external,skills);const old=f.snapshotTree(external);expect(()=>catalog.verify(c)).toThrow();expect(f.snapshotTree(external)).toEqual(old);expect(lstatSync(skills).isSymbolicLink()).toBe(true);
++ });
++ it('verifies the original C source on reuse as well as on a new publication',async()=>{
++  await catalog.publish([source()]);writeFileSync(join(f.standardPath,'SKILL.md'),'changed retained source');const before=f.snapshotTree(target());await expect(catalog.publish([source()])).rejects.toThrow();expect(f.snapshotTree(target())).toEqual(before);expect(existsSync(join(catalog.root,'pending.json'))).toBe(false);
++ });
++ it.each(['renamed','catalog-published'] as const)('refuses ready when original H bytes change at the %s boundary',async phase=>{
++  const service=new DiscoveryCatalog(f.store,f.home,reader,{checkpoint:p=>{if(p===phase)writeFileSync(join(target(),'SKILL.md'),'late user bytes');}});
++  await expect(service.publish([source()])).rejects.toThrow();expect(readFileSync(join(target(),'SKILL.md'),'utf8')).toBe('late user bytes');expect(existsSync(join(catalog.root,'pending.json'))).toBe(true);const r=f.sqlite.prepare("SELECT state FROM capability_resources WHERE kind='legacy-agent-projection'").get() as {state:string};expect(r.state).not.toBe('ready');
++ });
++});
+--- a/src/main/core/applications/__tests__/legacy-agent-load.test.ts
++++ b/src/main/core/applications/__tests__/legacy-agent-load.test.ts
+@@ -48,6 +48,15 @@
+   const standard=BUNDLED_SKILLS[0],nativeName=standardNativeSkillName(standard.id,standard.hash),files=Object.fromEntries(Object.entries(standard.files).map(([p,s])=>[p,p==='SKILL.md'?projectSkillName(Buffer.from(s),nativeName):Buffer.from(s)]));await catalog.publish([{nativeName,sourceHash:standard.hash,sourceResourceId:'standard-skill:'+standard.id+':'+standard.hash,files,executables:new Set()}]);value.input.catalog=await catalog.snapshot();const user={path:join(home,'user "quote" ; $(literal)/SKILL.md'),enabled:true,note:'unchanged user value'};value.input.userSkillConfig=[user,{path:dirname(old.path),enabled:true,note:'retained own metadata'}];const before=hashes(),plan=adapters.planLegacy(value.adapter.hash,value.input),config=flags(plan.args);
+   expect(config).toContainEqual(user);expect(config).toContainEqual({path:old.path,enabled:true,note:'retained own metadata'});expect(config).toContainEqual({path:other.snapshot.skills.find(s=>s.skillId===old.skillId)!.path,enabled:false});expect(config).toContainEqual({path:value.input.catalog.entries[0].path,enabled:false});expect(config.filter(v=>v.enabled===true&&v.path!==user.path).map(v=>v.path).sort()).toEqual(value.runtime.snapshot.skills.map(s=>s.path).sort());expect(hashes()).toEqual(before);
+  });
++ it('keeps original selected Codex paths enabled after their schema1 trees enter the coordinated catalog',async()=>{
++  const value=await previous();
++  for(const selected of value.runtime.snapshot.skills.filter(s=>s.enabled)){
++   const skill=BUNDLED_SKILLS.find(s=>s.id===selected.skillId&&s.hash===selected.hash)!;
++   await catalog.publish([{format:'legacy-tree-v1',nativeName:`smartdd-${skill.id}-${skill.hash.slice(0,16)}`,sourceHash:skill.hash,sourceResourceId:`standard-skill:${skill.id}:${skill.hash}`,files:Object.fromEntries(Object.entries(skill.files).map(([p,t])=>[p,Buffer.from(t)])),executables:new Set()}]);
++  }
++  value.input.catalog=await catalog.snapshot();const before=hashes(),plan=adapters.planLegacy(value.adapter.hash,value.input),config=flags(plan.args);
++  expect(config.filter(s=>s.enabled===true).map(s=>s.path).sort()).toEqual(value.runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path).sort());expect(new Set(config.map(s=>s.path)).size).toBe(config.length);expect(hashes()).toEqual(before);
++ });
+  it.each(['reference','projection-state','source-state'] as const)('rejects a current-format own projection whose %s is no longer authoritative',async kind=>{
+   const value=await previous(),standard=BUNDLED_SKILLS[0],nativeName=standardNativeSkillName(standard.id,standard.hash),sourceId='standard-skill:'+standard.id+':'+standard.hash,files=Object.fromEntries(Object.entries(standard.files).map(([p,s])=>[p,p==='SKILL.md'?projectSkillName(Buffer.from(s),nativeName):Buffer.from(s)]));
+   await catalog.publish([{nativeName,sourceHash:standard.hash,sourceResourceId:sourceId,files,executables:new Set()}]);value.input.catalog=await catalog.snapshot();const entry=value.input.catalog.entries[0];

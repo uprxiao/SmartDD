@@ -1,0 +1,69 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/db/migrations.test.ts src/main/core/applications/__tests__/activity.test.ts src/main/core/applications/__tests__/application-controller.test.ts src/main/core/applications/__tests__/business-data.test.ts src/main/core/applications/__tests__/mail-send-data.test.ts --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/activity.test.ts (6 tests | 3 failed) 287ms
+     × deduplicates the Data API and bridge ledger while preserving the true source,request and attempt count 46ms
+     × filters host-recorded connection subjects without inferring the current project selection 42ms
+     × retains deleted-project and index provenance and does not create new operations when inspecting or refreshing 33ms
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts (21 tests | 1 failed) 23735ms
+     × upgrades v18 send records and retains metadata-only user-source provenance on migration replay 658ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/activity.test.ts > persistent read-only application activity > deduplicates the Data API and bridge ledger while preserving the true source,request and attempt count
+SqliteError: CHECK constraint failed: (caller_kind='agent-run' AND scope_kind='project' AND project_id IS NOT NULL AND task_id IS NOT NULL AND run_id IS NOT NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='ui' AND ((scope_kind='project' AND project_id IS NOT NULL) OR scope_kind='connection-management') AND task_id IS NULL AND run_id IS NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='index-job' AND scope_kind='internal-index' AND semantics='read' AND project_id IS NOT NULL AND task_id IS NULL AND run_id IS NULL AND job_id IS NOT NULL AND parent_operation_id IS NOT NULL)
+ ❯ put src/main/core/applications/__tests__/activity.test.ts:10:356
+
+ ❯ src/main/core/applications/__tests__/activity.test.ts:14:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/activity.test.ts > persistent read-only application activity > filters host-recorded connection subjects without inferring the current project selection
+SqliteError: CHECK constraint failed: (caller_kind='agent-run' AND scope_kind='project' AND project_id IS NOT NULL AND task_id IS NOT NULL AND run_id IS NOT NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='ui' AND ((scope_kind='project' AND project_id IS NOT NULL) OR scope_kind='connection-management') AND task_id IS NULL AND run_id IS NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='index-job' AND scope_kind='internal-index' AND semantics='read' AND project_id IS NOT NULL AND task_id IS NULL AND run_id IS NULL AND job_id IS NOT NULL AND parent_operation_id IS NOT NULL)
+ ❯ put src/main/core/applications/__tests__/activity.test.ts:10:356
+
+ ❯ src/main/core/applications/__tests__/activity.test.ts:24:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/activity.test.ts > persistent read-only application activity > retains deleted-project and index provenance and does not create new operations when inspecting or refreshing
+SqliteError: CHECK constraint failed: (caller_kind='agent-run' AND scope_kind='project' AND project_id IS NOT NULL AND task_id IS NOT NULL AND run_id IS NOT NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='ui' AND ((scope_kind='project' AND project_id IS NOT NULL) OR scope_kind='connection-management') AND task_id IS NULL AND run_id IS NULL AND job_id IS NULL AND parent_operation_id IS NULL)
+    OR (caller_kind='index-job' AND scope_kind='internal-index' AND semantics='read' AND project_id IS NOT NULL AND task_id IS NULL AND run_id IS NULL AND job_id IS NOT NULL AND parent_operation_id IS NOT NULL)
+ ❯ put src/main/core/applications/__tests__/activity.test.ts:10:356
+
+ ❯ src/main/core/applications/__tests__/activity.test.ts:28:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/main/core/applications/__tests__/mail-send-data.test.ts > original immutable mail package send through actual host and private SMTP > upgrades v18 send records and retains metadata-only user-source provenance on migration replay
+AssertionError: expected [ …(2) ] to deeply equal [ '0019_mail_user_action_sources' ]
+
+- Expected
++ Received
+
+  [
+    "0019_mail_user_action_sources",
++   "0020_application_activity_subjects",
+  ]
+
+ ❯ src/main/core/applications/__tests__/mail-send-data.test.ts:151:142
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  4 failed | 82 passed (86)
+   Start at  20:31:32
+   Duration  24.36s (transform 593ms, setup 0ms, import 1.20s, tests 43.81s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

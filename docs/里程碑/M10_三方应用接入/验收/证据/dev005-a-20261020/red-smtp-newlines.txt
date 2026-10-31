@@ -1,0 +1,48 @@
+
+> smartdd@0.0.5 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/smtp.test.ts src/main/core/applications/__tests__/zentao.test.ts src/main/core/applications/__tests__/connection-service.test.ts
+
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+ ❯ src/main/core/applications/__tests__/smtp.test.ts (7 tests | 1 failed) 35ms
+     × submits the exact frozen bytes with private BCC envelope and a stable message ID 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/smtp.test.ts > SMTP adapter over an isolated local protocol server > submits the exact frozen bytes with private BCC envelope and a stable message ID
+AssertionError: expected Buffer[ 70, 114, 111, 109, 58, …(604) ] to deeply equal Buffer[ 70, 114, 111, 109, 58, …(603) ]
+
+- Expected
++ Received
+
+@@ -384,10 +384,11 @@
+      32,
+      98,
+      111,
+      100,
+      121,
++     13,
+      10,
+      46,
+      100,
+      111,
+      116,
+
+ ❯ src/main/core/applications/__tests__/smtp.test.ts:58:59
+     56|     const result = await submitSmtp(config(), 'fixture-private-passwor…
+     57|     expect(result).toMatchObject({ state: 'server-accepted', complete:…
+     58|     expect(messages).toHaveLength(1); expect(messages[0]).toEqual(prep…
+       |                                                           ^
+     59|     expect(commands.filter(c => c === 'DATA')).toHaveLength(1);
+     60|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 30 passed (31)
+   Start at  10:27:48
+   Duration  417ms (transform 165ms, setup 0ms, import 394ms, tests 206ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
