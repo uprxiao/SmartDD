@@ -1,0 +1,93 @@
+{
+  "schema": "v009-g001-review-result-v1",
+  "group": "V009-G001",
+  "attempt": "attempt-001",
+  "at": "2026-10-31T19:32:17.893390+00:00",
+  "status": "audit_complete_findings_reported",
+  "baselineCommit": "1f04126607471638804c1faf3effec5491cdf3c8",
+  "sourceManifestSha256": "7459711040e958db4764ef67b21ccd3581c545355c8e9ae8dacd60c11169d1f3",
+  "sourceFileCount": 5,
+  "sourceAllMatchBaseline": true,
+  "sourceCopiesUnchanged": true,
+  "windowsLog": {
+    "source": "/private/tmp/willyou-v008-integration-4q23427h/evidence/v008-windows-job-direct-log.log",
+    "path": "v008-windows-job-direct-log.log",
+    "bytes": 51693,
+    "sha256": "83f372d2620cca66d752400d8ce46a5ffe5605e7db672f1c5cc62178930c7ad1",
+    "copyMatchesSource": true
+  },
+  "actualWindowsOutcome": "build failed exit1 due to missing out/applications/mcp-bridge.cjs; no successful Windows bridge/bundle verification recorded",
+  "confirmedFindings": [
+    {
+      "id": "F01",
+      "severity": "high",
+      "classification": "confirmed known entry guard inconsistency",
+      "path": "scripts/applications/build-runtime.mjs",
+      "line": 10,
+      "status": "actual Windows job failure plus pure path confirmation",
+      "recommendation": "Compare resolved native argv with fileURLToPath(import.meta.url); preserve import guard and verify bridge output"
+    },
+    {
+      "id": "F02",
+      "severity": "high",
+      "classification": "confirmed adjacent Win32 path contract inconsistency",
+      "path": "scripts/applications/build-bundles.mjs",
+      "line": 12,
+      "related": [
+        {
+          "path": "scripts/applications/verify-bundles.cjs",
+          "line": 12
+        },
+        {
+          "path": "scripts/applications/verify-bundles.cjs",
+          "line": 15
+        }
+      ],
+      "status": "private exact-function VM/path.win32 proof; actual Windows post-guard run required",
+      "recommendation": "Normalize only trusted traversal-relative names to portable slash paths in both generator and verifier"
+    }
+  ],
+  "riskNotes": [
+    {
+      "id": "R01",
+      "severity": "low",
+      "topic": "executable bits",
+      "status": "no confirmed current false-only defect; future true marker/writer mismatch and real Windows mode/ACL unverified"
+    },
+    {
+      "id": "R02",
+      "severity": "low",
+      "topic": "fixed runtime hash",
+      "status": "real Windows output bytes unavailable; preserve pin; CRLF/toolchain differences not established"
+    },
+    {
+      "id": "R03",
+      "severity": "low",
+      "topic": "runtime manifest shape",
+      "status": "adding executable:false changes complete hash despite identical payload bytes; avoid unrelated schema change"
+    }
+  ],
+  "probeCounts": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "type": "pure path/URL/VM/synthetic analysis only",
+    "nativeWindowsAcceptance": false
+  },
+  "report": "docs/review/review-20261101-0332.md",
+  "resourcesReleased": true,
+  "formalMilestoneCasesAdded": 0,
+  "limits": [
+    "Only five copied baseline source files audited",
+    "Only archived actual Windows job log supplies native Windows evidence",
+    "No application build/App/browser/Agent/real CLI/model executed",
+    "No production or public result writes",
+    "No Mac or simulated win32 result represented as native Windows verification"
+  ],
+  "reportWriterFailure": "Initial private Python writer SyntaxError preserved in report-write-failure.log; corrected before delivery, not a product test failure",
+  "skill": {
+    "name": "codex-reviewer",
+    "source": "/Users/liubu/.codex/skills/codex-reviewer/SKILL.md",
+    "reportWrittenUnderPrivateDirectory": true
+  }
+}

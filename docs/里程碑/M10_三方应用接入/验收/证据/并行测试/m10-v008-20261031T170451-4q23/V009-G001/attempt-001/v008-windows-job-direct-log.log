@@ -1,0 +1,648 @@
+﻿2026-10-31T19:14:50.5648236Z Current runner version: '2.338.2'
+2026-10-31T19:14:50.5674761Z ##[group]Runner Image Provisioner
+2026-10-31T19:14:50.5675561Z Hosted Compute Agent
+2026-10-31T19:14:50.5676118Z Version: 20261021.618
+2026-10-31T19:14:50.5676711Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-31T19:14:50.5677383Z Build Date: 2026-10-21T00:45:21Z
+2026-10-31T19:14:50.5678025Z Worker ID: {da2d1348-e39b-447d-9edc-9eeeaaa2f9db}
+2026-10-31T19:14:50.5678712Z Region: centralus
+2026-10-31T19:14:50.5679198Z Cloud: Azure
+2026-10-31T19:14:50.5679659Z ##[endgroup]
+2026-10-31T19:14:50.5680967Z ##[group]Operating System
+2026-10-31T19:14:50.5681566Z Microsoft Windows Server 2022
+2026-10-31T19:14:50.5682137Z 10.0.20348
+2026-10-31T19:14:50.5682595Z Datacenter
+2026-10-31T19:14:50.5683042Z ##[endgroup]
+2026-10-31T19:14:50.5683538Z ##[group]Runner Image
+2026-10-31T19:14:50.5684086Z Image: windows-2022
+2026-10-31T19:14:50.5684612Z Version: 20261025.346.1
+2026-10-31T19:14:50.5686245Z Included Software: https://github.com/actions/runner-images/blob/win22/20261025.346/images/windows/Windows2022-Readme.md
+2026-10-31T19:14:50.5687725Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261025.346
+2026-10-31T19:14:50.5688624Z ##[endgroup]
+2026-10-31T19:14:50.5689654Z ##[group]GITHUB_TOKEN Permissions
+2026-10-31T19:14:50.5691449Z Contents: read
+2026-10-31T19:14:50.5692029Z Metadata: read
+2026-10-31T19:14:50.5692518Z ##[endgroup]
+2026-10-31T19:14:50.5694615Z Secret source: Actions
+2026-10-31T19:14:50.5695482Z Cache mode: write
+2026-10-31T19:14:50.5696145Z Prepare workflow directory
+2026-10-31T19:14:50.6125911Z Prepare all required actions
+2026-10-31T19:14:50.6200048Z Getting action download info
+2026-10-31T19:14:50.8712076Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-31T19:14:50.9934061Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-31T19:14:51.3223360Z Uses: uprxiao/SmartDD/.github/workflows/build.yml@refs/tags/v0.0.8 (1f04126607471638804c1faf3effec5491cdf3c8)
+2026-10-31T19:14:51.3228460Z ##[group] Inputs
+2026-10-31T19:14:51.3229430Z   require_mac_signing: false
+2026-10-31T19:14:51.3229937Z ##[endgroup]
+2026-10-31T19:14:51.3230696Z Complete job name: build / package (win, x64, windows-2022, WIN_CERTIFICATE, WIN_CERTIFICATE_PASSWORD)
+2026-10-31T19:14:51.4813645Z ##[group]Run actions/checkout@v4
+2026-10-31T19:14:51.4814708Z with:
+2026-10-31T19:14:51.4815120Z   persist-credentials: false
+2026-10-31T19:14:51.4815612Z   repository: uprxiao/SmartDD
+2026-10-31T19:14:51.4819554Z   token: ***
+2026-10-31T19:14:51.4819952Z   ssh-strict: true
+2026-10-31T19:14:51.4820358Z   ssh-user: git
+2026-10-31T19:14:51.4820751Z   clean: true
+2026-10-31T19:14:51.4821167Z   sparse-checkout-cone-mode: true
+2026-10-31T19:14:51.4821654Z   fetch-depth: 1
+2026-10-31T19:14:51.4822053Z   fetch-tags: false
+2026-10-31T19:14:51.4822466Z   show-progress: true
+2026-10-31T19:14:51.4822888Z   lfs: false
+2026-10-31T19:14:51.4823315Z   submodules: false
+2026-10-31T19:14:51.4823726Z   set-safe-directory: true
+2026-10-31T19:14:51.4824191Z   allow-unsafe-pr-checkout: false
+2026-10-31T19:14:51.4824897Z ##[endgroup]
+2026-10-31T19:14:51.6389149Z Syncing repository: uprxiao/SmartDD
+2026-10-31T19:14:51.6390922Z ##[group]Getting Git version info
+2026-10-31T19:14:51.6391573Z Working directory is 'D:\a\SmartDD\SmartDD'
+2026-10-31T19:14:51.7459323Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-31T19:14:52.0604769Z git version 2.56.0.windows.3
+2026-10-31T19:14:52.0654629Z ##[endgroup]
+2026-10-31T19:14:52.0677538Z Temporarily overriding HOME='D:\a\_temp\5a85f857-b553-4a48-8bce-0dd7260f7976' before making global git config changes
+2026-10-31T19:14:52.0678986Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-31T19:14:52.0691890Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\SmartDD\SmartDD
+2026-10-31T19:14:52.1369171Z Deleting the contents of 'D:\a\SmartDD\SmartDD'
+2026-10-31T19:14:52.1374306Z ##[group]Initializing the repository
+2026-10-31T19:14:52.1383293Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\SmartDD\SmartDD
+2026-10-31T19:14:52.2181422Z Initialized empty Git repository in D:/a/SmartDD/SmartDD/.git/
+2026-10-31T19:14:52.2221526Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/uprxiao/SmartDD
+2026-10-31T19:14:52.2839378Z ##[endgroup]
+2026-10-31T19:14:52.2840587Z ##[group]Disabling automatic garbage collection
+2026-10-31T19:14:52.2847717Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-31T19:14:52.3144901Z ##[endgroup]
+2026-10-31T19:14:52.3146118Z ##[group]Setting up auth
+2026-10-31T19:14:52.3157501Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-31T19:14:52.3460057Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-31T19:14:53.7077897Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-31T19:14:53.7506515Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-31T19:14:54.2696622Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-31T19:14:54.3015082Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-31T19:14:54.8039273Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-31T19:14:54.8362962Z ##[endgroup]
+2026-10-31T19:14:54.8363877Z ##[group]Fetching the repository
+2026-10-31T19:14:54.8377376Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1f04126607471638804c1faf3effec5491cdf3c8:refs/tags/v0.0.8
+2026-10-31T19:15:07.9946774Z From https://github.com/uprxiao/SmartDD
+2026-10-31T19:15:07.9947714Z  * [new ref]           1f04126607471638804c1faf3effec5491cdf3c8 -> v0.0.8
+2026-10-31T19:15:07.9977919Z ##[endgroup]
+2026-10-31T19:15:07.9978377Z ##[group]Determining the checkout info
+2026-10-31T19:15:07.9980787Z ##[endgroup]
+2026-10-31T19:15:07.9989979Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-31T19:15:08.0391814Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-31T19:15:08.0677422Z ##[group]Checking out the ref
+2026-10-31T19:15:08.0684368Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/tags/v0.0.8
+2026-10-31T19:15:09.1651676Z Updating files:   4% (1622/33090)
+2026-10-31T19:15:09.2739529Z Updating files:   5% (1655/33090)
+2026-10-31T19:15:09.4110794Z Updating files:   6% (1986/33090)
+2026-10-31T19:15:09.5800993Z Updating files:   7% (2317/33090)
+2026-10-31T19:15:09.7005922Z Updating files:   8% (2648/33090)
+2026-10-31T19:15:09.8039820Z Updating files:   9% (2979/33090)
+2026-10-31T19:15:09.9127140Z Updating files:  10% (3309/33090)
+2026-10-31T19:15:10.0365982Z Updating files:  11% (3640/33090)
+2026-10-31T19:15:10.1518464Z Updating files:  12% (3971/33090)
+2026-10-31T19:15:10.1538220Z Updating files:  13% (4302/33090)
+2026-10-31T19:15:10.2676221Z Updating files:  13% (4310/33090)
+2026-10-31T19:15:10.3608390Z Updating files:  14% (4633/33090)
+2026-10-31T19:15:10.4648129Z Updating files:  15% (4964/33090)
+2026-10-31T19:15:10.5462255Z Updating files:  16% (5295/33090)
+2026-10-31T19:15:10.6302714Z Updating files:  17% (5626/33090)
+2026-10-31T19:15:10.8000487Z Updating files:  18% (5957/33090)
+2026-10-31T19:15:10.9044938Z Updating files:  19% (6288/33090)
+2026-10-31T19:15:10.9865256Z Updating files:  20% (6618/33090)
+2026-10-31T19:15:11.0783257Z Updating files:  21% (6949/33090)
+2026-10-31T19:15:11.1560854Z Updating files:  22% (7280/33090)
+2026-10-31T19:15:11.1877356Z Updating files:  22% (7476/33090)
+2026-10-31T19:15:11.3083849Z Updating files:  23% (7611/33090)
+2026-10-31T19:15:11.4230950Z Updating files:  24% (7942/33090)
+2026-10-31T19:15:11.5201696Z Updating files:  25% (8273/33090)
+2026-10-31T19:15:11.6125502Z Updating files:  26% (8604/33090)
+2026-10-31T19:15:11.7128691Z Updating files:  27% (8935/33090)
+2026-10-31T19:15:11.8034978Z Updating files:  28% (9266/33090)
+2026-10-31T19:15:11.9747039Z Updating files:  29% (9597/33090)
+2026-10-31T19:15:12.0715599Z Updating files:  30% (9927/33090)
+2026-10-31T19:15:12.1588981Z Updating files:  31% (10258/33090)
+2026-10-31T19:15:12.3377016Z Updating files:  31% (10398/33090)
+2026-10-31T19:15:12.4264485Z Updating files:  32% (10589/33090)
+2026-10-31T19:15:12.6633176Z Updating files:  33% (10920/33090)
+2026-10-31T19:15:12.7812955Z Updating files:  34% (11251/33090)
+2026-10-31T19:15:12.8817320Z Updating files:  35% (11582/33090)
+2026-10-31T19:15:13.1171050Z Updating files:  36% (11913/33090)
+2026-10-31T19:15:13.1574855Z Updating files:  37% (12244/33090)
+2026-10-31T19:15:13.2455393Z Updating files:  37% (12323/33090)
+2026-10-31T19:15:13.3705531Z Updating files:  38% (12575/33090)
+2026-10-31T19:15:13.4217454Z Updating files:  39% (12906/33090)
+2026-10-31T19:15:13.4671012Z Updating files:  40% (13236/33090)
+2026-10-31T19:15:13.5804309Z Updating files:  41% (13567/33090)
+2026-10-31T19:15:13.7974597Z Updating files:  42% (13898/33090)
+2026-10-31T19:15:14.0440189Z Updating files:  43% (14229/33090)
+2026-10-31T19:15:14.1582065Z Updating files:  44% (14560/33090)
+2026-10-31T19:15:14.1975694Z Updating files:  44% (14770/33090)
+2026-10-31T19:15:14.3505365Z Updating files:  45% (14891/33090)
+2026-10-31T19:15:14.4543193Z Updating files:  46% (15222/33090)
+2026-10-31T19:15:14.6277499Z Updating files:  47% (15553/33090)
+2026-10-31T19:15:14.7916937Z Updating files:  48% (15884/33090)
+2026-10-31T19:15:14.9477855Z Updating files:  49% (16215/33090)
+2026-10-31T19:15:15.1635322Z Updating files:  50% (16545/33090)
+2026-10-31T19:15:15.1879867Z Updating files:  50% (16838/33090)
+2026-10-31T19:15:15.4093172Z Updating files:  51% (16876/33090)
+2026-10-31T19:15:15.6787944Z Updating files:  52% (17207/33090)
+2026-10-31T19:15:15.8594219Z Updating files:  53% (17538/33090)
+2026-10-31T19:15:16.0256370Z Updating files:  54% (17869/33090)
+2026-10-31T19:15:16.1616324Z Updating files:  55% (18200/33090)
+2026-10-31T19:15:16.2116179Z Updating files:  55% (18421/33090)
+2026-10-31T19:15:16.4208016Z Updating files:  56% (18531/33090)
+2026-10-31T19:15:16.4839234Z Updating files:  57% (18862/33090)
+2026-10-31T19:15:16.5998824Z Updating files:  58% (19193/33090)
+2026-10-31T19:15:16.7866066Z Updating files:  59% (19524/33090)
+2026-10-31T19:15:16.9661796Z Updating files:  60% (19854/33090)
+2026-10-31T19:15:17.0802828Z Updating files:  61% (20185/33090)
+2026-10-31T19:15:17.1766626Z Updating files:  62% (20516/33090)
+2026-10-31T19:15:17.2535017Z Updating files:  63% (20847/33090)
+2026-10-31T19:15:17.3887432Z Updating files:  64% (21178/33090)
+2026-10-31T19:15:17.5717062Z Updating files:  65% (21509/33090)
+2026-10-31T19:15:17.6944431Z Updating files:  66% (21840/33090)
+2026-10-31T19:15:17.9957300Z Updating files:  67% (22171/33090)
+2026-10-31T19:15:18.1926349Z Updating files:  68% (22502/33090)
+2026-10-31T19:15:18.3269512Z Updating files:  68% (22684/33090)
+2026-10-31T19:15:18.4353284Z Updating files:  69% (22833/33090)
+2026-10-31T19:15:18.6798356Z Updating files:  70% (23163/33090)
+2026-10-31T19:15:18.7791566Z Updating files:  71% (23494/33090)
+2026-10-31T19:15:18.8312087Z Updating files:  72% (23825/33090)
+2026-10-31T19:15:18.8942092Z Updating files:  73% (24156/33090)
+2026-10-31T19:15:18.9527273Z Updating files:  74% (24487/33090)
+2026-10-31T19:15:18.9941804Z Updating files:  75% (24818/33090)
+2026-10-31T19:15:19.1350256Z Updating files:  76% (25149/33090)
+2026-10-31T19:15:19.1783654Z Updating files:  77% (25480/33090)
+2026-10-31T19:15:19.2234459Z Updating files:  77% (25667/33090)
+2026-10-31T19:15:19.3822182Z Updating files:  78% (25811/33090)
+2026-10-31T19:15:19.5602811Z Updating files:  79% (26142/33090)
+2026-10-31T19:15:19.6912917Z Updating files:  80% (26472/33090)
+2026-10-31T19:15:19.8426427Z Updating files:  81% (26803/33090)
+2026-10-31T19:15:19.9667014Z Updating files:  82% (27134/33090)
+2026-10-31T19:15:20.1977780Z Updating files:  83% (27465/33090)
+2026-10-31T19:15:20.2142861Z Updating files:  83% (27757/33090)
+2026-10-31T19:15:20.3494551Z Updating files:  84% (27796/33090)
+2026-10-31T19:15:20.4963471Z Updating files:  85% (28127/33090)
+2026-10-31T19:15:20.6395910Z Updating files:  86% (28458/33090)
+2026-10-31T19:15:20.8072188Z Updating files:  87% (28789/33090)
+2026-10-31T19:15:20.9007964Z Updating files:  88% (29120/33090)
+2026-10-31T19:15:21.0075926Z Updating files:  89% (29451/33090)
+2026-10-31T19:15:21.1689573Z Updating files:  90% (29781/33090)
+2026-10-31T19:15:21.1820191Z Updating files:  91% (30112/33090)
+2026-10-31T19:15:21.2438708Z Updating files:  91% (30179/33090)
+2026-10-31T19:15:21.3182196Z Updating files:  92% (30443/33090)
+2026-10-31T19:15:21.3861840Z Updating files:  93% (30774/33090)
+2026-10-31T19:15:21.4580800Z Updating files:  94% (31105/33090)
+2026-10-31T19:15:21.5267702Z Updating files:  95% (31436/33090)
+2026-10-31T19:15:21.6029008Z Updating files:  96% (31767/33090)
+2026-10-31T19:15:21.6714961Z Updating files:  97% (32098/33090)
+2026-10-31T19:15:21.7367169Z Updating files:  98% (32429/33090)
+2026-10-31T19:15:21.7986447Z Updating files:  99% (32760/33090)
+2026-10-31T19:15:21.7986903Z Updating files: 100% (33090/33090)
+2026-10-31T19:15:21.7987528Z Updating files: 100% (33090/33090), done.
+2026-10-31T19:15:21.8622387Z Note: switching to 'refs/tags/v0.0.8'.
+2026-10-31T19:15:21.8622843Z 
+2026-10-31T19:15:21.8623159Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-31T19:15:21.8623858Z changes and commit them, and you can discard any commits you make in this
+2026-10-31T19:15:21.8624331Z state without impacting any branches by switching back to a branch.
+2026-10-31T19:15:21.8624616Z 
+2026-10-31T19:15:21.8625047Z If you want to create a new branch to retain commits you create, you may
+2026-10-31T19:15:21.8625524Z do so (now or later) by using -c with the switch command. Example:
+2026-10-31T19:15:21.8625788Z 
+2026-10-31T19:15:21.8625949Z   git switch -c <new-branch-name>
+2026-10-31T19:15:21.8626123Z 
+2026-10-31T19:15:21.8626221Z Or undo this operation with:
+2026-10-31T19:15:21.8626367Z 
+2026-10-31T19:15:21.8626446Z   git switch -
+2026-10-31T19:15:21.8626554Z 
+2026-10-31T19:15:21.8626764Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-31T19:15:21.8627071Z 
+2026-10-31T19:15:21.8627276Z HEAD is now at 1f041266 Merge M10 integration for WillYou v0.0.8 preview
+2026-10-31T19:15:21.9127230Z ##[endgroup]
+2026-10-31T19:15:21.9484518Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-31T19:15:21.9748613Z 1f04126607471638804c1faf3effec5491cdf3c8
+2026-10-31T19:15:21.9783767Z ##[group]Removing auth
+2026-10-31T19:15:21.9792237Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-31T19:15:22.0075105Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-31T19:15:22.5147412Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-31T19:15:22.5406154Z http.https://github.com/.extraheader
+2026-10-31T19:15:22.5445642Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-31T19:15:22.5759840Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-31T19:15:23.0604129Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-31T19:15:23.0967179Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-31T19:15:23.5680542Z ##[endgroup]
+2026-10-31T19:15:23.6109526Z Prepare all required actions
+2026-10-31T19:15:23.6110170Z Getting action download info
+2026-10-31T19:15:23.7330495Z Download action repository 'pnpm/action-setup@v4' (SHA:b906affcce14559ad1aafd4ab0e942779e9f58b1)
+2026-10-31T19:15:24.1084773Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-31T19:15:24.2472091Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-31T19:15:24.4673900Z ##[group]Run ./.github/actions/setup-build
+2026-10-31T19:15:24.4674175Z ##[endgroup]
+2026-10-31T19:15:24.4731627Z ##[start-action display=Run pnpm/action-setup@v4;id=__self.__pnpm_action-setup]
+2026-10-31T19:15:24.4878911Z ##[group]Run pnpm/action-setup@v4
+2026-10-31T19:15:24.4879154Z with:
+2026-10-31T19:15:24.4879327Z   dest: ~/setup-pnpm
+2026-10-31T19:15:24.4879516Z   run_install: null
+2026-10-31T19:15:24.4879691Z   cache: false
+2026-10-31T19:15:24.4879929Z   cache_dependency_path: pnpm-lock.yaml
+2026-10-31T19:15:24.4880194Z   package_json_file: package.json
+2026-10-31T19:15:24.4880416Z   standalone: false
+2026-10-31T19:15:24.4880592Z ##[endgroup]
+2026-10-31T19:15:24.6645455Z ##[group]Running self-installer...
+2026-10-31T19:15:25.1996842Z (node:2580) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-31T19:15:25.1998855Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-31T19:15:25.4035717Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-10-31T19:15:25.4164772Z Packages: +1
+2026-10-31T19:15:25.4165152Z +
+2026-10-31T19:15:27.5253661Z Progress: resolved 1, reused 0, downloaded 1, added 0
+2026-10-31T19:15:28.1839440Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2026-10-31T19:15:28.2889772Z 
+2026-10-31T19:15:28.2890272Z dependencies:
+2026-10-31T19:15:28.2890641Z + pnpm 10.27.0 (12.16.1 is available)
+2026-10-31T19:15:28.2890844Z 
+2026-10-31T19:15:28.3035908Z Done in 3.4s
+2026-10-31T19:15:28.3213562Z ##[endgroup]
+2026-10-31T19:15:28.3213861Z Installation Completed!
+2026-10-31T19:15:28.3346884Z ##[end-action id=__self.__pnpm_action-setup;outcome=success;conclusion=success;duration_ms=3861]
+2026-10-31T19:15:28.3350075Z ##[start-action display=Run actions/setup-node@v4;id=__self.__actions_setup-node]
+2026-10-31T19:15:28.3497000Z ##[group]Run actions/setup-node@v4
+2026-10-31T19:15:28.3497235Z with:
+2026-10-31T19:15:28.3497397Z   node-version: 24
+2026-10-31T19:15:28.3497577Z   cache: pnpm
+2026-10-31T19:15:28.3497743Z   always-auth: false
+2026-10-31T19:15:28.3497933Z   check-latest: false
+2026-10-31T19:15:28.3500559Z   token: ***
+2026-10-31T19:15:28.3500722Z env:
+2026-10-31T19:15:28.3500969Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:15:28.3501289Z ##[endgroup]
+2026-10-31T19:15:28.5281330Z Found in cache @ C:\hostedtoolcache\windows\node\24.22.1\x64
+2026-10-31T19:15:28.5287350Z (node:7668) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-31T19:15:28.5288023Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-31T19:15:28.5290884Z ##[group]Environment details
+2026-10-31T19:15:33.6743329Z node: v24.22.1
+2026-10-31T19:15:33.6743634Z npm: 11.19.1
+2026-10-31T19:15:33.6743813Z yarn: 1.22.22
+2026-10-31T19:15:33.6744319Z ##[endgroup]
+2026-10-31T19:15:33.7745642Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\Users\runneradmin\setup-pnpm\node_modules\.bin\pnpm.CMD store path --silent"
+2026-10-31T19:15:34.5273694Z D:\.pnpm-store\v10
+2026-10-31T19:15:34.8403039Z pnpm cache is not found
+2026-10-31T19:15:34.8548339Z ##[end-action id=__self.__actions_setup-node;outcome=success;conclusion=success;duration_ms=6519]
+2026-10-31T19:15:34.8553589Z ##[start-action display=Run actions/setup-python@v5;id=__self.__actions_setup-python]
+2026-10-31T19:15:34.8689388Z ##[group]Run actions/setup-python@v5
+2026-10-31T19:15:34.8689683Z with:
+2026-10-31T19:15:34.8689884Z   python-version: 3.11
+2026-10-31T19:15:34.8690127Z   check-latest: false
+2026-10-31T19:15:34.8693107Z   token: ***
+2026-10-31T19:15:34.8693297Z   update-environment: true
+2026-10-31T19:15:34.8693534Z   allow-prereleases: false
+2026-10-31T19:15:34.8693742Z   freethreaded: false
+2026-10-31T19:15:34.8693921Z env:
+2026-10-31T19:15:34.8694158Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:15:34.8694463Z ##[endgroup]
+2026-10-31T19:15:35.0259653Z ##[group]Installed versions
+2026-10-31T19:15:35.0380610Z (node:5216) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-31T19:15:35.0381463Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-31T19:15:35.0381947Z Successfully set up CPython (3.11.9)
+2026-10-31T19:15:35.0382389Z ##[endgroup]
+2026-10-31T19:15:35.0483746Z ##[end-action id=__self.__actions_setup-python;outcome=success;conclusion=success;duration_ms=192]
+2026-10-31T19:15:35.0486263Z ##[start-action display=Install Python build tools;id=__self.__run]
+2026-10-31T19:15:35.0605963Z ##[group]Run python -m pip install --upgrade pip setuptools wheel
+2026-10-31T19:15:35.0606512Z [36;1mpython -m pip install --upgrade pip setuptools wheel[0m
+2026-10-31T19:15:35.0671907Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-31T19:15:35.0672336Z env:
+2026-10-31T19:15:35.0672615Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:15:35.0673044Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:35.0673517Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-31T19:15:35.0674002Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:35.0674441Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:35.0674861Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:35.0675207Z ##[endgroup]
+2026-10-31T19:15:39.1964799Z Requirement already satisfied: pip in C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\site-packages (26.2.2)
+2026-10-31T19:15:39.5448886Z Requirement already satisfied: setuptools in C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\site-packages (65.5.0)
+2026-10-31T19:15:39.7191258Z Collecting setuptools
+2026-10-31T19:15:39.8948603Z   Downloading setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+2026-10-31T19:15:39.9624580Z Collecting wheel
+2026-10-31T19:15:39.9755664Z   Downloading wheel-0.48.0-py3-none-any.whl.metadata (2.3 kB)
+2026-10-31T19:15:40.0561091Z Collecting packaging>=24.0 (from wheel)
+2026-10-31T19:15:40.0688510Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-31T19:15:40.1131607Z Downloading setuptools-84.2.1-py3-none-any.whl (876 kB)
+2026-10-31T19:15:40.2337476Z    ---------------------------------------- 876.3/876.3 kB 9.7 MB/s  0:00:00
+2026-10-31T19:15:40.2453723Z Downloading wheel-0.48.0-py3-none-any.whl (33 kB)
+2026-10-31T19:15:40.2773128Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-31T19:15:40.4915594Z Installing collected packages: setuptools, packaging, wheel
+2026-10-31T19:15:40.4923218Z   Attempting uninstall: setuptools
+2026-10-31T19:15:40.4943020Z     Found existing installation: setuptools 65.5.0
+2026-10-31T19:15:40.8322506Z     Uninstalling setuptools-65.5.0:
+2026-10-31T19:15:40.8999195Z       Successfully uninstalled setuptools-65.5.0
+2026-10-31T19:15:42.2313584Z 
+2026-10-31T19:15:42.2324105Z Successfully installed packaging-26.3 setuptools-84.2.1 wheel-0.48.0
+2026-10-31T19:15:42.2953467Z ##[end-action id=__self.__run;outcome=success;conclusion=success;duration_ms=7246]
+2026-10-31T19:15:42.2956542Z ##[start-action display=Install dependencies (Windows);id=__self.__run_2]
+2026-10-31T19:15:42.3057649Z ##[group]Run pnpm install --frozen-lockfile
+2026-10-31T19:15:42.3057996Z [36;1mpnpm install --frozen-lockfile[0m
+2026-10-31T19:15:42.3072169Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-31T19:15:42.3072550Z env:
+2026-10-31T19:15:42.3072796Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:15:42.3073204Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:42.3073659Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-31T19:15:42.3074103Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:42.3074487Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:42.3074873Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:15:42.3075198Z   npm_config_msvs_version: 2022
+2026-10-31T19:15:42.3075423Z   GYP_MSVS_VERSION: 2022
+2026-10-31T19:15:42.3075619Z ##[endgroup]
+2026-10-31T19:15:42.8664311Z Lockfile is up to date, resolution step is skipped
+2026-10-31T19:15:42.9533669Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-10-31T19:15:43.0770163Z Packages: +746
+2026-10-31T19:15:43.0772497Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-10-31T19:15:43.9575175Z Progress: resolved 746, reused 0, downloaded 31, added 4
+2026-10-31T19:15:44.9595219Z Progress: resolved 746, reused 0, downloaded 121, added 40
+2026-10-31T19:15:45.9598931Z Progress: resolved 746, reused 0, downloaded 191, added 65
+2026-10-31T19:15:46.9606449Z Progress: resolved 746, reused 0, downloaded 288, added 102
+2026-10-31T19:15:47.9621446Z Progress: resolved 746, reused 0, downloaded 408, added 157
+2026-10-31T19:15:48.9636641Z Progress: resolved 746, reused 0, downloaded 474, added 182
+2026-10-31T19:15:49.9665691Z Progress: resolved 746, reused 0, downloaded 514, added 198
+2026-10-31T19:15:50.9825577Z Progress: resolved 746, reused 0, downloaded 564, added 222
+2026-10-31T19:15:51.9941376Z Progress: resolved 746, reused 0, downloaded 607, added 234
+2026-10-31T19:15:52.9959144Z Progress: resolved 746, reused 0, downloaded 669, added 261
+2026-10-31T19:15:53.9963722Z Progress: resolved 746, reused 0, downloaded 746, added 341
+2026-10-31T19:15:54.9983653Z Progress: resolved 746, reused 0, downloaded 746, added 522
+2026-10-31T19:15:56.0060546Z Progress: resolved 746, reused 0, downloaded 746, added 685
+2026-10-31T19:15:56.4698254Z Progress: resolved 746, reused 0, downloaded 746, added 746, done
+2026-10-31T19:15:57.0598690Z .../node_modules/better-sqlite3 install$ prebuild-install || node-gyp rebuild --release
+2026-10-31T19:15:57.0615322Z .../node-pty@1.1.0/node_modules/node-pty install$ node scripts/prebuild.js || node-gyp rebuild
+2026-10-31T19:15:57.0637124Z .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+2026-10-31T19:15:57.0730740Z .../esbuild@0.18.20/node_modules/esbuild postinstall$ node install.js
+2026-10-31T19:15:57.0857439Z .../esbuild@0.19.12/node_modules/esbuild postinstall$ node install.js
+2026-10-31T19:15:57.1623556Z .../node-pty@1.1.0/node_modules/node-pty install: [32m> Checking prebuilds...[0m
+2026-10-31T19:15:57.2520945Z .../node-pty@1.1.0/node_modules/node-pty install: Done
+2026-10-31T19:15:57.2525484Z .../node-pty@1.1.0/node_modules/node-pty postinstall$ node scripts/post-install.js
+2026-10-31T19:15:57.3245400Z .../node_modules/better-sqlite3 install: (node:7460) [DEP0176] DeprecationWarning: fs.R_OK is deprecated, use fs.constants.R_OK instead
+2026-10-31T19:15:57.3347361Z .../node_modules/better-sqlite3 install: (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-31T19:15:57.3794895Z .../node-pty@1.1.0/node_modules/node-pty postinstall: [32m> Cleaning release folder...[0m
+2026-10-31T19:15:57.3796896Z .../node-pty@1.1.0/node_modules/node-pty postinstall: [32m> Moving conpty.dll...[0m
+2026-10-31T19:15:57.3821091Z .../node-pty@1.1.0/node_modules/node-pty postinstall:   Using os.arch(): x64
+2026-10-31T19:15:57.3838874Z .../node-pty@1.1.0/node_modules/node-pty postinstall:   Found version 1.23.251008001
+2026-10-31T19:15:57.3879394Z .../node-pty@1.1.0/node_modules/node-pty postinstall:   Copying D:\a\SmartDD\SmartDD\node_modules\.pnpm\node-pty@1.1.0\node_modules\node-pty\third_party\conpty\1.23.251008001\win10-x64\conpty.dll -> D:\a\SmartDD\SmartDD\node_modules\.pnpm\node-pty@1.1.0\node_modules\node-pty\build\Release\conpty\conpty.dll
+2026-10-31T19:15:57.3883838Z .../node-pty@1.1.0/node_modules/node-pty postinstall:   Copying D:\a\SmartDD\SmartDD\node_modules\.pnpm\node-pty@1.1.0\node_modules\node-pty\third_party\conpty\1.23.251008001\win10-x64\OpenConsole.exe -> D:\a\SmartDD\SmartDD\node_modules\.pnpm\node-pty@1.1.0\node_modules\node-pty\build\Release\conpty\OpenConsole.exe
+2026-10-31T19:15:57.3923044Z .../esbuild@0.19.12/node_modules/esbuild postinstall: Done
+2026-10-31T19:15:57.3956612Z .../node-pty@1.1.0/node_modules/node-pty postinstall: Done
+2026-10-31T19:15:57.4176475Z .../esbuild@0.18.20/node_modules/esbuild postinstall: Done
+2026-10-31T19:15:57.4320521Z .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+2026-10-31T19:15:57.7118123Z .../node_modules/better-sqlite3 install: Done
+2026-10-31T19:15:58.1193987Z 
+2026-10-31T19:15:58.1194679Z dependencies:
+2026-10-31T19:15:58.1195186Z + @modelcontextprotocol/client 2.0.0
+2026-10-31T19:15:58.1195853Z + @modelcontextprotocol/ext-apps 2.0.3
+2026-10-31T19:15:58.1196440Z + @modelcontextprotocol/server 2.0.0
+2026-10-31T19:15:58.1196895Z + @parcel/watcher 2.5.6
+2026-10-31T19:15:58.1197324Z + @xterm/addon-unicode11 0.9.0
+2026-10-31T19:15:58.1197741Z + better-sqlite3 12.11.1
+2026-10-31T19:15:58.1198117Z + drizzle-orm 0.32.2
+2026-10-31T19:15:58.1198436Z + mysql2 3.24.6
+2026-10-31T19:15:58.1198740Z + node-pty 1.1.0
+2026-10-31T19:15:58.1199071Z + nodemailer 10.1.7
+2026-10-31T19:15:58.1199393Z + pg 8.23.1
+2026-10-31T19:15:58.1199694Z + picomatch 4.0.4
+2026-10-31T19:15:58.1200028Z + postal-mime 4.0.11
+2026-10-31T19:15:58.1200365Z + smol-toml 1.9.1
+2026-10-31T19:15:58.1200847Z + ssh2 1.17.0
+2026-10-31T19:15:58.1202571Z + vscode-jsonrpc 8.2.0
+2026-10-31T19:15:58.1203113Z + vscode-languageserver-protocol 3.17.5
+2026-10-31T19:15:58.1203932Z + yaml 2.9.1
+2026-10-31T19:15:58.1204241Z + zod 4.6.7
+2026-10-31T19:15:58.1204410Z 
+2026-10-31T19:15:58.1204565Z devDependencies:
+2026-10-31T19:15:58.1204790Z + @base-ui/react 1.9.0
+2026-10-31T19:15:58.1205041Z + @codemirror/commands 6.11.1
+2026-10-31T19:15:58.1205288Z + @codemirror/merge 6.12.1
+2026-10-31T19:15:58.1205522Z + @codemirror/state 6.7.6
+2026-10-31T19:15:58.1205747Z + @codemirror/view 6.43.14
+2026-10-31T19:15:58.1205972Z + @electron/rebuild 4.2.1
+2026-10-31T19:15:58.1206191Z + @pierre/theme 2.0.0
+2026-10-31T19:15:58.1206408Z + @tailwindcss/vite 4.3.3
+2026-10-31T19:15:58.1206655Z + @tanstack/react-query 5.104.2
+2026-10-31T19:15:58.1206926Z + @testing-library/react 16.3.3
+2026-10-31T19:15:58.1207200Z + @testing-library/user-event 14.6.8
+2026-10-31T19:15:58.1207495Z + @types/better-sqlite3 7.6.13
+2026-10-31T19:15:58.1207769Z + @types/node 22.20.5
+2026-10-31T19:15:58.1208023Z + @types/pg 8.23.1
+2026-10-31T19:15:58.1208222Z + @types/react 19.3.0
+2026-10-31T19:15:58.1208430Z + @types/react-dom 19.3.0
+2026-10-31T19:15:58.1208645Z + @types/ssh2 1.15.6
+2026-10-31T19:15:58.1209049Z + @types/yauzl 3.4.0
+2026-10-31T19:15:58.1210956Z + @types/yazl 3.3.1
+2026-10-31T19:15:58.1212935Z + @vitejs/plugin-react 4.7.0
+2026-10-31T19:15:58.1213374Z + @xterm/addon-fit 0.11.0
+2026-10-31T19:15:58.1213764Z + @xterm/xterm 6.0.0
+2026-10-31T19:15:58.1214180Z + class-variance-authority 0.7.1
+2026-10-31T19:15:58.1214580Z + clsx 2.1.1
+2026-10-31T19:15:58.1214897Z + docx-preview 0.3.7
+2026-10-31T19:15:58.1215249Z + drizzle-kit 0.24.2
+2026-10-31T19:15:58.1215586Z + electron 42.11.14
+2026-10-31T19:15:58.1215960Z + electron-builder 26.15.3
+2026-10-31T19:15:58.1216348Z + electron-vite 5.0.0
+2026-10-31T19:15:58.1216703Z + es-module-lexer 2.3.2
+2026-10-31T19:15:58.1217074Z + highlight.js 11.11.1
+2026-10-31T19:15:58.1217577Z + i18next 26.4.4
+2026-10-31T19:15:58.1218008Z + i18next-browser-languagedetector 8.2.1
+2026-10-31T19:15:58.1218463Z + js-yaml 4.1.0
+2026-10-31T19:15:58.1218771Z + jsdom 30.1.3
+2026-10-31T19:15:58.1219060Z + katex 0.16.22
+2026-10-31T19:15:58.1219382Z + lucide-react 0.564.0
+2026-10-31T19:15:58.1219755Z + markdown-it 14.1.0
+2026-10-31T19:15:58.1220626Z + markdown-it-texmath 1.0.0
+2026-10-31T19:15:58.1221057Z + mermaid 11.12.0
+2026-10-31T19:15:58.1221381Z + mobx 6.16.1
+2026-10-31T19:15:58.1222078Z + mobx-react-lite 4.1.1
+2026-10-31T19:15:58.1223381Z + papaparse 5.5.3
+2026-10-31T19:15:58.1224297Z + parse5 8.0.1
+2026-10-31T19:15:58.1225352Z + parse5-sax-parser 8.0.0
+2026-10-31T19:15:58.1226486Z + pdf-lib 1.17.1
+2026-10-31T19:15:58.1227583Z + pdfjs-dist 5.4.296
+2026-10-31T19:15:58.1228510Z + postcss 8.5.30
+2026-10-31T19:15:58.1229631Z + postcss-value-parser 4.2.0
+2026-10-31T19:15:58.1230620Z + react 19.3.0
+2026-10-31T19:15:58.1231520Z + react-dom 19.3.0
+2026-10-31T19:15:58.1232092Z + react-i18next 17.0.16
+2026-10-31T19:15:58.1241468Z + react-resizable-panels 4.14.5
+2026-10-31T19:15:58.1243497Z + saxes 6.0.0
+2026-10-31T19:15:58.1244713Z + shiki 3.20.0
+2026-10-31T19:15:58.1245767Z + sonner 2.0.8
+2026-10-31T19:15:58.1247053Z + ssf 0.11.2
+2026-10-31T19:15:58.1248136Z + tailwind-merge 2.6.1
+2026-10-31T19:15:58.1248575Z + tailwindcss 4.3.3
+2026-10-31T19:15:58.1248988Z + tw-animate-css 1.4.0
+2026-10-31T19:15:58.1249650Z + typescript 5.9.3
+2026-10-31T19:15:58.1249978Z + vite 6.4.4
+2026-10-31T19:15:58.1250271Z + vitest 4.1.11
+2026-10-31T19:15:58.1250558Z + yauzl 3.4.0
+2026-10-31T19:15:58.1250838Z + yazl 3.3.1
+2026-10-31T19:15:58.1251016Z 
+2026-10-31T19:15:58.1763335Z 
+2026-10-31T19:15:58.1764146Z > smartdd@0.0.8 postinstall D:\a\SmartDD\SmartDD
+2026-10-31T19:15:58.1764930Z > electron-rebuild -f --only=better-sqlite3,node-pty
+2026-10-31T19:15:58.1765359Z 
+2026-10-31T19:15:58.3345859Z Searching dependency tree
+2026-10-31T19:15:58.6158225Z Building modules: better-sqlite3, node-pty
+2026-10-31T19:17:37.4911953Z ✔ Rebuild Complete
+2026-10-31T19:17:37.5043241Z ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+2026-10-31T19:17:37.5044260Z │                                                                              │
+2026-10-31T19:17:37.5045215Z │   Ignored build scripts: @parcel/watcher@2.5.6, cpu-features@0.0.10,         │
+2026-10-31T19:17:37.5045930Z │   electron-winstaller@5.4.0, ssh2@1.17.0.                                    │
+2026-10-31T19:17:37.5046602Z │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+2026-10-31T19:17:37.5047209Z │   to run scripts.                                                            │
+2026-10-31T19:17:37.5047728Z │                                                                              │
+2026-10-31T19:17:37.5048255Z ╰──────────────────────────────────────────────────────────────────────────────╯
+2026-10-31T19:17:37.5113055Z Done in 1m 55s using pnpm v10.27.0
+2026-10-31T19:17:37.5311475Z ##[end-action id=__self.__run_2;outcome=success;conclusion=success;duration_ms=115235]
+2026-10-31T19:17:37.5313949Z ##[start-action display=Install dependencies (macOS/Linux);id=__self.__run_3]
+2026-10-31T19:17:37.5347426Z ##[end-action id=__self.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-31T19:17:37.5478978Z ##[group]Run pnpm test:release
+2026-10-31T19:17:37.5480076Z [36;1mpnpm test:release[0m
+2026-10-31T19:17:37.5590391Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-31T19:17:37.5590771Z env:
+2026-10-31T19:17:37.5591048Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:17:37.5591509Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:37.5592001Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-31T19:17:37.5592484Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:37.5592916Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:37.5593349Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:37.5593701Z ##[endgroup]
+2026-10-31T19:17:38.2148887Z 
+2026-10-31T19:17:38.2149630Z > smartdd@0.0.8 test:release D:\a\SmartDD\SmartDD
+2026-10-31T19:17:38.2150478Z > node --test scripts/release/release.test.mjs
+2026-10-31T19:17:38.2150878Z 
+2026-10-31T19:17:39.8609667Z ✔ Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode (1.7121ms)
+2026-10-31T19:17:39.8614876Z ﹣ Mac bundle cleanup removes signing-blocking metadata and preserves quarantine (0.1296ms) # SKIP
+2026-10-31T19:17:39.8616042Z ✔ custom version carry and numeric tag ordering (0.5687ms)
+2026-10-31T19:17:39.8617114Z ✔ rejects versions outside the agreed ranges and malformed tags (0.6453ms)
+2026-10-31T19:17:39.8620346Z ✔ metadata requires matching version and one nonempty exact changelog section (0.492ms)
+2026-10-31T19:17:39.8624309Z ✔ packaging refuses another OS before rebuilding or producing installers (137.9154ms)
+2026-10-31T19:17:39.8627012Z ✔ native probe finishes after PTY exit even if a worker handle remains open (127.581ms)
+2026-10-31T19:17:39.8630316Z ✔ release tag must be annotated, checked out, sequential and already in main (1106.48ms)
+2026-10-31T19:17:39.8635674Z ✔ installer filenames match native package architecture conventions (1.1097ms)
+2026-10-31T19:17:39.8641034Z ✔ WillYou packaging paths and workflow upload patterns stay consistent across platforms (0.8006ms)
+2026-10-31T19:17:39.8653184Z ✔ all seven installers must match their recorded checksums and commit (12.0904ms)
+2026-10-31T19:17:39.8655397Z ✔ missing platforms, dirty builds and unsigned Mac builds block publication (9.8364ms)
+2026-10-31T19:17:39.8656915Z ✔ preview permits unsigned assets while stable still requires signing (11.9149ms)
+2026-10-31T19:17:39.8658356Z ✔ missing MSI or Linux formats and altered manifest entries block publication (20.655ms)
+2026-10-31T19:17:39.8659877Z ✔ workflow entry points keep builds read-only and publication dependent on all builds (21.6532ms)
+2026-10-31T19:17:39.8782702Z ℹ tests 15
+2026-10-31T19:17:39.8783233Z ℹ suites 0
+2026-10-31T19:17:39.8783578Z ℹ pass 14
+2026-10-31T19:17:39.8783786Z ℹ fail 0
+2026-10-31T19:17:39.8784002Z ℹ cancelled 0
+2026-10-31T19:17:39.8784262Z ℹ skipped 1
+2026-10-31T19:17:39.8784464Z ℹ todo 0
+2026-10-31T19:17:39.8784720Z ℹ duration_ms 1607.2939
+2026-10-31T19:17:40.0099645Z ##[group]Run node scripts/release/build.mjs --platform "$BUILD_PLATFORM" --arch "$BUILD_ARCH"
+2026-10-31T19:17:40.0100392Z [36;1mnode scripts/release/build.mjs --platform "$BUILD_PLATFORM" --arch "$BUILD_ARCH"[0m
+2026-10-31T19:17:40.0115011Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-31T19:17:40.0115400Z env:
+2026-10-31T19:17:40.0115654Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-10-31T19:17:40.0116058Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:40.0116502Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-31T19:17:40.0116970Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:40.0117388Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:40.0117781Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-31T19:17:40.0118274Z   BUILD_PLATFORM: win
+2026-10-31T19:17:40.0118495Z   BUILD_ARCH: x64
+2026-10-31T19:17:40.0118686Z   SMARTDD_REQUIRE_MAC_SIGNING: 0
+2026-10-31T19:17:40.0118901Z   SMARTDD_SIGN: 0
+2026-10-31T19:17:40.0119068Z   CSC_LINK: 
+2026-10-31T19:17:40.0119242Z   CSC_KEY_PASSWORD: 
+2026-10-31T19:17:40.0119427Z   APPLE_ID: 
+2026-10-31T19:17:40.0119603Z   APPLE_APP_SPECIFIC_PASSWORD: 
+2026-10-31T19:17:40.0119825Z   APPLE_TEAM_ID: 
+2026-10-31T19:17:40.0120008Z ##[endgroup]
+2026-10-31T19:17:40.1888744Z Downloading Electron binary...
+2026-10-31T19:17:44.4949036Z Building WillYou 0.0.8: win/x64, unsigned trial
+2026-10-31T19:19:24.1595149Z [36mvite v6.4.4 [32mbuilding SSR bundle for production...[36m[39m
+2026-10-31T19:19:24.2277219Z transforming...
+2026-10-31T19:19:29.1989420Z [32m✓[39m 714 modules transformed.
+2026-10-31T19:19:29.5735336Z rendering chunks...
+2026-10-31T19:19:30.4516023Z node:fs:621
+2026-10-31T19:19:30.4516794Z   return binding.open(
+2026-10-31T19:19:30.4517233Z                  ^
+2026-10-31T19:19:30.4517412Z 
+2026-10-31T19:19:30.4518053Z Error: ENOENT: no such file or directory, open 'D:\a\SmartDD\SmartDD\out\applications\mcp-bridge.cjs'
+2026-10-31T19:19:30.4518824Z     at Object.openSync (node:fs:621:18)
+2026-10-31T19:19:30.4519263Z     at readFileSync (node:fs:487:35)
+2026-10-31T19:19:30.4519957Z     at file:///D:/a/SmartDD/SmartDD/scripts/applications/build-bundles.mjs:16:40
+2026-10-31T19:19:30.4520794Z     at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+2026-10-31T19:19:30.4521427Z     at async node:internal/modules/esm/loader:647:26
+2026-10-31T19:19:30.4522268Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+2026-10-31T19:19:30.4522916Z   errno: -4058,
+2026-10-31T19:19:30.4523217Z   code: 'ENOENT',
+2026-10-31T19:19:30.4523500Z   syscall: 'open',
+2026-10-31T19:19:30.4523983Z   path: 'D:\\a\\SmartDD\\SmartDD\\out\\applications\\mcp-bridge.cjs'
+2026-10-31T19:19:30.4524509Z }
+2026-10-31T19:19:30.4524655Z 
+2026-10-31T19:19:30.4524791Z Node.js v24.22.1
+2026-10-31T19:19:30.4616907Z [2mout/main/[22m[32mchunks/app-icon-DeEYHTMt.png             [39m[1m[2m1,015.88 kB[22m[1m[22m
+2026-10-31T19:19:30.4618267Z [2mout/main/[22m[36mchunks/_commonjsHelpers-DHfMLFPC.js      [39m[1m[2m    0.21 kB[22m[1m[22m
+2026-10-31T19:19:30.4619728Z [2mout/main/[22m[36mchunks/file-tex-Clh1yTbM.js              [39m[1m[2m    0.58 kB[22m[1m[22m
+2026-10-31T19:19:30.4621054Z [2mout/main/[22m[36mchunks/file-html-BISij2br.js             [39m[1m[2m    0.93 kB[22m[1m[22m
+2026-10-31T19:19:30.4622408Z [2mout/main/[22m[36mchunks/fidelity-B6WH2CHf.js              [39m[1m[2m    1.65 kB[22m[1m[22m
+2026-10-31T19:19:30.4623594Z [2mout/main/[22m[36mm9-office-pages.js                       [39m[1m[2m    2.24 kB[22m[1m[22m
+2026-10-31T19:19:30.4624861Z [2mout/main/[22m[36mm10-mail-reader.js                       [39m[1m[2m    5.58 kB[22m[1m[22m
+2026-10-31T19:19:30.4629845Z [2mout/main/[22m[36mchunks/pptx-chartex-preview-CHQaekdo.js  [39m[1m[2m    6.51 kB[22m[1m[22m
+2026-10-31T19:19:30.4631546Z [2mout/main/[22m[36mchunks/files-DbH9t9Sr.js                 [39m[1m[2m    7.44 kB[22m[1m[22m
+2026-10-31T19:19:30.4632939Z [2mout/main/[22m[36mchunks/pptx-image-BFY7VGJX.js            [39m[1m[2m    8.36 kB[22m[1m[22m
+2026-10-31T19:19:30.4634382Z [2mout/main/[22m[36mchunks/cell-edit-WAaPT8-u.js             [39m[1m[2m   11.22 kB[22m[1m[22m
+2026-10-31T19:19:30.4635789Z [2mout/main/[22m[36mchunks/pptx-placeholder-BOM43_AM.js      [39m[1m[2m   12.17 kB[22m[1m[22m
+2026-10-31T19:19:30.4637204Z [2mout/main/[22m[36mchunks/foxmail-source-DbJ_QtUj.js        [39m[1m[2m   38.76 kB[22m[1m[22m
+2026-10-31T19:19:30.4638552Z [2mout/main/[22m[36mm9-pptx-document.js                      [39m[1m[2m   58.98 kB[22m[1m[22m
+2026-10-31T19:19:30.4639846Z [2mout/main/[22m[36mm9-office-document.js                    [39m[1m[2m   81.26 kB[22m[1m[22m
+2026-10-31T19:19:30.4641407Z [2mout/main/[22m[36mm9-html-resources.js                     [39m[1m[2m  473.55 kB[22m[1m[22m
+2026-10-31T19:19:30.4642770Z [2mout/main/[22m[36mchunks/pages-model-C-wcK_X6.js           [39m[1m[33m  516.06 kB[39m[22m
+2026-10-31T19:19:30.4644072Z [2mout/main/[22m[36mm9-tex-resources.js                      [39m[1m[33m  792.94 kB[39m[22m
+2026-10-31T19:19:30.4645273Z [2mout/main/[22m[36mindex.js                                 [39m[1m[33m2,685.95 kB[39m[22m
+2026-10-31T19:19:30.4670723Z [31m✗[39m Build failed in 6.28s
+2026-10-31T19:19:30.4673293Z [31merror during build:
+2026-10-31T19:19:30.4675062Z [31m[smartdd-native-bridges] Command failed: C:\hostedtoolcache\windows\node\24.22.1\x64\node.exe scripts/applications/build-bundles.mjs[31m
+2026-10-31T19:19:30.4676145Z     at genericNodeError (node:internal/errors:986:15)
+2026-10-31T19:19:30.4676665Z     at wrappedFn (node:internal/errors:540:14)
+2026-10-31T19:19:30.4677183Z     at checkExecSyncError (node:child_process:943:11)
+2026-10-31T19:19:30.4677739Z     at execFileSync (node:child_process:979:15)
+2026-10-31T19:19:30.4678544Z     at Object.writeBundle (file:///D:/a/SmartDD/SmartDD/electron.vite.config.1793474364020.mjs:27:7)
+2026-10-31T19:19:30.4680173Z     at Object.handler (file:///D:/a/SmartDD/SmartDD/node_modules/.pnpm/vite@6.4.4_@types+node@22.2_472a08f72804ec62511b1ddf8064fcb5/node_modules/vite/dist/node/chunks/dep-3O3b9SCF.js:46876:15)
+2026-10-31T19:19:30.4681816Z     at file:///D:/a/SmartDD/SmartDD/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:23609:40
+2026-10-31T19:19:30.4682656Z     at async Promise.all (index 0)
+2026-10-31T19:19:30.4683701Z     at async PluginDriver.hookParallel (file:///D:/a/SmartDD/SmartDD/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:23519:9)
+2026-10-31T19:19:30.4685564Z     at async file:///D:/a/SmartDD/SmartDD/node_modules/.pnpm/rollup@4.64.6/node_modules/rollup/dist/es/shared/node-entry.js:24605:13[39m
+2026-10-31T19:19:30.5052126Z file:///D:/a/SmartDD/SmartDD/scripts/release/common.mjs:17
+2026-10-31T19:19:30.5054593Z   if (result.status !== 0) throw new Error(`${command} exited with ${result.status ?? result.signal}`);
+2026-10-31T19:19:30.5055351Z                                  ^
+2026-10-31T19:19:30.5055588Z 
+2026-10-31T19:19:30.5055994Z Error: C:\hostedtoolcache\windows\node\24.22.1\x64\node.exe exited with 1
+2026-10-31T19:19:30.5056763Z     at run (file:///D:/a/SmartDD/SmartDD/scripts/release/common.mjs:17:34)
+2026-10-31T19:19:30.5057514Z     at runBin (file:///D:/a/SmartDD/SmartDD/scripts/release/common.mjs:24:10)
+2026-10-31T19:19:30.5058278Z     at file:///D:/a/SmartDD/SmartDD/scripts/release/build.mjs:51:1
+2026-10-31T19:19:30.5058688Z 
+2026-10-31T19:19:30.5058808Z Node.js v24.22.1
+2026-10-31T19:19:30.5166772Z ##[error]Process completed with exit code 1.
+2026-10-31T19:19:30.5364900Z Post job cleanup.
+2026-10-31T19:19:30.5369604Z ##[start-action display=Run actions/setup-python@v5;id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__actions_setup-python]
+2026-10-31T19:19:30.5371991Z ##[end-action id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__actions_setup-python;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-31T19:19:30.5373959Z ##[start-action display=Run actions/setup-node@v4;id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__actions_setup-node]
+2026-10-31T19:19:30.5375943Z ##[end-action id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__actions_setup-node;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-31T19:19:30.5378013Z ##[start-action display=Run pnpm/action-setup@v4;id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__pnpm_action-setup]
+2026-10-31T19:19:30.5491989Z Post job cleanup.
+2026-10-31T19:19:30.7295485Z Pruning is unnecessary.
+2026-10-31T19:19:30.7395012Z ##[end-action id=__0e811ab7-5202-4f81-b59a-619fe81cfcbc.__pnpm_action-setup;outcome=success;conclusion=success;duration_ms=201]
+2026-10-31T19:19:30.7582025Z Post job cleanup.
+2026-10-31T19:19:30.9553262Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-31T19:19:30.9861600Z git version 2.56.0.windows.3
+2026-10-31T19:19:30.9938943Z Temporarily overriding HOME='D:\a\_temp\25d22c34-0ae7-4bea-98d9-e33d9b19abf8' before making global git config changes
+2026-10-31T19:19:30.9940502Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-31T19:19:30.9952201Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\SmartDD\SmartDD
+2026-10-31T19:19:31.0286950Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-31T19:19:31.0625454Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-31T19:19:31.5588861Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-31T19:19:31.5896268Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-31T19:19:32.0737753Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-31T19:19:32.1039611Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-31T19:19:32.6071375Z Cleaning up orphan processes
+2026-10-31T19:19:32.6686935Z Terminate orphan process: pid (1980) (vctip)
+2026-10-31T19:19:32.7022398Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5, pnpm/action-setup@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

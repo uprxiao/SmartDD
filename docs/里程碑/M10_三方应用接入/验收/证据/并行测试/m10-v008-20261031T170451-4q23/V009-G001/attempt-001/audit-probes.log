@@ -1,0 +1,107 @@
+{
+  "schema": "v009-g001-pure-audit-probes-v1",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Windows native argv differs from file URL pathname at known CI path",
+      "status": "passed",
+      "actual": {
+        "argv": "D:\\a\\SmartDD\\SmartDD\\scripts\\applications\\build-runtime.mjs",
+        "pathname": "/D:/a/SmartDD/SmartDD/scripts/applications/build-runtime.mjs",
+        "normalized": "D:\\a\\SmartDD\\SmartDD\\scripts\\applications\\build-runtime.mjs"
+      }
+    },
+    {
+      "name": "Same guard also skips POSIX paths containing encoded spaces",
+      "status": "passed",
+      "actual": {
+        "pathname": "/tmp/WillYou%20Build/scripts/applications/build-runtime.mjs",
+        "normalized": "/tmp/WillYou Build/scripts/applications/build-runtime.mjs"
+      }
+    },
+    {
+      "name": "Actual readTree source emits backslash key under mocked Win32 traversal",
+      "status": "passed",
+      "actual": [
+        "skills\\work-assistant\\SKILL.md"
+      ]
+    },
+    {
+      "name": "Actual verifier safe rejects generated Win32 backslash key",
+      "status": "passed",
+      "actual": {
+        "key": "skills\\work-assistant\\SKILL.md",
+        "accepted": false
+      }
+    },
+    {
+      "name": "Actual verifier names emits native key and differs from portable inventory",
+      "status": "passed",
+      "actual": [
+        "skills\\work-assistant\\SKILL.md"
+      ]
+    },
+    {
+      "name": "Trusted traversal normalization produces portable canonical paths",
+      "status": "passed",
+      "actual": "skills/work-assistant/SKILL.md"
+    },
+    {
+      "name": "Path separator alone changes content-addressed manifest hash",
+      "status": "passed",
+      "actual": {
+        "portableHash": "1cb6efe59b38e6107a8d8ef109c5925756c4127e4ec20b565d39bf460e412384",
+        "nativeWinHash": "8b293e953f526ed20e20b5944812469bbd4ef8c3b841626e5096102c67a8a943"
+      }
+    },
+    {
+      "name": "Current executable:false and mode 0600 are logically consistent",
+      "status": "passed",
+      "actual": {
+        "mode0600Marker": 0,
+        "syntheticMode0666Marker": 0,
+        "actualWindowsFsMeasured": false
+      }
+    },
+    {
+      "name": "Future executable:true is not supported by current always-0600 writer",
+      "status": "passed",
+      "actual": {
+        "currentWriterMarker": 0,
+        "verifierTrueMarker": 64,
+        "standard0755Marker": 73,
+        "currentBuiltinsTrue": false
+      }
+    },
+    {
+      "name": "Adding false executable field changes pinned runtime manifest hash",
+      "status": "passed",
+      "actual": {
+        "original": "0e0881dec720fb1fabc5bbbd3edbb03bfc2b0edec1f7a57a958533558fef8d3c",
+        "addedField": "423fb3fb395277a393f5f9278c8ed50d21be0afeeabc215cc4487573edc66713",
+        "bytesUnchanged": true
+      }
+    },
+    {
+      "name": "LF versus CRLF bytes change pinned runtime file/hash metadata",
+      "status": "passed",
+      "actual": {
+        "lf": "43924085f548d246a0d4cb6fc7d7b0eb12dfa547c5f7abe427e0b2dc8399a2cc",
+        "crlf": "81f6510c1da77e9ddf4edade78188724045417ecf41cb69646961bad1d744047",
+        "actualRuntimeBytesCompared": false
+      }
+    },
+    {
+      "name": "Canonical index provenance hash differs while resource-set hash stays stable",
+      "status": "passed",
+      "actual": {
+        "resourceSet": "eedd4c7086e07f97aea3f0242bf7995685b5a714bbfcd352153a571016a71ac6",
+        "firstIndex": "999de5c0013a1fa097d41f4799d7ce2b72261ca72b558a760ec47533e4d4c168",
+        "nextIndex": "ba352cd4fa502adcb418759fe57294cffe2990fb49e8f5888e68d0db5e1f7c41"
+      }
+    }
+  ],
+  "boundary": "Pure Node URL/path/VM/memory/arithmetic probes on macOS. Native Win32 path semantics are simulated with path.win32 and mocked fs. No Windows filesystem, Vite, application build, runtime process, external service or model was executed."
+}
