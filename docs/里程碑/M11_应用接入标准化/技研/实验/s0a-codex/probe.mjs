@@ -10,7 +10,11 @@ const token = process.env.WILLYOU_RUN_TOKEN || process.env.WILLYOU_RUN_CRED, end
 const netTest = () => new Promise(res => { const c = connect({ host: '1.1.1.1', port: 443, timeout: 4000 }); c.on('connect', () => { c.destroy(); res('CONNECTED'); }); c.on('timeout', () => { c.destroy(); res('TIMEOUT'); }); c.on('error', e => res('ERR:' + e.code)); });
 const proxyEnv = Object.keys(process.env).filter(k => /proxy/i.test(k));
 const netResult = await netTest();
-const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, proxyEnvNames: proxyEnv }) + '\n');
+// 经代理访问外部域名（默认应被拒）：Node 的 fetch 与 curl 各试一次，只报告状态或错误码，不读取内容。
+const viaFetch = await fetch('https://example.com', { signal: AbortSignal.timeout(6000) }).then(r => 'HTTP ' + r.status, e => 'ERR:' + (e.cause?.code || e.name));
+let viaCurl = ''; try { viaCurl = 'exit0 HTTP ' + execFileSync('curl', ['-sS', '-m', '6', '-o', '/dev/null', '-w', '%{http_code}', 'https://example.com'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); } catch (e) { viaCurl = 'exit' + e.status + ' ' + String(e.stderr || e.message).replace(/\s+/g, ' ').slice(0, 120); }
+const localCmds = {}; for (const [n, a] of [['git', ['--version']], ['node', ['-v']]]) { try { localCmds[n] = execFileSync(n, a, { encoding: 'utf8' }).trim(); } catch (e) { localCmds[n] = 'ERR:' + (e.code || e.status); } }
+const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, viaProxyFetch: viaFetch, viaProxyCurl: viaCurl, localCmds, proxyEnvNames: proxyEnv }) + '\n');
 if (!endpoint || !token) { done({ attempted: false, reason: 'missing env' }); process.exit(0); }
 const s = connect(endpoint); let out = '';
 s.on('connect', () => s.write(JSON.stringify({ op: 'bug.list', token, clientPid: process.pid }) + '\n'));
