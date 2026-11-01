@@ -1,0 +1,22 @@
+--- 002 repeated setup failure
++++ 003 UI-only fixture and two native reuses
+@@ -76,8 +76,8 @@
+  // default 10s hook on CI. This setup budget does not change business deadlines.
+  beforeAll(()=>{
+   build=mkdtempSync(join(tmpdir(),'willyou-m10-mail-data-build-'));worker=join(build,'mail.cjs');native=join(build,'foxmail');
+-  fileNative=join(build,'files');execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O1','-Wno-deprecated-declarations','-framework','Foundation','-framework','AppKit','-framework','ImageIO','-framework','CoreGraphics','-framework','CoreText',resolve('native/files/broker.mm'),'-o',fileNative],{stdio:'pipe'});
+-  execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-framework','Foundation','-lsqlite3',resolve('native/applications/foxmail.mm'),'-o',native]);execFileSync('xcrun',['clang++','-std=c++17','-O2',resolve('native/applications/process-identity.cc'),'-o',join(build,'willyou-process-identity')]);
++  fileNative=join(build,'files');copyFileSync(resolve('out/native/willyou-files'),fileNative);copyFileSync(resolve('out/native/willyou-process-identity'),join(build,'willyou-process-identity'));
++  execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-framework','Foundation','-lsqlite3',resolve('native/applications/foxmail.mm'),'-o',native]);
+   const require=createRequire(import.meta.url),esbuild=createRequire(require.resolve('electron-vite/package.json'))('esbuild');esbuild.buildSync({entryPoints:[resolve('src/main/core/applications/providers/mail-worker.ts')],bundle:true,platform:'node',format:'cjs',outfile:worker,alias:{'@shared':resolve('src/shared')}});
+   execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});bundles=new CapabilityBundleSource(join(build,'bundles'));
+  },60000);
+@@ -89,7 +89,7 @@
+   await new RuntimeRegistry(f.store).install(bundles.runtime());const trusted=new BuiltinPackageRegistry(f.store),pack=await trusted.install(bundles,bundles.index.apps.find(entry=>entry.appId==='mail')!);await trusted.packages.activate(pack.packageHash,0);
+   workspace=join(f.root,'workspace-p1');mkdirSync(workspace);const userData=join(f.root,'file-user-data');mkdirSync(userData);fileBroker=new NativeFileBroker(fileNative);const resolver={sources:()=>[{kind:'project-directory' as const,id:'private-root',projectId:'p1',path:workspace,label:'Private M10 attachment workspace'}]};files=new FileService(new FileRootsService(resolver,fileBroker),fileBroker,new FileRecoveryStore(fileBroker,userData,resolver));
+   app=setup();await app.recover();const tested=await app.testConnection(sender,{name:'Private test source',expectedRevision:0,config:{kind:'foxmail',sourcePath:sourceRoot,account:'private-fixture',queryDays:30}});const connection=await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);connectionId=connection.id;await enable();
+-  reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);
++  reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools(); // UI-only unified contract; no unrelated legacy Agent runs.
+  });
+  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();fox.close();files.closeOwner(fileOwner);await files.watcher.dispose();fileBroker.dispose();vi.restoreAllMocks();const ownedRoot=f.root;f.cleanup();replyCleanup.push({root:ownedRoot,rootExists:existsSync(ownedRoot),ownedFakeRuns:owned.length,nativePtys:0});});
+ 

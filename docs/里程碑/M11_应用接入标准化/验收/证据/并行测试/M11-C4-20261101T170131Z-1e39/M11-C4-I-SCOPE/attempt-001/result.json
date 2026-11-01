@@ -1,0 +1,164 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "runId": "M11-C4-20261101T170131Z-1e39",
+  "groupId": "M11-C4-I-SCOPE",
+  "attempt": "attempt-001",
+  "caseId": "M11-T06",
+  "status": "passed-I-only-A-R-pending",
+  "originalContract": "523f9d85: T06/R07/I+A+R, A/B different connections, A limited actions; spoof B project/connection, extra action, approved; deny with no external effects, then legal A query; parameters grant no authority.",
+  "requiredFormalLayers": [
+    "I",
+    "A",
+    "R"
+  ],
+  "executedLayers": [
+    "I"
+  ],
+  "source": {
+    "frozenDirectory": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/levels-current",
+    "commit": "523f9d85",
+    "manifestSha256": "4139a486315aab0142945907a5df21f36f57521b5f21ec37af216fed50c22c5d",
+    "sourceVerified": 2752,
+    "outVerified": 151,
+    "selectedDependencyHashes": [
+      {
+        "path": "package.json",
+        "realpath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/levels-current/package.json",
+        "sha256": "435aca01fc1606b1214b345d8aa66abbb551da37ff83ffb1760ca590efb77a7d"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "realpath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/levels-current/pnpm-lock.yaml",
+        "sha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+      },
+      {
+        "path": "node_modules/.modules.yaml",
+        "realpath": "/Users/hx/hx/hxWork/SmartDD/node_modules/.modules.yaml",
+        "sha256": "efb80571340f3067cb94200dd40229279f9aad2ad6076af4eb32cc8db92a976d"
+      },
+      {
+        "path": "node_modules/vitest/package.json",
+        "realpath": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.5_jsdom@30.1.3_@noble+hashes@2.4.0__vite@6.4.4_@types+n_17faef52d621732777e46e83475344fc/node_modules/vitest/package.json",
+        "sha256": "a28126d97bcaf567da5bed69443b7f3bcd9a7a8c38c8b66e554686b6bb2c10e0"
+      },
+      {
+        "path": "node_modules/electron/package.json",
+        "realpath": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/package.json",
+        "sha256": "b1b569ed884012bcbf5e488db799cb162c2c3ef4ff544a3e708043aaf27cfc9a"
+      },
+      {
+        "path": "node_modules/better-sqlite3/package.json",
+        "realpath": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/package.json",
+        "sha256": "4665126292eff5dffe6c0ffabf98c4de18e479aa0b53edd775028eb567b3ecc1"
+      },
+      {
+        "path": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "realpath": "/Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "sha256": "541880d9625fddf7dd2815e500e0787ab31d44218cad998cda59528ae78a6edb"
+      }
+    ],
+    "productionChanges": [],
+    "passingRuntimeSourceSha256": "c7259c48e2e16e17722f079100374b4fd07190cddddf84a195c69f761b5c48cd",
+    "finalTypedTestSha256": "eea674b2e6dbd7f37ec641e65e21a942b34f833cbc521ebc3e02682d4fe7de62",
+    "typeOnlyDelta": "002-to-typed-fixture.patch: import type and cast for setup-sender only; no runtime/expectation change; no green rerun."
+  },
+  "startedAt": "2026-11-01T17:41:52.423000+00:00",
+  "finishedAt": "2026-11-01T17:42:51.230265+00:00",
+  "sealedAt": "2026-11-01T17:44:11.836899+00:00",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "criteria": [
+    {
+      "criterion": "A/B项目不同连接，A仅有限动作",
+      "status": "passed-I",
+      "actual": "Actual ProjectService B, actual verified/saved connection records, different selected source IDs; host-created immutable A plan allows exactly zentao.object.list and list() exposes only it.",
+      "evidence": "raw-outcomes.json precondition"
+    },
+    {
+      "criterion": "A提交B project",
+      "status": "passed-I",
+      "actual": "Both call.projectId and arguments.projectId -> INVALID_INPUT; no provider/business effects."
+    },
+    {
+      "criterion": "A提交B connection",
+      "status": "passed-I",
+      "actual": "CLI call.connectionId=B -> INVALID_INPUT (must be null); arguments.connectionId=B -> SCOPE_DENIED from actual selected connection scope before provider."
+    },
+    {
+      "criterion": "额外动作被拒",
+      "status": "passed-I",
+      "actual": "Actually installed get capability excluded from fixed A allowed table -> SCOPE_DENIED before provider work."
+    },
+    {
+      "criterion": "自报approved不能授权",
+      "status": "passed-I",
+      "actual": "Both call.approved=true and arguments.approved=true -> INVALID_INPUT."
+    },
+    {
+      "criterion": "各次越权业务/外部副作用0，最后合法A成功",
+      "status": "passed-I",
+      "actual": "Each7 denial: HTTP0, ZenTao revision objects0, mail drafts0. Audit/failed-operation journals are expected bookkeeping, not business effects. Final A returns object101 with connectionA, only2 /a/ identity/work HTTP requests, /b/0; active project remains p1 and B selection unchanged."
+    }
+  ],
+  "softwareResults": {
+    "uniqueIContractPassed": 1,
+    "attackDenials": 7,
+    "legalQueryAfterDenials": 1,
+    "productFailures": 0,
+    "fixtureSetupFailuresRetained": 1,
+    "initialTypeErrorsRetained": 2,
+    "finalNodeTypecheck": "passed",
+    "formalWholeCasesAddedByExecutor": 0
+  },
+  "priorEvidenceReview": "prior-evidence-review.json",
+  "publicSchemasAndErrors": "public-input-contract-and-errors.json",
+  "rawOutcomes": "raw-outcomes.json",
+  "commands": "commands.json",
+  "failures": [
+    {
+      "classification": "driver-fixture",
+      "command": "001",
+      "actual": "PackageRegistry.active field generation was misread as revision; actual activation CAS rejected before any attack. Only corrected that field; original outcomes empty and cleanup retained.",
+      "evidence": [
+        "001-scope-contract.json",
+        "001-driver-test.ts",
+        "001-driver-outcomes.json",
+        "001-driver-cleanup.json",
+        "001-to-002-driver-fix.patch"
+      ]
+    },
+    {
+      "classification": "type-only-fixture",
+      "command": "003",
+      "actual": "Synthetic connection-setup sender missing explicit ApplicationUiSender boundary cast; added type-only declaration, full node check004 passed.",
+      "evidence": [
+        "003-typecheck.log",
+        "004-typecheck.log",
+        "002-to-typed-fixture.patch"
+      ]
+    },
+    {
+      "classification": "artifact-review",
+      "actual": "Initial evidence-mapping assertion noticed sampled old B-connection test status skipped. No product step/rerun; corrected review to no credit and relied on current full contract."
+    }
+  ],
+  "fixtureBoundary": [
+    "Actual immutable v2 ZenTao package/registry, fixed session/run plan, ApplicationToolService CLI entry, trusted module/Data API/execution contexts, saved selections, provider verification and actual ZentaoClient HTTP.",
+    "Synthetic sender gate/process identity/rootPID/available-CLI are I preconditions. Sender type cast is only for setup; no UI authorization coverage.",
+    "Host finite plan constructed through real createApplicationRunPlan at run creation; no stored authority/results rewritten.",
+    "Private loopback synthetic provider; connection-test HTTP reset before attack checkpoints. No daily credentials/external service/native Agent/PTY/App/heavy work."
+  ],
+  "missingFormalLayers": [
+    "A: packaged App/native CLI and visible denials",
+    "R: real managed Agent required by original T06"
+  ],
+  "cleanup": "cleanup.json",
+  "resourcesReleased": true,
+  "formalLedgerUpdatedByExecutor": false,
+  "efficiency": {
+    "greenMatricesRerun": 0,
+    "validContractRuns": 1,
+    "preProductFixtureFailure": 1,
+    "builds": 0,
+    "installs": 0
+  }
+}

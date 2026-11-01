@@ -1,0 +1,311 @@
+import {definitions as builtInDefinitions} from '../../../resources/applications/definitions.mjs';
+const applicationDescriptions=Object.fromEntries(builtInDefinitions.map(app=>[app.appId,app.description]));
+import{normalizeVersionPreview}from'./version-preview-model.mjs';
+import {DRAFT_TARGET_FIXTURES,draftTargetFixture} from './mail-draft-target-fixtures.mjs';
+import {projectDemoActivity} from './activity-prototype-model.mjs';
+import {sanitizeSenderConfirmations} from './m11-sender-confirmations.mjs';
+// M10 isolated prototype. Only public synthetic configuration is persisted.
+export const M10_STORAGE = 'willyou-m10-prototype-v2';
+export const APP_DEFINITIONS = [
+  { id: 'zentao', name: '禅道', description: applicationDescriptions.zentao, tagline: '查看指派给我的 Bug 和研发需求', skills: [
+    { id: 'zentao-bug-analysis', name: 'Bug 分析助手', description: '读取本人 Bug、核对复现信息，并结合项目代码分析根因。', prompt: '查看指派给我的 Bug，结合当前项目代码分析根因，先给出处理建议。' },
+    { id: 'zentao-story-review', name: '研发需求评审', description: '核对本人研发需求的描述、验收标准和边界，整理待确认问题。', prompt: '查看指派给我的研发需求，检查描述和验收标准，整理需要补充的问题。' },
+  ], capabilities: [
+    { id: 'bug.list', title: '查询我的 Bug', effect: 'read' }, { id: 'story.list', title: '查询我的研发需求', effect: 'read' }, { id: 'object.read', title: '读取详情、历史与附件', effect: 'read' }, { id: 'object.transition', title: '流转操作（待评审）', effect: 'write', pending: true },
+  ] },
+  { id: 'mail', name: '邮件', description: applicationDescriptions.mail, tagline: '在项目 Agent 中查询、准备草稿与获准发送邮件', skills: [
+    { id: 'mail-work-assistant', name: '邮件工作助手', description: '搜索本地邮件、总结来往内容和待办，准备草稿及经授权的新邮件、回复或回复全部。', prompt: '找出今天与当前项目有关的本地邮件，总结待办事项，并准备需要回复的草稿。' },
+  ], capabilities: [
+    { id: 'mail.search', title: '搜索本地邮件', effect: 'read' }, { id: 'mail.read', title: '读取正文与附件', effect: 'read' }, { id: 'mail.draft', title: '准备邮件草稿', effect: 'draft' }, { id: 'mail.send', title: '发送、回复与回复全部（SMTP）', effect: 'write' },
+  ] },
+];
+export function initialIntegrationState() {
+  return { version: 2, installed: ['zentao', 'mail'], connections: [
+    { id: 'zt-demo', app: 'zentao', kind: 'zentao', name: '公司禅道', url: 'http://zentao.intranet.example/biz/', account: 'demo.user', auth: 'password', credentialPresent: true, enabled: true, validation: 'ready', revision: 1 },
+    { id: 'fox-demo', app: 'mail', kind: 'local', name: '工作邮箱 · Foxmail', path: '/Users/demo/Library/Containers/com.tencent.Foxmail/Data/Library/Foxmail/', account: 'work@example.invalid', enabled: true, validation: 'ready', revision: 1 },
+  ], bindings: { ais: ['zt-demo', 'fox-demo'], smartdd: ['zt-demo'] }, activity: [] };
+}
+const PUBLIC_FIELDS = ['id', 'app', 'kind', 'name', 'url', 'path', 'account', 'auth', 'host', 'port', 'transport', 'tls', 'credentialPresent', 'enabled', 'validation', 'revision', 'queryDays', 'fromAddress', 'cleanupPending'];
+export function projectIntegrationState(value) {
+  const known = new Set(APP_DEFINITIONS.map(a => a.id));
+  const connections = (Array.isArray(value?.connections) ? value.connections : []).filter(c => known.has(c.app) && typeof c.id === 'string').map(c => { const publicValue=Object.fromEntries(PUBLIC_FIELDS.filter(k => c[k] !== undefined).map(k => [k, c[k]]));if(c.kind==='local'){const days=c.queryDays===undefined?(validMailDays(value?.mailQueryDays)?Number(value.mailQueryDays):30):c.queryDays;publicValue.queryDays=validMailDays(days)?Number(days):days;}if(c.kind==='smtp'&&c.fromAddress===undefined&&typeof c.account==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.account))publicValue.fromAddress=c.account;return publicValue;});
+  const ids = new Set(connections.map(c => c.id));
+  const packages = Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, value?.packages?.[a.id] === '1.1.0' ? '1.1.0' : '1.0.0']));
+  // Materialize legacy enablement once, so clearing a connection never disables the app.
+  const projectIds = [...new Set([...Object.keys(value?.bindings || {}), ...Object.keys(value?.projectApps || {})])];
+  const projectApps = Object.fromEntries(projectIds.map(projectId => [projectId, Object.fromEntries(APP_DEFINITIONS.map(app => [app.id, typeof value?.projectApps?.[projectId]?.[app.id] === 'boolean' ? value.projectApps[projectId][app.id] : connections.some(c => c.app === app.id && (Array.isArray(value?.bindings?.[projectId]) ? value.bindings[projectId] : []).includes(c.id))]))]));
+  return { version: 2, packages, versionPreview:normalizeVersionPreview(value?.versionPreview,packages), projectApps, globalApps:Object.fromEntries(APP_DEFINITIONS.map(a=>[a.id,value?.globalApps?.[a.id]!==false])), mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
+    connectionCompatibility:Object.fromEntries(Object.entries(value?.connectionCompatibility||{}).filter(([id])=>ids.has(id)).map(([id,report])=>[id,{revision:Number.isSafeInteger(report?.revision)&&report.revision>0?report.revision:0,versions:(Array.isArray(report?.versions)?report.versions:[]).filter(row=>['1.0.0','1.1.0'].includes(row?.version)&&['compatible','incompatible','unverified'].includes(row?.status)).slice(0,200).map(({version,status})=>({version,status}))}])),
+    senderConfirmations: sanitizeSenderConfirmations(value?.senderConfirmations),
+    bindings: Object.fromEntries(Object.entries(value?.bindings || {}).filter(([k]) => typeof k === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k, v]) => [k, [...new Set((Array.isArray(v) ? v : []).filter(id => ids.has(id)))]])),
+    mailSlotRevisions: Object.fromEntries(Object.entries(value?.mailSlotRevisions || {}).filter(([k]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k,v]) => [k,Object.fromEntries(['local','smtp'].map(slot => [slot,Number.isSafeInteger(v?.[slot]) && v[slot] >= 0 ? v[slot] : Number.isSafeInteger(value?.mailBindingRevisions?.[k]) ? value.mailBindingRevisions[k] : 0]))])),
+    mailBindingRevisions: Object.fromEntries(Object.entries(value?.mailBindingRevisions || {}).filter(([k, v]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k) && Number.isSafeInteger(v) && v >= 0)),
+    // Activity contains only fixed synthetic fixture identifiers and labels.
+    activity: (Array.isArray(value?.activity) ? value.activity : []).slice(0, 40).map(projectDemoActivity),
+  };
+}
+export function validateConnection(draft, secret = '') {
+  if (!['zentao', 'local', 'smtp'].includes(draft.kind)) return '不支持的连接类型。';
+  if (!draft.name?.trim()) return '请输入连接名称。';
+  if (draft.name.length > 120) return '连接名称最多120个字符。';
+  if (draft.kind === 'local') {
+    if (!draft.path?.startsWith('/') || /[\x00-\x1f]/.test(draft.path)) return '请选择完整的本地来源路径。';
+    if (draft.queryDays !== undefined && !validMailDays(draft.queryDays)) return '请输入1–100之间的整数天数。';
+    return typeof draft.account === 'string' && draft.account.trim() && draft.account.length <= 512 && !/[\x00-\x1f]/.test(draft.account) ? '' : '请明确填写这个本地来源的邮箱账号。';
+  }
+  if (draft.kind === 'zentao') {
+    if (draft.auth !== undefined && !['password', 'token'].includes(draft.auth)) return '不支持的禅道认证方式。';
+    try { const u = new URL(draft.url); if (!['http:', 'https:'].includes(u.protocol) || u.username || u.password || u.hash || u.search) return '请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。'; }
+    catch { return '请输入有效的禅道服务地址。'; }
+    if (!draft.account?.trim()) return '请输入用户名。';
+  } else {
+    if (draft.auth !== undefined && draft.auth !== 'password') return '不支持的发件认证方式。';
+    if (draft.transport !== undefined && !['implicit-tls', 'starttls', 'plain'].includes(draft.transport)) return '不支持的 SMTP 连接方式。';
+    if (!draft.host?.trim() || /[\s/@?#\\]/.test(draft.host)) return '请填写邮件服务主机名。';
+    if (!Number.isInteger(Number(draft.port)) || Number(draft.port) < 1 || Number(draft.port) > 65535) return '端口必须为1–65535之间的整数。';
+    if (typeof draft.account !== 'string' || !draft.account.trim() || draft.account.length>512 || /[\x00-\x1f]/.test(draft.account)) return '请输入SMTP登录账号。';
+    const from=draft.fromAddress===undefined?draft.account:draft.fromAddress;if(typeof from!=='string'||from.length>512||!/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(from))return '请输入有效的发件地址。';
+  }
+  if (!secret.trim() && !draft.credentialPresent) return '请填写认证凭据后再测试连接';
+  return '';
+}
+// Public synthetic state only; no credential bytes or local security store.
+export function disconnectDemoConnection(state,id,{cleanupFailed=false}={}) {
+ const old=state.connections.find(c=>c.id===id);if(!old)return state;
+ return {...state,connections:state.connections.map(c=>c.id===id?{...c,validation:'disconnected',credentialPresent:false,cleanupPending:!!c.cleanupPending||!!c.credentialPresent&&cleanupFailed,revision:c.revision+1}:c)};
+}
+export function completeDemoCredentialCleanup(state,id) {
+ if(!state.connections.some(c=>c.id===id&&c.cleanupPending))return state;
+ return {...state,connections:state.connections.map(c=>c.id===id?{...c,cleanupPending:false}:c)};
+}
+export function connectionReady(connection) { return !!connection && connection.enabled && connection.validation === 'ready'; }
+export function projectAppSelected(state, projectId, appId) {
+  const explicit = state.projectApps?.[projectId]?.[appId];
+  return state.installed.includes(appId) && (typeof explicit === 'boolean' ? explicit : state.connections.some(c => c.app === appId && (state.bindings[projectId] || []).includes(c.id)));
+}
+export function applicationEnabled(state,appId){return APP_DEFINITIONS.some(a=>a.id===appId)&&state.installed.includes(appId)&&state.globalApps?.[appId]!==false;}
+export function projectAppEnabled(state,projectId,appId){return applicationEnabled(state,appId)&&projectAppSelected(state,projectId,appId);}
+export function addApplication(state,appId){if(!APP_DEFINITIONS.some(a=>a.id===appId)||state.installed.includes(appId))return state;return{...state,installed:[...state.installed,appId],globalApps:{...state.globalApps,[appId]:true}};}
+export function setApplicationEnabled(state,appId,enabled){
+ if(typeof enabled!=='boolean'||!APP_DEFINITIONS.some(a=>a.id===appId)||!state.installed.includes(appId)||applicationEnabled(state,appId)===enabled)return state;
+ const next={...state,globalApps:{...state.globalApps,[appId]:enabled}};
+ if(appId==='mail'){const projects=new Set([...Object.keys(state.projectApps||{}),...Object.keys(state.bindings||{})]);next.mailBindingRevisions={...state.mailBindingRevisions};next.mailSlotRevisions={...state.mailSlotRevisions};for(const id of projects){next.mailBindingRevisions[id]=(state.mailBindingRevisions?.[id]||0)+1;next.mailSlotRevisions[id]={local:mailSlotRevision(state,id,'local')+1,smtp:mailSlotRevision(state,id,'smtp')+1};}}
+ return next;
+}
+export function selectedConnections(state, projectId, appId) {
+  const ids = new Set(state.bindings[projectId] || []);
+  const matches = state.connections.filter(c => ids.has(c.id) && (!appId || c.app === appId));
+  // Resolve each explicit selection independently; ambiguous legacy groups never pick an account.
+  return matches.filter(c => matches.filter(x => x.app === c.app && (c.app === 'zentao' || x.kind === c.kind)).length === 1);
+}
+const mailSlotRevision = (state,project,kind) => state.mailSlotRevisions?.[project]?.[kind] ?? state.mailBindingRevisions?.[project] ?? 0;
+export function selectProjectMailConnection(state, projectId, kind, connectionId) {
+  if (!['local', 'smtp'].includes(kind)) return state;
+  if (connectionId && !state.connections.some(c => c.id === connectionId && c.app === 'mail' && c.kind === kind)) return state;
+  const old = state.connections.filter(c => c.app === 'mail' && c.kind === kind && (state.bindings[projectId] || []).includes(c.id));
+  if ((!connectionId && !old.length) || (old.length === 1 && old[0].id === connectionId)) return state;
+  return { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], mail: projectAppSelected(state, projectId, 'mail') } }, mailBindingRevisions: { ...state.mailBindingRevisions, [projectId]: (state.mailBindingRevisions?.[projectId] || 0) + 1 }, mailSlotRevisions: { ...state.mailSlotRevisions,[projectId]: { local: mailSlotRevision(state,projectId,'local'),smtp: mailSlotRevision(state,projectId,'smtp'),[kind]: mailSlotRevision(state,projectId,kind) + 1 } }, bindings: { ...state.bindings, [projectId]: [
+    ...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'mail' && c.kind === kind)),
+    ...(connectionId ? [connectionId] : []),
+  ] } };
+}
+export function availableConnections(state, project) {
+  return selectedConnections(state, project).filter(c => projectAppEnabled(state, project, c.app) && connectionReady(c));
+}
+export function packageVersion(state, appId) { return state.packages?.[appId] || '1.0.0'; }
+export function projectPackages(state, projectId) {
+  return APP_DEFINITIONS.filter(a => projectAppEnabled(state, projectId, a.id)).map(a => ({
+    id: a.id, version: packageVersion(state, a.id), skills: a.skills.map(s => s.id),
+    tools: a.capabilities.filter(c => !c.pending).map(c => c.id),
+    connections: selectedConnections(state, projectId, a.id).map(c => ({ id: c.id, revision: c.revision })),
+  }));
+}
+export function integrationSnapshot(state, projectId) { return { projectId, evidence: 'prepared-demo', packages: projectPackages(state, projectId) }; }
+// A snapshot is fixed identity, not equality with current default packages or health.
+export function snapshotCurrent(snapshot, state, projectId) {
+  return !!snapshot && snapshot.projectId === projectId && Array.isArray(snapshot.packages);
+}
+export function connectionVersionCompatibility(state,connection,version){
+ const report=state.connectionCompatibility?.[connection.id];if(!report)return 'compatible';
+ if(report.revision!==connection.revision||!Array.isArray(report.versions))return 'unverified';const rows=report.versions.filter(row=>row.version===version);
+ return rows.some(row=>row.status==='incompatible')?'incompatible':!rows.length||rows.some(row=>row.status==='unverified')?'unverified':'compatible';
+}
+export function sessionApplicationState(snapshot, state, projectId, appId) {
+  const fixed = snapshot?.projectId === projectId && snapshot.packages?.find(p => p.id === appId);
+  if (!fixed) return { usable: false, label: snapshot ? '本会话未选用；需新建会话' : '历史能力未知；不自动补入' };
+  if (!state.installed.includes(appId)) return { usable: false, label: '应用已移除；历史版本保留' };
+  if (!applicationEnabled(state,appId)) return {usable:false,label:'应用已全局停用'};
+  if (!projectAppEnabled(state, projectId, appId)) return { usable: false, label: '当前项目已停用' };
+  const versions = state.installedVersions?.[appId] || ['1.0.0', packageVersion(state, appId)];
+  if (!versions.includes(fixed.version)) return { usable: false, label: '固定版本缺失；修复原版本后可继续' };
+  const selected = selectedConnections(state, projectId, appId);
+  const issues=selected.map(connection=>({connectionId:connection.id,status:connectionVersionCompatibility(state,connection,fixed.version)})).filter(row=>row.status!=='compatible');
+  const compatibilityError=issues.length?(issues.some(row=>row.status==='incompatible')?'CONFIG_INCOMPATIBLE':'CONFIG_UNVERIFIED'):null;
+  const compatibilityLabel=compatibilityError==='CONFIG_INCOMPATIBLE'?'当前连接与固定版本不兼容':'当前连接与固定版本兼容性待核验';
+  const ready = selected.filter(connectionReady).filter(connection=>connectionVersionCompatibility(state,connection,fixed.version)==='compatible');
+  if (appId === 'mail') return { usable: true, label: compatibilityError?'草稿可用；'+compatibilityLabel+'，读取／SMTP分别核对':ready.some(c => c.kind === 'smtp') ? '草稿可用；读取与SMTP按连接检查' : '草稿可用；尚无可用SMTP', connections: selected,compatibilityError };
+  return { usable: ready.length === 1, label: compatibilityError?compatibilityLabel+'；Agent继续工作':ready.length === 1 ? '当前生效连接可用' : selected.length ? '连接不可用；Agent继续工作' : '未选定唯一连接；Agent继续工作', connections: selected,compatibilityError };
+}
+const CAPABILITY_FAULTS = {
+  missing: { code: 'PACKAGE_MISSING', title: '固定应用包缺失', reason: '本会话引用的版本文件不可用。仅恢复同一版本、同一内容标识的可信副本。', action: '修复原版本' },
+  corrupt: { code: 'HASH_MISMATCH', title: '固定应用包损坏', reason: '文件校验不一致，已隔离该应用能力；不会读取损坏文件或替换成新版本。', action: '修复原版本' },
+  incompatible: { code: 'CONFIG_INCOMPATIBLE', title: '固定版本与当前配置不兼容', reason: '当前连接配置无法提供此版本需要的契约。保留当前配置与会话，不回退密码；检查兼容设置后再启用能力。', action: '重新检查兼容性' },
+  nameConflict: { code: 'AGENT_CAPABILITY_NAME_CONFLICT', title: '应用能力名称与用户配置冲突', reason: '用户插件命名空间、完整 Skill 名称或 MCP 配置键已占用。此应用整体不注入，保留用户配置，Agent继续工作；不会覆盖用户能力或自动改名启用。', action: '重新检查冲突' },
+  bridge: { code: 'BRIDGE_UNAVAILABLE', title: '应用能力桥暂时不可用', reason: '有限重试后仍未连接。工具暂不可用，Agent 继续工作；恢复后只接收新调用，不重放旧操作。', action: '重新连接能力桥' },
+  bridgeRestart: { code: 'BRIDGE_RESTART_REQUIRED', title: '此 Agent 需下次启动时恢复能力桥', reason: '当前适配器不支持运行中重新加载能力桥。原 Agent 继续工作；下次由 WillYou 停止并恢复此会话时重新准备，仍固定原版本。不会自动停止或新建会话。' },
+};
+export function sessionCapabilityDiagnostic(snapshot, state, projectId, appId, fault = 'none') {
+  const fixed = snapshot?.projectId === projectId && snapshot.packages?.find(p => p.id === appId);
+  const current = sessionApplicationState(snapshot, state, projectId, appId);
+  const versions = state.installedVersions?.[appId] || ['1.0.0', packageVersion(state, appId)];
+  const actualFault = fixed && !versions.includes(fixed.version) ? 'missing' : fault;
+  if (!fixed || !state.installed.includes(appId) || !projectAppEnabled(state, projectId, appId)) return { ...current, code: 'CURRENT_ACCESS_UNAVAILABLE', title: current.label, reason: '当前应用授权条件不满足；不会通过修复或重连绕过。', fault: 'none', fixedVersion: fixed?.version };
+  const detail = CAPABILITY_FAULTS[actualFault];
+  if(actualFault==='none'&&current.compatibilityError)return{...current,code:current.compatibilityError,title:current.label,reason:'当前连接配置预检不支持该固定版本；核对并修复配置后恢复原会话，不切换旧版本。仅合成状态。',fault:'none',fixedVersion:fixed.version};
+  return detail ? { ...detail, usable: false, fault: actualFault, fixedVersion: fixed.version } : { ...current, code: 'READY_DEMO', title: current.label, reason: '仅表示合成准备条件；不代表真实 Agent 已发现或调用。', fault: 'none', fixedVersion: fixed.version };
+}
+export function recoverSessionCapability(snapshot, state, projectId, appId, fault, succeeds = true, evidence = {}) {
+  // Fixture outcome only: production must verify the fixed content hash before publishing any repair.
+  const diagnostic = sessionCapabilityDiagnostic(snapshot, state, projectId, appId, fault);
+  if (diagnostic.fault === 'nameConflict' && (!succeeds || evidence.userResolvedConflict !== true)) return { ok: false, state, fault: 'nameConflict', message: '冲突仍存在，应用整体保持不注入；请自行处理明确的冲突项后再检查，未修改任何用户配置。' };
+  if (!diagnostic.action || !succeeds) return { ok: false, state, fault: diagnostic.fault, message: diagnostic.fault === 'missing' || diagnostic.fault === 'corrupt' ? '未取得同内容标识的可信副本；保留原版本引用，能力仍不可用。' : '条件仍不满足，相关应用保持不可用；Agent继续工作。' };
+  const next = ['missing', 'corrupt'].includes(diagnostic.fault) ? { ...state, installedVersions: { ...state.installedVersions, [appId]: [...new Set([...(state.installedVersions?.[appId] || []), diagnostic.fixedVersion])] } } : state;
+  const remaining=sessionApplicationState(snapshot,next,projectId,appId);
+  if(remaining.compatibilityError)return{ok:true,state:next,fault:'none',partial:true,message:'已模拟恢复本次故障，但当前连接配置仍'+(remaining.compatibilityError==='CONFIG_INCOMPATIBLE'?'不兼容':'待核验')+'；已恢复部分保留，需在连接表单重新测试。原固定版本及历史保留，未重发操作。'};
+  return { ok: true, state: next, fault: 'none', message: '模拟恢复完成，仍使用 v' + diagnostic.fixedVersion + '；下次新调用可用，未重发任何操作。' };
+}
+export function toggleProjectApplication(state, projectId, appId, enabled) {
+  if (enabled && !state.installed.includes(appId)) return state;
+  return { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], [appId]: enabled } } };
+}
+export function switchProjectZenTao(state, projectId, connectionId, tasks = []) {
+  const candidate = state.connections.find(c => c.id === connectionId && c.app === 'zentao');
+  if (connectionId && !candidate) return { ok: false, state, reason: '目标连接不存在。' };
+  let blocked;try{blocked=demoZenTaoRuns(tasks,projectId);}catch(error){return{ok:false,state,reason:error.message};}
+  if (blocked.length) return { ok: false, state, reason: '先停止相关运行；不会自动重启。', tasks: blocked };
+  return { ok: true, state: { ...state, bindings: { ...state.bindings, [projectId]: [...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'zentao')), ...(connectionId ? [connectionId] : [])] } } };
+}
+export function removeApplication(state, appId) {
+  const projectIds = new Set([...Object.keys(state.bindings), ...Object.keys(state.projectApps || {})]);
+  return { ...state, installed: state.installed.filter(id => id !== appId), projectApps: Object.fromEntries([...projectIds].map(id => [id, { ...state.projectApps?.[id], [appId]: false }])) };
+}
+export function upgradeBlockers(tasks = []) { return tasks.filter(t => t.status === 'running' && (t.runner === 'codex' || t.sharedSkillDiscovery === true)); }
+export function simulatePackageUpgrade(state, fail = false, tasks = []) {
+  if (upgradeBlockers(tasks).length) return { ok: false, waiting: true, state, message: '等待共享Skill目录的相关运行结束；保持原默认版本，不强制打断Agent。' };
+  if (fail) return { ok: false, state, message: '模拟准备失败：未切换默认版本，原包、会话和本地数据均保留。' };
+  return { ok: true, state: { ...state, packages: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, '1.1.0'])), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set([...(state.installedVersions?.[a.id] || ['1.0.0']), '1.1.0'])]])), dataSchema: 2 }, message: '模拟校验并启用新版：新会话用1.1.0，历史会话仍固定原版本。原本地数据继续读取。' };
+}
+export function packageRetention(state, tasks, appId, version) {
+  const references = tasks.filter(t => t.integrationSnapshot?.packages?.some(p => p.id === appId && p.version === version));
+  const unknown = tasks.filter(t => !t.integrationSnapshot);
+  const reasons = [packageVersion(state, appId) === version && '新会话默认版本', references.length && `${references.length}个会话引用（含停止／归档）`, unknown.length && '历史能力未知，待核对引用'].filter(Boolean);
+  return { references, running: references.filter(t => t.status === 'running').length, reasons, cleanable: reasons.length === 0 };
+}
+export function validMailDays(value) { return /^\d+$/.test(String(value)) && Number(value) >= 1 && Number(value) <= 100; }
+export function mailSourceDiagnostic(scene, hasSource, hasSelection = hasSource) {
+  if (!hasSelection) return { state: 'unselected', title: '未选用读取来源', reason: '尚未发起邮件读取；在项目中选择一个本地来源后再检查。仍可保存草稿和使用其他Agent能力。' };
+  if (!hasSource) return { state: 'failed', title: '已选读取来源当前不可用', reason: '检查项目选定来源的连接与权限；不会改用其他邮箱，也不会当作完整空结果。' };
+  const failures = {
+    denied: ['本地来源无访问权限', '请在来源配置中检查本机目录访问权限；不会反复重试权限错误。'],
+    locked: ['本地来源暂时被占用', '有限重试后仍未读到；待来源可读后重新检查，不修改Foxmail文件。'],
+    unsupported: ['当前Foxmail来源格式不支持', '请检查来源路径和受支持格式；首版不提供导出后导入通道，也不将旧缓存当作完整新结果。'],
+    error: ['本地来源读取失败', '有限重试后仍失败；检查来源后重试。失败不能报告为没有匹配邮件。'],
+  };
+  if (failures[scene]) return { state: 'failed', title: failures[scene][0], reason: failures[scene][1] };
+  if (scene === 'partial') return { state: 'partial', title: '本地读取部分完成', reason: '合成示例：2封邮件正文和1个附件未读到。已读结果可用，缺失项明确标记；不能称为完整检索或推断缺失内容。' };
+  return { state: 'complete', title: '本地示例检查完整', reason: '仅覆盖本次日期范围内已下载到本机的数据，不表示远端邮箱已经同步。' };
+}
+export function mailQueryWindow(days, now = new Date()) {
+  const count = validMailDays(days) ? Number(days) : 30;
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - count + 1);
+  const date = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+  return { days: count, from: date(start), through: date(now), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+}
+export const DEMO_MAIL_DRAFT = { to: 'team@example.invalid', cc: [], bcc: [], subject: 'M10 接入方案评审', body: '大家好，\n\n应用连接和项目选用方案已整理，请查看账号配置、本地邮件读取与结果恢复流程。\n\n谢谢。', attachment: false };
+function projectDrafts(drafts) {
+  // Persist only a fixture identity and lifecycle metadata; never user-entered mail text.
+  return (Array.isArray(drafts) ? drafts : []).filter(d => ['m10-review','m10-review-long'].includes(d.fixture)||!!draftTargetFixture(d.fixture)).map(d => ({ id: String(d.id), project: String(d.project), fixture: d.fixture, revision: Number(d.revision) || 1, senderId: typeof d.senderId === 'string' ? d.senderId : '', mailBindingRevision: Number.isSafeInteger(d.mailBindingRevision) ? d.mailBindingRevision : -1,mailSendSlotRevision: Number.isSafeInteger(d.mailSendSlotRevision) ? d.mailSendSlotRevision : -1, status: ['draft','sending','success','failed','unknown'].includes(d.status) ? d.status : 'draft', at: String(d.at || '') }));
+}
+export function saveDemoDraft(state, project, existingId, expectedRevision, { adoptCurrentSender = false, longContent = false, targetFixture } = {}) {
+  if(targetFixture!==undefined&&!draftTargetFixture(targetFixture))return{ok:false,state,reason:'固定合成目标场景无效，未修改草稿。'};
+  const old = state.drafts?.find(d => d.id === existingId);
+  if (existingId && !old) return { ok: false, state, reason: '草稿已不存在，请重新打开草稿列表。' };
+  if (old && old.project !== project) return { ok: false, state, reason: '不能覆盖其他项目的草稿。' };
+  if (old && old.revision !== expectedRevision) return { ok: false, state, reason: '草稿已由其他会话修改，请重新打开。' };
+  if (old && ['sending','success','unknown'].includes(old.status)) return { ok: false, state, reason: '发送中、已发送或结果未知的记录不能覆盖；先核实结果。' };
+  const draft = { id: old?.id || 'draft-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), project, fixture: old?.fixture || targetFixture || (longContent ? 'm10-review-long' : 'm10-review'), revision: (old?.revision || 0) + 1, senderId: selectedConnections(state, project, 'mail').find(c => c.kind === 'smtp')?.id || '', mailBindingRevision: state.mailBindingRevisions?.[project] || 0,mailSendSlotRevision: mailSlotRevision(state,project,'smtp'), status: 'draft', at: new Date().toISOString() };
+  if (old && !adoptCurrentSender) { draft.senderId = old.senderId; draft.mailBindingRevision = old.mailBindingRevision; draft.mailSendSlotRevision = old.mailSendSlotRevision; }
+  return { ok: true, state: { ...state, drafts: [draft, ...(state.drafts || []).filter(d => d.id !== draft.id)] }, draft };
+}
+export function demoDraftSendEligibility(state, projectId, draft) {
+  const sender = selectedConnections(state, projectId, 'mail').find(c => c.kind === 'smtp');
+  if (!draft || draft.project !== projectId || !['draft','failed'].includes(draft.status)) return { ok: false, reason: '草稿状态不允许提交。' };
+  if (!applicationEnabled(state,'mail')) return {ok:false,reason:'邮件应用已全局停用，草稿保留。'};
+  if (!projectAppEnabled(state, projectId, 'mail')) return { ok: false, reason: '当前项目未启用邮件，草稿保留。' };
+  const changed = draft.senderId !== (sender?.id || '') || (draft.mailSendSlotRevision >= 0 ? draft.mailSendSlotRevision !== mailSlotRevision(state,projectId,'smtp') : draft.mailBindingRevision !== (state.mailBindingRevisions?.[projectId] || 0));
+  if (changed) return { ok: false, changed: true, sender, reason: '项目邮件设置已变化，请重新核对来源与发件账号；原草稿未被改写，明确采用当前设置后更新草稿修订。' };
+  return connectionReady(sender) ? { ok: true, sender } : { ok: false, sender, reason: '当前项目未配置可用SMTP；草稿仍保留，不改用其他账号。' };
+}
+export function verifyDemoSendAccepted(state, recordId) {
+  const record = state.activity.find(a => a.id === recordId);
+  if (!record || record.status !== 'unknown') return state;
+  return {
+    ...state,
+    activity: state.activity.map(a => a.id === recordId ? { ...a, status: 'success', operation: a.operation + '（模拟查证：已接受）' } : a),
+    drafts: (state.drafts || []).map(d => record.draftId && d.id === record.draftId && d.project === record.project && d.revision === record.revision && d.status === 'unknown' ? { ...d, status: 'success' } : d),
+  };
+}
+export function connectionIdentityChanged(old, draft) {
+  if (!old) return false;
+  if (old.app !== draft.app || old.kind !== draft.kind) return true;
+  if (old.kind === 'local') return old.path !== draft.path || (old.account || '') !== (draft.account || '');
+  return old.account !== draft.account || (old.kind === 'zentao' ? old.url !== draft.url : old.host !== draft.host || (old.fromAddress ?? old.account) !== (draft.fromAddress ?? draft.account));
+}
+export function saveConnection(state, draft, hasCredential) {
+  const old = state.connections.find(c => c.id === draft.id);
+  if (connectionIdentityChanged(old, draft)) return state;
+  const connection = { ...draft, credentialPresent: draft.kind !== 'local' && !!hasCredential, enabled: old?.enabled ?? true, validation: 'ready', revision: (old?.revision || 0) + 1 };
+  return projectIntegrationState({ ...state, installed: [...state.installed, draft.app], connections: old ? state.connections.map(c => c.id === draft.id ? connection : c) : [...state.connections, connection] });
+}
+export function referenceText(type, id, connectionId = type === 'mail' ? 'fox-demo' : 'zt-demo') {
+  const source = encodeURIComponent(connectionId);
+  return type === 'mail' ? `[邮件 mail://${source}/${id}] 请基于这封示例邮件继续分析。` : `[禅道 ${type === 'story' ? 'Story' : 'Bug'} #${id} zentao://${source}/${type}/${id}] 请读取详情并分析。`;
+}
+
+// Synthetic-only scope. Missing snapshots in this prototype are known ordinary
+// fixtures; an explicitly unknown/corrupt scope must never be treated as empty.
+export function demoZenTaoRuns(tasks,projectId){
+ return tasks.filter(t=>{
+  if(t.project!==projectId||!['running','preparing','stopping'].includes(t.status))return false;
+  if(t.integrationScopeUnknown)throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+  if(!t.integrationSnapshot)return false;
+  if(!Array.isArray(t.integrationSnapshot.packages))throw new Error('无法核验受影响会话的应用范围，已保留原连接选择');
+  return t.applicationInjection!=='native-only'&&t.integrationSnapshot.packages.some(p=>p.id==='zentao');
+ });
+}
+export function demoApplicationImpact(state,query,projects=[]){
+ const target=query.kind==='disconnect'?state.connections.find(c=>c.id===query.connectionId):null;
+ if(query.kind==='disconnect'&&!target)throw new Error('该示例连接不存在');
+ const appId=target?.app||query.appId||'zentao',connections=state.connections.filter(c=>query.kind==='disconnect'?c.id===query.connectionId:c.app===appId);
+ const ids=[...new Set([...Object.keys(state.bindings),...Object.keys(state.projectApps||{})])].filter(id=>query.kind!=='disconnect'||state.bindings[id]?.includes(query.connectionId));
+ return{kind:query.kind,appId,connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.kind==='local'?'foxmail':c.kind,enabled:c.enabled,authorization:c.validation==='disconnected'?'disconnected':'connected'})),projects:ids.map(id=>({id,name:projects.find(p=>p.id===id)?.name||id,archived:!!projects.find(p=>p.id===id)?.archived,enabled:projectAppEnabled(state,id,appId),connections:(state.bindings[id]||[]).filter(x=>connections.some(c=>c.id===x)).map(x=>({id:x,slot:connections.find(c=>c.id===x).kind}))})),runs:[]};
+}
+
+// Fixed public fixtures only: persisted drafts contain identity/revision metadata,
+// never user mail text. Preview remains stable across route/theme/scene changes.
+export function demoMailDraftPreview(draft) {
+  const long = draft?.fixture === 'm10-review-long', revision = draft?.revision || 1,target=draftTargetFixture(draft?.fixture);
+  return {to:target?(target.to.join('、')||'未填写'):DEMO_MAIL_DRAFT.to,cc:(target?.cc??DEMO_MAIL_DRAFT.cc).join('、')||'无',bcc:(target?.bcc??DEMO_MAIL_DRAFT.bcc).join('、')||'无',
+    subject:((target?target.subject:DEMO_MAIL_DRAFT.subject + (long ? ' · 跨团队接口与历史资料联合评审'.repeat(10) : '')) + (revision > 1 ? ' · 合成修订 r'+revision : ''))||'（无主题）',
+    body:(target?target.body:DEMO_MAIL_DRAFT.body + (long ? ('\n合成评审内容：请核对接口边界、账号身份及异常恢复，不代表真实用户邮件。').repeat(24) : '')) + (revision > 1 ? '\n合成内容修订 r'+revision+'：由示例Agent更新；非用户邮件。' : ''),
+    attachmentSummary:target?'无附件 · 固定合成目标摘要':long ? '合成附件摘要：接口说明与历史资料.pdf · 仅占位，未读取真实文件' : '无附件 · 实际发件前核对明确指定文件'};
+}
+export function approveDemoDraft(state, project, draft, expectedRevision) {
+  if (!draft || draft.project !== project || draft.revision !== expectedRevision) return {ok:false,reason:'草稿修订已变化，请重新打开审阅。'};
+  const eligible=demoDraftSendEligibility(state,project,draft);if(!eligible.ok)return eligible;
+  return {ok:true,approval:{project,draftId:draft.id,revision:draft.revision,senderId:draft.senderId,slotRevision:draft.mailSendSlotRevision}};
+}
+export function checkDemoDraftApproval(state, project, draft, approval) {
+  if (!draft || !approval || approval.project !== project || draft.project !== project || approval.draftId !== draft.id || approval.revision !== draft.revision || approval.senderId !== draft.senderId || approval.slotRevision !== draft.mailSendSlotRevision) return {ok:false,reason:'原草稿内容或发件身份已变化，请重新审阅并确认。'};
+  return demoDraftSendEligibility(state,project,draft);
+}

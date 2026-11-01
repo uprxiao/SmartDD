@@ -3,7 +3,7 @@ const applicationDescriptions=Object.fromEntries(builtInDefinitions.map(app=>[ap
 import{normalizeVersionPreview}from'./version-preview-model.mjs';
 import {DRAFT_TARGET_FIXTURES,draftTargetFixture} from './mail-draft-target-fixtures.mjs';
 import {projectDemoActivity} from './activity-prototype-model.mjs';
-import {sanitizeSenderConfirmations} from './m11-sender-confirmations.mjs';
+import {sanitizeSenderConfirmations,recordInitialAutomaticSender} from './m11-sender-confirmations.mjs';
 // M10 isolated prototype. Only public synthetic configuration is persisted.
 export const M10_STORAGE = 'willyou-m10-prototype-v2';
 export const APP_DEFINITIONS = [
@@ -34,7 +34,7 @@ export function projectIntegrationState(value) {
   // Materialize legacy enablement once, so clearing a connection never disables the app.
   const projectIds = [...new Set([...Object.keys(value?.bindings || {}), ...Object.keys(value?.projectApps || {})])];
   const projectApps = Object.fromEntries(projectIds.map(projectId => [projectId, Object.fromEntries(APP_DEFINITIONS.map(app => [app.id, typeof value?.projectApps?.[projectId]?.[app.id] === 'boolean' ? value.projectApps[projectId][app.id] : connections.some(c => c.app === app.id && (Array.isArray(value?.bindings?.[projectId]) ? value.bindings[projectId] : []).includes(c.id))]))]));
-  return { version: 2, packages, versionPreview:normalizeVersionPreview(value?.versionPreview,packages), projectApps, globalApps:Object.fromEntries(APP_DEFINITIONS.map(a=>[a.id,value?.globalApps?.[a.id]!==false])), mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
+  let state = { version: 2, packages, versionPreview:normalizeVersionPreview(value?.versionPreview,packages), projectApps, globalApps:Object.fromEntries(APP_DEFINITIONS.map(a=>[a.id,value?.globalApps?.[a.id]!==false])), mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
     connectionCompatibility:Object.fromEntries(Object.entries(value?.connectionCompatibility||{}).filter(([id])=>ids.has(id)).map(([id,report])=>[id,{revision:Number.isSafeInteger(report?.revision)&&report.revision>0?report.revision:0,versions:(Array.isArray(report?.versions)?report.versions:[]).filter(row=>['1.0.0','1.1.0'].includes(row?.version)&&['compatible','incompatible','unverified'].includes(row?.status)).slice(0,200).map(({version,status})=>({version,status}))}])),
     senderConfirmations: sanitizeSenderConfirmations(value?.senderConfirmations),
     bindings: Object.fromEntries(Object.entries(value?.bindings || {}).filter(([k]) => typeof k === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k, v]) => [k, [...new Set((Array.isArray(v) ? v : []).filter(id => ids.has(id)))]])),
@@ -43,6 +43,8 @@ export function projectIntegrationState(value) {
     // Activity contains only fixed synthetic fixture identifiers and labels.
     activity: (Array.isArray(value?.activity) ? value.activity : []).slice(0, 40).map(projectDemoActivity),
   };
+  for(const project of projectIds)state=recordInitialAutomaticSender(state,project,selectedConnections(state,project,'mail'));
+  return state;
 }
 export function validateConnection(draft, secret = '') {
   if (!['zentao', 'local', 'smtp'].includes(draft.kind)) return '不支持的连接类型。';
@@ -104,10 +106,12 @@ export function selectProjectMailConnection(state, projectId, kind, connectionId
   if (connectionId && !state.connections.some(c => c.id === connectionId && c.app === 'mail' && c.kind === kind)) return state;
   const old = state.connections.filter(c => c.app === 'mail' && c.kind === kind && (state.bindings[projectId] || []).includes(c.id));
   if ((!connectionId && !old.length) || (old.length === 1 && old[0].id === connectionId)) return state;
-  return { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], mail: projectAppSelected(state, projectId, 'mail') } }, mailBindingRevisions: { ...state.mailBindingRevisions, [projectId]: (state.mailBindingRevisions?.[projectId] || 0) + 1 }, mailSlotRevisions: { ...state.mailSlotRevisions,[projectId]: { local: mailSlotRevision(state,projectId,'local'),smtp: mailSlotRevision(state,projectId,'smtp'),[kind]: mailSlotRevision(state,projectId,kind) + 1 } }, bindings: { ...state.bindings, [projectId]: [
+  state=recordInitialAutomaticSender(state,projectId,selectedConnections(state,projectId,'mail'));
+  const next = { ...state, projectApps: { ...state.projectApps, [projectId]: { ...state.projectApps?.[projectId], mail: projectAppSelected(state, projectId, 'mail') } }, mailBindingRevisions: { ...state.mailBindingRevisions, [projectId]: (state.mailBindingRevisions?.[projectId] || 0) + 1 }, mailSlotRevisions: { ...state.mailSlotRevisions,[projectId]: { local: mailSlotRevision(state,projectId,'local'),smtp: mailSlotRevision(state,projectId,'smtp'),[kind]: mailSlotRevision(state,projectId,kind) + 1 } }, bindings: { ...state.bindings, [projectId]: [
     ...(state.bindings[projectId] || []).filter(id => !state.connections.some(c => c.id === id && c.app === 'mail' && c.kind === kind)),
     ...(connectionId ? [connectionId] : []),
   ] } };
+  return recordInitialAutomaticSender(next,projectId,selectedConnections(next,projectId,'mail'));
 }
 export function availableConnections(state, project) {
   return selectedConnections(state, project).filter(c => projectAppEnabled(state, project, c.app) && connectionReady(c));

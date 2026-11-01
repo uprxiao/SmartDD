@@ -52,7 +52,9 @@ export class MailSenderIdentity {
   }
   afterSelection(projectId:string):void{
     const binding=this.binding(projectId);if(!binding||binding.eligibility!=='automatic')return;
-    const status=this.status(projectId);if(status.state!=='automatic')this.write(binding,'automatic',null);
+    const status=this.status(projectId);// A changed binding must retain the previous receipt until an explicit
+    // reconfirmation. Matching addresses only auto-confirm the first selection.
+    if(status.state==='needs-confirmation')this.write(binding,'automatic',null);
   }
   private write(binding:Binding,method:ConfirmationRow['method'],senderId:string|null):void{
     const row={project_id:binding.projectId,binding_hash:digest(canonicalJson(binding)),binding_json:canonicalJson(binding),method,receipt_id:randomUUID(),sender_id:senderId,confirmed_at:new Date().toISOString()},hash=digest(canonicalJson(row));

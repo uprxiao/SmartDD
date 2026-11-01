@@ -11,7 +11,7 @@ import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,pin=process.env.WILLYOU_ACCEPTANCE_ASAR_SHA,sourcePin=process.env.WILLYOU_TEST_SOURCE_MANIFEST_SHA,theme=process.env.RC_THEME??'ylight';
-assert(executable?.startsWith('/private/tmp/willyou-m11-s4/')&&/^[a-f0-9]{64}$/.test(sourcePin??''));assert(['ylight','ydark'].includes(theme));
+assert(/^\/private\/tmp\/willyou-m11-s[47]\//.test(executable??'')&&/^[a-f0-9]{64}$/.test(sourcePin??''));assert(['ylight','ydark'].includes(theme));
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');assert.equal(sha(await readFile(resolve(dirname(executable),'../Resources/app.asar'))),pin);
 const root=await mkdtemp('/private/tmp/willyou-m11-sender-ui-'),home=join(root,'home'),userData=join(root,'userdata');await mkdir(home);
 const result={schema:'m11-sender-identity-ui-v1',root,userData,theme,sourceManifestSha256:sourcePin,asarSha256:pin,driverSha256:sha(await readFile(new URL(import.meta.url))),startedAt:new Date().toISOString(),status:'running',formalCasePassesAdded:0,checks:[],smtp:{connections:0,auth:0,data:0},isolation:{syntheticOnly:true,cipher:'process-local reversible fixture; restored before exit',setup:'RPC creates connection/project prerequisites; selection and confirmation use actual UI',noRealAgent:true,noExternalSend:true}};
@@ -43,7 +43,7 @@ try{
  stage='ui-confirm';await click('.m10-sender-identity button','确认这是我的发件身份');await state('confirmed');assert.equal(await app.evaluate("document.querySelectorAll('.m10-sender-identity button').length"),0);
  stage='secret-revision';sender=await testSave({id:sender.id,name:sender.name,expectedRevision:sender.revision,config:smtpConfig,secret:'M11_SYNTHETIC_ROTATED_ONLY'});await reload();await projectPage();await state('invalidated');
  await click('.m10-sender-identity button','重新确认发件身份');await state('confirmed');
- stage='automatic';await click(radio('为M11 发件身份隔离选用fixture@example.test'));await state('automatic');
+ stage='changed-binding';await click(radio('为M11 发件身份隔离选用fixture@example.test'));await state('invalidated');await click('.m10-sender-identity button','重新确认发件身份');await state('automatic');
  stage='mismatch-rejected';await click(radio('为M11 发件身份隔离选用other@example.test'));await app.waitFor("[...document.querySelectorAll('[role=alert]')].some(e=>e.textContent.includes('不一致'))");const selection=unwrap(await app.invoke('applications.projectSettings',project.id,'mail'));assert.equal(selection.connections.foxmail,sources['fixture@example.test'].id);assert.equal(unwrap(await app.invoke('applications.projectPolicy',project.id,'mail')).state,'automatic');note('Mismatched email source rejected; prior automatic binding preserved');await app.screenshot(join(root,'mismatch-rejected.png'));
  assert.equal(result.smtp.data,0);assert.deepEqual(app.rendererErrors,[]);result.status='passed-identity-ui';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.stage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{await app.screenshot(join(root,'failure.png'));result.dom=await app.evaluate('document.body.innerText');}catch{}}

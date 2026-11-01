@@ -5,8 +5,10 @@ import { senderIdentity, confirmSenderIdentity, runPlanForApp, adapterLevels, ma
 
 const P = 'ais';
 const smtp = (over = {}) => ({ id: 'smtp-1', app: 'mail', kind: 'smtp', name: '公司发件', host: 'smtp.example.invalid', port: 465, account: 'login', fromAddress: 'work@example.invalid', credentialPresent: true, enabled: true, validation: 'ready', revision: 1, ...over });
-const base = (smtpOver) => {
+const base = (smtpOver, local=true) => {
   let state = projectIntegrationState({ ...initialIntegrationState(), connections: [...initialIntegrationState().connections, smtp(smtpOver)] });
+  if(local===false)state=selectProjectMailConnection(state,P,'local','');
+  if(typeof local==='string')state={...state,connections:state.connections.map(c=>c.id==='fox-demo'?{...c,account:local}:c)};
   state = selectProjectMailConnection(state, P, 'smtp', 'smtp-1');
   return state;
 };
@@ -41,8 +43,7 @@ test('mailbox directory that differs is rejected and cannot be overridden by con
 });
 
 test('SMTP only (no Foxmail): needs user confirmation, then confirmed', () => {
-  let state = base();
-  state = selectProjectMailConnection(state, P, 'local', '');
+  let state = base(undefined,false);
   const before = senderIdentity(state, P);
   assert.equal(before.status, 'needs-confirm'); assert.equal(before.sendAllowed, false);
   state = confirmSenderIdentity(state, P);
@@ -51,12 +52,12 @@ test('SMTP only (no Foxmail): needs user confirmation, then confirmed', () => {
 });
 
 test('non-mailbox Foxmail directory needs confirmation', () => {
-  const state = base();
-  assert.equal(senderIdentity(state, P, 'non-mailbox').status, 'needs-confirm');
+  const state = base(undefined,'opaque-account');
+  assert.equal(senderIdentity(state, P).status, 'needs-confirm');
 });
 
 test('confirmation is invalidated when the bound SMTP revision or Foxmail selection changes', () => {
-  let state = selectProjectMailConnection(base(), P, 'local', '');
+  let state = base(undefined,false);
   state = confirmSenderIdentity(state, P);
   assert.equal(senderIdentity(state, P).status, 'confirmed');
   // SMTP revision bump
@@ -74,7 +75,7 @@ test('confirmation is invalidated when the bound SMTP revision or Foxmail select
 });
 
 test('confirmations survive state sanitisation but are dropped when malformed', () => {
-  let state = selectProjectMailConnection(base(), P, 'local', '');
+  let state = base(undefined,false);
   state = confirmSenderIdentity(state, P);
   const reloaded = projectIntegrationState(JSON.parse(JSON.stringify(state)));
   assert.equal(senderIdentity(reloaded, P).status, 'confirmed');
@@ -83,7 +84,7 @@ test('confirmations survive state sanitisation but are dropped when malformed', 
 });
 
 test('mail capability rows follow slots; reply needs Foxmail, drafts and resources do not', () => {
-  let state = selectProjectMailConnection(base(), P, 'local', '');
+  let state = base(undefined,false);
   const rows = id => Object.fromEntries(mailCapabilityRows(state, P).map(r => [r.id, r.ok]));
   assert.equal(rows().read, false); assert.equal(rows().reply, false);
   assert.equal(rows().resource, true); assert.equal(rows().draft, true); assert.equal(rows()['query-send'], true);
@@ -112,4 +113,14 @@ test('S10 increment declares L2 without enabling chat authorization or switching
   assert.equal(by.L3, 'unverified');
   assert.equal(runPlanForApp('zentao', 'l2').active, 'cli');
   assert.equal(runPlanForApp('mail', 'l2').active, 'mcp');
+});
+
+test('D08 matching automatic identity invalidates on source switches, switch-back and SMTP revision changes', () => {
+  const initial=base(), a=initial.connections.find(c=>c.id==='fox-demo');
+  const withB={...initial,connections:[...initial.connections,{...a,id:'fox-second',name:'same mailbox other source'}]};
+  const switched=selectProjectMailConnection(withB,P,'local','fox-second');
+  assert.equal(senderIdentity(switched,P).status,'invalidated');assert.equal(senderIdentity(switched,P).sendAllowed,false);
+  const returned=selectProjectMailConnection(switched,P,'local','fox-demo');assert.equal(senderIdentity(returned,P).status,'invalidated');
+  assert.equal(senderIdentity(confirmSenderIdentity(returned,P),P).status,'auto');
+  const bumped={...initial,connections:initial.connections.map(c=>c.id==='smtp-1'?{...c,revision:2}:c)};assert.equal(senderIdentity(bumped,P).status,'invalidated');
 });

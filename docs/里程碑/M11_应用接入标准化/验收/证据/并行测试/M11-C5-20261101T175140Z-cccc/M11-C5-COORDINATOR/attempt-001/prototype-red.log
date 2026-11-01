@@ -1,0 +1,46 @@
+✔ mailboxOf only accepts mailbox-shaped values and lowercases them (0.437041ms)
+✔ no SMTP: cannot send, reading and drafts are unaffected (0.461459ms)
+✔ mailbox directory matching the from address auto-confirms (case-insensitive) (0.192959ms)
+✔ mailbox directory that differs is rejected and cannot be overridden by confirmation (0.188125ms)
+✔ SMTP only (no Foxmail): needs user confirmation, then confirmed (0.113959ms)
+✔ non-mailbox Foxmail directory needs confirmation (0.0825ms)
+✔ confirmation is invalidated when the bound SMTP revision or Foxmail selection changes (0.132292ms)
+✔ confirmations survive state sanitisation but are dropped when malformed (0.3675ms)
+✔ mail capability rows follow slots; reply needs Foxmail, drafts and resources do not (0.140083ms)
+✔ run plan: mail is always MCP; zentao uses CLI when declared, read-only fallback MCP otherwise (0.121334ms)
+✔ adapter levels: original review state stays closed; undeclared versions do not get CLI (0.094167ms)
+✔ S10 increment declares L2 without enabling chat authorization or switching entries (0.04475ms)
+✖ D08 matching automatic identity invalidates on source switches, switch-back and SMTP revision changes (0.46125ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 42.97375
+
+✖ failing tests:
+
+test at prototypes/m6-codex/tests/m11-preview-model.test.mjs:117:1
+✖ D08 matching automatic identity invalidates on source switches, switch-back and SMTP revision changes (0.46125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'auto'
+  - 'invalidated'
+  
+      at TestContext.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/prototypes/m6-codex/tests/m11-preview-model.test.mjs:121:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'auto',
+    expected: 'invalidated',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,242 @@
+{
+  "schema": "m11-c4-t33-sender-v1",
+  "group": "M11-C4-A-SENDER",
+  "caseId": "T33",
+  "layers": [
+    "I",
+    "A"
+  ],
+  "root": "/private/tmp/willyou-m11-c4-sender-oJ6ru8",
+  "userData": "/private/tmp/willyou-m11-c4-sender-oJ6ru8/userdata",
+  "sourceCommit": "523f9d85",
+  "sourceManifestSha256": "4139a486315aab0142945907a5df21f36f57521b5f21ec37af216fed50c22c5d",
+  "asarSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d",
+  "driverSha256": "663c621e59d0268de3aa82554c99927beae68cdc204700f5856bc3aab553d28a",
+  "startedAt": "2026-11-01T17:45:38.611Z",
+  "status": "failed",
+  "criteria": [],
+  "actions": [
+    {
+      "stage": "project-selection",
+      "selector": "[data-testid=nav-apps]",
+      "point": {
+        "x": 171.5,
+        "y": 173.5
+      },
+      "at": "2026-11-01T17:45:40.184Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": ".m10-sidebar button",
+      "text": "项目选用",
+      "point": {
+        "x": 171.5,
+        "y": 334.5
+      },
+      "at": "2026-11-01T17:45:40.441Z"
+    }
+  ],
+  "policySnapshots": [],
+  "draftPrerequisites": [],
+  "formalCasesAdded": 0,
+  "isolation": {
+    "syntheticOnly": true,
+    "noRealAgent": true,
+    "noExternalRelay": true,
+    "cipher": "process-local reversible fixture; restored; not Keychain acceptance"
+  },
+  "smtpPort": 58600,
+  "pid": 95325,
+  "installationInitialFocus": [
+    {
+      "pid": 95325,
+      "before": {
+        "focused": false,
+        "visibility": "visible"
+      },
+      "requested": true,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 95325,
+    "checkedInputs": 18
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 95325,
+      "checkedInputs": 18
+    }
+  ],
+  "projects": {
+    "smtp": {
+      "id": "ce996851-ed2f-466d-a7dd-35b15ae3b705",
+      "name": "T33 SMTP-only",
+      "aliases": [],
+      "description": "Synthetic sender identity",
+      "rulesPath": null,
+      "configVersion": 1,
+      "archivedAt": null,
+      "createdAt": 1793555092589,
+      "updatedAt": 1793555092589,
+      "dirs": [],
+      "databases": [],
+      "servers": []
+    },
+    "matching": {
+      "id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+      "name": "T33 matching Foxmail",
+      "aliases": [],
+      "description": "Synthetic matched account directory",
+      "rulesPath": null,
+      "configVersion": 1,
+      "archivedAt": null,
+      "createdAt": 1793555092591,
+      "updatedAt": 1793555092591,
+      "dirs": [],
+      "databases": [],
+      "servers": []
+    }
+  },
+  "connections": {
+    "senderBefore": {
+      "id": "67095b84-7088-456f-9c11-f2a8cbb76d06",
+      "appId": "mail",
+      "providerId": "smtp",
+      "name": "T33 synthetic SMTP",
+      "config": {
+        "kind": "smtp",
+        "host": "127.0.0.1",
+        "port": 58600,
+        "username": "fixture@example.test",
+        "fromAddress": "fixture@example.test",
+        "authMode": "password",
+        "mode": "plain"
+      },
+      "configSchemaVersion": 1,
+      "revision": 1,
+      "configRevision": 1,
+      "identityRevision": 1,
+      "secretRevision": 1,
+      "policyRevision": 1,
+      "identity": {
+        "providerId": "smtp",
+        "serviceId": "smtp://127.0.0.1:58600",
+        "accountId": "fixture@example.test",
+        "contractMajor": 1
+      },
+      "enabled": true,
+      "authorization": "connected",
+      "health": "healthy",
+      "healthCode": "OK",
+      "healthMessage": "连接已核验",
+      "testedAt": "2026-11-01T17:44:52.814Z",
+      "hasSecret": true,
+      "cleanupPending": false,
+      "createdAt": "2026-11-01T17:44:52.814Z",
+      "updatedAt": "2026-11-01T17:44:52.814Z"
+    },
+    "A": {
+      "id": "e2a3a1f4-8365-44d7-bc09-867999b84768",
+      "appId": "mail",
+      "providerId": "foxmail",
+      "name": "T33 source A",
+      "config": {
+        "kind": "foxmail",
+        "sourcePath": "/private/tmp/willyou-m11-c4-sender-oJ6ru8/A/fixture@example.test",
+        "account": "editable label excluded from identity",
+        "queryDays": 30
+      },
+      "configSchemaVersion": 1,
+      "revision": 1,
+      "configRevision": 1,
+      "identityRevision": 1,
+      "secretRevision": 0,
+      "policyRevision": 1,
+      "identity": {
+        "providerId": "foxmail",
+        "serviceId": "foxmail:e3ccec0135247822699ad3228f41f1589ab47688579d7525740f1109d9f61b08",
+        "accountId": "editable label excluded from identity",
+        "contractMajor": 1
+      },
+      "enabled": true,
+      "authorization": "connected",
+      "health": "healthy",
+      "healthCode": "OK",
+      "healthMessage": "连接已核验",
+      "testedAt": "2026-11-01T17:44:53.049Z",
+      "hasSecret": false,
+      "cleanupPending": false,
+      "createdAt": "2026-11-01T17:44:53.049Z",
+      "updatedAt": "2026-11-01T17:44:53.049Z"
+    },
+    "B": {
+      "id": "4b580aed-69cd-446e-839b-6b1132a7a0fe",
+      "appId": "mail",
+      "providerId": "foxmail",
+      "name": "T33 source B",
+      "config": {
+        "kind": "foxmail",
+        "sourcePath": "/private/tmp/willyou-m11-c4-sender-oJ6ru8/B/fixture@example.test",
+        "account": "another editable label",
+        "queryDays": 30
+      },
+      "configSchemaVersion": 1,
+      "revision": 1,
+      "configRevision": 1,
+      "identityRevision": 1,
+      "secretRevision": 0,
+      "policyRevision": 1,
+      "identity": {
+        "providerId": "foxmail",
+        "serviceId": "foxmail:a7fd8f7d5741e6c0aff82b8f8493d979110bb00fc6ed3889cfd9c242b06f0eb9",
+        "accountId": "another editable label",
+        "contractMajor": 1
+      },
+      "enabled": true,
+      "authorization": "connected",
+      "health": "healthy",
+      "healthCode": "OK",
+      "healthMessage": "连接已核验",
+      "testedAt": "2026-11-01T17:44:53.291Z",
+      "hasSecret": false,
+      "cleanupPending": false,
+      "createdAt": "2026-11-01T17:44:53.291Z",
+      "updatedAt": "2026-11-01T17:44:53.291Z"
+    }
+  },
+  "resume": {
+    "previousResultSha256": "12dcde0352b973a9b159c3d1c6773d476c931ec8c771dd75e86e2097118c6333",
+    "boundary": "Same private projects/connections/source/port; original prerequisite project select never committed. No business criterion rerun."
+  },
+  "failedStage": "project-selection",
+  "error": "Error: Electron test condition timed out",
+  "stack": "Error: Electron test condition timed out\n    at Object.waitFor (file:///private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/sender-worker/scripts/lib/electron-harness.mjs:109:13)\n    at async projectPage (file:///private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/sender-worker/scripts/applications/m11-c4-sender-ui.mjs:24:918)\n    at async file:///private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/sender-worker/scripts/applications/m11-c4-sender-ui.mjs:47:106",
+  "failureDom": "自定义\n应用\n技能\n已添加\n邮件\n管理\n项目选用\n调用记录\nWillYou\n项目选用\n\n为项目启用应用，工具与配套 Skill 一起使用。\n\n选择项目\nT33 SMTP-only\nT33 matching Foxmail\n选择一个项目\n\n从右上方选择本机项目，再分别配置它的应用和连接。\n\n前往工作台",
+  "receipts": [],
+  "smtp": {
+    "connections": 0,
+    "auth": 0,
+    "dataAttempts": 0,
+    "messages": [],
+    "errors": []
+  },
+  "beforeSource": {
+    "A": {
+      "messages.db": "9ce3bccbfba7e9c86070c937eb82e6705c0a09bd4ff10c43da73482aeee19a20",
+      "Mail/Inbox/1.mail": "0cabbc812a1fc1e727f5d8fcd202727b8e8c1f5bdc406ac83edf2729508a710d"
+    },
+    "B": {
+      "messages.db": "3c1c2e76f4a941f0dbd04d4a64d08bcd3483bc34f3e78b6557296346c72ce670",
+      "Mail/Inbox/1.mail": "30a725b55e11ef72cd74bdb156daff3b2c9263627b6eb8c7790efd2c30e57780"
+    }
+  },
+  "asarAfterSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d",
+  "finishedAt": "2026-11-01T17:45:50.743Z",
+  "stage": "project-selection"
+}

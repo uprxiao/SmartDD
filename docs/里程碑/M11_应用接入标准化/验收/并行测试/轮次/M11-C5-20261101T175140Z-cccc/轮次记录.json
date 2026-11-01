@@ -1,0 +1,95 @@
+{
+  "runId": "M11-C5-20261101T175140Z-cccc",
+  "milestone": "M11",
+  "updatedAt": "2026-11-01T18:02:57.682607+00:00",
+  "sourceCommit": "60c4312f",
+  "status": "D07-D08-fix",
+  "resources": {
+    "UI": null,
+    "heavy": "coordinator prototype build then production package",
+    "lightweight-I": []
+  },
+  "agents": {
+    "coordinator": "/root",
+    "executors": []
+  },
+  "cases": [
+    "T33 D08 full acceptance red",
+    "T19/T33 D07 bound-draft unaffected"
+  ],
+  "defects": [
+    "D07 drafts incorrectly require confirmed sender",
+    "D08 matching selection replaces prior receipt rather than invalidating"
+  ],
+  "baselinePackage": "C4 e19be13c... immutable old red; new package required after production fix",
+  "groups": [
+    {
+      "id": "M11-C5-I-IDENTITY",
+      "owner": "coordinator",
+      "criteria": [
+        "unconfirmed/revision-invalidated bound draft create/update succeeds",
+        "foreign sender remains rejected",
+        "send before reconfirm remains denied",
+        "first matching automatic remains",
+        "matching source switch and switch-back invalidates; receipt retained until explicit reconfirm"
+      ],
+      "status": "red-2-production-checks"
+    },
+    {
+      "id": "M11-C5-I-REPLY",
+      "owner": "/root/upstream_contract",
+      "criteria": [
+        "unconfirmed and disabled selected SMTP does not block scoped reply draft via unified capability",
+        "foreign sender still denied",
+        "no authentication or send side effects"
+      ],
+      "status": "3-passed-cleanup-released-pending-archive",
+      "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/source",
+      "privateRed": "two invalid preflight attempts retained; third actual3 green"
+    },
+    {
+      "id": "M11-C5-P-IDENTITY",
+      "owner": "coordinator",
+      "criteria": [
+        "initial matching automatic",
+        "existing matching source switch invalidated",
+        "reconfirm via existing action",
+        "light/dark existing states"
+      ],
+      "status": "prototype-building"
+    },
+    {
+      "id": "M11-C5-I-PUBLIC-REPLY",
+      "owner": "coordinator",
+      "criteria": [
+        "self-contained native fixture, no unused Agent setup",
+        "all original19 assertions retained",
+        "native three hashes captured before cleanup"
+      ],
+      "status": "3-passed",
+      "cleanup": "runner85199 exit0; nativebuild files deleted, scoped ps no remaining"
+    }
+  ],
+  "accounting": {
+    "source": "验收/测试用例.md",
+    "total": 38,
+    "passed": 17,
+    "pending": 21,
+    "percent": 44.74
+  },
+  "next": "fix prototype transition and production boundaries, targeted/full affected regressions, checkpoint, one new package, D07/D08 actual A retest",
+  "sourceManifestSha256": "02bce58188fd3735bfed4a0b7c2294b950011f49633eed8e1a867d91a402aac7",
+  "checks": {
+    "businessOriginalRed": 2,
+    "businessTargetedGreen": 2,
+    "businessFull": 59,
+    "prototypeNewRed": 1,
+    "prototypeTargeted": 13,
+    "prototypeRelatedUnique": 63,
+    "independentV2Reply": 3,
+    "publicSelfContainedReply": 3,
+    "typecheckNodeWeb": "exit0",
+    "nodeFinalAfterPublicTest": "exit0",
+    "prototypeBuild": "exit0 7.87sec"
+  }
+}

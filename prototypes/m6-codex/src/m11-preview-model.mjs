@@ -4,20 +4,13 @@
 import { selectedConnections } from './integration-model.mjs';
 export { sanitizeSenderConfirmations } from './m11-sender-confirmations.mjs';
 
-const MAILBOX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const mailboxOf = value => (typeof value === 'string' && MAILBOX.test(value.trim()) ? value.trim().toLowerCase() : null);
-
-/** Foxmail 来源所在账号目录名：原型用合成字段 accountDir，缺省取 account；可由演示开关覆盖为非邮箱目录名。 */
+import {mailboxOf,senderBindingOf,sameSenderBinding} from './m11-sender-confirmations.mjs';
+export {mailboxOf} from './m11-sender-confirmations.mjs';
+/** 合成账号目录；演示覆盖代表目录身份变化，同样使已有确认失效。 */
 export function foxmailDirectory(local, directoryOverride) {
-  if (directoryOverride === 'non-mailbox') return '合成账号目录（非邮箱）';
-  return local ? (local.accountDir ?? local.account ?? '') : '';
+ if(directoryOverride==='non-mailbox')return '合成账号目录（非邮箱）';
+ return local?(local.accountDir??local.account??''):'';
 }
-
-const bindingOf = (smtp, local, directory) => ({
-  smtpId: smtp.id, smtpRevision: smtp.revision ?? 1, fromAddress: mailboxOf(smtp.fromAddress ?? smtp.account) ?? '',
-  localId: local?.id ?? null, localRevision: local?.revision ?? null, localDirectory: local ? directory : null,
-});
-const sameBinding = (a, b) => !!a && !!b && ['smtpId', 'smtpRevision', 'fromAddress', 'localId', 'localRevision', 'localDirectory'].every(k => a[k] === b[k]);
 
 /**
  * status：
@@ -33,22 +26,21 @@ export function senderIdentity(state, projectId, directoryOverride) {
   const smtp = chosen.find(c => c.kind === 'smtp'), local = chosen.find(c => c.kind === 'local');
   if (!smtp) return { status: 'no-smtp', sendAllowed: false, label: '未选用发件账号', detail: '读取与草稿不受影响；需要发送时先选用 SMTP 发件账号。', binding: null };
   const directory = foxmailDirectory(local, directoryOverride), from = mailboxOf(smtp.fromAddress ?? smtp.account), dirMailbox = mailboxOf(directory);
-  const binding = bindingOf(smtp, local, directory);
-  if (local && dirMailbox) {
-    if (from && dirMailbox === from) return { status: 'auto', sendAllowed: true, label: '发件身份已自动确认', detail: `Foxmail 账号目录 ${dirMailbox} 与发件地址一致。`, binding };
-    return { status: 'mismatch', sendAllowed: false, label: '发件地址与 Foxmail 账号不一致', detail: `Foxmail 账号目录为 ${dirMailbox}，发件地址为 ${from || '（无效）'}。为避免以他人身份发信，不能用确认覆盖；请改选一致的发件账号或来源。`, binding };
-  }
-  const reason = local ? '账号目录名不是邮箱地址，无法自动比较。' : '未选用 Foxmail 来源，没有可比较的账号。';
-  const record = state.senderConfirmations?.[projectId];
-  if (record && sameBinding(record.binding, binding)) return { status: 'confirmed', sendAllowed: true, label: '发件身份已由用户确认', detail: `${reason}已确认「${binding.fromAddress}」是你的发件身份；连接或修订变化后需重新确认。`, binding, confirmedAt: record.at };
-  if (record) return { status: 'invalidated', sendAllowed: false, label: '发件身份确认已失效', detail: `${reason}所绑定的发件账号、Foxmail 来源或其修订已变化，需重新确认；读取与草稿不受影响。`, binding };
+  const binding = senderBindingOf(state, projectId, smtp, local, directory);
+  const matching=!!local&&!!from&&dirMailbox===from;
+  if(local&&dirMailbox&&!matching)return {status:'mismatch',sendAllowed:false,label:'发件地址与 Foxmail 账号不一致',detail:`Foxmail 账号目录为 ${dirMailbox}，发件地址为 ${from||'（无效）'}。不能用用户确认覆盖，请改选一致的发件账号或来源。`,binding};
+  const reason=matching?'来源目录仍与发件地址匹配。':local?'账号目录名不是邮箱地址，无法自动比较。':'未选用 Foxmail 来源，没有可比较的账号。';
+  const record=state.senderConfirmations?.[projectId];
+  if(record&&sameSenderBinding(record.binding,binding)){const auto=record.method==='automatic';return{status:auto?'auto':'confirmed',sendAllowed:true,label:auto?'发件身份已自动确认':'发件身份已由用户确认',detail:auto?`Foxmail 账号目录 ${dirMailbox} 与发件地址一致。`:`${reason}已确认「${binding.fromAddress}」是你的发件身份；连接或修订变化后需重新确认。`,binding,confirmedAt:record.at};}
+  if(record)return{status:'invalidated',sendAllowed:false,label:'发件身份确认已失效',detail:`${reason}所绑定的发件账号、Foxmail 来源或其修订已变化，需重新确认；读取与草稿不受影响。`,binding};
+  if(matching)return{status:'auto',sendAllowed:true,label:'发件身份已自动确认',detail:`Foxmail 账号目录 ${dirMailbox} 与发件地址一致。`,binding};
   return { status: 'needs-confirm', sendAllowed: false, label: '需要确认发件身份', detail: `${reason}请确认「${binding.fromAddress || '该发件地址'}」是你的发件身份后才能发送。`, binding };
 }
 
 export function confirmSenderIdentity(state, projectId, directoryOverride, at = 'demo-confirmed') {
   const current = senderIdentity(state, projectId, directoryOverride);
   if (!['needs-confirm', 'invalidated'].includes(current.status)) return state;
-  return { ...state, senderConfirmations: { ...state.senderConfirmations, [projectId]: { binding: current.binding, at } } };
+  return { ...state, senderConfirmations: { ...state.senderConfirmations, [projectId]: { method:current.binding.localId&&mailboxOf(current.binding.localDirectory)===current.binding.fromAddress?'automatic':'user', binding: current.binding, at } } };
 }
 
 // ---------------- 会话运行计划（合成）----------------

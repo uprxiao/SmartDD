@@ -1,0 +1,11 @@
+--- 001 driver
++++ 002 driver
+@@ -46,7 +46,7 @@
+  const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets),sender={sender:Object.assign(new EventEmitter(),{id:741,isDestroyed:()=>false})};
+  const cwdB=join(f.root,'project-b');mkdirSync(cwdB);const projectB=projects.createProject({name:'T06 isolated B',aliases:[],description:'',rulesPath:null},[{label:'',path:cwdB}]).id;
+  app=new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:()=>{},mailWorker:join(f.root,'unused-worker'),foxmailNative:join(f.root,'unused-native'),processes:reader});await app.recover();
+- const source=new CapabilityBundleSource(resolve('out/capability-bundles')),entry=source.index.apps.find(a=>a.appId==='zentao')!;await new RuntimeRegistry(f.store).install(source.runtime());const builtin=new BuiltinPackageRegistry(f.store),installed=await builtin.install(source,entry),active=builtin.packages.active('zentao');await builtin.packages.activate(installed.packageHash,active?.revision??0);const manifest=installed.manifest;if(manifest.schema!=='smartdd-app-package-v2')throw Error('v2 fixture required');
++ const source=new CapabilityBundleSource(resolve('out/capability-bundles')),entry=source.index.apps.find(a=>a.appId==='zentao')!;await new RuntimeRegistry(f.store).install(source.runtime());const builtin=new BuiltinPackageRegistry(f.store),installed=await builtin.install(source,entry),active=builtin.packages.active('zentao');await builtin.packages.activate(installed.packageHash,active?.generation??0);const manifest=installed.manifest;if(manifest.schema!=='smartdd-app-package-v2')throw Error('v2 fixture required');
+  await app.selections.setAdded('zentao',true,0);
+  const connect=async(side:'a'|'b')=>{const result=await app!.testConnection(sender,{name:'synthetic '+side,expectedRevision:0,config:{kind:'zentao',baseUrl:'http://127.0.0.1:'+address.port+'/'+side+'/',username:'tester',authMode:'token'},secret:'T06-SYNTHETIC-'+side});return app!.saveConnection(sender,'zentao',result.operationId,result.candidateHash);};
+  const connectionA=await connect('a'),connectionB=await connect('b');expect(connectionA.id).not.toBe(connectionB.id);

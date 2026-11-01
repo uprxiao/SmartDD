@@ -1,0 +1,281 @@
+{
+  "schema": "m11-c4-t33-final-v1",
+  "group": "M11-C4-A-SENDER",
+  "formalCase": "T33",
+  "layers": [
+    "I",
+    "A"
+  ],
+  "originalCriteria": "只SMTP以及Foxmail账号目录名邮箱且一致的项目；用户确认身份后合成SMTP可发；SMTP修订变化/切换Foxmail后原确认失效发送被拒并提示重新确认；读取和草稿不受影响；确认可追溯连接及修订。",
+  "status": "failed-product-D07-D08-preserved",
+  "formalCasePassesAdded": 0,
+  "criteria": [
+    {
+      "id": "T33-drafts-unaffected-create",
+      "layer": "I",
+      "status": "failed-product",
+      "defect": "M11-C4-D07",
+      "expected": "Sender confirmation only gates send, not preparing a draft bound to current SMTP.",
+      "actual": "Original mail.draft.create returned SENDER_IDENTITY_REQUIRED before creating a draft. Coordinator confirmed R14 in-scope defect.",
+      "evidence": "../attempt-003/result-resume-002.json; original driver snapshot; closed-db-readonly.json",
+      "boundary": "No update/reply mutation claimed. Later confirmation before fixture generation does not override original red."
+    },
+    {
+      "id": "T33-smtp-only-user-confirm",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Only-SMTP project identity confirmed by actual page click; binding/revisions captured",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T17:47:48.731Z"
+    },
+    {
+      "id": "T33-smtp-only-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "After actual identity confirmation, actual page review/send submits one synthetic SMTP250 message",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T17:47:51.594Z"
+    },
+    {
+      "id": "T33-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI secret rotation increments SMTP revision and invalidates prior user confirmation; UI review refuses SENDER_IDENTITY_REQUIRED and requests reconfirmation",
+      "stage": "smtp-revision-reject",
+      "at": "2026-11-01T17:47:55.710Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-smtp-change",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+      "connectionId": "e2a3a1f4-8365-44d7-bc09-867999b84768",
+      "sourceReference": {
+        "connectionId": "e2a3a1f4-8365-44d7-bc09-867999b84768",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "0cabbc812a1fc1e727f5d8fcd202727b8e8c1f5bdc406ac83edf2729508a710d"
+      },
+      "draftHash": "652ff700d8bd06f4f8cb887881e4956de576d266169160a18396d681e7767afb",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE A\n"
+    },
+    {
+      "id": "T33-matching-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "SMTP revision change also invalidates prior automatic identity in matching-directory project and UI send preparation is refused",
+      "stage": "matching-revision-reject",
+      "at": "2026-11-01T17:48:00.436Z"
+    },
+    {
+      "id": "T33-smtp-reconfirm-restores",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI reconfirmation binds revised SMTP and restores one synthetic SMTP send without draft revision change",
+      "stage": "smtp-reconfirm",
+      "at": "2026-11-01T17:48:05.177Z"
+    },
+    {
+      "id": "T33-matching-reconfirm-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual page reconfirmation on matching directory restores synthetic send; policy records automatic method for matching eligibility and binding revisions are traceable",
+      "stage": "matching-reconfirm",
+      "at": "2026-11-01T17:48:10.410Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-foxmail-switch",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+      "connectionId": "4b580aed-69cd-446e-839b-6b1132a7a0fe",
+      "sourceReference": {
+        "connectionId": "4b580aed-69cd-446e-839b-6b1132a7a0fe",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "30a725b55e11ef72cd74bdb156daff3b2c9263627b6eb8c7790efd2c30e57780"
+      },
+      "draftHash": "5add06771a049883476f65ff243c5e13890a04fa01db51de8d805499e687f240",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE B\n"
+    },
+    {
+      "id": "T33-foxmail-switch-invalidates",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Switching from matching Foxmail A to distinct matching Foxmail B silently writes new automatic confirmation; real page review prepares send instead of refusing and asking reconfirmation. Original criterion retained.",
+      "stage": "foxmail-ui-switch",
+      "actualPolicy": "automatic",
+      "prepareCode": null,
+      "prepareOk": true,
+      "at": "2026-11-01T17:48:16.501Z",
+      "defect": "M11-C4-D08"
+    }
+  ],
+  "criterionCountsOnly": {
+    "passed": 8,
+    "failedProduct": 2,
+    "notFormalCases": true
+  },
+  "preservedAttempts": [
+    {
+      "attempt": "attempt-001",
+      "manifestSha256": "9d758f498e1d1ae2bf55664e8b6563b6e64bfdc9437329c189957bc21ce630fe"
+    },
+    {
+      "attempt": "attempt-002",
+      "manifestSha256": "ab044d9c6e755e0dedff8f238e72101a4584b18cbd7e4f37d6c8fbf09b500991"
+    },
+    {
+      "attempt": "attempt-003",
+      "manifestSha256": "5f973026ece33909a11e2fc63ff358ca7f0b37cb296c33fa98784f04815719b0"
+    }
+  ],
+  "rawResult": "result-resume-003.json",
+  "effectiveOldEvidence": [],
+  "defects": [
+    {
+      "id": "M11-C4-D07",
+      "actual": "Original mail.draft.create returned SENDER_IDENTITY_REQUIRED before creating a draft. Coordinator confirmed R14 in-scope defect.",
+      "decision": "Coordinator confirmed drafts must not be blocked; original refusal remains red."
+    },
+    {
+      "id": "M11-C4-D08",
+      "actual": "UI switch between distinct matching Foxmail sources silently replaces identity receipt; page prepare succeeds instead of requiring reconfirmation.",
+      "decision": "Coordinator confirmed approved R14 and original T33 require invalidation after any existing binding/revision change. Initial matching automatic stays valid.",
+      "transition": "D08-transition.json"
+    }
+  ],
+  "passedScope": "Actual only-SMTP confirmation and send; actual SMTP credential edit/test/save increments revision1→2 and secretRevision1→2; both project identities invalidated and page review refused; actual reconfirmation restores three planned sends; original read/query/resource and existing draft hashes remain valid. All confirmation snapshots retain connection/revision binding and receipt/hash.",
+  "smtpEvidence": {
+    "dataAttempts": 3,
+    "acceptedMessages": [
+      {
+        "sha256": "2ccddd3ecab676e6453f5c1ddde59ab20028efb316e40257facfcf5fb7feb32c",
+        "bytes": 316,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 SMTP initial",
+        "at": "2026-11-01T17:47:51.247Z"
+      },
+      {
+        "sha256": "f9449c02cbe3dd077ec1dfac65131cc0a0c05398f7c2bc7209b554e2ee38b3cd",
+        "bytes": 320,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 SMTP reconfirmed",
+        "at": "2026-11-01T17:48:04.844Z"
+      },
+      {
+        "sha256": "c0e5b21ceac2f5f850ada0a765c36bbc0e442ff1801a8525c55206ed4a64ba9b",
+        "bytes": 324,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 matching reconfirmed",
+        "at": "2026-11-01T17:48:10.062Z"
+      }
+    ],
+    "grants": [
+      {
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      {
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      {
+        "source": "renderer-confirmation",
+        "state": "used"
+      }
+    ],
+    "intents": [
+      {
+        "id": "83fd4f1e-c0d0-4b2d-bca9-7d775268c332",
+        "project_id": "ce996851-ed2f-466d-a7dd-35b15ae3b705",
+        "source_task_id": null,
+        "source_run_id": null,
+        "draft_revision": 1,
+        "state": "server-accepted"
+      },
+      {
+        "id": "c0c83288-8ab8-4ff2-b1de-863ca3d39118",
+        "project_id": "ce996851-ed2f-466d-a7dd-35b15ae3b705",
+        "source_task_id": null,
+        "source_run_id": null,
+        "draft_revision": 1,
+        "state": "server-accepted"
+      },
+      {
+        "id": "5262c3c9-670b-451f-9014-e2047e7199df",
+        "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+        "source_task_id": null,
+        "source_run_id": null,
+        "draft_revision": 1,
+        "state": "server-accepted"
+      },
+      {
+        "id": "18bf7847-c41b-4787-8c93-20c52d2094fb",
+        "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+        "source_task_id": null,
+        "source_run_id": null,
+        "draft_revision": 1,
+        "state": "canceled"
+      }
+    ],
+    "lastSwitchedSourceIntentCanceledWithoutFourthSend": true,
+    "noExternalRelay": true
+  },
+  "setupBoundary": "RPC creates project/connections and four prerequisite drafts only. Confirmation, credential edit/test/save, source switch, review/send all actual UI. Sidebar project buttons replaced native-select driver failure. Mail reads and draft hashes are I-layer read-only services; no UI draft-create/edit claim.",
+  "noAgentEvidence": {
+    "tasks": 0,
+    "runs": 0,
+    "allOperationTaskAndRunIdsNull": true
+  },
+  "mailSourcesUnchanged": true,
+  "cipherBoundary": "Private reversible process-local safeStorage fixture restored every exit; no Keychain/production encryption claim.",
+  "verification": "verification.json",
+  "sourceCommit": "523f9d85",
+  "sourceInputCount": 2752,
+  "sourceInputChanges": [],
+  "outCount": 151,
+  "outUnchanged": true,
+  "asarSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d",
+  "commands": [
+    {
+      "attempt": "attempt-001",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c4-sender-cache WILLYOU_ACCEPTANCE_APP=/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou WILLYOU_ACCEPTANCE_ASAR_SHA=e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d node scripts/applications/m11-c4-sender-ui.mjs",
+      "exitCode": 1
+    },
+    {
+      "attempt": "attempt-002",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c4-sender-cache WILLYOU_ACCEPTANCE_APP=/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou WILLYOU_ACCEPTANCE_ASAR_SHA=e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d T33_RESUME_ROOT=/private/tmp/willyou-m11-c4-sender-oJ6ru8 node scripts/applications/m11-c4-sender-ui.mjs",
+      "exitCode": 1
+    },
+    {
+      "attempt": "attempt-003",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c4-sender-cache WILLYOU_ACCEPTANCE_APP=/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou WILLYOU_ACCEPTANCE_ASAR_SHA=e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d T33_RESUME_ROOT=/private/tmp/willyou-m11-c4-sender-oJ6ru8 T33_RESUME_ATTEMPT=002 node scripts/applications/m11-c4-sender-ui.mjs",
+      "exitCode": 1
+    },
+    {
+      "attempt": "attempt-004",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c4-sender-cache WILLYOU_ACCEPTANCE_APP=/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou WILLYOU_ACCEPTANCE_ASAR_SHA=e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d T33_RESUME_ROOT=/private/tmp/willyou-m11-c4-sender-oJ6ru8 T33_RESUME_ATTEMPT=003 T33_PREVIOUS_RESULT=result-resume-002.json T33_RESUME_AFTER_SELECTION=1 node scripts/applications/m11-c4-sender-ui.mjs",
+      "exitCode": 0
+    }
+  ],
+  "timing": {
+    "firstStartedAt": "2026-11-01T17:44:49.916Z",
+    "finishedAt": "2026-11-01T17:48:16.892Z",
+    "recordedExecutionSeconds": 66.54,
+    "wallSpanSeconds": 206.976,
+    "lastSubflowSeconds": 32.032,
+    "AppLaunches": 4,
+    "builds": 0,
+    "resourceConflictObserved": false,
+    "cost": "Two native project-selector driver failures. Third run reached D07. Final run reused configured projects and moved RPC draft generation after actual identity confirmation without altering D07 expectation."
+  },
+  "cleanup": "cleanup.json",
+  "resourcesReleased": true,
+  "next": "Coordinator fixes D07/D08 on new baseline, aligns approved prototype transitions and builds unified package for affected replay. Prepare only; no old-package rerun. T31 reader/composer conflict is separate."
+}

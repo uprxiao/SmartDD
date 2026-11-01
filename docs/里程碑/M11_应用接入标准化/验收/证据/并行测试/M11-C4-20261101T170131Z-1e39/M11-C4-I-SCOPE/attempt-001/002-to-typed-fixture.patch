@@ -1,0 +1,19 @@
+--- 002 passing source
++++ type-only boundary declaration
+@@ -15,6 +15,7 @@
+ import {SecretsStore} from '../../../secrets';
+ import {ProjectService} from '../../projects/project-service';
+ import {ApplicationService} from '../application-service';
++import type {ApplicationUiSender} from '../execution-context';
+ import {ApplicationToolService} from '../tool-service';
+ import {ApplicationAdapterRegistry} from '../application-adapter-registry';
+ import {CapabilityBundleSource} from '../bundle-source';
+@@ -43,7 +44,7 @@
+   if(url.pathname.endsWith('/v2/my/work'))return send({mode:'bug',type:'assignedTo',pager:{recTotal:1,pageID:1,recPerPage:Number(url.searchParams.get('recPerPage')),pageTotal:1},bugs:[{id:side==='a'?'101':'202',title:side==='a'?'owned A only':'foreign B must never be queried',assignedTo:{account:'tester'},status:'active'}]});
+   res.writeHead(404);res.end('{}');
+  });server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});await new Promise<void>(r=>server!.listen(0,'127.0.0.1',r));const address=server.address();if(!address||typeof address==='string')throw Error('private HTTP address');
+- const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets),sender={sender:Object.assign(new EventEmitter(),{id:741,isDestroyed:()=>false})};
++ const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets),sender={sender:Object.assign(new EventEmitter(),{id:741,isDestroyed:()=>false})} as unknown as ApplicationUiSender;
+  const cwdB=join(f.root,'project-b');mkdirSync(cwdB);const projectB=projects.createProject({name:'T06 isolated B',aliases:[],description:'',rulesPath:null},[{label:'',path:cwdB}]).id;
+  app=new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:()=>{},mailWorker:join(f.root,'unused-worker'),foxmailNative:join(f.root,'unused-native'),processes:reader});await app.recover();
+  const source=new CapabilityBundleSource(resolve('out/capability-bundles')),entry=source.index.apps.find(a=>a.appId==='zentao')!;await new RuntimeRegistry(f.store).install(source.runtime());const builtin=new BuiltinPackageRegistry(f.store),installed=await builtin.install(source,entry),active=builtin.packages.active('zentao');await builtin.packages.activate(installed.packageHash,active?.generation??0);const manifest=installed.manifest;if(manifest.schema!=='smartdd-app-package-v2')throw Error('v2 fixture required');

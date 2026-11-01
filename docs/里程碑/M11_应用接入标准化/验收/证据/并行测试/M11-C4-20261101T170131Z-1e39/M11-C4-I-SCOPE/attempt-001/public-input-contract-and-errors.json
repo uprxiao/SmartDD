@@ -1,0 +1,206 @@
+{
+  "cliInvocationEnvelope": "Strict object: operation three dot-separated lower-case parts; positive contractMajor; connectionId must be null; arguments record. No projectId/approved fields.",
+  "zentaoObjectListInputSchema": {
+    "additionalProperties": false,
+    "description": "分页查询当前连接账号被指派的 Bug 或研发需求；完整性与空结果分开返回。",
+    "properties": {
+      "connectionId": {
+        "anyOf": [
+          {
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "cursor": {
+        "anyOf": [
+          {
+            "maxLength": 8192,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "kind": {
+        "enum": [
+          "bug",
+          "story"
+        ],
+        "type": "string"
+      },
+      "limit": {
+        "maximum": 200,
+        "minimum": 1,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "kind"
+    ],
+    "type": "object"
+  },
+  "actualErrors": [
+    {
+      "scenario": "forged-call-project",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug"
+        },
+        "projectId": "cd30c390-5934-40e9-8e67-8923e8b62354"
+      },
+      "outerSchemaAccepted": false,
+      "code": "INVALID_INPUT",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "forged-argument-project",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug",
+          "projectId": "cd30c390-5934-40e9-8e67-8923e8b62354"
+        }
+      },
+      "outerSchemaAccepted": true,
+      "code": "INVALID_INPUT",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "foreign-call-connection",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": "1910831f-b76c-47ee-9083-05bd073954ab",
+        "arguments": {
+          "kind": "bug"
+        }
+      },
+      "outerSchemaAccepted": false,
+      "code": "INVALID_INPUT",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "foreign-business-connection",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug",
+          "connectionId": "1910831f-b76c-47ee-9083-05bd073954ab"
+        }
+      },
+      "outerSchemaAccepted": true,
+      "code": "SCOPE_DENIED",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "extra-real-capability",
+      "input": {
+        "operation": "zentao.object.get",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug",
+          "reference": {}
+        }
+      },
+      "outerSchemaAccepted": true,
+      "code": "SCOPE_DENIED",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "self-approved-call",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug"
+        },
+        "approved": true
+      },
+      "outerSchemaAccepted": false,
+      "code": "INVALID_INPUT",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    {
+      "scenario": "self-approved-argument",
+      "input": {
+        "operation": "zentao.object.list",
+        "contractMajor": 2,
+        "connectionId": null,
+        "arguments": {
+          "kind": "bug",
+          "approved": true
+        }
+      },
+      "outerSchemaAccepted": true,
+      "code": "INVALID_INPUT",
+      "providerRequests": 0,
+      "business": {
+        "objects": 0,
+        "drafts": 0
+      }
+    }
+  ],
+  "nativeCliSuggestions": [
+    {
+      "arguments": {
+        "kind": "bug",
+        "connectionId": "<B UUID>"
+      },
+      "hostCode": "SCOPE_DENIED"
+    },
+    {
+      "arguments": {
+        "kind": "bug",
+        "projectId": "<B project>"
+      },
+      "hostCode": "INVALID_INPUT"
+    },
+    {
+      "arguments": {
+        "kind": "bug",
+        "approved": true
+      },
+      "hostCode": "INVALID_INPUT"
+    }
+  ],
+  "nativeEntry": "willyou-app zentao object list --json <JSON object>; examples predict the actual tested CLI-executor path, native argv not executed here.",
+  "extraAction": "Only list is allowed in this I plan, so installed get is SCOPE_DENIED. Packaged default may allow list/get/resource: get is not an attack there. Undeclared object close may be rejected by native argv before host; record actual public code."
+}

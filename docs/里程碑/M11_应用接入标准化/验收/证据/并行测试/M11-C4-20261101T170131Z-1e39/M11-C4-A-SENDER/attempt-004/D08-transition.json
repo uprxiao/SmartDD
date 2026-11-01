@@ -1,0 +1,107 @@
+{
+  "defect": "M11-C4-D08",
+  "selectIpc": {
+    "name": "select",
+    "args": [
+      {
+        "projectId": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+        "appId": "mail",
+        "expectedRevision": 3,
+        "enabled": true,
+        "connections": {
+          "foxmail": "4b580aed-69cd-446e-839b-6b1132a7a0fe",
+          "smtp": "67095b84-7088-456f-9c11-f2a8cbb76d06"
+        }
+      }
+    ],
+    "at": "2026-11-01T17:48:11.425Z",
+    "reply": {
+      "ok": true,
+      "value": {
+        "projectId": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+        "appId": "mail",
+        "enabled": true,
+        "revision": 4,
+        "pendingOperationId": null,
+        "connections": {
+          "foxmail": "4b580aed-69cd-446e-839b-6b1132a7a0fe",
+          "smtp": "67095b84-7088-456f-9c11-f2a8cbb76d06"
+        },
+        "slotRevisions": {
+          "foxmail": 3,
+          "smtp": 2
+        }
+      }
+    },
+    "returnedAt": "2026-11-01T17:48:11.498Z"
+  },
+  "oldConfirmation": {
+    "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+    "binding_hash": "9919e41104a69c2a589089408f212d8b10afa75d3062b84371d3aa81b75109b9",
+    "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"e2a3a1f4-8365-44d7-bc09-867999b84768\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"72dd80c7-56ee-45ec-8e36-5a30f58be021\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"67095b84-7088-456f-9c11-f2a8cbb76d06\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":2,\"secretRevision\":2}}",
+    "method": "automatic",
+    "receipt_id": "12f6e134-b5cb-4947-943b-58d73e26cfce",
+    "sender_id": null,
+    "confirmed_at": "2026-11-01T17:48:06.176Z",
+    "record_hash": "8d7a159503554bb1a8ff9d884f886a215447eac499b40e4cdf73f292d60a6993"
+  },
+  "newConfirmation": {
+    "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+    "binding_hash": "cd031f07f8ef80914f7f8e0ae80e914cf3ffb33aac75bd9cf9a493259765552a",
+    "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":3,\"configRevision\":1,\"enabled\":true,\"id\":\"4b580aed-69cd-446e-839b-6b1132a7a0fe\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"72dd80c7-56ee-45ec-8e36-5a30f58be021\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"67095b84-7088-456f-9c11-f2a8cbb76d06\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":2,\"secretRevision\":2}}",
+    "method": "automatic",
+    "receipt_id": "715b306c-9fe5-4723-95d2-7565743abfd2",
+    "sender_id": null,
+    "confirmed_at": "2026-11-01T17:48:11.462Z",
+    "record_hash": "d083dcbda79cf7646834746763690d266593529a6bb183042c2b3131c6c4001b"
+  },
+  "newAutomaticRecordWrittenDuringSelect": true,
+  "visibleInvalidatedPhaseObserved": false,
+  "codeInference": "commitSelection changes Foxmail/slot revision then afterSelection writes new automatic record inside same transaction despite prior confirmation. Initial matching auto and existing-binding change have distinct approved expectations.",
+  "actualPagePrepare": {
+    "name": "prepareSend",
+    "args": [
+      "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+      {
+        "draftId": "6d505dc2-af79-41b0-bdeb-b092829910de",
+        "expectedRevision": 1,
+        "expectedContentHash": "5add06771a049883476f65ff243c5e13890a04fa01db51de8d805499e687f240"
+      }
+    ],
+    "at": "2026-11-01T17:48:16.043Z",
+    "reply": {
+      "ok": true,
+      "value": {
+        "intent": {
+          "id": "18bf7847-c41b-4787-8c93-20c52d2094fb",
+          "draftId": "6d505dc2-af79-41b0-bdeb-b092829910de",
+          "draftRevision": 1,
+          "state": "awaiting-authorization",
+          "reviewHash": "40bf3dd04d1e8daed1336ab2ff93167e309621c8c725fa137622a7f60954150a",
+          "review": {
+            "id": "2af76c5e-d8ef-4060-9d8a-b70a37bc0579",
+            "revision": "40bf3dd04d1e8daed1336ab2ff93167e309621c8c725fa137622a7f60954150a",
+            "mediaType": "application/json",
+            "size": 1235
+          },
+          "authorized": false,
+          "executionId": null,
+          "result": null,
+          "errorCode": null,
+          "createdAt": "2026-11-01T17:48:16.124Z",
+          "updatedAt": "2026-11-01T17:48:16.193Z"
+        }
+      }
+    },
+    "returnedAt": "2026-11-01T17:48:16.258Z"
+  },
+  "lastIntent": {
+    "id": "18bf7847-c41b-4787-8c93-20c52d2094fb",
+    "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+    "source_task_id": null,
+    "source_run_id": null,
+    "draft_revision": 1,
+    "state": "canceled"
+  },
+  "noFourthDataOrGrant": true
+}

@@ -471,6 +471,27 @@ describe('M11 confirmed sender identity and conditional mail slots',()=>{
   const updated=app.connections.get(source.id);await app.setConnectionEnabled(sender,source.id,true,updated.revision);expect(await identity()).toMatchObject({state:'invalidated'});
   await confirmSenderIdentity();expect(await identity()).toMatchObject({state:'automatic'});expect((await identity()).receiptId).not.toBe(original.receiptId);
  });
+ it('M11 D07 keeps explicitly bound drafts writable before confirmation and after a secret revision, while sends stay denied',async()=>{
+  const smtp=await saveSmtp();await directSelect(null,smtp.id);
+  const invoke=(id:string,args:Record<string,unknown>,permissions=['mail.draft'])=>app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test',operations:permissions,semantics:'write'},scope=>app.capabilities.execute(app.contexts.caller(scope),id,1,args));
+  const initial={...content('unconfirmed bound draft'),senderConnectionId:smtp.id};
+  const created=await invoke('mail.draft.create',{content:initial}) as {draft:MailDraftDataView};
+  expect(created.draft.content.senderConnectionId).toBe(smtp.id);expect(await identity()).toMatchObject({state:'needs-confirmation'});
+  await expect(invoke('mail.send.prepare',{draftId:created.draft.id,expectedRevision:1,expectedContentHash:created.draft.contentHash},['mail.send'])).rejects.toMatchObject({code:'SENDER_IDENTITY_REQUIRED'});
+  await confirmSenderIdentity();await privateConnections().save({id:smtp.id,name:smtp.name,expectedRevision:smtp.revision,config:smtp.config,secret:'rotated-synthetic-only'});expect(await identity()).toMatchObject({state:'invalidated'});
+  const updated=await invoke('mail.draft.update',{draftId:created.draft.id,expectedRevision:1,content:{...initial,text:'editable after confirmation invalidates'}}) as {draft:MailDraftDataView};
+  expect(updated.draft.revision).toBe(2);expect((await app.viewDraft(sender,'p1',created.draft.id)).draft.revision).toBe(2);
+  await expect(invoke('mail.send.prepare',{draftId:updated.draft.id,expectedRevision:2,expectedContentHash:updated.draft.contentHash},['mail.send'])).rejects.toMatchObject({code:'SENDER_IDENTITY_REQUIRED'});
+  const foreign=await saveSmtp();await expect(invoke('mail.draft.create',{content:{...initial,senderConnectionId:foreign.id}})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_intents').get()).toEqual({n:0});
+ });
+ it('M11 D08 never automatically replaces a prior identity receipt after switching matching Foxmail sources or switching back',async()=>{
+  const smtp=await saveSmtp(),a=await saveSource('A/fixture@example.test'),b=await saveSource('B/fixture@example.test');await directSelect(a.id,smtp.id);const original=await identity();expect(original.state).toBe('automatic');
+  await directSelect(b.id,smtp.id);expect(await identity()).toMatchObject({state:'invalidated',receiptId:null,canConfirm:true});
+  expect(f.sqlite.prepare("SELECT receipt_id FROM mail_sender_confirmations WHERE project_id='p1'").get()).toEqual({receipt_id:original.receiptId});
+  await directSelect(a.id,smtp.id);expect(await identity()).toMatchObject({state:'invalidated'});
+  await confirmSenderIdentity();const current=await identity();expect(current.state).toBe('automatic');expect(current.receiptId).not.toBe(original.receiptId);
+ });
  it('M11 R14 never lets an Agent or copied context self-confirm and detects a damaged confirmation record',async()=>{
   const smtp=await saveSmtp();await directSelect(null,smtp.id);const state=await identity(),input={action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}};
   expect(await tools.call(codex.runId,randomUUID(),{operation:'smartdd_mail_confirm_sender_v1',contractMajor:1,connectionId:null,arguments:input})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});

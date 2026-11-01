@@ -1,0 +1,477 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "runId": "M11-C5-20261101T175140Z-cccc",
+  "groupId": "M11-C5-I-REPLY",
+  "attempt": "attempt-001",
+  "relatedDefect": "D07 affected reply drafting; D08 invalidation state retained but full D08 automatic-selection matrix belongs to coordinator",
+  "status": "passed-I-three-scenarios-with-retained-driver-failures",
+  "source": {
+    "directory": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/source",
+    "baseCommit": "60c4312f",
+    "baselineManifestSha256": "02bce58188fd3735bfed4a0b7c2294b950011f49633eed8e1a867d91a402aac7",
+    "sourceFileCount": 3216,
+    "outFileCount": 151,
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64",
+    "productionChanges": [],
+    "actualExecutedSourceSha256": "72d79738e67c12d8e43ffad21b23b1788858c91324804256033adf82ee22f458",
+    "sourceOutDepsVerification": "source-verification-after.json"
+  },
+  "startedAt": "2026-11-01T17:55:51.687000+00:00",
+  "finishedAt": "2026-11-01T17:57:50.918577+00:00",
+  "sealedAt": "2026-11-01T17:59:17.695274+00:00",
+  "coverageLayer": "I only; actual Foxmail SQLite/MIME Worker/native reader, real project/connection contexts and unified data-only v2 capability executor. Synthetic sender/connection-verifier/cipher are explicit I preconditions; no actual App/UI/native Agent/PTY/model/external SMTP.",
+  "criteria": [
+    {
+      "criterion": "Current selected SMTP unconfirmed still permits unified reply draft",
+      "status": "passed-I",
+      "actual": "needs-confirmation retained; actual execute(caller,mail.reply.create,2) creates/persists draft bound to selected SMTP and real source reference.",
+      "mode": "unconfirmed"
+    },
+    {
+      "criterion": "Invalidated SMTP confirmation still permits reply draft",
+      "status": "passed-I",
+      "actual": "Confirmed then secret revision changed; state invalidated remains; same selected SMTP reply draft succeeds and persists.",
+      "mode": "invalidated"
+    },
+    {
+      "criterion": "Disabled selected SMTP still permits local reply draft",
+      "status": "passed-I",
+      "actual": "Selected SMTP explicitly disabled after confirmation; draft still succeeds without granting SMTP send authority.",
+      "mode": "disabled"
+    },
+    {
+      "criterion": "Foreign sender remains rejected",
+      "status": "passed-I",
+      "actual": "Each actual foreign saved SMTP ID rejected SCOPE_DENIED before creating any draft; current selected SMTP then succeeds with exactly1 draft."
+    },
+    {
+      "criterion": "No credential authentication or external submission for draft",
+      "status": "passed-I",
+      "actual": "Every mode spies actual SecretsStore.get, verifySmtp and submitSmtp after source/SMTP setup:0/0/0; mail_send_intents0; source DB and original MAIL bytes unchanged."
+    },
+    {
+      "criterion": "Original send gates remain enforced",
+      "status": "passed-I",
+      "actual": "Unified mail.send.prepare still rejects unconfirmed/invalidated as SENDER_IDENTITY_REQUIRED, disabled as AUTH_REQUIRED. No send intent/SMTP submission."
+    }
+  ],
+  "actualResults": [
+    {
+      "mode": "unconfirmed",
+      "phase": "unified-reply",
+      "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-1s8wm5",
+      "identity": {
+        "bindingHash": "e8c59a1ee1daad9626c9b8b9de85a0dcf920439b3a40f6ef2a962dfc2e44c571",
+        "fromAddress": "receiver@example.test",
+        "accountDirectory": "synthetic-foxmail",
+        "state": "needs-confirmation",
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": true,
+        "message": "请确认该SMTP发件地址是你的发件身份。"
+      },
+      "result": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.reply.create",
+        "data": {
+          "draft": {
+            "id": "47751511-feda-4387-8d50-0dc70b01943b",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "3c208bf45bb76dfd6cd911852d6df41cc7e459a9adbe63851225f1e9685f53c2",
+            "content": {
+              "mode": "reply",
+              "sourceMessageRef": {
+                "connectionId": "175129f1-4eb4-412b-b156-dcad94a28143",
+                "identityRevision": 1,
+                "nativeId": "701",
+                "contentRevision": "18e297a418629de0dcfddd3e5dd5635ab46a8e38f992f66bc2d17d42572a1e9b"
+              },
+              "senderConnectionId": "38d0424c-c30f-42f3-a879-0f977fd159e6",
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Re: fixture 701",
+              "text": {
+                "id": "1a3fad31-f38b-4510-ba98-a28c5c694435",
+                "revision": "1aad6440b8a87a3213e0f36581e15c5443edfd1088eadb933b57bdaeded2c114",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 32
+              },
+              "html": null,
+              "inReplyTo": "<fixture-701@example.test>",
+              "references": [
+                "<fixture-701@example.test>"
+              ],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T17:57:26.035Z",
+            "updatedAt": "2026-11-01T17:57:26.035Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": [
+            {
+              "slot": "foxmail",
+              "connectionId": "175129f1-4eb4-412b-b156-dcad94a28143",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            },
+            {
+              "slot": "smtp",
+              "connectionId": "38d0424c-c30f-42f3-a879-0f977fd159e6",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 2
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "1a3fad31-f38b-4510-ba98-a28c5c694435",
+            "revision": "1aad6440b8a87a3213e0f36581e15c5443edfd1088eadb933b57bdaeded2c114",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 32
+          }
+        ],
+        "operation": {
+          "id": "571d5eb5-1080-47a3-8aff-3f2ddba249b7",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "storedDraftId": "47751511-feda-4387-8d50-0dc70b01943b",
+      "sender": "38d0424c-c30f-42f3-a879-0f977fd159e6",
+      "foreignDenied": "SCOPE_DENIED",
+      "sendDenied": "SENDER_IDENTITY_REQUIRED",
+      "secretReads": 0,
+      "smtpAuthentication": 0,
+      "smtpSubmissions": 0,
+      "sourceHashesUnchanged": true,
+      "drafts": {
+        "n": 1
+      },
+      "sendIntents": 0
+    },
+    {
+      "mode": "invalidated",
+      "phase": "unified-reply",
+      "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-wn0WKm",
+      "identity": {
+        "bindingHash": "db4164f8f4c779a2f71b3a78306ef1aa8009f2dca6d2b8c0be7d4ee6dfdfe6cf",
+        "fromAddress": "receiver@example.test",
+        "accountDirectory": "synthetic-foxmail",
+        "state": "invalidated",
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": true,
+        "message": "绑定连接或修订已变化，需要重新确认发件身份。"
+      },
+      "result": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.reply.create",
+        "data": {
+          "draft": {
+            "id": "248c311e-51e4-46cf-a320-001943f16eed",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "f6f1503bcb054ed38d293af204a544a90a7654603655ebc8284205c2ad742209",
+            "content": {
+              "mode": "reply",
+              "sourceMessageRef": {
+                "connectionId": "cc0cb271-59e1-451f-9a1f-f6866a1ab854",
+                "identityRevision": 1,
+                "nativeId": "701",
+                "contentRevision": "1f5a5d99596f60aee80fabf3556b2a2ca23f787db638fe99554451e613c163a4"
+              },
+              "senderConnectionId": "817a6900-81bb-4e48-ba4f-a1890bc4f3f4",
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Re: fixture 701",
+              "text": {
+                "id": "d52941cb-ec53-4325-9464-30e03562075d",
+                "revision": "aee8f058a6988761ab8eb9bbd25c79621b26d8e81ff5264e2aea733e4d397382",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 32
+              },
+              "html": null,
+              "inReplyTo": "<fixture-701@example.test>",
+              "references": [
+                "<fixture-701@example.test>"
+              ],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T17:57:29.219Z",
+            "updatedAt": "2026-11-01T17:57:29.219Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": [
+            {
+              "slot": "foxmail",
+              "connectionId": "cc0cb271-59e1-451f-9a1f-f6866a1ab854",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            },
+            {
+              "slot": "smtp",
+              "connectionId": "817a6900-81bb-4e48-ba4f-a1890bc4f3f4",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 2
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "d52941cb-ec53-4325-9464-30e03562075d",
+            "revision": "aee8f058a6988761ab8eb9bbd25c79621b26d8e81ff5264e2aea733e4d397382",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 32
+          }
+        ],
+        "operation": {
+          "id": "2f17edec-9a57-4b53-889b-3a95dd374c26",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "storedDraftId": "248c311e-51e4-46cf-a320-001943f16eed",
+      "sender": "817a6900-81bb-4e48-ba4f-a1890bc4f3f4",
+      "foreignDenied": "SCOPE_DENIED",
+      "sendDenied": "SENDER_IDENTITY_REQUIRED",
+      "secretReads": 0,
+      "smtpAuthentication": 0,
+      "smtpSubmissions": 0,
+      "sourceHashesUnchanged": true,
+      "drafts": {
+        "n": 1
+      },
+      "sendIntents": 0
+    },
+    {
+      "mode": "disabled",
+      "phase": "unified-reply",
+      "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-m8pz6E",
+      "identity": {
+        "bindingHash": "1c19aab1740bbe2f7a1a76657d011b458af28aad8f9a12a980d40c07e105d17e",
+        "fromAddress": "receiver@example.test",
+        "accountDirectory": "synthetic-foxmail",
+        "state": "invalidated",
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": true,
+        "message": "绑定连接或修订已变化，需要重新确认发件身份。"
+      },
+      "result": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.reply.create",
+        "data": {
+          "draft": {
+            "id": "5d9b941c-a048-47af-b997-9ebcbea8d2c6",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "4470904830e667cd7fc34ed063c6db9509711e9fdccfdbd363fdfcbed498eae7",
+            "content": {
+              "mode": "reply",
+              "sourceMessageRef": {
+                "connectionId": "326a9dac-717a-4161-b710-a2bfa5fb871a",
+                "identityRevision": 1,
+                "nativeId": "701",
+                "contentRevision": "83f6c87dff5ea61ad7e5f44e274cabfd61b3c39ece81acd6bc02c6ea20da15ea"
+              },
+              "senderConnectionId": "0e10b47a-f281-4ef9-8b2b-fa3c8b23bfa4",
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Re: fixture 701",
+              "text": {
+                "id": "2ffef740-f0b1-4611-8abe-f7d1a83128dd",
+                "revision": "ad06d3e506ae8d5830a1b84fe03313c69de7597b59dec0438951de86dd819f66",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 29
+              },
+              "html": null,
+              "inReplyTo": "<fixture-701@example.test>",
+              "references": [
+                "<fixture-701@example.test>"
+              ],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T17:57:32.481Z",
+            "updatedAt": "2026-11-01T17:57:32.481Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": [
+            {
+              "slot": "foxmail",
+              "connectionId": "326a9dac-717a-4161-b710-a2bfa5fb871a",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            },
+            {
+              "slot": "smtp",
+              "connectionId": "0e10b47a-f281-4ef9-8b2b-fa3c8b23bfa4",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 2,
+              "bindingRevision": 2
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "2ffef740-f0b1-4611-8abe-f7d1a83128dd",
+            "revision": "ad06d3e506ae8d5830a1b84fe03313c69de7597b59dec0438951de86dd819f66",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 29
+          }
+        ],
+        "operation": {
+          "id": "ced258e9-3322-44db-a911-750a1099b888",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "storedDraftId": "5d9b941c-a048-47af-b997-9ebcbea8d2c6",
+      "sender": "0e10b47a-f281-4ef9-8b2b-fa3c8b23bfa4",
+      "foreignDenied": "SCOPE_DENIED",
+      "sendDenied": "AUTH_REQUIRED",
+      "secretReads": 0,
+      "smtpAuthentication": 0,
+      "smtpSubmissions": 0,
+      "sourceHashesUnchanged": true,
+      "drafts": {
+        "n": 1
+      },
+      "sendIntents": 0
+    }
+  ],
+  "checks": {
+    "uniqueValidScenariosPassed": 3,
+    "validScenariosFailed": 0,
+    "foreignSenderRejections": 3,
+    "sendGateRejections": 3,
+    "secretReads": 0,
+    "smtpAuth": 0,
+    "smtpSubmit": 0,
+    "sendIntents": 0,
+    "sourceHashesUnchanged": true,
+    "formalWholeCasesAdded": 0
+  },
+  "retainedFailures": [
+    {
+      "commands": [
+        "001"
+      ],
+      "classification": "fixture-precondition",
+      "actual": "Default v2 bundle paired with original unused legacy Agent schema2 start; real session registry correctly rejected before reply.3 failed setup instances, zero reply steps/outcomes.",
+      "fix": "Removed only unused cc/codex start calls because all new contracts use authenticated UI contexts."
+    },
+    {
+      "commands": [
+        "002"
+      ],
+      "classification": "orchestration/fixture repeated setup",
+      "actual": "Preparation asserted missing frozen out Foxmail, aborted before file edit; shell nevertheless launched unchanged test.3 repeated setup failures retained.",
+      "fix": "Preparation and execution separated into sequential tool calls; correct existing two native helpers reused, missing Foxmail compiled privately."
+    }
+  ],
+  "staticPreflightTiming": "static-preflight-and-ordering.json explicitly distinguishes before003 SHA/no-start/v2/hash-plan checks from executable-bit check first done after run. No backdating.",
+  "fixtureAdaptation": "fixture-adaptation.patch and 002-to-003-fixture-fix.patch; no business assertion changed across failures. Default v2 package deliberately used to exercise unified contractMajor2; legacy direct reply calls not acceptance path.",
+  "candidateForRepository": {
+    "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/source/delivery-reply/candidate/mail-reply-identity.test.ts",
+    "sha256": "5effc718fc29317be977a05e972248ef9700dbea929a25f9b5bc328be494fa1f",
+    "executedSha256": "72d79738e67c12d8e43ffad21b23b1788858c91324804256033adf82ee22f458",
+    "diff": "../candidate/executed-to-candidate.patch",
+    "scope": "Only evidence observation hooks removed;19 expect assertions preserved; no green replay per coordinator instruction."
+  },
+  "limits": [
+    "The transient private compiled Foxmail binary hash was not captured before original afterAll removed it. Actual frozen native source hash, compiler command, two reused frozen helper hashes,151 out hashes and behavior evidence retained. No later hash substituted.",
+    "No full old mail-read regression matrix rerun; coordinator owns full59/59 business regression/prototype63/63/types/final App.",
+    "SMTP verifier fixture establishes saved synthetic records only; actual source reads use real Foxmail Worker/native. Secret/auth/send zero assertions cover the actual reply/send-denial phase after setup."
+  ],
+  "commands": "commands.json",
+  "cleanup": "cleanup.json",
+  "heavyResourceReleased": true,
+  "formalLedgerUpdatedByExecutor": false,
+  "efficiency": {
+    "validThreeScenarioRuns": 1,
+    "fixtureSetupRuns": 2,
+    "initialNativeCompiles": 6,
+    "finalNativeCompiles": 1,
+    "frozenHelpersReusedFinal": 2,
+    "repeatedGreenMatrices": 0,
+    "appBuilds": 0,
+    "installs": 0,
+    "reworkCause": "v2 bundle/unused legacy schema2 fixture mismatch plus missing shell failure guard; both retained and corrected without expectation changes."
+  }
+}

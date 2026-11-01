@@ -93,12 +93,14 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
       status:projectId=>identity.status(projectId),validateSelection:(projectId,slots)=>identity.validateSelection(projectId,slots),afterSelection:projectId=>identity.afterSelection(projectId),
       stamp:(projectId,permission)=>permission==='mail.send'?identity.requireConfirmed(projectId):null,
       action:(context,sender,input)=>{const parsed=z.object({action:z.literal('confirm-sender'),arguments:z.unknown()}).strict().safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','此项目身份操作无效');return identity.confirm(context,String(sender.sender.id),parsed.data.arguments);},
-    },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: (context, method, input) => {
+    },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: async (context, method, input) => {
       services.contexts.assertActive(context);
       if(['mail.draft.create','mail.draft.update','mail.reply.create'].includes(method)&&input&&typeof input==='object'){
         const content=method==='mail.reply.create'?input:Reflect.get(input,'content');
         const selected=content&&typeof content==='object'?Reflect.get(content,'senderConnectionId'):null;
-        if(typeof selected==='string')identity.requireConfirmed(context.projectId!,selected);
+        // A draft's sender reference is scoped to this project, but is not a
+        // send authorization. SMTP health/confirmation only gates sending.
+        if(typeof selected==='string')await services.contexts.draftSender(context,selected);
       }
       return target(method).execute(context,method,input);
     }};

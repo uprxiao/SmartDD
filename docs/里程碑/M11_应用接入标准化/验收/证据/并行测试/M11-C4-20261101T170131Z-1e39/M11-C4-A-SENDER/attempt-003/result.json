@@ -1,0 +1,62 @@
+{
+  "schema": "m11-c4-sender-attempt-v1",
+  "group": "M11-C4-A-SENDER",
+  "caseId": "T33",
+  "status": "failed-product-D07",
+  "classification": "product-D07",
+  "actual": "Bound mail.draft.create under needs-confirmation returned SENDER_IDENTITY_REQUIRED. Coordinator confirmed R14 draft preparation must remain available: D07 product defect. Original red retained; only later prerequisite order changed.",
+  "rawResult": "result-resume-002.json",
+  "error": "AssertionError [ERR_ASSERTION]: {\"ok\":false,\"code\":\"SENDER_IDENTITY_REQUIRED\",\"message\":\"请确认该SMTP发件地址是你的发件身份。\"}",
+  "smtpDataAttempts": 0,
+  "policySnapshots": [
+    {
+      "label": "initial-smtp",
+      "projectId": "ce996851-ed2f-466d-a7dd-35b15ae3b705",
+      "at": "2026-11-01T17:46:57.254Z",
+      "policy": {
+        "bindingHash": "215f14179e82e2f4c9b51f3929266b4d8e17c603a0a069f0cafa34bbcf4918dc",
+        "fromAddress": "fixture@example.test",
+        "accountDirectory": null,
+        "state": "needs-confirmation",
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": true,
+        "message": "请确认该SMTP发件地址是你的发件身份。"
+      },
+      "record": []
+    },
+    {
+      "label": "initial-matching",
+      "projectId": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+      "at": "2026-11-01T17:47:00.883Z",
+      "policy": {
+        "bindingHash": "bee8fb89c000b92bdddc0b530e5077dea0c115064c2f513ce5f226fbacedc88c",
+        "fromAddress": "fixture@example.test",
+        "accountDirectory": "fixture@example.test",
+        "state": "automatic",
+        "method": "automatic",
+        "confirmedAt": "2026-11-01T17:47:00.066Z",
+        "receiptId": "972f406c-6882-4d92-a759-fd1f85224ae0",
+        "canConfirm": false,
+        "message": "来源账号目录与发件地址一致，已自动确认。"
+      },
+      "record": [
+        {
+          "project_id": "72dd80c7-56ee-45ec-8e36-5a30f58be021",
+          "binding_hash": "bee8fb89c000b92bdddc0b530e5077dea0c115064c2f513ce5f226fbacedc88c",
+          "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"e2a3a1f4-8365-44d7-bc09-867999b84768\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"72dd80c7-56ee-45ec-8e36-5a30f58be021\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"67095b84-7088-456f-9c11-f2a8cbb76d06\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":1}}",
+          "method": "automatic",
+          "receipt_id": "972f406c-6882-4d92-a759-fd1f85224ae0",
+          "sender_id": null,
+          "confirmed_at": "2026-11-01T17:47:00.066Z",
+          "record_hash": "21629a772e921292e63e5f2f9ba78fdc89553f4f11c7e6ac7d842dc0c8386959"
+        }
+      ]
+    }
+  ],
+  "startedAt": "2026-11-01T17:46:53.123Z",
+  "finishedAt": "2026-11-01T17:47:01.215Z",
+  "pid": 95513,
+  "formalCasePassesAdded": 0
+}
