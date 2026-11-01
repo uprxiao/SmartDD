@@ -8,7 +8,7 @@ import {APP_DEFINITIONS,initialIntegrationState,projectIntegrationState} from '@
 // @ts-expect-error Shared synthetic workspace is JavaScript.
 import {IntegrationWorkspace} from '@root/prototypes/m6-codex/src/IntegrationWorkspace.jsx';
 // @ts-expect-error Public package declarations are shared JavaScript metadata.
-import {definitions} from '@root/resources/applications/definitions.mjs';
+import {retainedV1Definitions as definitions} from '@root/resources/applications/definitions.mjs';
 afterEach(cleanup);
 const base=()=>projectIntegrationState(initialIntegrationState());
 it.each(['zentao','mail'])('shows the declared %s package tools without treating candidate capabilities as installed tools',id=>{

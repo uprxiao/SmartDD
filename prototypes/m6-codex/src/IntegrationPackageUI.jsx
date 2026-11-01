@@ -3,7 +3,8 @@ import {applicationPublicationRecordText,applicationVersionStage,applicationClea
 import {applicationCallFeedback} from '../../../src/shared/application-call-feedback';
 import skillLabels from '../../../src/shared/application-skill-labels.json';
 import permissionLabels from '../../../src/shared/application-permission-labels.json';
-import {definitions} from '../../../resources/applications/definitions.mjs';
+// The approved R0.9 prototype (4de34cbba) lists the v1 tool view; v2 capability display is a pending prototype increment.
+import {retainedV1Definitions as definitions} from '../../../resources/applications/definitions.mjs';
 import {applicationEnabled,projectAppSelected} from './integration-model.mjs';
 import {cleanupRecoveryPreview} from './cleanup-recovery-preview.mjs';
 import {senderIdentity,confirmSenderIdentity,runPlanForApp,adapterLevels,mailCapabilityRows,RUN_PLAN_SCENARIOS} from './m11-preview-model.mjs';

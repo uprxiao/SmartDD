@@ -2,7 +2,7 @@
  "schema": "willyou-test-round-v1",
  "runId": "M11-R1-20261101T070500Z-resume",
  "milestone": "M11",
- "updatedAt": "2026-11-01T10:09:06.644745+00:00",
+ "updatedAt": "2026-11-01T10:13:30.138925+00:00",
  "agents": {
   "coordinator": "Claude Code（串行执行，未启用子Agent）"
  },
@@ -90,11 +90,13 @@
   {
    "id": "M11-R1-D03",
    "class": "test-and-prototype",
-   "status": "open",
+   "status": "fixed",
    "symptom": "22 renderer prototype test files failed to load: 'The URL must be of scheme file' from resources/applications/definitions.mjs under jsdom",
    "cause": "9ee3ca61 read the module catalog with readFileSync(new URL(..., import.meta.url)); under jsdom import.meta.url is not file:",
    "fix": "afea182d: static JSON import; 19 of 22 files now pass",
-   "remaining": "3 tests still red and were already red behind the load error: prototype-skill-layout x2 expect v1 package `tools` (packages are now v2 `capabilities`); prototype-evidence finds multiple role=status elements. Not fixed yet."
+   "remaining": "3 tests still red and were already red behind the load error: prototype-skill-layout x2 expect v1 package `tools` (packages are now v2 `capabilities`); prototype-evidence finds multiple role=status elements. Not fixed yet.",
+   "fix2": "Prototype package section reads retainedV1Definitions (approved R0.9 baseline 4de34cbba predates the v2 migration 9ee3ca61; a v2 capability list needs a new prototype increment and user review). prototype-evidence test queries all role=status elements instead of assuming one.",
+   "verification": "renderer applications 49 files / 528 tests passed"
   }
  ],
  "environment": [
@@ -105,7 +107,7 @@
  "accounting": {
   "formalPassesAdded": 0
  },
- "next": "Fix D03 prototype tests; repackage; verify S8 dialog in real App (light/dark); then S9 formal cases",
+ "next": "Repackage with S8; verify S8 run plan dialog in the real App (light/dark); then S9 formal cases",
  "driverChanges": [
   {
    "file": "scripts/applications/m11-zen-cli-ui.mjs",
