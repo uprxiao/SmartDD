@@ -18,12 +18,20 @@ export interface SessionLaunchRestriction {
  reason:'managed_launch_payload_too_large'|'fixed_application_resources_unavailable'|'managed_capabilities_unavailable';issueCode:'AGENT_ADAPTER_UNSUPPORTED'|'CAPABILITY_UNAVAILABLE'|'AGENT_CAPABILITY_NAME_CONFLICT'|'RESOURCE_RECOVERY_REQUIRED';restrictedAt:string;
 }
 export interface SessionSkillObservation {runId:string;appId:string;skillId:string;kind:'discovery'|'read';packageHash:string;recordHash:string;observedAt:string;cliVersion:string;}
+/** M11 S8: the fixed run plan as recorded at launch, plus declared adapter levels for its CLI version. */
+export interface SessionRunPlanDiagnostic {
+ cliVersion:string;verified:boolean;nativeSendEvidence:boolean;
+ levels:{level:'L0.skill'|'L0.mcp'|'L0.cli'|'L1'|'L2'|'L3';state:'declared'|'best-effort'|'unverified'}[];
+ applications:{appId:string;primaryEntry:'mcp'|'cli';effectiveEntry:'mcp'|'cli'|'mixed'|'unavailable';fallback:boolean;reason:string|null}[];
+ sandboxSource:string;
+}
 export interface SessionRunDiagnostic {
  skillObservations?:SessionSkillObservation[];skillObservationIssue?:string|null;
  id:string;state:string;startedAt:string;endedAt:string|null;current:boolean;
  preparation:SessionPreparationEvidence|null;preparationIssue:string|null;
  restriction:SessionLaunchRestriction|null;restrictionIssue:string|null;
  bridge:{connected:boolean;observedAt:string|null;issueCode:string|null};
+ runPlan?:SessionRunPlanDiagnostic|null;runPlanIssue?:string|null;
 }
 export interface SessionConnectionDiagnostic {
  slot:ApplicationProvider;id:string|null;name:string|null;originalId:string|null;originalName:string|null;health:string;testedAt:string|null;

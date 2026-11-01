@@ -24,6 +24,24 @@ import {verifyPackageTree} from './package-files';
 import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
+import {verifyApplicationRunPlan} from './run-plan';
+import {AgentAdapterRegistry} from './agent-adapter-registry';
+import type {SessionRunPlanDiagnostic} from '@shared/application-session-diagnostics';
+const LEVELS=['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const;
+/** Reads the immutable plan recorded for this run. Absent plan is not an error (legacy or restricted runs). */
+function runPlanDiagnostic(store:ResourceStore,runId:string,adapterHash:string|null):{plan:SessionRunPlanDiagnostic|null;issue:string|null}{
+ const row=store.sqlite.prepare("SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?").get('application-run-plan:'+runId) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;
+ if(!row)return{plan:null,issue:null};
+ try{
+  if(row.kind!=='application-run-plan'||row.owner_store_id!==store.storeId||row.state!=='committed')throw new Error();
+  const plan=verifyApplicationRunPlan(JSON.parse(row.plan_json));if(plan.runId!==runId||(adapterHash&&plan.capabilityAdapter.hash!==adapterHash))throw new Error();
+  let declared:readonly string[]=[];let verified=false,nativeSendEvidence=false;
+  try{const e=new AgentAdapterRegistry(store).effective(plan.capabilityAdapter.hash,plan.cliVersion);declared=e.levels;verified=e.verified;nativeSendEvidence=e.nativeSendEvidence;}catch{/* Unknown adapter stays unverified. */}
+  return{issue:null,plan:{cliVersion:plan.cliVersion,verified,nativeSendEvidence,sandboxSource:plan.sandbox.source,
+   levels:LEVELS.map(level=>({level,state:declared.includes(level)?(verified?'declared' as const:'best-effort' as const):'unverified' as const})),
+   applications:plan.applications.map(a=>({appId:a.appId,primaryEntry:a.primaryEntry,effectiveEntry:a.effectiveEntry,fallback:a.fallback,reason:a.reason}))}};
+ }catch{return{plan:null,issue:'RESOURCE_RECOVERY_REQUIRED'};}
+}
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
 const skillObservationSchema=z.object({runId:id,appId:applicationIdSchema,skillId:id,kind:z.enum(['discovery','read']),packageHash:hash,recordHash:hash,observedAt:z.iso.datetime(),cliVersion:z.string().min(1).max(128)}).strict();
 const path=z.string().min(1).max(4096).refine(v=>v.startsWith('/')&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v));
@@ -86,7 +104,8 @@ export class ApplicationSessionDiagnostics {
    if(value.cliVersion!==preparation?.cliVersion||value.runId!==row.run_id||value.appId!==record.app_id||value.skillId!==record.skill_id||value.kind!==record.kind||value.observedAt!==record.observed_at||digest(canonicalJson(value))!==record.evidence_hash||fixed?.packageHash!==value.packageHash||!fixed.skills.some(s=>s.skillId===value.skillId)||Date.parse(value.observedAt)<Date.parse(row.started_at)||(row.ended_at&&Date.parse(value.observedAt)>Date.parse(row.ended_at)))throw new Error('invalid historical observation');
    skillObservations.push(value);
   }catch{skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';}
-  return{skillObservations,skillObservationIssue,id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};
+  const planned=runPlanDiagnostic(this.store,row.run_id,session?.snapshot.adapterBinding.hash??null);
+  return{runPlan:planned.plan,runPlanIssue:planned.issue,skillObservations,skillObservationIssue,id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};
  }
  private directory(resource:ResourceRecord):string{
   const path=this.store.directory(resource),root=path.slice(0,-resource.relativePath.length).replace(/\/$/,'');let current=root;for(const part of ['',...resource.relativePath.split('/')]){if(part)current=join(current,part);const st=lstatSync(current);if(st.isSymbolicLink()||!st.isDirectory())throw new ApplicationError('OWNERSHIP_CONFLICT','原资源目录包含链接或异常归属');}return path;

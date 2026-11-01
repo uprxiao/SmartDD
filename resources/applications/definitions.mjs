@@ -1,5 +1,5 @@
 import {sampleKvDefinition} from './sample-kv/definition.mjs';
-import {readFileSync} from 'node:fs';
+import moduleCatalog from '../../src/shared/application-module-catalog.json' with {type: 'json'};
 // Trusted built-in package sources. Package versions are independent from the App version.
 // A change to the pinned runtime or any released file requires a new application version.
 const runtime = { id: 'applications', hash: 'adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625', protocolMajor: 1 };
@@ -111,7 +111,8 @@ definitions[definitions.indexOf(mailV103Definition)] = mailV104Definition;
 
 // Historical v1 declarations remain available only to isolated compatibility tests.
 export const retainedV1Definitions = structuredClone(definitions);
-const compiledModules = JSON.parse(readFileSync(new URL('../../src/shared/application-module-catalog.json', import.meta.url), 'utf8')).applications;
+// Static JSON import: works in Node, Vite and jsdom tests (import.meta.url is not file: under jsdom).
+const compiledModules = moduleCatalog.applications;
 const mailModulePolicies = compiledModules.find(module => module.appId === 'mail');
 const applicationResultV2 = (appId, capability, data) => object({
   schema: { const: 'willyou-app-result-v2' }, contractMajor: { const: 2 }, status: { const: 'ok' }, capabilityId: { const: capability.id }, data,

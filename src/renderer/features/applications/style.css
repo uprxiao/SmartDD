@@ -257,3 +257,15 @@
 .m10-sender-identity .m10-runtime-demo { margin-block: 4px 0; }
 .m10-sender-actions { display: grid; gap: 6px; justify-items: start; }
 .m10-sender-identity{display:grid;gap:6px}
+/* M11 S8：会话运行计划与适配等级（依原型 R0.9 integration.css） */
+.m10-run-plan, .m10-plan-app { display: grid; gap: 6px; }
+.m10-run-plan { margin-block: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; }
+.m10-level-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.m10-level-list li { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; min-width: 0; }
+.m10-level-list li[data-state="declared"] { border-color: color-mix(in srgb, #2f9e6b 55%, var(--border)); }
+.m10-level-list li[data-state="best-effort"] { border-color: color-mix(in srgb, #c98a1a 55%, var(--border)); }
+.m10-level-list li[data-state="unverified"] { color: var(--muted); }
+.m10-level-list code { font-size: 12px; }
+.m10-plan-app { padding-top: 10px; border-top: 1px solid var(--border); }
+.m10-plan-app > .m10-state { justify-self: start; }
+.m10-plan-app[data-active="none"] > strong { color: var(--muted); }

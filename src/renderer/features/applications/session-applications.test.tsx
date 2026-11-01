@@ -142,3 +142,25 @@ describe('QA P09 confirmed header grouping with real evidence boundaries',()=>{
 });
 
 it('QA project applications entry opens only the diagnosed original project without starting or switching the task',async()=>{mount();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'项目应用'}));expect(m.openProject).toHaveBeenCalledExactlyOnceWith('p1','applications');expect(m.close).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();});
+describe('M11 S8 run plan diagnostics',()=>{
+ it('shows declared levels, CLI entry and closed L2/L3 with page authorization note',async()=>{
+  const current={...run(),runPlan:{cliVersion:'0.166.0',verified:true,nativeSendEvidence:false,sandboxSource:'inherited-named-permissions',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:['L2','L3'].includes(level)?'unverified' as const:'declared' as const})),applications:[{appId:'zentao',primaryEntry:'cli' as const,effectiveEntry:'cli' as const,fallback:false,reason:null}]},runPlanIssue:null};
+  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();
+  const plan=await screen.findByLabelText('本次运行计划');
+  expect(within(plan).getByText(/Codex 0\.166\.0 · 已声明版本/)).toBeTruthy();
+  const levels=within(plan).getByLabelText('适配等级').querySelectorAll('li');expect(levels).toHaveLength(6);
+  expect([...levels].filter(li=>li.getAttribute('data-state')==='unverified').map(li=>li.querySelector('code')?.textContent)).toEqual(['L2','L3']);
+  expect(within(plan).getByText('生效入口 · CLI')).toBeTruthy();expect(within(plan).getByText(/发送使用页面授权/)).toBeTruthy();
+ });
+ it('shows an undeclared version as degraded with the fallback reason',async()=>{
+  const current={...run(),runPlan:{cliVersion:'0.199.0',verified:false,nativeSendEvidence:false,sandboxSource:'unchanged-user-policy',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:['L0.skill','L0.mcp'].includes(level)?'best-effort' as const:'unverified' as const})),applications:[{appId:'zentao',primaryEntry:'cli' as const,effectiveEntry:'mcp' as const,fallback:true,reason:'该 Agent 版本未声明 CLI 交付'}]},runPlanIssue:null};
+  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();
+  const plan=await screen.findByLabelText('本次运行计划');
+  expect(within(plan).getByText(/未声明版本，按降级处理/)).toBeTruthy();expect(within(plan).getByText(/已降级为只读 MCP：该 Agent 版本未声明 CLI 交付/)).toBeTruthy();
+ });
+ it('does not invent a plan for legacy runs and flags an unverifiable plan',async()=>{
+  mount();await screen.findByText('原会话');expect(screen.queryByLabelText('本次运行计划')).toBeNull();cleanup();client.clear();
+  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:{...run(),runPlan:null,runPlanIssue:'RESOURCE_RECOVERY_REQUIRED'}})});mount();
+  expect(await screen.findByText(/本次运行计划无法核验/)).toBeTruthy();
+ });
+});
