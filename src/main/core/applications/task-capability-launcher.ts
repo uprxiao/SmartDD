@@ -140,8 +140,18 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const rows=this.support.store.sqlite.prepare('SELECT s.app_id AS appId FROM application_project_settings s JOIN application_catalog_state c ON c.app_id=s.app_id WHERE s.project_id=? AND s.enabled=1 AND c.added=1 AND c.enabled=1 ORDER BY s.app_id').all(projectId) as {appId:string}[];
     return rows.map(({appId})=>{const active=this.applications.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
   }
+  /** Only new selections use the currently distributed adapter for their exact
+   * native version. Retained snapshots always keep their original binding. */
+  private currentAdapter(runner:'claude-code'|'codex',cliVersion:string|undefined){
+    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.projectionFormatVersion===1).sort((a,b)=>{
+      const left=a.version.split('.').map(Number),right=b.version.split('.').map(Number);return right[0]-left[0]||right[1]-left[1]||right[2]-left[2];
+    });
+    // Unknown versions retain the original unavailable/native-only path;
+    // choosing an adapter here never grants support for an unverified CLI.
+    return candidates.find(a=>cliVersion!==undefined&&a.cliVersions.includes(cliVersion))??candidates.at(-1);
+  }
   private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshotV2{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');
+    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);
     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
@@ -307,7 +317,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     try{lstatSync(path);return false;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return true;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原临时目录状态暂不能核验');}
   }
   private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
-    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.support.status().adapters.find(a=>a.agentId===snapshot.runner&&a.version==='1.0.0'):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
+    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.currentAdapter(snapshot.runner,native?.version):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
     const knownVersion=Boolean(native&&(!unavailable||unavailable==='RESOURCE_BUSY'||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=snapshot.runner==='codex'||!knownVersion;
     const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
     const resources=[`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,...(isolation.hash!==adapter.hash?[isolation.resource.resourceId]:[]),...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
@@ -338,7 +348,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }catch(error){await run.stop('unavailable-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
   private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
+    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
     const collection=await catalog.snapshot(),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
     // A native-only guard grants no application bridge. When filtering is unverified,
     // preserve native argv/config and freeze H for the consumer rather than blocking

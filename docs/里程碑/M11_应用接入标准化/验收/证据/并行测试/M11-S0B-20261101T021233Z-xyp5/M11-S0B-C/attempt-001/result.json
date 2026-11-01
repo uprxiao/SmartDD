@@ -1,0 +1,105 @@
+{
+  "schema": "m11-s0b-composition-result-v1",
+  "group": "M11-S0B-C",
+  "sourceManifestSha256": "1070f777f35c4303aa0be72232acbc996c87bd62ee17f40c5a82e5f7b2be130f",
+  "checks": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source",
+      "startedAt": "2026-11-01T02:12:56.708537+00:00",
+      "finishedAt": "2026-11-01T02:13:03.131936+00:00",
+      "seconds": 6.42,
+      "pid": 48457,
+      "exitCode": 2,
+      "timeout": false,
+      "log": "typecheck.log",
+      "summary": []
+    },
+    {
+      "name": "task-capability-launcher",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source",
+      "startedAt": "2026-11-01T02:13:03.132122+00:00",
+      "finishedAt": "2026-11-01T02:13:03.868053+00:00",
+      "seconds": 0.736,
+      "pid": 48527,
+      "exitCode": 1,
+      "timeout": false,
+      "log": "task-capability-launcher.log",
+      "summary": [
+        "Test Files  1 failed (1)",
+        "Tests  no tests"
+      ]
+    },
+    {
+      "name": "build-contract",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/applications/build.test.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source",
+      "startedAt": "2026-11-01T02:13:03.868226+00:00",
+      "finishedAt": "2026-11-01T02:13:04.000731+00:00",
+      "seconds": 0.132,
+      "pid": 48545,
+      "exitCode": 1,
+      "timeout": false,
+      "log": "build-contract.log",
+      "summary": [
+        "# tests 1",
+        "# pass 0",
+        "# fail 1",
+        "# skipped 0",
+        "# duration_ms 109.01375"
+      ]
+    }
+  ],
+  "sourceFileCount": 2200,
+  "sourceMismatches": [],
+  "formalM11NewPassed": 0,
+  "status": "failed",
+  "finishedAt": "2026-11-01T02:13:04.045829+00:00",
+  "notes": [
+    "Private frozen source; no production or authority-ledger modifications.",
+    "task-capability-launcher uses version shell fixtures, no real additional Agent.",
+    "--no-cache avoids Vitest result cache writes through shared node_modules."
+  ],
+  "failureClassification": [
+    {
+      "check": "typecheck",
+      "category": "test-code-and-freeze-fixture",
+      "details": [
+        "task-capability-launcher.test.ts:142:34 TS2345: profiles.resolve requires a string, received AiProfileView",
+        "Missing frozen drizzle/meta/_journal.json",
+        "Missing frozen prototypes/m6-codex/src/FileCodeTextarea"
+      ]
+    },
+    {
+      "check": "task-capability-launcher",
+      "category": "freeze-fixture",
+      "details": [
+        "Missing drizzle/meta/_journal.json prevents module import; 0 assertions executed"
+      ]
+    },
+    {
+      "check": "build-contract",
+      "category": "freeze-fixture",
+      "details": [
+        "Missing licenses/M10/bridge/mcp-server-LICENSE.txt prevents build-runtime startup"
+      ]
+    }
+  ],
+  "rerunPerformed": false
+}

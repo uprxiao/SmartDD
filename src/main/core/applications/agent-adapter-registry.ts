@@ -26,7 +26,7 @@ const within = (root: string,path: string): boolean => { const r = relative(root
  * Host transport policy also applies to retained adapters without changing
  * their immutable bytes or the session's fixed package/adapter selection. */
 function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadPlan{
-  if(plan.agentId!=='codex'||input.cliVersion!=='0.162.1')return plan;
+  if(plan.agentId!=='codex'||!['0.162.1','0.166.0'].includes(input.cliVersion))return plan;
   const bridge=input.mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
   const names=[...new Set(input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>Object.keys(p.toolContractMajors)))].sort();
   if(!names.length)return plan;

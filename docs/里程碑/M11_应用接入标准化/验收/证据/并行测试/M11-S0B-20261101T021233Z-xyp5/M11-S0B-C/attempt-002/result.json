@@ -1,0 +1,92 @@
+{
+  "schema": "m11-s0b-composition-result-v1",
+  "group": "M11-S0B-C",
+  "sourceManifestSha256": "e2940bbf3fb7be3979e26f67111cd964e96b49873e0668e0ec305b8f65da0b2d",
+  "checks": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+      "startedAt": "2026-11-01T02:14:01.223462+00:00",
+      "finishedAt": "2026-11-01T02:14:16.596765+00:00",
+      "seconds": 15.373,
+      "pid": 49416,
+      "exitCode": 0,
+      "timeout": false,
+      "log": "typecheck.log",
+      "summary": []
+    },
+    {
+      "name": "task-capability-launcher",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+      "startedAt": "2026-11-01T02:14:16.596924+00:00",
+      "finishedAt": "2026-11-01T02:20:08.197459+00:00",
+      "seconds": 351.595,
+      "pid": 49546,
+      "exitCode": 1,
+      "timeout": false,
+      "log": "task-capability-launcher.log",
+      "summary": [
+        "⎯⎯⎯⎯⎯⎯ Failed Tests 255 ⎯⎯⎯⎯⎯⎯",
+        "Test Files  1 failed (1)",
+        "Tests  255 failed (255)"
+      ]
+    },
+    {
+      "name": "build-contract",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/applications/build.test.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+      "startedAt": "2026-11-01T02:20:08.197651+00:00",
+      "finishedAt": "2026-11-01T02:20:09.067574+00:00",
+      "seconds": 0.87,
+      "pid": 52795,
+      "exitCode": 0,
+      "timeout": false,
+      "log": "build-contract.log",
+      "summary": [
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 785.591792"
+      ]
+    }
+  ],
+  "sourceFileCount": 33274,
+  "sourceMismatches": [],
+  "formalM11NewPassed": 0,
+  "status": "failed",
+  "finishedAt": "2026-11-01T02:20:12.977676+00:00",
+  "notes": [
+    "Private frozen source; no production or authority-ledger modifications.",
+    "task-capability-launcher uses version shell fixtures, no real additional Agent.",
+    "--no-cache avoids Vitest result cache writes through shared node_modules."
+  ],
+  "failureClassification": [
+    {
+      "check": "task-capability-launcher",
+      "category": "environment-unix-listen-denied",
+      "affectedTests": 255,
+      "commonFailure": "beforeEach -> ManagedTaskCapabilities.open -> PrivateApplicationBroker.start:37",
+      "probe": "unix-bind-probe.json",
+      "errno": "EPERM",
+      "scope": "All tests failed during shared setup; not 255 distinct product assertion failures."
+    }
+  ],
+  "rerunPerformed": false
+}

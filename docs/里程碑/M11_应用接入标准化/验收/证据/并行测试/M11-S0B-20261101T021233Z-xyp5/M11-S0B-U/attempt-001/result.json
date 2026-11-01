@@ -1,0 +1,69 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S0B-U",
+  "attempt": 1,
+  "status": "fixture-failed-partial",
+  "classification": "freeze-fixture-incomplete",
+  "scope": "software tests only; no formal M11 case closed",
+  "baseCommit": "4de34cbba4430edb5c618241a049a72188c17388",
+  "sourceManifestSha256": "1070f777f35c4303aa0be72232acbc996c87bd62ee17f40c5a82e5f7b2be130f",
+  "command": [
+    "pnpm",
+    "test",
+    "src/main/core/applications/__tests__/agent-adapters.test.ts",
+    "src/main/core/applications/__tests__/native-user-messages.test.ts",
+    "src/main/core/applications/__tests__/agent-support.test.ts",
+    "--maxWorkers=1",
+    "--no-file-parallelism"
+  ],
+  "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source",
+  "startedAt": "2026-11-01T02:12:39.879400+00:00",
+  "finishedAt": "2026-11-01T02:12:41.223096+00:00",
+  "elapsedSeconds": 1.344,
+  "exitCode": 1,
+  "files": {
+    "total": 3,
+    "passed": 1,
+    "failedAtImport": 2
+  },
+  "assertions": {
+    "total": 47,
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0
+  },
+  "perFile": [
+    {
+      "file": "src/main/core/applications/__tests__/native-user-messages.test.ts",
+      "status": "passed",
+      "assertionsPassed": 47
+    },
+    {
+      "file": "src/main/core/applications/__tests__/agent-adapters.test.ts",
+      "status": "import-failed",
+      "assertionsRun": 0
+    },
+    {
+      "file": "src/main/core/applications/__tests__/agent-support.test.ts",
+      "status": "import-failed",
+      "assertionsRun": 0
+    }
+  ],
+  "failures": [
+    {
+      "affectedFiles": [
+        "agent-adapters.test.ts",
+        "agent-support.test.ts"
+      ],
+      "message": "Cannot find package @root/drizzle/meta/_journal.json imported from src/main/db/migrations.ts",
+      "category": "freeze-fixture-incomplete",
+      "nextAction": "Coordinator supplies drizzle directory and a new source manifest; retry as attempt-002 with --no-cache."
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheWriteObserved": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "m11-s0b-composition-result-v1",
+  "group": "M11-S0B-C",
+  "sourceManifestSha256": "e2940bbf3fb7be3979e26f67111cd964e96b49873e0668e0ec305b8f65da0b2d",
+  "checks": [
+    {
+      "name": "s0b-smoke",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+        "-t",
+        "M11 S0b",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+      "startedAt": "2026-11-01T02:21:29.306110+00:00",
+      "finishedAt": "2026-11-01T02:21:36.230804+00:00",
+      "seconds": 6.925,
+      "pid": 53439,
+      "exitCode": 0,
+      "timeout": false,
+      "log": "s0b-smoke.log",
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  1 passed | 254 skipped (255)"
+      ]
+    },
+    {
+      "name": "task-capability-launcher",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+      "startedAt": "2026-11-01T02:21:36.231058+00:00",
+      "finishedAt": "2026-11-01T02:36:36.284143+00:00",
+      "seconds": 900.038,
+      "pid": 53458,
+      "exitCode": -15,
+      "timeout": true,
+      "log": "task-capability-launcher.log",
+      "summary": []
+    }
+  ],
+  "sourceFileCount": 33274,
+  "sourceMismatches": [],
+  "formalM11NewPassed": 0,
+  "status": "incomplete-outer-command-budget",
+  "finishedAt": "2026-11-01T02:36:40.884617+00:00",
+  "execution": "require_escalated; local fixture processes/socket only",
+  "reusedGreenChecks": {
+    "attempt-002": [
+      "typecheck",
+      "build-contract"
+    ]
+  },
+  "notes": [
+    "Private frozen source; no production or authority-ledger modifications.",
+    "task-capability-launcher uses version shell fixtures, no real additional Agent.",
+    "--no-cache avoids Vitest result cache writes through shared node_modules."
+  ],
+  "attempt": "attempt-003",
+  "failureClassification": [
+    {
+      "category": "outer-command-budget",
+      "details": "The bounded command budget expired before a full file result; not 255 independent product failures. Preserve prior passing preconditions and split the unchanged original assertions in the next attempt."
+    }
+  ],
+  "priorFailurePreserved": [
+    "attempt-001: incomplete freeze and test compile error",
+    "attempt-002: common setup denied local Unix listen (EPERM)"
+  ],
+  "environmentPrecondition": {
+    "defaultSandboxProbe": "../attempt-002/unix-bind-probe.json",
+    "authorizedLocalProbe": "unix-bind-probe.json",
+    "s0bSmoke": "s0b-smoke-result.json",
+    "fullFileOnlyAfterSmokePassed": true
+  },
+  "failureExcerpt": []
+}

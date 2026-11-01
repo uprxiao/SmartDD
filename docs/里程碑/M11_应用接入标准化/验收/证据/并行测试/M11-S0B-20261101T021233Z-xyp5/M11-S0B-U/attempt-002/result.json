@@ -1,0 +1,70 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S0B-U",
+  "attempt": 2,
+  "status": "fixture-failed-partial",
+  "classification": "test-fixture-identity-reuse",
+  "scope": "software tests only; no formal M11 case closed",
+  "baseCommit": "4de34cbba4430edb5c618241a049a72188c17388",
+  "sourceManifestSha256": "e2940bbf3fb7be3979e26f67111cd964e96b49873e0668e0ec305b8f65da0b2d",
+  "command": [
+    "pnpm",
+    "test",
+    "src/main/core/applications/__tests__/agent-adapters.test.ts",
+    "src/main/core/applications/__tests__/native-user-messages.test.ts",
+    "src/main/core/applications/__tests__/agent-support.test.ts",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--no-cache"
+  ],
+  "cwd": "/private/tmp/willyou-m11-s0b-xyp5tfp9/source-attempt-002",
+  "startedAt": "2026-11-01T02:14:03.300480+00:00",
+  "finishedAt": "2026-11-01T02:14:49.245159+00:00",
+  "elapsedSeconds": 45.944,
+  "exitCode": 1,
+  "files": {
+    "total": 3,
+    "passed": 2,
+    "failed": 1
+  },
+  "assertions": {
+    "total": 88,
+    "passed": 87,
+    "failed": 1,
+    "skipped": 0
+  },
+  "perFile": [
+    {
+      "file": "src/main/core/applications/__tests__/agent-adapters.test.ts",
+      "status": "failed",
+      "assertionsTotal": 30,
+      "assertionsPassed": 29,
+      "assertionsFailed": 1
+    },
+    {
+      "file": "src/main/core/applications/__tests__/native-user-messages.test.ts",
+      "status": "passed"
+    },
+    {
+      "file": "src/main/core/applications/__tests__/agent-support.test.ts",
+      "status": "passed"
+    }
+  ],
+  "failures": [
+    {
+      "file": "src/main/core/applications/__tests__/agent-adapters.test.ts",
+      "line": 26,
+      "name": "M11 S0b delivers Codex 0.166.0 through a new fixed adapter without widening retained or unknown versions",
+      "message": "原任务能力已经固定，不能改成新版本或新路径",
+      "category": "test-fixture-identity-reuse",
+      "analysis": "The test first creates a new adapter snapshot copied from original, then creates the retained original under the same taskId. The production immutable session guard correctly rejects the second creation. Use a separate task identity for the retained-session fixture; do not loosen the production guard.",
+      "nextAction": "Coordinator fixes the isolated task identity in the source test and freezes a new baseline; rerun affected adapter tests, reuse unchanged successful suites if hashes and predicates remain valid."
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheUnchanged": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

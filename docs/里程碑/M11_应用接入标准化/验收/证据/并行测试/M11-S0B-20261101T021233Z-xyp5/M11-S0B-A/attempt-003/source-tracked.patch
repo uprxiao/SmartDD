@@ -1,0 +1,273 @@
+diff --git a/scripts/applications/build-bundles.mjs b/scripts/applications/build-bundles.mjs
+index f9a42e733..62bc453a2 100644
+--- a/scripts/applications/build-bundles.mjs
++++ b/scripts/applications/build-bundles.mjs
+@@ -15,7 +15,7 @@ try {
+   const adapters=[],runtimes=[],apps=[];
+   const runtimeFiles={'mcp-bridge.cjs':readFileSync(runtimeEntry)},runtimeManifest={schema:'smartdd-app-runtime-v1',id:'applications',protocolMajor:1,bridgeEntry:'mcp-bridge.cjs',files:Object.entries(runtimeFiles).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes)}))},runtimeHash=digest(canonical(runtimeManifest)),runtimePath='runtimes/'+runtimeHash;
+   writeTree(join(stage,runtimePath),{...runtimeFiles,'runtime.json':Buffer.from(canonical(runtimeManifest)+'\n')});runtimes.push({id:'applications',protocolMajor:1,hash:runtimeHash,path:runtimePath,bridgeEntry:'mcp-bridge.cjs'});
+-  for(const agentId of ['claude-code','codex']) for(const adapterVersion of ['1.0.0','1.1.0']) {
++  for(const agentId of ['claude-code','codex']) for(const adapterVersion of agentId==='codex'?['1.0.0','1.1.0','1.2.0']:['1.0.0','1.1.0']) {
+     const source=readTree(resolve('resources/agent-adapters',agentId,adapterVersion)),metadata=JSON.parse(source['adapter.json'].toString('utf8'));delete source['adapter.json'];
+     const manifest={schema:'willyou-owned-bundle-v1',metadata,files:Object.entries(source).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes),executable:false})).sort((a,b)=>compare(a.path,b.path))},hash=digest(canonical(manifest)),path='adapters/'+agentId+'/'+metadata.version+'/'+hash;
+     writeTree(join(stage,path),{...source,'bundle.json':Buffer.from(canonical(manifest)+'\n')});adapters.push({agentId,version:metadata.version,hash,path});
+diff --git a/scripts/applications/build.test.mjs b/scripts/applications/build.test.mjs
+index 8f1708bab..880cc4439 100644
+--- a/scripts/applications/build.test.mjs
++++ b/scripts/applications/build.test.mjs
+@@ -28,7 +28,7 @@ test('CLI builds pinned application bundles from an escaped native path with com
+   execFileSync(process.execPath, [join(root, 'scripts/applications/build-bundles.mjs'), bundles, runtimeEntry], child);
+   const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+   const verified = bundleVerifier.verifyCapabilityBundles(bundles, version);
+-  assert.equal(verified.adapters, 4);
++  assert.equal(verified.adapters, 5);
+   assert.equal(verified.runtimes, 1);
+   assert.deepEqual(verified.apps.map(app => app.appId).sort(), ['mail', 'zentao']);
+   const index = JSON.parse(readFileSync(join(bundles, 'index.json'), 'utf8'));
+diff --git a/scripts/applications/verify-bundles.cjs b/scripts/applications/verify-bundles.cjs
+index 7e129ae4c..63c111f0e 100644
+--- a/scripts/applications/verify-bundles.cjs
++++ b/scripts/applications/verify-bundles.cjs
+@@ -18,7 +18,7 @@ function fullTree(root,path,manifestName,expectedHash) {
+ }
+ function verifyCapabilityBundles(root,expectedVersion) {
+   const rootStat=lstatSync(root);assert(rootStat.isDirectory()&&!rootStat.isSymbolicLink(),'Regular capability resource root');const index=readJson(join(root,'index.json'));assert.equal(index.schema,'willyou-capability-bundles-v1','Capability index schema');assert.equal(index.build.appVersion,expectedVersion,'Capability App version');const {indexHash,...content}=index;assert.equal(hash(canonical(content)),indexHash,'Capability index hash');assert.equal(hash(canonical({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps})),index.build.resourceSetHash,'Complete resource-set hash');
+-  assert.deepEqual(index.adapters.map(a=>a.agentId+'@'+a.version).sort(),['claude-code@1.0.0','claude-code@1.1.0','codex@1.0.0','codex@1.1.0'],'Both original and legacy-preserving Agent adapters');assert.deepEqual(index.apps.map(a=>a.appId).sort(),['mail','zentao'],'Both complete built-in applications');assert.equal(new Set(index.runtimes.map(r=>r.hash)).size,index.runtimes.length,'Unique runtime records');
++  assert.deepEqual(index.adapters.map(a=>a.agentId+'@'+a.version).sort(),['claude-code@1.0.0','claude-code@1.1.0','codex@1.0.0','codex@1.1.0','codex@1.2.0'],'Retained original/legacy adapters and the Codex 0.166.0 baseline');assert.deepEqual(index.apps.map(a=>a.appId).sort(),['mail','zentao'],'Both complete built-in applications');assert.equal(new Set(index.runtimes.map(r=>r.hash)).size,index.runtimes.length,'Unique runtime records');
+   for(const a of index.adapters){assert.equal(a.path,`adapters/${a.agentId}/${a.version}/${a.hash}`);const {manifest}=fullTree(root,a.path,'bundle.json',a.hash);assert.equal(manifest.schema,'willyou-owned-bundle-v1');assert.equal(manifest.metadata.agentId,a.agentId);assert.equal(manifest.metadata.version,a.version);}
+   for(const r of index.runtimes){assert.equal(r.path,`runtimes/${r.hash}`);const {manifest}=fullTree(root,r.path,'runtime.json',r.hash);assert.equal(manifest.schema,'smartdd-app-runtime-v1');assert.equal(manifest.id,r.id);assert.equal(manifest.protocolMajor,r.protocolMajor);assert.equal(manifest.bridgeEntry,r.bridgeEntry);assert(manifest.files.some(f=>f.path===r.bridgeEntry),'Complete runtime entry');}
+   const apps=[];
+diff --git a/scripts/release/native-smoke.cjs b/scripts/release/native-smoke.cjs
+index 65db4109d..7ee889edc 100644
+--- a/scripts/release/native-smoke.cjs
++++ b/scripts/release/native-smoke.cjs
+@@ -54,7 +54,7 @@ if (process.platform === 'darwin') {
+   const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
+   assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
+   assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
+-  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0'], 'Both original and legacy-preserving Agent adapters packaged');
++  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0', 'codex@1.2.0'], 'Original/legacy adapters and Codex 0.166.0 baseline packaged');
+   assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), ['mail', 'zentao'], 'Both built-in application packages packaged');
+   for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes, ...capabilityIndex.apps]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
+   for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');
+diff --git a/src/main/core/applications/__tests__/agent-adapters.test.ts b/src/main/core/applications/__tests__/agent-adapters.test.ts
+index 7bc210b42..a17cc6e83 100644
+--- a/src/main/core/applications/__tests__/agent-adapters.test.ts
++++ b/src/main/core/applications/__tests__/agent-adapters.test.ts
+@@ -10,6 +10,23 @@ import { agentFixture } from './agent-fixture';
+ let f: Awaited<ReturnType<typeof agentFixture>>;
+ beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup());
+ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
++  it('M11 S0b delivers Codex 0.166.0 through a new fixed adapter without widening retained or unknown versions',async()=>{
++    const original=f.plan('codex'),retained=f.adapters.verify(original.adapterBinding.hash),source=bundledAgentAdapters().find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.2.0')!;
++    const current=await f.adapters.install(source.metadata,source.files),snapshot=structuredClone(original);
++    snapshot.adapterBinding={...snapshot.adapterBinding,version:current.metadata.version,hash:current.hash};snapshot.agentAtCreation.version='0.166.0';
++    await f.sessions.create(snapshot,f.home);const request=await f.request(snapshot),plan=f.adapters.plan(current.hash,request);
++    const flags=parseToml(plan.args.filter((_,i)=>i>0&&plan.args[i-1]==='-c').join('\n')) as {skills:{config:{path:string;enabled:boolean}[]};mcp_servers:Record<string,{command:string;tools:Record<string,{output_token_limit:number}>}>};
++    expect(flags.skills.config).toContainEqual({path:snapshot.packages[0].skills[0].projectionPath,enabled:true});
++    const bridge=request.mcp.find(m=>m.kind==='applications')!;
++    expect(flags.mcp_servers[bridge.serverName].command).toBe(process.execPath);
++    for(const name of Object.keys(snapshot.packages[0].toolContractMajors))expect(flags.mcp_servers[bridge.serverName].tools[name]).toEqual({output_token_limit:BRIDGE_LIMITS.responseBytes});
++    expect(plan.bridgeRecovery).toBe('unverified');expect(current.metadata.cliVersions).toEqual(['0.166.0']);
++    expect(()=>f.adapters.plan(current.hash,{...request,cliVersion:'0.166.1'})).toThrow('尚未验证');
++    expect(f.adapters.verify(retained.hash).manifest).toEqual(retained.manifest);
++    const fixedOld=f.plan('codex');await f.sessions.create(fixedOld,f.home);const oldRequest=await f.request(fixedOld,request.catalog!);
++    expect(()=>f.adapters.plan(retained.hash,{...oldRequest,cliVersion:'0.166.0'})).toThrow('尚未验证');
++    expect((await f.sessions.get(fixedOld.taskId)).snapshot.adapterBinding).toEqual(fixedOld.adapterBinding);
++  });
+   it('keeps the original fixed Codex application response complete within its host budget without altering snapshot or global tool policy',async()=>{
+     const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),original=await f.sessions.get(snapshot.taskId),adapter=f.adapters.verify(snapshot.adapterBinding.hash),entry=join(f.store.root,adapter.resource.relativePath,'index.cjs'),bytes=readFileSync(entry),inventory=structuredClone(input.inventory),userConfig=structuredClone(input.userSkillConfig);
+     const plan=f.adapters.plan(snapshot.adapterBinding.hash,input),flags=parseToml(plan.args.filter((_,i)=>i>0&&plan.args[i-1]==='-c').join('\n')) as {mcp_servers:Record<string,{command:string;tools?:Record<string,{output_token_limit:number;approval_mode?:string}>}>;tool_output_token_limit?:number};
+diff --git a/src/main/core/applications/__tests__/agent-support.test.ts b/src/main/core/applications/__tests__/agent-support.test.ts
+index 09cb62efc..8eb967b60 100644
+--- a/src/main/core/applications/__tests__/agent-support.test.ts
++++ b/src/main/core/applications/__tests__/agent-support.test.ts
+@@ -24,13 +24,13 @@ beforeEach(async()=>{f=await agentFixture({applicationVersion:'2.0.0'});const db
+ afterEach(()=>{capabilities.dispose();f.cleanup();});
+ describe('indexed production resource bootstrap and nonfatal readiness',()=>{
+   it('builds an index whose complete adapter/runtime hashes match the runtime registries',async()=>{
+-    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(4);expect(source.index.runtimes).toHaveLength(1);
++    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(5);expect(source.index.runtimes).toHaveLength(1);
+     const installed=await new RuntimeRegistry(f.store).install(source.runtime());expect(installed.contentHash).toBe(source.index.runtimes[0].hash);
+     for(const bundle of source.adapters()){const record=await f.adapters.install(bundle.metadata,bundle.files);expect(record.hash).toBe(bundle.hash);expect([...bundledAgentAdapters(),...bundledLegacyAgentAdapters()].find(a=>a.metadata.agentId===bundle.metadata.agentId&&a.metadata.version===bundle.metadata.version)!.files).toEqual(bundle.files);}
+   });
+   it('initializes once from actual indexed files and exposes only prepared resources, with native discovery still unverified',async()=>{
+-    const service=new AgentSupportService(f.store,capabilities,output),first=service.initialize();expect(service.initialize()).toBe(first);await first;const status=service.status();expect(status.state).toBe('ready');expect(status.adapters.map(a=>a.agentId+'@'+a.version).sort()).toEqual(['claude-code@1.0.0','claude-code@1.1.0','codex@1.0.0','codex@1.1.0']);expect(status.adapters.every(a=>a.filesReady&&a.nativeDiscovery==='unverified'&&a.bridgeRecovery==='unverified'&&a.configReload==='unverified'&&a.recoveryRequiresAgentRestart===null&&a.recoveryEvidence?.length===0)).toBe(true);expect(status.legacyResourceCount).toBe(3);expect(existsSync(join(f.home,'.agents'))).toBe(false);
+-    status.adapters.length=0;expect(service.status().adapters).toHaveLength(4);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
++    const service=new AgentSupportService(f.store,capabilities,output),first=service.initialize();expect(service.initialize()).toBe(first);await first;const status=service.status();expect(status.state).toBe('ready');expect(status.adapters.map(a=>a.agentId+'@'+a.version).sort()).toEqual(['claude-code@1.0.0','claude-code@1.1.0','codex@1.0.0','codex@1.1.0','codex@1.2.0']);expect(status.adapters.every(a=>a.filesReady&&a.nativeDiscovery==='unverified'&&a.bridgeRecovery==='unverified'&&a.configReload==='unverified'&&a.recoveryRequiresAgentRestart===null&&a.recoveryEvidence?.length===0)).toBe(true);expect(status.legacyResourceCount).toBe(3);expect(existsSync(join(f.home,'.agents'))).toBe(false);
++    status.adapters.length=0;expect(service.status().adapters).toHaveLength(5);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
+   });
+   it('does not throw when the distribution index is missing, leaving existing installed versions usable',async()=>{
+     const service=new AgentSupportService(f.store,capabilities,join(f.root,'missing-index'));await expect(service.initialize()).resolves.toBeUndefined();expect(service.status()).toMatchObject({state:'unavailable',errorCode:'INVALID_PACKAGE'});expect(f.adapters.verify(f.installedAdapters[0].hash).resource.state).toBe('ready');
+diff --git a/src/main/core/applications/__tests__/native-user-messages.test.ts b/src/main/core/applications/__tests__/native-user-messages.test.ts
+index 84e951fbd..06228983f 100644
+--- a/src/main/core/applications/__tests__/native-user-messages.test.ts
++++ b/src/main/core/applications/__tests__/native-user-messages.test.ts
+@@ -8,6 +8,8 @@ import type { ApplicationUiSender } from '../execution-context';
+ import type { RunContext } from '../run-registry';
+ import { NativeUserInputs } from '../native-user-inputs';
+ import { NativeUserMessages } from '../native-user-messages';
++import { codexSkillReadEvidence } from '../codex-skill-read-evidence';
++import { codexSkillDiscoveryEvidence } from '../codex-skill-discovery-evidence';
+ import { encodeClaudeDir } from '../../tasks/native-sessions';
+ const sender = { sender: { id: 101 }, senderFrame: { processId: 9, routingId: 1 } } as unknown as ApplicationUiSender;
+ let root: string, cwd: string, nativeRoot: string, file: string, current: RunContext, abort: AbortController, inputs: NativeUserInputs, messages: NativeUserMessages, now: number, failRun: boolean, currentChecks: number;
+@@ -29,6 +31,24 @@ const write = (value: unknown, complete = true) => appendFileSync(file, JSON.str
+ const input = (value = text) => inputs.observe(sender, { taskId: 'owned-task', ptyId: 'owned-pty' }, '\x1b[200~' + value + '\x1b[201~\r');
+ beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-native-user-messages-')); cwd = join(root, 'project'); nativeRoot = join(root, 'native'); mkdirSync(cwd); mkdirSync(nativeRoot); now = Date.now(); failRun = false; currentChecks = 0; });
+ afterEach(() => { messages?.dispose(); inputs?.dispose(); vi.restoreAllMocks(); rmSync(root, { recursive: true, force: true }); });
++it('M11 S0b leaves Codex 0.166.0 chat authorization and Skill evidence closed even for an otherwise matching old-format log',async()=>{
++ setup('codex','0.166.0');input();write(user());
++ const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'Complete fixed skill\n'};
++ const records=[
++  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call',name:'exec_command',call_id:'read',arguments:JSON.stringify({cmd:"/bin/cat '"+target.path+"'"})}},
++  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call_output',call_id:'read',output:'Chunk ID: abc123\nWall time: 0.0100 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\n'+target.content}},
++  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'message',role:'developer',content:[{type:'input_text',text:'<skills_instructions>\n## Skills\n### Skill roots\n- `r0` = `'+join(root,'skill')+'`\n### Available skills\n- '+target.nativeName+': Controlled Skill. (file: r0/SKILL.md)\n</skills_instructions>'}]}},
++ ];
++ for(const record of records)write(record);
++ // Positive controls prove the logs/targets would match the retained parser;
++ // the new version must still receive no discovery/read or authorization proof.
++ const lines=records.map(record=>JSON.stringify(record));
++ expect(codexSkillReadEvidence(lines,[target],now,now)).toHaveLength(1);
++ expect(codexSkillDiscoveryEvidence(lines,[target],now,now)).toHaveLength(1);
++ expect(await messages.read(current.run.runId)).toMatchObject({status:'unsupported',messages:[],issueCode:'AGENT_ADAPTER_UNSUPPORTED'});
++ expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
++ expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([]);
++});
+ for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' native user origin and trusted terminal bytes', () => {
+   beforeEach(() => setup(runner));
+   it('matches committed Unicode user content only after the actual owned PTY submission, including old rollout date', async () => {
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index b5492faad..8e17f93bd 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -138,6 +138,20 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
+ };
+ 
+ describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
++ it('M11 S0b selects the version-matched Codex adapter for a new 0.166.0 task and keeps native evidence unverified',async()=>{
++  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});
++  mkdirSync(join(home,'.codex'),{recursive:true});writeFileSync(join(home,'.codex','s0b.config.toml'),'model="isolated-profile-marker"\n');
++  const profile=profiles.create({name:'M11 named profile fixture',runner:'codex',executable:profiles.resolve(codexId).command,args:['--profile','s0b'],env:[],color:null,isDefault:false});
++  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
++  const created=await create(profile.id),saved=await managed.sessions.get(created.task.id),runId=created.task.runtimeSnapshot!.runId!;
++  expect(saved.snapshot.adapterBinding.version).toBe('1.2.0');expect(saved.snapshot.agentAtCreation.version).toBe('0.166.0');
++  expect(managed.runs.assertActive(runId).snapshot.adapterBinding).toEqual(saved.snapshot.adapterBinding);
++  const flags=ptys.launches[0].args.join('\n');expect(flags).toContain('mcp_servers.');expect(flags).toContain('skills.config=');expect(flags).toContain('output_token_limit');
++  expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);
++  const diagnostic=await applications.sessionDiagnostics.inspect(created.task.id);
++  expect(diagnostic.currentRun?.preparation).toMatchObject({cliVersion:'0.166.0',state:'prepared'});
++  for(const app of diagnostic.applications)expect(app.evidence).toMatchObject({skillDiscovery:'unverified',skillRead:'unverified'});
++ });
+  it('M10-UG-01 keeps legacy imported disabled standard capabilities out of a new managed Mail session',async()=>{
+   projects.createDatabase(projectId,{env:'test',label:'definition only',aliases:[],vendor:'postgres',host:'127.0.0.1',port:9,database:'fixture',schema:'public',username:'fixture',accessLevel:'readonly',isDefault:true,note:'Never connected',password:'isolated-disabled-password'});
+   for(const id of ['project-db-diagnostics','remote-password-ssh',MCP_CAPABILITY])sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,id);
+diff --git a/src/main/core/applications/agent-adapter-registry.ts b/src/main/core/applications/agent-adapter-registry.ts
+index 09b21528b..7bff974d2 100644
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -26,7 +26,7 @@ const within = (root: string,path: string): boolean => { const r = relative(root
+  * Host transport policy also applies to retained adapters without changing
+  * their immutable bytes or the session's fixed package/adapter selection. */
+ function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadPlan{
+-  if(plan.agentId!=='codex'||input.cliVersion!=='0.162.1')return plan;
++  if(plan.agentId!=='codex'||!['0.162.1','0.166.0'].includes(input.cliVersion))return plan;
+   const bridge=input.mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
+   const names=[...new Set(input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>Object.keys(p.toolContractMajors)))].sort();
+   if(!names.length)return plan;
+diff --git a/src/main/core/applications/agent-assets.ts b/src/main/core/applications/agent-assets.ts
+index 416271876..6ca85a0be 100644
+--- a/src/main/core/applications/agent-assets.ts
++++ b/src/main/core/applications/agent-assets.ts
+@@ -1,11 +1,12 @@
+ import { agentAdapterMetadataSchema } from '@shared/agent-adapters';
+ const raw = import.meta.glob('@root/resources/agent-adapters/**/*',{ query: '?raw',import: 'default',eager: true }) as Record<string,string>;
+-const adaptersAt = (version:string) => ['claude-code','codex'].map(id => {
++const adapterAt = (id:string,version:string) => {
+   const prefix = `/agent-adapters/${id}/${version}/`, sources = Object.fromEntries(Object.entries(raw).filter(([path]) => path.includes(prefix)).map(([path,text]) => [path.split(prefix)[1],text]));
+   const metadata = agentAdapterMetadataSchema.parse(JSON.parse(sources['adapter.json']));
+   const files = Object.fromEntries(Object.entries(sources).filter(([path]) => path !== 'adapter.json').map(([path,text]) => [path,Buffer.from(text,'utf8')]));
+   return { metadata,files };
+-});
++};
++const adaptersAt = (version:string) => ['claude-code','codex'].map(id => adapterAt(id,version));
+ 
+-export const bundledAgentAdapters=()=>adaptersAt('1.0.0');
++export const bundledAgentAdapters=()=>[...adaptersAt('1.0.0'),adapterAt('codex','1.2.0')];
+ export const bundledLegacyAgentAdapters=()=>adaptersAt('1.1.0');
+diff --git a/src/main/core/applications/task-capability-launcher.ts b/src/main/core/applications/task-capability-launcher.ts
+index f250408da..a6c598082 100644
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -140,8 +140,18 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     const rows=this.support.store.sqlite.prepare('SELECT s.app_id AS appId FROM application_project_settings s JOIN application_catalog_state c ON c.app_id=s.app_id WHERE s.project_id=? AND s.enabled=1 AND c.added=1 AND c.enabled=1 ORDER BY s.app_id').all(projectId) as {appId:string}[];
+     return rows.map(({appId})=>{const active=this.applications.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
+   }
++  /** Only new selections use the currently distributed adapter for their exact
++   * native version. Retained snapshots always keep their original binding. */
++  private currentAdapter(runner:'claude-code'|'codex',cliVersion:string|undefined){
++    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.projectionFormatVersion===1).sort((a,b)=>{
++      const left=a.version.split('.').map(Number),right=b.version.split('.').map(Number);return right[0]-left[0]||right[1]-left[1]||right[2]-left[2];
++    });
++    // Unknown versions retain the original unavailable/native-only path;
++    // choosing an adapter here never grants support for an unverified CLI.
++    return candidates.find(a=>cliVersion!==undefined&&a.cliVersions.includes(cliVersion))??candidates.at(-1);
++  }
+   private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshotV2{
+-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');
++    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);
+     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
+     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
+     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
+@@ -307,7 +317,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     try{lstatSync(path);return false;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return true;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原临时目录状态暂不能核验');}
+   }
+   private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
+-    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.support.status().adapters.find(a=>a.agentId===snapshot.runner&&a.version==='1.0.0'):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
++    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.currentAdapter(snapshot.runner,native?.version):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
+     const knownVersion=Boolean(native&&(!unavailable||unavailable==='RESOURCE_BUSY'||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=snapshot.runner==='codex'||!knownVersion;
+     const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
+     const resources=[`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,...(isolation.hash!==adapter.hash?[isolation.resource.resourceId]:[]),...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
+@@ -338,7 +348,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     }catch(error){await run.stop('unavailable-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+   }
+   private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
+-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.support.status().adapters.find(a=>a.agentId===runner&&a.version==='1.0.0');if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
++    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
+     const collection=await catalog.snapshot(),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
+     // A native-only guard grants no application bridge. When filtering is unverified,
+     // preserve native argv/config and freeze H for the consumer rather than blocking
+diff --git a/src/main/core/capabilities/discovery.test.ts b/src/main/core/capabilities/discovery.test.ts
+index 492b67206..b5cf69065 100644
+--- a/src/main/core/capabilities/discovery.test.ts
++++ b/src/main/core/capabilities/discovery.test.ts
+@@ -156,10 +156,10 @@ describe('Codex effective configuration precedence',()=>{
+     const rows=discoverCapabilities({...c,args:['--','-c',`skills.config=[{path=${JSON.stringify(path)},enabled=true}]`],details:detail});
+     expect(detail.userSkillConfig).toEqual([{path,enabled:false}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(false);expect(detail.issues).toContain('profile_configuration_unverified');
+   });
+-  it.each([['--profile','read-only'],['--profile=read-only'],['-p','read-only']])('reads the selected independent profile file only for the verified CLI (%j)',(...args)=>{
++  it.each(['0.162.1','0.166.0'].flatMap(nativeVersion=>[['--profile','read-only'],['--profile=read-only'],['-p','read-only']].map(args=>({nativeVersion,args}))))('reads the selected independent profile file only for verified CLI $nativeVersion ($args)',({nativeVersion,args})=>{
+     const detail=details();file('custom/config.toml','skills.config=[{path="/base-user",enabled=false}]\n');
+     file('custom/read-only.config.toml','skills.config=[{path="/profile-user",enabled=true,custom="host-only-profile-marker"}]\n[mcp_servers.profile_server]\ncommand="/usr/bin/true"\nenv={TOKEN="never-render-profile-secret"}\n');
+-    const rows=discoverCapabilities({...c,nativeVersion:'0.162.1',args:args as string[],details:detail});
++    const rows=discoverCapabilities({...c,nativeVersion,args,details:detail});
+     expect(detail.issues).toEqual([]);expect(detail.userSkillConfig).toEqual([{path:'/profile-user',enabled:true,custom:'host-only-profile-marker'}]);
+     expect(rows.find(r=>r.name==='profile_server')).toMatchObject({source:'profile',envNames:['TOKEN']});expect(JSON.stringify(rows)).not.toContain('never-render-profile-secret');expect(JSON.stringify(rows)).not.toContain('host-only-profile-marker');
+   });
+diff --git a/src/main/core/capabilities/discovery.ts b/src/main/core/capabilities/discovery.ts
+index 941928e64..62250c3b6 100644
+--- a/src/main/core/capabilities/discovery.ts
++++ b/src/main/core/capabilities/discovery.ts
+@@ -259,9 +259,10 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
+     const args = codexConfigurationArgs(c.args ?? [], () => c.details?.issues.push('profile_configuration_unverified'));
+     const configs = [{ path: join(c.stateRoot, 'config.toml'), source: 'user' }];
+     if (args.profile !== null) {
+-      // The checked adapter currently supports exactly 0.162.1. Since 0.134,
++      // Keep named-profile interpretation limited to the verified baselines.
++      // Since 0.134,
+       // profiles are independent files, not legacy [profiles.*] tables.
+-      if (c.nativeVersion !== '0.162.1') c.details?.issues.push('profile_configuration_unverified');
++      if (!['0.162.1','0.166.0'].includes(c.nativeVersion ?? '')) c.details?.issues.push('profile_configuration_unverified');
+       else {
+         const path = join(c.stateRoot, args.profile + '.config.toml');
+         if (!existsSync(path)) c.details?.issues.push('profile_configuration_unverified');

@@ -156,10 +156,10 @@ describe('Codex effective configuration precedence',()=>{
     const rows=discoverCapabilities({...c,args:['--','-c',`skills.config=[{path=${JSON.stringify(path)},enabled=true}]`],details:detail});
     expect(detail.userSkillConfig).toEqual([{path,enabled:false}]);expect(rows.find(r=>r.path===path)?.enabled).toBe(false);expect(detail.issues).toContain('profile_configuration_unverified');
   });
-  it.each([['--profile','read-only'],['--profile=read-only'],['-p','read-only']])('reads the selected independent profile file only for the verified CLI (%j)',(...args)=>{
+  it.each(['0.162.1','0.166.0'].flatMap(nativeVersion=>[['--profile','read-only'],['--profile=read-only'],['-p','read-only']].map(args=>({nativeVersion,args}))))('reads the selected independent profile file only for verified CLI $nativeVersion ($args)',({nativeVersion,args})=>{
     const detail=details();file('custom/config.toml','skills.config=[{path="/base-user",enabled=false}]\n');
     file('custom/read-only.config.toml','skills.config=[{path="/profile-user",enabled=true,custom="host-only-profile-marker"}]\n[mcp_servers.profile_server]\ncommand="/usr/bin/true"\nenv={TOKEN="never-render-profile-secret"}\n');
-    const rows=discoverCapabilities({...c,nativeVersion:'0.162.1',args:args as string[],details:detail});
+    const rows=discoverCapabilities({...c,nativeVersion,args,details:detail});
     expect(detail.issues).toEqual([]);expect(detail.userSkillConfig).toEqual([{path:'/profile-user',enabled:true,custom:'host-only-profile-marker'}]);
     expect(rows.find(r=>r.name==='profile_server')).toMatchObject({source:'profile',envNames:['TOKEN']});expect(JSON.stringify(rows)).not.toContain('never-render-profile-secret');expect(JSON.stringify(rows)).not.toContain('host-only-profile-marker');
   });

@@ -259,9 +259,10 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     const args = codexConfigurationArgs(c.args ?? [], () => c.details?.issues.push('profile_configuration_unverified'));
     const configs = [{ path: join(c.stateRoot, 'config.toml'), source: 'user' }];
     if (args.profile !== null) {
-      // The checked adapter currently supports exactly 0.162.1. Since 0.134,
+      // Keep named-profile interpretation limited to the verified baselines.
+      // Since 0.134,
       // profiles are independent files, not legacy [profiles.*] tables.
-      if (c.nativeVersion !== '0.162.1') c.details?.issues.push('profile_configuration_unverified');
+      if (!['0.162.1','0.166.0'].includes(c.nativeVersion ?? '')) c.details?.issues.push('profile_configuration_unverified');
       else {
         const path = join(c.stateRoot, args.profile + '.config.toml');
         if (!existsSync(path)) c.details?.issues.push('profile_configuration_unverified');

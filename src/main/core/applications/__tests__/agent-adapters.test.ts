@@ -10,6 +10,23 @@ import { agentFixture } from './agent-fixture';
 let f: Awaited<ReturnType<typeof agentFixture>>;
 beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup());
 describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
+  it('M11 S0b delivers Codex 0.166.0 through a new fixed adapter without widening retained or unknown versions',async()=>{
+    const original=f.plan('codex'),retained=f.adapters.verify(original.adapterBinding.hash),source=bundledAgentAdapters().find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.2.0')!;
+    const current=await f.adapters.install(source.metadata,source.files),snapshot=structuredClone(original);
+    snapshot.adapterBinding={...snapshot.adapterBinding,version:current.metadata.version,hash:current.hash};snapshot.agentAtCreation.version='0.166.0';
+    await f.sessions.create(snapshot,f.home);const request=await f.request(snapshot),plan=f.adapters.plan(current.hash,request);
+    const flags=parseToml(plan.args.filter((_,i)=>i>0&&plan.args[i-1]==='-c').join('\n')) as {skills:{config:{path:string;enabled:boolean}[]};mcp_servers:Record<string,{command:string;tools:Record<string,{output_token_limit:number}>}>};
+    expect(flags.skills.config).toContainEqual({path:snapshot.packages[0].skills[0].projectionPath,enabled:true});
+    const bridge=request.mcp.find(m=>m.kind==='applications')!;
+    expect(flags.mcp_servers[bridge.serverName].command).toBe(process.execPath);
+    for(const name of Object.keys(snapshot.packages[0].toolContractMajors))expect(flags.mcp_servers[bridge.serverName].tools[name]).toEqual({output_token_limit:BRIDGE_LIMITS.responseBytes});
+    expect(plan.bridgeRecovery).toBe('unverified');expect(current.metadata.cliVersions).toEqual(['0.166.0']);
+    expect(()=>f.adapters.plan(current.hash,{...request,cliVersion:'0.166.1'})).toThrow('尚未验证');
+    expect(f.adapters.verify(retained.hash).manifest).toEqual(retained.manifest);
+    const fixedOld=f.plan('codex');await f.sessions.create(fixedOld,f.home);const oldRequest=await f.request(fixedOld,request.catalog!);
+    expect(()=>f.adapters.plan(retained.hash,{...oldRequest,cliVersion:'0.166.0'})).toThrow('尚未验证');
+    expect((await f.sessions.get(fixedOld.taskId)).snapshot.adapterBinding).toEqual(fixedOld.adapterBinding);
+  });
   it('keeps the original fixed Codex application response complete within its host budget without altering snapshot or global tool policy',async()=>{
     const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),original=await f.sessions.get(snapshot.taskId),adapter=f.adapters.verify(snapshot.adapterBinding.hash),entry=join(f.store.root,adapter.resource.relativePath,'index.cjs'),bytes=readFileSync(entry),inventory=structuredClone(input.inventory),userConfig=structuredClone(input.userSkillConfig);
     const plan=f.adapters.plan(snapshot.adapterBinding.hash,input),flags=parseToml(plan.args.filter((_,i)=>i>0&&plan.args[i-1]==='-c').join('\n')) as {mcp_servers:Record<string,{command:string;tools?:Record<string,{output_token_limit:number;approval_mode?:string}>}>;tool_output_token_limit?:number};

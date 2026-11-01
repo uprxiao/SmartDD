@@ -8,6 +8,8 @@ import type { ApplicationUiSender } from '../execution-context';
 import type { RunContext } from '../run-registry';
 import { NativeUserInputs } from '../native-user-inputs';
 import { NativeUserMessages } from '../native-user-messages';
+import { codexSkillReadEvidence } from '../codex-skill-read-evidence';
+import { codexSkillDiscoveryEvidence } from '../codex-skill-discovery-evidence';
 import { encodeClaudeDir } from '../../tasks/native-sessions';
 const sender = { sender: { id: 101 }, senderFrame: { processId: 9, routingId: 1 } } as unknown as ApplicationUiSender;
 let root: string, cwd: string, nativeRoot: string, file: string, current: RunContext, abort: AbortController, inputs: NativeUserInputs, messages: NativeUserMessages, now: number, failRun: boolean, currentChecks: number;
@@ -29,6 +31,24 @@ const write = (value: unknown, complete = true) => appendFileSync(file, JSON.str
 const input = (value = text) => inputs.observe(sender, { taskId: 'owned-task', ptyId: 'owned-pty' }, '\x1b[200~' + value + '\x1b[201~\r');
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-native-user-messages-')); cwd = join(root, 'project'); nativeRoot = join(root, 'native'); mkdirSync(cwd); mkdirSync(nativeRoot); now = Date.now(); failRun = false; currentChecks = 0; });
 afterEach(() => { messages?.dispose(); inputs?.dispose(); vi.restoreAllMocks(); rmSync(root, { recursive: true, force: true }); });
+it('M11 S0b leaves Codex 0.166.0 chat authorization and Skill evidence closed even for an otherwise matching old-format log',async()=>{
+ setup('codex','0.166.0');input();write(user());
+ const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'Complete fixed skill\n'};
+ const records=[
+  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call',name:'exec_command',call_id:'read',arguments:JSON.stringify({cmd:"/bin/cat '"+target.path+"'"})}},
+  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call_output',call_id:'read',output:'Chunk ID: abc123\nWall time: 0.0100 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\n'+target.content}},
+  {timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'message',role:'developer',content:[{type:'input_text',text:'<skills_instructions>\n## Skills\n### Skill roots\n- `r0` = `'+join(root,'skill')+'`\n### Available skills\n- '+target.nativeName+': Controlled Skill. (file: r0/SKILL.md)\n</skills_instructions>'}]}},
+ ];
+ for(const record of records)write(record);
+ // Positive controls prove the logs/targets would match the retained parser;
+ // the new version must still receive no discovery/read or authorization proof.
+ const lines=records.map(record=>JSON.stringify(record));
+ expect(codexSkillReadEvidence(lines,[target],now,now)).toHaveLength(1);
+ expect(codexSkillDiscoveryEvidence(lines,[target],now,now)).toHaveLength(1);
+ expect(await messages.read(current.run.runId)).toMatchObject({status:'unsupported',messages:[],issueCode:'AGENT_ADAPTER_UNSUPPORTED'});
+ expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
+ expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([]);
+});
 for (const runner of ['claude-code', 'codex'] as const) describe(runner + ' native user origin and trusted terminal bytes', () => {
   beforeEach(() => setup(runner));
   it('matches committed Unicode user content only after the actual owned PTY submission, including old rollout date', async () => {

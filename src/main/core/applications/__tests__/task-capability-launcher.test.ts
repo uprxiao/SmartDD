@@ -138,6 +138,20 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
 };
 
 describe('production ManagedTaskCapabilities composed with actual TaskService and local services',()=>{
+ it('M11 S0b selects the version-matched Codex adapter for a new 0.166.0 task and keeps native evidence unverified',async()=>{
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});
+  mkdirSync(join(home,'.codex'),{recursive:true});writeFileSync(join(home,'.codex','s0b.config.toml'),'model="isolated-profile-marker"\n');
+  const profile=profiles.create({name:'M11 named profile fixture',runner:'codex',executable:profiles.resolve(codexId).command,args:['--profile','s0b'],env:[],color:null,isDefault:false});
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const created=await create(profile.id),saved=await managed.sessions.get(created.task.id),runId=created.task.runtimeSnapshot!.runId!;
+  expect(saved.snapshot.adapterBinding.version).toBe('1.2.0');expect(saved.snapshot.agentAtCreation.version).toBe('0.166.0');
+  expect(managed.runs.assertActive(runId).snapshot.adapterBinding).toEqual(saved.snapshot.adapterBinding);
+  const flags=ptys.launches[0].args.join('\n');expect(flags).toContain('mcp_servers.');expect(flags).toContain('skills.config=');expect(flags).toContain('output_token_limit');
+  expect((await applications.nativeMessages.read(runId)).messages).toEqual([]);
+  const diagnostic=await applications.sessionDiagnostics.inspect(created.task.id);
+  expect(diagnostic.currentRun?.preparation).toMatchObject({cliVersion:'0.166.0',state:'prepared'});
+  for(const app of diagnostic.applications)expect(app.evidence).toMatchObject({skillDiscovery:'unverified',skillRead:'unverified'});
+ });
  it('M10-UG-01 keeps legacy imported disabled standard capabilities out of a new managed Mail session',async()=>{
   projects.createDatabase(projectId,{env:'test',label:'definition only',aliases:[],vendor:'postgres',host:'127.0.0.1',port:9,database:'fixture',schema:'public',username:'fixture',accessLevel:'readonly',isDefault:true,note:'Never connected',password:'isolated-disabled-password'});
   for(const id of ['project-db-diagnostics','remote-password-ssh',MCP_CAPABILITY])sqlite.prepare('INSERT INTO project_capabilities(id,project_id,capability_id,enabled) VALUES(?,?,?,0)').run(randomUUID(),projectId,id);
