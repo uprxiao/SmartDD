@@ -5,13 +5,15 @@ import {execFileSync} from 'node:child_process';
 import {join,resolve} from 'node:path';
 import assert from 'node:assert/strict';
 import {buildFileBroker} from './files/build.mjs';
-import {buildProcessIdentity} from './applications/build.mjs';
+import {buildProcessIdentity,buildApplicationCli} from './applications/build.mjs';
 import {buildApplicationRuntime} from './applications/build-runtime.mjs';
 
 const output=resolve(process.argv[2]??'out');
 execFileSync(process.execPath,['scripts/applications/generate-module-metadata.mjs','--write'],{stdio:'inherit'});
 buildFileBroker({output:join(output,'native/willyou-files')});
 const identityHelper=buildProcessIdentity({output:join(output,'native/willyou-process-identity')});
+const applicationCli=buildApplicationCli({output:join(output,'native/willyou-app')});
+if(applicationCli){const help=JSON.parse(execFileSync(applicationCli,['--help'],{encoding:'utf8',timeout:5000}));assert.equal(help.command,'willyou-app');}
 let nativeProbe=null;
 if(identityHelper){
  // A newly compiled helper must actually be executable and speak the expected

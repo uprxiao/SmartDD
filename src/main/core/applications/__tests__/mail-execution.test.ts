@@ -45,7 +45,7 @@ beforeEach(async () => {
   store = new ResourceStore(sqlite,join(root,'capabilities'));
   // A fake cipher/verifier isolates orchestration; transport is tested separately with real local servers.
   const secrets = new SecretsStore(drizzle(sqlite,{ schema }),{ isAvailable: () => true,encrypt: s => Buffer.from([...s].reverse().join('')),decrypt: b => [...b.toString()].reverse().join('') });
-  connections = new ApplicationConnectionService(store,secrets,{ verify: async (c,secret,signal) => c.kind === 'smtp' && c.host === '127.0.0.1' ? verifySmtp(c,secret,signal) : ({ providerId: c.kind,serviceId: 'smtp-fixture-service',accountId: c.kind === 'foxmail' ? c.account : c.username,contractMajor: 1 }) });
+  connections = new ApplicationConnectionService(store,secrets,{ verify: async (c,secret,signal) => c.kind === 'smtp' && c.host === '127.0.0.1' ? verifySmtp(c,secret,signal) : ({ providerId: c.kind,serviceId: 'smtp-fixture-service',accountId: c.kind === 'foxmail' ? c.account : 'username' in c ? c.username : 'fixture-account',contractMajor: 1 }) });
   smtp = await connections.save({ expectedRevision: 0,name: 'isolated SMTP',config: config(),secret: 'fixture-first-secret' });
   selections = new ApplicationSelectionService(store,connections,{ requireProject: id => { if (!sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(id)) throw new ApplicationError('NOT_FOUND','fixture project'); },stopProjectRuns: async () => true,runningInProject: () => 0 });
   await selections.setAdded('mail',true,0);

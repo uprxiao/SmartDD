@@ -14,6 +14,8 @@ import type {ConfigViewConverter} from '../config-view-registry';
 import type {CapabilitySessionSnapshot} from '@shared/application-session';
 
 export interface ApplicationModuleData extends ApplicationDataHost {
+  dispose?():Promise<void>;
+  connectionsChanged?():Promise<void>;
   projectPolicy?:ApplicationProjectPolicy;
   receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
   /** Retained internal v1 callers may use their original service, never the new routing facade. */

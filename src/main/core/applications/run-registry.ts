@@ -14,9 +14,9 @@ import { withResourceLock } from './resource-lock';
 import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
 import type { ProcessIdentity, ProcessIdentityReader, ProcessState } from './process-identity';
 import type {ApplicationRunPlan} from '@shared/application-run-plan';
-import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan} from './run-plan';
+import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan,assertRunPlanSnapshotSource} from './run-plan';
 
-const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.enum(['zentao','foxmail','smtp']),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
+const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
 const bindingsSchema = z.array(bindingSchema).max(64).refine(items => new Set(items.map(i => i.appId + ':' + i.slot)).size === items.length);
 const reserveSchema = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),bindings: bindingsSchema }).strict();
 export type RunBindingRevision = z.infer<typeof bindingSchema>;
@@ -100,7 +100,7 @@ export class CapabilityRunRegistry {
     if (session.selectionHash !== owned.selectionHash || session.snapshot.projectId !== row.project_id || session.snapshot.runner !== row.runner || session.pointer.snapshotHash !== row.snapshot_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','运行与固定会话身份不同');
     const scope=readApplicationRunScope(this.store,runId,session.snapshot,owned.scope?.evidenceHash);if(Boolean(scope)!==Boolean(owned.scope))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本轮应用范围与宿主登记不同');
     const plan=owned.planHash?readApplicationRunPlan(this.store,runId,owned.planHash):undefined;
-    if(plan&&(plan.taskId!==row.task_id||plan.projectId!==row.project_id||plan.snapshotHash!==row.snapshot_hash))throw new ApplicationError('SCOPE_DENIED','运行计划不能替换固定会话身份');
+    if(plan)assertRunPlanSnapshotSource(this.store,plan,session.snapshot,row.snapshot_hash);
     return { row,owned,session,...(plan?{plan}:{}) };
   }
   /** Lifecycle authority for native-only history is distinct from business authority. */

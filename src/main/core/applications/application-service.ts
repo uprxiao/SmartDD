@@ -164,11 +164,17 @@ export class ApplicationService {
   }
   private management<T>(sender:ApplicationUiSender,appId:ApplicationId,action:string,semantics:'read'|'write',work:(context:import('./execution-context').ApplicationExecutionContext)=>Promise<T>,projectId?:string):Promise<T>{
     applicationIdSchema.parse(appId);if(projectId)this.options.projects.getProject(projectId);
-    return this.contexts.withManagement(sender,{appId,action,semantics,projectId},async context=>{const value=await work(context);if(semantics==='write'){this.contexts.invalidate();if(this.executionPromise)await(await this.executionPromise).invalidatePolicies();this.options.changed?.();}return value;});
+    return this.contexts.withManagement(sender,{appId,action,semantics,projectId},async context=>{const value=await work(context);if(semantics==='write'){this.contexts.invalidate();await this.data.connectionsChanged();if(this.executionPromise)await(await this.executionPromise).invalidatePolicies();this.options.changed?.();}return value;});
   }
   setAdded(sender:ApplicationUiSender,appId:ApplicationId,added:boolean,expectedRevision:number){return this.management(sender,appId,'application.add','write',()=>this.selections.setAdded(appId,z.boolean().parse(added),z.number().int().nonnegative().parse(expectedRevision)));}
   setEnabled(sender:ApplicationUiSender,appId:ApplicationId,enabled:boolean,expectedRevision:number){return this.management(sender,appId,'application.enable','write',()=>this.selections.setGlobalEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
   projectSettings(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.selections.projectView(projectId,appId),projectId);}
+  invokeCapability(sender:ApplicationUiSender,projectId:string,appId:ApplicationId,capabilityId:string,input:unknown){
+    this.options.requireSender(sender);this.options.projects.getProject(projectId);applicationIdSchema.parse(appId);
+    const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','应用没有可用版本');const application=this.builtin.assertTrusted(active.packageHash),capability=builtinApplicationModules.capabilityViews(application.manifest).find(c=>c.id===capabilityId);
+    if(!capability)throw new ApplicationError('SCOPE_DENIED','项目应用未声明此能力');
+    return this.contexts.withUi(sender,{projectId,appId,action:'ui.capability.invoke',operations:[capability.permission],semantics:capability.semantics==='read'?'read':'write',...(capability.retry==='safe-read'?{retry:'safe-read' as const}:{})},context=>this.capabilities.execute(this.contexts.caller(context),capability.id,capability.contractMajor,input));
+  }
   projectPolicy(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.data.policy(appId)?.status(projectId)??null,projectId);}
   projectAction(sender:ApplicationUiSender,projectId:string,appId:ApplicationId,input:unknown){return this.management(sender,appId,'application.project.action','write',context=>{const action=this.data.policy(appId)?.action;if(!action)throw new ApplicationError('SCOPE_DENIED','此应用没有项目页面专属动作');return action(context,sender,input);},projectId);}
   select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=this.connections.registry.parseSelection(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
@@ -279,6 +285,6 @@ export class ApplicationService {
   });}
   dispose():Promise<void>{
     if(this.closing)return this.closing;this.closed=true;this.uiReads.dispose();this.terminal?.dispose();this.nativeMessages.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();this.attachmentOpeners?.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
-    const exports=this.attachmentExports?.dispose();const maintenance=this.maintenanceWaits.dispose();this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending,exports,maintenance,this.cacheRepairPromise]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+    const exports=this.attachmentExports?.dispose();const maintenance=this.maintenanceWaits.dispose();this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending,exports,maintenance,this.cacheRepairPromise,this.data.dispose()]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }

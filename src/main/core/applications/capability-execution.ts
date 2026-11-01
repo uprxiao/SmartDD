@@ -9,6 +9,8 @@ import type { BuiltinPackageRegistry } from './builtin-package-registry';
 import { canonicalJson } from './manifest';
 import {applicationResultV2Schema,type ApplicationResultV2} from '@shared/application-result';
 import {applicationResourceRefSchema} from '@shared/application-data';
+import {AjvJsonSchemaValidator} from '@modelcontextprotocol/server/validators/ajv';
+import type {JsonSchemaType} from '@modelcontextprotocol/server';
 
 interface CapabilityData {
   receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
@@ -16,6 +18,8 @@ interface CapabilityData {
 }
 /** UI, MCP and CLI converge here after their own host-issued identity checks. */
 export class ApplicationCapabilityExecution {
+  private readonly validator=new AjvJsonSchemaValidator();
+  private readonly contracts=new Map<string,{input:ReturnType<AjvJsonSchemaValidator['getValidator']>;output:ReturnType<AjvJsonSchemaValidator['getValidator']>}>();
   constructor(private readonly contexts:ApplicationExecutionContexts,private readonly modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>,private readonly packages:BuiltinPackageRegistry,private readonly data:CapabilityData){}
 
   private declaration(packageHash:string,capabilityId:string,contractMajor:number):ApplicationCapability{
@@ -64,6 +68,13 @@ export class ApplicationCapabilityExecution {
     if(!capability.id.startsWith(context.appId+'.')||capability.semantics!=='read'&&(context.semantics!=='write'||caller.kind==='internal'))throw new ApplicationError('SCOPE_DENIED','本次调用上下文未授权该业务动作');
     if(caller.kind==='agent'&&(caller.entry==='cli'?capability.id!==context.action:capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action)))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');
     if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');
+    const key=context.packageHash+':'+capability.id;
+    let contract=this.contracts.get(key);
+    if(contractMajor===2&&!contract){
+      const name=capability.binding.cli?capability.id:capability.binding.mcp?.tool??(capability.binding.fallback&&'mcp'in capability.binding.fallback?capability.binding.fallback.mcp.tool:capability.id),source=this.packages.packages.toolContractSources(context.packageHash,name);
+      contract={input:this.validator.getValidator(JSON.parse(source.input) as JsonSchemaType),output:this.validator.getValidator(JSON.parse(source.output) as JsonSchemaType)};this.contracts.set(key,contract);
+    }
+    if(contract&&!contract.input(args).valid)throw new ApplicationError('INVALID_INPUT','能力参数不符合固定输入契约');
     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
     return this.contexts.withSignal(context,signal,async()=>{
       // A retained v1 external-write call can return an already claimed receipt without re-entering its provider.
@@ -72,7 +83,9 @@ export class ApplicationCapabilityExecution {
       if(!receiptOnly)await this.contexts.requireSlots(context,capability.slots.required);
       const result=await this.data.execute(context,implementation.method,args);
       this.contexts.require(context,capability.permission);
-      return contractMajor===2?this.result(caller,context,capability,result):result;
+      const value=contractMajor===2?this.result(caller,context,capability,result):result;
+      if(contract&&!contract.output(value).valid)throw new ApplicationError('INVALID_RESPONSE','能力结果不符合固定输出契约');
+      return value;
     });
   }
 }

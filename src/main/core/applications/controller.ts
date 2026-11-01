@@ -43,6 +43,7 @@ export function createApplicationController(service:ApplicationService|undefined
     setEnabled:(event,appId:ApplicationId,enabled:boolean,revision:number)=>run(event,current=>current.setEnabled(event,appId,enabled,revision)),
     projectSettings:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectSettings(event,projectId,appId)),
     projectPolicy:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectPolicy(event,projectId,appId)),
+    invokeCapability:(event,projectId:string,appId:ApplicationId,capabilityId:string,input:unknown)=>run(event,current=>current.invokeCapability(event,projectId,appId,capabilityId,input)),
     projectAction:(event,projectId:string,appId:ApplicationId,input:unknown)=>run(event,current=>current.projectAction(event,projectId,appId,input)),
     select:(event,input:ProjectApplicationSelectionInput)=>run(event,current=>current.select(event,input)),
     connections:(event,appId:ApplicationId)=>run(event,current=>current.listConnections(event,appId)),

@@ -18,7 +18,7 @@ try {
   const adapters=[],runtimes=[],apps=[];
   const runtimeFiles={'mcp-bridge.cjs':readFileSync(runtimeEntry)},runtimeManifest={schema:'smartdd-app-runtime-v1',id:'applications',protocolMajor:1,bridgeEntry:'mcp-bridge.cjs',files:Object.entries(runtimeFiles).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes)}))},runtimeHash=digest(canonical(runtimeManifest)),runtimePath='runtimes/'+runtimeHash;
   writeTree(join(stage,runtimePath),{...runtimeFiles,'runtime.json':Buffer.from(canonical(runtimeManifest)+'\n')});runtimes.push({id:'applications',protocolMajor:1,hash:runtimeHash,path:runtimePath,bridgeEntry:'mcp-bridge.cjs'});
-  for(const agentId of ['claude-code','codex']) for(const adapterVersion of agentId==='codex'?['1.0.0','1.1.0','1.2.0']:['1.0.0','1.1.0']) {
+  for(const agentId of ['claude-code','codex']) for(const adapterVersion of agentId==='codex'?['1.0.0','1.1.0','1.2.0','1.3.0']:['1.0.0','1.1.0']) {
     const source=readTree(resolve('resources/agent-adapters',agentId,adapterVersion)),metadata=JSON.parse(source['adapter.json'].toString('utf8'));delete source['adapter.json'];
     const manifest={schema:'willyou-owned-bundle-v1',metadata,files:Object.entries(source).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes),executable:false})).sort((a,b)=>compare(a.path,b.path))},hash=digest(canonical(manifest)),path='adapters/'+agentId+'/'+metadata.version+'/'+hash;
     writeTree(join(stage,path),{...source,'bundle.json':Buffer.from(canonical(manifest)+'\n')});adapters.push({agentId,version:metadata.version,hash,path});

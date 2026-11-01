@@ -10,7 +10,7 @@ import type {ApplicationExecutionContexts} from './execution-context';
 import type {ApplicationModuleRegistry,TrustedApplicationModule,ApplicationProjectPolicy} from './modules/registry';
 import {ApplicationCapabilityExecution} from './capability-execution';
 import {BuiltinPackageRegistry} from './builtin-package-registry';
-type RegisteredData=ApplicationDataHost&{receiptOnly?:(context:ApplicationExecutionContext,method:string,input:unknown)=>boolean;projectPolicy?:ApplicationProjectPolicy;legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
+type RegisteredData=ApplicationDataHost&{dispose?:()=>Promise<void>;connectionsChanged?:()=>Promise<void>;receiptOnly?:(context:ApplicationExecutionContext,method:string,input:unknown)=>boolean;projectPolicy?:ApplicationProjectPolicy;legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
 interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[];execution?:{contexts:ApplicationExecutionContexts;modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>}}
 export class ApplicationBusinessDataService implements ApplicationDataHost {
   private readonly builtinMail?:MailDraftDataService;
@@ -41,6 +41,8 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
       this.hosts.set('mail',{resolve:(version,method,binding)=>target(method).resolve(version,method,binding),execute:(context,method,input)=>target(method).execute(context,method,input)});
     }
   }
+  async dispose(){await Promise.all([...this.hosts.values()].map(host=>host.dispose?.()));}
+  async connectionsChanged(){await Promise.all([...this.hosts.values()].map(host=>host.connectionsChanged?.()));}
   resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){
     const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');
     const handler=host.resolve(version,method,binding),execution=this.capabilities,contexts=this.contexts;

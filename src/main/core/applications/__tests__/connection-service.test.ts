@@ -18,7 +18,7 @@ import { fixtureBundle } from './fixtures';
 import {builtinConfigViews} from '../config-view-registry';
 let root: string, sqlite: Database.Database, secrets: SecretsStore, store: ResourceStore, service: ApplicationConnectionService;
 let available: boolean, verify: ReturnType<typeof vi.fn<ConnectionVerifier['verify']>>;
-const config = (): ConnectionConfig => ({ kind: 'zentao', baseUrl: 'https://zentao.example.test/biz/', username: 'tester', authMode: 'token' });
+const config = (): Extract<ConnectionConfig,{kind:'zentao'}> => ({ kind: 'zentao', baseUrl: 'https://zentao.example.test/biz/', username: 'tester', authMode: 'token' });
 const input = (over: Partial<SaveApplicationConnection> = {}): SaveApplicationConnection => ({ expectedRevision: 0, name: 'Isolated ZenTao', config: config(), secret: 'fixture-secret-first', ...over });
 const identity = (c: ConnectionConfig): VerifiedConnectionIdentity => ({ providerId: c.kind, serviceId: 'fixture-service', accountId: 'fixture-account', contractMajor: 1 });
 const authVersion = (c: { identityRevision: number; configRevision: number; secretRevision: number; policyRevision: number }) => ({ identityRevision: c.identityRevision, configRevision: c.configRevision, secretRevision: c.secretRevision, policyRevision: c.policyRevision });

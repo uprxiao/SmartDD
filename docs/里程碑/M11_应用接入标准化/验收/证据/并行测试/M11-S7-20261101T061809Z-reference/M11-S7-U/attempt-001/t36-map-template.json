@@ -1,0 +1,76 @@
+{
+  "case": "M11-T36",
+  "authority": "docs/里程碑/M11_应用接入标准化/验收/测试用例.md:78",
+  "layer": "I",
+  "allOriginalCriteriaFullyDemonstratedByThisBatch": false,
+  "recommendation": "Do not close T36 from this batch alone; root may combine other valid evidence or schedule missing host-level project-stop/rotation/shutdown observations. This executor does not update the formal ledger.",
+  "criteria": [
+    {
+      "id": "scope",
+      "criterion": "范围外被拒且未调上游",
+      "coverage": "Pool MCP/CLI audit count plus real sample-kv capability refusal",
+      "testNameFragments": [
+        "credentials/config and maps only trusted capabilities",
+        "same module/data/protection/result"
+      ],
+      "remaining": "No additional gap in the selected controlled reference scope"
+    },
+    {
+      "id": "project-stop",
+      "criterion": "两个项目使用同一连接；停止 A 不取消 B 的在途调用",
+      "coverage": "Partial: two same-connection leases share a session; release A leaves B running",
+      "testNameFragments": [
+        "shares one connection/revision/scope session"
+      ],
+      "remaining": "The selected test does not create distinct projects/runs A and B or invoke the real host project-stop/revocation path"
+    },
+    {
+      "id": "rotation",
+      "criterion": "轮换后建立新会话、旧会话收尾",
+      "coverage": "Pool integration uses two explicit revisions; actual stdio session/directory lifecycle",
+      "testNameFragments": [
+        "opens a new revision while old in-flight work finishes"
+      ],
+      "remaining": "No full connection credential-rotation operation through ApplicationService in the selected test"
+    },
+    {
+      "id": "cancel",
+      "criterion": "取消传递到上游",
+      "coverage": "Actual controlled CLI cancellation and PID exit; shared MCP lease cancellation has host receipt assertions",
+      "testNameFragments": [
+        "cancels the actual owned CLI process",
+        "shares one connection/revision/scope session"
+      ],
+      "remaining": "No explicit audit assertion that a running MCP upstream observed its cancellation notification"
+    },
+    {
+      "id": "write-unknown",
+      "criterion": "写超时为未知且不重发",
+      "coverage": "Actual controlled MCP submitted write, unknown result, business-key query, exactly one kv_put audit entry",
+      "testNameFragments": [
+        "returns unknown for a submitted write timeout"
+      ],
+      "remaining": "CLI write-timeout variant is outside the selected test evidence"
+    },
+    {
+      "id": "shutdown",
+      "criterion": "关闭宿主后子进程全部退出",
+      "coverage": "Pool close cancels actual pending MCP/CLI work and removes private directories; separate CLI cancel checks PID exit",
+      "testNameFragments": [
+        "closes all active sessions and removes private credentials",
+        "cancels the actual owned CLI process"
+      ],
+      "remaining": "Selected shutdown test calls pool.close directly rather than full ApplicationService/host disposal and does not assert all MCP/CLI PIDs afterward"
+    },
+    {
+      "id": "daily-config",
+      "criterion": "上游 CLI 未读取用户日常配置",
+      "coverage": "Private HOME/config directory audit, 0700 directory/0600 credentials, refusal of global isolation/token inheritance",
+      "testNameFragments": [
+        "credentials/config and maps only trusted capabilities",
+        "refuses unisolatable tools"
+      ],
+      "remaining": "No filesystem read sentinel/audit asserting absence of daily configuration access; evidence is limited to the controlled reference process configuration"
+    }
+  ]
+}

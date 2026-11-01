@@ -28,9 +28,9 @@ test('CLI builds pinned application bundles from an escaped native path with com
   execFileSync(process.execPath, [join(root, 'scripts/applications/build-bundles.mjs'), bundles, runtimeEntry], child);
   const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
   const verified = bundleVerifier.verifyCapabilityBundles(bundles, version);
-  assert.equal(verified.adapters, 5);
+  assert.equal(verified.adapters, 6);
   assert.equal(verified.runtimes, 1);
-  assert.deepEqual(verified.apps.map(app => app.appId).sort(), ['mail', 'zentao']);
+  assert.deepEqual(verified.apps.map(app => app.appId).sort(), definitions.map(app=>app.appId).sort());
   const index = JSON.parse(readFileSync(join(bundles, 'index.json'), 'utf8'));
   for (const definition of definitions) {
     assert.equal(index.runtimes[0].hash, definition.runtime.hash, 'Original pinned runtime is unchanged');
@@ -38,6 +38,10 @@ test('CLI builds pinned application bundles from an escaped native path with com
     const manifest = JSON.parse(readFileSync(join(bundles, app.path, 'manifest.json'), 'utf8'));
     assert(manifest.files.some(file => file.path.startsWith('skills/') && file.path.endsWith('/SKILL.md')));
     assert(manifest.files.every(file => !file.path.includes('\\')), 'Portable manifest paths use forward slashes');
+    if(definition.appId==='zentao'){
+      assert.equal(manifest.schema,'smartdd-app-package-v2');assert.equal(manifest.version,'1.1.0');assert.equal(manifest.capabilities.length,3);assert.equal(manifest.entry,'cli');
+      assert(!Object.hasOwn(manifest,'adapter'));assert(manifest.files.every(file=>!file.executable&&!/\.(?:c?js|mjs|py|sh)$/.test(file.path)),'ZenTao v2 is data only');
+    }
     if(definition.appId==='mail'){
       assert.equal(manifest.schema,'smartdd-app-package-v2');assert.equal(manifest.version,'1.1.0');assert.equal(manifest.capabilities.length,14);
       assert(!Object.hasOwn(manifest,'adapter'));assert(manifest.files.every(file=>!file.executable&&!/\.(?:c?js|mjs|py|sh)$/.test(file.path)),'Mail v2 is data only');

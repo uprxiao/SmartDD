@@ -192,7 +192,7 @@ async function main(): Promise<void> {
       applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
       await applications.recover();
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
-        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),stopPty:id=>ptys.kill(id)});
+        managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),stopPty:id=>ptys.kill(id)});
         tasks.attachManagedCapabilities(managedTasks);
       }
     }

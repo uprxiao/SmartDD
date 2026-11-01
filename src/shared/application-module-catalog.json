@@ -14,7 +14,8 @@
         {
           "id": "zentao.object.list",
           "contractMajors": [
-            1
+            1,
+            2
           ],
           "permission": "zentao.read",
           "semantics": "read",
@@ -30,7 +31,8 @@
         {
           "id": "zentao.object.get",
           "contractMajors": [
-            1
+            1,
+            2
           ],
           "permission": "zentao.read",
           "semantics": "read",
@@ -46,7 +48,8 @@
         {
           "id": "zentao.resource.read",
           "contractMajors": [
-            1
+            1,
+            2
           ],
           "permission": "zentao.read",
           "semantics": "read",
@@ -715,6 +718,167 @@
               "fromAddress",
               "authMode",
               "mode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "appId": "sample-kv",
+      "slots": [
+        "sample-kv"
+      ],
+      "stopBeforeSwitch": false,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "sample-kv.entry.read",
+          "contractMajors": [
+            2
+          ],
+          "permission": "sample-kv.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "sample-kv"
+            ],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "sample-kv.entry.write",
+          "contractMajors": [
+            2
+          ],
+          "permission": "sample-kv.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [
+              "sample-kv"
+            ],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "revision",
+            "object": "sample_kv_entry",
+            "key": "expectedRevision"
+          },
+          "legacyTool": null
+        }
+      ],
+      "presentation": {
+        "displayName": "接入标准示例",
+        "heading": "受控 MCP／CLI 接入示例",
+        "mark": "link",
+        "projectNote": "仅使用合成凭据与本机样本数据，用于验证应用接入规范。",
+        "emptyConnectionSuffix": "",
+        "defaultProvider": "sample-kv",
+        "panel": null,
+        "switchTitle": "切换样本连接"
+      },
+      "providers": [
+        {
+          "id": "sample-kv",
+          "appId": "sample-kv",
+          "title": "本机样本连接",
+          "icon": "link",
+          "initial": {
+            "kind": "sample-kv",
+            "service": "local-reference",
+            "prefix": "demo:",
+            "transport": "mcp",
+            "authMode": "token"
+          },
+          "summaryFields": [
+            "service",
+            "transport"
+          ],
+          "locationField": "prefix",
+          "secret": {
+            "title": "合成 Token",
+            "authModeValidation": "样本仅接受 SYNTHETIC_ 开头的合成 Token。"
+          },
+          "project": {
+            "title": "样本连接",
+            "unselectedNote": "不自动选用连接。"
+          },
+          "groups": [
+            {
+              "key": "service",
+              "title": "样本服务",
+              "label": "样本服务",
+              "type": "text",
+              "required": true,
+              "validation": "使用小写字母、数字和短横线。"
+            },
+            {
+              "key": "prefix",
+              "title": "允许的键前缀",
+              "label": "允许的键前缀",
+              "type": "text",
+              "required": true,
+              "validation": "请填写可判定的非空键前缀。"
+            },
+            {
+              "key": "transport",
+              "title": "上游方式",
+              "label": "上游方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "mcp",
+                  "label": "MCP"
+                },
+                {
+                  "value": "cli",
+                  "label": "CLI"
+                }
+              ],
+              "validation": "请选择受控上游方式。"
+            }
+          ],
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "sample-kv"
+              },
+              "service": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,47}$"
+              },
+              "prefix": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[A-Za-z0-9:_-]+$"
+              },
+              "transport": {
+                "type": "string",
+                "enum": [
+                  "mcp",
+                  "cli"
+                ]
+              },
+              "authMode": {
+                "type": "string",
+                "const": "token"
+              }
+            },
+            "required": [
+              "kind",
+              "service",
+              "prefix",
+              "transport",
+              "authMode"
             ],
             "additionalProperties": false
           }

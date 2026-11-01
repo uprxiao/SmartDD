@@ -2,9 +2,24 @@ import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {applicationCapabilityViews,type ApplicationPackageManifest} from '@shared/application-capabilities';
 import {renderSkillTemplate,selectCapabilityEntry,type SkillRenderParameters} from './run-plan';
+import {applicationNativeSkillName} from '@shared/application-session';
+import {canonicalJson,digest} from './manifest';
 
 const deliverySchema=z.object({schema:z.literal(1),allowedOperations:z.array(z.string()).max(256),available:z.object({mcp:z.boolean(),cli:z.boolean()}).strict()}).strict();
 export type ApplicationSkillDelivery=z.infer<typeof deliverySchema>;
+export function applicationSkillDelivery(manifest:ApplicationPackageManifest,allowedOperations:readonly string[],available:{mcp:boolean;cli:boolean}):ApplicationSkillDelivery|undefined{
+  if(manifest.schema!=='smartdd-app-package-v2')return undefined;
+  const capabilities=manifest.capabilities.filter(c=>allowedOperations.includes(c.permission));
+  const selected=capabilities.map(c=>selectCapabilityEntry(c,available).entry);
+  return{schema:1,allowedOperations:[...allowedOperations],available:{mcp:selected.includes('mcp'),cli:selected.includes('cli')}};
+}
+/** Only differing effective invocations get different native identities. Tokens, endpoints and run IDs are absent. */
+export function applicationSkillProjectionName(manifest:ApplicationPackageManifest,skillId:string,packageHash:string,delivery?:ApplicationSkillDelivery):string{
+  const variant=manifest.schema==='smartdd-app-package-v2'&&manifest.skills.some(s=>s.id===skillId&&s.template)&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);
+  if(!variant)return applicationNativeSkillName(manifest.appId,skillId,packageHash);
+  if(!delivery)throw new ApplicationError('INVALID_PACKAGE','动态Skill缺少本次入口参数');
+  return applicationNativeSkillName(manifest.appId,skillId,digest(canonicalJson({packageHash,skillId,parameters:applicationSkillParameters(manifest,delivery)})));
+}
 
 /** Public delivery parameters only. Invocations always come from verified package bindings. */
 export function applicationSkillParameters(manifest:ApplicationPackageManifest,raw:ApplicationSkillDelivery):SkillRenderParameters{

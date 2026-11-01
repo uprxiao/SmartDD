@@ -24,8 +24,7 @@ import {ApplicationAdapterRegistry} from '../application-adapter-registry';
 import {MacProcessIdentityReader} from '../process-identity';
 
 /** Real module/data/SQLite/plan composition; CLI binary, peer kernel reader and native Agent are fixtures. */
-export async function cliFixture(options:{nativeRoot?:boolean}={}){
- const f=await agentFixture(),reader=new FixtureProcessReader(),distribution=join(f.root,'cli-distribution');
+export async function installCliFixturePackage(store:import('../resource-store').ResourceStore,distribution:string){
  cpSync(resolve('out/capability-bundles'),distribution,{recursive:true});
  const original=new CapabilityBundleSource(distribution),entry=original.index.apps.find(a=>a.appId==='mail')!,bundle=original.application(entry);
  if(bundle.manifest.schema!=='smartdd-app-package-v2')throw Error('Production Mail v2 required');
@@ -34,7 +33,12 @@ export async function cliFixture(options:{nativeRoot?:boolean}={}){
  for(const[path,bytes]of Object.entries(checked.files)){mkdirSync(join(directory,path,'..'),{recursive:true});writeFileSync(join(directory,path),bytes);}
  writeFileSync(join(directory,'manifest.json'),canonicalJson(checked.manifest)+'\n');
  const {indexHash:_,...index}=structuredClone(original.index);index.apps=index.apps.map(a=>a.appId==='mail'?{appId:'mail',version:manifest.version,hash:checked.packageHash,path:relative}:a);index.build.resourceSetHash=digest(canonicalJson({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps}));writeFileSync(join(distribution,'index.json'),canonicalJson({...index,indexHash:digest(canonicalJson(index))})+'\n');
- const source=new CapabilityBundleSource(distribution);await new RuntimeRegistry(f.store).install(source.runtime());const trusted=new BuiltinPackageRegistry(f.store),installed=await trusted.install(source,source.index.apps.find(a=>a.appId==='mail')!);await trusted.packages.activate(installed.packageHash,0);
+ const source=new CapabilityBundleSource(distribution);await new RuntimeRegistry(store).install(source.runtime());const trusted=new BuiltinPackageRegistry(store),installed=await trusted.install(source,source.index.apps.find(a=>a.appId==='mail')!);await trusted.packages.activate(installed.packageHash,trusted.packages.active('mail')?.generation??0);
+ return{manifest,installed,source};
+}
+
+export async function cliFixture(options:{nativeRoot?:boolean}={}){
+ const f=await agentFixture(),reader=new FixtureProcessReader(),{manifest,installed}=await installCliFixturePackage(f.store,join(f.root,'cli-distribution'));
  const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),projects=new ProjectService(db,secrets),sender={sender:Object.assign(new EventEmitter(),{id:123,isDestroyed:()=>false})};
  const applications=new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:()=>{},mailWorker:join(f.root,'not-executed-worker'),foxmailNative:join(f.root,'not-executed-native'),processes:reader});await applications.recover();await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId:'p1',appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
  const base=f.plan('codex'),adapter=f.installedAdapters.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.2.0')!,toolMajors=Object.fromEntries(applicationToolDeclarations(manifest).map(t=>[t.name,t.contractMajor])),bridge=base.mcp.find(m=>m.kind==='applications')!;

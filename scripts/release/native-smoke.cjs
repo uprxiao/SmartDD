@@ -39,6 +39,7 @@ if (process.platform === 'darwin') {
   assert.equal(ownProcess.state, 'running', 'Read-only own process probe');
   assert.equal(ownProcess.pid, process.pid, 'Probe matches own PID');
   assert.match(ownProcess.startedAt, /^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/, 'Kernel process start identity');
+  const applicationCli=path.join(resources,'native/willyou-app');assert(fs.existsSync(applicationCli),'Packaged native application CLI');assert.equal(execFileSync('/usr/bin/lipo',['-archs',applicationCli],{encoding:'utf8'}).trim(),expectedArch==='arm64'?'arm64':'x86_64','Application CLI architecture');assert.equal(JSON.parse(execFileSync(applicationCli,['--help'],{encoding:'utf8',timeout:5000})).command,'willyou-app','Application CLI local JSON help');
   const mailReader = path.join(resources, 'native/willyou-foxmail');
   assert(fs.existsSync(mailReader), 'Packaged Foxmail readonly reader');
   assert.equal(execFileSync('/usr/bin/lipo', ['-archs', mailReader], { encoding: 'utf8' }).trim(), expectedArch === 'arm64' ? 'arm64' : 'x86_64', 'Foxmail reader architecture');
@@ -54,8 +55,8 @@ if (process.platform === 'darwin') {
   const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
   assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
   assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
-  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0', 'codex@1.2.0'], 'Original/legacy adapters and Codex 0.166.0 baseline packaged');
-  assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), ['mail', 'zentao'], 'Both built-in application packages packaged');
+  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0', 'codex@1.2.0', 'codex@1.3.0'], 'Original/legacy adapters and Codex 0.166.0 baseline packaged');
+  assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), require('../../src/shared/application-module-catalog.json').applications.map(a=>a.appId).sort(), 'All registered application packages packaged');
   for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes, ...capabilityIndex.apps]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
   for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');
   assert.equal(packagedRequire('nodemailer/package.json').version, '10.1.7', 'Fixed SMTP dependency');

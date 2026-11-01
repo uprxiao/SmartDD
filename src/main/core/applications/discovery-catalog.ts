@@ -21,7 +21,7 @@ import {verifyLegacyDiscoveryEntry,assertDiscoveryPath,legacyDiscoveryEntry} fro
 import { PackageRegistry } from './package-registry';
 import { applicationSkillContentHash } from './session-registry';
 import { projectSkillName, standardNativeSkillName } from './session-projector';
-import {renderApplicationSkill,type ApplicationSkillDelivery} from './application-skill-template';
+import {applicationSkillProjectionName,renderApplicationSkill,type ApplicationSkillDelivery} from './application-skill-template';
 import {resourceGcPlan,type ResourceGcPlan} from './resource-gc-plan';
 const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(128).regex(/^smartdd-[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
@@ -315,7 +315,7 @@ export class DiscoveryCatalog {
         else if (resource.kind === 'application-package') {
             const pkg = new PackageRegistry(this.store, 'discovery-reader').get(resource.contentHash);
             verifyPackageTree(this.store.directory(resource), pkg, this.store.storeId);
-            const skill = pkg.manifest.skills.find(s => applicationNativeSkillName(pkg.appId, s.id, pkg.packageHash) === plan.entry.nativeName);
+            const skill = pkg.manifest.skills.find(s => applicationSkillProjectionName(pkg.manifest,s.id,pkg.packageHash,plan.source.delivery) === plan.entry.nativeName);
             if (!skill || applicationSkillContentHash(pkg.manifest, skill.path) !== plan.entry.sourceHash)
                 throw new ApplicationError('HASH_MISMATCH', '应用Skill来源身份不同');
             const prefix = skill.path + '/';
@@ -764,8 +764,19 @@ export class DiscoveryCatalog {
             return results;
         });
     }
-    verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshot): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
-        throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影资源未就绪或实际HOME不同'); const manifest = verifyOwnedBundle(this.store.directory(resource), resource.contentHash, this.store.storeId); if (manifest.metadata.homeId !== this.homeId)
-        throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影属于其他发现根'); const selections = [...snapshot.packages.flatMap(p => p.skills.map(s => ({ path: s.projectionPath, hash: s.contentHash }))), ...snapshot.standardSkills.map(s => ({ path: s.projectionPath, hash: s.hash }))]; if (snapshot.runner !== 'codex' || !selections.some(s => s.path === join(this.store.directory(resource), 'SKILL.md') && s.hash === manifest.metadata.sourceHash))
-        throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影未被原会话按相同来源选择'); }
+    verifyReference(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
+        if(resource.kind!=='agent-projection'||resource.pathScope!=='H'||resource.scopeIdentity!==this.homeId||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_STATE_CHANGED','共享投影资源未就绪或实际HOME不同');
+        const root=this.store.directory(resource),manifest=verifyOwnedBundle(root,resource.contentHash,this.store.storeId);
+        if(manifest.metadata.homeId!==this.homeId||snapshot.runner!=='codex')throw new ApplicationError('OWNERSHIP_CONFLICT','共享投影属于其他发现根');
+        const selections=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash}))];
+        if(selections.some(s=>s.path===join(root,'SKILL.md')&&s.hash===manifest.metadata.sourceHash))return;
+        // A per-run delivery keeps the fixed source selection; only its verified invocation view differs.
+        const selected=snapshot.packages.find(p=>manifest.metadata.sourceResourceId==='app:'+p.packageHash),pkg=selected&&new PackageRegistry(this.store,'variant-reference-reader').get(selected.packageHash),delivery=manifest.metadata.delivery as unknown as ApplicationSkillDelivery|undefined;
+        if(!selected||!pkg||pkg.manifest.schema!=='smartdd-app-package-v2'||!delivery||canonicalJson(delivery.allowedOperations)!==canonicalJson(selected.allowedOperations))throw new ApplicationError('OWNERSHIP_CONFLICT','动态投影未被原会话按相同来源选择');
+        const skill=selected.skills.find(s=>s.contentHash===manifest.metadata.sourceHash&&applicationSkillProjectionName(pkg.manifest,s.skillId,pkg.packageHash,delivery)===manifest.metadata.nativeName);
+        if(!skill||join(this.home,'.agents/skills',String(manifest.metadata.nativeName),'SKILL.md')!==join(root,'SKILL.md'))throw new ApplicationError('OWNERSHIP_CONFLICT','动态投影路径或来源不同');
+        const files=Object.fromEntries(manifest.files.map(file=>[file.path,readFileSync(join(root,file.path))])),executables=new Set(manifest.files.filter(f=>f.executable).map(f=>f.path));
+        const planned=this.plans([{nativeName:String(manifest.metadata.nativeName),sourceHash:skill.contentHash,sourceResourceId:'app:'+pkg.packageHash,files,executables,delivery}])[0];
+        if(planned.hash!==resource.contentHash)throw new ApplicationError('HASH_MISMATCH','动态投影元数据与原资源身份不同');this.verifySource(planned);
+    }
 }

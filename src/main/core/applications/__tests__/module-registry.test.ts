@@ -26,9 +26,9 @@ const third = {
 
 describe('compiled application module composition', () => {
   it('keeps the two current applications and their three providers registered through one catalog', () => {
-    expect(builtinApplicationModules.appIds()).toEqual(['zentao', 'mail']);
+    expect(builtinApplicationModules.appIds()).toEqual(['zentao', 'mail', 'sample-kv']);
     const host = new HostApplicationRegistry(builtinApplicationModules.definitions);
-    expect(host.appIds()).toEqual(['zentao', 'mail']);
+    expect(host.appIds()).toEqual(['zentao', 'mail', 'sample-kv']);
     expect(host.provider('foxmail').authentication).toEqual({ kind: 'none', mode: 'local-readonly' });
     expect(host.application('zentao').stopBeforeSwitch).toBe(true);
     expect(host.application('mail').stopBeforeSwitch).toBe(false);

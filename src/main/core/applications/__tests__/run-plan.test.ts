@@ -5,7 +5,7 @@ import type {ApplicationCapability} from '@shared/application-capabilities';
 import {capabilitySessionSnapshotSchema} from '@shared/application-session';
 import {capabilitySessionSnapshotV3Schema} from '@shared/application-session-v3';
 import {canonicalJson,digest} from '../manifest';
-import {createApplicationRunPlan,readApplicationRunPlan,renderSkillTemplate,requirePlanEntry,selectCapabilityEntry,storeApplicationRunPlan,verifyApplicationRunPlan} from '../run-plan';
+import {createApplicationRunPlan,readApplicationRunPlan,renderSkillTemplate,requirePlanEntry,selectCapabilityEntry,storeApplicationRunPlan,verifyApplicationRunPlan,assertRunPlanSnapshotSource} from '../run-plan';
 import {CapabilityRunRegistry,type OwnedCapabilityRun} from '../run-registry';
 import {ApplicationToolService} from '../tool-service';
 import {FixtureProcessReader,runFixture} from './run-fixture';
@@ -31,6 +31,13 @@ describe('M11 immutable, transport-independent application run plans',()=>{
   expect(()=>requirePlanEntry(plan,'zentao.object.get',2,'mcp')).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
   const snapshot={...f.snapshot,packages:f.snapshot.packages.map(p=>({...p,allowedOperations:['zentao.read']}))};
   expect(createApplicationRunPlan({runId:randomUUID(),snapshot,snapshotHash:f.session.pointer.snapshotHash,applications:[{manifest:f.application!.manifest,packageHash:f.application!.packageHash,capabilities:capabilities()}],available:{mcp:true,cli:false},skills:[]}).allowed.map(c=>c.capabilityId)).toEqual(['zentao.object.get']);
+ });
+ it('retains the immutable plan after the host binds the first native id, but refuses all selection changes',async()=>{
+  const plan=build(),nativeId=randomUUID();await f.sessions.bindNativeSession(f.snapshot.taskId,f.session.pointer.snapshotHash,{...f.snapshot.native,runner:f.snapshot.runner,sessionId:nativeId});const current=await f.sessions.get(f.snapshot.taskId);
+  expect(()=>assertRunPlanSnapshotSource(f.store,plan,current.snapshot,current.pointer.snapshotHash)).not.toThrow();
+  expect(()=>assertRunPlanSnapshotSource(f.store,plan,{...current.snapshot,projectId:'another-project'},current.pointer.snapshotHash)).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+  expect(()=>assertRunPlanSnapshotSource(f.store,plan,{...current.snapshot,packages:[]},current.pointer.snapshotHash)).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
+  f.sqlite.prepare('UPDATE capability_snapshot_versions SET snapshot_json=? WHERE snapshot_hash=?').run('{}',plan.snapshotHash);expect(()=>assertRunPlanSnapshotSource(f.store,plan,current.snapshot,current.pointer.snapshotHash)).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
  });
  it('stores one exact plan, detects content tampering and retains old session bytes',()=>{
   const before=f.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId),plan=build();

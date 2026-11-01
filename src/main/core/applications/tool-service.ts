@@ -37,6 +37,7 @@ interface InvocationRow { operation_id: string;request_hash: string;state: 'runn
 interface SelectedTool { application: InstalledApplicationPackage;declaration: ApplicationManifest['tools'][number];tool: BridgeTool }
 const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'] = 'not-started',exhausted = false): BridgeFailure => {
   const code = error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE';
+  if(code==='UPSTREAM_RESULT_UNKNOWN')effect='unknown';
   return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','ENTRY_NOT_ACTIVE','SENDER_IDENTITY_REQUIRED','SENDER_IDENTITY_MISMATCH','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
 };
 /** Fixed package contracts + run-derived context. No model argument ever selects project or package. */

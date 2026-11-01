@@ -1,3 +1,4 @@
+import {sampleKvDefinition} from './sample-kv/definition.mjs';
 import {readFileSync} from 'node:fs';
 // Trusted built-in package sources. Package versions are independent from the App version.
 // A change to the pinned runtime or any released file requires a new application version.
@@ -112,9 +113,9 @@ definitions[definitions.indexOf(mailV103Definition)] = mailV104Definition;
 export const retainedV1Definitions = structuredClone(definitions);
 const compiledModules = JSON.parse(readFileSync(new URL('../../src/shared/application-module-catalog.json', import.meta.url), 'utf8')).applications;
 const mailModulePolicies = compiledModules.find(module => module.appId === 'mail');
-const mailResultV2 = (capability, data) => object({
+const applicationResultV2 = (appId, capability, data) => object({
   schema: { const: 'willyou-app-result-v2' }, contractMajor: { const: 2 }, status: { const: 'ok' }, capabilityId: { const: capability.id }, data,
-  source: object({ appId: { const: 'mail' }, packageHash: hash, revision: nullable(str(128)), connections: array(object({slot:str(64),connectionId:uuid,identityRevision:integer(1),configRevision:integer(1),policyRevision:integer(),bindingRevision:integer()}),32) }),
+  source: object({ appId: { const: appId }, packageHash: hash, revision: nullable(str(128)), connections: array(object({slot:str(64),connectionId:uuid,identityRevision:integer(1),configRevision:integer(1),policyRevision:integer(),bindingRevision:integer()}),32) }),
   completeness: object({ complete: boolean, missing: array(str(512),256) }),
   pagination: nullable(object({ nextCursor: nullable(str(8192)), total: nullable(integer()) })), resources: array(resourceRef,1024),
   operation: object({ id: uuid, requestId: nullable(uuid), origin: enumeration('ui','mcp','cli','internal'), effectState: enumeration('read-only','completed','unknown') }),
@@ -129,7 +130,30 @@ const mailV110Definition = {
     if (!compiled || !compiled.contractMajors.includes(2)) throw Error('Missing trusted mail capability policy: ' + tool.name);
     const { contractMajors: _versions, legacyTool: _legacy, ...policy } = compiled;
     return { ...policy, contractMajor: 2, title: tool.name, legacyTool: { name: tool.name, contractMajor: 1 },
-      binding: { mcp: { tool: tool.name.replace(/_v1$/, '_v2') } }, input: tool.input, output: mailResultV2(policy,tool.output), description: tool.description };
+      binding: { mcp: { tool: tool.name.replace(/_v1$/, '_v2') } }, input: tool.input, output: applicationResultV2('mail',policy,tool.output), description: tool.description };
   }),
 };
 definitions[definitions.findIndex(definition => definition.appId === 'mail')] = mailV110Definition;
+
+// Additive ZenTao v2: stable business/reference rules, CLI primary, read-only MCP fallback.
+const zentaoModulePolicies = compiledModules.find(module => module.appId === 'zentao');
+const { tools: oldZentaoTools, adapter: _oldZentaoAdapter, ...zentaoData } = structuredClone(retainedV1Definitions.find(definition => definition.appId === 'zentao'));
+const zentaoV110Definition = {
+  ...zentaoData, schema: 'smartdd-app-package-v2', version: '1.1.0', module: { id: 'zentao', contractMajor: 1 }, entry: 'cli',
+  connectionSlots: [{ slot: 'zentao', required: true }],
+  skills: zentaoData.skills.map(skill => ({ ...skill, template: true })),
+  capabilities: oldZentaoTools.map(tool => {
+    const compiled = zentaoModulePolicies.capabilities.find(capability => capability.legacyTool === tool.name);
+    if (!compiled || !compiled.contractMajors.includes(2)) throw Error('Missing trusted ZenTao capability policy: ' + tool.name);
+    const { contractMajors: _versions, legacyTool: _legacy, ...policy } = compiled;
+    const command = policy.id.split('.');
+    return { ...policy, contractMajor: 2, title: tool.description, legacyTool: { name: tool.name, contractMajor: 1 },
+      binding: { cli: { command }, fallback: { mcp: { tool: tool.name.replace(/_v1$/, '_v2') } } },
+      input: tool.input, output: applicationResultV2('zentao',policy,{
+        ...tool.output, properties:{...tool.output.properties,presentation:object({available:boolean,labels:{type:'object',additionalProperties:str(2000)},choices:{type:'object',additionalProperties:{type:'object',additionalProperties:str(2000)}}})},
+      }), description: tool.description };
+  }),
+};
+definitions[definitions.findIndex(definition => definition.appId === 'zentao')] = zentaoV110Definition;
+
+definitions.push(sampleKvDefinition(runtime,applicationResultV2));

@@ -1,10 +1,10 @@
 import type {AttachmentSaveResult,MailAttachmentSource} from './application-attachments';
 import {z} from 'zod';
-import type {ApplicationId} from './application-connections';
+import {applicationIdSchema,type ApplicationId} from './application-connections';
 import type {MailDraftContent,MailAttachment} from './mail-drafts';
 import type {MailSendState,MailSendResult} from './mail-execution';
 export const applicationActivityQuerySchema=z.object({
- appId:z.enum(['mail','zentao']).optional(),connectionId:z.uuid().optional(),projectId:z.string().min(1).max(128).optional(),
+ appId:applicationIdSchema.optional(),connectionId:z.uuid().optional(),projectId:z.string().min(1).max(128).optional(),
  limit:z.number().int().min(1).max(100).default(50),cursor:z.string().min(1).max(4096).nullable().optional(),
 }).strict();
 export type ApplicationActivityQuery=z.input<typeof applicationActivityQuerySchema>;

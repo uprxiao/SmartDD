@@ -1,7 +1,7 @@
 import {claudeProjectionSelection,selectedStandardSkills} from './claude-projection-selection';
 import {verifyClaudeDelivery} from './claude-delivery-state';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname,join } from 'node:path';
 import { parseDocument } from 'yaml';
 import { ApplicationError } from '@shared/applications';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
@@ -13,7 +13,7 @@ import { ownedBundle, writeOwnedBundle, verifyOwnedBundle,type OwnedBundle,type 
 import type { ResourceRecord, ResourceStore } from './resource-store';
 import type { CapabilitySessionRegistry } from './session-registry';
 import {skillFilesHash} from './run-plan';
-import {renderApplicationSkill,type ApplicationSkillDelivery} from './application-skill-template';
+import {applicationSkillDelivery,applicationSkillProjectionName,renderApplicationSkill,type ApplicationSkillDelivery} from './application-skill-template';
 export const standardNativeSkillName = (skillId: string,hash: string): string => {
   const name = `smartdd-s-${skillId}-${hash.slice(0,12)}`;
   if (name.length > 64 || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(name)) throw new ApplicationError('INVALID_PACKAGE','标准Skill原生名称超过已验证范围'); return name;
@@ -33,7 +33,7 @@ export class SessionCapabilityProjector {
   private readonly packages: PackageRegistry;
   private readonly legacy: LegacyCapabilityResourceAdopter;
   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
-  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string>;delivery?:ApplicationSkillDelivery;templateHash?:string;parametersHash?:string;renderedHash?:string }[] {
+  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[],available={mcp:true,cli:false}): { appId?:string;skillId?:string;nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string>;delivery?:ApplicationSkillDelivery;templateHash?:string;parametersHash?:string;renderedHash?:string }[] {
     if(applicationScope&&((!applicationScope.length&&!independent)||(independent&&applicationScope.length!==0)||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
@@ -42,15 +42,16 @@ export class SessionCapabilityProjector {
         const prefix = skill.sourceRelativePath + '/', files: Record<string,Buffer> = {},executables = new Set<string>();
         let delivery:ApplicationSkillDelivery|undefined;
         if(installed.manifest.schema==='smartdd-app-package-v2'&&installed.manifest.skills.find(s=>s.id===skill.skillId)?.template){
-          delivery={schema:1,allowedOperations:[...application.allowedOperations],available:{mcp:true,cli:false}};
+          delivery=applicationSkillDelivery(installed.manifest,application.allowedOperations,snapshot.runner==='codex'?available:{mcp:available.mcp,cli:false});
         }
+        const nativeName=snapshot.runner==='codex'?applicationSkillProjectionName(installed.manifest,skill.skillId,application.packageHash,delivery):skill.nativeName,path=nativeName===skill.nativeName?skill.projectionPath:join(dirname(dirname(skill.projectionPath)),nativeName,'SKILL.md');
         for (const source of installed.manifest.files.filter(f => f.path.startsWith(prefix))) {
           const relative=source.path.slice(prefix.length),bytes=readFileSync(join(this.store.root,installed.relativePath,source.path));if(bytes.length!==source.size||digest(bytes)!==source.sha256)throw new ApplicationError('HASH_MISMATCH','原Skill文件在读取时已改变');
           const content=relative==='SKILL.md'?renderApplicationSkill(bytes,installed.manifest,skill.skillId,delivery):bytes;
-          files[relative]=relative==='SKILL.md'?projectSkillName(content,skill.nativeName):content;if(source.executable)executables.add(relative);
+          files[relative]=relative==='SKILL.md'?projectSkillName(content,nativeName):content;if(source.executable)executables.add(relative);
         }
         if (!files['SKILL.md']) throw new ApplicationError('INVALID_PACKAGE','原Skill完整目录缺少入口');
-        result.push({ nativeName: skill.nativeName,path: skill.projectionPath,sourceHash: skill.contentHash,sourceResourceId: installed.resourceId,files,executables,...(delivery?{delivery,templateHash:skill.contentHash,parametersHash:digest(canonicalJson({delivery,nativeName:skill.nativeName})),renderedHash:skillFilesHash(files)}:{}) });
+        result.push({appId:application.appId,skillId:skill.skillId,nativeName,path,sourceHash: skill.contentHash,sourceResourceId: installed.resourceId,files,executables,...(delivery?{delivery,templateHash:skill.contentHash,parametersHash:digest(canonicalJson({delivery,nativeName})),renderedHash:skillFilesHash(files)}:{}) });
       }
       verifyPackageTree(join(this.store.root,installed.relativePath),installed,this.store.storeId);
     }

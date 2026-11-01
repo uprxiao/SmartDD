@@ -19,4 +19,4 @@ export function buildApplicationCli({output=resolve('out/native/willyou-app')}={
   execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-mmacosx-version-min=12.0','-arch',process.arch==='arm64'?'arm64':'x86_64','-framework','Foundation','native/applications/cli.mm','-o',output],{stdio:'inherit'});
   return output;
 }
-if (process.argv[1] === new URL(import.meta.url).pathname) { buildFoxmailReader(); buildProcessIdentity(); }
+if (process.argv[1] === new URL(import.meta.url).pathname) { buildFoxmailReader(); buildProcessIdentity(); buildApplicationCli(); }

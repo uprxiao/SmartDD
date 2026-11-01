@@ -8,6 +8,9 @@ import {BRIDGE_LIMITS} from '@shared/application-bridge';
 import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
+import {applicationSkillSnapshotView} from './application-skill-view';
+import {readApplicationRunPlan,skillFilesHash} from './run-plan';
+import {readFileSync} from 'node:fs';
 import {legacyPlannerInput} from './legacy-agent-load';
 import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
 import { ownedBundle, writeOwnedBundle, verifyOwnedBundle, type OwnedBundleManifest } from './owned-bundle';
@@ -83,7 +86,17 @@ export class AgentAdapterRegistry {
     if(input.applicationScope&&((snapshot.runner!=='codex'&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
-    const allSkills = [...applications.flatMap(p => p.skills.map(s => ({ path: s.projectionPath,name: s.nativeName,hash: s.contentHash }))),...standards.map(s => ({ path: s.projectionPath,name: basename(dirname(s.projectionPath)),hash: s.hash }))];
+    if(input.applicationSkillDelivery||input.cliSandbox){
+      if(snapshot.runner!=='codex'||meta.cliEntry!=='supported'||!input.applicationSkillDelivery)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此适配器尚未验证本次CLI/Skill交付');
+      const delivery=input.applicationSkillDelivery,runPlan=readApplicationRunPlan(this.store,input.runId,delivery.planHash),saved=this.store.sqlite.prepare('SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(snapshot.taskId) as {snapshot_hash:string}|undefined;
+      if(!saved||runPlan.taskId!==snapshot.taskId||runPlan.projectId!==snapshot.projectId||saved.snapshot_hash!==runPlan.snapshotHash||digest(canonicalJson(snapshot))!==saved.snapshot_hash)throw new ApplicationError('SNAPSHOT_IMMUTABLE','本次交付不能替换原会话选择');
+      const expected=runPlan.skills.map(s=>({appId:s.appId,skillId:s.skillId,nativeName:s.nativeName})),actual=delivery.skills.map(s=>({appId:s.appId,skillId:s.skillId,nativeName:s.nativeName}));
+      if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('SCOPE_DENIED','实际Skill交付不等于固定运行计划');
+      applicationSkillSnapshotView(snapshot,delivery.skills);
+      for(const view of delivery.skills){if(view.path!==join(input.native.home,'.agents/skills',view.nativeName,'SKILL.md'))throw new ApplicationError('OWNERSHIP_CONFLICT','本次交付越过原生发现根');const entry=input.catalog?.entries.find(e=>e.path===view.path&&e.nativeName===view.nativeName&&e.sourceHash===view.sourceHash&&e.storeId===this.store.storeId);if(!entry)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本次Skill尚未按相同身份发布');const bundle=verifyOwnedBundle(dirname(view.path),entry.projectionHash,this.store.storeId),files=Object.fromEntries(bundle.files.map(f=>[f.path,readFileSync(join(dirname(view.path),f.path))]));if(skillFilesHash(files)!==runPlan.skills.find(s=>s.appId===view.appId&&s.skillId===view.skillId)!.renderedHash)throw new ApplicationError('HASH_MISMATCH','实际Skill内容不等于本次运行摘要');}
+      if(input.cliSandbox&&(!runPlan.grades.cli||!runPlan.allowed.some(c=>c.entry==='cli')||input.cliSandbox.digest!==runPlan.sandbox.digest||input.cliSandbox.source!==runPlan.sandbox.source))throw new ApplicationError('SCOPE_DENIED','沙箱交付不等于本次运行策略');
+    }
+    const skillView=applicationSkillSnapshotView(snapshot,input.applicationSkillDelivery?.skills??[]),allSkills=[...skillView.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>p.skills.map(s=>({path:s.projectionPath,name:s.nativeName,hash:s.contentHash}))),...standards.map(s=>({path:s.projectionPath,name:basename(dirname(s.projectionPath)),hash:s.hash}))];
     const excludedH=guardOmissions??validateNativeDiscoveryExclusions(this.store,input,allSkills.map(s=>s.path));
     if (snapshot.runner === 'claude-code' && input.pluginRoot) {
       const expected = join(this.store.root,'sessions',snapshot.taskId,'claude/plugin');
@@ -133,7 +146,7 @@ export class AgentAdapterRegistry {
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();
-      const plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...input.snapshot,packages:input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner || plan.bridgeRecovery !== installed.metadata.bridgeRecovery) throw new Error(); return codexOutputBudget(plan,input); }
+      const view=applicationSkillSnapshotView(input.snapshot,input.applicationSkillDelivery?.skills??[]),plan = agentLoadPlanSchema.parse(module.prepare({ ...input,...(input.catalog&&(omitted||input.catalogExclusions)?{catalog:{...input.catalog,entries:input.catalog.entries.filter(e=>!omitted?.has(e.path)&&!input.catalogExclusions?.paths.includes(e.path))}}:{}),snapshot:{...view,packages:view.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)),standardSkills:selectedStandardSkills(input.snapshot,input.standardSkillScope)},mcpConfigPath: join(this.store.root,'runs',input.snapshot.projectId,input.snapshot.taskId,input.runId,'mcp.json') })); if (plan.agentId !== input.snapshot.runner || plan.bridgeRecovery !== installed.metadata.bridgeRecovery) throw new Error(); return codexOutputBudget(plan,input); }
     catch (error) { if ((error as { code?: string }).code === 'AGENT_CAPABILITY_NAME_CONFLICT') throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停设置与固定受管选择冲突，保留原配置'); throw new ApplicationError('HOST_INCOMPATIBLE','原Agent适配器无法安全生成本次加载参数'); }
   }
   planLegacy(hash:string,value:unknown):AgentLoadPlan {

@@ -2,6 +2,7 @@ import {ApplicationError} from '@shared/applications';
 import type {ApplicationCapability,ApplicationEntry,ApplicationPackageManifest} from '@shared/application-capabilities';
 import {applicationRunPlanSchema,type ApplicationRunPlan,type RunPlanAllowedCapability} from '@shared/application-run-plan';
 import type {CapabilitySessionSnapshot} from '@shared/application-session';
+import {storedCapabilitySessionSnapshotSchema} from '@shared/application-session-v3';
 import type {ResourceStore} from './resource-store';
 import {canonicalJson,compareCodePoints,digest} from './manifest';
 
@@ -60,6 +61,16 @@ export function readApplicationRunPlan(store:ResourceStore,runId:string,expected
   if(!row||row.kind!=='application-run-plan'||row.owner_store_id!==store.storeId||row.state!=='committed')throw new ApplicationError('HASH_MISMATCH','固定运行计划缺失');
   let value:unknown;try{value=JSON.parse(row.plan_json);}catch{throw new ApplicationError('HASH_MISMATCH','固定运行计划无法解析');}
   const plan=verifyApplicationRunPlan(value,expectedHash);if(plan.runId!==runId)throw new ApplicationError('SCOPE_DENIED','运行计划不属于当前运行');return plan;
+}
+/** A first native session id is host-bound once; it does not replace the fixed source selection. */
+export function assertRunPlanSnapshotSource(store:ResourceStore,plan:ApplicationRunPlan,snapshot:CapabilitySessionSnapshot,currentHash:string):void{
+  if(plan.taskId!==snapshot.taskId||plan.projectId!==snapshot.projectId)throw new ApplicationError('SCOPE_DENIED','运行计划不能替换固定会话身份');
+  if(plan.snapshotHash===currentHash)return;
+  const row=store.sqlite.prepare('SELECT snapshot_json FROM capability_snapshot_versions WHERE task_id=? AND snapshot_hash=?').get(snapshot.taskId,plan.snapshotHash) as {snapshot_json:string}|undefined;
+  try{
+    const original=storedCapabilitySessionSnapshotSchema.parse(JSON.parse(row?.snapshot_json??''));
+    if(digest(canonicalJson(original))!==plan.snapshotHash||original.native.sessionId!==null||!snapshot.native.sessionId||canonicalJson({...snapshot,native:{...snapshot.native,sessionId:null}})!==canonicalJson(original))throw Error();
+  }catch{throw new ApplicationError('SCOPE_DENIED','运行计划来源与原固定选择不同');}
 }
 export function requirePlanEntry(plan:ApplicationRunPlan,capabilityId:string,contractMajor:number,entry:ApplicationEntry):RunPlanAllowedCapability{
   const capability=plan.allowed.find(c=>c.capabilityId===capabilityId&&c.contractMajor===contractMajor);

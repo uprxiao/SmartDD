@@ -8,5 +8,5 @@ const adapterAt = (id:string,version:string) => {
 };
 const adaptersAt = (version:string) => ['claude-code','codex'].map(id => adapterAt(id,version));
 
-export const bundledAgentAdapters=()=>[...adaptersAt('1.0.0'),adapterAt('codex','1.2.0')];
+export const bundledAgentAdapters=()=>[...adaptersAt('1.0.0'),adapterAt('codex','1.2.0'),adapterAt('codex','1.3.0')];
 export const bundledLegacyAgentAdapters=()=>adaptersAt('1.1.0');

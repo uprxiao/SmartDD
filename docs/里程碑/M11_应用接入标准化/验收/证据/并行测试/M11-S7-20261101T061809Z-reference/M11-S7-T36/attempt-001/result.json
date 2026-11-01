@@ -1,0 +1,34 @@
+{
+  "schema": "willyou-test-result-v1",
+  "group": "M11-S7-T36",
+  "at": "2026-11-01T06:26:29.179754+00:00",
+  "sourceManifestSha256": "8341d7070b5b69f48404d0ea5a2f183aee16d1b79a407658aa69fec33debdace",
+  "sourceNote": "Recoverable post-execution source snapshot; production and test bytes were not changed between final execution and snapshot capture",
+  "baseCommit": "9fafcfef8bac60da4752b254198d9904d554c958",
+  "layer": "I; actual TaskService/ApplicationService and actual reference stdio/CLI; TestPtys and reversible cipher are explicit fixtures",
+  "cases": [
+    {
+      "id": "M11-T36",
+      "status": "passed",
+      "criteria": {
+        "range": "mapping/scope rejections before upstream audit invoke",
+        "projectStop": "two actual TaskService projects share one connection and one reference MCP session; stopProject(A) cancels A while B returns successfully and remains active",
+        "rotation": "revision2 opens a new private directory/session; revision1 finishes its in-flight call, is released and its process/credentials removed",
+        "cancel": "MCP per-request cancel; actual CLI SIGTERM/process-group exit awaited before pending drops",
+        "unknown": "submitted write timeout returns UPSTREAM_RESULT_UNKNOWN; read finds original operationId; upstream audit counts one put",
+        "dispose": "ApplicationService.dispose reaches module pool and the observed actual reference MCP pid is no longer running; no active resource leases remain",
+        "privateConfig": "MCP and CLI use 0700 private HOME/XDG, 0600 credential file; reference executable reads only this credential path; no daily configs or credentials copied"
+      },
+      "evidence": [
+        "task-final.log",
+        "upstream-final.log",
+        "../../M11-S7-U/attempt-001/result.json"
+      ]
+    }
+  ],
+  "firstFailure": {
+    "kind": "new test fixture budget",
+    "detail": "two task preparations plus cancellation took longer than Vitest default 5s; new test given bounded30s; production deadlines unchanged; original timeout retained"
+  },
+  "formalNewPasses": 1
+}

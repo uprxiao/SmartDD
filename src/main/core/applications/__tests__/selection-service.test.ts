@@ -19,7 +19,7 @@ beforeEach(() => {
   for (const id of ['p1', 'p2']) sqlite.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,1,1)').run(id, 'Same visible name');
   store = new ResourceStore(sqlite, root); const db = drizzle(sqlite, { schema });
   const secrets = new SecretsStore(db, { isAvailable: () => true, encrypt: s => Buffer.from([...s].reverse().join('')), decrypt: b => [...b.toString()].reverse().join('') });
-  connections = new ApplicationConnectionService(store, secrets, { verify: async config => ({ providerId: config.kind, serviceId: 'fixture-service', accountId: config.kind === 'foxmail' ? config.account : config.username, contractMajor: 1 }) });
+  connections = new ApplicationConnectionService(store, secrets, { verify: async config => ({ providerId: config.kind, serviceId: 'fixture-service', accountId: config.kind === 'foxmail' ? config.account : 'username' in config ? config.username : 'fixture-account', contractMajor: 1 }) });
   live = 0; stop = vi.fn(async () => { live = 0; return true; });
   service = new ApplicationSelectionService(store, connections, { requireProject: id => { if (!sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(id)) throw new ApplicationError('NOT_FOUND', 'project fixture missing'); }, stopProjectRuns: stop, runningInProject: () => live });
 });

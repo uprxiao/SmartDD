@@ -61,7 +61,7 @@ export function projectLayers(cwd: string, home: string): string[] {
 }
 
 /** Parse only configuration arguments. Never evaluate a shell or expose parser excerpts. */
-function codexConfigurationArgs(args: string[], issue: () => void): { profile: string | null; overrides: Obj[] } {
+export function codexConfigurationArgs(args: string[], issue: () => void): { profile: string | null; overrides: Obj[] } {
   let profile: string | null = null, profileSeen = false;
   const overrides: Obj[] = [];
   for (let i = 0; i < args.length; i++) {
