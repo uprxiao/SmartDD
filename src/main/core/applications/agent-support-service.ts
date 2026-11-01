@@ -7,6 +7,8 @@ import { AgentAdapterRegistry } from './agent-adapter-registry';
 import { LegacyCapabilityResourceAdopter } from './legacy-resource-adopter';
 import { RuntimeRegistry } from './runtime-registry';
 import { CapabilityBundleSource } from './bundle-source';
+import { applicationModuleMetadata } from '@shared/application-provider-metadata';
+import type { ApplicationId } from '@shared/application-connections';
 /** App startup prepares immutable local bytes; failure is diagnostic and never throws into task startup. */
 export class AgentSupportService {
   readonly adapters: AgentAdapterRegistry;
@@ -24,11 +26,14 @@ export class AgentSupportService {
       const installedRuntime=await new RuntimeRegistry(this.store).install(runtime);this.state.runtimeHash=installedRuntime.contentHash;
       for(const skill of this.capabilities.list())for(const version of skill.versions){await this.legacy.adoptStandard(skill.id,version.hash);this.state.legacyResourceCount++;}
       await this.legacy.adoptRuntime(this.capabilities.runtimeIdentity().hash);this.state.legacyResourceCount++;
-      const expected = ['mail','zentao'];
-      if (source.index.apps.length !== expected.length || !expected.every(id => source.index.apps.some(a => a.appId === id))) throw new ApplicationError('INVALID_PACKAGE','本版本缺少已声明的完整内置应用包');
+      // The registered module catalog is the single source; new applications must not edit this service.
+      // The retained-v1 test fixture intentionally indexes a registered subset; production must index every registration.
+      const registered = applicationModuleMetadata.map(m => m.appId), indexed = source.index.apps.map(a => a.appId);
+      if (new Set(indexed).size !== indexed.length || indexed.some(id => !registered.includes(id))
+        || (!source.index.build.testFixture && !registered.every(id => indexed.includes(id)))) throw new ApplicationError('INVALID_PACKAGE','本版本缺少已声明的完整内置应用包');
       const builtin = new BuiltinPackageRegistry(this.store), packages = builtin.packages;
       for (const entry of source.index.apps) {
-        const status: AgentSupportState['applications'][number] = { appId: entry.appId as 'mail' | 'zentao', version: entry.version, hash: entry.hash, filesReady: false, defaultForNewSessions: false, errorCode: null };
+        const status: AgentSupportState['applications'][number] = { appId: entry.appId as ApplicationId, version: entry.version, hash: entry.hash, filesReady: false, defaultForNewSessions: false, errorCode: null };
         this.state.applications.push(status);
         try {
           const installed = await builtin.install(source,entry);status.filesReady = installed.state === 'ready';

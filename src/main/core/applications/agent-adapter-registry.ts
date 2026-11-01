@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { basename, dirname, join, relative } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import {BRIDGE_LIMITS} from '@shared/application-bridge';
-import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan } from '@shared/agent-adapters';
+import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import {applicationSkillSnapshotView} from './application-skill-view';
@@ -36,8 +36,16 @@ function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadP
   const tools=names.map(name=>JSON.stringify(name)+'={output_token_limit='+BRIDGE_LIMITS.responseBytes+'}').join(',');
   return agentLoadPlanSchema.parse({...plan,args:[...plan.args,'-c','mcp_servers.'+bridge.serverName+'.tools={'+tools+'}']});
 }
+/** Adapters published before the M11 level table keep their original verified native message formats. */
+const RETAINED_NATIVE_MESSAGE_FORMATS: Readonly<Record<string, readonly string[]>> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
 export class AgentAdapterRegistry {
   constructor(readonly store: ResourceStore) {}
+  /** Single read point for declared levels (§15.4). Undeclared versions get no level; fail closed. */
+  levels(hash:string,cliVersion:string):readonly AgentLevel[]{
+    const meta=this.get(hash).metadata;if(!meta.cliVersions.includes(cliVersion))return [];
+    if(meta.levels)return meta.levels[cliVersion]??[];
+    return RETAINED_NATIVE_MESSAGE_FORMATS[meta.agentId]?.includes(cliVersion)?['L0.skill','L0.mcp','L1','L2','L3']:[];
+  }
   recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {
     const installed=this.verify(hash),meta=installed.metadata;
     if(!meta.cliVersions.includes(cliVersion)||!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return{capability:'unverified'};

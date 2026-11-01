@@ -2,6 +2,8 @@ import {claudeRunDeliverySchema} from './claude-delivery';
 import { z } from 'zod';
 import { storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema } from './application-session-v3';
 import { boundedJson } from './application-bridge';
+export const agentLevelSchema=z.enum(['L0.skill','L0.mcp','L0.cli','L1','L2','L3']);
+export type AgentLevel=z.infer<typeof agentLevelSchema>;
 export const bridgeRecoveryCapabilitySchema=z.enum(['supported','unsupported','unverified']);
 const absolute = z.string().min(1).max(4096).refine(s => s.startsWith('/') && !/[\x00\r\n]/.test(s));
 const hash = z.string().regex(/^[a-f0-9]{64}$/), name = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/);
@@ -9,7 +11,10 @@ export const agentAdapterMetadataSchema = z.object({ schema: z.literal('willyou-
   configReload:bridgeRecoveryCapabilitySchema.optional(),recoveryRequiresAgentRestart:z.boolean().optional(),recoveryEntry:z.literal('replaceBridge').optional(),
   recoveryEvidence:z.array(z.object({cliVersion:z.string().regex(/^\d+\.\d+\.\d+$/),baseline:z.string().min(1).max(256)}).strict()).max(32).optional(),
   cliEntry:bridgeRecoveryCapabilitySchema.optional(),
+  // M11-R15 §15.4: per CLI version declared levels. L2/L3 only with published fixtures and negative cases.
+  levels:z.record(z.string().regex(/^\d+\.\d+\.\d+$/),z.array(agentLevelSchema).min(1).max(8)).optional(),
 }).strict().superRefine((value,ctx)=>{
+  if(value.levels&&(Object.keys(value.levels).some(v=>!value.cliVersions.includes(v))||Object.values(value.levels).some(l=>new Set(l).size!==l.length||!l.includes('L0.skill')||!l.includes('L1')||(!l.includes('L0.mcp')&&!l.includes('L0.cli'))||(l.includes('L3')&&!l.includes('L2')))))ctx.addIssue({code:'custom',message:'等级表须属于声明版本，含L0.skill、L1及至少一个入口；L3依赖L2'});
   if(value.bridgeRecovery==='supported'&&(value.configReload!=='supported'||value.recoveryRequiresAgentRestart!==false||value.recoveryEntry!=='replaceBridge'||!value.cliVersions.every(version=>value.recoveryEvidence?.some(e=>e.cliVersion===version))))ctx.addIssue({code:'custom',message:'独立恢复支持必须绑定可重载入口、无Agent重启及每个CLI版本的证据'});
   if(value.recoveryEvidence&&(new Set(value.recoveryEvidence.map(e=>e.cliVersion)).size!==value.recoveryEvidence.length||value.recoveryEvidence.some(e=>!value.cliVersions.includes(e.cliVersion))))ctx.addIssue({code:'custom',message:'恢复证据必须唯一且属于声明的CLI版本'});
 });

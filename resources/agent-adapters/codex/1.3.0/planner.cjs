@@ -8,7 +8,9 @@ exports.plan=(agentId,input)=>{
  if(policy.kind!=='inherit'||typeof policy.parent!=='string'||!policy.endpoint.startsWith('/private/tmp/wy-cli-'))throw Error('Unsupported effective sandbox');
  const name='wy_cli_'+createHash('sha256').update(policy.endpoint).digest('hex').slice(0,12);
  if(policy.existingNames.includes(name))throw Error('Temporary permissions name already exists');
- const prefix='permissions.'+JSON.stringify(name),args=['-c','default_permissions='+JSON.stringify(name),'-c',prefix+'.extends='+JSON.stringify(policy.parent),'-c',prefix+'.network.unix_sockets={'+JSON.stringify(policy.endpoint)+'="allow"}'];
+ // Codex 0.166.0 resolves default_permissions only against a bare TOML key; a quoted key is reported as undefined.
+ if(!/^wy_cli_[0-9a-f]{12}$/.test(name))throw Error('Temporary permissions name must be a bare TOML key');
+ const prefix='permissions.'+name,args=['-c','default_permissions='+JSON.stringify(name),'-c',prefix+'.extends='+JSON.stringify(policy.parent),'-c',prefix+'.network.unix_sockets={'+JSON.stringify(policy.endpoint)+'="allow"}'];
  if(policy.enableNetwork)args.push('-c',prefix+'.network.enabled=true');
  if(policy.networkProxy)args.push('-c','features.network_proxy=true');
  return{...output,args:[...output.args,...args]};

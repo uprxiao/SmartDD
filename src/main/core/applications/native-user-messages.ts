@@ -12,7 +12,10 @@ import { encodeClaudeDir } from '../tasks/native-sessions';
 import { NativeUserInputs, type HostUserInputReceipt } from './native-user-inputs';
 
 const LIMIT = { tail: 4 * 1024 * 1024, line: 1024 * 1024, head: 65536, entries: 4096, records: 8192, proofs: 64 };
-const supported: Record<string, readonly string[]> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
+/** Fallback used only when no registry is wired (isolated unit fixtures); production queries the adapter registry. */
+const retainedSupported: Record<string, readonly string[]> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
+export type NativeMessageLevels = (adapterHash: string, runner: string, cliVersion: string) => boolean;
+const retainedLevels: NativeMessageLevels = (_hash, runner, version) => Boolean(retainedSupported[runner]?.includes(version));
 const utf8 = (bytes: Uint8Array) => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 const json = (bytes: Uint8Array): any => { try { return JSON.parse(utf8(bytes)); } catch { return null; } };
 export interface NativeUserMessage {
@@ -34,7 +37,7 @@ export class NativeUserMessages {
   private readonly registrations = new Map<string, Registration>();
   private readonly proofs = new Map<NativeUserMessage, Proof>();
   private closed = false;
-  constructor(private readonly inputs: NativeUserInputs, private readonly current: (runId: string) => RunContext, private readonly now = Date.now) {}
+  constructor(private readonly inputs: NativeUserInputs, private readonly current: (runId: string) => RunContext, private readonly now = Date.now, private readonly supportsMessages: NativeMessageLevels = retainedLevels) {}
   register(runId: string, version: string, signal: AbortSignal): void {
     if (this.closed || signal.aborted) return;
     const old = this.registrations.get(runId);
@@ -47,7 +50,7 @@ export class NativeUserMessages {
   private context(runId: string): { context: RunContext; registration: Registration } {
     const registration = this.registrations.get(runId), context = this.current(runId);
     if (this.closed || !registration || registration.signal.aborted || context.signal.aborted || context.run.state !== 'active' || context.run.runId !== runId || context.signal !== registration.signal || !context.snapshot.native.sessionId || !/^[A-Za-z0-9_-]{1,128}$/.test(context.snapshot.native.sessionId)) throw new ApplicationError('SOURCE_UNAVAILABLE', '没有本次运行的可核验原生用户消息来源');
-    if (!supported[context.snapshot.runner]?.includes(registration.version)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前原生消息格式尚未验证');
+    if (!this.supportsMessages(context.snapshot.adapterBinding.hash, context.snapshot.runner, registration.version)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前原生消息格式尚未验证');
     return { context, registration };
   }
   private prune(): void { for (const [message, proof] of this.proofs) if (proof.expiresAt <= this.now() || !this.registrations.has(message.runId)) this.proofs.delete(message); }

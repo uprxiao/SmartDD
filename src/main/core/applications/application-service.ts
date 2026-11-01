@@ -1,3 +1,4 @@
+import { AgentAdapterRegistry } from './agent-adapter-registry';
 import {applicationToolDeclarations} from '@shared/application-capabilities';
 import type {ApplicationCapabilityExecution} from './capability-execution';
 import {readDraftSendHistory} from './mail-draft-send-history';
@@ -111,7 +112,7 @@ export class ApplicationService {
     this.versions=new ApplicationVersionMaintenance(store,processes,undefined,move,new ResourceGraphMaintenance(store,processes,move));
     this.activity=new ApplicationActivityService(store);
     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null,mailSendScope:context=>context.applicationScope&&!context.applicationScope.includes('mail')?null:this.nativeMailScope(context.run.projectId)});
-    this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
+    this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);},Date.now,(hash,_runner,version)=>{try{return new AgentAdapterRegistry(store).levels(hash,version).includes('L3');}catch{return false;}});
     this.builtin=new BuiltinPackageRegistry(store,builtinApplicationModules);
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
     this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId)),validateSelection:(projectId,appId,slots)=>this.data?.policy(appId)?.validateSelection?.(projectId,slots),afterSelection:(projectId,appId)=>this.data?.policy(appId)?.afterSelection?.(projectId)});
