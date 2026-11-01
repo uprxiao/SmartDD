@@ -6,11 +6,13 @@
 
 ## 当前接续C7：授权、结果与撤销边界收口
 
-正式 **26/38通过、12待收口（Story2），68.42%**。本批完整新增T07/T19/T20/T38 与T25（C8 补真实降级读）：D11三种已知前置在实际App明确未执行；真实页面grant交回原MCP的normal/unknown两封合成DATA及get2不重发、原外层Bridge/账结果一致；真实双Task跨run令牌与其他身份负例业务0。停止/新运行沿用有效C6证据，C7补UI停用/重新启用/断开，旧身份不能复活。T20两原命令exit1及T07驱动红均保留，按原逐判据核证，不把整命令改绿。[本批归账](验收/证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-ACCOUNTING/attempt-001/result.json)。
+正式 **27/38通过、11待收口（Story2），71.05%**。本批完整新增T07/T19/T20/T38、T25（C8 补真实降级读）与 T14（C9 补原生退出）：D11三种已知前置在实际App明确未执行；真实页面grant交回原MCP的normal/unknown两封合成DATA及get2不重发、原外层Bridge/账结果一致；真实双Task跨run令牌与其他身份负例业务0。停止/新运行沿用有效C6证据，C7补UI停用/重新启用/断开，旧身份不能复活。T20两原命令exit1及T07驱动红均保留，按原逐判据核证，不把整命令改绿。[本批归账](验收/证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-ACCOUNTING/attempt-001/result.json)。
 
 C7源3222/测试out151、1333生产输入、ASAR `b87809c7…`、编译1次/包1次/六原生smoke已固定。仅外部驱动和文档变更不重建基础包；当前root制作T25纯sample声明资源私有变体，不改宿主/邮件/禅道/adapters/runtime。T17原业务映射与剩余CLI detail/resource、T12/T28旧会话/混合日志在私有I/驱动准备；官方v0.0.9 Mac包已下载并核SHA供升级前置。T14原生退出、T31页面范围冲突及Story2集中后置。不改版本、不发布。[C7轮次](验收/并行测试/轮次/M11-C7-20261101T191439Z-e388/轮次记录.json)。
 
 **C8 补证与 T25 通过（2026-11-02）：**同一冻结包 `b87809c7…`（未重建）跑真实降级读：真实 Codex 0.166 引擎、报告版本夹具 99.0.0、真实 MCP `smartdd_zentao_work_list_v2` 返回 `status ok／capabilityId zentao.object.list`（对象 79291，contentRevision 存在），runPlan `entry=mcp／fallback=true／reason=cli-entry-unavailable`，`grades` `cli=false／mcp=true／skill=true`、`discoveryObserved=false／userMessageObserved=false`，S8 运行计划两主题展示降级与页面授权提示，清理完整、渲染错误 0。skill 读取时 `WILLYOU_RUN_TOKEN` 为空，证明未走 CLI。T25 整例通过，**26/38、68.42%**；分项为通过 26、部分通过 6（T12、T13、T14、T17、T28、T31）、未执行 4（T09、T29、T34、T37）、Story 暂缓 2。[T25 读证据](验收/证据/并行测试/M11-C8-20261101T214642Z-t25r/M11-C8-A-T25-READ/attempt-001/result.json)。
+
+**C9 原生退出与 T14 通过（2026-11-02）：**新增 `scripts/applications/fixtures/native-quit-performer.swift`，通过辅助功能完成真实退出：按应用菜单「退出 WillYou」→ 在 `kAXWindowsAttribute` 取独立 `AXDialog`「有 1 个任务正在运行」→ 按「退出」→ 轮询进程终止；`signalsSent=false`、`syntheticPointerEvents=false`。同一冻结包（未重建）跑通 8 项：`normalExit` code 0、原 CLI 消失、旧 run `stopped`／`revoked`，重开同 userData 经真实侧栏恢复同 `nativeId`、新 PTY／run 按原命名权限档完成真实 Codex CLI 读，外部无身份 CLI `AUTH_REQUIRED`。前三个失败轮次（相对路径、按到 Apple 菜单、未激活时 `AXWindows` 为空）保留为驱动失败记录。T14 整例通过，**27/38、71.05%**；分项为通过 27、部分通过 5（T12、T13、T17、T28、T31）、未执行 4（T09、T29、T34、T37）、Story 暂缓 2。[T14 证据](验收/证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/result.json)、[退出回执](验收/证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/quit-receipt.json)。
 
 **驱动前置缺陷（不计业务失败）：** `m11-zen-cli-ui.mjs` 第 31 行需读 git 分支／提交，C7 冻结副本无 `.git`，首次运行即 `fatal: not a git repository`。处理：复制冻结源到新私有根并建合成提交，保留原 source manifest `42e08ed9…` 作为真实锚点；重跑 11 秒通过。
 
@@ -81,7 +83,7 @@ Cloud Code 配 DeepSeek、Codex 等是用户期望的使用组合；同一套应
 | 调研 | [前期讨论与官方资料](../../F19D_应用接入标准与CLI_MCP双入口.md)：继续作为来源记录，不重复维护阶段业务规则 |
 | 技研 | [技术方案](技研/技术方案.md)：源码现状、标准草案与 CLI 身份隔离模拟实验（§9）；[架构设计](技研/架构设计.md)：分层、manifest v2、身份网关、连接槽、适配层、Agent 适配抽象（§15）、未验证假设与 S0–S12 实施拆分，**R0.9已评审通过**，真实宿主身份验证（V1/V2）待S5生产集成验收 |
 | 原型／界面 | [原型说明与变更](原型/原型说明与变更.md)：R0.9 已在共用原型实现两处增量（项目页「发件身份」6 种状态、会话弹窗「本次运行计划」）；模型 11 项单测及相关 106 项通过，`vite build` 已通过；真实 Chrome 浏览器检查 28 项断言全部通过，已归档浅／深色与窄屏截图（设计原型 P）；悬停／焦点／键盘及Codex参考比对待生产验收；本轮用户已批准原型 |
-| 验收 | [测试用例](验收/测试用例.md)：R0.9评审基线38条，按六组执行；当前26/38通过、12待收口（含Story暂缓2），68.42%；2026-11-02完成C7收账与C8的T25补证（真实降级 MCP 读）；剩余A/R继续 |
+| 验收 | [测试用例](验收/测试用例.md)：R0.9评审基线38条，按六组执行；当前27/38通过、11待收口（含Story暂缓2），71.05%；2026-11-02完成C7收账、C8的T25补证与C9的T14原生退出；剩余A/R继续 |
 | 交付 | 开发中，未交付；阶段软件证据见执行记录，真实新包与整条M11验收尚未完成 |
 
 ## 分支与基线

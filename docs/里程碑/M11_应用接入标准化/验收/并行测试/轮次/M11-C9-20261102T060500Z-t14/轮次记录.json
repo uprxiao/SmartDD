@@ -1,0 +1,87 @@
+{
+  "schema": "m11-parallel-run-record-v1",
+  "runId": "M11-C9-20261102T060500Z-t14",
+  "createdAt": "2026-11-01T22:00:00Z",
+  "updatedAt": "2026-11-01T22:08:00Z",
+  "branch": "feature/0.1.0",
+  "baseline": {
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "sourceCopy": "/private/tmp/willyou-m11-c8-t25read/src",
+    "package": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+    "rebuild": false,
+    "codexCli": {
+      "version": "0.166.0",
+      "entrySha256": "39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1"
+    }
+  },
+  "agents": [
+    "coordinator"
+  ],
+  "resources": {
+    "ui": "granted 2026-11-01T22:03:20Z -> released 2026-11-01T22:03:35Z",
+    "native": "AX performer (swift), coordinator-owned",
+    "build": "none"
+  },
+  "groups": [
+    {
+      "id": "M11-C9-A-T14-RESTART",
+      "case": "M11-T14",
+      "layers": "I+A+R",
+      "status": "passed",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001",
+      "result": "passed-normal-app-restart",
+      "checks": 8
+    }
+  ],
+  "nativePerformer": {
+    "path": "scripts/applications/fixtures/native-quit-performer.swift",
+    "mechanism": "AX: activate -> kAXMenuBar application menu -> Quit item -> AXDialog in kAXWindows -> 退出 -> poll process exit",
+    "signalsSent": false,
+    "syntheticPointerEvents": false,
+    "receipt": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/quit-receipt.json",
+    "earlierFailures": [
+      {
+        "attempt": 1,
+        "reason": "executor relative path in frozen source cwd; set -e aborted before wait"
+      },
+      {
+        "attempt": 2,
+        "reason": "quit-item-not-pressed: pressed Apple menu (menu bar index 1 is the application menu)"
+      },
+      {
+        "attempt": 3,
+        "reason": "confirmation dialog not found: AXWindows empty until app activated"
+      }
+    ]
+  },
+  "accounting": {
+    "at": "2026-11-02T06:07:00+08:00",
+    "passed": 27,
+    "partial": 5,
+    "notExecuted": 4,
+    "storyPending": 2,
+    "total": 38,
+    "ratio": "71.05%",
+    "added": "M11-T14",
+    "partialList": [
+      "T12",
+      "T13",
+      "T17",
+      "T28",
+      "T31"
+    ],
+    "notExecutedList": [
+      "T09",
+      "T29",
+      "T34",
+      "T37"
+    ],
+    "storyList": [
+      "T21",
+      "T22"
+    ]
+  },
+  "envRisk": "workspace formatter rewrites repository .test.ts ~1s after change; evidence files sealed with chmod 444; recompute manifests before commit",
+  "next": "T17 A/R (zentao detail/resource) -> T37 entry rejection 口径 -> T09 timeout/cancel -> T29 sandbox equivalence -> T34 onboarding -> T12/T28 official-app upgrade; user items: T31 (F23 已登记), T21/T22 Story data"
+}
