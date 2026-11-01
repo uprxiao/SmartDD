@@ -1,0 +1,11 @@
+import json,hashlib,shutil
+from pathlib import Path
+h=json.load(open('/private/tmp/willyou-m11-c7-current-round.json'));root=Path(h['root']);old=root/'t25-worker';new=root/'t25-worker-attempt002';assert not new.exists();shutil.copytree(old,new,symlinks=True);p=new/'scripts/applications/m11-t25-ui.mjs';s=p.read_text();needle="const args=['--disable','hooks'";assert s.count(needle)==1;s=s.replace(needle,"const args=['--profile','m11-native','--disable','hooks'")
+needle="if(app)try{result.exitBeforeCleanup=";replacement="if(app)try{if(audit){result.pageAudit=await audit.records();await audit.restore();result.pageObserverRestored=true;}result.cipherRestored=await app.mainEvaluate('globalThis.__t25CipherRestore?globalThis.__t25CipherRestore():true');result.hooksRestoredBeforeExitProbe=true;result.exitBeforeCleanup=";assert s.count(needle)==1;s=s.replace(needle,replacement)
+needle="try{if(audit){result.pageAudit=await audit.records();await audit.restore();result.pageObserverRestored=true;}if(app)result.cipherRestored=";assert s.count(needle)==1;s=s.replace(needle,"try{if(!result.hooksRestoredBeforeExitProbe&&audit){result.pageAudit=await audit.records();await audit.restore();result.pageObserverRestored=true;}if(!result.hooksRestoredBeforeExitProbe&&app)result.cipherRestored=")
+s=s.replace(str(old.resolve())+'/delivery-t25/attempt-001/latest-a-result.txt',str(new.resolve())+'/delivery-t25/attempt-002/latest-a-result.txt');p.write_text(s);(new/'delivery-t25/attempt-002').mkdir(exist_ok=False)
+p=new/'run-t25-command.sh';s=p.read_text().replace(str(old.resolve()),str(new.resolve()));p.write_text(s)
+files=[];sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+for rel in ['scripts/applications/m11-t25-ui.mjs','run-t25-command.sh']:
+ files.append({'path':rel,'beforeSha256':sha(old/rel),'sha256':sha(new/rel)})
+(new/'t25-driver-002-delta.json').write_text(json.dumps({'scope':'External fixture only; original failed run/driver/preparation remain immutable','changes':['Activate the exact intended named native profile in actual launch args; original model/disabledSkill expectations preserved','Restore own observers/cipher before waitForExit1 can close inspector on failure','Use own attempt002 latest-result pointer, never overwrite original failed pointer'],'AppOrProductionModified':False,'files':files},indent=2)+'\n');print(str(new))

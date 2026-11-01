@@ -1,0 +1,66 @@
+{
+  "schema": "m11-c7-t17-I-v1",
+  "case": "T17",
+  "layer": "I only",
+  "status": "passed18-targeted-I",
+  "formalCasePassesAdded": 0,
+  "criteria": {
+    "exactLegacyMapping": {
+      "status": "passed",
+      "mail": 14,
+      "zentao": 3,
+      "actual": "Trusted retained-v1 views and new v2 manifests resolve same stable IDs to actual registered host method, semantics, permission, required/conditional slots and write protections."
+    },
+    "schemaCompatibility": {
+      "status": "passed",
+      "inputs": "All17 input schema objects deeply identical",
+      "rawOutputs": "Mail14 output data deeply identical; Zen3 only additional optional presentation field, otherwise deeply identical. v1 stays raw and v2 requires full provenance/result envelope."
+    },
+    "missingBothSlotsGetCancel": {
+      "status": "passed",
+      "actual": "Real business draft/prepare created under same simulated MCP run, then actual production selector clears bothslots. get/cancel/get/cancel allok with sameintent/stale terminalstate, producer0,execution0,grant0; existing stale state not falsely changed to canceled.",
+      "output": "observations.json final record"
+    }
+  },
+  "boundaries": [
+    "Actual production registry/ToolService/SQLite/identity scope/state/MIME preparation, simulated process identities and UI sender; no native MCPstdio/CLI/App/model claims.",
+    "Synthetic verification seam for connection setup; no helper/worker/provider network invoked.",
+    "Read/date/pages/resource data use verified T10/T02 evidence separately; not rerun here."
+  ],
+  "commands": [
+    {
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c7-t17-cache WILLYOU_T17_EVIDENCE=delivery-t17/i-attempt-001 pnpm test src/main/core/applications/__tests__/m11-t17-contract.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery-t17/i-attempt-001/vitest.json",
+      "session": 50430,
+      "exitCode": 0
+    },
+    {
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c7-t17-cache pnpm exec tsc --noEmit -p tsconfig.node.json",
+      "session": 50300,
+      "exitCode": 0,
+      "log": "typecheck.log"
+    }
+  ],
+  "baseline": {
+    "runId": "M11-C7-20261101T191439Z-e388",
+    "root": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b",
+    "record": "docs/里程碑/M11_应用接入标准化/验收/并行测试/轮次/M11-C7-20261101T191439Z-e388/轮次记录.json",
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source",
+    "sourceManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source-manifest.json",
+    "productionManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/package-production-inputs.json",
+    "previous": "/private/tmp/willyou-m11-c6-current-round.json",
+    "packageOutput": "/private/tmp/willyou-m11-s7/package-c7-attempt-001",
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "productionManifestSha256": "32d89fc7f90f2c713a0c6a24ed7c249769b970bb260d991042ff80070ba35d51",
+    "packageApp": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42"
+  },
+  "sourceOutChecks": {
+    "sourceCount": 3222,
+    "outCount": 151,
+    "bad": []
+  },
+  "testSourceSha256": "f39f2d83850ad76be8d45ce9742f87377fb6a7a62af009e74b6cf280c591f2ef",
+  "cleanup": "cleanup.json",
+  "next": "Only prepare and await separate A+R UI/heavy lease; T17 not whole-case passed"
+}

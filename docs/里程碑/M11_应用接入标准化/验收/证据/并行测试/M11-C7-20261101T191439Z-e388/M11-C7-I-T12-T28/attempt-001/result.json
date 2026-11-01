@@ -1,0 +1,135 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "runId": "M11-C7-20261101T191439Z-e388",
+  "groupId": "M11-C7-I-T12-T28",
+  "attempt": "attempt-001",
+  "status": "targeted-I-passed; original A preconditions/coverage remain partial",
+  "startedAt": "2026-11-01T19:44:21.298882+00:00",
+  "sealedAt": "2026-11-01T19:47:38.891284+00:00",
+  "cases": [
+    "M11-T12",
+    "M11-T28"
+  ],
+  "executedLayers": [
+    "I",
+    "static A prerequisite analysis only"
+  ],
+  "formalCasePassesAdded": 0,
+  "formalLedgerUpdatedByExecutor": false,
+  "source": {
+    "frozenSourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "privateWorker": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/t12-t28-worker",
+    "sourceFileCount": 3222,
+    "outFileCount": 151,
+    "verification": "source-out-deps-final.json",
+    "productionChanged": false,
+    "privateTestChangesOnly": 2,
+    "newPrivateExecutedTests": {
+      "round001-task": "executed-task-capability-launcher.test.ts",
+      "round002-task": "executed-round002-task-capability-launcher.test.ts",
+      "native": "executed-native-user-messages.test.ts"
+    },
+    "App": "C7 b87809c... supplied but never started by this group",
+    "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+    "arch": "arm64"
+  },
+  "criteria": [
+    {
+      "case": "M11-T12",
+      "original": "原v0.0.9固定会话、MCPv1；升级恢复原工具；旧资源和v1语义保持，不自动替包/扩权",
+      "actualI": "真实TaskService/SQLite保持完整原snapshot、pointer、raw snapshot JSON及全部refs；恢复同nativeId但新runId；旧草稿v1结果逐对象相等，无v2封装；工具全为v1，新v2工具在旧run拒绝SCOPE_DENIED",
+      "evidence": "round002-raw/fixed-v1-current166-new-cli.json",
+      "status": "I passed with explicit fixture preconditions",
+      "missing": "官方v009真实App来源、升级UI恢复/真实Agent旧工具调用尚未执行。当前I旧包是保留兼容v1资源，不能替代官方旧App升级A。"
+    },
+    {
+      "case": "M11-T12",
+      "original": "经真实UI新建CLI会话，新会话使用已选择的新能力；核对包、权限和记录",
+      "actualI": "旧run正常停止后，独立新TaskService任务选中数据版CLI v2包；实际ToolService(entry=cli)统一v2返回和origin=cli；旧v1工具在新run拒绝；新包hash/版本/权限与旧固定绑定分开",
+      "evidence": "round002-raw/fixed-v1-current166-new-cli.json",
+      "status": "I passed; A missing",
+      "missing": "真实UI新CLI会话尚未执行。本I不执行实际CLI二进制。"
+    },
+    {
+      "case": "M11-T28",
+      "original": "旧创建版本/current新版本；恢复时按当前安装版本登记/等级判定，诊断区分创建与本次运行",
+      "actualI": "0.162.1创建版本固定；版本shell改为0.166.0后实际tasks.open新run的nativeMessages.register参数、preparation/runPlan/current诊断全为0.166；createdCliVersion保持0.162.1；旧projection1适配器不改字节且按best-effort规则判定",
+      "evidence": "round002-raw/fixed-v1-current166-new-cli.json",
+      "status": "I passed; actual version-history A missing",
+      "missing": "版本shell与合成native历史是I夹具，无真实0.162进程。官方旧App若用当前0.166创建，创建版本同为0.166，不能证明真实版本转换。"
+    },
+    {
+      "case": "M11-T28",
+      "original": "混合记录可判定正确解析，不可判定失败即关闭",
+      "actualI": "实际NativeUserMessages有界IO读取旧header+过期旧记录+未知格式+有效当前call/output/catalog，仅当前166一read一discovery；未知未来角色、错callId、无配对输出、JSON截断无read/discovery；L3始终unsupported",
+      "evidence": [
+        "raw/mixed-determinable.json",
+        "raw/mixed-undecidable.json"
+      ],
+      "status": "I passed",
+      "missing": "真实新旧CLI混合文件的A前置未执行；受控L2-only声明仅作component I前置。"
+    },
+    {
+      "case": "M11-T28",
+      "original": "跨Agent读取拒绝",
+      "actualI": "实际Codex与Claude注册parser各自正控成功，互读对方相同claimed session/cwd的记录均null；把foreign格式置于本次own Codex文件，宿主IO无read/discovery",
+      "evidence": "raw/cross-agent.json",
+      "status": "I passed (actual parsers + owned IO)",
+      "missing": "本组未启动另一真实Agent。原前置另一个Agent夹具按I覆盖，App展示/恢复仍待A。"
+    }
+  ],
+  "softwareResults": {
+    "newUniqueAssertions": 4,
+    "passedUniqueAssertions": 4,
+    "preflightPassed": 1,
+    "preflightDuplicatesOneOfFour": true,
+    "round001": {
+      "passed": 3,
+      "failed": 1,
+      "failureClassification": "fixture shared discovery collision at concurrent new-task creation"
+    },
+    "round002": {
+      "passed": 1,
+      "failed": 0,
+      "selection": "only originally failed combined old/new task test"
+    },
+    "filteredOriginalTests": "not executed; not counted as passed",
+    "commands": "commands.json",
+    "productFailures": []
+  },
+  "originalFailurePreserved": {
+    "report": "vitest-directed.json",
+    "diagnosis": "fixture-diagnosis-round001.json",
+    "change": "正常停止已验证旧run后新建，原业务/权限断言未放宽。末尾原taskkill重复无害；所有服务清场。"
+  },
+  "retainedEvidence": "retained-evidence.json",
+  "retainedNativeInputsExactlyUnchanged": 5,
+  "rawPositiveNegativeResults": [
+    "raw/mixed-determinable.json",
+    "raw/mixed-undecidable.json",
+    "raw/cross-agent.json",
+    "round002-raw/old-resumed-v1-proof.json",
+    "round002-raw/fixed-v1-current166-new-cli.json"
+  ],
+  "actualCreationVersion": "0.162.1",
+  "actualCurrentFixtureVersion": "0.166.0",
+  "originalContract": "original-contract-excerpts.txt (git630ae0df, original T12/T28 rows retained)",
+  "officialOldAppPolicy": "upgrade-policy-evidence.json",
+  "aReadiness": "a-driver-readiness.md",
+  "aDriverSyntaxChecks": "a-driver-syntax-check.json (3 syntax checks, no top-level invocation)",
+  "unresolvedOriginalPrerequisites": [
+    "官方旧App旧固定会话/真实UI升级恢复及新UI CLI创建尚未执行",
+    "官方v009声明0.162.1与本轮仅真0.166冲突：不得伪造旧MCP成功或真旧版本历史；可选真实旧App产生unsupported-v1后当前恢复只能按实际子项报告"
+  ],
+  "resourcesReleased": true,
+  "cleanup": "cleanup.json",
+  "efficiency": {
+    "newFormalCasesComplete": 0,
+    "reason": "本批只分配I和A准备；缺官方旧App实际升级层及真实旧版本历史前置",
+    "noBuilds": true,
+    "noOldGreenMatrixRerun": true,
+    "fixtureRetryCount": 1,
+    "fixtureRetryReason": "本组新旧会话共享发现目录同时active；改为原合同顺序停止后新建",
+    "testTimeSource": "Vitest JSON startTime Unix milliseconds and per-assertion duration; commands.json preserves report values"
+  }
+}

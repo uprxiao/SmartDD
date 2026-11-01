@@ -1,0 +1,343 @@
+{
+  "checkedAt": "2026-11-01T19:47:04.718921+00:00",
+  "oldTagCommit": "a6bfc60873a0c68e8ac630e2c9b951db04db82c8",
+  "sourcePolicy": [
+    {
+      "revision": "a6bfc60873a0c68e8ac630e2c9b951db04db82c8",
+      "file": "src/main/core/applications/task-capability-launcher.ts",
+      "sourceSha256": "0edad8eac20b26de9bd0c9ac455ee311e914a7152c7dff06d96516e2783f6614",
+      "lines": [
+        {
+          "line": 194,
+          "text": "        }catch(error){"
+        },
+        {
+          "line": 195,
+          "text": "          if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;"
+        },
+        {
+          "line": 196,
+          "text": "          if(!(error instanceof ApplicationError))throw error;"
+        },
+        {
+          "line": 197,
+          "text": "          if(this.legacyPreparationWarnings.size>=256&&!this.legacyPreparationWarnings.has(input.taskId))this.legacyPreparationWarnings.delete(this.legacyPreparationWarnings.keys().next().value!);"
+        },
+        {
+          "line": 198,
+          "text": "          this.legacyPreparationWarnings.set(input.taskId,error.code);unavailable=error.code;"
+        },
+        {
+          "line": 199,
+          "text": "          const converted=this.support.store.sqlite.prepare('SELECT schema_version FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {schema_version:number}|undefined;"
+        },
+        {
+          "line": 200,
+          "text": "          if(converted?.schema_version===2)current=await this.sessions.get(input.taskId);"
+        },
+        {
+          "line": 201,
+          "text": "        }"
+        },
+        {
+          "line": 202,
+          "text": "        if(!current)return this.prepareNativeHistory(input,native,unavailable,catalog);"
+        },
+        {
+          "line": 203,
+          "text": "      }else{"
+        },
+        {
+          "line": 204,
+          "text": "      const planned=this.createSnapshot(input,native,(await catalog.snapshot()).generation);"
+        },
+        {
+          "line": 205,
+          "text": "      const plannedRuntimeReady=await applicationRuntimeReady(planned);"
+        },
+        {
+          "line": 206,
+          "text": "      const plannedPhysical=planned.runner==='codex'?await catalog.inspectPhysical(planned):undefined,plannedFacets=native?nativeCapabilityConflicts(planned,native,plannedPhysical):undefined,plannedExcludedStandards=new Set([...(plannedFacets?.standardSkills??[]),...(plannedFacets?.unavailableStandardSkills??[])]),plannedStandards=plannedExcludedStandards.size?planned.standardSkills.filter(s=>!plannedExcludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,plannedConflicts=plannedFacets?.applications??new Set<string>(),plannedReady=inspectApplicationResources(this.support.store,planned.packages).filter(p=>plannedRuntimeReady&&p.state==='ready'&&!plannedConflicts.has(p.appId)&&!plannedFacets?.unavailableApplications.has(p.appId)).map(p=>p.appId),plannedScope=plannedReady.length<planned.packages.length?plannedReady:undefined;"
+        },
+        {
+          "line": 207,
+          "text": "      assertNoPendingApplicationSwitch(this.support.store,plannedScope?{projectId:planned.projectId,packages:planned.packages.filter(p=>plannedScope.includes(p.appId))}:planned);"
+        },
+        {
+          "line": 208,
+          "text": "      const adapter=this.support.adapters.get(planned.adapterBinding.hash);"
+        },
+        {
+          "line": 209,
+          "text": "      if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';"
+        },
+        {
+          "line": 210,
+          "text": "      if(planned.runner==='codex'&&!unavailable&&await catalog.hasPendingPublication())unavailable='RESOURCE_BUSY';"
+        },
+        {
+          "line": 211,
+          "text": "      if(planned.runner==='codex'&&!unavailable){"
+        },
+        {
+          "line": 212,
+          "text": "        try{planned.catalogGeneration=(await catalog.publish(this.projector.sourceSkills(planned,plannedScope,plannedScope?.length===0,plannedStandards),{signal:input.signal,requestedOnly:true})).generation;}"
+        },
+        {
+          "line": 213,
+          "text": "        catch(error){if(error instanceof ApplicationError&&error.code==='OWNERSHIP_CONFLICT')unavailable='AGENT_CAPABILITY_NAME_CONFLICT';else if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'&&await catalog.hasPendingPublication())unavailable=error.code;else throw error;}"
+        },
+        {
+          "line": 214,
+          "text": "      }"
+        },
+        {
+          "line": 215,
+          "text": "      if(plannedScope)this.initialApplicationScopes.set(planned.taskId,{selectionHash:selectionHash(planned),appIds:Object.freeze([...plannedScope])});"
+        },
+        {
+          "line": 216,
+          "text": "      try{current=await this.sessions.create(planned,input.home,plannedScope);}finally{this.initialApplicationScopes.delete(planned.taskId);}"
+        },
+        {
+          "line": 217,
+          "text": "      await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);"
+        },
+        {
+          "line": 218,
+          "text": "      }"
+        },
+        {
+          "line": 219,
+          "text": "    }"
+        },
+        {
+          "line": 220,
+          "text": "    if(!current)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原会话固定快照尚未就绪');"
+        },
+        {
+          "line": 221,
+          "text": "    if(current.snapshot.legacyBinding){"
+        },
+        {
+          "line": 222,
+          "text": "      try{"
+        },
+        {
+          "line": 223,
+          "text": "        const original=assertLegacySessionSource(this.support.store,current.snapshot);"
+        },
+        {
+          "line": 224,
+          "text": "        if(!this.originalTransientAbsent(original.snapshot.manifestPath))unavailable??='RESOURCE_RECOVERY_REQUIRED';"
+        },
+        {
+          "line": 225,
+          "text": "        else if(!unavailable&&native){await this.sessions.ensureMirror(input.taskId);if(current.snapshot.runner==='codex')await new LegacyOriginalCodex(this.support.store,catalog).prepare(input.taskId,input.signal);else await new LegacyOriginalPlugin(this.support.store).prepare(input.taskId,input.signal);this.legacyPreparationWarnings.delete(input.taskId);}"
+        },
+        {
+          "line": 226,
+          "text": "      }catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;unavailable??=error.code;}"
+        },
+        {
+          "line": 227,
+          "text": "      if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);"
+        },
+        {
+          "line": 228,
+          "text": "    }"
+        },
+        {
+          "line": 229,
+          "text": "    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash);"
+        },
+        {
+          "line": 230,
+          "text": "    if(native&&!adapter.metadata.cliVersions.includes(native.version))unavailable='AGENT_ADAPTER_UNSUPPORTED';"
+        },
+        {
+          "line": 231,
+          "text": "    if(snapshot.runner==='codex'&&!unavailable&&await catalog.hasPendingPublication())unavailable='RESOURCE_BUSY';"
+        },
+        {
+          "line": 232,
+          "text": "    if(unavailable||!native)return this.prepareUnavailableSession(input,current,native,unavailable??'AGENT_ADAPTER_UNSUPPORTED',catalog);"
+        },
+        {
+          "line": 233,
+          "text": "    const runtimeReady=await applicationRuntimeReady(snapshot);"
+        },
+        {
+          "line": 234,
+          "text": "    const physical=snapshot.runner==='codex'&&!snapshot.legacyBinding?await catalog.inspectPhysical(snapshot):undefined,facets=native&&!snapshot.legacyBinding?nativeCapabilityConflicts(snapshot,native,physical):undefined,excludedStandards=new Set([...(facets?.standardSkills??[]),...(facets?.unavailableStandardSkills??[])]),standardSkillScope=excludedStandards.size?snapshot.standardSkills.filter(s=>!excludedStandards.has(s.projectionPath)).map(s=>s.projectionPath):undefined,standardSkills=snapshot.standardSkills.filter(s=>standardSkillScope===undefined||standardSkillScope.includes(s.projectionPath)),conflicts=facets?.applications??new Set<string>(),ready=inspectApplicationResources(this.support.store,snapshot.packages).filter(p=>runtimeReady&&p.state==='ready'&&!conflicts.has(p.appId)&&!facets?.unavailableApplications.has(p.appId)).map(p=>p.appId),applicationScope=!snapshot.legacyBinding&&!unavailable&&native&&(ready.length<snapshot.packages.length||standardSkillScope!==undefined||snapshot.runner==='codex'&&!!physical?.excludedPaths.length||snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId))?ready:undefined;"
+        },
+        {
+          "line": 235,
+          "text": "    if(ready.length<snapshot.packages.length&&!applicationScope)return this.prepareUnavailableSession(input,current,native,unavailable,catalog);"
+        },
+        {
+          "line": 236,
+          "text": "    if(snapshot.runner==='claude-code'&&this.claudeDelivery.has(snapshot.taskId)&&(unavailable||!native))return this.prepareUnavailableSession(input,current,native,unavailable,catalog);"
+        },
+        {
+          "line": 237,
+          "text": "    const excludedApplications=snapshot.packages.filter(p=>!ready.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash,code:applicationRuntimeIssue??(conflicts.has(p.appId)?'AGENT_CAPABILITY_NAME_CONFLICT' as const:'CAPABILITY_UNAVAILABLE' as const)}));"
+        }
+      ]
+    },
+    {
+      "revision": "C7-frozen",
+      "file": "src/main/core/applications/agent-adapter-registry.ts",
+      "sourceSha256": "476d8fd6d6a733a1eba4f18004e40996cc16a742f64170c7daf2a0f29e59c4fc",
+      "lines": [
+        {
+          "line": 46,
+          "text": "  constructor(readonly store: ResourceStore, private readonly nativeFormats: NativeEvidenceAdapterRegistry = builtinNativeEvidenceAdapters, readonly deliveryAdapters: CapabilityDeliveryAdapterRegistry = builtinCapabilityDeliveryAdapters) {}"
+        },
+        {
+          "line": 47,
+          "text": "  /** Single read point for declared levels (§15.4). Undeclared versions get no level; fail closed. */"
+        },
+        {
+          "line": 48,
+          "text": "  levels(hash:string,cliVersion:string):readonly AgentLevel[]{"
+        },
+        {
+          "line": 49,
+          "text": "    const declared=this.declaredLevels(hash,cliVersion), check=this.selfCheckResult(hash,cliVersion);"
+        },
+        {
+          "line": 50,
+          "text": "    return check?.status==='passed'?[...new Set([...declared,...check.proven])]:declared;"
+        },
+        {
+          "line": 51,
+          "text": "  }"
+        },
+        {
+          "line": 52,
+          "text": "  private declaredLevels(hash:string,cliVersion:string):readonly AgentLevel[]{"
+        },
+        {
+          "line": 53,
+          "text": "    const meta=this.get(hash).metadata;if(!meta.cliVersions.includes(cliVersion))return [];"
+        },
+        {
+          "line": 54,
+          "text": "    if(meta.levels)return meta.levels[cliVersion]??[];"
+        },
+        {
+          "line": 55,
+          "text": "    return RETAINED_NATIVE_MESSAGE_FORMATS[meta.agentId]?.includes(cliVersion)?['L0.skill','L0.mcp','L1','L2','L3']:[];"
+        },
+        {
+          "line": 56,
+          "text": "  }"
+        },
+        {
+          "line": 57,
+          "text": "  /** Declared levels after the undeclared-version downgrade (§15.4). Diagnostics and delivery read this. */"
+        },
+        {
+          "line": 58,
+          "text": "  effective(hash:string,cliVersion:string):EffectiveLevels{"
+        },
+        {
+          "line": 59,
+          "text": "    const declared=effectiveLevels(this.declaredLevels(hash,cliVersion)),check=this.selfCheckResult(hash,cliVersion);"
+        },
+        {
+          "line": 60,
+          "text": "    return check?.status==='passed'?{...declared,levels:[...new Set([...declared.levels,...check.proven])]}:declared;"
+        },
+        {
+          "line": 61,
+          "text": "  }"
+        },
+        {
+          "line": 62,
+          "text": "  /** Host-only, deliberately absent from RPC/MCP. A format check proves neither CLI identity nor authorization. */"
+        },
+        {
+          "line": 63,
+          "text": "  selfCheck(hash:string,cliVersion:string,fixtures:NativeFormatCheckFixtures){"
+        },
+        {
+          "line": 64,
+          "text": "    const installed=this.verify(hash), result=checkNativeFormat(this.nativeFormats.get(installed.metadata.agentId),hash,cliVersion,fixtures);"
+        },
+        {
+          "line": 65,
+          "text": "    this.verify(hash);storeNativeFormatCheck(this.store,result);return result;"
+        },
+        {
+          "line": 66,
+          "text": "  }"
+        },
+        {
+          "line": 67,
+          "text": "  selfCheckResult(hash:string,cliVersion:string){const result=readNativeFormatCheck(this.store,hash,cliVersion);if(result)this.verify(hash);return result;}"
+        },
+        {
+          "line": 68,
+          "text": "  versionSupport(hash:string,cliVersion:string):'declared'|'best-effort'|'unsupported'{"
+        },
+        {
+          "line": 69,
+          "text": "    const meta=this.get(hash).metadata;"
+        },
+        {
+          "line": 70,
+          "text": "    if(!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return 'unsupported';"
+        },
+        {
+          "line": 71,
+          "text": "    if(meta.cliVersions.includes(cliVersion))return 'declared';"
+        },
+        {
+          "line": 72,
+          "text": "    return meta.projectionFormatVersion===1&&/^\\d+\\.\\d+\\.\\d+$/.test(cliVersion)&&this.deliveryAdapters.get(meta.agentId).bestEffortMcp===true?'best-effort':'unsupported';"
+        },
+        {
+          "line": 73,
+          "text": "  }"
+        },
+        {
+          "line": 74,
+          "text": "  recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {"
+        }
+      ]
+    }
+  ],
+  "adapterParity": [
+    {
+      "path": "resources/agent-adapters/codex/1.0.0/adapter.json",
+      "oldTagSha256": "78fa24e114fe5095be1865baa597a91290f11e0ba3fcbc0cec49c3020a80da02",
+      "currentSha256": "78fa24e114fe5095be1865baa597a91290f11e0ba3fcbc0cec49c3020a80da02",
+      "exact": true
+    },
+    {
+      "path": "resources/agent-adapters/codex/1.0.0/index.cjs",
+      "oldTagSha256": "1145b351684ef4245402c5bbbed088af418bd6bae6cf91651bb1ec06e972ee8a",
+      "currentSha256": "1145b351684ef4245402c5bbbed088af418bd6bae6cf91651bb1ec06e972ee8a",
+      "exact": true
+    },
+    {
+      "path": "resources/agent-adapters/codex/1.1.0/adapter.json",
+      "oldTagSha256": "ee0d503f79a98d90df1bcabd6aeefeded1cee20819ddcd332d1f1d4b63ca301c",
+      "currentSha256": "ee0d503f79a98d90df1bcabd6aeefeded1cee20819ddcd332d1f1d4b63ca301c",
+      "exact": true
+    },
+    {
+      "path": "resources/agent-adapters/codex/1.1.0/index.cjs",
+      "oldTagSha256": "a760bcb0f0d5ba343c27bb3aa04644ced76b5a78621effc2e0a6863a538c92c8",
+      "currentSha256": "a760bcb0f0d5ba343c27bb3aa04644ced76b5a78621effc2e0a6863a538c92c8",
+      "exact": true
+    }
+  ],
+  "officialDmgProvidedByCoordinator": {
+    "path": "/private/tmp/willyou-m11-upgrade-v009-download/WillYou-0.0.9-mac-arm64.dmg",
+    "sha256": "f9186e1326ba67e9135cd1c49d75375febcef37f09d90862c6ea904b9960e9da",
+    "boundary": "Coordinator download/hash verified. This worker did not mount/extract/inspect official ASAR; Git tag policy is source provenance, not a claim that extracted ASAR was inspected."
+  }
+}
