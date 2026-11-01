@@ -1,0 +1,59 @@
+{
+  "schema": "m11-parallel-round-v1",
+  "runId": "M11-C10-20261102T062500Z-t13",
+  "stage": "M11",
+  "updatedAt": "2026-11-02T06:30:00Z",
+  "status": "T13 UI scopes complete; terminal/diagnostics/long-text open",
+  "baseline": {
+    "package": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+    "sourceManifest": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "rebuild": false,
+    "note": "生产输入未变；本批只新增验收驱动与证据"
+  },
+  "agents": [
+    {
+      "id": "coordinator",
+      "role": "drive T13 UI scopes",
+      "status": "delivered"
+    }
+  ],
+  "groups": [
+    {
+      "id": "M11-C10-A-T13-UI",
+      "case": "M11-T13 (partial)",
+      "layer": "A",
+      "driver": "scripts/applications/m11-t13-ui-states.mjs",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C10-20261102T062500Z-t13/M11-C10-A-T13-UI/attempt-001",
+      "files": 9,
+      "result": "passed-ui-scopes-without-agent",
+      "checks": 8,
+      "covered": [
+        "catalog",
+        "connection-form",
+        "project-selection",
+        "activity",
+        "light",
+        "dark"
+      ],
+      "uncovered": [
+        "terminal insertion",
+        "session diagnostics",
+        "real long-text truncation"
+      ]
+    }
+  ],
+  "resources": {
+    "ui": "released",
+    "heavy": "released",
+    "processesClosed": true
+  },
+  "accounting": {
+    "formalCasePassesAdded": 0,
+    "total": 38,
+    "passed": 27,
+    "pending": 11,
+    "note": "T13 remains partial: terminal, session diagnostics and long-text truncation uncovered"
+  },
+  "next": "Terminal + session diagnostics need a running Agent session (reuse m11-mail-v2 synthetic Responses session); then T37 dual-entry refusal, T34 new appId+, T09/T29."
+}
