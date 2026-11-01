@@ -13,8 +13,11 @@ const netResult = await netTest();
 // 经代理访问外部域名（默认应被拒）：Node 的 fetch 与 curl 各试一次，只报告状态或错误码，不读取内容。
 const viaFetch = await fetch('https://example.com', { signal: AbortSignal.timeout(6000) }).then(r => 'HTTP ' + r.status, e => 'ERR:' + (e.cause?.code || e.name));
 let viaCurl = ''; try { viaCurl = 'exit0 HTTP ' + execFileSync('curl', ['-sS', '-m', '6', '-o', '/dev/null', '-w', '%{http_code}', 'https://example.com'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); } catch (e) { viaCurl = 'exit' + e.status + ' ' + String(e.stderr || e.message).replace(/\s+/g, ' ').slice(0, 120); }
+// 交互式验证附加项：工作区写入是否保持；模拟 MCP 桥端点是否仍不可达（只放行 CLI 端点时）。
+let writeTest = 'skipped'; try { (await import('node:fs')).writeFileSync('wy-write-test.txt', 'ok'); writeTest = 'OK'; } catch (e) { writeTest = 'ERR:' + e.code; }
+const mcpEp = process.env.WILLYOU_TEST_MCP; const mcpTest = mcpEp ? await new Promise(r => { const c = connect(mcpEp); c.on('connect', () => { c.destroy(); r('CONNECTED'); }); c.on('error', e => r('ERR:' + e.code)); }) : 'skipped';
 const localCmds = {}; for (const [n, a] of [['git', ['--version']], ['node', ['-v']]]) { try { localCmds[n] = execFileSync(n, a, { encoding: 'utf8' }).trim(); } catch (e) { localCmds[n] = 'ERR:' + (e.code || e.status); } }
-const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, viaProxyFetch: viaFetch, viaProxyCurl: viaCurl, localCmds, proxyEnvNames: proxyEnv }) + '\n');
+const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, viaProxyFetch: viaFetch, viaProxyCurl: viaCurl, localCmds, writeTest, mcpEndpoint: mcpTest, proxyEnvNames: proxyEnv }) + '\n');
 if (!endpoint || !token) { done({ attempted: false, reason: 'missing env' }); process.exit(0); }
 const s = connect(endpoint); let out = '';
 s.on('connect', () => s.write(JSON.stringify({ op: 'bug.list', token, clientPid: process.pid }) + '\n'));
