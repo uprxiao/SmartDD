@@ -214,7 +214,7 @@ export function SessionApplications({ task, integration, onUse, onNewTask, onCon
   return <div className="m10-session-apps">
     {diagnosticControl}
     <p className="section-description">固定版本与当前使用条件分别展示。应用不可用时，Agent继续工作。</p>
-    {snapshot && <RunPlanPreview data={data} task={task} apps={apps} snapshot={snapshot} />}
+    {snapshot ? <RunPlanPreview data={data} task={task} apps={apps} snapshot={snapshot} /> : diagnosticPreview === 'recorded' && <p className="m10-muted m10-run-plan-empty" role="status">本会话没有固定的运行计划：历史会话不补造入口或适配等级。新建会话时按当时的项目应用与 Agent 版本生成。</p>}
     {!snapshot && <p className="m10-note" role="status">{diagnosticPreview === 'corrupt' ? '固定能力快照损坏，保留原记录等待核查。' : diagnosticPreview === 'unsupported-schema' ? '原能力快照格式暂不支持，请使用兼容版本。原记录已保留，不自动迁移或替换。' : diagnosticPreview === 'not-recorded' ? '本任务尚无已记录的固定能力。查看当前项目可用版本不表示本会话已选用。' : '历史能力未知：不自动补入当前应用。可继续原任务，或使用当前应用新建会话。'}</p>}
     {!apps.length && <p className="m10-note">本会话未选用应用。</p>}
     {apps.map(app => {
