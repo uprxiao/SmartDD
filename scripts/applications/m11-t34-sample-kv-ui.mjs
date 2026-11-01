@@ -325,7 +325,11 @@ try {
   await clickText("button", "管理项目选用");
   await new Promise((resolve) => setTimeout(resolve, 700));
   // The view asks for the project first, then for the connection slot this application owns.
-  if (await app.evaluate(`[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='\u9009\u62e9\u9879\u76ee')`))
+  if (
+    await app.evaluate(
+      `[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='\u9009\u62e9\u9879\u76ee')`,
+    )
+  )
     await clickText("button", "\u9009\u62e9\u9879\u76ee");
   await new Promise((resolve) => setTimeout(resolve, 600));
   const pickProject = await app.evaluate(
@@ -343,9 +347,11 @@ try {
   );
   result.slotRadio = radio;
   assert(radio, `Connection slot radio missing: ${radioLabel}`);
-  await click('[aria-label=' + JSON.stringify(radioLabel) + ']');
+  await click("[aria-label=" + JSON.stringify(radioLabel) + "]");
   await new Promise((resolve) => setTimeout(resolve, 1200));
-  const state = (await app.invoke("applications.projectSettings", project.id, "sample-kv")).value;
+  const state = (
+    await app.invoke("applications.projectSettings", project.id, "sample-kv")
+  ).value;
   result.selection = state;
   assert(
     state?.enabled || state?.connections?.["sample-kv"],
