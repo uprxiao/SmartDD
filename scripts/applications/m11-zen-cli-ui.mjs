@@ -677,7 +677,11 @@ const privateEnv = {
  HTTP_PROXY: "http://127.0.0.1:1",
  HTTPS_PROXY: "http://127.0.0.1:1",
  ALL_PROXY: "http://127.0.0.1:1",
- NO_PROXY: "127.0.0.1,localhost",
+ NO_PROXY:
+  "127.0.0.1,localhost" +
+  (process.env.WILLYOU_ZEN_BASE
+   ? "," + URL.parse(process.env.WILLYOU_ZEN_BASE)?.hostname
+   : ""),
  SHELL: "/bin/zsh",
 };
 // This script is itself an isolated driver process. Do not rely on its caller
@@ -1745,11 +1749,11 @@ try {
   expectedRevision: 0,
   config: {
    kind: "zentao",
-   baseUrl: "http://127.0.0.1:" + port + "/zt/",
-   username: "tester",
+   baseUrl: process.env.WILLYOU_ZEN_BASE ?? "http://127.0.0.1:" + port + "/zt/",
+   username: process.env.WILLYOU_ZEN_USER ?? "tester",
    authMode: "token",
   },
-  secret: "M11_SYNTHETIC_ZT",
+  secret: process.env.WILLYOU_ZEN_SECRET ?? "M11_SYNTHETIC_ZT",
  });
  assert(tested.ok, tested.message);
  const saved = await app.invoke(
