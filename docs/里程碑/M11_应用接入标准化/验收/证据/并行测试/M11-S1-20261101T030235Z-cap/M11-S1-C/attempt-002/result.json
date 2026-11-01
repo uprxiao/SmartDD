@@ -1,0 +1,92 @@
+{
+  "schema": "m11-s1-c-result-v1",
+  "group": "M11-S1-C",
+  "source": "/private/tmp/willyou-m11-s1/source-attempt-002",
+  "sourceManifestSha256": "9ef81cfdefa14bef170a1a98797766043c199eb823ce70369a9c1d7fa22a0624",
+  "checks": [
+    {
+      "name": "runtime-preflight",
+      "argv": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+        "scripts/applications/build-runtime.mjs",
+        "/private/tmp/willyou-m11-s1/evidence/composition/attempt-002/runtime-preflight"
+      ],
+      "startedAt": "2026-11-01T03:07:02.090283+00:00",
+      "finishedAt": "2026-11-01T03:07:02.583797+00:00",
+      "seconds": 0.494,
+      "exitCode": 0,
+      "outerBudgetExpired": false,
+      "pid": 98499,
+      "log": "runtime-preflight.log"
+    },
+    {
+      "name": "bundle-preflight",
+      "argv": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+        "scripts/applications/build-bundles.mjs",
+        "/private/tmp/willyou-m11-s1/evidence/composition/attempt-002/bundles-preflight",
+        "/private/tmp/willyou-m11-s1/evidence/composition/attempt-002/runtime-preflight/mcp-bridge.cjs"
+      ],
+      "startedAt": "2026-11-01T03:07:02.584015+00:00",
+      "finishedAt": "2026-11-01T03:07:02.674848+00:00",
+      "seconds": 0.091,
+      "exitCode": 0,
+      "outerBudgetExpired": false,
+      "pid": 98501,
+      "log": "bundle-preflight.log"
+    },
+    {
+      "name": "builtin-tests",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/builtin-packages.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1/evidence/composition/attempt-002/vitest.json"
+      ],
+      "startedAt": "2026-11-01T03:07:02.697608+00:00",
+      "finishedAt": "2026-11-01T03:07:21.344929+00:00",
+      "seconds": 18.647,
+      "exitCode": 0,
+      "outerBudgetExpired": false,
+      "pid": 98508,
+      "log": "builtin-tests.log"
+    }
+  ],
+  "runtimePinPreflight": {
+    "confirmed": true,
+    "expectedOldRuntimeHash": [
+      "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625"
+    ],
+    "generatedRuntimeHash": [
+      "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625"
+    ],
+    "bridgeFileSha256": "0e9755c239679c7065952570e0b2a1e94762adb87c0403f6a657db6a2b79e9f9",
+    "validation": "Actual private build-bundles legacy pin guard and generated index; no hash rewritten"
+  },
+  "coverage": {
+    "numTotalTestSuites": 2,
+    "numPassedTestSuites": 2,
+    "numFailedTestSuites": 0,
+    "numTotalTests": 29,
+    "numPassedTests": 29,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "success": true,
+    "failures": []
+  },
+  "sourceFileCount": 33349,
+  "sourceMismatches": [],
+  "dependencyBaselineUnchanged": true,
+  "formalM11NewPassed": 0,
+  "status": "passed",
+  "finishedAt": "2026-11-01T03:07:23.154820+00:00",
+  "notes": [
+    "No production/App build; builtin-package tests generate only their original private runtime/bundle fixtures.",
+    "No source, expectations or authority-ledger edits."
+  ]
+}

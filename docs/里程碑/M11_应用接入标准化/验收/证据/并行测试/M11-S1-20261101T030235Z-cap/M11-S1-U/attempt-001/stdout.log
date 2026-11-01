@@ -1,0 +1,66 @@
+
+> smartdd@0.0.9 test /private/tmp/willyou-m11-s1/source-attempt-001
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/capability-manifest.test.ts src/main/core/applications/__tests__/manifest.test.ts --maxWorkers=1 --no-file-parallelism --no-cache --reporter=verbose --reporter=json --outputFile=/private/tmp/willyou-m11-s1/evidence/units/attempt-001/vitest.json
+
+
+ RUN  v4.1.11 /private/tmp/willyou-m11-s1/source-attempt-001
+
+ × src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > accepts a data-only CLI capability with a read-only MCP fallback and verifies its complete tree 7ms
+   → expected { …(17) } to deeply equal { appId: 'zentao', …(16) }
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > checks a trusted module identity and its supported contract before admitting v2 1ms
+ × src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > preserves the exact v1 identity and calls no module lookup while parsing old resources 2ms
+   → expected '{"adapter":{"entry":"adapter/index.cj…' to be '{"adapter":{"entry":"adapter/index.cj…' // Object.is equality
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > projects a v1 tool through trusted business policy without renaming its tool or mutating bytes 1ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > accepts protected writes and requires explicit observed authorization for external writes 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects MCP fallback contract major mismatch before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects MCP primary contract major mismatch before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects two primary entries before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects no primary entry before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects primary differs from application entry before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects same fallback as primary before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects write fallback before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects write without protection before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects write automatic retry before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects capability of another app before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects CLI command of another app before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects undeclared required slot before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects undeclared conditional slot before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects repeated dependency before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects undeclared capability permission before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects duplicate capability before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects missing contract file before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects case folded file collision before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects package code before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects package executable before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects legacy mapping wrong major before publication 0ms
+ ✓ src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > rejects unknown declarations, altered bytes and unlisted files 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > canonicalizes nested object keys by Unicode code point with preserved array order 1ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > gives the same identity for equivalent file-list and object-key orders 3ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > changes identity when either Skill, adapter, tool contract or permission changes 1ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "../escape" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "/absolute" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a//b" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/./b" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a\\b" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "C:/x" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/CON.txt" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/NUL" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/trailing." 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/trailing " 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "a/‮x" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects ambiguous package path "é/file" 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects unknown manifest fields and duplicate or case-folded file paths 1ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects a missing or empty connection-contract declaration before assigning executable package identity 1ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects file-directory conflicts and a missing declared executable entry 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects altered bytes, size, missing files and unlisted files before publication 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > rejects malformed JSON Schema resources and mismatched migration checksums 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > bounds native application and Skill names before creating any shared projections 0ms
+ ✓ src/main/core/applications/__tests__/manifest.test.ts > application manifest identity and complete-file contract > enforces application/tool identity, declared permissions, send annotations and host compatibility 0ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 47 passed (49)
+   Start at  11:03:26
+   Duration  247ms (transform 34ms, setup 0ms, import 89ms, tests 23ms, environment 0ms)
+
+JSON report written to /private/tmp/willyou-m11-s1/evidence/units/attempt-001/vitest.json
+ ELIFECYCLE  Test failed. See above for more details.

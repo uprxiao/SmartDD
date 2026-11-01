@@ -1,0 +1,73 @@
+[1101/110326.676150:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1101/110326.996663:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1101/110327.145500:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > accepts a data-only CLI capability with a read-only MCP fallback and verifies its complete tree
+AssertionError: expected { …(17) } to deeply equal { appId: 'zentao', …(16) }
+
+- Expected
++ Received
+
+@@ -57,16 +57,10 @@
+    "displayName": "禅道",
+    "entry": "cli",
+    "files": [
+      {
+        "executable": false,
+-       "path": "skills/query/SKILL.md",
+-       "sha256": "6564e9f701b13ddf23e52542a2d1b76459ff5eb101cf75dbe98b26f53bfd429a",
+-       "size": 80,
+-     },
+-     {
+-       "executable": false,
+        "path": "schemas/connection.json",
+        "sha256": "32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e",
+        "size": 62,
+      },
+      {
+@@ -78,10 +72,16 @@
+      {
+        "executable": false,
+        "path": "schemas/output.json",
+        "sha256": "32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e",
+        "size": 62,
++     },
++     {
++       "executable": false,
++       "path": "skills/query/SKILL.md",
++       "sha256": "6564e9f701b13ddf23e52542a2d1b76459ff5eb101cf75dbe98b26f53bfd429a",
++       "size": 80,
+      },
+    ],
+    "hostApi": {
+      "max": 1,
+      "min": 1,
+
+ ❯ src/main/core/applications/__tests__/capability-manifest.test.ts:28:32
+     26|   it('accepts a data-only CLI capability with a read-only MCP fallback…
+     27|     const b = v2Bundle(), validated = validatePackageBundle(b, modules…
+     28|     expect(validated.manifest).toEqual(b.manifest);
+       |                                ^
+     29|     expect(validated.packageHash).toBe(digest(canonicalJson(b.manifest…
+     30|     const views = applicationCapabilityViews(validated.manifest);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/capability-manifest.test.ts > v2 capability manifests and retained v1 views > preserves the exact v1 identity and calls no module lookup while parsing old resources
+AssertionError: expected '{"adapter":{"entry":"adapter/index.cj…' to be '{"adapter":{"entry":"adapter/index.cj…' // Object.is equality
+
+Expected: "{"adapter":{"entry":"adapter/index.cjs","format":"cjs"},"appId":"zentao","connectionContracts":[{"authModes":["token"],"configApiMajor":1,"identityContractMajor":1,"inputSchemaPath":"schemas/connection.json","providerId":"zentao"}],"dataApi":1,"description":"Isolated application package fixture","displayName":"禅道","files":[{"executable":false,"path":"skills/query/SKILL.md","sha256":"6564e9f701b13ddf23e52542a2d1b76459ff5eb101cf75dbe98b26f53bfd429a","size":80},{"executable":false,"path":"adapter/index.cjs","sha256":"2bb61805b903e1069b65028fe0d68b2695421235d8a7445b251ae0717303af8f","size":39},{"executable":false,"path":"schemas/connection.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62},{"executable":false,"path":"schemas/input.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62},{"executable":false,"path":"schemas/output.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62}],"hostApi":{"max":1,"min":1},"migrations":[],"permissions":["zentao.read"],"runtime":{"hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","id":"applications","protocolMajor":1},"schema":"smartdd-app-package-v1","skills":[{"description":"Read assigned objects","entry":"skills/query/SKILL.md","id":"query","path":"skills/query"}],"tools":[{"annotations":{"destructiveHint":false,"idempotentHint":true,"openWorldHint":true,"readOnlyHint":true},"contractMajor":1,"inputSchemaPath":"schemas/input.json","name":"smartdd_zentao_query_v1","outputSchemaPath":"schemas/output.json","permission":"zentao.read"}],"version":"1.0.0"}"
+Received: "{"adapter":{"entry":"adapter/index.cjs","format":"cjs"},"appId":"zentao","connectionContracts":[{"authModes":["token"],"configApiMajor":1,"identityContractMajor":1,"inputSchemaPath":"schemas/connection.json","providerId":"zentao"}],"dataApi":1,"description":"Isolated application package fixture","displayName":"禅道","files":[{"executable":false,"path":"adapter/index.cjs","sha256":"2bb61805b903e1069b65028fe0d68b2695421235d8a7445b251ae0717303af8f","size":39},{"executable":false,"path":"schemas/connection.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62},{"executable":false,"path":"schemas/input.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62},{"executable":false,"path":"schemas/output.json","sha256":"32062bdb9024160d3b9816f12ba2f337808ee107449f8bf08d55b0026944f51e","size":62},{"executable":false,"path":"skills/query/SKILL.md","sha256":"6564e9f701b13ddf23e52542a2d1b76459ff5eb101cf75dbe98b26f53bfd429a","size":80}],"hostApi":{"max":1,"min":1},"migrations":[],"permissions":["zentao.read"],"runtime":{"hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","id":"applications","protocolMajor":1},"schema":"smartdd-app-package-v1","skills":[{"description":"Read assigned objects","entry":"skills/query/SKILL.md","id":"query","path":"skills/query"}],"tools":[{"annotations":{"destructiveHint":false,"idempotentHint":true,"openWorldHint":true,"readOnlyHint":true},"contractMajor":1,"inputSchemaPath":"schemas/input.json","name":"smartdd_zentao_query_v1","outputSchemaPath":"schemas/output.json","permission":"zentao.read"}],"version":"1.0.0"}"
+
+ ❯ src/main/core/applications/__tests__/capability-manifest.test.ts:45:122
+     43|   it('preserves the exact v1 identity and calls no module lookup while…
+     44|     const b = fixtureBundle(), bytes = canonicalJson(b.manifest);
+     45|     expect(canonicalJson(parsePackageManifest(b.manifest, { supportsMo…
+       |                                                                                                                          ^
+     46|     expect(canonicalJson(parseManifest(b.manifest))).toBe(bytes);
+     47|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

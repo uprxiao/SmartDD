@@ -1,0 +1,80 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S1-U",
+  "attempt": 1,
+  "status": "failed",
+  "classification": "new-tests-use-noncanonical-manifest-fixture",
+  "scope": "Two requested manifest unit suites only; no production changes or real app acceptance",
+  "baseCommit": "712fe3e5a630b92fe6664a51261c0635496c0839",
+  "sourceManifestSha256": "37c59f7117b99ca78c0996068ffb0a7fab569e482718c4ce37cdb969326cf962",
+  "command": [
+    "pnpm",
+    "test",
+    "src/main/core/applications/__tests__/capability-manifest.test.ts",
+    "src/main/core/applications/__tests__/manifest.test.ts",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--no-cache",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=/private/tmp/willyou-m11-s1/evidence/units/attempt-001/vitest.json"
+  ],
+  "cwd": "/private/tmp/willyou-m11-s1/source-attempt-001",
+  "startedAt": "2026-11-01T03:03:26.454772+00:00",
+  "finishedAt": "2026-11-01T03:03:27.313834+00:00",
+  "elapsedSeconds": 0.859,
+  "exitCode": 1,
+  "timedOut": false,
+  "outerBudgetSeconds": 120,
+  "individualTestTimeout": "Unmodified",
+  "counts": {
+    "files": 2,
+    "testCases": 49,
+    "passed": 47,
+    "failed": 2,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/capability-manifest.test.ts",
+      "total": 27,
+      "passed": 25,
+      "failed": 2,
+      "status": "failed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "total": 22,
+      "passed": 22,
+      "failed": 0,
+      "status": "passed"
+    }
+  ],
+  "perTestResults": "per-test-results.json",
+  "failures": [
+    {
+      "fullName": "v2 capability manifests and retained v1 views > accepts a data-only CLI capability with a read-only MCP fallback and verifies its complete tree",
+      "status": "failed",
+      "durationMs": 7.328166999999993,
+      "failureMessages": [
+        "AssertionError: expected { …(17) } to deeply equal { appId: 'zentao', …(16) }\n    at /private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/capability-manifest.test.ts:28:32\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ]
+    },
+    {
+      "fullName": "v2 capability manifests and retained v1 views > preserves the exact v1 identity and calls no module lookup while parsing old resources",
+      "status": "failed",
+      "durationMs": 1.9691669999999988,
+      "failureMessages": [
+        "AssertionError: expected '{\"adapter\":{\"entry\":\"adapter/index.cj…' to be '{\"adapter\":{\"entry\":\"adapter/index.cj…' // Object.is equality\n    at /private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/capability-manifest.test.ts:45:122\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ]
+    }
+  ],
+  "diagnosis": "Both failing assertions compare the original fixture files array (Skill first) with a manifest whose files have been path-sorted. The retained parseManifest already sorts files at manifest.ts:29; the new parsePackageManifest also sorts at line40. Exact errors/diffs remain in stderr.log and vitest.json. Coordinator confirmed and is preparing a corrected baseline; executor did not alter source or expectations.",
+  "preflightNote": "A first driver preflight assumed dictionary manifest.files; the published S1 manifest provides a list. No tests started before adapting the read-only preflight; record retained in preflight-format-001.json.",
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheUnchanged": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

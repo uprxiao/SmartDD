@@ -1,0 +1,102 @@
+{
+  "schema": "m11-s1-c-result-v1",
+  "group": "M11-S1-C",
+  "source": "/private/tmp/willyou-m11-s1/source-attempt-001",
+  "sourceManifestSha256": "37c59f7117b99ca78c0996068ffb0a7fab569e482718c4ce37cdb969326cf962",
+  "checks": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "startedAt": "2026-11-01T03:04:06.665851+00:00",
+      "finishedAt": "2026-11-01T03:04:21.148032+00:00",
+      "seconds": 14.482,
+      "exitCode": 0,
+      "outerBudgetExpired": false,
+      "pid": 97095,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "package-tests",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/package-registry.test.ts",
+        "src/main/core/applications/__tests__/package-files.test.ts",
+        "src/main/core/applications/__tests__/builtin-packages.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1/evidence/composition/attempt-001/vitest.json"
+      ],
+      "startedAt": "2026-11-01T03:04:21.148283+00:00",
+      "finishedAt": "2026-11-01T03:04:29.705944+00:00",
+      "seconds": 8.558,
+      "exitCode": 1,
+      "outerBudgetExpired": false,
+      "pid": 97223,
+      "log": "package-tests.log"
+    }
+  ],
+  "coverage": {
+    "numTotalTestSuites": 6,
+    "numPassedTestSuites": 5,
+    "numFailedTestSuites": 1,
+    "numTotalTests": 58,
+    "numPassedTests": 29,
+    "numFailedTests": 0,
+    "numPendingTests": 29,
+    "success": false,
+    "failures": []
+  },
+  "sourceFileCount": 33349,
+  "sourceMismatches": [],
+  "dependencyBaselineUnchanged": true,
+  "formalM11NewPassed": 0,
+  "status": "failed",
+  "finishedAt": "2026-11-01T03:04:32.217120+00:00",
+  "notes": [
+    "No production/App build; builtin-package tests generate only their original private runtime/bundle fixtures.",
+    "No source, expectations or authority-ledger edits."
+  ],
+  "suiteSetupFailures": [
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "message": "Command failed: /Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron scripts/applications/build-bundles.mjs /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-builtin-build-KIKoLy/bundles /var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-builtin-build-KIKoLy/runtime/mcp-bridge.cjs\n[1101/110422.350851:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)\nfile:///private/tmp/willyou-m11-s1/source-attempt-001/scripts/applications/build-bundles.mjs:25\n    if (metadata.runtime.hash !== runtimeHash) throw new Error(`Pinned application runtime changed for ${metadata.appId}@${metadata.version}; review and use a new application version`);\n                                                     ^\n\nError: Pinned application runtime changed for zentao@1.0.3; review and use a new application version\n    at file:///private/tmp/willyou-m11-s1/source-attempt-001/scripts/applications/build-bundles.mjs:25:54\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)\n\nNode.js v24.19.0\n",
+      "blockedTestCount": 29,
+      "classification": "pinned-v1-runtime-build-input-regression"
+    }
+  ],
+  "fileResults": [
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "status": "failed",
+      "declaredTests": 29,
+      "passed": 0,
+      "failed": 0,
+      "notExecuted": 29
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/package-files.test.ts",
+      "status": "passed",
+      "declaredTests": 3,
+      "passed": 3,
+      "failed": 0,
+      "notExecuted": 0
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "status": "passed",
+      "declaredTests": 26,
+      "passed": 26,
+      "failed": 0,
+      "notExecuted": 0
+    }
+  ],
+  "blockedTestsNotCountedAsPassed": 29,
+  "actualIndividualFailures": 0
+}
