@@ -1,0 +1,895 @@
+import { randomUUID } from 'node:crypto';
+import { existsSync, realpathSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import { desc, eq, isNotNull } from 'drizzle-orm';
+import { pickCodexSession, type CodexWaiter } from '@shared/codex-session';
+import type { LaunchMode } from '@shared/runner-args';
+import {
+  taskTitle,
+  TITLE_MAX,
+  type CreateTaskRequest,
+  type OpenTaskRequest,
+  type TaskRecovery,
+  type TaskView,
+} from '@shared/tasks';
+import type { AppDb } from '../../db/client';
+import { aiProfiles, projects, tasks } from '../../db/schema';
+import { PARENT_AGENT_VARS, planLaunchEnv } from '../../launch-env';
+import { launchArgMax, launchPayloadFits } from '../../launch-budget';
+import type { SpawnOptions } from '../../pty-manager';
+import type { RuntimeSnapshot } from '@shared/capabilities';
+import { RUNTIME_ISOLATION, type CapabilityService, type PreparedRuntime } from '../capabilities/capability-service';
+import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
+import type { ProfileHealth } from '../ai/profile-health';
+import { redact } from '../connections/redact';
+import type { ProjectService } from '../projects/project-service';
+import { builtinRunnerAdapters, type RunnerAdapterRegistry, type ObservedRunnerSession } from './runner-adapters';
+import { ApplicationError } from '@shared/applications';
+import { SessionTail } from './session-health';
+import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
+import { imageInputCapability, type TerminalImageCapability } from '@shared/terminal-image';
+
+type TaskRow = typeof tasks.$inferSelect;
+
+/** The part of PtyManager the service needs; tests pass a fake. */
+export interface PtyHost {
+  spawn(opts: SpawnOptions): string;
+  nativePid?(id: string): number | null;
+  kill(id: string): void;
+  on(event: 'exit', listener: (id: string, code: number) => void): unknown;
+  off(event: 'exit', listener: (id: string, code: number) => void): unknown;
+  processId?(id: string): number | null;
+}
+
+export interface TaskServiceDeps {
+  db: AppDb;
+  ptys: PtyHost;
+  profiles: AiProfileService;
+  projects: ProjectService;
+  baseEnv: () => Record<string, string>;
+  /** Fired whenever the list or a running state changes; the renderer re-reads. */
+  onChanged: () => void;
+  /** Optional API health reporting; native history is followed independently. */
+  health?: Pick<ProfileHealth, 'report'>;
+  capabilities?: CapabilityService;
+  managedCapabilities?: TaskCapabilityLauncher;
+  now?: () => number;
+  codexPollMs?: number;
+  healthPollMs?: number;
+  /** Local OS capacity; injectable for deterministic boundary tests. */
+  launchArgMax?: () => number | null;
+  /** Startup-only trusted runner composition; immutable throughout this service lifetime. */
+  runnerAdapters?: RunnerAdapterRegistry;
+}
+
+/** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
+export const EARLY_EXIT_MS = 15_000;
+/** A missing PTY exit must never leave an archive request pending indefinitely. */
+export const ARCHIVE_STOP_TIMEOUT_MS = 5000;
+
+/** How long a Codex watcher keeps looking after its PTY exited (the rollout may be flushed late). */
+const CODEX_EXIT_GRACE_MS = 3000;
+
+interface CodexWatch {
+  timer: NodeJS.Timeout;
+  exitTimer?: NodeJS.Timeout;
+  root: string;
+  waiter: CodexWaiter;
+  busy: boolean;
+  /** Set once the PTY exited: the follower's last poll waits until the session is known. */
+  finalTail?: SessionTail;
+}
+
+interface Follow {
+  tail: SessionTail;
+  timer: NodeJS.Timeout;
+  ptyId: string;
+  profileId: string;
+  launchedAt: number;
+}
+
+export interface OpenResult {
+  task: TaskView;
+  ptyId: string;
+}
+
+const parseNames = (json: string): string[] => {
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+export class TaskService {
+  private readonly running = new Map<string, string>(); // taskId → ptyId
+  private readonly codexWatchers = new Map<string, CodexWatch>();
+  private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
+  private readonly follows = new Map<string, Follow>(); // taskId → session file follower
+  private readonly killedPtys = new Set<string>();
+  private readonly archiving = new Set<string>();
+  private readonly closing = new Set<string>();
+  private readonly pendingArchiveStops = new Map<(error: Error) => void, string>();
+  private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
+  private readonly now: () => number;
+  private readonly runnerAdapters: RunnerAdapterRegistry;
+  private readonly creations = new Map<string,{taskId:string;senderId:number|null}>();
+  private readonly launching = new Map<string,{projectId:string;abort:AbortController}>();
+  private readonly opening = new Map<string,{profileId:string|null;projectId:string|null;abort:AbortController;promise:Promise<OpenResult>}>();
+  private readonly managed = new Map<string,{taskId:string;launch:TaskCapabilityLaunch;exited:boolean;exitCode?:number}>();
+  private closed = false;
+  private readonly nativeClaims = new Map<string,string>();
+  private readonly bindingNative = new Map<string,Promise<void>>();
+  /** Only this host can attest that a newly started Claude run ended without a history file. */
+  private readonly freshNativeTasks = new Set<string>();
+
+  constructor(private readonly d: TaskServiceDeps) {
+    this.now = d.now ?? Date.now;
+    this.runnerAdapters = d.runnerAdapters ?? builtinRunnerAdapters;
+    d.ptys.on('exit', this.onPtyExit);
+  }
+
+  private adapter(runner: ResolvedProfile['runner']) { return this.runnerAdapters.get(runner); }
+
+  /** Startup-only composition: no live or preparing task can switch registries. */
+  attachManagedCapabilities(launcher: TaskCapabilityLauncher): void {
+    if (this.closed || this.running.size || this.launching.size || this.opening.size || this.managed.size || this.d.managedCapabilities && this.d.managedCapabilities !== launcher) throw new Error('任务运行时已经固定，不能替换');
+    this.d.managedCapabilities = launcher;
+  }
+
+  list(opts: { includeArchived?: boolean } = {}): TaskView[] {
+    const rows = this.d.db
+      .select({ task: tasks, projectName: projects.name, projectVersion: projects.configVersion, color: aiProfiles.color })
+      .from(tasks)
+      .leftJoin(projects, eq(tasks.projectId, projects.id))
+      .leftJoin(aiProfiles, eq(tasks.aiProfileId, aiProfiles.id))
+      .orderBy(desc(tasks.createdAt))
+      .all();
+    return rows
+      .filter((r) => opts.includeArchived || r.task.archivedAt == null)
+      .map((r) => this.toView(r.task, r.projectName, r.projectVersion, r.color));
+  }
+
+  get(id: string): TaskView {
+    const r = this.d.db
+      .select({ task: tasks, projectName: projects.name, projectVersion: projects.configVersion, color: aiProfiles.color })
+      .from(tasks)
+      .leftJoin(projects, eq(tasks.projectId, projects.id))
+      .leftJoin(aiProfiles, eq(tasks.aiProfileId, aiProfiles.id))
+      .where(eq(tasks.id, id))
+      .get();
+    if (!r) throw new Error('任务不存在或已被删除');
+    return this.toView(r.task, r.projectName, r.projectVersion, r.color);
+  }
+
+  /** New task from the home page (PRD F05 steps 1–3). Nothing is recorded if the CLI cannot start. */
+  async create(req: CreateTaskRequest, sender?: TaskInputSender): Promise<OpenResult> {
+    const token=req.launchToken;
+    if(token!==undefined&&(!/^[a-f0-9-]{36}$/i.test(token)||this.creations.has(token)))throw new Error('启动请求标识无效或已在使用');
+    const id=randomUUID();
+    if(token)this.creations.set(token,{taskId:id,senderId:sender?.sender.id??null});
+    try{return await this.createOnce(req,sender,id);}finally{if(token)this.creations.delete(token);}
+  }
+
+  /** Only the initiating renderer may cancel its pending creation; settled tokens are inert. */
+  cancelCreate(token:string,sender?:TaskInputSender):boolean {
+    const pending=this.creations.get(token);
+    if(!pending||pending.senderId!==(sender?.sender.id??null))return false;
+    this.kill(pending.taskId);return true;
+  }
+
+  private async createOnce(req: CreateTaskRequest, sender: TaskInputSender|undefined,id:string): Promise<OpenResult> {
+    if (this.closed) throw new Error('应用正在退出，不能启动任务');
+    const project = this.d.projects.getProject(req.projectId);
+    if (project.archivedAt != null) throw new Error(`项目「${project.name}」已归档，不能新建任务`);
+    const dir = req.dirId ? project.dirs.find((x) => x.id === req.dirId) : (project.dirs.find((x) => x.isDefault) ?? project.dirs[0]);
+    if (!dir) throw new Error(`项目「${project.name}」还没有登记代码目录`);
+    if (!dir.status.available) throw new Error(`代码目录不可用：${dir.path}`);
+    const profile = this.d.profiles.resolve(req.aiProfileId);
+
+    const ts = this.now();
+    const firstMessage = req.firstMessage.trim();
+    // Claude takes our id, so the task id doubles as its session id.
+    const sessionId = this.adapter(profile.runner).sessionIdStrategy === 'host' ? id : null;
+    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender });
+
+    try {
+      this.d.db
+        .insert(tasks)
+        .values({
+          id,
+          projectId: project.id,
+          dirId: dir.id,
+          cwd: dir.path,
+          aiProfileId: profile.id,
+          aiProfileName: profile.name,
+          runner: profile.runner,
+          nativeSessionId: sessionId,
+          nativeHistoryObserved: null,
+          title: taskTitle(firstMessage, profile.name, ts),
+          firstMessage,
+          injectedEnvNames: JSON.stringify(injectedNames),
+          runtimeSnapshot: runtime ? JSON.stringify(runtime.snapshot) : null,
+          configVersion: project.configVersion,
+          stateRoot,
+          lastLaunchedAt: launchedAt,
+          createdAt: ts,
+          updatedAt: ts,
+        })
+        .run();
+      if (!this.managed.get(ptyId)?.exited) this.running.set(id, ptyId);
+      if (runtime) this.trackRuntime(id, ptyId, runtime);
+      if (this.adapter(profile.runner).sessionIdStrategy === 'observed') this.watchNativeSession(id, ptyId, profile.runner, dir.path, stateRoot, launchedAt, firstMessage);
+      this.follow(id, ptyId, profile, dir.path, stateRoot, launchedAt, runtime?.secretValues);
+      const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
+      this.d.onChanged();
+      return { task: this.get(id), ptyId };
+    } catch(error){await this.abortSpawn(ptyId,runtime,'task-record-failed');throw error;}
+  }
+
+  /** Resume / reopen a task that is not running; a running task just returns its terminal. */
+  open(req: OpenTaskRequest): Promise<OpenResult> {
+    if(this.closed)return Promise.reject(new Error('应用正在退出，不能恢复任务'));
+    if(this.closing.has(req.taskId))return Promise.reject(new Error('会话正在关闭，请稍后再打开'));
+    const current=this.opening.get(req.taskId);
+    if(current){if(req.aiProfileId&&req.aiProfileId!==current.profileId)return Promise.reject(new Error('任务正在准备启动，完成后才能换 AI 配置'));return current.promise;}
+    const row=this.d.db.select({profileId:tasks.aiProfileId,projectId:tasks.projectId}).from(tasks).where(eq(tasks.id,req.taskId)).get();
+    const profileId=req.aiProfileId??row?.profileId??null,abort=new AbortController();
+    const promise=this.openOnce(req,abort.signal).finally(()=>{if(this.opening.get(req.taskId)?.promise===promise)this.opening.delete(req.taskId);});
+    this.opening.set(req.taskId,{profileId,projectId:row?.projectId??null,abort,promise});return promise;
+  }
+
+  private async openOnce(req: OpenTaskRequest, signal:AbortSignal): Promise<OpenResult> {
+    if(this.closed)throw new Error('应用正在退出，不能恢复任务');
+    await this.bindingNative.get(req.taskId)?.catch(()=>undefined);
+    if(this.closed)throw new Error('应用正在退出，不能恢复任务');
+    if(signal.aborted)throw new Error('任务启动已取消');
+    const row = this.require(req.taskId);
+    if (this.closing.has(row.id)) throw new Error('会话正在关闭，请稍后再打开');
+    if (this.archiving.has(row.id)) throw new Error('任务正在结束并归档，请稍后再试');
+    if (row.archivedAt !== null) throw new Error('任务已归档，请先取消归档再启动');
+    const live = this.running.get(row.id);
+    if (live) {
+      if (req.aiProfileId && req.aiProfileId !== row.aiProfileId) throw new Error('任务正在运行，结束后才能换 AI 配置恢复');
+      return { task: this.get(row.id), ptyId: live };
+    }
+    const profileId = req.aiProfileId ?? row.aiProfileId;
+    if (!profileId) throw new Error('原 AI 配置已删除，请选择一个 AI 配置来恢复');
+    const profile = this.d.profiles.resolve(profileId);
+    if (profile.runner !== row.runner) throw new Error(`不能用 ${profile.runner} 的 AI 配置恢复 ${row.runner} 任务`);
+    if (!existsSync(row.cwd) || !statSync(row.cwd).isDirectory()) throw new Error(`工作目录不存在：${row.cwd}`);
+
+    const { recovery, reason } = this.recoveryOf(row);
+    if (recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${reason}`);
+    const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
+    // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
+    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes(this.adapter(row.runner).stateEnvVar) } : null;
+    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
+      row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined);
+
+    try {
+      const ts = this.now();
+      const project = row.projectId ? this.d.db.select().from(projects).where(eq(projects.id, row.projectId)).get() : undefined;
+      this.d.db
+        .update(tasks)
+        .set({
+          aiProfileId: profile.id,
+          aiProfileName: profile.name,
+          injectedEnvNames: JSON.stringify(injectedNames),
+          runtimeSnapshot: runtime?.persistSnapshot === false ? row.runtimeSnapshot : runtime ? JSON.stringify(runtime.snapshot) : null,
+          stateRoot,
+          configVersion: project?.configVersion ?? row.configVersion,
+          lastLaunchedAt: launchedAt,
+          updatedAt: ts,
+        })
+        .where(eq(tasks.id, row.id))
+        .run();
+      if (!this.managed.get(ptyId)?.exited) this.running.set(row.id, ptyId);
+      if (runtime) this.trackRuntime(row.id, ptyId, runtime);
+      if (this.adapter(row.runner).sessionIdStrategy === 'observed' && mode === 'new') this.watchNativeSession(row.id, ptyId, row.runner, row.cwd, stateRoot, launchedAt, '');
+      this.follow(row.id, ptyId, profile, row.cwd, stateRoot, launchedAt, runtime?.secretValues);
+      const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
+      this.d.onChanged();
+      return { task: this.get(row.id), ptyId };
+    } catch(error){await this.abortSpawn(ptyId,runtime,'task-record-failed');throw error;}
+  }
+
+  rename(id: string, title: string): TaskView {
+    this.require(id);
+    const t = title.trim();
+    if (!t) throw new Error('任务标题不能为空');
+    if (t.length > TITLE_MAX * 2) throw new Error(`任务标题不能超过 ${TITLE_MAX * 2} 个字符`);
+    this.d.db.update(tasks).set({ title: t, updatedAt: this.now() }).where(eq(tasks.id, id)).run();
+    this.d.onChanged();
+    return this.get(id);
+  }
+
+  setArchived(id: string, archived: boolean): TaskView {
+    const row = this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
+    if (archived && (this.running.has(id)||this.launching.has(id)||this.opening.has(id))) throw new Error('任务正在运行，请先结束再归档');
+    if ((row.archivedAt !== null) === archived) return this.get(id);
+    this.d.db
+      .update(tasks)
+      .set({ archivedAt: archived ? this.now() : null, updatedAt: this.now() })
+      .where(eq(tasks.id, id))
+      .run();
+    this.d.onChanged();
+    return this.get(id);
+  }
+
+  /** Explicit user confirmation: wait for this PTY to exit before hiding its task. */
+  async stopAndArchive(id: string): Promise<TaskView> {
+    this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
+    const ptyId = this.running.get(id);
+    if (!ptyId) return this.setArchived(id, true);
+    this.archiving.add(id);
+    try {
+      await this.waitForPtyExit(id, ptyId, '终端尚未确认结束，未归档。请稍后重试。');
+      // No await between releasing the guard and saving the archived flag.
+      this.archiving.delete(id);
+      return this.setArchived(id, true);
+    } finally {
+      this.archiving.delete(id);
+    }
+  }
+
+  /** End only this session, with an exit receipt; keep its record and CLI files. */
+  async closeSession(id: string): Promise<TaskView> {
+    this.require(id);
+    if (this.closing.has(id) || this.archiving.has(id)) throw new Error('会话正在结束，请稍后再试');
+    this.closing.add(id);
+    try {
+      // M10 startup can still be preparing before it owns a PTY. Closing must
+      // settle that exact opening, otherwise it could spawn after close returns.
+      const opening=this.opening.get(id);
+      if(opening){
+        opening.abort.abort();this.launching.get(id)?.abort.abort();
+        await new Promise<void>((resolve,reject)=>{
+          let settled=false;
+          const finish=(error?:Error)=>{if(settled)return;settled=true;clearTimeout(timer);this.pendingArchiveStops.delete(finish);if(error)reject(error);else resolve();};
+          const timer=setTimeout(()=>finish(new Error('任务启动尚未确认结束，会话仍保留。请稍后重试。')),ARCHIVE_STOP_TIMEOUT_MS);
+          this.pendingArchiveStops.set(finish,'应用正在退出，会话关闭未完成');
+          void opening.promise.then(()=>finish(),()=>finish());
+        });
+      }
+      const ptyId = this.running.get(id);
+      if (ptyId) await this.waitForPtyExit(id, ptyId, '终端尚未确认结束，会话仍保留。请稍后重试。', '应用正在退出，会话关闭未完成');
+      this.stopWatch(id);
+      this.unfollow(id);
+      for (const [ptyId, taskId] of this.watchedPty) if (taskId === id) this.watchedPty.delete(ptyId);
+      return this.get(id);
+    } finally {
+      this.closing.delete(id);
+    }
+  }
+
+  private waitForPtyExit(id: string, ptyId: string, timeoutMessage: string, cancelledMessage = '应用正在退出，归档未完成'): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        this.d.ptys.off('exit', onExit);
+        this.pendingArchiveStops.delete(finish);
+        if (error) reject(error);
+        else resolve();
+      };
+      const onExit = (exitedId: string) => { if (exitedId === ptyId) finish(); };
+      const timer = setTimeout(() => finish(new Error(timeoutMessage)), ARCHIVE_STOP_TIMEOUT_MS);
+      this.pendingArchiveStops.set(finish, cancelledMessage);
+      this.d.ptys.on('exit', onExit);
+      try { this.kill(id); }
+      catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
+    });
+  }
+
+  /** Only SmartDD's record goes; the CLI's own session files stay (PRD F05 step 5). */
+  delete(id: string): void {
+    this.require(id);
+    if (this.closing.has(id)) throw new Error('会话正在关闭，请稍后再试');
+    if (this.archiving.has(id)) throw new Error('任务正在结束并归档，请稍后再试');
+    this.kill(id);
+    this.stopWatch(id);
+    this.unfollow(id);
+    this.running.delete(id);
+    this.d.db.delete(tasks).where(eq(tasks.id, id)).run();
+    void this.d.managedCapabilities?.tombstone(id).catch(()=>undefined);
+    this.d.onChanged();
+  }
+
+  kill(id: string): void {
+    this.opening.get(id)?.abort.abort();
+    this.launching.get(id)?.abort.abort();
+    const ptyId = this.running.get(id);
+    if (!ptyId) return;
+    const alreadyStopping = this.killedPtys.has(ptyId);
+    this.killedPtys.add(ptyId);
+    const managed=this.managed.get(ptyId);if(managed)void managed.launch.stop('user-stop').catch(()=>undefined);
+    try { this.d.ptys.kill(ptyId); }
+    catch (error) { if (!alreadyStopping) this.killedPtys.delete(ptyId); throw error; }
+  }
+
+  /** Stop only this project's owned tasks/preparations; uncertain owners keep the project busy. */
+  async stopProject(projectId:string,timeoutMs=5000,matches?:(taskId:string)=>boolean):Promise<boolean>{
+    for(const id of this.projectActiveTaskIds(projectId))if(!matches||matches(id))this.kill(id);
+    const deadline=performance.now()+timeoutMs;
+    while(this.runningInProject(projectId,matches)>0){if(performance.now()>=deadline)return false;await new Promise<void>(resolve=>setTimeout(resolve,Math.min(20,Math.max(1,deadline-performance.now()))));}
+    return true;
+  }
+
+  runningCount(): number {
+    return new Set([...this.running.keys(),...this.launching.keys(),...this.opening.keys()]).size;
+  }
+
+  /** Main-process ownership check for input; no database work on each keypress.
+   * Archived tasks cannot be running. Stop/archive/delete revoke input immediately,
+   * even while the native process is still delivering its final exit event.
+   */
+  activePty(taskId: string): string | null {
+    const id = this.running.get(taskId);
+    return id && !this.killedPtys.has(id) && !this.archiving.has(taskId) ? id : null;
+  }
+
+  /** Capability belongs to this live launch, not the profile's runner label. */
+  imageInput(taskId: string, ptyId: string): { capability: TerminalImageCapability; launchId: string | null } {
+    const run = this.runtimes.get(ptyId);
+    if (this.activePty(taskId) !== ptyId || run?.taskId !== taskId || run.runtime.check()?.status !== 'passed') return { capability: imageInputCapability(null), launchId: null };
+    const launch = run.runtime.imageInputLaunch?.() ?? null;
+    if (!launch || this.d.ptys.processId?.(ptyId) !== launch.pid) return { capability: imageInputCapability(null), launchId: null };
+    return { capability: imageInputCapability(launch), launchId: `${launch.runId}/${launch.pid}/${launch.sha256}` };
+  }
+
+  /** How many of the project's tasks have a live CLI (a project with any cannot be deleted). */
+  private projectActiveTaskIds(projectId:string):Set<string>{
+    const stored=new Set(this.d.db.select({id:tasks.id}).from(tasks).where(eq(tasks.projectId,projectId)).all().map(r=>r.id));
+    const ids=new Set([...this.running.keys()].filter(id=>stored.has(id)));
+    for(const[id,launch]of this.launching)if(launch.projectId===projectId)ids.add(id);
+    for(const[id,opening]of this.opening)if(opening.projectId===projectId)ids.add(id);
+    for(const id of this.d.managedCapabilities?.activeTaskIds?.(projectId)??[])ids.add(id);
+    return ids;
+  }
+  runningInProject(projectId:string,matches?:(taskId:string)=>boolean):number{
+    const ids=this.projectActiveTaskIds(projectId);return matches?[...ids].filter(matches).length:ids.size;
+  }
+
+  dispose(): void {
+    this.closed=true;for(const opening of this.opening.values())opening.abort.abort();for(const launch of this.launching.values())launch.abort.abort();
+    for(const run of this.managed.values())if(!run.exited)void run.launch.stop('host-shutdown').catch(()=>undefined);
+    for (const [cancel, message] of this.pendingArchiveStops) cancel(new Error(message));
+    for (const [ptyId,run] of this.runtimes) {
+      clearInterval(run.timer);
+      if(!this.managed.has(ptyId))run.runtime.release();
+    }
+    this.runtimes.clear();
+    for (const id of this.codexWatchers.keys()) this.stopWatch(id);
+    for (const f of this.follows.values()) clearInterval(f.timer);
+    this.follows.clear();
+    if(![...this.managed.values()].some(run=>!run.exited))this.d.ptys.off('exit', this.onPtyExit);
+  }
+
+  // ---- internals ----
+
+  private async spawn(
+    profile: ResolvedProfile,
+    cwd: string,
+    mode: LaunchMode,
+    sessionId: string | null,
+    firstMessage: string,
+    size: { cols?: number; rows?: number },
+    keepRoot: { path: string; explicit: boolean } | null = null,
+    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null; newTask: boolean; initialSender?: TaskInputSender }
+  ): Promise<{ ptyId: string; injectedNames: string[]; stateRoot: string; runtime?: PreparedRuntime; launchedAt: number }> {
+    const base = { ...this.d.baseEnv() };
+    for (const key of PARENT_AGENT_VARS) delete base[key];
+    const env = { ...profile.env };
+    if (keepRoot) {
+      const home = env.HOME || base.HOME || homedir();
+      if (this.adapter(profile.runner).preserveImplicitStateRoot && !keepRoot.explicit && keepRoot.path === this.adapter(profile.runner).defaultStateRoot(home)) {
+        // An explicit default-looking Claude root selects a different .claude.json.
+        delete env[this.adapter(profile.runner).stateEnvVar];
+        delete base[this.adapter(profile.runner).stateEnvVar];
+      } else {
+        env[this.adapter(profile.runner).stateEnvVar] = keepRoot.path;
+      }
+    }
+    const hasCapabilities = Boolean(this.d.capabilities || this.d.managedCapabilities);
+    if (context && hasCapabilities) {
+      // Freeze the discovery roots after shell rc without changing the selected native root.
+      env.HOME = env.HOME || base.HOME || homedir();
+      const adapter = this.adapter(profile.runner), explicitRoot = env[adapter.stateEnvVar] || base[adapter.stateEnvVar];
+      if (!adapter.preserveImplicitStateRoot) env[adapter.stateEnvVar] = keepRoot?.path || adapter.stateRoot(env, base);
+      else if (explicitRoot) env[adapter.stateEnvVar] = explicitRoot;
+      else delete env[adapter.stateEnvVar];
+    }
+    if (hasCapabilities && Object.keys(profile.env).some(key => RUNTIME_ISOLATION.some(prefix => key.startsWith(prefix)))) {
+      throw new Error('AI 配置使用了 WillYou 项目注入保留变量，请在项目中配置资源');
+    }
+    const abort = new AbortController();
+    if (context) this.launching.set(context.taskId, { projectId: context.projectId, abort });
+    let launch: TaskCapabilityLaunch | undefined;
+    let runtime: PreparedRuntime | undefined;
+    let nativePtyId: string | undefined;
+    let forkAttempted = false;
+    let launchedAt = 0;
+    try {
+      if (context && this.d.managedCapabilities) {
+        launch = await this.d.managedCapabilities.prepare({
+          projectId: context.projectId, taskId: context.taskId, profile, cwd,
+          home: env.HOME ?? base.HOME ?? homedir(), stateRoot: this.adapter(profile.runner).stateRoot(env, base),
+          claudeConfigExplicit: Boolean(env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR),
+          mode, sessionId, previous: context.previous ?? null, newTask: context.newTask, signal: abort.signal, environment: { ...base, ...env },
+        });
+      }
+      if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
+      runtime = launch?.runtime ?? (!this.d.managedCapabilities && context ? this.d.capabilities?.prepare({
+        ...context, runner: profile.runner, cwd, home: env.HOME ?? base.HOME ?? process.env.HOME ?? '', profileArgs: profile.args,
+      }) : undefined);
+      const assemble = () => {
+        const plan = planLaunchEnv(base, { ...env, ...runtime?.env, ...launch?.env }, [
+          ...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
+          ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME', this.adapter(profile.runner).stateEnvVar] : []),
+        ]);
+        const args = this.adapter(profile.runner).launchArgs({
+          mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
+        });
+        const executable = launch?.command ?? profile.command;
+        const command = runtime?.wrap(executable, args) ?? { command: executable, args };
+        return { plan, command };
+      };
+      let { plan, command } = assemble();
+      if (launch) {
+        const limit = (this.d.launchArgMax ?? launchArgMax)();
+        const fits = () => launchPayloadFits({ ...command, env: plan.env, scriptArgs: plan.scriptArgs }, limit);
+        if (!fits() && launch.nativeOnly) {
+          launch = await launch.nativeOnly('managed_launch_payload_too_large');
+          runtime = launch.runtime;
+          ({ plan, command } = assemble());
+        }
+        if (!fits()) throw new Error('原生 Agent 的启动参数和环境已超过本机容量，请缩短初始输入或配置后重试');
+      }
+      if (launch) {
+        this.managed.set(launch.ptyId, { taskId: context!.taskId, launch, exited: false });
+        await launch.beforeSpawn();
+        if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
+      }
+      let ptyId: string;
+      try {
+        // Recheck after asynchronous preparation/arming and immediately before the
+        // native fork. A late loss must follow the known no-fork failure path.
+        if (context && !context.newTask) {
+          const current = this.require(context.taskId), recovery = this.recoveryOf(current);
+          if (recovery.recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${recovery.reason}`);
+          if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
+          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== this.adapter(profile.runner).stateRoot(env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
+        }
+        launch?.assertBeforeFork?.();
+        if (context && !context.newTask && this.adapter(profile.runner).sessionIdStrategy === 'host' && mode === 'reopen') {
+          // Persist uncertainty before fork: a host crash must not leave a reusable
+          // "never written" claim while the native process may have written history.
+          this.d.db.update(tasks).set({ nativeHistoryObserved: null }).where(eq(tasks.id, context.taskId)).run();
+        }
+        launchedAt = this.now();
+        forkAttempted = true;
+        ptyId = this.d.ptys.spawn({
+          id: launch?.ptyId, ...command, cwd, env: plan.env, scriptArgs: plan.scriptArgs, cols: size.cols, rows: size.rows,
+        });
+        nativePtyId = ptyId;
+        if (context && this.adapter(profile.runner).sessionIdStrategy === 'host' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
+      } catch (error) {
+        if (launch) {
+          if (forkAttempted) await launch.spawnFailed();
+        }
+        else runtime?.release();
+        throw error;
+      }
+      if (launch) {
+        if (ptyId !== launch.ptyId) throw new Error('终端未沿用预留身份');
+        if (!this.managed.get(ptyId)?.exited) this.running.set(context!.taskId, ptyId);
+        await launch.spawned(this.d.ptys.nativePid?.(ptyId) ?? null);
+        if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
+        if (mode === 'new' && context?.initialSender && firstMessage.trim()) {
+          try { launch.initialInput?.(context.initialSender, firstMessage.trim()); }
+          catch { /* Origin evidence is optional; never replay a prompt already given to the native process. */ }
+        }
+      }
+      return { ptyId, injectedNames: plan.injectedNames, stateRoot: this.adapter(profile.runner).stateRoot(env, base), runtime, launchedAt };
+    } catch (error) {
+      // Arming may itself await or fail. Only this closure knows whether the OS
+      // fork was attempted; settle its unused windows before ordinary revocation.
+      if (launch && !forkAttempted && launch.cancelBeforeFork) {
+        try {
+          await launch.cancelBeforeFork();
+          this.managed.delete(launch.ptyId);
+          if (this.closed && ![...this.managed.values()].some(run => !run.exited)) this.d.ptys.off('exit', this.onPtyExit);
+        } catch { /* An unconfirmed cancellation keeps its process records and leases. */ }
+      }
+      // Request revocation before signalling the owned PTY, then await it; a revoker may itself await exit.
+      let stopping: Promise<void> | undefined;
+      if (launch) {
+        try { stopping = launch.stop(abort.signal.aborted || this.closed ? 'launch-canceled' : 'launch-failed').catch(() => undefined); } catch { /* Owner retains its failed-stop record. */ }
+      } else if (!nativePtyId) runtime?.release();
+      if (nativePtyId) {
+        this.killedPtys.add(nativePtyId);
+        try { this.d.ptys.kill(nativePtyId); } catch { /* An uncertain exit never releases managed resources. */ }
+      }
+      await stopping;
+      throw error;
+    } finally {
+      if (context && this.launching.get(context.taskId)?.abort === abort) this.launching.delete(context.taskId);
+    }
+  }
+
+  private async abortSpawn(ptyId:string,runtime:PreparedRuntime|undefined,reason:string):Promise<void>{
+    const managed=this.managed.get(ptyId);let stopping:Promise<void>|undefined;
+    if(managed){try{stopping=managed.launch.stop(reason).catch(()=>undefined);}catch{}}
+    else if(runtime&&!this.runtimes.has(ptyId)){const release=(id:string)=>{if(id===ptyId){this.d.ptys.off('exit',release);runtime.release();}};this.d.ptys.on('exit',release);}
+    this.killedPtys.add(ptyId);try{this.d.ptys.kill(ptyId);}catch{}await stopping;
+  }
+
+  private runtimeOf(row: TaskRow): RuntimeSnapshot | null {
+    if (!row.runtimeSnapshot) return null;
+    try { return JSON.parse(row.runtimeSnapshot) as RuntimeSnapshot; } catch { throw new Error('任务的能力快照损坏，无法安全恢复'); }
+  }
+
+  private trackRuntime(taskId: string, ptyId: string, runtime: PreparedRuntime): void {
+    const run = { taskId, runtime, startedAt: Date.now(), timer: setInterval(() => {
+      if (this.runtimes.get(ptyId) !== run) return;
+      const report = runtime.check();
+      if (report) this.saveRuntimeCheck(taskId, runtime, report);
+      if (report || Date.now() - run.startedAt > 30_000) {
+        clearInterval(run.timer);
+        if (!report) {
+          this.saveRuntimeCheck(taskId, runtime, { status: 'failed', issues: ['self_check_timeout'], at: Date.now() });
+          this.killedPtys.add(ptyId);
+          this.d.ptys.kill(ptyId);
+        }
+      }
+    }, 200) };
+    this.runtimes.set(ptyId, run);
+  }
+
+  private saveRuntimeCheck(taskId: string, runtime: PreparedRuntime, report: RuntimeSnapshot['selfCheck']): void {
+    runtime.snapshot.selfCheck = report;
+    if (runtime.persistSnapshot !== false) this.d.db.update(tasks).set({ runtimeSnapshot: JSON.stringify(runtime.snapshot) }).where(eq(tasks.id, taskId)).run();
+    this.d.onChanged();
+  }
+
+  /** A positive observation survives host restarts; absence is never evidence of no history. */
+  private observeNativeHistory(row: TaskRow, file: string | null): boolean {
+    let present = false;
+    try { const stat = file && statSync(file); present = !!stat && stat.isFile() && stat.size > 0; } catch { /* Missing or inaccessible original history. */ }
+    if (present && row.nativeHistoryObserved !== true) {
+      this.d.db.update(tasks).set({ nativeHistoryObserved: true }).where(eq(tasks.id, row.id)).run();
+    }
+    return present;
+  }
+
+  private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
+    if (!row.nativeSessionId) return this.adapter(row.runner).sessionIdStrategy === 'host'
+      ? { recovery: 'unrecoverable', reason: `没有记录 ${this.adapter(row.runner).describe().sessionLabel} 的 session ID（M3 之前的记录）` }
+      : { recovery: 'not-started', reason: `还没有发过消息，${this.adapter(row.runner).describe().label} 未生成会话；打开时会新开一个` };
+    const root = row.stateRoot ?? this.adapter(row.runner).stateRoot({}, {});
+    let file: string | null = null;
+    try { file = this.adapter(row.runner).sessionFile(root, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Preserve the original identity on inaccessible history. */ }
+    if (this.observeNativeHistory(row, file)) return { recovery: 'resumable', reason: '' };
+    // Claude reserves its UUID before writing a file. Only a newly created task
+    // whose owned run ended without a file can legitimately reopen that UUID.
+    // A run interrupted before host acknowledgement remains unknown after restart.
+    // NULL is unknown or still running; only this host may recognize its live new run.
+    if (this.adapter(row.runner).sessionIdStrategy === 'host' && (row.nativeHistoryObserved === false || (row.nativeHistoryObserved === null && this.running.has(row.id) && this.freshNativeTasks.has(row.id)))) return { recovery: 'fresh', reason: '尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开' };
+    return { recovery: 'unrecoverable', reason: row.nativeHistoryObserved === true
+      ? '原生会话状态目录或历史缺失或不可用，保留原记录与路径，不能用空目录恢复'
+      : '原生会话历史状态未知或缺失，请恢复原目录；不会按未发消息新开' };
+  }
+
+  // Codex creates its session only after the first user message, so poll until it appears.
+  // Several tasks may wait in one directory: a session goes to the task it belongs to
+  // (codexOwnerOf), and is claimed synchronously after the read, so no two tasks share one.
+  private watchNativeSession(taskId: string, ptyId: string, runner: ResolvedProfile['runner'], cwd: string, root: string, launchedAt: number, firstMessage: string): void {
+    this.stopWatch(taskId);
+    let realCwd = cwd;
+    try {
+      realCwd = realpathSync(cwd);
+    } catch {
+      // Checked before launch; keep the recorded path if it vanished since.
+    }
+    const w: CodexWatch = {
+      root,
+      waiter: { taskId, realCwd, launchedAtMs: launchedAt, firstMessage },
+      busy: false,
+      timer: setInterval(async () => {
+        // A pending authoritative ID write must keep this task from claiming another rollout.
+        if (w.busy || this.bindingNative.has(taskId)) return;
+        w.busy = true;
+        let candidates: ObservedRunnerSession[] = [];
+        try {
+          candidates = await this.adapter(runner).observeSessions(root, launchedAt);
+        } catch {
+          // Unreadable this round; try again on the next tick.
+        } finally {
+          w.busy = false;
+        }
+        // Stopped or replaced by a newer run while reading.
+        if (this.codexWatchers.get(taskId) !== w) return;
+        const waiters = [...this.codexWatchers.values()].filter((x) => x.root === root).map((x) => x.waiter);
+        const found = pickCodexSession(candidates, { taskId, waiters, claimedIds: this.claimedSessionIds() });
+        if (!found) return;
+        const managed=this.managed.get(ptyId);
+        const claim=taskId+':'+ptyId;this.nativeClaims.set(found.id,claim);
+        try {
+          if(managed?.launch.bindNative){
+            const pending=Promise.resolve().then(()=>managed.launch.bindNative!(found.id));this.bindingNative.set(taskId,pending);
+            try{await pending;}finally{if(this.bindingNative.get(taskId)===pending)this.bindingNative.delete(taskId);}
+          }
+          if(this.codexWatchers.get(taskId)!==w)return;
+          this.stopWatch(taskId);
+          const currentRuntime=this.runtimes.get(ptyId)?.runtime??managed?.launch.runtime;
+          this.d.db.update(tasks).set({ ...(currentRuntime&&currentRuntime.persistSnapshot!==false?{runtimeSnapshot:JSON.stringify(currentRuntime.snapshot)}:{}),nativeSessionId: found.id, nativeHistoryObserved: true, updatedAt: this.now() }).where(eq(tasks.id, taskId)).run();
+        }catch{this.stopWatch(taskId);this.d.onChanged();return;}
+        finally{if(this.nativeClaims.get(found.id)===claim)this.nativeClaims.delete(found.id);}
+        if (w.finalTail) this.pollFollow(w.finalTail);
+        this.d.onChanged();
+      }, this.d.codexPollMs ?? 1500),
+    };
+    this.codexWatchers.set(taskId, w);
+    this.watchedPty.set(ptyId, taskId);
+  }
+
+  private claimedSessionIds(): Set<string> {
+    return new Set([
+      ...this.d.db
+        .select({ id: tasks.nativeSessionId })
+        .from(tasks)
+        .where(isNotNull(tasks.nativeSessionId))
+        .all()
+        .map((r) => r.id as string),...this.nativeClaims.keys()
+    ]);
+  }
+
+  private stopWatch(taskId: string): void {
+    const w = this.codexWatchers.get(taskId);
+    if (w) { clearInterval(w.timer); clearTimeout(w.exitTimer); }
+    this.codexWatchers.delete(taskId);
+  }
+
+  /** Report the API's answers in this run's session file to the profile's health (latest wins). */
+  private follow(taskId: string, ptyId: string, profile: ResolvedProfile, cwd: string, root: string, launchedAt: number, resourceSecrets: string[] = []): void {
+    const health = this.d.health;
+    this.unfollow(taskId);
+    let scanned = false;
+    const locate = (): string | null => {
+      const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
+      if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
+      const file = this.adapter(profile.runner).sessionFile(root, cwd, row.sid, { sinceMs: launchedAt, scan: this.adapter(profile.runner).sessionIdStrategy === 'host' ? false : !scanned });
+      // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
+      scanned = true;
+      const current = this.require(taskId);
+      if (current.stateRoot === root && current.cwd === cwd && current.nativeSessionId === row.sid) this.observeNativeHistory(current, file);
+      return file;
+    };
+    // Bound to the settings this run started with: its answers say nothing about an edited profile.
+    const signature = this.d.profiles.launchSignature(profile.id);
+    const secrets = [...this.d.profiles.secretValues(profile.id), ...resourceSecrets];
+    const tail = new SessionTail({
+      runner: profile.runner,
+      locate,
+      launchedAt,
+      onEvent: (ev) => health?.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
+    });
+    const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
+    this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
+  }
+
+  private pollFollow(tail: SessionTail): void {
+    try {
+      tail.poll();
+    } catch {
+      // A session file we cannot read only means no health update.
+    }
+  }
+
+  private unfollow(taskId: string): void {
+    const f = this.follows.get(taskId);
+    if (f) clearInterval(f.timer);
+    this.follows.delete(taskId);
+  }
+
+  private readonly onPtyExit = (ptyId: string, code: number) => {
+    const managed=this.managed.get(ptyId);if(managed&&!managed.exited){managed.exited=true;managed.exitCode=code;void managed.launch.exited().catch(()=>undefined);}
+    const run = this.runtimes.get(ptyId);
+    let injectionFailed = false;
+    if (run) {
+      clearInterval(run.timer);
+      const report = run.runtime.check() ?? (run.runtime.snapshot.selfCheck.status !== 'pending' ? run.runtime.snapshot.selfCheck : { status: 'failed' as const, issues: ['self_check_not_received'], at: Date.now() });
+      // An old PTY exiting cannot overwrite a new run's snapshot or release its files.
+      const saved=this.d.db.select({snapshot:tasks.runtimeSnapshot}).from(tasks).where(eq(tasks.id,run.taskId)).get();let sameSaved=false;try{sameSaved=!!saved?.snapshot&&JSON.parse(saved.snapshot).runId===run.runtime.snapshot.runId;}catch{}
+      if (this.running.get(run.taskId) === ptyId || (!this.running.has(run.taskId)&&sameSaved)) this.saveRuntimeCheck(run.taskId, run.runtime, report);
+      injectionFailed = report.status === 'failed';
+      if(!managed)run.runtime.release();
+      this.runtimes.delete(ptyId);
+    }
+    for (const [taskId, id] of this.running) {
+      if (id !== ptyId) continue;
+      if (this.freshNativeTasks.delete(taskId)) {
+        const row = this.require(taskId);
+        let file: string | null = null;
+        try { if (row.stateRoot && row.nativeSessionId) file = this.adapter(row.runner).sessionFile(row.stateRoot, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Unknown stays held if the native root cannot be inspected. */ }
+        if (!this.observeNativeHistory(row, file) && file === null && row.nativeHistoryObserved !== true) {
+          // An inaccessible root cannot establish that the owned run wrote nothing.
+          const readableRoot = Boolean(row.stateRoot && this.adapter(row.runner).canConfirmNoHistory(row.stateRoot));
+          if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(eq(tasks.id, taskId)).run();
+        }
+      }
+      this.running.delete(taskId);
+      this.d.onChanged();
+    }
+    const killed = this.killedPtys.delete(ptyId);
+    for (const [taskId, f] of this.follows) {
+      if (f.ptyId !== ptyId) continue;
+      this.unfollow(taskId);
+      this.pollFollow(f.tail); // the last answers written before exit
+      // A Codex session found only after exit still gets its last answers read.
+      const w = this.codexWatchers.get(taskId);
+      if (w) w.finalTail = f.tail;
+      const secs = (this.now() - f.launchedAt) / 1000;
+      if (!killed && !injectionFailed && code !== 0 && !f.tail.sawEvent && secs * 1000 < EARLY_EXIT_MS) {
+        const message =
+          code === 127 ? '找不到 CLI 命令（退出码 127）' : `CLI 启动后 ${Math.max(1, Math.round(secs))} 秒退出（退出码 ${code}）`;
+        this.d.health?.report(f.profileId, { category: code === 127 ? 'not_found' : 'other', message }, `task:${taskId}`);
+      }
+    }
+    if(this.closed&&![...this.managed.values()].some(run=>!run.exited))this.d.ptys.off('exit',this.onPtyExit);
+    const watched = this.watchedPty.get(ptyId);
+    if (watched) {
+      this.watchedPty.delete(ptyId);
+      // Give Codex a moment to flush the rollout after the last message before giving up —
+      // but only on this run's watcher: a reopened task has a new one by then.
+      const w = this.codexWatchers.get(watched);
+      if (w) w.exitTimer = setTimeout(() => this.codexWatchers.get(watched) === w && this.stopWatch(watched), CODEX_EXIT_GRACE_MS);
+    }
+  };
+
+  private require(id: string): TaskRow {
+    const row = this.d.db.select().from(tasks).where(eq(tasks.id, id)).get();
+    if (!row) throw new Error('任务不存在或已被删除');
+    return row;
+  }
+
+  private toView(row: TaskRow, projectName: string | null, projectVersion: number | null, color: string | null): TaskView {
+    const ptyId = this.running.get(row.id) ?? null;
+    const { recovery, reason } = this.recoveryOf(row);
+    const currentRuntime=ptyId?(this.runtimes.get(ptyId)?.runtime??this.managed.get(ptyId)?.launch.runtime):undefined;
+    return {
+      id: row.id,
+      projectId: row.projectId,
+      projectName,
+      dirId: row.dirId,
+      cwd: row.cwd,
+      aiProfileId: row.aiProfileId,
+      aiProfileName: row.aiProfileName,
+      aiProfileColor: color,
+      runner: row.runner,
+      nativeSessionId: row.nativeSessionId,
+      title: row.title,
+      firstMessage: row.firstMessage,
+      injectedEnvNames: parseNames(row.injectedEnvNames),
+      runtimeSnapshot: currentRuntime?.persistSnapshot===false?currentRuntime.snapshot:this.runtimeOf(row),
+      configVersion: row.configVersion,
+      projectConfigVersion: projectVersion,
+      archivedAt: row.archivedAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      lastLaunchedAt: row.lastLaunchedAt,
+      ptyId,
+      recovery,
+      recoveryReason: reason,
+    };
+  }
+}

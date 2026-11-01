@@ -1,0 +1,185 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "groupId": "M11-C2-I-EVIDENCE-RETEST",
+  "attempt": "attempt-002",
+  "executor": "/root/upstream_contract",
+  "caseId": "M11-T27",
+  "status": "passed-I-with-valid-retained-evidence",
+  "startedAt": "2026-11-01T16:18:10.267000+00:00",
+  "finishedAt": "2026-11-01T16:19:08.677689+00:00",
+  "sourceCommit": "1981486e + C2 frozen changes",
+  "baselineManifestSha256": "558ec0d89664b08a04c02efe5e84fab57504427d8ec070c9bab4860e08170750",
+  "baseManifestSha256": "258a31fd0820500665e7e3a95ced471abe4b4e503e877cf19a9353f81399de6a",
+  "productionDelta": [
+    {
+      "path": "src/main/core/applications/native-user-messages.ts",
+      "sha256": "55b607bea5a8dc75f07a34bb4c0acb12ba7fd2133ee32319fc1103cfa0e64274"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/native-user-messages.test.ts",
+      "sha256": "b2934dfba1a6790f645aecc782e59af64442732edad40e5a31754c43cd38928d"
+    }
+  ],
+  "unexpectedBaselineChanges": [],
+  "executorProductionMutation": false,
+  "originalContractTestHashUnchanged": true,
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/evidence-retest",
+    "dependencies": "shared read-only node_modules",
+    "cache": "private",
+    "outNative": "unchanged hashes verified",
+    "UI": false,
+    "AppBuild": false,
+    "realModelOrAgent": false,
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false
+  },
+  "criteria": [
+    {
+      "criterion": "实际Codex格式与注册测试格式同一合同，正例产证据并验证回执",
+      "status": "passed-reused",
+      "basis": "Original positive and committed-input/brand/verify/one-use claim scenarios for both formats remain green. Only Skill generic budget filtering changed; under-budget positive records and user-message path unchanged.",
+      "evidence": {
+        "groupId": "M11-C2-I-EVIDENCE",
+        "attempt": "attempt-001",
+        "manifestSha256": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13"
+      }
+    },
+    {
+      "criterion": "畸形、工具伪用户、跨格式、未注册及无L3拒绝",
+      "status": "passed-reused",
+      "basis": "Original same-host negative scenarios green, parser/identity/L3/receipt logic unchanged.",
+      "evidence": {
+        "groupId": "M11-C2-I-EVIDENCE",
+        "attempt": "attempt-001",
+        "manifestSha256": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13"
+      }
+    },
+    {
+      "criterion": "替换、链接、截断、header和inode重核",
+      "status": "passed-reused",
+      "basis": "Original real-file IO/verify/header negatives for both formats green. No affected IO/header/verify code changed; directly affected original NativeUserMessages regressions reran57/57 below.",
+      "evidence": [
+        {
+          "groupId": "M11-C2-I-EVIDENCE",
+          "attempt": "attempt-001",
+          "manifestSha256": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13"
+        },
+        "evidence-attempt-002-native-regression-vitest.json"
+      ]
+    },
+    {
+      "criterion": "超字节尾窗、运行时间及未完整newline拒绝",
+      "status": "passed-reused",
+      "basis": "Original bounded4MiB tail/time/newline cases green; complete-line endpoint and bounded-tail behavior unchanged. Normal large-history user-source regressions reran in direct file.",
+      "evidence": [
+        {
+          "groupId": "M11-C2-I-EVIDENCE",
+          "attempt": "attempt-001",
+          "manifestSha256": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13"
+        },
+        "evidence-attempt-002-native-regression-vitest.json"
+      ]
+    },
+    {
+      "criterion": "超records/单行不得误发现或读取",
+      "status": "passed-rerun",
+      "basis": "The exact original two scripted-test reds reran unchanged and now both yield zero users, reads, discoveries. records overflow retains user TOO_LARGE; oversized valid JSON lines dropped before custom parser. New direct-file regressions also pass with permissive registered parser.",
+      "rawResults": [
+        {
+          "format": "scripted-test",
+          "scenario": "over-record-budget",
+          "at": "2026-11-01T16:18:10.472Z",
+          "source": {
+            "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m11-c2-evidence-v0psbh/native/events/45d74e34-8557-4b4a-93a7-828f3989d75f.events",
+            "sha256": "e63f9a2ed70ebc2b4e12937be3efa325de60bed16e847e4132653dafaa9b4893",
+            "bytes": 25670,
+            "lineCount": 8197
+          },
+          "result": {
+            "users": {
+              "status": "unavailable",
+              "messages": [],
+              "issueCode": "TOO_LARGE"
+            },
+            "reads": [],
+            "discoveries": []
+          }
+        },
+        {
+          "format": "scripted-test",
+          "scenario": "over-line-budget",
+          "at": "2026-11-01T16:18:10.487Z",
+          "source": {
+            "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m11-c2-evidence-guxPQt/native/events/766ca0c6-8451-427e-ae2b-d32e72407041.events",
+            "sha256": "020a5d15e5eb55f0e489fb56eca7c42b3c29af546d73d783e2352ad3a81c0729",
+            "bytes": 3146822,
+            "lineCount": 4
+          },
+          "result": {
+            "users": {
+              "status": "no-match",
+              "messages": [],
+              "issueCode": null
+            },
+            "reads": [],
+            "discoveries": []
+          }
+        }
+      ],
+      "evidence": [
+        "evidence-attempt-002-original-reds-vitest.json",
+        "evidence-attempt-002-native-regression-vitest.json"
+      ]
+    }
+  ],
+  "results": {
+    "originalContractRedSelectedPassed": 2,
+    "originalContractFilteredNotExecuted": 17,
+    "directlyAffectedNativeUserMessagesPassed": 57,
+    "failed": 0,
+    "newSelectedSoftwareInstances": 59,
+    "retainedOtherContractGreens": 17,
+    "retainedOtherFiveFileGreens": 67,
+    "validDistinctCombinedSoftwareEvidence": 143,
+    "oldProductRedRetained": true,
+    "formalAccounting": "Executor did not alter authoritative ledger. T27 I layer all original criteria now supported by retained + new evidence."
+  },
+  "defect": {
+    "id": "M11-C2-D01",
+    "classification": "product",
+    "state": "fixed-retested-I",
+    "originalRedEvidence": {
+      "groupId": "M11-C2-I-EVIDENCE",
+      "attempt": "attempt-001",
+      "manifestSha256": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13"
+    }
+  },
+  "fixtureBoundary": [
+    "RunContext, owned sender and PTY identity are I preconditions; no real OS PTY/model.",
+    "Fixture snapshot is type-cast to scripted-test because public Runner/profile/B-package schema is not generalized; only trusted NativeEvidenceAdapterRegistry is extended.",
+    "L2/L3 callback explicitly fixture-enables parsers for contract testing; this is not a released version/authorization-level promotion.",
+    "Actual production NativeUserInputs creates receipt; no fabricated receipt, IO mock, verify mock or claim implementation.",
+    "Scripted adapter only implements deterministic log-format parsing and lookup; generic budget ownership deliberately left with host, as documented by new adapter interface."
+  ],
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/m11-c2-evidence-contract.test.ts -t 'T27 same host contract: scripted-test (enforces the record-count budget|does not accept an over-line-budget)' --maxWorkers=1 --reporter=json --outputFile=evidence-attempt-002-original-reds-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/native-user-messages.test.ts --maxWorkers=1 --reporter=json --outputFile=evidence-attempt-002-native-regression-vitest.json"
+  ],
+  "preservedHashes": {
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+    "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+    "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b"
+  },
+  "notes": [
+    "No old full matrix rerun; old red and other valid green evidence untouched.",
+    "Oversized inputs summarized with actual byte/line counts/SHA256 and unchanged reproducible generator; raw before/after result objects archived.",
+    "This I-only custom format/type-cast is not T35 or production new-Agent/profile/B-package support; fixture-enabling L2/L3 does not promote released levels."
+  ]
+}

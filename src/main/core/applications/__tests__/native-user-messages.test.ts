@@ -8,6 +8,7 @@ import type { ApplicationUiSender } from '../execution-context';
 import type { RunContext } from '../run-registry';
 import { NativeUserInputs } from '../native-user-inputs';
 import { NativeUserMessages } from '../native-user-messages';
+import { builtinNativeEvidenceAdapters, NativeEvidenceAdapterRegistry, type NativeEvidenceAdapter } from '../native-evidence-adapters';
 import { codexSkillReadEvidence } from '../codex-skill-read-evidence';
 import { codexSkillDiscoveryEvidence } from '../codex-skill-discovery-evidence';
 import { encodeClaudeDir } from '../../tasks/native-sessions';
@@ -29,8 +30,51 @@ function user(value = text): Record<string, any> {
 }
 const write = (value: unknown, complete = true) => appendFileSync(file, JSON.stringify(value) + (complete ? '\n' : ''));
 const input = (value = text) => inputs.observe(sender, { taskId: 'owned-task', ptyId: 'owned-pty' }, '\x1b[200~' + value + '\x1b[201~\r');
+function replaceFormat(overrides:Partial<NativeEvidenceAdapter>){
+ messages.dispose();
+ const format={...builtinNativeEvidenceAdapters.get(current.snapshot.runner),...overrides};
+ messages=new NativeUserMessages(inputs,()=>current,()=>now,undefined,new NativeEvidenceAdapterRegistry([format]));
+ messages.register(current.run.runId,current.snapshot.agentAtCreation.version,abort.signal);
+}
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-native-user-messages-')); cwd = join(root, 'project'); nativeRoot = join(root, 'native'); mkdirSync(cwd); mkdirSync(nativeRoot); now = Date.now(); failRun = false; currentChecks = 0; });
 afterEach(() => { messages?.dispose(); inputs?.dispose(); vi.restoreAllMocks(); rmSync(root, { recursive: true, force: true }); });
+describe('M11 S10 pluggable evidence format host boundaries',()=>{
+ it('rejects an unregistered format instead of falling through to the Codex parser',()=>{
+  expect(()=>builtinNativeEvidenceAdapters.get('unregistered-agent')).toThrow('没有已登记');
+  const codex=builtinNativeEvidenceAdapters.get('codex');
+  expect(()=>new NativeEvidenceAdapterRegistry([codex,codex])).toThrow('无效或重复');
+ });
+ it('does not grant chat authorization when a registered adapter has no L3 parser',async()=>{
+  setup('codex');input();write(user());replaceFormat({parseUserMessage:undefined});
+  expect(await messages.read(current.run.runId)).toMatchObject({status:'unsupported',messages:[],issueCode:'AGENT_ADAPTER_UNSUPPORTED'});
+ });
+ it('keeps adapter enumeration inside the owned native root before any file can be certified',async()=>{
+  setup('codex');input();write(user());const outside=join(root,'other-session');mkdirSync(outside);
+  replaceFormat({locate:async(_identity,lookup)=>{await lookup.names(outside);return file;}});
+  expect(await messages.read(current.run.runId)).toMatchObject({status:'unavailable',messages:[],issueCode:'SCOPE_DENIED'});
+ });
+ it('rejects malformed or out-of-scope adapter Skill results, including accidental raw log fields',async()=>{
+  setup('codex');const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,path:skill.projectionPath,content:'fixed'};
+  const valid={skillId:target.id,observedAt:new Date(now).toISOString(),callId:'owned-read',recordHash:'b'.repeat(64)};
+  for(const wrong of [{...valid,skillId:'not-selected'},{...valid,observedAt:new Date(now+1).toISOString()},{...valid,recordHash:'invalid'},{...valid,raw:'unfiltered tool text'}]){
+   replaceFormat({observeSkillReads:()=>[wrong]});expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
+  }
+  replaceFormat({observeSkillReads:()=>[valid]});expect(await messages.skillReads(current.run.runId,[target])).toEqual([valid]);
+ });
+ it.each(['records','line'] as const)('enforces the shared Skill %s budget before calling an adapter parser',async budget=>{
+  setup('codex');const header=readFileSync(file,'utf8'),skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,path:skill.projectionPath,content:'fixed'};
+  const marker=JSON.stringify({type:'fixture_skill_read'}),observation={skillId:target.id,observedAt:new Date(now).toISOString(),callId:'owned-read',recordHash:'b'.repeat(64)};
+  const parser=(lines:readonly string[])=>lines.some(line=>line.includes('fixture_skill_read'))?[observation]:[];
+  replaceFormat({observeSkillReads:parser,observeSkillDiscoveries:parser});
+  const records=budget==='records'?'{}\n'.repeat(8193)+marker:' '.repeat(1024*1024+1)+marker;
+  writeFileSync(file,header+records+'\n');
+  expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
+  expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([]);
+  writeFileSync(file,header+marker+'\n');
+  expect(await messages.skillReads(current.run.runId,[target])).toEqual([observation]);
+  expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([observation]);
+ });
+});
 it('M11 S0b leaves Codex 0.166.0 chat authorization and Skill evidence closed even for an otherwise matching old-format log',async()=>{
  setup('codex','0.166.0');input();write(user());
  const skill=current.snapshot.packages[0].skills[0],target={id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'Complete fixed skill\n'};

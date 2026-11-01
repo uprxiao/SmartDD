@@ -1,0 +1,224 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "groupId": "M11-C2-I-EVIDENCE",
+  "attempt": "attempt-001",
+  "executor": "/root/upstream_contract",
+  "sourceCommit": "1981486e",
+  "sourceDirtyBaseline": true,
+  "baselineManifestSha256": "258a31fd0820500665e7e3a95ced471abe4b4e503e877cf19a9353f81399de6a",
+  "startedAt": "2026-11-01T16:14:59.714000+00:00",
+  "finishedAt": "2026-11-01T16:16:58.402027+00:00",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/evidence-baseline",
+    "privateCache": true,
+    "privateOutReused": true,
+    "dependencyRoot": "shared read-only node_modules",
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false,
+    "UI": false,
+    "AppBuild": false,
+    "newRealAgentSupportClaimed": false,
+    "fixtureBoundary": [
+      "RunContext, owned sender and PTY identity are I preconditions; no real OS PTY/model.",
+      "Fixture snapshot is type-cast to scripted-test because public Runner/profile/B-package schema is not generalized; only trusted NativeEvidenceAdapterRegistry is extended.",
+      "L2/L3 callback explicitly fixture-enables parsers for contract testing; this is not a released version/authorization-level promotion.",
+      "Actual production NativeUserInputs creates receipt; no fabricated receipt, IO mock, verify mock or claim implementation.",
+      "Scripted adapter only implements deterministic log-format parsing and lookup; generic budget ownership deliberately left with host, as documented by new adapter interface."
+    ]
+  },
+  "baselineVerified": {
+    "productionFilesChangedByExecutor": [],
+    "privateConfigChange": "cacheDir only",
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "evidenceAdaptersSha256": "c61de40b5d02c35c0e81618798ac499a50117e67ec7d2f60f00a41113fd44861",
+    "userMessagesSha256": "3eead48895271c2f1db2b6b4cc08df4fc33aa97059ff54999e20967bf18b9129",
+    "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+    "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+    "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b"
+  },
+  "cases": [
+    {
+      "id": "M11-T27",
+      "layer": "I",
+      "status": "partial-failed-product",
+      "criteria": [
+        {
+          "criterion": "实际Codex格式与注册测试格式运行同一合同，正例产对应证据",
+          "status": "passed",
+          "actual": "The same describe.each contract runs actual builtin Codex NativeEvidenceAdapter and one scripted-test registry entry through unchanged NativeUserMessages. Both produce exactly one matched user proof, one Skill read and one discovery. Before real NativeUserInputs.observe creates a committed receipt, identical user record is no-match; verify rejects copied proof and claim rejects reuse for another intent.",
+          "evidence": "evidence-attempt-001-contract-vitest.json"
+        },
+        {
+          "criterion": "畸形、tool输出伪用户与跨格式拒绝",
+          "status": "passed",
+          "actual": "Both adapters reject malformed/null/partial JSON, wrong role/tool-as-user, assistant/tool catalog spoofing, other format under valid header and other format header. Unknown Agent returns unsupported rather than Codex fallback; adapter lacking optional L3 returns unsupported.",
+          "evidence": "evidence-attempt-001-contract-vitest.json"
+        },
+        {
+          "criterion": "替换/链接/截断和身份重核",
+          "status": "passed",
+          "actual": "Both adapters use real filesystem locate/open/header/stat and host verify. File/ancestor symlinks produce zero evidence. Inode replacement invalidates branded proof, truncated user record produces no proof/evidence, wrong session header rejects every channel. Incomplete final newline remains uncertified until exact final newline arrives.",
+          "evidence": "evidence-attempt-001-contract-vitest.json"
+        },
+        {
+          "criterion": "超字节尾窗和时间窗口不得误认证",
+          "status": "passed",
+          "actual": "Positive records followed by >4MiB padding fall outside the real bounded read tail; stale records are rejected. Host preserves current bounded-tail semantics for long histories, rather than treating any total file over4MiB as invalid.",
+          "evidence": "evidence-attempt-001-contract-vitest.json"
+        },
+        {
+          "criterion": "超records与超单行预算不得误发现/读取",
+          "status": "failed",
+          "actual": "Codex rejects both scenarios (own parser includes budgets). Scripted format receives 8193 extra records or >1MiB whitespace-prefixed valid Skill records from host and returns one read + one discovery in each case; host accepts them. User-message read correctly rejects records as TOO_LARGE or skips long lines, so defect is specific to shared Skill path.",
+          "rawResults": [
+            {
+              "format": "scripted-test",
+              "scenario": "over-record-budget",
+              "at": "2026-11-01T16:15:00.217Z",
+              "source": {
+                "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m11-c2-evidence-S5dVp0/native/events/3b9bd2d3-ffe0-42a6-a0a3-4c9dba0f4ab9.events",
+                "sha256": "b1750ff9d10c009f8c6268f0c21d25e2121c34cf727ea3dcb016e61e03515ae9",
+                "bytes": 25670,
+                "lineCount": 8197
+              },
+              "result": {
+                "users": {
+                  "status": "unavailable",
+                  "messages": [],
+                  "issueCode": "TOO_LARGE"
+                },
+                "reads": [
+                  {
+                    "skillId": "assistant",
+                    "observedAt": "2026-11-01T16:15:00.211Z",
+                    "callId": "read-fixture",
+                    "recordHash": "91964df732949dd59773d1737fd42154a20a596e9e1d79f48ed83135457b8ab1"
+                  }
+                ],
+                "discoveries": [
+                  {
+                    "skillId": "assistant",
+                    "observedAt": "2026-11-01T16:15:00.211Z",
+                    "callId": "catalog-fixture",
+                    "recordHash": "7e23a6fa4848f086c2ca47fe86b8988db83f5f525370520bbefaedd67839c9aa"
+                  }
+                ]
+              }
+            },
+            {
+              "format": "scripted-test",
+              "scenario": "over-line-budget",
+              "at": "2026-11-01T16:15:00.242Z",
+              "source": {
+                "path": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m11-c2-evidence-GWdN6I/native/events/d8fdbd8a-65b8-4e85-9763-9686daf6f5a2.events",
+                "sha256": "3b0467178b51017365ef6e05b74fbe49fbc5795f6f860ed444d3686860d6f4d8",
+                "bytes": 3146822,
+                "lineCount": 4
+              },
+              "result": {
+                "users": {
+                  "status": "no-match",
+                  "messages": [],
+                  "issueCode": null
+                },
+                "reads": [
+                  {
+                    "skillId": "assistant",
+                    "observedAt": "2026-11-01T16:15:00.222Z",
+                    "callId": "read-fixture",
+                    "recordHash": "02199da80d29428837d0893f5b936d895cb7dbb3565d8ceb4813a071e7ad67cb"
+                  }
+                ],
+                "discoveries": [
+                  {
+                    "skillId": "assistant",
+                    "observedAt": "2026-11-01T16:15:00.222Z",
+                    "callId": "catalog-fixture",
+                    "recordHash": "8620e19c5c1aad510ec3a555fecf47484118c69559ad145ae39880e0986a7cb8"
+                  }
+                ]
+              }
+            }
+          ],
+          "evidence": [
+            "evidence-attempt-001-contract-vitest.json",
+            "evidence-outcomes-72479.json"
+          ],
+          "defect": "M11-C2-D01"
+        }
+      ],
+      "defect": {
+        "id": "M11-C2-D01",
+        "classification": "product",
+        "file": "src/main/core/applications/native-user-messages.ts",
+        "method": "readSkillObservations",
+        "cause": "Host caps tail bytes but passes unrestricted record count and oversized lines to new format parser; only builtin Codex parser happened to enforce them.",
+        "expected": "Generic host Skill reader enforces <=8192 parsed records and ignores records over1MiB before format parser invocation.",
+        "productionFixAppliedByExecutor": false,
+        "oldRedRetained": true
+      },
+      "formalPassesAdded": 0
+    }
+  ],
+  "checks": {
+    "contract": {
+      "total": 19,
+      "passed": 17,
+      "failed": 2,
+      "filtered": 0
+    },
+    "affectedExistingFiles": {
+      "total": 122,
+      "passed": 122,
+      "failed": 0,
+      "filtered": 0,
+      "files": [
+        {
+          "file": "agent-consistency.test.ts",
+          "passed": 12
+        },
+        {
+          "file": "codex-skill-discovery-evidence.test.ts",
+          "passed": 4
+        },
+        {
+          "file": "codex-skill-read-evidence.test.ts",
+          "passed": 15
+        },
+        {
+          "file": "native-diagnostic-cost.test.ts",
+          "passed": 1
+        },
+        {
+          "file": "native-user-messages.test.ts",
+          "passed": 55
+        },
+        {
+          "file": "session-diagnostics.test.ts",
+          "passed": 35
+        }
+      ]
+    },
+    "totalUniqueSoftwareInstances": 141,
+    "effectivePassed": 139,
+    "productFailed": 2,
+    "nodeTypecheck": "passed",
+    "formalCaseCountAdded": 0
+  },
+  "rawEvidence": {
+    "resultRecords": 19,
+    "nativeSourceLogs": "All inputs <16KiB archived byte-for-byte as evidence-log-*.jsonl. Oversized/over-record/tail fixtures recorded by exact input SHA256, byte/line counts, private generation source and raw result objects; no full large source dump.",
+    "sourceTypingOnlyChange": "After contract runner, annotated three format selector arguments as string for TypeScript; no executable logic/assertion changed. Final node typecheck passed."
+  },
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/m11-c2-evidence-contract.test.ts --maxWorkers=1 --reporter=json --outputFile=evidence-attempt-001-contract-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/native-user-messages.test.ts src/main/core/applications/__tests__/session-diagnostics.test.ts src/main/core/applications/__tests__/native-diagnostic-cost.test.ts src/main/core/applications/__tests__/agent-consistency.test.ts src/main/core/applications/__tests__/codex-skill-read-evidence.test.ts src/main/core/applications/__tests__/codex-skill-discovery-evidence.test.ts --maxWorkers=1 --reporter=json --outputFile=evidence-attempt-001-regression-vitest.json",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json"
+  ],
+  "next": "Coordinator fixes shared Skill record/line budget then freezes new source and retests only two original red contract cases plus necessary affected checks. T27 remains NOT passed."
+}

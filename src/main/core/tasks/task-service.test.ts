@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { appendFileSync, chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
@@ -14,6 +14,7 @@ import { AiProfileService } from '../ai/ai-profile-service';
 import type { HealthEvent } from '../ai/health-classify';
 import { ProjectService } from '../projects/project-service';
 import { ARCHIVE_STOP_TIMEOUT_MS, TaskService, type PtyHost } from './task-service';
+import { builtinRunnerAdapters, RunnerAdapterRegistry, type RunnerAdapter } from './runner-adapters';
 
 const cipher: SecretCipher = {
   isAvailable: () => true,
@@ -143,6 +144,33 @@ const writeCodexRollout = (cwd: string, id: string, at: number) => {
   return join(dir, `rollout-x-${id}.jsonl`);
 };
 const claudeSessionPath = (cwd: string, id: string) => join(claudeRoot(), 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'), `${id}.jsonl`);
+
+it('delegates session strategy, launch arguments, state root and recovery to its fixed runner registry',async()=>{
+  svc.dispose();
+  const state=mk('adapter-state'),original=builtinRunnerAdapters.get('codex');
+  const launchArgs=vi.fn<RunnerAdapter['launchArgs']>(options=>['--adapter-mode',options.mode,'--adapter-session',options.sessionId??'missing']);
+  const canConfirmNoHistory=vi.fn(()=>true);
+  const adapter:RunnerAdapter={...original,stateEnvVar:'M11_ADAPTER_HOME',sessionIdStrategy:'host',launchArgs,canConfirmNoHistory,
+    stateRoot:env=>env.M11_ADAPTER_HOME||state,
+    sessionFile:(root,_cwd,id)=>{const file=join(root,id+'.jsonl');return existsSync(file)?file:null;},
+  };
+  const deps={db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:tmp}),onChanged:()=>changed++,runnerAdapters:new RunnerAdapterRegistry(builtinRunnerAdapters.list().map(a=>a.id==='codex'?adapter:a)),healthPollMs:20};
+  svc=new TaskService(deps);
+  const p=project(),profile=codexProfile(),created=await svc.create({projectId:p.id,dirId:null,aiProfileId:profile.id,firstMessage:'registry dispatch'});
+  expect(created.task.nativeSessionId).toBe(created.task.id);
+  expect(ptys.last.args).toEqual(['--adapter-mode','new','--adapter-session',created.task.id]);
+  // The composition object may be reused by its owner; a live service keeps its original registry.
+  deps.runnerAdapters=builtinRunnerAdapters;
+  svc.kill(created.task.id);expect(canConfirmNoHistory).toHaveBeenCalledWith(state);
+  expect(svc.get(created.task.id).recovery).toBe('fresh');
+  await svc.open({taskId:created.task.id});
+  expect(ptys.last.args).toEqual(['--adapter-mode','reopen','--adapter-session',created.task.id]);
+  writeFileSync(join(state,created.task.id+'.jsonl'),'{}\n');
+  svc.kill(created.task.id);expect(svc.get(created.task.id).recovery).toBe('resumable');
+  await svc.open({taskId:created.task.id});
+  expect(ptys.last.args).toEqual(['--adapter-mode','resume','--adapter-session',created.task.id]);
+  expect(launchArgs.mock.calls.map(([o])=>o.mode)).toEqual(['new','reopen','resume']);
+});
 
 describe('TaskService.closeSession', () => {
   const pair = async () => {

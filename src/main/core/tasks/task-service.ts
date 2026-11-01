@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { accessSync, constants, existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, realpathSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { desc, eq, isNotNull } from 'drizzle-orm';
 import { pickCodexSession, type CodexWaiter } from '@shared/codex-session';
-import { buildRunnerArgs, type LaunchMode } from '@shared/runner-args';
+import type { LaunchMode } from '@shared/runner-args';
 import {
   taskTitle,
   TITLE_MAX,
@@ -24,8 +24,7 @@ import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service
 import type { ProfileHealth } from '../ai/profile-health';
 import { redact } from '../connections/redact';
 import type { ProjectService } from '../projects/project-service';
-import { claudeSessionFile, recentCodexRollouts, stateRootFor } from './native-sessions';
-import { runnerAdapter } from './runner-adapters';
+import { builtinRunnerAdapters, type RunnerAdapterRegistry, type ObservedRunnerSession } from './runner-adapters';
 import { ApplicationError } from '@shared/applications';
 import { SessionTail } from './session-health';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
@@ -60,6 +59,8 @@ export interface TaskServiceDeps {
   healthPollMs?: number;
   /** Local OS capacity; injectable for deterministic boundary tests. */
   launchArgMax?: () => number | null;
+  /** Startup-only trusted runner composition; immutable throughout this service lifetime. */
+  runnerAdapters?: RunnerAdapterRegistry;
 }
 
 /** A CLI that dies this soon after launch, unprompted and without any API answer, failed to start. */
@@ -113,6 +114,7 @@ export class TaskService {
   private readonly pendingArchiveStops = new Map<(error: Error) => void, string>();
   private readonly runtimes = new Map<string, { taskId: string; runtime: PreparedRuntime; timer: NodeJS.Timeout; startedAt: number }>();
   private readonly now: () => number;
+  private readonly runnerAdapters: RunnerAdapterRegistry;
   private readonly creations = new Map<string,{taskId:string;senderId:number|null}>();
   private readonly launching = new Map<string,{projectId:string;abort:AbortController}>();
   private readonly opening = new Map<string,{profileId:string|null;projectId:string|null;abort:AbortController;promise:Promise<OpenResult>}>();
@@ -125,8 +127,11 @@ export class TaskService {
 
   constructor(private readonly d: TaskServiceDeps) {
     this.now = d.now ?? Date.now;
+    this.runnerAdapters = d.runnerAdapters ?? builtinRunnerAdapters;
     d.ptys.on('exit', this.onPtyExit);
   }
+
+  private adapter(runner: ResolvedProfile['runner']) { return this.runnerAdapters.get(runner); }
 
   /** Startup-only composition: no live or preparing task can switch registries. */
   attachManagedCapabilities(launcher: TaskCapabilityLauncher): void {
@@ -187,7 +192,7 @@ export class TaskService {
     const ts = this.now();
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
-    const sessionId = runnerAdapter(profile.runner).sessionIdStrategy === 'host' ? id : null;
+    const sessionId = this.adapter(profile.runner).sessionIdStrategy === 'host' ? id : null;
     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender });
 
     try {
@@ -216,7 +221,7 @@ export class TaskService {
         .run();
       if (!this.managed.get(ptyId)?.exited) this.running.set(id, ptyId);
       if (runtime) this.trackRuntime(id, ptyId, runtime);
-      if (profile.runner === 'codex') this.watchCodex(id, ptyId, dir.path, stateRoot, launchedAt, firstMessage);
+      if (this.adapter(profile.runner).sessionIdStrategy === 'observed') this.watchNativeSession(id, ptyId, profile.runner, dir.path, stateRoot, launchedAt, firstMessage);
       this.follow(id, ptyId, profile, dir.path, stateRoot, launchedAt, runtime?.secretValues);
       const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
       this.d.onChanged();
@@ -260,7 +265,7 @@ export class TaskService {
     if (recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${reason}`);
     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
     // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
-    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes('CLAUDE_CONFIG_DIR') } : null;
+    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes(this.adapter(row.runner).stateEnvVar) } : null;
     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
       row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined);
 
@@ -283,7 +288,7 @@ export class TaskService {
         .run();
       if (!this.managed.get(ptyId)?.exited) this.running.set(row.id, ptyId);
       if (runtime) this.trackRuntime(row.id, ptyId, runtime);
-      if (row.runner === 'codex' && mode === 'new') this.watchCodex(row.id, ptyId, row.cwd, stateRoot, launchedAt, '');
+      if (this.adapter(row.runner).sessionIdStrategy === 'observed' && mode === 'new') this.watchNativeSession(row.id, ptyId, row.runner, row.cwd, stateRoot, launchedAt, '');
       this.follow(row.id, ptyId, profile, row.cwd, stateRoot, launchedAt, runtime?.secretValues);
       const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
       this.d.onChanged();
@@ -486,24 +491,22 @@ export class TaskService {
     const env = { ...profile.env };
     if (keepRoot) {
       const home = env.HOME || base.HOME || homedir();
-      if (profile.runner === 'claude' && !keepRoot.explicit && keepRoot.path === join(home, '.claude')) {
+      if (this.adapter(profile.runner).preserveImplicitStateRoot && !keepRoot.explicit && keepRoot.path === this.adapter(profile.runner).defaultStateRoot(home)) {
         // An explicit default-looking Claude root selects a different .claude.json.
-        delete env.CLAUDE_CONFIG_DIR;
-        delete base.CLAUDE_CONFIG_DIR;
+        delete env[this.adapter(profile.runner).stateEnvVar];
+        delete base[this.adapter(profile.runner).stateEnvVar];
       } else {
-        env[runnerAdapter(profile.runner).stateEnvVar] = keepRoot.path;
+        env[this.adapter(profile.runner).stateEnvVar] = keepRoot.path;
       }
     }
     const hasCapabilities = Boolean(this.d.capabilities || this.d.managedCapabilities);
     if (context && hasCapabilities) {
       // Freeze the discovery roots after shell rc without changing the selected native root.
       env.HOME = env.HOME || base.HOME || homedir();
-      if (profile.runner === 'codex') env.CODEX_HOME = keepRoot?.path || stateRootFor('codex', env, base);
-      else {
-        const root = env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR;
-        if (root) env.CLAUDE_CONFIG_DIR = root;
-        else delete env.CLAUDE_CONFIG_DIR;
-      }
+      const adapter = this.adapter(profile.runner), explicitRoot = env[adapter.stateEnvVar] || base[adapter.stateEnvVar];
+      if (!adapter.preserveImplicitStateRoot) env[adapter.stateEnvVar] = keepRoot?.path || adapter.stateRoot(env, base);
+      else if (explicitRoot) env[adapter.stateEnvVar] = explicitRoot;
+      else delete env[adapter.stateEnvVar];
     }
     if (hasCapabilities && Object.keys(profile.env).some(key => RUNTIME_ISOLATION.some(prefix => key.startsWith(prefix)))) {
       throw new Error('AI 配置使用了 WillYou 项目注入保留变量，请在项目中配置资源');
@@ -519,7 +522,7 @@ export class TaskService {
       if (context && this.d.managedCapabilities) {
         launch = await this.d.managedCapabilities.prepare({
           projectId: context.projectId, taskId: context.taskId, profile, cwd,
-          home: env.HOME ?? base.HOME ?? homedir(), stateRoot: stateRootFor(profile.runner, env, base),
+          home: env.HOME ?? base.HOME ?? homedir(), stateRoot: this.adapter(profile.runner).stateRoot(env, base),
           claudeConfigExplicit: Boolean(env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR),
           mode, sessionId, previous: context.previous ?? null, newTask: context.newTask, signal: abort.signal, environment: { ...base, ...env },
         });
@@ -531,9 +534,9 @@ export class TaskService {
       const assemble = () => {
         const plan = planLaunchEnv(base, { ...env, ...runtime?.env, ...launch?.env }, [
           ...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
-          ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME'] : []),
+          ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME', this.adapter(profile.runner).stateEnvVar] : []),
         ]);
-        const args = buildRunnerArgs(profile.runner, {
+        const args = this.adapter(profile.runner).launchArgs({
           mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
         });
         const executable = launch?.command ?? profile.command;
@@ -564,10 +567,10 @@ export class TaskService {
           const current = this.require(context.taskId), recovery = this.recoveryOf(current);
           if (recovery.recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${recovery.reason}`);
           if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
-          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== stateRootFor(profile.runner, env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
+          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== this.adapter(profile.runner).stateRoot(env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
         }
         launch?.assertBeforeFork?.();
-        if (context && !context.newTask && profile.runner === 'claude' && mode === 'reopen') {
+        if (context && !context.newTask && this.adapter(profile.runner).sessionIdStrategy === 'host' && mode === 'reopen') {
           // Persist uncertainty before fork: a host crash must not leave a reusable
           // "never written" claim while the native process may have written history.
           this.d.db.update(tasks).set({ nativeHistoryObserved: null }).where(eq(tasks.id, context.taskId)).run();
@@ -578,7 +581,7 @@ export class TaskService {
           id: launch?.ptyId, ...command, cwd, env: plan.env, scriptArgs: plan.scriptArgs, cols: size.cols, rows: size.rows,
         });
         nativePtyId = ptyId;
-        if (context && profile.runner === 'claude' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
+        if (context && this.adapter(profile.runner).sessionIdStrategy === 'host' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
       } catch (error) {
         if (launch) {
           if (forkAttempted) await launch.spawnFailed();
@@ -596,7 +599,7 @@ export class TaskService {
           catch { /* Origin evidence is optional; never replay a prompt already given to the native process. */ }
         }
       }
-      return { ptyId, injectedNames: plan.injectedNames, stateRoot: stateRootFor(profile.runner, env, base), runtime, launchedAt };
+      return { ptyId, injectedNames: plan.injectedNames, stateRoot: this.adapter(profile.runner).stateRoot(env, base), runtime, launchedAt };
     } catch (error) {
       // Arming may itself await or fail. Only this closure knows whether the OS
       // fork was attempted; settle its unused windows before ordinary revocation.
@@ -669,18 +672,18 @@ export class TaskService {
   }
 
   private recoveryOf(row: TaskRow): { recovery: TaskRecovery; reason: string } {
-    if (!row.nativeSessionId) return row.runner === 'claude'
-      ? { recovery: 'unrecoverable', reason: '没有记录 Claude 的 session ID（M3 之前的记录）' }
-      : { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
-    const root = row.stateRoot ?? stateRootFor(row.runner, {}, {});
+    if (!row.nativeSessionId) return this.adapter(row.runner).sessionIdStrategy === 'host'
+      ? { recovery: 'unrecoverable', reason: `没有记录 ${this.adapter(row.runner).describe().sessionLabel} 的 session ID（M3 之前的记录）` }
+      : { recovery: 'not-started', reason: `还没有发过消息，${this.adapter(row.runner).describe().label} 未生成会话；打开时会新开一个` };
+    const root = row.stateRoot ?? this.adapter(row.runner).stateRoot({}, {});
     let file: string | null = null;
-    try { file = runnerAdapter(row.runner).sessionFile(root, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Preserve the original identity on inaccessible history. */ }
+    try { file = this.adapter(row.runner).sessionFile(root, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Preserve the original identity on inaccessible history. */ }
     if (this.observeNativeHistory(row, file)) return { recovery: 'resumable', reason: '' };
     // Claude reserves its UUID before writing a file. Only a newly created task
     // whose owned run ended without a file can legitimately reopen that UUID.
     // A run interrupted before host acknowledgement remains unknown after restart.
     // NULL is unknown or still running; only this host may recognize its live new run.
-    if (row.runner === 'claude' && (row.nativeHistoryObserved === false || (row.nativeHistoryObserved === null && this.running.has(row.id) && this.freshNativeTasks.has(row.id)))) return { recovery: 'fresh', reason: '尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开' };
+    if (this.adapter(row.runner).sessionIdStrategy === 'host' && (row.nativeHistoryObserved === false || (row.nativeHistoryObserved === null && this.running.has(row.id) && this.freshNativeTasks.has(row.id)))) return { recovery: 'fresh', reason: '尚未观察到原生会话文件；打开时沿用原 ID 和原目录新开' };
     return { recovery: 'unrecoverable', reason: row.nativeHistoryObserved === true
       ? '原生会话状态目录或历史缺失或不可用，保留原记录与路径，不能用空目录恢复'
       : '原生会话历史状态未知或缺失，请恢复原目录；不会按未发消息新开' };
@@ -689,7 +692,7 @@ export class TaskService {
   // Codex creates its session only after the first user message, so poll until it appears.
   // Several tasks may wait in one directory: a session goes to the task it belongs to
   // (codexOwnerOf), and is claimed synchronously after the read, so no two tasks share one.
-  private watchCodex(taskId: string, ptyId: string, cwd: string, root: string, launchedAt: number, firstMessage: string): void {
+  private watchNativeSession(taskId: string, ptyId: string, runner: ResolvedProfile['runner'], cwd: string, root: string, launchedAt: number, firstMessage: string): void {
     this.stopWatch(taskId);
     let realCwd = cwd;
     try {
@@ -705,9 +708,9 @@ export class TaskService {
         // A pending authoritative ID write must keep this task from claiming another rollout.
         if (w.busy || this.bindingNative.has(taskId)) return;
         w.busy = true;
-        let candidates: Awaited<ReturnType<typeof recentCodexRollouts>> = [];
+        let candidates: ObservedRunnerSession[] = [];
         try {
-          candidates = await recentCodexRollouts(root, launchedAt);
+          candidates = await this.adapter(runner).observeSessions(root, launchedAt);
         } catch {
           // Unreadable this round; try again on the next tick.
         } finally {
@@ -764,7 +767,7 @@ export class TaskService {
     const locate = (): string | null => {
       const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
       if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
-      const file = runnerAdapter(profile.runner).sessionFile(root, cwd, row.sid, { sinceMs: launchedAt, scan: profile.runner === 'claude' ? false : !scanned });
+      const file = this.adapter(profile.runner).sessionFile(root, cwd, row.sid, { sinceMs: launchedAt, scan: this.adapter(profile.runner).sessionIdStrategy === 'host' ? false : !scanned });
       // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
       scanned = true;
       const current = this.require(taskId);
@@ -817,23 +820,10 @@ export class TaskService {
       if (this.freshNativeTasks.delete(taskId)) {
         const row = this.require(taskId);
         let file: string | null = null;
-        try { if (row.stateRoot && row.nativeSessionId) file = claudeSessionFile(row.stateRoot, row.cwd, row.nativeSessionId); } catch { /* Unknown stays held if the native root cannot be inspected. */ }
+        try { if (row.stateRoot && row.nativeSessionId) file = this.adapter(row.runner).sessionFile(row.stateRoot, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Unknown stays held if the native root cannot be inspected. */ }
         if (!this.observeNativeHistory(row, file) && file === null && row.nativeHistoryObserved !== true) {
           // An inaccessible root cannot establish that the owned run wrote nothing.
-          let readableRoot = false;
-          try {
-            if (row.stateRoot && statSync(row.stateRoot).isDirectory()) {
-              accessSync(row.stateRoot, constants.R_OK | constants.X_OK);
-              const directory = join(row.stateRoot, 'projects');
-              let names: string[] = [];
-              try { names = readdirSync(directory); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
-              for (const name of names) {
-                const folder = join(directory, name);
-                if (statSync(folder).isDirectory()) accessSync(folder, constants.R_OK | constants.X_OK);
-              }
-              readableRoot = true;
-            }
-          } catch { /* Keep unknown when any possible original history cannot be inspected. */ }
+          const readableRoot = Boolean(row.stateRoot && this.adapter(row.runner).canConfirmNoHistory(row.stateRoot));
           if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(eq(tasks.id, taskId)).run();
         }
       }

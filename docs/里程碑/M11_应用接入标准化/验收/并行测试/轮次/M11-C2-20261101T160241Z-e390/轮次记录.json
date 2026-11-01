@@ -1,0 +1,169 @@
+{
+  "schema": "willyou-test-round-v1",
+  "runId": "M11-C2-20261101T160241Z-e390",
+  "milestone": "M11",
+  "updatedAt": "2026-11-01T16:23:43.926120+00:00",
+  "sourceCommit": "1981486e",
+  "status": "checkpoint-ready",
+  "agents": {
+    "coordinator": "Codex /root",
+    "executors": [
+      "/root/zen_consistency",
+      "/root/upstream_contract"
+    ]
+  },
+  "boundary": "R0.9；同范围授权；macOS arm64/Codex0.166.0；合成模型允许R；Story暂缓；阶段性commit/push开发分支；不发版",
+  "scope": "S10 A组生命周期完整方法及宿主委托；后续B组和T35完整链路、T26版本自检",
+  "changes": [
+    "runner-adapters.ts: startup-only immutable registry, descriptor/profile/executable/stateRoot/launch/observe/locate/absence contract",
+    "task-service.ts: delegate state root, args, observed session and recovery to adapter; keep builtin behavior",
+    "runner-adapters.test.ts: registered real scripted CLI new/resume; no wholeT35 pass claim"
+  ],
+  "resources": {
+    "UI": "free",
+    "heavy": "free",
+    "lightweight-I": []
+  },
+  "groups": [
+    {
+      "id": "M11-C2-A-LIFECYCLE",
+      "cases": [
+        "M11-T23 (I partial)",
+        "M11-T35 (A-group partial only)"
+      ],
+      "criteria": [
+        "existingClaude/Codex new/resume/implicit-root/history safety unchanged",
+        "registered scripted CLI executes new/resume via methods",
+        "unknown/duplicate/incomplete registration fails closed"
+      ],
+      "status": "software-passed",
+      "owner": "coordinator",
+      "command": "pnpm test runner-adapters/native-sessions/task-service --maxWorkers=1",
+      "sourceState": "1981486e + current 3-file recoverable delta; snapshot after test stabilization",
+      "checks": 58
+    },
+    {
+      "id": "M11-C2-I-LAUNCHER",
+      "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/baseline",
+      "manifestSha256": "a1088073a10226b20ecf09fdce60c4a6fdf60c8447971519aa107bf1e9ec61a3",
+      "cases": [
+        "T23/T35 partial I regression"
+      ],
+      "owner": "/root/zen_consistency",
+      "status": "delivered-verified-archived",
+      "scope": "entire task-capability-launcher file, original thresholds, maxWorkers1, no UI/real model/whole-case claim",
+      "resourcesReleased": true,
+      "checks": 265
+    },
+    {
+      "id": "M11-C2-I-EVIDENCE",
+      "case": "M11-T27",
+      "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/evidence-baseline",
+      "manifestSha256": "258a31fd0820500665e7e3a95ced471abe4b4e503e877cf19a9353f81399de6a",
+      "owner": "/root/upstream_contract",
+      "status": "attempt-001-delivered-product-red",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C2-I-EVIDENCE-RETEST",
+      "case": "M11-T27",
+      "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/evidence-retest",
+      "manifestSha256": "558ec0d89664b08a04c02efe5e84fab57504427d8ec070c9bab4860e08170750",
+      "owner": "/root/upstream_contract",
+      "status": "delivered-I-complete-pending-stage",
+      "scope": "original2 red cases plus host-budget affected native-user-messages unit tests; retain17 green+other122 applicable prior evidence",
+      "criteria": [
+        "scripted-test超记录数不能read/discover",
+        "scripted-test>1MiB单行不能read/discover",
+        "正常大历史尾窗/positive control仍可用"
+      ],
+      "resourcesReleased": true
+    }
+  ],
+  "accounting": {
+    "addedWholeCases": 0,
+    "source": "验收/测试用例.md: 9/38, 29 remaining, 23.68%; T24 corrected to pending stage",
+    "receipts": [
+      {
+        "group": "M11-C2-I-EVIDENCE",
+        "attempt": "001",
+        "deliveryHash": "393fb3de0c4dff172eeca368ae1b1fe51a951cd63fec01ac6d781c1139d09e13",
+        "archived": true,
+        "ledgerUpdated": "T27 failed/partial; no added whole pass"
+      },
+      {
+        "group": "M11-C2-I-EVIDENCE",
+        "attempt": "002",
+        "deliveryHash": "f73a580286d6368213677530d5ff969c0ae34517c2517003b27bc1cfe8f52e6d",
+        "archived": true,
+        "ledgerUpdated": "T27 I-complete/pending-stage; no new whole pass"
+      },
+      {
+        "group": "M11-C2-I-LAUNCHER",
+        "attempt": "001",
+        "deliveryHash": "b8905d7e600a804b1316a5b0af1fd8a9d3b0653a254e19be95e94d43ea0c5dd4",
+        "archived": true,
+        "ledgerUpdated": "affected I265; no whole-case increment"
+      }
+    ]
+  },
+  "next": "finish checkpoint typecheck/archive/commit/push; then T26 integrated selfcheck and T35 full registration chain",
+  "githubCheckpoint": {
+    "branch": "feature/0.1.0",
+    "commit": "1981486e",
+    "push": "confirmed origin 9a569a81..1981486e",
+    "userRequest": "阶段性提交代码到github；用户睡觉期间自主完成开发/测试/优化，用户参与项最后集中"
+  },
+  "baseline": {
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/baseline",
+    "manifestSha256": "a1088073a10226b20ecf09fdce60c4a6fdf60c8447971519aa107bf1e9ec61a3",
+    "outReuse": "C1 resource/native unchanged; private out/cache, shared read-only deps",
+    "status": "frozen-source-verified-cleanup-confirmed"
+  },
+  "evidenceBaseline": {
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C2-20261101T160241Z-e390-xp_jh49h/evidence-baseline",
+    "manifestSha256": "258a31fd0820500665e7e3a95ced471abe4b4e503e877cf19a9353f81399de6a",
+    "scope": "current A+B native formats source",
+    "preflight": "5 passed"
+  },
+  "steps": {
+    "A": "58 lifecycle + whole launcher265 passed, no failures/skips; old native behavior unchanged",
+    "B": "native format registry and host boundary implemented, T27 I contract complete after D01 red/retest; public Runner/profile and delivery still incomplete",
+    "T35": "public Runner/profile and delivery registration still limited to builtins; not complete",
+    "T26": "version selfcheck still pending"
+  },
+  "defects": [
+    {
+      "id": "M11-C2-D01",
+      "classification": "product",
+      "summary": "host Skill observation path omitted shared record/line budgets",
+      "status": "fixed-independent-retest-passed",
+      "originalEvidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C2-20261101T160241Z-e390/M11-C2-I-EVIDENCE/attempt-001/result.json",
+      "retestEvidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C2-20261101T160241Z-e390/M11-C2-I-EVIDENCE/attempt-002/result.json"
+    }
+  ],
+  "accountingCorrections": [
+    {
+      "case": "M11-T24",
+      "from": "whole-case pass",
+      "to": "I complete, pending stage prerequisite",
+      "basis": "architecture§12 B04 and originalgroup fullExecutionAfter S10/S11; final package not ready",
+      "history": "C1 frozen results preserved; only current ledger corrected",
+      "caseCountDelta": -1
+    }
+  ],
+  "efficiency": {
+    "addedWholeCases": 0,
+    "correctedWholeCases": -1,
+    "launcherSeconds": 787.2225,
+    "launcherRetries": 0,
+    "newAppBuilds": 0,
+    "reasonNoWholeIncrement": "T24/T27 wait S10/S11 full implementation and final package prerequisite; A/B software steps narrow specific gaps",
+    "diagnosis": "C2-D01 independent scripted format exposed missing shared host budgets; fixed once, reran original2 red+affected57 only"
+  },
+  "checks": {
+    "typecheck": "node/web exit0",
+    "diffCheck": "passed",
+    "noNewApp": true
+  }
+}
