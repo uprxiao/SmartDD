@@ -6,9 +6,9 @@
 
 版本日志自检为主进程方法AgentAdapterRegistry.selfCheck，未暴露RPC/MCP。结果只含判据布尔值、hash与时间，绑定适配hash、CLI版本和平台，记录在既有宿主operation journal；日志格式检查只能补L2，不能证明CLI身份/沙箱或L3。每次失败覆盖此前本机绿，原尝试保留。运行时与自检共用skill-observation-contract，避免兼容判断弱于宿主。NativeUserMessages和诊断继续只从注册表读取等级；已发布L3事实不由自检创造。
 
-S11未知版本MCP best-effort已由受信交付机制显式选择：注册表versionSupport统一判定；未知版本只能投放Skill/MCP，不给CLI token/沙箱、L2/L3或原话发送授权。有fallback实际MCP读取、无fallback明确unavailable、已固定会话恢复保留原绑定均在独立I夹具中通过。剩余：受影响完整回归归账、统一最终包及对应A/R验收。T26/T35仅I层/主链通过，未计整例；不将本节写成阶段交付。源码与红绿证据见本阶段最新执行记录与轮次。
+S11未知版本MCP best-effort已由受信交付机制显式选择：注册表versionSupport统一判定；未知版本只能投放Skill/MCP，不给CLI token/沙箱、L2/L3或原话发送授权。有fallback实际MCP读取、无fallback明确unavailable、已固定会话恢复保留原绑定均在独立I夹具中通过。接续：受影响完整回归已形成有效证据，统一最终包已完成已知CLI和受控未知MCP主链；对应整例及剩余A/R以权威账归账，不将本节写成阶段交付。源码与红绿证据见本阶段最新执行记录与轮次。
 
-更新：2026-11-01。依据：[架构设计](架构设计.md) §4.2、§15.4–15.6，需求 R0.9（M11-R12、R15）。本文只写当前代码里的实际位置；设计里尚未落地的部分单列在“当前缺口”，不当作已经可用。
+更新：2026-11-02。依据：[架构设计](架构设计.md) §4.2、§15.4–15.6，需求 R0.9（M11-R12、R15）。本文只写当前代码里的实际位置；设计里尚未落地的部分单列在“当前缺口”，不当作已经可用。
 
 ## 一、新增一个应用
 
@@ -33,31 +33,40 @@ S11未知版本MCP best-effort已由受信交付机制显式选择：注册表ve
 4. 运行 `pnpm test:prepare` 重建能力包，再跑 `pnpm typecheck` 与受影响测试。
 5. 连接表单由模块配置视图通用渲染，不写应用专用页面。
 
-## 二、新增一个 Agent
+## 二、新增一个 Agent（523f9d85 实现基线）
 
-**A 组（运行器生命周期）：** 在 `src/main/core/tasks/runner-adapters.ts` 实现 `RunnerAdapter`：`stateEnvVar`、`sessionIdStrategy`（`host` 或 `observed`）、`sessionFile(root, cwd, sessionId, {sinceMs, scan})`，并加入 `adapters` 表。
+`Runner` 和资源 `agentId` 使用结构化字符串身份；只有启动时受信注册的实现可以执行。放宽身份字段不等于支持任何新 Agent，也不自动在产品下拉框增加入口。数据库现有文本列不改写。
 
-**B 组（能力交付与证据）：** 在 `resources/agent-adapters/<agentId>/<version>/` 发布适配资源（`adapter.json`、`index.cjs`、`planner.cjs`）。`adapter.json` 用 `levels` 按 CLI 版本声明等级：
-
-- 必须含 `L0.skill`、`L1`，以及 `L0.mcp`、`L0.cli` 至少一个。
-- `L3` 依赖 `L2`；L2、L3 必须随资源附夹具与负例，**本机自检最多提升到 L2**（`raiseBySelfCheck`）。
-- 未声明的版本按 `effectiveLevels([])` 降级：只有 `L0.skill`／`L0.mcp`，诊断标“未验证”，不交付 CLI，发送退回页面点击授权。
-- 已发布的适配资源不可原地替换，改动须用新版本号。
-
-**步骤：**
-
-1. 实现 A 组，并补 `runner-adapters.test.ts` 的契约断言。
-2. 发布 B 组资源，先只声明 L0＋L1。
-3. 跑一致性套件 `src/main/core/applications/__tests__/agent-consistency.test.ts`：正例必须产出证据；畸形、截断、超预算、窗口外、角色伪装、调用与输出不匹配、内容被改、未知记录形态都不得产出证据。
-4. 需要 L2／L3 时，用真实 CLI 版本的脱敏日志补正例和负例，通过后再在 `levels` 登记。
-
-## 三、当前缺口（2026-11-01）
-
-| 项 | 状态 |
+| 实现位置 | 必须实现／登记的内容 |
 | --- | --- |
-| `Runner` 类型 | 仍是 `'claude' \| 'codex'` 联合类型。新增真实 Agent 还要放宽它及 `agentAdapterMetadataSchema.agentId`；假第三 Agent 夹具只验证了接口形状（T35 仅软件部分） |
-| 其余 runner 分支 | `task-capability-launcher.ts`、`native-user-messages.ts` 等约 20 个文件仍有 claude／codex 分支，尚未全部迁入适配器 |
-| Codex 0.166.0 的 L2／L3 | L2已以脱敏真实日志声明（5bc62bb0），按运行Skill名字的D04及C1真实App读取复验通过；L3仍关闭，发送使用页面授权 |
-| 版本自检 | 只有判定函数 `raiseBySelfCheck`，未接入启动流程与诊断（T26 未完成） |
-| 诊断显示“未验证” | S8已实现；C1修复L2已声明时提示仍说读取关闭的矛盾，App/P浅深定向检查通过；T13全范围仍待收口 |
-| CI 检查“不允许改的文件无应用名分支” | 已有`sample-kv.test.ts`检查通用host/page无样本名分支并由默认测试收集；T34仍待新包真实页面选用/Agent等完整判据，不把该静态检查单算通过 |
+| `src/main/core/tasks/runner-adapters.ts` 的 `RunnerAdapterRegistry` | A 组：`describe`、`profileSchema`、`discoverExecutable`、`detectVersion`、状态根、`launchArgs`、会话观察／定位及无历史判定；`sessionIdStrategy` 区分宿主指定与原生观察。生产组成根登记实现；测试注入私有 registry。 |
+| `src/main/core/applications/capability-delivery-adapters.ts` 的 `CapabilityDeliveryAdapterRegistry` | B 组受信机制：独立 Agent／runner 身份、`inspectNative`、`skillProjection`、`entryDelivery`；声明 CLI 时必须提供该 Agent 自身的 `effectiveSandbox`，不能借用 Codex 默认探针。当前可复用 `shared-home` 和 `session-plugin` 投放机制。类实现保留 `this`。 |
+| `resources/agent-adapters/<agentId>/<version>/` | 不可原地替换的固定 CJS 资源（`adapter.json`、`index.cjs`、`planner.cjs`），声明版本／等级、生成无秘密的计划及入口配置。计划、投影、资源哈希和原子发布仍由 `AgentAdapterRegistry` 与宿主核验。 |
+| `src/main/core/applications/native-evidence-adapters.ts` 的 `NativeEvidenceAdapterRegistry` | 可选原生格式：定位、头部、用户消息、Skill 发现／读取解析。仅处理宿主交付的有界记录；IO、路径／链接／inode复核、预算、PTY输入回执、授权和清理由宿主管理。未知身份不借用 Codex 解析器。 |
+
+等级规则：
+
+- 必须含 `L0.skill`、`L1`，以及 `L0.mcp`、`L0.cli` 至少一个；`L3` 依赖 `L2`，每个声明等级附版本对应的夹具及负例。
+- 本阶段真实 Agent 仅 Codex 0.166.0；L2 已声明并经真实 App 读取核验，L3 仍关闭。Claude 迁入接口但沿用原证据与免真实验证边界，不扩大等级。
+- 只有显式支持 `bestEffortMcp` 的交付机制才允许未知版本的 Skill／MCP 尝试；注册表 `versionSupport`／`effective` 是唯一等级读取点。未知 Codex 不发 CLI token、不放宽沙箱、L2／L3关闭；有降级入口只读走 MCP，无降级入口本次不可用且说明原因，发送退回页面授权。
+- 主进程 `AgentAdapterRegistry.selfCheck(hash, cliVersion, fixtures)` 是开发／验收自检入口，未暴露 RPC／MCP。它只校验原生日志，最多补 L2，不能凭日志证明 CLI 沙箱／身份，也不能提升 L3。结果绑定资源hash、CLI版本、平台和解析版本，保存在既有 operation journal；新失败覆盖此前本机绿，历史尝试保留。用户原话解析成功也不等于授权。
+- 已发布资源不可原地替换；会话保留创建版本与固定包，恢复时探测本次安装版本，并按该版本重新判级，不能跨 Agent 读取。
+
+步骤：
+
+1. 在受信实现中完成 A、B 组并登记；AI配置保存前应用其 `profileSchema`。不修改任务、业务、网关与诊断框架来识别新名字。
+2. 发布固定 CJS 资源，先只声明已证明的 L0＋L1；按生效入口渲染同源应用 SOP，不为模型复制业务规则。
+3. 跑 `runner-adapters.test.ts`、`capability-delivery-adapters.test.ts`、`agent-consistency.test.ts`、`agent-adapters.test.ts` 的相应合同；以 `task-capability-launcher.test.ts` 内独立身份 `scripted-test` 场景复核真实自有PTY新建／停止／恢复、Skill读取、实际 MCP 业务及固定快照。
+4. 需要 L2／L3 时增加原生格式实现与脱敏真实版本夹具，跑 `native-user-messages.test.ts` 和一致性负例（角色伪装、畸形、截断、替换／链接、预算、混合／未知记录等）。自检另跑 `agent-format-self-check.test.ts`，不能用自检代替发布的 L3 证据。
+5. 验收使用统一打包 App 和隔离数据，按对应 M 用例全部判据归账；测试脚本 Agent 不代表 pi、zcode 或其他真实 Agent 已适配。
+
+## 三、当前验收边界（2026-11-02）
+
+| 项 | 实际状态 |
+| --- | --- |
+| 公共身份、生命周期与交付抽象 | 已实现；第三 Agent 真实脚本链及受影响回归通过。新增真实产品入口仍须独立需求／适配验证。 |
+| 版本自检 | 已接入宿主注册表及持久化等级读取；严格观察合同、损坏／矛盾回执及失败覆盖均已复验。只有日志证据，不能证明 CLI 或提升 L3。 |
+| Codex 0.166.0 的 L2／L3 | L2声明及最终包真实读取通过；L3关闭，页面授权保留。 |
+| 诊断 | 统一包 `e19be13c…` 的已知CLI与受控未知版本MCP在浅／深色显示一致；T13全页面、长文本等其余判据尚待完整验收。 |
+| 应用扩展静态检查 | `sample-kv.test.ts` 核对通用host/page无样本名分支；T34真实页面选用与Agent等完整判据仍待，不把静态检查单算通过。 |
+| 整例与交付 | 以[权威用例账](../验收/测试用例.md)为准；本文描述实现位置，不替代阶段交付结论。Story待用户数据，Windows／Linux不在本阶段范围。 |

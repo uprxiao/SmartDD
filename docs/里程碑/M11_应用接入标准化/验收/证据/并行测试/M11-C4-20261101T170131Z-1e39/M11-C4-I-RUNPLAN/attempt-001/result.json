@@ -1,0 +1,50 @@
+{
+  "runId": "M11-C4-20261101T170131Z-1e39",
+  "groupId": "M11-C4-I-RUNPLAN",
+  "time": "2026-11-01T17:35:10.190254+00:00",
+  "sourceCommit": "523f9d85",
+  "tests": 8,
+  "passed": 8,
+  "failed": 0,
+  "pending": 0,
+  "layer": "I only, no real PTY or UI",
+  "baseline": "Coordinator executed current repository source after the attempted private-copy setup raised TypeError (manifest out field was a description, not a list); shell continued to actual test command. No copied-source claim; no rerun needed. Production inputs checked against the frozen523 manifest after exit; only docs/external driver dirty, no concurrent production writes.",
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c4-runplan-cache pnpm test src/main/core/applications/__tests__/run-plan.test.ts --maxWorkers=1 --reporter=json --outputFile=/private/tmp/willyou-m11-c4-runplan-result.json",
+  "actualCwd": "/Users/hx/hx/hxWork/SmartDD",
+  "cache": "private from first test process",
+  "checks": [
+    "read-only fallback only at initial selection, writes never fall back",
+    "wrong entry refused before invocation/business",
+    "fixed plan preserved and mutation refused",
+    "selected SOP rendering only matching entry",
+    "old schema retained"
+  ],
+  "inputs": [
+    {
+      "path": "src/main/core/applications/run-plan.ts",
+      "sha256": "224ea175f40e0c4523b65f5ee646f1d9e4eb875d4506f0acbbc690ed214c3b0a"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/run-plan.test.ts",
+      "sha256": "4d4aa6576469caa622a6caf7e1afa1e51c5c9ee3fc96b19384e2a57bbee9dd43"
+    },
+    {
+      "path": "scripts/run-tests.mjs",
+      "sha256": "c8eb4fda8cf33dc74d5c079776ad12fadd3e3716fa01203e82e3b214357b8543"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "dc0f9b289488d21c549ea5190e251084ce4fbe94f26e5a4233c718176bf51196"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+    }
+  ],
+  "cleanup": {
+    "runnerSession": 34585,
+    "exitCode": 0,
+    "noAppOrPtyCreated": true
+  },
+  "formalWholeAdded": 0
+}

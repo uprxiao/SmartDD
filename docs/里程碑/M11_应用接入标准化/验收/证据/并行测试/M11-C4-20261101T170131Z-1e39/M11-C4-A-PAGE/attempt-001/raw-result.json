@@ -1,0 +1,945 @@
+{
+  "schema": "m11-c4-t31-page-ui-v1",
+  "group": "M11-C4-A-PAGE",
+  "caseId": "T31",
+  "layer": "I+A",
+  "root": "/private/tmp/willyou-m11-c4-page-LhQlhV",
+  "userData": "/private/tmp/willyou-m11-c4-page-LhQlhV/userdata",
+  "executable": "/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d",
+  "sourceManifestSha256": "882554ceb464efd6b62c6028a2464ab9fce20aa2cdd6e452fcab322da3db8acb",
+  "sourceCommit": "523f9d85",
+  "driverSha256": "1dbd665418eb64ba70cb26c745a3620711ed9093c1c4eaa91ae85f2a0638f2d9",
+  "startedAt": "2026-11-01T17:34:36.898Z",
+  "status": "failed",
+  "criteria": [
+    {
+      "id": "T31-project-selection",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "ZenTao and Mail enabled and all three synthetic connections selected by real UI; sender identity automatic",
+      "at": "2026-11-01T17:34:46.797Z"
+    },
+    {
+      "id": "T31-zentao-list-detail",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Real UI reads assigned synthetic Bug list, detail and full body/history through original handlers",
+      "at": "2026-11-01T17:34:47.549Z"
+    },
+    {
+      "id": "T31-mail-read",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual page only checks source status; no mail message list/detail/body control. No mailQuery/mailRead/mailResource called.",
+      "evidence": "04-mail-page-missing-controls.png",
+      "at": "2026-11-01T17:34:48.893Z"
+    },
+    {
+      "id": "T31-create-draft-ui",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual page has no create/new draft input or button; suggests project Agent.",
+      "evidence": "04-mail-page-missing-controls.txt",
+      "at": "2026-11-01T17:34:48.893Z"
+    },
+    {
+      "id": "T31-modify-draft-ui",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual draft page only views/reviews saved revisions; no edit fields or save action.",
+      "evidence": "04-mail-page-missing-controls.txt",
+      "at": "2026-11-01T17:34:48.893Z"
+    }
+  ],
+  "actions": [
+    {
+      "stage": "project-selection",
+      "selector": "[data-testid=nav-apps]",
+      "point": {
+        "x": 171.5,
+        "y": 173.5
+      },
+      "at": "2026-11-01T17:34:41.757Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": ".m10-sidebar button",
+      "text": "项目选用",
+      "point": {
+        "x": 171.5,
+        "y": 367.5
+      },
+      "at": "2026-11-01T17:34:42.040Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "select[aria-label=当前应用项目]",
+      "point": {
+        "x": 1218,
+        "y": 84.5
+      },
+      "at": "2026-11-01T17:34:42.341Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "[aria-label=\"为M11 C4 页面独立验证启用禅道\"]",
+      "point": {
+        "x": 1247.5,
+        "y": 283.25
+      },
+      "at": "2026-11-01T17:34:42.422Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "[aria-label=\"为M11 C4 页面独立验证选用C4 synthetic ZenTao\"]",
+      "point": {
+        "x": 442.5,
+        "y": 469.5
+      },
+      "at": "2026-11-01T17:34:43.285Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "[aria-label=\"为M11 C4 页面独立验证启用邮件\"]",
+      "point": {
+        "x": 1247.5,
+        "y": 470.25
+      },
+      "at": "2026-11-01T17:34:44.093Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "[aria-label=\"为M11 C4 页面独立验证选用C4 synthetic received source\"]",
+      "point": {
+        "x": 442.5,
+        "y": 469.5
+      },
+      "at": "2026-11-01T17:34:45.029Z"
+    },
+    {
+      "stage": "project-selection",
+      "selector": "[aria-label=\"为M11 C4 页面独立验证选用C4 synthetic SMTP\"]",
+      "point": {
+        "x": 442.5,
+        "y": 469.5
+      },
+      "at": "2026-11-01T17:34:45.844Z"
+    },
+    {
+      "stage": "zentao-page",
+      "selector": ".m10-sidebar .installed",
+      "text": "禅道",
+      "point": {
+        "x": 171.5,
+        "y": 240
+      },
+      "at": "2026-11-01T17:34:46.859Z"
+    },
+    {
+      "stage": "zentao-page",
+      "selector": ".m10-object-list button",
+      "point": {
+        "x": 727.5,
+        "y": 740.0625
+      },
+      "at": "2026-11-01T17:34:47.235Z"
+    },
+    {
+      "stage": "zentao-page",
+      "selector": "dialog button",
+      "text": "关闭",
+      "point": {
+        "x": 967,
+        "y": 694
+      },
+      "at": "2026-11-01T17:34:47.555Z"
+    },
+    {
+      "stage": "mail-page",
+      "selector": ".m10-sidebar .installed",
+      "text": "邮件",
+      "point": {
+        "x": 171.5,
+        "y": 273
+      },
+      "at": "2026-11-01T17:34:47.627Z"
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "isolation": {
+    "syntheticOnly": true,
+    "realAgentStarted": false,
+    "rpcDraftPrerequisiteDoesNotPassUiCreateOrUpdate": true,
+    "cipher": "process-local reversible fixture; no Keychain claim"
+  },
+  "ports": {
+    "zentao": 57132,
+    "smtp": 57133
+  },
+  "pid": 92597,
+  "processIdentity": "92597 92588 Mon Nov  2 01:34:36 2026     /private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou --remote-debugging-address=127.0.0.1 --remote-debugging-port=57134 --inspect=127.0.0.1:0",
+  "installationInitialFocus": [
+    {
+      "pid": 92597,
+      "before": {
+        "focused": false,
+        "visibility": "visible"
+      },
+      "requested": true,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 92597,
+    "checkedInputs": 44
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 92597,
+      "checkedInputs": 44
+    }
+  ],
+  "project": {
+    "id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+    "name": "M11 C4 页面独立验证",
+    "aliases": [],
+    "description": "T31 synthetic sources; no Agent",
+    "rulesPath": null,
+    "configVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1793554480772,
+    "updatedAt": 1793554480772,
+    "dirs": [],
+    "databases": [],
+    "servers": []
+  },
+  "connectionIds": {
+    "zentao": "379e8872-f7bf-449d-b2b9-ce68773ecf08",
+    "foxmail": "487925fd-de06-45e7-99a9-05f090ff4bed",
+    "smtp": "694abfb7-e7c5-47f5-8400-a8535ba121f0"
+  },
+  "mailDom": "<div class=\"m10-mail-workspace\"><div class=\"m10-mail-agent\"><h3>在项目 Agent 中处理邮件</h3><p>查询、阅读、总结、撰写、回复和附件处理，从 WillYou 终端发起。这里管理配置、草稿与发送结果。</p><button class=\"m10-button secondary\">新建项目任务</button></div><section class=\"m10-mail-config\"><h3>查询范围</h3><p>默认最近 30 天 · 含当天，按本机时区计算。最多100天，无匹配不扩大范围。</p><button class=\"m10-button secondary\">管理项目来源与发件账号</button><p>当前发件：fixture@example.test</p></section><section class=\"m10-mail-status\"><div class=\"m10-section-heading\"><h3>本地来源与刷新</h3><button class=\"m10-button secondary\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-refresh-cw\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"></path><path d=\"M21 3v5h-5\"></path><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"></path><path d=\"M8 16H3v5\"></path></svg>检查本地来源</button></div><p>C4 synthetic received source</p><p>本次查询最近 30 天 · 2026-10-04 — 2026-11-02 · Asia/Singapore</p><p role=\"status\">本次范围完整更新</p><p>1 / 1 条已检查 · 1 条匹配 · 0 项读取问题</p><small>最近检查：2026-11-02 01:34<br>最近完整更新：2026-11-02 01:34</small><p class=\"m10-muted\">只读本机 Foxmail 数据，不触发收信、不修改原邮箱。查询天数与缓存保留时间独立。</p></section><details class=\"m10-mail-cache\"><summary>本地占用与缓存</summary><p>可重建缓存：0.09 MB / 500 MB；索引 0.09 MB，对象 0 MB，辅助文件 0.01 MB，临时写入 0 MB。</p><p>0 项当前占用</p><p>邮件业务文件：0 MB（正文、保留附件与临时保存文件）；0 个草稿 · 0 条发送记录。</p><p>共享业务数据库：5.3 MB。共享数据库包含其他业务，不单独归属于邮件；以上为当前文件字节快照，不与缓存合计为总空间。</p><p>邮件应用版本占用：</p><p>v1.1.0 · 原件 0.11 MB · 派生 0 MB · 新会话默认版本、运行或资源操作仍有占用</p><p class=\"m10-muted\">版本含共享依赖，逐版本查看，不重复累加；业务数据和历史版本可能持续增长，500 MB仅限制可重建缓存。</p><p>30天未使用自动回收；使用中的资源先保留。Foxmail 原邮件、草稿、发送记录与其附件副本独立保留。</p><button class=\"m10-button secondary\">清理可重建缓存</button></details><section class=\"m10-drafts\"><div class=\"m10-section-heading\"><h3>项目草稿与发送结果</h3><button class=\"m10-button secondary\">刷新草稿</button></div><p class=\"m10-muted\">未配置 SMTP 也可准备草稿。草稿保存在本机 SQLite，同项目 Agent 可接续修订。</p><p>暂无草稿。可让项目 Agent 准备内容。</p><details class=\"m10-save-history\"><summary>附件保存回执</summary></details></section><button class=\"m10-button secondary\">查看本项目邮件调用记录</button></div>",
+  "mailControls": [
+    {
+      "tag": "BUTTON",
+      "text": "新建项目任务",
+      "aria": null,
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "管理项目来源与发件账号",
+      "aria": null,
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "检查本地来源",
+      "aria": null,
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "aria": null,
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "刷新草稿",
+      "aria": null,
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "查看本项目邮件调用记录",
+      "aria": null,
+      "type": null
+    }
+  ],
+  "draftFixture": {
+    "method": "RPC prerequisite only; never counted as UI create/update",
+    "reply": {
+      "schema": "willyou-app-result-v2",
+      "contractMajor": 2,
+      "status": "ok",
+      "capabilityId": "mail.draft.create",
+      "data": {
+        "draft": {
+          "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+          "revision": 1,
+          "state": "draft",
+          "contentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+          "content": {
+            "mode": "new",
+            "sourceMessageRef": null,
+            "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+            "to": [
+              "recipient@example.test"
+            ],
+            "cc": [],
+            "bcc": [],
+            "subject": "M11 C4 page-only synthetic send",
+            "text": {
+              "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+              "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 26
+            },
+            "html": null,
+            "inReplyTo": null,
+            "references": [],
+            "attachmentIds": []
+          },
+          "attachments": [],
+          "activeIntentId": null,
+          "lastExecutionId": null,
+          "sourceTaskId": null,
+          "copiedFromDraftId": null,
+          "createdAt": "2026-11-01T17:34:48.951Z",
+          "updatedAt": "2026-11-01T17:34:48.951Z"
+        }
+      },
+      "source": {
+        "appId": "mail",
+        "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+        "revision": "1",
+        "connections": []
+      },
+      "completeness": {
+        "complete": true,
+        "missing": []
+      },
+      "pagination": null,
+      "resources": [
+        {
+          "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+          "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+          "mediaType": "text/plain;charset=utf-8",
+          "size": 26
+        }
+      ],
+      "operation": {
+        "id": "a5ae0b43-749d-42e3-8dd2-490ffc586824",
+        "requestId": null,
+        "origin": "ui",
+        "effectState": "completed"
+      }
+    }
+  },
+  "failedStage": "independent-send-fixture",
+  "error": "TypeError: Cannot read properties of undefined (reading 'data')",
+  "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at file:///private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C4-20261101T170131Z-1e39-l3ng2gjx/page-worker/scripts/applications/m11-c4-page-ui.mjs:45:529",
+  "failureDom": "自定义\n应用\n技能\n已添加\n禅道\n邮件\n管理\n项目选用\n调用记录\nWillYou\n全部应用\n邮件v1.1.0\n\n在项目 Agent 中查询、准备草稿与获准发送邮件\n\n添加连接\n应用包\nv1.1.0\n随 WillYou 交付\n\n连接、工具与 1 个 Skill 一起提供，在项目中选用后即可使用。\n\n邮件工作助手\n随应用启用\n\n搜索本地邮件、总结来往内容和待办，准备草稿及经授权的新邮件、回复或回复全部。\n\n“找出今天与当前项目有关的本地邮件，总结待办事项，并准备需要回复的草稿。”\n\n准备新任务\n请先在本项目打开一个运行中的终端；不会自动选择其他任务。\n查看工具与包内容\n版本与占用\n检查占用\n\n新会话使用默认版本；旧会话与已删除任务保留的原生历史继续引用原版本。\n\n当前分发没有待切换的应用版本。\n\nv1.1.0新会话默认\n\n版本阶段：已发布\n\n发布阶段不表示 Agent 已发现、读取或连接已可用。\n\n发布记录：原发布已完成\n\n记录更新：2026-11-01T17:34:38.174Z\n\n0 个会话 · 0 个已删任务保留引用 · 0 个运行占用\n版本原件 102.8 KB · 派生资源 0 字节\n完整性已核对 · 宿主契约兼容\n\n新会话默认版本\n\n查看引用 v1.1.0\n\n空间按文件字节计算。清理保留连接、草稿、发送记录和版本身份；共享依赖另按占用保留。\n\n连接\n2 个连接\nC4 synthetic received source\nfixture@example.test · /private/tmp/willyou-m11-c4-page-LhQlhV/fixture@example.test\n已验证连接\n上次验证：2026-11-02 01:34 · OK\nC4 synthetic SMTP\nfixture@example.test · 127.0.0.1\n已验证连接\n上次验证：2026-11-02 01:34 · OK\n项目中使用\n选择项目\nM11 C4 页面独立验证\n\n为当前项目显式启用应用，并分别选用来源。启用不代表已有会话已经加载，旧会话保持原固定能力。\n\n管理项目选用\n在项目 Agent 中处理邮件\n\n查询、阅读、总结、撰写、回复和附件处理，从 WillYou 终端发起。这里管理配置、草稿与发送结果。\n\n新建项目任务\n查询范围\n\n默认最近 30 天 · 含当天，按本机时区计算。最多100天，无匹配不扩大范围。\n\n管理项目来源与发件账号\n\n当前发件：fixture@example.test\n\n本地来源与刷新\n检查本地来源\n\nC4 synthetic received source\n\n本次查询最近 30 天 · 2026-10-04 — 2026-11-02 · Asia/Singapore\n\n本次范围完整更新\n\n1 / 1 条已检查 · 1 条匹配 · 0 项读取问题\n\n最近检查：2026-11-02 01:34\n最近完整更新：2026-11-02 01:34\n\n只读本机 Foxmail 数据，不触发收信、不修改原邮箱。查询天数与缓存保留时间独立。\n\n本地占用与缓存\n项目草稿与发送结果\n刷新草稿\n\n未配置 SMTP 也可准备草稿。草稿保存在本机 SQLite，同项目 Agent 可接续修订。\n\n暂无草稿。可让项目 Agent 准备内容。\n\n附件保存回执\n查看本项目邮件调用记录\n应用能力\n读取本地邮件、正文与附件\n读取\n准备本地草稿\n本地准备 · 无需 SMTP\n发送邮件\nSMTP 发送 · 需具体授权\n作用范围\n\n连接统一管理，项目按需选用。停用后不再用于新调用，已发出的操作保留实际结果。\n\n本地数据\n\n配置与记录保存在本机，升级后继续使用。移除应用保留业务数据与历史包。",
+  "receipts": [
+    {
+      "name": "select",
+      "args": [
+        {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "zentao",
+          "enabled": true,
+          "expectedRevision": 0,
+          "connections": {
+            "zentao": null
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:42.367Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "zentao",
+          "enabled": true,
+          "revision": 1,
+          "pendingOperationId": null,
+          "connections": {
+            "zentao": null
+          },
+          "slotRevisions": {
+            "zentao": 1
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:42.421Z"
+    },
+    {
+      "name": "select",
+      "args": [
+        {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "zentao",
+          "expectedRevision": 1,
+          "enabled": true,
+          "connections": {
+            "zentao": "379e8872-f7bf-449d-b2b9-ce68773ecf08"
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:43.226Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "zentao",
+          "enabled": true,
+          "revision": 2,
+          "pendingOperationId": null,
+          "connections": {
+            "zentao": "379e8872-f7bf-449d-b2b9-ce68773ecf08"
+          },
+          "slotRevisions": {
+            "zentao": 2
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:43.285Z"
+    },
+    {
+      "name": "select",
+      "args": [
+        {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "enabled": true,
+          "expectedRevision": 0,
+          "connections": {
+            "foxmail": null,
+            "smtp": null
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:44.027Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "enabled": true,
+          "revision": 1,
+          "pendingOperationId": null,
+          "connections": {
+            "foxmail": null,
+            "smtp": null
+          },
+          "slotRevisions": {
+            "foxmail": 1,
+            "smtp": 1
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:44.092Z"
+    },
+    {
+      "name": "select",
+      "args": [
+        {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "expectedRevision": 1,
+          "enabled": true,
+          "connections": {
+            "foxmail": "487925fd-de06-45e7-99a9-05f090ff4bed",
+            "smtp": null
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:44.955Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "enabled": true,
+          "revision": 2,
+          "pendingOperationId": null,
+          "connections": {
+            "foxmail": "487925fd-de06-45e7-99a9-05f090ff4bed",
+            "smtp": null
+          },
+          "slotRevisions": {
+            "foxmail": 2,
+            "smtp": 1
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:45.028Z"
+    },
+    {
+      "name": "select",
+      "args": [
+        {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "expectedRevision": 2,
+          "enabled": true,
+          "connections": {
+            "foxmail": "487925fd-de06-45e7-99a9-05f090ff4bed",
+            "smtp": "694abfb7-e7c5-47f5-8400-a8535ba121f0"
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:45.776Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "appId": "mail",
+          "enabled": true,
+          "revision": 3,
+          "pendingOperationId": null,
+          "connections": {
+            "foxmail": "487925fd-de06-45e7-99a9-05f090ff4bed",
+            "smtp": "694abfb7-e7c5-47f5-8400-a8535ba121f0"
+          },
+          "slotRevisions": {
+            "foxmail": 2,
+            "smtp": 2
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:45.843Z"
+    },
+    {
+      "name": "zentaoWork",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "kind": "bug",
+          "cursor": null,
+          "limit": 50
+        },
+        "a70a6423-830c-4865-ae36-f19c86ce6cf2"
+      ],
+      "at": "2026-11-01T17:34:46.858Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "kind": "bug",
+          "items": [
+            {
+              "id": "79291",
+              "title": "C4 synthetic assigned Bug",
+              "status": "active",
+              "assignedTo": "tester",
+              "reference": {
+                "connectionId": "379e8872-f7bf-449d-b2b9-ce68773ecf08",
+                "identityRevision": 1,
+                "nativeId": "79291",
+                "contentRevision": "424a540e91e7e01666e87c057f0ade3a1bcbf58a11603505396bd928fd796c8c"
+              }
+            }
+          ],
+          "total": 1,
+          "nextCursor": null,
+          "complete": true,
+          "checkedAt": "2026-11-01T17:34:47.026Z",
+          "problems": [],
+          "presentation": {
+            "available": true,
+            "labels": {},
+            "choices": {
+              "status": {
+                "active": "激活"
+              },
+              "pri": {
+                "3": "P2"
+              },
+              "severity": {
+                "3": "较大"
+              }
+            }
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:47.069Z"
+    },
+    {
+      "name": "zentaoObject",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "kind": "bug",
+          "reference": {
+            "connectionId": "379e8872-f7bf-449d-b2b9-ce68773ecf08",
+            "identityRevision": 1,
+            "nativeId": "79291",
+            "contentRevision": "424a540e91e7e01666e87c057f0ade3a1bcbf58a11603505396bd928fd796c8c"
+          }
+        },
+        "4250b1de-26ff-4e48-8a39-52d85b7826e4"
+      ],
+      "at": "2026-11-01T17:34:47.162Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "kind": "bug",
+          "id": "79291",
+          "reference": {
+            "connectionId": "379e8872-f7bf-449d-b2b9-ce68773ecf08",
+            "identityRevision": 1,
+            "nativeId": "79291",
+            "contentRevision": "ba796b1d66208d992b0853cba736c3889f2e1e1263bc143dd6ee7773738847a2"
+          },
+          "fields": {
+            "id": "79291",
+            "title": "C4 synthetic assigned Bug",
+            "status": "active",
+            "pri": 3,
+            "severity": 3,
+            "assignedTo": {
+              "account": "tester"
+            },
+            "product": {
+              "id": "96",
+              "name": "C4 synthetic product"
+            }
+          },
+          "body": {
+            "id": "3088b20c-0165-4481-9c03-18d019734c6e",
+            "revision": "36a54b738d6b4fe05d5b74588500bf592f52f273b1237045f22ae5100f33ec1f",
+            "mediaType": "application/json",
+            "size": 40
+          },
+          "history": {
+            "id": "582f7724-a698-4da5-8bce-6bcd325726bf",
+            "revision": "215ab28ceefe2af3e942f4b67d7eaadfb31f4b21fc606c0f0ccebb40077c578e",
+            "mediaType": "application/json",
+            "size": 58
+          },
+          "attachments": [],
+          "complete": true,
+          "missing": [],
+          "presentation": {
+            "available": true,
+            "labels": {},
+            "choices": {
+              "status": {
+                "active": "激活"
+              },
+              "pri": {
+                "3": "P2"
+              },
+              "severity": {
+                "3": "较大"
+              }
+            }
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:47.306Z"
+    },
+    {
+      "name": "zentaoResource",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "resource": {
+            "id": "3088b20c-0165-4481-9c03-18d019734c6e",
+            "revision": "36a54b738d6b4fe05d5b74588500bf592f52f273b1237045f22ae5100f33ec1f",
+            "mediaType": "application/json",
+            "size": 40
+          },
+          "offset": 0,
+          "length": 65536
+        },
+        "a30817c2-f1bc-48a2-b4df-30dc16d27198"
+      ],
+      "at": "2026-11-01T17:34:47.309Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "resourceId": "3088b20c-0165-4481-9c03-18d019734c6e",
+          "revision": "36a54b738d6b4fe05d5b74588500bf592f52f273b1237045f22ae5100f33ec1f",
+          "offset": 0,
+          "length": 40,
+          "encoding": "utf8",
+          "data": "{\"steps\":\"<p>C4_SYNTHETIC_BUG_BODY</p>\"}",
+          "nextOffset": null,
+          "eof": true
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:47.455Z"
+    },
+    {
+      "name": "zentaoResource",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "resource": {
+            "id": "582f7724-a698-4da5-8bce-6bcd325726bf",
+            "revision": "215ab28ceefe2af3e942f4b67d7eaadfb31f4b21fc606c0f0ccebb40077c578e",
+            "mediaType": "application/json",
+            "size": 58
+          },
+          "offset": 0,
+          "length": 65536
+        },
+        "f3ea33f8-3da1-480e-a017-89285e4ad0f9"
+      ],
+      "at": "2026-11-01T17:34:47.359Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "resourceId": "582f7724-a698-4da5-8bce-6bcd325726bf",
+          "revision": "215ab28ceefe2af3e942f4b67d7eaadfb31f4b21fc606c0f0ccebb40077c578e",
+          "offset": 0,
+          "length": 58,
+          "encoding": "utf8",
+          "data": "[{\"action\":\"opened\",\"comment\":\"C4_SYNTHETIC_BUG_HISTORY\"}]",
+          "nextOffset": null,
+          "eof": true
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:47.499Z"
+    },
+    {
+      "name": "mailStatus",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 1,
+          "refresh": true
+        },
+        "fe1a975b-0825-4c08-a72f-215577b47270"
+      ],
+      "at": "2026-11-01T17:34:47.627Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "query": {
+            "items": [
+              {
+                "subject": "C4 synthetic received mail",
+                "from": "sender@example.test",
+                "to": "fixture@example.test",
+                "date": "2026-11-01T17:34:36.000Z",
+                "messageId": "<c4-received@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "487925fd-de06-45e7-99a9-05f090ff4bed",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "9096c38fc59c8af3b83c0c95160b188e55489b1f7cae617515a0385fe4c8b2ce"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 1,
+            "range": {
+              "days": 30,
+              "timeZone": "Asia/Singapore",
+              "startDate": "2026-10-04",
+              "endDate": "2026-11-02",
+              "start": "2026-10-03T16:00:00.000Z",
+              "endExclusive": "2026-11-02T16:00:00.000Z"
+            },
+            "checkedAt": "2026-11-01T17:34:48.462Z",
+            "problems": []
+          },
+          "refresh": {
+            "scanned": 1,
+            "total": 1,
+            "finished": true,
+            "problemCount": 0,
+            "lastSuccessfulRefreshAt": "2026-11-01T17:34:48.462Z"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:48.735Z"
+    },
+    {
+      "name": "drafts",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 50,
+          "cursor": null
+        }
+      ],
+      "at": "2026-11-01T17:34:47.832Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "items": [],
+          "nextCursor": null
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:47.890Z"
+    },
+    {
+      "name": "invokeCapability",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "mail",
+        "mail.draft.create",
+        {
+          "content": {
+            "mode": "new",
+            "sourceMessageRef": null,
+            "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+            "to": [
+              "recipient@example.test"
+            ],
+            "cc": [],
+            "bcc": [],
+            "subject": "M11 C4 page-only synthetic send",
+            "text": "M11_C4_PAGE_SYNTHETIC_BODY",
+            "html": null,
+            "inReplyTo": null,
+            "references": [],
+            "attachmentIds": []
+          }
+        }
+      ],
+      "at": "2026-11-01T17:34:48.893Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.draft.create",
+          "data": {
+            "draft": {
+              "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+              "revision": 1,
+              "state": "draft",
+              "contentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+                "to": [
+                  "recipient@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "M11 C4 page-only synthetic send",
+                "text": {
+                  "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+                  "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+                  "mediaType": "text/plain;charset=utf-8",
+                  "size": 26
+                },
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "activeIntentId": null,
+              "lastExecutionId": null,
+              "sourceTaskId": null,
+              "copiedFromDraftId": null,
+              "createdAt": "2026-11-01T17:34:48.951Z",
+              "updatedAt": "2026-11-01T17:34:48.951Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "1",
+            "connections": []
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+              "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 26
+            }
+          ],
+          "operation": {
+            "id": "a5ae0b43-749d-42e3-8dd2-490ffc586824",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:34:48.997Z"
+    }
+  ],
+  "httpCalls": [
+    {
+      "path": "/biz/api.php/v1/user",
+      "query": "",
+      "at": "2026-11-01T17:34:40.950Z"
+    },
+    {
+      "path": "/biz/api.php/v1/user",
+      "query": "",
+      "at": "2026-11-01T17:34:47.014Z"
+    },
+    {
+      "path": "/biz/api.php/v2/my/work",
+      "query": "?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1",
+      "at": "2026-11-01T17:34:47.015Z"
+    },
+    {
+      "path": "/biz/api.php/v1/langs",
+      "query": "?modules=bug",
+      "at": "2026-11-01T17:34:47.028Z"
+    },
+    {
+      "path": "/biz/api.php/v1/user",
+      "query": "",
+      "at": "2026-11-01T17:34:47.235Z"
+    },
+    {
+      "path": "/biz/api.php/v1/bugs/79291",
+      "query": "",
+      "at": "2026-11-01T17:34:47.235Z"
+    },
+    {
+      "path": "/biz/api.php/v1/user",
+      "query": "",
+      "at": "2026-11-01T17:34:47.409Z"
+    },
+    {
+      "path": "/biz/api.php/v1/user",
+      "query": "",
+      "at": "2026-11-01T17:34:47.409Z"
+    },
+    {
+      "path": "/biz/api.php/v1/bugs/79291",
+      "query": "",
+      "at": "2026-11-01T17:34:47.410Z"
+    },
+    {
+      "path": "/biz/api.php/v1/bugs/79291",
+      "query": "",
+      "at": "2026-11-01T17:34:47.410Z"
+    }
+  ],
+  "smtp": {
+    "connections": 1,
+    "auth": 1,
+    "dataAttempts": 0,
+    "messages": [],
+    "errors": [
+      "ECONNRESET"
+    ]
+  },
+  "finishedAt": "2026-11-01T17:34:49.197Z",
+  "stage": "independent-send-fixture",
+  "beforeSource": {
+    "messages.db": "b5cf304b51a47114c8a66e427ec99409d92c6ede5be57ebaf023931669a7bfde",
+    "Mail/Inbox/1.mail": "9096c38fc59c8af3b83c0c95160b188e55489b1f7cae617515a0385fe4c8b2ce"
+  },
+  "asarAfterSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d"
+}

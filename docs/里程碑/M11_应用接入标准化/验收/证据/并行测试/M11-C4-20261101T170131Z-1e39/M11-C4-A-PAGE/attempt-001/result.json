@@ -1,0 +1,60 @@
+{
+  "schema": "m11-c4-page-attempt-v1",
+  "group": "M11-C4-A-PAGE",
+  "caseId": "T31",
+  "layer": "I+A",
+  "status": "failed-driver-preserved",
+  "failureClassification": "driver-return-shape",
+  "reason": "RPC invokeCapability returns v2 result directly, not a ToolResponse.value wrapper. Original draft creation succeeded; error before reading draft.id.",
+  "rawResult": "raw-result.json",
+  "actualCriteria": [
+    {
+      "id": "T31-project-selection",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "ZenTao and Mail enabled and all three synthetic connections selected by real UI; sender identity automatic",
+      "at": "2026-11-01T17:34:46.797Z"
+    },
+    {
+      "id": "T31-zentao-list-detail",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Real UI reads assigned synthetic Bug list, detail and full body/history through original handlers",
+      "at": "2026-11-01T17:34:47.549Z"
+    },
+    {
+      "id": "T31-mail-read",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual page only checks source status; no mail message list/detail/body control. No mailQuery/mailRead/mailResource called.",
+      "evidence": "04-mail-page-missing-controls.png",
+      "at": "2026-11-01T17:34:48.893Z"
+    },
+    {
+      "id": "T31-create-draft-ui",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual page has no create/new draft input or button; suggests project Agent.",
+      "evidence": "04-mail-page-missing-controls.txt",
+      "at": "2026-11-01T17:34:48.893Z"
+    },
+    {
+      "id": "T31-modify-draft-ui",
+      "layer": "I+A",
+      "status": "failed-product",
+      "actual": "Actual draft page only views/reviews saved revisions; no edit fields or save action.",
+      "evidence": "04-mail-page-missing-controls.txt",
+      "at": "2026-11-01T17:34:48.893Z"
+    }
+  ],
+  "failureStage": "independent-send-fixture",
+  "smtpData": 0,
+  "actualExecution": {
+    "start": "2026-11-01T17:34:36.898Z",
+    "end": "2026-11-01T17:34:49.197Z",
+    "pid": 92597
+  },
+  "driverSha256": "1dbd665418eb64ba70cb26c745a3620711ed9093c1c4eaa91ae85f2a0638f2d9",
+  "driverSnapshotHashMatches": true,
+  "formalCasesAdded": 0
+}

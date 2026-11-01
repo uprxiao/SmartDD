@@ -1,0 +1,13 @@
+--- C2 original archived test
++++ C4 private frozen-source test
+@@ -20,8 +20,8 @@
+ function record(name:string,value:unknown){
+  const bytes=readFileSync(file);const source={path: file,sha256:digest(bytes),bytes:bytes.length,lineCount:bytes.toString().split('\n').length-1};
+  outcomes.push({format:current.snapshot.runner,scenario:name,at:new Date().toISOString(),source,result:value});
+- if(bytes.length<16384)writeFileSync(join(process.cwd(),'evidence-log-'+process.pid+'-'+outcomes.length+'.jsonl'),bytes);
+- writeFileSync(join(process.cwd(),'evidence-outcomes-'+process.pid+'.json'),JSON.stringify(outcomes,null,2)+'\n');
++ if(bytes.length<16384)writeFileSync(join(process.cwd(),'delivery-evidence/attempt-001/raw/evidence-log-'+process.pid+'-'+outcomes.length+'.jsonl'),bytes);
++ writeFileSync(join(process.cwd(),'delivery-evidence/attempt-001/raw/evidence-outcomes-'+process.pid+'.json'),JSON.stringify(outcomes,null,2)+'\n');
+ }
+ const timestamp=(r:any)=>typeof r?.at==='string'?Date.parse(r.at):NaN;
+ function scriptedSkill(kind:'read'|'discovery',lines:readonly string[],targets:readonly SkillReadTarget[],since:number,through:number):SkillReadObservation[]{

@@ -1,0 +1,2966 @@
+{
+  "schema": "m11-c4-t31-page-ui-v1",
+  "group": "M11-C4-A-PAGE",
+  "caseId": "T31",
+  "layer": "I+A",
+  "root": "/private/tmp/willyou-m11-c4-page-LhQlhV",
+  "userData": "/private/tmp/willyou-m11-c4-page-LhQlhV/userdata",
+  "executable": "/private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "asarSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d",
+  "sourceManifestSha256": "882554ceb464efd6b62c6028a2464ab9fce20aa2cdd6e452fcab322da3db8acb",
+  "sourceCommit": "523f9d85",
+  "driverSha256": "c6d9d56c40b657fddada5ad3549fa82dc27a74bcc1d54c9a4084ac5a72ca7a40",
+  "startedAt": "2026-11-01T17:36:52.392Z",
+  "status": "partial-product-gaps",
+  "criteria": [
+    {
+      "id": "T31-review-ui",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Existing RPC-fixture draft reviewed in actual page; exact recipient/from/body shown and no SMTP DATA before click",
+      "at": "2026-11-01T17:36:55.945Z"
+    },
+    {
+      "id": "T31-page-authorize-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "One actual page click authorizes the reviewed revision and submits once to bounded synthetic loopback SMTP; accepted250, no external relay",
+      "at": "2026-11-01T17:36:56.589Z"
+    },
+    {
+      "id": "T31-page-context-no-agent",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual DB has zero tasks/runs; all operation task_id/run_id null, page actions caller_kind ui, index child jobs explicit; send review has null sourceTaskId/sourceRunId",
+      "at": "2026-11-01T17:36:56.629Z"
+    }
+  ],
+  "actions": [
+    {
+      "stage": "setup",
+      "selector": "[data-testid=nav-apps]",
+      "point": {
+        "x": 171.5,
+        "y": 173.5
+      },
+      "at": "2026-11-01T17:36:53.841Z"
+    },
+    {
+      "stage": "setup",
+      "selector": ".m10-sidebar .installed",
+      "text": "邮件",
+      "point": {
+        "x": 171.5,
+        "y": 273
+      },
+      "at": "2026-11-01T17:36:54.178Z"
+    },
+    {
+      "stage": "draft-review",
+      "selector": "button",
+      "text": "刷新草稿",
+      "point": {
+        "x": 560,
+        "y": 573.3125
+      },
+      "at": "2026-11-01T17:36:55.099Z"
+    },
+    {
+      "stage": "draft-review",
+      "selector": ".m10-draft-row",
+      "point": {
+        "x": 727.5,
+        "y": 674.3125
+      },
+      "at": "2026-11-01T17:36:55.231Z"
+    },
+    {
+      "stage": "draft-review",
+      "selector": "dialog button",
+      "text": "审阅发送内容",
+      "point": {
+        "x": 941,
+        "y": 620.25
+      },
+      "at": "2026-11-01T17:36:55.578Z"
+    },
+    {
+      "stage": "page-authorize-send",
+      "selector": "dialog button",
+      "text": "发送此修订",
+      "point": {
+        "x": 947.5,
+        "y": 721.5
+      },
+      "at": "2026-11-01T17:36:56.130Z"
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "isolation": {
+    "syntheticOnly": true,
+    "realAgentStarted": false,
+    "rpcDraftPrerequisiteDoesNotPassUiCreateOrUpdate": true,
+    "cipher": "process-local reversible fixture; no Keychain claim"
+  },
+  "ports": {
+    "zentao": 57132,
+    "smtp": 57133
+  },
+  "pid": 92999,
+  "processIdentity": "92999 92991 Mon Nov  2 01:36:52 2026     /private/tmp/willyou-m11-s7/package-c4-attempt-002/mac-arm64/WillYou.app/Contents/MacOS/WillYou --remote-debugging-address=127.0.0.1 --remote-debugging-port=57471 --inspect=127.0.0.1:0",
+  "installationInitialFocus": [
+    {
+      "pid": 92999,
+      "before": {
+        "focused": false,
+        "visibility": "visible"
+      },
+      "requested": true,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 92999,
+    "checkedInputs": 18
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 92999,
+      "checkedInputs": 18
+    }
+  ],
+  "project": {
+    "id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+    "name": "M11 C4 页面独立验证",
+    "aliases": [],
+    "description": "T31 synthetic sources; no Agent",
+    "rulesPath": null,
+    "configVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1793554480772,
+    "updatedAt": 1793554480772,
+    "dirs": [],
+    "databases": [],
+    "servers": []
+  },
+  "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+  "draftFixture": {
+    "method": "RPC prerequisite only; never counted as UI create/update",
+    "reply": {
+      "schema": "willyou-app-result-v2",
+      "contractMajor": 2,
+      "status": "ok",
+      "capabilityId": "mail.draft.create",
+      "data": {
+        "draft": {
+          "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+          "revision": 1,
+          "state": "draft",
+          "contentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+          "content": {
+            "mode": "new",
+            "sourceMessageRef": null,
+            "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+            "to": [
+              "recipient@example.test"
+            ],
+            "cc": [],
+            "bcc": [],
+            "subject": "M11 C4 page-only synthetic send",
+            "text": {
+              "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+              "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 26
+            },
+            "html": null,
+            "inReplyTo": null,
+            "references": [],
+            "attachmentIds": []
+          },
+          "attachments": [],
+          "activeIntentId": null,
+          "lastExecutionId": null,
+          "sourceTaskId": null,
+          "copiedFromDraftId": null,
+          "createdAt": "2026-11-01T17:34:48.951Z",
+          "updatedAt": "2026-11-01T17:34:48.951Z"
+        }
+      },
+      "source": {
+        "appId": "mail",
+        "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+        "revision": "1",
+        "connections": []
+      },
+      "completeness": {
+        "complete": true,
+        "missing": []
+      },
+      "pagination": null,
+      "resources": [
+        {
+          "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+          "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+          "mediaType": "text/plain;charset=utf-8",
+          "size": 26
+        }
+      ],
+      "operation": {
+        "id": "a5ae0b43-749d-42e3-8dd2-490ffc586824",
+        "requestId": null,
+        "origin": "ui",
+        "effectState": "completed"
+      }
+    }
+  },
+  "resumes": {
+    "priorRoot": "/private/tmp/willyou-m11-c4-page-LhQlhV",
+    "priorResultSha256": "61f91970524ccd9253c1dacc3544daa9a5b9925f78ceeed54605abf57a091896",
+    "onlyRemaining": "Existing original draft UI review/authorize/send/provenance; no new draft and no repeated ZenTao/missing-controls flow"
+  },
+  "draftControls": [
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "aria": "关闭弹窗"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "交给 Agent 继续处理",
+      "aria": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "关闭",
+      "aria": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "审阅发送内容",
+      "aria": null
+    }
+  ],
+  "receipts": [
+    {
+      "name": "mailStatus",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 1,
+          "refresh": true
+        },
+        "4a92f14b-a4c4-43ae-9dd8-1103fca1e85c"
+      ],
+      "at": "2026-11-01T17:36:54.276Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "query": {
+            "items": [
+              {
+                "subject": "C4 synthetic received mail",
+                "from": "sender@example.test",
+                "to": "fixture@example.test",
+                "date": "2026-11-01T17:34:36.000Z",
+                "messageId": "<c4-received@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "487925fd-de06-45e7-99a9-05f090ff4bed",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "9096c38fc59c8af3b83c0c95160b188e55489b1f7cae617515a0385fe4c8b2ce"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 1,
+            "range": {
+              "days": 30,
+              "timeZone": "Asia/Singapore",
+              "startDate": "2026-10-04",
+              "endDate": "2026-11-02",
+              "start": "2026-10-03T16:00:00.000Z",
+              "endExclusive": "2026-11-02T16:00:00.000Z"
+            },
+            "checkedAt": "2026-11-01T17:36:54.648Z",
+            "problems": []
+          },
+          "refresh": {
+            "scanned": 1,
+            "total": 1,
+            "finished": true,
+            "problemCount": 0,
+            "lastSuccessfulRefreshAt": "2026-11-01T17:36:54.648Z"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:54.903Z"
+    },
+    {
+      "name": "drafts",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 50,
+          "cursor": null
+        }
+      ],
+      "at": "2026-11-01T17:36:54.511Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "items": [
+            {
+              "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+              "revision": 1,
+              "state": "draft",
+              "subject": "M11 C4 page-only synthetic send",
+              "attachmentCount": 0,
+              "createdAt": "2026-11-01T17:34:48.951Z",
+              "updatedAt": "2026-11-01T17:34:48.951Z"
+            }
+          ],
+          "nextCursor": null
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:54.578Z"
+    },
+    {
+      "name": "drafts",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 50,
+          "cursor": null
+        }
+      ],
+      "at": "2026-11-01T17:36:55.035Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "items": [
+            {
+              "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+              "revision": 1,
+              "state": "draft",
+              "subject": "M11 C4 page-only synthetic send",
+              "attachmentCount": 0,
+              "createdAt": "2026-11-01T17:34:48.951Z",
+              "updatedAt": "2026-11-01T17:34:48.951Z"
+            }
+          ],
+          "nextCursor": null
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:55.099Z"
+    },
+    {
+      "name": "draft",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+        1
+      ],
+      "at": "2026-11-01T17:36:55.140Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "draft": {
+            "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+              "to": [
+                "recipient@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "M11 C4 page-only synthetic send",
+              "text": {
+                "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+                "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 26
+              },
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T17:34:48.951Z",
+            "updatedAt": "2026-11-01T17:34:48.951Z"
+          },
+          "currentRevision": 1,
+          "sendRecord": null
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:55.231Z"
+    },
+    {
+      "name": "resource",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "resource": {
+            "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+            "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 26
+          },
+          "offset": 0,
+          "length": 65536
+        }
+      ],
+      "at": "2026-11-01T17:36:55.233Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "resourceId": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+          "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+          "offset": 0,
+          "length": 26,
+          "encoding": "utf8",
+          "data": "M11_C4_PAGE_SYNTHETIC_BODY",
+          "nextOffset": null,
+          "eof": true
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:55.281Z"
+    },
+    {
+      "name": "prepareSend",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+          "expectedRevision": 1,
+          "expectedContentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5"
+        }
+      ],
+      "at": "2026-11-01T17:36:55.468Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "intent": {
+            "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+            "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "draftRevision": 1,
+            "state": "awaiting-authorization",
+            "reviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+            "review": {
+              "id": "014f1be8-e6ed-407c-bfd6-14595cc6ab6f",
+              "revision": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+              "mediaType": "application/json",
+              "size": 1238
+            },
+            "authorized": false,
+            "executionId": null,
+            "result": null,
+            "errorCode": null,
+            "createdAt": "2026-11-01T17:36:55.568Z",
+            "updatedAt": "2026-11-01T17:36:55.635Z"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:55.701Z"
+    },
+    {
+      "name": "reviewSend",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "70bab42e-e9ef-44c7-8676-36bbb18577c7"
+      ],
+      "at": "2026-11-01T17:36:55.701Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "intent": {
+            "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+            "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "draftRevision": 1,
+            "state": "awaiting-authorization",
+            "reviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+            "review": {
+              "id": "014f1be8-e6ed-407c-bfd6-14595cc6ab6f",
+              "revision": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+              "mediaType": "application/json",
+              "size": 1238
+            },
+            "authorized": false,
+            "executionId": null,
+            "result": null,
+            "errorCode": null,
+            "createdAt": "2026-11-01T17:36:55.568Z",
+            "updatedAt": "2026-11-01T17:36:55.635Z"
+          },
+          "displayReceiptId": "985504ca-85f6-4591-a0d3-199f922dc936",
+          "review": {
+            "attachments": [],
+            "bindingRevision": 2,
+            "configRevision": 1,
+            "connectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+            "content": {
+              "attachmentIds": [],
+              "bcc": [],
+              "cc": [],
+              "html": null,
+              "inReplyTo": null,
+              "mode": "new",
+              "references": [],
+              "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+              "sourceMessageRef": null,
+              "subject": "M11 C4 page-only synthetic send",
+              "text": "M11_C4_PAGE_SYNTHETIC_BODY",
+              "to": [
+                "recipient@example.test"
+              ]
+            },
+            "draftContentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+            "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "draftRevision": 1,
+            "fromAddress": "fixture@example.test",
+            "frozenHash": "01dede687a190284c81a0adf4d85083f69a849c063eda75e36639a828a2eae7f",
+            "identityHash": "1707ce959942586c04dc6a37e9f9a32cae635c436b600ef97097dd1a1aaeec78",
+            "identityRevision": 1,
+            "intentId": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+            "messageId": "<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>",
+            "policyRevision": 1,
+            "priorUnknownExecutionIds": [],
+            "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+            "rawHash": "904eb72ce617c19a32335008c7ff7c8eb4147db96c63ce48dbe37b65a718d411",
+            "schema": "willyou-mail-send-v1",
+            "smtpConfigHash": "e7b6e79eee787a2634adbe170cf48f3753e39fd3a396d7ccc51a4d74de5eb795",
+            "sourceRunId": null,
+            "sourceTaskId": null
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:55.790Z"
+    },
+    {
+      "name": "authorizeSend",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "intentId": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+          "expectedReviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+          "displayReceiptId": "985504ca-85f6-4591-a0d3-199f922dc936",
+          "reviewedUnknownExecutionIds": []
+        }
+      ],
+      "at": "2026-11-01T17:36:55.976Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "intent": {
+            "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+            "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "draftRevision": 1,
+            "state": "authorized",
+            "reviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+            "review": {
+              "id": "014f1be8-e6ed-407c-bfd6-14595cc6ab6f",
+              "revision": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+              "mediaType": "application/json",
+              "size": 1238
+            },
+            "authorized": true,
+            "executionId": null,
+            "result": null,
+            "errorCode": null,
+            "createdAt": "2026-11-01T17:36:55.568Z",
+            "updatedAt": "2026-11-01T17:36:56.053Z"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:56.129Z"
+    },
+    {
+      "name": "executeSend",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "intentId": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+          "expectedReviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f"
+        }
+      ],
+      "at": "2026-11-01T17:36:56.130Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "intent": {
+            "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+            "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "draftRevision": 1,
+            "state": "server-accepted",
+            "reviewHash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+            "review": {
+              "id": "014f1be8-e6ed-407c-bfd6-14595cc6ab6f",
+              "revision": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+              "mediaType": "application/json",
+              "size": 1238
+            },
+            "authorized": false,
+            "executionId": "298013ca-e70a-4d7b-90a1-537e1f59ded1",
+            "result": {
+              "accepted": [
+                "recipient@example.test"
+              ],
+              "complete": true,
+              "errorCode": null,
+              "messageId": "<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>",
+              "rejected": [],
+              "smtpCode": 250,
+              "state": "server-accepted"
+            },
+            "errorCode": null,
+            "createdAt": "2026-11-01T17:36:55.568Z",
+            "updatedAt": "2026-11-01T17:36:56.297Z"
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:56.362Z"
+    },
+    {
+      "name": "draft",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+        1
+      ],
+      "at": "2026-11-01T17:36:56.362Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "draft": {
+            "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+            "revision": 1,
+            "state": "sent",
+            "contentHash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+              "to": [
+                "recipient@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "M11 C4 page-only synthetic send",
+              "text": {
+                "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+                "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 26
+              },
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": "298013ca-e70a-4d7b-90a1-537e1f59ded1",
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T17:34:48.951Z",
+            "updatedAt": "2026-11-01T17:36:56.297Z"
+          },
+          "currentRevision": 1,
+          "sendRecord": {
+            "item": {
+              "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+              "kind": "send",
+              "appId": "mail",
+              "projectId": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+              "projectName": "M11 C4 页面独立验证",
+              "taskId": null,
+              "taskTitle": null,
+              "runId": null,
+              "jobId": null,
+              "parentOperationId": null,
+              "callerKind": "ui",
+              "action": "mail.send",
+              "semantics": "write",
+              "state": "server-accepted",
+              "attemptCount": 1,
+              "errorCode": null,
+              "effectState": null,
+              "requestId": null,
+              "startedAt": "2026-11-01T17:36:55.568Z",
+              "endedAt": "2026-11-01T17:36:56.297Z",
+              "connections": [
+                {
+                  "id": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+                  "name": "C4 synthetic SMTP"
+                }
+              ],
+              "subjects": [],
+              "send": {
+                "intentId": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+                "draftId": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+                "draftRevision": 1,
+                "executionId": "298013ca-e70a-4d7b-90a1-537e1f59ded1",
+                "state": "server-accepted",
+                "executionState": "server-accepted",
+                "authorizationSource": "renderer-confirmation",
+                "grantState": "used",
+                "updatedAt": "2026-11-01T17:36:56.297Z"
+              }
+            },
+            "send": {
+              "messageId": "<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>",
+              "fromAddress": "fixture@example.test",
+              "draftRevision": 1,
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+                "to": [
+                  "recipient@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "M11 C4 page-only synthetic send",
+                "text": "M11_C4_PAGE_SYNTHETIC_BODY",
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "result": {
+                "state": "server-accepted",
+                "complete": true,
+                "accepted": [
+                  "recipient@example.test"
+                ],
+                "rejected": [],
+                "errorCode": null,
+                "smtpCode": 250,
+                "messageId": "<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>"
+              },
+              "priorUnknownExecutionIds": []
+            }
+          }
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:56.441Z"
+    },
+    {
+      "name": "drafts",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "limit": 50,
+          "cursor": null
+        }
+      ],
+      "at": "2026-11-01T17:36:56.445Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "items": [
+            {
+              "id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+              "revision": 1,
+              "state": "sent",
+              "subject": "M11 C4 page-only synthetic send",
+              "attachmentCount": 0,
+              "createdAt": "2026-11-01T17:34:48.951Z",
+              "updatedAt": "2026-11-01T17:36:56.297Z"
+            }
+          ],
+          "nextCursor": null
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:56.502Z"
+    },
+    {
+      "name": "resource",
+      "args": [
+        "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        {
+          "resource": {
+            "id": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+            "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 26
+          },
+          "offset": 0,
+          "length": 65536
+        }
+      ],
+      "at": "2026-11-01T17:36:56.502Z",
+      "reply": {
+        "ok": true,
+        "value": {
+          "resourceId": "1686e85e-bdbb-4b16-bca0-df90c027bc0d",
+          "revision": "469aa7dce163a42faf2710779bb6f72d7c59383b7b4daf32e253e22441b69edd",
+          "offset": 0,
+          "length": 26,
+          "encoding": "utf8",
+          "data": "M11_C4_PAGE_SYNTHETIC_BODY",
+          "nextOffset": null,
+          "eof": true
+        }
+      },
+      "returnedAt": "2026-11-01T17:36:56.550Z"
+    }
+  ],
+  "db": {
+    "file": "/private/tmp/willyou-m11-c4-page-LhQlhV/userdata/smartdd.db",
+    "counts": {
+      "tasks": 0,
+      "capability_runs": 0,
+      "mail_drafts": 1,
+      "mail_send_intents": 1
+    },
+    "operations": [
+      {
+        "operation_id": "f7b363f5-bd70-42ca-b6bf-982755e203ee",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.add",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "c7838d63-afb8-4a90-af34-87ac7433f4c0",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.add",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "294754ec-31b4-4271-8c89-7c17927c4ff4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.test",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "cf481313-37dd-40ab-82f4-ef962bcf0b77",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.save",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "c472dcff-848d-4aef-bafa-296e40194c12",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.test",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "40518135-ec72-4d24-aabf-6cee0f3311e4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.save",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "93da931c-8054-4d88-a35d-3ad07cabe323",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.test",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "18f39f6f-01cf-4b1c-90fb-fdfa418b8d60",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.save",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "dfa7626c-7990-46fe-adf2-253547526607",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "8d0389a1-8c43-4605-aae7-ac2ccf12ed1f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b618e4e1-0c9f-4c43-a535-e87438fcbef2",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "19c9905b-363c-40b3-b1ec-24a9cf9a1a53",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "d54992e0-e68a-4ddb-a156-df950af29ae4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "9d25dfd3-643b-443c-9c02-ec5b9ced115e",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "48726db0-db41-48c0-9835-ac3fb90d0714",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3008b363-a40c-44e3-a4b5-a2e63ee77838",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.select",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e1a1b0bf-7221-43cd-95af-fb7f46d54bcc",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f86c6cc5-49cc-4cc3-97db-30518d935b4f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "06a51e57-b774-428b-bbca-734678cc796a",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "04f28e5c-2528-48fe-90ed-3dd7df2eac6b",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "48528348-36a4-447f-a0f6-f07ed0166bfd",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e017f6ff-d134-4adc-9b1a-a832609f2de5",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "58e9a9df-39c0-434f-8f4e-ffa01112b092",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b16966b6-d2a0-44c0-9d4c-bea68e28c159",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f0b5eb87-00f0-4bb9-96c6-7efa3add595f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a1c027de-0bfb-4cad-bb0f-7c1c61784967",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5e2f60d6-db37-4c43-8152-cea066dcc40e",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3df03564-bab7-475c-88ec-8b6bb833eaba",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f9ea600d-fd7e-402e-b40d-f949152aeb2d",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "42582785-91d5-41f6-87e6-08382b4534ee",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "d1f01cb7-8434-4eeb-a14c-5c5e6f6e49cd",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.select",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "0a39174e-60bb-491e-8c3f-5fa2bbf77eb3",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "9a5fe470-a678-449a-8cd4-0b1114146bae",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "89d37fce-0e3a-43df-b9f1-bbf7195725e5",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "8e07c884-0081-4c08-8d9e-115aeee2d8f7",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "6a5bf005-5e3c-449f-9a20-c0a283f936c8",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "1677b616-5bbb-4ae0-a12f-5c1dfa04e9d3",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3b5b26f4-d7f2-4342-8240-8e41a6d82a40",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b5ef4227-3e15-4897-be7d-a9b281a28ef3",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "88cf035e-1d72-4dc0-8bbc-676369a84600",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "7f36e9e7-f85c-47e4-b30d-ced54737c110",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "ca6b7a2c-066e-4711-9192-ddb84941c08a",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e9c7ad9f-9b42-49b0-b7eb-1e072b84554f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f7809119-7813-4802-a789-8b144bfc8043",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "042ee639-5fec-4071-98ac-9d303dafff2d",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5bff4692-0b54-4754-96c7-ed5f1cdb61dc",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.select",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "dcc3bef5-9cc7-46a5-9a50-83108bab08ac",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b89524c3-2bdf-4c46-88e5-adb58970b1b9",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "128fe057-df37-4191-9a1b-e6bafc8cdb75",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "82f55fe1-ec7a-4c5a-9884-76841332f51c",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "45180dfb-317d-4098-8bf2-b46e85e5482b",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "37924b86-d9a2-4a30-baee-dc329e1edea2",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "938e5490-bf97-4b71-aa33-ebd10c5d04ce",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "8e543372-c772-4783-8b25-d09e2900d821",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "67b8b0d6-2c84-4118-9267-392c9fee7ed9",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "c24afff2-d038-437c-99ab-ae230fdb915c",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "cd3a5fc1-46a6-47c0-afa9-ef55149b76a3",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "da563263-74bc-4eac-8292-a99fba891f31",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "0ee60c79-b46e-4de4-b1c7-c291415becc4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a808835c-8f13-451e-85bf-fbc8eb2706ed",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "09960735-8d5a-4980-8562-3459012871b7",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.select",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a00ee918-d563-405c-ae87-74217fe87618",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "719bea82-f0ec-4302-9656-901a2b1d0b66",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "51212d10-1390-4634-aafb-b8e1b70eff04",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a86413b3-4868-4877-adfe-cde8a69b1717",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "87727fbc-b948-4100-9214-0c15f055755c",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3dd49de1-2caa-40e1-85a3-5dc67fa1cb84",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "6290c135-ebe4-49e4-a456-931d7d263dab",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f3ec5ee8-f68b-4c6d-a0f0-e5c36b98c2cd",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a0a319f2-1fc5-4cf1-bfc4-fdb376e41419",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e9fbf67e-bedc-411f-8445-da65c4751e2f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5b72247f-0a2b-461c-8b36-fd58e5a43bdb",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "d8678f66-f9c5-40ef-adb2-1802992326e4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e4d06674-b94b-4de4-b4c6-d171351087b0",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "9cc2dab4-d9f0-480c-a61f-1890393a6488",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "9356dea4-6939-4c7d-9d1d-cea0836eb479",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.select",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "1d9144fb-8fd7-4afa-b6e2-7513217db307",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "6dc8b1dc-0a9d-4d1f-b682-e24d800333f4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "207298d1-e054-45cf-9489-7f64a80285d7",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "54376495-6ffd-425a-af6d-bd3a0183ec1c",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "101ac9c0-daf7-4114-8738-5faecbe8077c",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5c166552-5bb2-46d2-9b0f-d8484e16f40b",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "8043e830-6f08-41df-8a0b-6edd544092f9",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "91ae46e3-82b0-486c-8b8d-b3acd45073c7",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "633c8017-1961-49d1-a110-a3d7a3567770",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a0da5b4e-70f2-4df2-9945-2347b869b97f",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "52f564a3-f8a1-405b-b95f-7510d4557797",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "c0e067fd-f1b2-4991-9ff7-da42b6ee80ee",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "d30ab7b3-7d64-4cc1-8b96-46e50df613a5",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "sample-kv",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b43ef93a-cced-4545-b266-34cee7e71112",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "7471bbc1-0509-4aba-9b5a-c216b55a2449",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "ui.zentao.work",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "0cfd4839-5126-4c8f-bb37-9e9c70592b7e",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "f97f001b-7317-4b9b-aaaf-adf9bd24a94d",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "cb756382-769a-4868-bfe7-1a04f1e783e1",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "cc38cb30-48d7-4a06-bf19-814aa0d3aeb3",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "ui.zentao.object",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "1f893a1f-aa34-41c5-9f40-d60535461daa",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "ui.zentao.resource",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "21faa725-6699-40b3-9551-51e232f376e2",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "zentao",
+        "action": "ui.zentao.resource",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "9609c523-cce5-4e86-8e0f-55a2a41086dc",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "21c762eb-0e8d-48e6-9259-186484ffd0fb",
+        "caller_kind": "index-job",
+        "scope_kind": "internal-index",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": "21c762eb-0e8d-48e6-9259-186484ffd0fb",
+        "parent_operation_id": "9609c523-cce5-4e86-8e0f-55a2a41086dc",
+        "app_id": "mail",
+        "action": "mail.refresh",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "7bcdfd94-d181-4ae4-9e60-1f84d60897e4",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.cache.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "74db1b77-18aa-4f62-87af-b4ea6a705e2a",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "090b1b62-7b77-45f1-a7d3-319bfc01b740",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "b3c62693-7b3a-434e-bfb2-5bf5db694bf5",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a5ae0b43-749d-42e3-8dd2-490ffc586824",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.capability.invoke",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "09327c6f-90ec-4143-800b-cdbed4d8125b",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "6f571922-aa44-4eb8-83f1-746bbae74bf5",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "427c214c-b324-4613-9c8b-c3213f64b743",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "0984a4bd-8351-49af-aef3-06dd9218744c",
+        "caller_kind": "index-job",
+        "scope_kind": "internal-index",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": "0984a4bd-8351-49af-aef3-06dd9218744c",
+        "parent_operation_id": "427c214c-b324-4613-9c8b-c3213f64b743",
+        "app_id": "mail",
+        "action": "mail.refresh",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "c2f7df8f-0acd-4ac9-9a79-c865a050fd81",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.cache.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "af7c9822-f2fc-4dfa-ae8f-ffc1a133802e",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "11daf9ac-c9c1-438d-bc8d-65a055773103",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5c846b6f-08d8-41e9-ac19-b60c574725cb",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "894e148c-5cff-45ff-b72c-ffd80ba23e31",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "1d8d90e2-fcd0-4dba-844c-28eb275da9af",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "dfea382b-43ce-443c-b974-c17de88312d3",
+        "caller_kind": "index-job",
+        "scope_kind": "internal-index",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": "dfea382b-43ce-443c-b974-c17de88312d3",
+        "parent_operation_id": "1d8d90e2-fcd0-4dba-844c-28eb275da9af",
+        "app_id": "mail",
+        "action": "mail.refresh",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e1164ac9-32bd-4d5e-9143-cc618b508aa8",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.cache.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "84f03937-5efd-4af3-a17e-9620cd586262",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "88af3d68-c2fd-4914-8e6b-83b63942feae",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3ee0a92f-d8cb-4c63-a0e5-3f42bb82cfb6",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.project.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "8cb3dc55-0ad1-490a-8044-1f4009e457e7",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "connection.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "370e17c3-520b-4512-a1f5-a92afbc3962b",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "5827037d-17d6-40b6-9d58-83461be67bd1",
+        "caller_kind": "index-job",
+        "scope_kind": "internal-index",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": "5827037d-17d6-40b6-9d58-83461be67bd1",
+        "parent_operation_id": "370e17c3-520b-4512-a1f5-a92afbc3962b",
+        "app_id": "mail",
+        "action": "mail.refresh",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "6acedb3a-f368-4c7b-b7b0-a9680a6e0146",
+        "caller_kind": "ui",
+        "scope_kind": "connection-management",
+        "project_id": null,
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "application.cache.status",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "d9fe186d-539c-4489-a15b-0d1fa6cd0b0f",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3f166f53-e21b-438e-9cbe-8774c4dc0291",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "4d0705ab-d5bf-490b-a384-96a7a3f2482b",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.get",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3ff35a1e-9f38-4a99-aa31-0853d51293a7",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.resource.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "06b74403-e8b0-4b44-8c36-a701b33d8905",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.send.prepare",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "fa869804-557b-44e8-872a-87d345f37b2e",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.send.review",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "a83e5c70-4f64-49fb-90a9-33649b4a79cd",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.send.authorize",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "3eff59de-c7b0-47e3-92b8-3326aa9294fe",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.send.execute",
+        "semantics": "write",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "e3a88b70-c194-414a-b56b-a25bb701cbcf",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.get",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "91f81fc4-fdc8-4ef6-a586-49f927f81a13",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.draft.list",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      },
+      {
+        "operation_id": "2c793909-c0ab-4aa6-b1fe-544d4b2e0591",
+        "caller_kind": "ui",
+        "scope_kind": "project",
+        "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+        "task_id": null,
+        "run_id": null,
+        "job_id": null,
+        "parent_operation_id": null,
+        "app_id": "mail",
+        "action": "ui.mail.resource.read",
+        "semantics": "read",
+        "state": "succeeded",
+        "error_code": null
+      }
+    ],
+    "mailSendTables": [
+      "mail_send_intents",
+      "mail_send_grants",
+      "mail_send_executions",
+      "mail_sender_confirmations"
+    ],
+    "sends": {
+      "mail_send_intents": [
+        {
+          "id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+          "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "source_task_id": null,
+          "source_run_id": null,
+          "operation_id": "06b74403-e8b0-4b44-8c36-a701b33d8905",
+          "request_hash": "7e20a88e33e6d38cfada263745b522c93697d4d952faa2f298c584af8d020598",
+          "draft_id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+          "draft_revision": 1,
+          "draft_content_hash": "c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5",
+          "connection_id": "694abfb7-e7c5-47f5-8400-a8535ba121f0",
+          "identity_revision": 1,
+          "config_revision": 1,
+          "policy_revision": 1,
+          "binding_revision": 2,
+          "identity_json": "{\"accountId\":\"fixture@example.test\",\"contractMajor\":1,\"providerId\":\"smtp\",\"serviceId\":\"smtp://127.0.0.1:57133\"}",
+          "smtp_config_json": "{\"authMode\":\"password\",\"fromAddress\":\"fixture@example.test\",\"host\":\"127.0.0.1\",\"kind\":\"smtp\",\"mode\":\"plain\",\"port\":57133,\"username\":\"fixture@example.test\"}",
+          "raw_write_id": "d6144c2d-bd0a-4f51-b4e8-faa2542d2fa5",
+          "raw_object_id": "4c2e8318-970b-4950-bafa-87389deff237",
+          "raw_hash": "904eb72ce617c19a32335008c7ff7c8eb4147db96c63ce48dbe37b65a718d411",
+          "frozen_hash": "01dede687a190284c81a0adf4d85083f69a849c063eda75e36639a828a2eae7f",
+          "envelope_json": "{\"from\":\"fixture@example.test\",\"to\":[\"recipient@example.test\"]}",
+          "message_id": "<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>",
+          "review_json": "{\"attachments\":[],\"bindingRevision\":2,\"configRevision\":1,\"connectionId\":\"694abfb7-e7c5-47f5-8400-a8535ba121f0\",\"content\":{\"attachmentIds\":[],\"bcc\":[],\"cc\":[],\"html\":null,\"inReplyTo\":null,\"mode\":\"new\",\"references\":[],\"senderConnectionId\":\"694abfb7-e7c5-47f5-8400-a8535ba121f0\",\"sourceMessageRef\":null,\"subject\":\"M11 C4 page-only synthetic send\",\"text\":\"M11_C4_PAGE_SYNTHETIC_BODY\",\"to\":[\"recipient@example.test\"]},\"draftContentHash\":\"c5a811d24f720fb6f411816da8afcac61097a1d3b2bbb77faf6ebf7df95562b5\",\"draftId\":\"2d5822cd-1d43-48f4-83fb-f0c847c447a3\",\"draftRevision\":1,\"fromAddress\":\"fixture@example.test\",\"frozenHash\":\"01dede687a190284c81a0adf4d85083f69a849c063eda75e36639a828a2eae7f\",\"identityHash\":\"1707ce959942586c04dc6a37e9f9a32cae635c436b600ef97097dd1a1aaeec78\",\"identityRevision\":1,\"intentId\":\"70bab42e-e9ef-44c7-8676-36bbb18577c7\",\"messageId\":\"<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>\",\"policyRevision\":1,\"priorUnknownExecutionIds\":[],\"projectId\":\"81c330f7-2e2a-481a-8ca9-9a22ebeb6438\",\"rawHash\":\"904eb72ce617c19a32335008c7ff7c8eb4147db96c63ce48dbe37b65a718d411\",\"schema\":\"willyou-mail-send-v1\",\"smtpConfigHash\":\"e7b6e79eee787a2634adbe170cf48f3753e39fd3a396d7ccc51a4d74de5eb795\",\"sourceRunId\":null,\"sourceTaskId\":null}",
+          "review_hash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+          "state": "server-accepted",
+          "grant_id": "defe298a-30a9-4554-acb3-b11e67370e6c",
+          "execution_id": "298013ca-e70a-4d7b-90a1-537e1f59ded1",
+          "cancel_requested_at": null,
+          "owner_instance_id": "bbdf941b-f1f8-4d6b-b250-225042a1528c",
+          "owner_pid": 92999,
+          "owner_started_at": "darwin-proc-v1:1793554612:399079",
+          "error_code": null,
+          "created_at": "2026-11-01T17:36:55.568Z",
+          "updated_at": "2026-11-01T17:36:56.297Z",
+          "sender_identity_hash": "80c85413e49c80d01d37fcc0544dcc90b21915e5e49fd59ffc7fe47d91df2388"
+        }
+      ],
+      "mail_send_grants": [
+        {
+          "id": "defe298a-30a9-4554-acb3-b11e67370e6c",
+          "intent_id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+          "source": "renderer-confirmation",
+          "evidence_id": "55180d2f-2c55-4fa4-92cc-16b213aad25c",
+          "evidence_hash": "d1ee57463e35cbb75adc8b43886134db160961226461280685771e164565abdc",
+          "review_hash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+          "evidence_json": "{\"createdAt\":\"2026-11-01T17:36:56.028Z\",\"expiresAt\":\"2026-11-01T17:46:56.028Z\",\"id\":\"55180d2f-2c55-4fa4-92cc-16b213aad25c\",\"intentId\":\"70bab42e-e9ef-44c7-8676-36bbb18577c7\",\"projectId\":\"81c330f7-2e2a-481a-8ca9-9a22ebeb6438\",\"reviewHash\":\"de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f\",\"reviewedUnknownExecutionIds\":[],\"runId\":null,\"source\":\"renderer-confirmation\",\"sourceHash\":\"a84c90e49630b3d991aa4c81b1dfc6345b9ca4a343c2f12c1688b70f6c521a01\",\"taskId\":null}",
+          "state": "used",
+          "expires_at": "2026-11-01T17:46:56.028Z",
+          "created_at": "2026-11-01T17:36:56.053Z"
+        }
+      ],
+      "mail_send_executions": [
+        {
+          "id": "298013ca-e70a-4d7b-90a1-537e1f59ded1",
+          "intent_id": "70bab42e-e9ef-44c7-8676-36bbb18577c7",
+          "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "draft_id": "2d5822cd-1d43-48f4-83fb-f0c847c447a3",
+          "draft_revision": 1,
+          "review_hash": "de5d24a836ac54b342ae380adfeff8fa52dc4e9f463f3285979acb5b8d7cd38f",
+          "state": "server-accepted",
+          "result_json": "{\"accepted\":[\"recipient@example.test\"],\"complete\":true,\"errorCode\":null,\"messageId\":\"<wy-70bab42e-e9ef-44c7-8676-36bbb18577c7@willyou.local>\",\"rejected\":[],\"smtpCode\":250,\"state\":\"server-accepted\"}",
+          "secret_revision": 1,
+          "owner_instance_id": "bbdf941b-f1f8-4d6b-b250-225042a1528c",
+          "started_at": "2026-11-01T17:36:56.239Z",
+          "ended_at": "2026-11-01T17:36:56.297Z"
+        }
+      ],
+      "mail_sender_confirmations": [
+        {
+          "project_id": "81c330f7-2e2a-481a-8ca9-9a22ebeb6438",
+          "binding_hash": "b90122e3f604747508072aa5b588e504c43c47df843575fd2ebaeae4960be0a4",
+          "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"487925fd-de06-45e7-99a9-05f090ff4bed\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"81c330f7-2e2a-481a-8ca9-9a22ebeb6438\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"694abfb7-e7c5-47f5-8400-a8535ba121f0\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":1}}",
+          "method": "automatic",
+          "receipt_id": "314d71a2-f43d-45f7-ba1d-885041b4584f",
+          "sender_id": null,
+          "confirmed_at": "2026-11-01T17:34:45.815Z",
+          "record_hash": "1d1b29f4da32b00b75d54a84cb79ae23b81c7ac1701b92483254e9c220f8a0bc"
+        }
+      ]
+    }
+  },
+  "afterSource": {
+    "messages.db": "b5cf304b51a47114c8a66e427ec99409d92c6ede5be57ebaf023931669a7bfde",
+    "Mail/Inbox/1.mail": "9096c38fc59c8af3b83c0c95160b188e55489b1f7cae617515a0385fe4c8b2ce"
+  },
+  "httpCalls": [],
+  "smtp": {
+    "connections": 1,
+    "auth": 1,
+    "dataAttempts": 1,
+    "messages": [
+      {
+        "sha256": "904eb72ce617c19a32335008c7ff7c8eb4147db96c63ce48dbe37b65a718d411",
+        "bytes": 329,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "M11 C4 page-only synthetic send",
+        "text": "M11_C4_PAGE_SYNTHETIC_BODY",
+        "acceptedAt": "2026-11-01T17:36:56.265Z"
+      }
+    ],
+    "errors": []
+  },
+  "finishedAt": "2026-11-01T17:36:56.800Z",
+  "stage": "provenance",
+  "beforeSource": {
+    "messages.db": "b5cf304b51a47114c8a66e427ec99409d92c6ede5be57ebaf023931669a7bfde",
+    "Mail/Inbox/1.mail": "9096c38fc59c8af3b83c0c95160b188e55489b1f7cae617515a0385fe4c8b2ce"
+  },
+  "asarAfterSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d"
+}

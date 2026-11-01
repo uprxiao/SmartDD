@@ -20,10 +20,10 @@ const root=await mkdtemp('/private/tmp/willyou-m11-s4-native-');
 const home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
 assert(executable&&cli,'Set WILLYOU_ACCEPTANCE_APP and WILLYOU_CODEX_CLI to this private package and isolated Codex executable');
-const appRoot=resolve(dirname(executable),'../..');assert(appRoot.startsWith('/private/tmp/willyou-m11-s4/'));assert(/^[a-f0-9]{64}$/.test(process.env.WILLYOU_TEST_SOURCE_MANIFEST_SHA??''));
+const appRoot=resolve(dirname(executable),'../..');assert(/^\/private\/tmp\/willyou-m11-s[47]\//.test(appRoot));assert(/^[a-f0-9]{64}$/.test(process.env.WILLYOU_TEST_SOURCE_MANIFEST_SHA??''));
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const marker='M11_S4_NATIVE_READ_'+root.split('-').at(-1);
-const result={schema:'m11-s4-packaged-native-read-v1',startedAt:new Date().toISOString(),root,userData,home,state,cwd,
+const result={schema:'m11-s4-packaged-native-read-v2',startedAt:new Date().toISOString(),root,userData,home,state,cwd,
  branch:execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim(),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),sourceDirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),
  app:appRoot,asarSha256:sha(await readFile(join(appRoot,'Contents/Resources/app.asar'))),
  layer:'A: real packaged App composer -> actual Codex CLI -> real M11 v2 MCP capability returning the unified result -> actual session diagnostics; model response is private synthetic fixture, no real model or external send',
@@ -40,7 +40,9 @@ let stage='setup',app,task,project,profile;
 const sockets=new Set();
 const progress=async()=>{const value={at:new Date().toISOString(),stage,root,pid:app?.processId,taskId:task?.id,requests:result.requests.length};await writeFile(join(root,'progress.json'),JSON.stringify(value,null,2)+'\n');console.log(JSON.stringify(value));};
 const checked=(name,details={})=>{result.checks.push({name,at:new Date().toISOString(),passed:true,...details});};
-const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{bytes+=b.length;if(bytes>4*1024*1024)req.destroy();else chunks.push(b);});req.on('end',()=>{
+const shellQuote=value=>"'"+value.replaceAll("'","'\\''")+"'";
+async function readRunPlan(){return poll(async()=>app.mainEvaluate(`(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json');const DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData,'smartdd.db'))},{readonly:true});try{const row=db.prepare("SELECT plan_json FROM capability_resource_operations WHERE kind='application-run-plan' ORDER BY created_at DESC LIMIT 1").get();return row?JSON.parse(row.plan_json):null}finally{db.close()}})()`),15000);}
+const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{bytes+=b.length;if(bytes>4*1024*1024)req.destroy();else chunks.push(b);});req.on('end',async()=>{
  if(!req.url?.endsWith('/responses')){res.writeHead(404);res.end('{}');return;}
  let body;try{body=JSON.parse(Buffer.concat(chunks).toString())}catch{res.writeHead(400);res.end('{}');return;}
  if(body.tools?.some(x=>(x.name??'').startsWith('mcp__wy_')))writeFile(join(root,'native-tool-definitions.json'),JSON.stringify(body.tools.filter(x=>(x.name??'').startsWith('mcp__wy_')),null,2)+'\n').catch(()=>{});
@@ -50,7 +52,19 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
   requestBytes:bytes,sha256:sha(raw),userSkillMarkerPresent:raw.includes('m11-owned-config'),
   toolNames:(body.tools??[]).map(x=>x.name??x.type),response:text};result.requests.push(item);console.log(JSON.stringify({request:item.kind,model:item.model,tools:item.toolNames}));
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
+ if(taskRequest&&!result.issuedSkill){
+  try{
+   result.runPlan=await readRunPlan();assert.equal(result.runPlan.applications.find(a=>a.appId==='mail').effectiveEntry,'mcp');
+   const entry=result.runPlan.skills.find(v=>v.appId==='mail');assert(entry);const path=join(home,'.agents/skills',entry.nativeName,'SKILL.md');
+   const tools=(body.tools??[]).flatMap(t=>t.type==='namespace'?(t.tools??[]).map(v=>({...v,namespace:t.name})):[t]);const exec=tools.find(t=>t.name==='exec_command');assert(exec);
+   const call={type:'function_call',id:'fc_m11_local_skill',call_id:'call_m11_local_skill',name:exec.name,...(exec.namespace?{namespace:exec.namespace}:{}),arguments:JSON.stringify({cmd:'/bin/cat '+shellQuote(path),max_output_tokens:12000,yield_time_ms:10000}),status:'completed'};
+   result.issuedSkill={...call,path,fixture:'synthetic model chooses actual native file read'};
+   const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
+   send('response.created',{response:{id:'resp_m11_skill',object:'response',created_at:Math.floor(Date.now()/1000),status:'in_progress',output:[]}});send('response.output_item.added',{output_index:0,item:{...call,status:'in_progress',arguments:''}});send('response.function_call_arguments.delta',{item_id:call.id,output_index:0,delta:call.arguments});send('response.function_call_arguments.done',{item_id:call.id,output_index:0,arguments:call.arguments});send('response.output_item.done',{output_index:0,item:call});send('response.completed',{response:{id:'resp_m11_skill',object:'response',created_at:Math.floor(Date.now()/1000),status:'completed',model:body.model,output:[call],usage:{input_tokens:1,output_tokens:1,total_tokens:2}}});res.end();return;
+  }catch(error){result.fixtureFailure={code:'MAIL_SKILL_PRECONDITION',message:String(error)};res.end();return;}
+ }
  if(taskRequest&&!result.issuedTool){
+  result.skillOutput=(body.input??[]).filter(v=>v.call_id==='call_m11_local_skill');
   const ns=(body.tools??[]).find(x=>x.type==='namespace'&&(x.tools??[]).some(t=>t.name==='smartdd_mail_draft_list_v2'));
   writeFileSync(join(root,'actual-native-tools.json'),JSON.stringify(body.tools??[],null,2)+'\n');
   if(!ns){result.fixtureFailure={code:'MCP_TOOL_MISSING',message:'Actual native request is missing the declared Mail read tool'};res.end();return;}
@@ -104,7 +118,7 @@ try{
  stage='composer';await progress();const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,15000);await app.evaluate(`document.title='A · M11 S0b · Codex 0.166.0 只读回归';true`);
  await app.waitFor(`document.querySelector('[data-testid=home-project]')?.textContent.includes('M11 原生 CLI 隔离项目')&&document.querySelector('[data-testid=home-profile]')?.textContent.includes('M11 私有 Codex')`,15000);
  await app.evaluate(`window.__m5={output:{},exits:{}};window.electronAPI.eventOn('pty:data',e=>{window.__m5.output[e.ptyId]=(window.__m5.output[e.ptyId]||'')+e.data});window.electronAPI.eventOn('pty:exit',e=>{window.__m5.exits[e.ptyId]=e.code});true`);
- const prompt=marker+': Read the current project local draft list exactly once using its declared MCP tool. Do not create, update, send or delete anything. Return '+marker+'_DONE when finished.';
+ const prompt=marker+': Read the current project mail Skill, then read the local draft list exactly once using its declared MCP tool. Do not create, update, send or delete anything. Return '+marker+'_DONE when finished.';
  stage='waiting-initial-foreground';await progress();await focusNewInstalledWindow(app,userData,result);installAppFocusGuard(app,result);
  await click('[data-testid=home-input]');await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text:prompt});assert.equal(await app.evaluate(`document.querySelector('[data-testid=home-input]').value`),prompt);
  await app.screenshot(join(root,'composer.png'));const before=await app.invoke('tasks.list',{includeArchived:true});assert.equal(before.length,0);
@@ -112,7 +126,7 @@ try{
  task=await poll(async()=>{const list=await app.invoke('tasks.list',{includeArchived:true});return list.length===1?list[0]:null;},20000);result.taskId=task.id;
  checked('Real composer input and button created exactly one new Task',{taskId:task.id});
  stage='native-task-response';await progress();
- await poll(async()=>{const current=await app.invoke('tasks.get',task.id);task=current;const out=current.ptyId?await app.output(current.ptyId):'';await writeFile(join(root,'terminal-current.txt'),out);await writeFile(join(root,'task-current.json'),JSON.stringify(current,null,2)+'\n');const done=result.requests.some(r=>r.kind==='ui-task')&&out.includes(marker+'_DONE');return done;},45000);
+ await poll(async()=>{const current=await app.invoke('tasks.get',task.id);task=current;const out=current.ptyId?await app.output(current.ptyId):'';await writeFile(join(root,'terminal-current.txt'),out);await writeFile(join(root,'task-current.json'),JSON.stringify(current,null,2)+'\n');const done=result.requests.some(r=>r.kind==='ui-task')&&result.nativeToolOutputs?.length===1;return done;},45000);
  const requests=result.requests.filter(r=>r.kind==='ui-task');assert(requests.length>0);assert(requests.every(r=>r.model==='m11-ui-profile-model'&&!r.userSkillMarkerPresent));
  checked('Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array',{requestCount:requests.length});
  stage='session-diagnostics';await progress();const session=await app.invoke('applications.session',task.id);assert(session.ok,session.message);result.session=session.value;result.finalTask=await app.invoke('tasks.get',task.id);assert(result.finalTask.ptyId);
@@ -122,8 +136,8 @@ try{
  const output=result.nativeToolOutputs[0].output;const value=JSON.parse(output.slice(output.indexOf('{')));assert.equal(value.schema,'willyou-app-result-v2');assert.equal(value.capabilityId,'mail.draft.list');assert.equal(value.contractMajor,2);assert.deepEqual(value.data,{items:[],nextCursor:null});assert.equal(value.operation.origin,'mcp');assert.equal(value.operation.effectState,'read-only');assert.deepEqual(value.source.connections,[]);result.actualCapabilityResult=value;
  const usage=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.some(a=>a.appId==='mail'&&a.evidence.successfulToolRequests>=1)?d.value:null;});result.sessionAfterTool=usage;
  assert.equal(usage.currentRun.preparation.cliVersion,'0.166.0');
- for(const a of usage.applications){assert.equal(a.evidence.skillRead,'unverified');assert.equal(a.evidence.skillDiscovery,'unverified');}
- checked('Actual Codex 0.166.0 called the v2 read-only MCP capability; no draft or SMTP write; L2 evidence stayed unverified');
+ const evidence=await poll(async()=>{const d=await app.invoke('applications.session',task.id);const a=d.ok&&d.value.applications.find(v=>v.appId==='mail');return a&&a.evidence.skillRead==='verified'&&a.evidence.skillDiscovery==='verified'?a.evidence:null;},30000);result.skillEvidence=evidence;assert.match(JSON.stringify(result.skillOutput),/smartdd_mail_draft_list_v2/);assert.doesNotMatch(JSON.stringify(result.skillOutput),/willyou-app mail/);assert.equal(result.runPlan.applications.find(a=>a.appId==='mail').effectiveEntry,'mcp');
+ checked('Actual Codex read the matching delivered mail Skill (native L2 discovery/read), then called the v2 MCP capability through real host permissions/operation audit; no CLI prerequisite or SMTP write');
  const baseAfter=await readFile(join(state,'config.toml'),'utf8'),profileAfter=await readFile(join(state,'m11-native.config.toml'),'utf8');
  const business=bytes=>{const value=parseToml(bytes);delete value.tui;delete value.notice;return value;};
  assert.deepEqual(business(baseAfter),business(config));assert.deepEqual(business(profileAfter),business(profileText));

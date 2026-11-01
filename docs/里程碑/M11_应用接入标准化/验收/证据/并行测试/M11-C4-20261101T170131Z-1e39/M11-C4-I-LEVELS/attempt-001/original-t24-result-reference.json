@@ -1,0 +1,208 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "groupId": "M11-C1-I-LEVELS",
+  "caseId": "M11-T24",
+  "attempt": "attempt-001",
+  "status": "passed-I-recommended-for-coordinator-review",
+  "requiredLayers": "I",
+  "executedLayers": "I",
+  "source": {
+    "sourceCommit": "6c255b1437b283864e8a4bec5ccb7dcbfc6cb135",
+    "baselineManifestSha256": "7290ed6d86d3ecdfe6393a56e38bd9327f8f8e264bb5359ca12b63d0f694c5a9",
+    "platform": "macOS 26.6.1",
+    "arch": "arm64",
+    "electron": "42.11.14",
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "outIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+    "layer": "I only: actual TaskService, registered immutable Agent adapter bundles/CJS planner, session projection, invocation service and diagnostics; harmless version scripts/Fake PTY/kernel process fixtures. No real native Agent/UI/model."
+  },
+  "startedAt": "2026-11-01T15:56:05.463000+00:00",
+  "finishedAt": "2026-11-01T15:57:07.483393+00:00",
+  "command": "pnpm test src/main/core/applications/__tests__/m11-t24-adapter-levels.test.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=delivery-t24/attempt-001/vitest-result.json",
+  "exitCode": 0,
+  "softwareResults": {
+    "passed": 2,
+    "failed": 0,
+    "filtered": 0
+  },
+  "wholeCasePassRecommendation": 1,
+  "formalLedgerUpdatedByExecutor": false,
+  "usedEvidence": {
+    "prior": "T16 production TaskService/ManagedTaskCapabilities fixture composition and explicit own-resource cleanup reused as source; no prior test count added",
+    "new": "Both required adapters actually selected from the real indexed distribution, verified and loaded, with generated plan argv present in own Fake PTY launches. Real MCP-entry invocation service calls and diagnostics exercised."
+  },
+  "criteria": [
+    {
+      "criterion": "Load a declared L0-L3 Codex adapter and a test adapter implementing L0+L1",
+      "status": "passed",
+      "actual": "Control is the unmodified retained Codex adapter1.0.0 for native0.162.1; production registry retains its verified L0.skill/L0.mcp/L1/L2/L3 declaration (metadata intentionally preserved). Test adapter9.0.0 for native0.166.0 explicitly declares only L0.skill/L0.mcp/L1 and unsupported CLI; index and bundle hashes fixed. Both are installed through real indexed bundle initialization and selected by actual TaskService."
+    },
+    {
+      "criterion": "Verify Skill delivery and callable capabilities for both adapters",
+      "status": "passed",
+      "actual": "Actual pure CJS planners loaded, final argv verified against each own Fake PTY launch. Both delivered current mail1.1.0 SOP from its original package/content identity, without template placeholders. Same ApplicationToolService and trusted business module returned v2 draft-list success, source app/package identity and MCP read-only operation."
+    },
+    {
+      "criterion": "Diagnostics truthfully mark unimplemented L2/L3 unverified",
+      "status": "passed",
+      "actual": "Control diagnostic shows L2/L3 declared and nativeSendEvidence=true as its existing retained version declaration. Minimal test adapter shows L0.skill/L0.mcp/L1 declared, L0.cli/L2/L3 unverified and nativeSendEvidence=false. Neither run fabricates Skill discovery/read observations; both show one successful tool request."
+    },
+    {
+      "criterion": "No application package or core capability-service changes",
+      "status": "passed",
+      "actual": "Same mail package selected; manifest canonical hash and every package-file digest unchanged across real invocation/diagnostic. All original frozen tracked inputs unchanged apart from expected private Vitest cacheDir; entire prepared out byte tree matches baseline."
+    }
+  ],
+  "actualAdapters": [
+    {
+      "mode": "minimal-fixture",
+      "nativeVersion": "0.166.0",
+      "metadata": {
+        "schema": "willyou-agent-adapter-v1",
+        "agentId": "codex",
+        "version": "9.0.0",
+        "entry": "index.cjs",
+        "projectionFormatVersion": 1,
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "cliVersions": [
+          "0.166.0"
+        ],
+        "bridgeRecovery": "unverified",
+        "evidenceBaseline": "M11 T24 private registered L0+L1 fixture; no L2/L3 evidence methods or CLI delivery",
+        "cliEntry": "unsupported",
+        "levels": {
+          "0.166.0": [
+            "L0.skill",
+            "L0.mcp",
+            "L1"
+          ]
+        }
+      },
+      "hash": "b023640651d4472b4de4f287d653908e2cc2970232c0986b086c9231d211fdf2",
+      "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+      "diagnostic": {
+        "cliVersion": "0.166.0",
+        "verified": true,
+        "nativeSendEvidence": false,
+        "sandboxSource": "unchanged-user-policy",
+        "levels": [
+          {
+            "level": "L0.skill",
+            "state": "declared"
+          },
+          {
+            "level": "L0.mcp",
+            "state": "declared"
+          },
+          {
+            "level": "L0.cli",
+            "state": "unverified"
+          },
+          {
+            "level": "L1",
+            "state": "declared"
+          },
+          {
+            "level": "L2",
+            "state": "unverified"
+          },
+          {
+            "level": "L3",
+            "state": "unverified"
+          }
+        ],
+        "applications": [
+          {
+            "appId": "mail",
+            "primaryEntry": "mcp",
+            "effectiveEntry": "mcp",
+            "fallback": false,
+            "reason": null
+          }
+        ]
+      },
+      "callStatus": "ok"
+    },
+    {
+      "mode": "retained-full",
+      "nativeVersion": "0.162.1",
+      "metadata": {
+        "schema": "willyou-agent-adapter-v1",
+        "agentId": "codex",
+        "version": "1.0.0",
+        "entry": "index.cjs",
+        "projectionFormatVersion": 1,
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "cliVersions": [
+          "0.162.1"
+        ],
+        "bridgeRecovery": "unverified",
+        "evidenceBaseline": "M10 runtime-preflight-20261019; new production integration acceptance still required"
+      },
+      "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+      "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+      "diagnostic": {
+        "cliVersion": "0.162.1",
+        "verified": true,
+        "nativeSendEvidence": true,
+        "sandboxSource": "unchanged-user-policy",
+        "levels": [
+          {
+            "level": "L0.skill",
+            "state": "declared"
+          },
+          {
+            "level": "L0.mcp",
+            "state": "declared"
+          },
+          {
+            "level": "L0.cli",
+            "state": "unverified"
+          },
+          {
+            "level": "L1",
+            "state": "declared"
+          },
+          {
+            "level": "L2",
+            "state": "declared"
+          },
+          {
+            "level": "L3",
+            "state": "declared"
+          }
+        ],
+        "applications": [
+          {
+            "appId": "mail",
+            "primaryEntry": "mcp",
+            "effectiveEntry": "mcp",
+            "fallback": false,
+            "reason": null
+          }
+        ]
+      },
+      "callStatus": "ok"
+    }
+  ],
+  "testFixtureRegistration": "Private copied bundle distribution adds codex9.0.0 only, generated from existing1.3.0 planner with version stamp9.0.0 and reduced explicit metadata levels. No parser/authorization/business stubs added and no existing production files modified. No L2/L3 evidence method registered.",
+  "limits": [
+    "Only I-layer approved scripted fixtures; no actual Codex0.162.1/Claude/third Agent binary executed.",
+    "The retained full-grade control tests declaration/loading/calling/diagnostic, not a new L3 parser proof or real send. Current production0.166.0 L3 remains undeclared/closed.",
+    "No App/UI/native sandbox or kernel-peer acceptance claim."
+  ],
+  "failures": [],
+  "efficiency": {
+    "validSoftwareScenarios": 2,
+    "selectedExecutions": 2,
+    "builds": 0,
+    "retries": 0,
+    "UIResourcesAcquired": false
+  },
+  "cleanup": "All own TaskService/broker/CLI listeners disposed, Fake PTYs0, fixture bridge errors[], private roots deleted; test/typecheck handles exited."
+}

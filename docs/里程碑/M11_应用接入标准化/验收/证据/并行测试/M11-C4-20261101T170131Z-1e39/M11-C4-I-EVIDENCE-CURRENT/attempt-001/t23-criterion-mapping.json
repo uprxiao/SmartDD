@@ -1,0 +1,173 @@
+{
+  "caseId": "M11-T23",
+  "requiredLayer": "I",
+  "originalContract": "original-t23-t27-contract.md",
+  "status": "I-criteria-supported-for-coordinator-review",
+  "recommendation": "Retained prior-behavior assertions plus directly affected current tests and same-production-input packaged0.166 proof support T23 I. Coordinator decides final phase/package prerequisites and whole-case accounting.",
+  "criteria": [
+    {
+      "id": "lifecycle",
+      "criterion": "0.166.0迁移前后运行器生命周期保持既有行为",
+      "status": "supported",
+      "actual": "C2 lifecycle58 preserves built-in lifecycle facts, fixed-registry delegation, state-root precedence, Codex ID discovery/resume --cd and exact-owned stop. C3 effective265 covers new/resume/history/fork/stop. Current App0.166 creates one real Task via composer and executes native session.",
+      "evidence": [
+        "references/c2-lifecycle/lifecycle-result.json",
+        "references/c3-launcher-final/effective-software-cases.json",
+        "references/c4-app-base/result.json"
+      ],
+      "exactSupportingTests": [
+        "RunnerAdapter contract built-in adapters keep their prior lifecycle facts",
+        "RunnerAdapter contract keeps state-root precedence and implicit native defaults explicit in the adapters",
+        "delegates session strategy, launch arguments, state root and recovery to its fixed runner registry",
+        "TaskService.closeSession waits for this exact PTY, preserves both records and project, and reopens normally",
+        "Codex discovers the session id once Codex writes its rollout, then resumes with --cd",
+        "Codex a Codex task that never got a message starts fresh without the old first message"
+      ]
+    },
+    {
+      "id": "load-plan",
+      "criterion": "0.166.0版本匹配、固定资源及加载计划",
+      "status": "supported",
+      "actual": "C3 S0b selects version-matched0.166 adapter; fixed CJS adapter30 verifies plans, projections, version/platform rejection and immutable bindings. Current native0.166 App fixes adapter1.3.0 hash765fdc8b... and CLI entry; C4 B2 reran affected CLI plan/fallback.",
+      "evidence": [
+        "references/c3-launcher-original/agent-adapters-result.json",
+        "references/c3-launcher-final/effective-software-cases.json",
+        "references/c4-b2/b2-result-001.json",
+        "references/c4-app-base/result.json"
+      ],
+      "exactSupportingTests": [
+        "M11 S5 CLI delivery through the production task entry fixes a CLI plan, publishes the matching Skill and supplies an environment-only token that dies at stop",
+        "M11 S5 CLI delivery through the production task entry uses the declared MCP fallback without a token or policy injection when effective sandbox is unverified",
+        "M11 S5 CLI delivery through the production task entry permanently rejects the old token after project authorization changes even if the selection is restored",
+        "M11 S4 data-only Mail v2 through the production task composition creates a schema-3 task with a fixed plan and renders the exact delivered Skill bytes",
+        "production ManagedTaskCapabilities composed with actual TaskService and local services M11 S0b selects the version-matched Codex adapter for a new 0.166.0 task and keeps native evidence unverified"
+      ]
+    },
+    {
+      "id": "skill-delivery",
+      "criterion": "Skill投放与原应用身份/内容规则一致",
+      "status": "supported",
+      "actual": "C3 S4 checks fixed schema3 plan/exact rendered bytes; S5 matching CLI Skill. Current actual native Codex reads delivered bug-analysis Skill with per-run names/rendered hashes, preserving user-disabled Skill configuration. Current T24 two scenarios also verify unchanged same-package SOP identity.",
+      "evidence": [
+        "references/c3-launcher-final/effective-software-cases.json",
+        "references/c4-app-base/result.json"
+      ],
+      "supplementaryT24SealedSibling": {
+        "path": "levels-current/delivery/attempt-001/result.json",
+        "manifestSha256": "32a84f675ff1ffaa6750217b55c40e5888c3af2266549b40b5ce8c865aaeb10a"
+      }
+    },
+    {
+      "id": "entry-l0-l1",
+      "criterion": "L0/L1及MCP/CLI入口和调用身份保持既有行为",
+      "status": "supported",
+      "actual": "C3 effective launcher265/adapters30 preserve fixed entry/Skill/token/scope/revocation/MCP fallback. Later D05/probe changes covered by C4 B2 CLI/fallback and App8 actual native CLI/kernel-peer/provider chain. Sealed App99 group6 supplements unknown-version degradation.",
+      "evidence": [
+        "references/c3-launcher-final/result.json",
+        "references/c4-b2/b2-result-001.json",
+        "references/c4-app-base/result.json",
+        "references/c4-app-unknown/result.json"
+      ]
+    },
+    {
+      "id": "l2",
+      "criterion": "0.166.0夹具与负例支持后才启用L2发现/读取",
+      "status": "supported",
+      "actual": "Current actual Codex-format positive yields one read/discovery under shared strict contract; original17 negative scenarios have valid retained mappings. Byte-identical NativeUserMessages/shared validator retains direct62 regression. Current actual Codex0.166 App discovers both Skills and reads bug-analysis with run/call/record identity. App aggregate SkillRead remains unverified because story-review was not read.",
+      "evidence": [
+        "001-positive-formats.json",
+        "t27-all-original-scenarios.json",
+        "references/c3-strict-retest/selfcheck-attempt-002-direct-regression-vitest.json",
+        "references/c4-app-base/result.json"
+      ],
+      "observed": {
+        "skillDiscovery": "verified",
+        "skillRead": "unverified",
+        "toolRequests": 1,
+        "successfulToolRequests": 1,
+        "latestToolAt": "2026-11-01T17:23:07.882Z",
+        "latestErrorCode": null,
+        "latestEffectState": "read-only",
+        "latestAttemptCount": 1,
+        "skillReadObservations": [
+          {
+            "skillId": "bug-analysis",
+            "observedAt": "2026-11-01T17:23:07.782Z",
+            "callId": "call_m11_cli_0",
+            "recordHash": "cc4868c9db8a58c136ce025a90f8ac6a469041383ca2cc8b71726515662e1dff",
+            "runId": "6fec4be0-c848-4e39-a73a-d8f72ccc067c"
+          }
+        ],
+        "skillDiscoveryObservations": [
+          {
+            "skillId": "bug-analysis",
+            "observedAt": "2026-11-01T17:23:07.623Z",
+            "callId": "catalog:17b6cc07eaca77806de6fea1aafb2bb8c82471271102491a82f2f1f612e5db86",
+            "recordHash": "17b6cc07eaca77806de6fea1aafb2bb8c82471271102491a82f2f1f612e5db86",
+            "runId": "6fec4be0-c848-4e39-a73a-d8f72ccc067c"
+          },
+          {
+            "skillId": "story-review",
+            "observedAt": "2026-11-01T17:23:07.623Z",
+            "callId": "catalog:17b6cc07eaca77806de6fea1aafb2bb8c82471271102491a82f2f1f612e5db86",
+            "recordHash": "17b6cc07eaca77806de6fea1aafb2bb8c82471271102491a82f2f1f612e5db86",
+            "runId": "6fec4be0-c848-4e39-a73a-d8f72ccc067c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "l3",
+      "criterion": "L3只可在0.166夹具与负例充分证明后启用，否则失败即关闭",
+      "status": "supported-conservative-closed",
+      "actual": "T27 explicit I-only level callback tests real receipt/proof/verify/claim without version promotion. C3 self-check cannot promote L3 even when user-message parsing succeeds. Current native0.166 packaged plan/UI keeps L3 unverified and chat-native sending closed with page authorization. Conditional enabling requirement is met by retaining L3 closed; no successful native authorization/send inferred.",
+      "evidence": [
+        "001-positive-formats.json",
+        "references/c3-strict-retest/result.json",
+        "references/c4-app-base/result.json"
+      ],
+      "currentDeclaredLevels": [
+        {
+          "level": "L0.skill",
+          "state": "declared"
+        },
+        {
+          "level": "L0.mcp",
+          "state": "declared"
+        },
+        {
+          "level": "L0.cli",
+          "state": "declared"
+        },
+        {
+          "level": "L1",
+          "state": "declared"
+        },
+        {
+          "level": "L2",
+          "state": "declared"
+        },
+        {
+          "level": "L3",
+          "state": "unverified"
+        }
+      ]
+    }
+  ],
+  "sourceApplicability": {
+    "inputCount": 1229,
+    "matched": 1229,
+    "mismatches": [],
+    "productionManifestSha256": "882554ceb464efd6b62c6028a2464ab9fce20aa2cdd6e452fcab322da3db8acb",
+    "asarSha256": "e19be13c4d2944d761d93ba8744997cbc90c9a87041ac99e668b99d006c13b8d"
+  },
+  "sourceDeltaBasis": "c3-integration-to-c4-input-delta.json; later valid CLI/probe branches rerun in C4 B2 and native App, unknown gate checked by App99. Generic host/parser/strict validator matches retained sources byte-for-byte.",
+  "uncoveredOriginalICriteria": [],
+  "limits": [
+    "No new old/new packaged-binary A/B run; migration parity comes from preserved prior-behavior assertions, fixed-registry/CJS tests and current native chain.",
+    "Story-review read stays unverified. No claim that all application Skills were read.",
+    "L3 remains intentionally disabled. No actual native chat send, real external model/send or other formal case completion claimed.",
+    "Final S10/S11/package prerequisites and whole-case count belong to coordinator."
+  ],
+  "formalWholeCasesAddedByExecutor": 0
+}
