@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
 import { assertHostCompatible, canonicalJson, digest, parsePackageManifest, validatePackageBundle, type ApplicationBundle, type ValidatedPackageBundle,type ApplicationModuleCatalog } from './manifest';
-import {applicationToolDeclarations} from '@shared/application-capabilities';
+import {applicationInvocationDeclarations} from '@shared/application-capabilities';
 import {builtinApplicationModules} from './modules';
 import { verifyPackageTree, writePackageTree } from './package-files';
 import { withResourceLock } from './resource-lock';
@@ -34,7 +34,7 @@ export class PackageRegistry {
     return (this.store.sqlite.prepare('SELECT package_hash AS packageHash,activation_generation AS generation FROM capability_active_packages WHERE app_id=?').get(appId) as { packageHash: string; generation: number } | undefined) ?? null;
   }
   private storeContracts(bundle: ValidatedPackageBundle): void {
-    for (const tool of applicationToolDeclarations(bundle.manifest)) {
+    for (const tool of [...applicationInvocationDeclarations(bundle.manifest,'mcp'),...applicationInvocationDeclarations(bundle.manifest,'cli')]) {
       const input = bundle.files[tool.inputSchemaPath].toString('utf8'), output = bundle.files[tool.outputSchemaPath].toString('utf8');
       const old = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(bundle.packageHash,tool.name) as { input_source: string;output_source: string } | undefined;
       if (old && (old.input_source !== input || old.output_source !== output)) throw new ApplicationError('HASH_MISMATCH','固定工具契约记录已改变，不能静默覆盖');
@@ -43,7 +43,7 @@ export class PackageRegistry {
   }
   /** Retained exact source text is independently bound to the original manifest file hashes. */
   toolContractSources(hash: string,toolName: string): { input: string;output: string } {
-    const application = this.get(hash), tool = applicationToolDeclarations(application.manifest).find(t => t.name === toolName);
+    const application = this.get(hash), tool = [...applicationInvocationDeclarations(application.manifest,'mcp'),...applicationInvocationDeclarations(application.manifest,'cli')].find(t => t.name === toolName);
     const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
     if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
     for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');

@@ -124,6 +124,15 @@ export function applicationToolDeclarations(manifest:ApplicationPackageManifest)
     return[{name:binding.tool,contractMajor:capability.contractMajor,permission:capability.permission,inputSchemaPath:capability.inputSchemaPath,outputSchemaPath:capability.outputSchemaPath,annotations:{readOnlyHint:capability.semantics==='read',destructiveHint:capability.semantics==='external-write',idempotentHint:capability.semantics==='read',openWorldHint:true}}];
   });
 }
+/** CLI invocation identities are capability IDs; they cannot alias native MCP tool names. */
+export function applicationInvocationDeclarations(manifest:ApplicationPackageManifest,entry:ApplicationEntry):ApplicationManifestV1['tools']{
+  if(entry==='mcp')return applicationToolDeclarations(manifest);
+  if(manifest.schema==='smartdd-app-package-v1')return[];
+  return manifest.capabilities.flatMap(capability=>{
+    if(!capability.binding.cli&&!(capability.binding.fallback&&'cli'in capability.binding.fallback))return[];
+    return[{name:capability.id,contractMajor:capability.contractMajor,permission:capability.permission,inputSchemaPath:capability.inputSchemaPath,outputSchemaPath:capability.outputSchemaPath,annotations:{readOnlyHint:capability.semantics==='read',destructiveHint:capability.semantics==='external-write',idempotentHint:capability.semantics==='read',openWorldHint:true}}];
+  });
+}
 
 export interface LegacyCapabilityPolicy {
   id: string; semantics: ApplicationCapability['semantics']; retry: ApplicationCapability['retry'];

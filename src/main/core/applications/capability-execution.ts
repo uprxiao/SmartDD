@@ -30,14 +30,14 @@ export class ApplicationCapabilityExecution {
   }
   forMethod(binding:Readonly<ApplicationDataBinding>,method:string,contractMajor:number):ApplicationCapability{
     const application=this.packages.assertTrusted(binding.packageHash);
-    const capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(c.binding.mcp?.tool===binding.toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===binding.toolName));
+    const capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(binding.entry==='cli'?c.id===binding.toolName:c.binding.mcp?.tool===binding.toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===binding.toolName));
     if(application.appId!==binding.appId||!capability||capability.permission!==binding.permission||this.modules.capability(binding.appId,capability.id,contractMajor).method!==method)throw new ApplicationError('SCOPE_DENIED','固定Data API路由不能替换业务能力');
     return this.declaration(binding.packageHash,capability.id,contractMajor);
   }
-  tool(packageHash:string,toolName:string,contractMajor:number){
-    const application=this.packages.assertTrusted(packageHash),capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(c.binding.mcp?.tool===toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===toolName));
+  tool(packageHash:string,toolName:string,contractMajor:number,entry:'mcp'|'cli'='mcp'){
+    const application=this.packages.assertTrusted(packageHash),capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(entry==='cli'?c.id===toolName&&(!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback):c.binding.mcp?.tool===toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===toolName));
     if(!capability)throw new ApplicationError('SCOPE_DENIED','固定应用没有此MCP能力');
-    return{capability,method:this.modules.capability(application.appId,capability.id,contractMajor).method,binding:{packageHash,appId:application.appId,toolName,permission:capability.permission}};
+    return{capability,method:this.modules.capability(application.appId,capability.id,contractMajor).method,binding:{packageHash,appId:application.appId,toolName,permission:capability.permission,...(entry==='cli'?{entry}:{})}};
   }
   /** UI follows the current fixed package contract; callers still enter the same authenticated executor. */
   async forUi(context:ApplicationExecutionContext,capabilityId:string,args:unknown):Promise<unknown>{
@@ -62,7 +62,7 @@ export class ApplicationCapabilityExecution {
     const capability=this.declaration(context.packageHash,capabilityId,contractMajor);
     this.contexts.require(context,capability.permission);
     if(!capability.id.startsWith(context.appId+'.')||capability.semantics!=='read'&&(context.semantics!=='write'||caller.kind==='internal'))throw new ApplicationError('SCOPE_DENIED','本次调用上下文未授权该业务动作');
-    if(caller.kind==='agent'&&capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');
+    if(caller.kind==='agent'&&(caller.entry==='cli'?capability.id!==context.action:capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action)))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');
     if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');
     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
     return this.contexts.withSignal(context,signal,async()=>{

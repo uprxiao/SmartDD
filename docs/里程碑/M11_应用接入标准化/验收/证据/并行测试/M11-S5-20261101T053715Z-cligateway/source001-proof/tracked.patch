@@ -1,0 +1,300 @@
+diff --git a/scripts/applications/build.mjs b/scripts/applications/build.mjs
+index a2b41df70..bc1f7079c 100644
+--- a/scripts/applications/build.mjs
++++ b/scripts/applications/build.mjs
+@@ -13,4 +13,10 @@ export function buildProcessIdentity({ output = resolve('out/native/willyou-proc
+   execFileSync('xcrun', ['clang++', '-std=c++17', '-O2', '-mmacosx-version-min=12.0', '-arch', process.arch === 'arm64' ? 'arm64' : 'x86_64', 'native/applications/process-identity.cc', '-o', output], { stdio: 'inherit' });
+   return output;
+ }
++export function buildApplicationCli({output=resolve('out/native/willyou-app')}={}){
++  if(process.platform!=='darwin')return null;
++  mkdirSync(resolve(output,'..'),{recursive:true});
++  execFileSync('xcrun',['clang++','-std=c++17','-fobjc-arc','-O2','-mmacosx-version-min=12.0','-arch',process.arch==='arm64'?'arm64':'x86_64','-framework','Foundation','native/applications/cli.mm','-o',output],{stdio:'inherit'});
++  return output;
++}
+ if (process.argv[1] === new URL(import.meta.url).pathname) { buildFoxmailReader(); buildProcessIdentity(); }
+diff --git a/src/main/core/applications/application-adapter-registry.ts b/src/main/core/applications/application-adapter-registry.ts
+index dd914b00f..eee230e6e 100644
+--- a/src/main/core/applications/application-adapter-registry.ts
++++ b/src/main/core/applications/application-adapter-registry.ts
+@@ -11,6 +11,7 @@ import { RuntimeRegistry } from './runtime-registry';
+ import type { ResourceStore } from './resource-store';
+ import type { ApplicationToolHost, HostToolOperation } from './tool-service';
+ import type {ApplicationHostCatalog} from './host-application-registry';
++import type {ApplicationEntry} from '@shared/application-capabilities';
+ 
+ const descriptor = z.object({
+   method: z.string().regex(/^[a-z][a-z0-9-]*\.[a-z][a-z0-9.-]*$/).max(128),
+@@ -24,11 +25,11 @@ interface FixedApplicationAdapter {
+   operations: Record<string,Descriptor>;
+   execute(name: string,input: Record<string,unknown>,data: { v1: { invoke(method: string,input: Record<string,unknown>): Promise<unknown> } }): Promise<unknown>;
+ }
+-export interface ApplicationDataBinding { packageHash: string;appId: string;toolName: string;permission: string }
++export interface ApplicationDataBinding { packageHash: string;appId: string;toolName: string;permission: string;entry?:ApplicationEntry }
+ /** Implemented by host services; a package never receives SQLite, a secret or an arbitrary RPC method. */
+ export interface ApplicationDataHost {
+   resolve(version: 1,method: string,binding: Readonly<ApplicationDataBinding>): HostToolOperation;
+-  resolveCapability?(packageHash:string,toolName:string,contractMajor:number):HostToolOperation;
++  resolveCapability?(packageHash:string,toolName:string,contractMajor:number,entry?:ApplicationEntry):HostToolOperation;
+ }
+ 
+ /** Executes only indexed built-ins, by the session's original hash. This is not a third-party-code sandbox. */
+@@ -88,13 +89,14 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
+     return {application,adapter};
+   }
+ 
+-  resolve(packageHash: string,toolName: string,contractMajor: number): HostToolOperation {
++  resolve(packageHash: string,toolName: string,contractMajor: number,entry:ApplicationEntry='mcp'): HostToolOperation {
+     const installed=this.builtin.assertTrusted(packageHash);
+     if(installed.manifest.schema==='smartdd-app-package-v2'){
+       assertHostCompatible(installed.manifest);this.runtimes.verify(installed.manifest.runtime.hash,installed.manifest.runtime);
+       if(!this.data.resolveCapability)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
+-      return this.data.resolveCapability(packageHash,toolName,contractMajor);
++      return this.data.resolveCapability(packageHash,toolName,contractMajor,entry);
+     }
++    if(entry!=='mcp')throw new ApplicationError('ENTRY_NOT_ACTIVE','旧版本应用仅保留原MCP入口');
+     const {application,adapter} = this.load(packageHash);
+     const tool = application.manifest.tools.find(t => t.name === toolName && t.contractMajor === contractMajor);
+     const route = adapter.operations[toolName];
+diff --git a/src/main/core/applications/business-data-service.ts b/src/main/core/applications/business-data-service.ts
+index 75b3c088c..9d493a907 100644
+--- a/src/main/core/applications/business-data-service.ts
++++ b/src/main/core/applications/business-data-service.ts
+@@ -51,9 +51,9 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+       return contexts.withAgent(run,binding,operation,handler.semantics,context=>execution.execute(contexts.caller(context),capability.id,operation.contractMajor,args,operation.signal));
+     }} satisfies ReturnType<ApplicationDataHost['resolve']>;
+   }
+-  resolveCapability(packageHash:string,toolName:string,contractMajor:number){
++  resolveCapability(packageHash:string,toolName:string,contractMajor:number,entry:'mcp'|'cli'='mcp'){
+     if(!this.capabilities)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
+-    const route=this.capabilities.tool(packageHash,toolName,contractMajor);return this.resolve(1,route.method,route.binding);
++    const route=this.capabilities.tool(packageHash,toolName,contractMajor,entry);return this.resolve(1,route.method,route.binding);
+   }
+   execute(context:ApplicationExecutionContext,method:string,input:unknown){
+     const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);
+diff --git a/src/main/core/applications/capability-execution.ts b/src/main/core/applications/capability-execution.ts
+index 960c24fc8..8f4c9b68d 100644
+--- a/src/main/core/applications/capability-execution.ts
++++ b/src/main/core/applications/capability-execution.ts
+@@ -30,14 +30,14 @@ export class ApplicationCapabilityExecution {
+   }
+   forMethod(binding:Readonly<ApplicationDataBinding>,method:string,contractMajor:number):ApplicationCapability{
+     const application=this.packages.assertTrusted(binding.packageHash);
+-    const capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(c.binding.mcp?.tool===binding.toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===binding.toolName));
++    const capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(binding.entry==='cli'?c.id===binding.toolName:c.binding.mcp?.tool===binding.toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===binding.toolName));
+     if(application.appId!==binding.appId||!capability||capability.permission!==binding.permission||this.modules.capability(binding.appId,capability.id,contractMajor).method!==method)throw new ApplicationError('SCOPE_DENIED','固定Data API路由不能替换业务能力');
+     return this.declaration(binding.packageHash,capability.id,contractMajor);
+   }
+-  tool(packageHash:string,toolName:string,contractMajor:number){
+-    const application=this.packages.assertTrusted(packageHash),capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(c.binding.mcp?.tool===toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===toolName));
++  tool(packageHash:string,toolName:string,contractMajor:number,entry:'mcp'|'cli'='mcp'){
++    const application=this.packages.assertTrusted(packageHash),capability=this.modules.capabilityViews(application.manifest).find(c=>c.contractMajor===contractMajor&&(entry==='cli'?c.id===toolName&&(!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback):c.binding.mcp?.tool===toolName||c.binding.fallback&&'mcp'in c.binding.fallback&&c.binding.fallback.mcp.tool===toolName));
+     if(!capability)throw new ApplicationError('SCOPE_DENIED','固定应用没有此MCP能力');
+-    return{capability,method:this.modules.capability(application.appId,capability.id,contractMajor).method,binding:{packageHash,appId:application.appId,toolName,permission:capability.permission}};
++    return{capability,method:this.modules.capability(application.appId,capability.id,contractMajor).method,binding:{packageHash,appId:application.appId,toolName,permission:capability.permission,...(entry==='cli'?{entry}:{})}};
+   }
+   /** UI follows the current fixed package contract; callers still enter the same authenticated executor. */
+   async forUi(context:ApplicationExecutionContext,capabilityId:string,args:unknown):Promise<unknown>{
+@@ -62,7 +62,7 @@ export class ApplicationCapabilityExecution {
+     const capability=this.declaration(context.packageHash,capabilityId,contractMajor);
+     this.contexts.require(context,capability.permission);
+     if(!capability.id.startsWith(context.appId+'.')||capability.semantics!=='read'&&(context.semantics!=='write'||caller.kind==='internal'))throw new ApplicationError('SCOPE_DENIED','本次调用上下文未授权该业务动作');
+-    if(caller.kind==='agent'&&capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');
++    if(caller.kind==='agent'&&(caller.entry==='cli'?capability.id!==context.action:capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action)))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');
+     if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');
+     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
+     return this.contexts.withSignal(context,signal,async()=>{
+diff --git a/src/main/core/applications/execution-context.ts b/src/main/core/applications/execution-context.ts
+index 53b32a24c..4f43aeb32 100644
+--- a/src/main/core/applications/execution-context.ts
++++ b/src/main/core/applications/execution-context.ts
+@@ -265,12 +265,15 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
+   }
+   withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+     const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
+-    if(known.plan){const allowed=known.plan.allowed.find(c=>c.mcpTool===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定工具不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,'mcp');}
+-    if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selected.toolContractMajors[binding.toolName]!==operation.contractMajor||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
++    const entry=binding.entry??'mcp';
++    if(known.plan){const allowed=known.plan.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定能力不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,entry);}
++    else if(entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
++    const selectedMajor=entry==='cli'&&known.snapshot.schema===3?known.snapshot.packages.find(p=>p.packageHash===binding.packageHash)?.capabilityContractMajors[binding.toolName]:entry==='mcp'?selected?.toolContractMajors[binding.toolName]:undefined;
++    if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selectedMajor!==operation.contractMajor||(operation.entry??'mcp')!==entry||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
+     const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);
+     const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
+     return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
+-      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry:'mcp',requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
++      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry,requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
+       return work(context);
+     },false);
+   }
+diff --git a/src/main/core/applications/package-registry.ts b/src/main/core/applications/package-registry.ts
+index 9695d8caf..c8c2cb9ea 100644
+--- a/src/main/core/applications/package-registry.ts
++++ b/src/main/core/applications/package-registry.ts
+@@ -3,7 +3,7 @@ import { join } from 'node:path';
+ import type Database from 'better-sqlite3';
+ import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
+ import { assertHostCompatible, canonicalJson, digest, parsePackageManifest, validatePackageBundle, type ApplicationBundle, type ValidatedPackageBundle,type ApplicationModuleCatalog } from './manifest';
+-import {applicationToolDeclarations} from '@shared/application-capabilities';
++import {applicationInvocationDeclarations} from '@shared/application-capabilities';
+ import {builtinApplicationModules} from './modules';
+ import { verifyPackageTree, writePackageTree } from './package-files';
+ import { withResourceLock } from './resource-lock';
+@@ -34,7 +34,7 @@ export class PackageRegistry {
+     return (this.store.sqlite.prepare('SELECT package_hash AS packageHash,activation_generation AS generation FROM capability_active_packages WHERE app_id=?').get(appId) as { packageHash: string; generation: number } | undefined) ?? null;
+   }
+   private storeContracts(bundle: ValidatedPackageBundle): void {
+-    for (const tool of applicationToolDeclarations(bundle.manifest)) {
++    for (const tool of [...applicationInvocationDeclarations(bundle.manifest,'mcp'),...applicationInvocationDeclarations(bundle.manifest,'cli')]) {
+       const input = bundle.files[tool.inputSchemaPath].toString('utf8'), output = bundle.files[tool.outputSchemaPath].toString('utf8');
+       const old = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(bundle.packageHash,tool.name) as { input_source: string;output_source: string } | undefined;
+       if (old && (old.input_source !== input || old.output_source !== output)) throw new ApplicationError('HASH_MISMATCH','固定工具契约记录已改变，不能静默覆盖');
+@@ -43,7 +43,7 @@ export class PackageRegistry {
+   }
+   /** Retained exact source text is independently bound to the original manifest file hashes. */
+   toolContractSources(hash: string,toolName: string): { input: string;output: string } {
+-    const application = this.get(hash), tool = applicationToolDeclarations(application.manifest).find(t => t.name === toolName);
++    const application = this.get(hash), tool = [...applicationInvocationDeclarations(application.manifest,'mcp'),...applicationInvocationDeclarations(application.manifest,'cli')].find(t => t.name === toolName);
+     const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
+     if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
+     for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');
+diff --git a/src/main/core/applications/tool-service.ts b/src/main/core/applications/tool-service.ts
+index a577a335e..78d417923 100644
+--- a/src/main/core/applications/tool-service.ts
++++ b/src/main/core/applications/tool-service.ts
+@@ -1,4 +1,5 @@
+-import {applicationToolDeclarations} from '@shared/application-capabilities';
++import {applicationInvocationDeclarations,type ApplicationEntry} from '@shared/application-capabilities';
++import {cliInvocationCallSchema} from '@shared/application-cli';
+ import {assertRunApplication} from './application-run-scope';
+ import {applicationConnectionNotice} from './application-run-policy';
+ import { randomUUID } from 'node:crypto';
+@@ -19,7 +20,7 @@ import type { CapabilityRunRegistry, RunContext } from './run-registry';
+ import {requirePlanEntry} from './run-plan';
+ /** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
+ const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
+-export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null }
++export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null;entry?:ApplicationEntry }
+ export interface HostToolOperation {
+   semantics: 'read' | 'write';
+   /** Only a trusted read executor may request transient transport/source retries; annotations alone never authorize them. */
+@@ -30,7 +31,7 @@ export interface HostToolOperation {
+   execute(context: RunContext,args: Record<string,unknown>,operation: ApplicationOperationContext): Promise<unknown>;
+ }
+ export interface ApplicationToolHost {
+-  resolve(packageHash: string,toolName: string,contractMajor: number): HostToolOperation;
++  resolve(packageHash: string,toolName: string,contractMajor: number,entry?:ApplicationEntry): HostToolOperation;
+ }
+ interface InvocationRow { operation_id: string;request_hash: string;state: 'running' | 'succeeded' | 'failed' | 'unknown';attempt_count: number;effect_state: BridgeFailure['effectState'];error_code: string | null }
+ interface SelectedTool { application: InstalledApplicationPackage;declaration: ApplicationManifest['tools'][number];tool: BridgeTool }
+@@ -45,7 +46,14 @@ export class ApplicationToolService {
+   private readonly pending = new Map<string,{ hash: string;work: Promise<BridgeResponse> }>();
+   private readonly cache = new Map<string,{ hash: string;response: BridgeResponse;bytes: number }>();
+   private cacheBytes = 0;
+-  constructor(readonly store: ResourceStore,private readonly runs: CapabilityRunRegistry,private readonly host: ApplicationToolHost,private readonly options: { retryDelays?: readonly number[];now?: () => number } = {}) { this.packages = new PackageRegistry(store,'tool-reader'); }
++  constructor(readonly store: ResourceStore,private readonly runs: CapabilityRunRegistry,private readonly host: ApplicationToolHost,private readonly options: { retryDelays?: readonly number[];now?: () => number;entry?:ApplicationEntry } = {}) { this.packages = new PackageRegistry(store,'tool-reader'); }
++  private get entry():ApplicationEntry{return this.options.entry??'mcp';}
++  get invocationEntry():ApplicationEntry{return this.entry;}
++  private handler(hash:string,operation:string,major:number){return this.entry==='cli'?this.host.resolve(hash,operation,major,'cli'):this.host.resolve(hash,operation,major);}
++  private snapshotContracts(context:RunContext){
++    if(this.entry==='cli')return context.snapshot.schema===3?context.snapshot.packages.map(selection=>({selection,contracts:selection.capabilityContractMajors})):[];
++    return context.snapshot.packages.map(selection=>({selection,contracts:selection.toolContractMajors}));
++  }
+   private clock(): number { return this.options.now?.() ?? Date.now(); }
+   private schema(source: string): { type: 'object';[key: string]: unknown } {
+     const raw = Buffer.from(source,'utf8');
+@@ -55,11 +63,12 @@ export class ApplicationToolService {
+     return json as { type: 'object';[key: string]: unknown };
+   }
+   private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true): SelectedTool {
+-    const selected = context.snapshot.packages.find(p => Object.hasOwn(p.toolContractMajors,call.operation));
+-    if (!selected || selected.toolContractMajors[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该工具契约');
++    const record=this.snapshotContracts(context).find(p=>Object.hasOwn(p.contracts,call.operation)),selected=record?.selection;
++    if (!selected || record?.contracts[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
+     assertRunApplication(context,selected.appId);
+-    if(context.plan){const allowed=context.plan.allowed.find(c=>c.mcpTool===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','工具不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,'mcp');}
+-    const application = this.packages.get(selected.packageHash), declaration = applicationToolDeclarations(application.manifest).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
++    if(context.plan){const allowed=context.plan.allowed.find(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','能力不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,this.entry);}
++    else if(this.entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
++    const application = this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
+     if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
+     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
+     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
+@@ -72,12 +81,12 @@ export class ApplicationToolService {
+   async list(runId: string): Promise<{ tools: BridgeTool[];unavailable: { appId: string;code: string }[] }> {
+     return this.runs.withActivity(runId,async context => {
+       const tools: BridgeTool[] = [], unavailable: { appId: string;code: string }[] = [];
+-      for (const application of context.snapshot.packages) {
++      for (const {selection:application,contracts} of this.snapshotContracts(context)) {
+         const group: BridgeTool[] = [];
+         try {
+           assertRunApplication(context,application.appId);
+           const manifest = this.packages.get(application.packageHash).manifest;
+-          const permitted = Object.entries(application.toolContractMajors).filter(([name,major]) => application.allowedOperations.includes(applicationToolDeclarations(manifest).find(t => t.name === name)!.permission)&&(!context.plan||context.plan.allowed.some(c=>c.mcpTool===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry==='mcp')));
++          const permitted = Object.entries(contracts).filter(([name,major]) => {const declaration=applicationInvocationDeclarations(manifest,this.entry).find(t=>t.name===name);return !!declaration&&application.allowedOperations.includes(declaration.permission)&&(!context.plan&&this.entry==='mcp'||!!context.plan?.allowed.some(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry===this.entry));});
+           for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);
+           tools.push(...group);
+           if (permitted.length) { const [operation,contractMajor] = permitted[0]; this.selected(context,{ operation,contractMajor }); }
+@@ -91,9 +100,9 @@ export class ApplicationToolService {
+     try {
+       this.runs.assertActive(runId);
+       if (!z.uuid().safeParse(requestId).success || !boundedJson(input) || Buffer.byteLength(JSON.stringify(input)) > BRIDGE_LIMITS.requestBytes) throw new ApplicationError('INVALID_INPUT','调用编号或JSON范围无效');
+-      const parsed = bridgeCallSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','工具调用包含未允许字段或契约无效');
++      const parsed = (this.entry==='cli'?cliInvocationCallSchema:bridgeCallSchema).safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','能力调用包含未允许字段或契约无效');
+       const call = parsed.data, context = this.runs.assertActive(runId), selected = this.selected(context,call);
+-      const handler = this.host.resolve(selected.application.packageHash,call.operation,call.contractMajor);
++      const handler = this.handler(selected.application.packageHash,call.operation,call.contractMajor);
+       const hash = digest(canonicalJson(call)), key = runId + ':' + requestId, previous = this.pending.get(key) ?? this.cache.get(key);
+       if (previous) {
+         if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入');
+@@ -131,7 +140,7 @@ export class ApplicationToolService {
+     try {
+       if (control.signal.aborted) throw new ApplicationError(interruptionCode(control.signal,control.timeout),'本次调用已取消');
+       return await this.runs.withActivity(runId,async context => {
+-        const selected = this.selected(context,call), handler = this.host.resolve(selected.application.packageHash,call.operation,call.contractMajor);
++        const selected = this.selected(context,call), handler = this.handler(selected.application.packageHash,call.operation,call.contractMajor);
+         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
+         if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');
+         handler.authorize(context,call.connectionId);
+@@ -155,7 +164,7 @@ export class ApplicationToolService {
+           this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
+           // An executor may ignore cancellation; its activity lease stays held until it really settles.
+           try {
+-            const value = await handler.execute(fresh,call.arguments,{ operationId: operationId!,requestId,attempt: attempts,deadline,signal,packageHash: selected.application.packageHash,appId: selected.application.appId,toolName: call.operation,contractMajor: call.contractMajor,connectionId: call.connectionId });
++            const value = await handler.execute(fresh,call.arguments,{ operationId: operationId!,requestId,attempt: attempts,deadline,signal,packageHash: selected.application.packageHash,appId: selected.application.appId,toolName: call.operation,contractMajor: call.contractMajor,connectionId: call.connectionId,...(this.entry==='cli'?{entry:this.entry}:{}) });
+             if (!boundedJson(value) || Buffer.byteLength(JSON.stringify(value)) > BRIDGE_LIMITS.responseBytes - 4096) throw new ApplicationError('TOO_LARGE','响应超过本次预算，请使用分页或有界资源');
+             if (!outputValidator(value).valid) throw new ApplicationError('INVALID_RESPONSE','结果不符合固定工具输出契约');
+             this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
+diff --git a/src/shared/application-capabilities.ts b/src/shared/application-capabilities.ts
+index b50e40793..b90b35983 100644
+--- a/src/shared/application-capabilities.ts
++++ b/src/shared/application-capabilities.ts
+@@ -124,6 +124,15 @@ export function applicationToolDeclarations(manifest:ApplicationPackageManifest)
+     return[{name:binding.tool,contractMajor:capability.contractMajor,permission:capability.permission,inputSchemaPath:capability.inputSchemaPath,outputSchemaPath:capability.outputSchemaPath,annotations:{readOnlyHint:capability.semantics==='read',destructiveHint:capability.semantics==='external-write',idempotentHint:capability.semantics==='read',openWorldHint:true}}];
+   });
+ }
++/** CLI invocation identities are capability IDs; they cannot alias native MCP tool names. */
++export function applicationInvocationDeclarations(manifest:ApplicationPackageManifest,entry:ApplicationEntry):ApplicationManifestV1['tools']{
++  if(entry==='mcp')return applicationToolDeclarations(manifest);
++  if(manifest.schema==='smartdd-app-package-v1')return[];
++  return manifest.capabilities.flatMap(capability=>{
++    if(!capability.binding.cli&&!(capability.binding.fallback&&'cli'in capability.binding.fallback))return[];
++    return[{name:capability.id,contractMajor:capability.contractMajor,permission:capability.permission,inputSchemaPath:capability.inputSchemaPath,outputSchemaPath:capability.outputSchemaPath,annotations:{readOnlyHint:capability.semantics==='read',destructiveHint:capability.semantics==='external-write',idempotentHint:capability.semantics==='read',openWorldHint:true}}];
++  });
++}
+ 
+ export interface LegacyCapabilityPolicy {
+   id: string; semantics: ApplicationCapability['semantics']; retry: ApplicationCapability['retry'];
+diff --git a/src/shared/applications.ts b/src/shared/applications.ts
+index 419714ea4..14fa6aa66 100644
+--- a/src/shared/applications.ts
++++ b/src/shared/applications.ts
+@@ -72,7 +72,7 @@ export const applicationManifestSchema = z.object({
+ });
+ export type ApplicationManifest = z.infer<typeof applicationManifestSchema>;
+ export type ApplicationManifestV1 = ApplicationManifest;
+-export type ApplicationErrorCode = 'SENDER_IDENTITY_MISMATCH' | 'SENDER_IDENTITY_REQUIRED' | 'ENTRY_NOT_ACTIVE' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
++export type ApplicationErrorCode = 'PEER_UNVERIFIABLE' | 'EXECUTABLE_MISMATCH' | 'PEER_MISMATCH' | 'TOKEN_EXPIRED' | 'PERMISSION_DENIED' | 'SENDER_IDENTITY_MISMATCH' | 'SENDER_IDENTITY_REQUIRED' | 'ENTRY_NOT_ACTIVE' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
+ export class ApplicationError extends Error {
+   constructor(public readonly code: ApplicationErrorCode, message: string) { super(message); this.name = 'ApplicationError'; }
+ }

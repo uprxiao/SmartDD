@@ -11,6 +11,7 @@ import { RuntimeRegistry } from './runtime-registry';
 import type { ResourceStore } from './resource-store';
 import type { ApplicationToolHost, HostToolOperation } from './tool-service';
 import type {ApplicationHostCatalog} from './host-application-registry';
+import type {ApplicationEntry} from '@shared/application-capabilities';
 
 const descriptor = z.object({
   method: z.string().regex(/^[a-z][a-z0-9-]*\.[a-z][a-z0-9.-]*$/).max(128),
@@ -24,11 +25,11 @@ interface FixedApplicationAdapter {
   operations: Record<string,Descriptor>;
   execute(name: string,input: Record<string,unknown>,data: { v1: { invoke(method: string,input: Record<string,unknown>): Promise<unknown> } }): Promise<unknown>;
 }
-export interface ApplicationDataBinding { packageHash: string;appId: string;toolName: string;permission: string }
+export interface ApplicationDataBinding { packageHash: string;appId: string;toolName: string;permission: string;entry?:ApplicationEntry }
 /** Implemented by host services; a package never receives SQLite, a secret or an arbitrary RPC method. */
 export interface ApplicationDataHost {
   resolve(version: 1,method: string,binding: Readonly<ApplicationDataBinding>): HostToolOperation;
-  resolveCapability?(packageHash:string,toolName:string,contractMajor:number):HostToolOperation;
+  resolveCapability?(packageHash:string,toolName:string,contractMajor:number,entry?:ApplicationEntry):HostToolOperation;
 }
 
 /** Executes only indexed built-ins, by the session's original hash. This is not a third-party-code sandbox. */
@@ -88,13 +89,14 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
     return {application,adapter};
   }
 
-  resolve(packageHash: string,toolName: string,contractMajor: number): HostToolOperation {
+  resolve(packageHash: string,toolName: string,contractMajor: number,entry:ApplicationEntry='mcp'): HostToolOperation {
     const installed=this.builtin.assertTrusted(packageHash);
     if(installed.manifest.schema==='smartdd-app-package-v2'){
       assertHostCompatible(installed.manifest);this.runtimes.verify(installed.manifest.runtime.hash,installed.manifest.runtime);
       if(!this.data.resolveCapability)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
-      return this.data.resolveCapability(packageHash,toolName,contractMajor);
+      return this.data.resolveCapability(packageHash,toolName,contractMajor,entry);
     }
+    if(entry!=='mcp')throw new ApplicationError('ENTRY_NOT_ACTIVE','旧版本应用仅保留原MCP入口');
     const {application,adapter} = this.load(packageHash);
     const tool = application.manifest.tools.find(t => t.name === toolName && t.contractMajor === contractMajor);
     const route = adapter.operations[toolName];
