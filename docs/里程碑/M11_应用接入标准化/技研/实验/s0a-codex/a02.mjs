@@ -1,4 +1,5 @@
-// 评审 A02 补验（真实 codex exec，3 次模型调用，假数据）。模拟“用户自定义权限档案”：
+// 评审 A02 补验（2026-11-01 修正：文件规则写法按官方配置参考改为 filesystem."<路径>"="deny"；结论在任一轮无结果时判无效）
+// 真实 codex exec，3 次模型调用，假数据）。模拟“用户自定义权限档案”：
 //   拒读一个目录 + 联网只允许 example.com（经 Codex 代理）。
 //   P0 用户档案本身（基线，不注入）
 //   P1 继承用户档案（extends="userx"）＋只追加 CLI socket   ← 修订后的设计
@@ -15,9 +16,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const cfgPath = join(homedir(), '.codex', 'config.toml');
 const fp = () => { try { return createHash('sha256').update(readFileSync(cfgPath)).digest('hex') + ':' + statSync(cfgPath).mtimeMs; } catch { return null; } };
 const cfgBefore = fp();
+mkdirSync(join(here, 'results'), { recursive: true });
 const host = new PeerCheckedHost(); await host.start();
 const denyDir = mkdtempSync(join(tmpdir(), 'wy-deny-')); const denyFile = join(denyDir, 'secret.txt'); writeFileSync(denyFile, 'synthetic');
-const userProfile = ['features.network_proxy=true', 'permissions.userx.extends=":workspace"', `permissions.userx.filesystem.deny_read=["${denyDir}"]`, 'permissions.userx.network.enabled=true', 'permissions.userx.network.domains={"example.com"="allow"}'];
+const userProfile = ['features.network_proxy=true', 'permissions.userx.extends=":workspace"', `permissions.userx.filesystem={"${denyDir}"="deny"}`, 'permissions.userx.network.enabled=true', 'permissions.userx.network.domains={"example.com"="allow"}'];
 const sock = `{"${host.endpoint}"="allow"}`;
 const cases = {
   P0: [...userProfile, 'default_permissions="userx"'],
@@ -33,19 +35,23 @@ const runCase = (id, cfg) => {
   let out = '', err = ''; p.stdout.on('data', d => out += d); p.stderr.on('data', d => err += d);
   const timer = setTimeout(() => p.kill('SIGTERM'), 240000);
   return new Promise(res => p.on('close', code => { clearTimeout(timer); const m = out.match(/\{\\"probe\\":\\"s0a\\".*?\}\\n/g) || []; let r = null; try { r = JSON.parse(JSON.parse('"' + m[0].replace(/\\n$/, '') + '"')); } catch {}
+    writeFileSync(join(here, 'results', `a02-raw-${id}.jsonl`), out.replaceAll(run.token, '<token>').replaceAll(host.endpoint, '<sock>').split('\n').slice(-60).join('\n'));
     res({ id, codexExit: code, cli: r?.channel ?? null, denyRead: r?.denyRead, writeTest: r?.writeTest, allowedUrl: r?.allowedUrl, otherUrl: r?.otherUrl, externalTcp443: r?.externalTcp443, tokenLeaked: out.includes(run.token) || err.includes(run.token), stderrTail: err.replace(host.endpoint, '<sock>').split('\n').filter(l => /error|warn|permission|profile/i.test(l)).slice(-4) }); }));
 };
 const results = [];
-for (const [id, cfg] of Object.entries(cases)) results.push(await runCase(id, cfg));
-const [p0, p1, p2] = results;
-const same = (a, b) => a === b || (String(a).startsWith('ERR') && String(b).startsWith('ERR'));
-const verdict = {
+const only = process.argv.slice(2);
+for (const [id, cfg] of Object.entries(cases)) if (!only.length || only.includes(id)) results.push(await runCase(id, cfg));
+const byId = Object.fromEntries(results.map(r => [r.id, r])); const p0 = byId.P0, p1 = byId.P1, p2 = byId.P2;
+const same = (a, b) => a !== undefined && b !== undefined && (a === b || (String(a).startsWith('ERR') && String(b).startsWith('ERR')));
+const allRan = !!(p0 && p1 && p2) && results.every(r => r.codexExit === 0 && r.denyRead !== undefined);
+const verdict = !allRan ? { valid: false, reason: '至少一轮没有得到探针结果，结论无效' } : {
+  valid: true,
   baselineRulesEffective: { denyReadBlocked: String(p0.denyRead).startsWith('ERR'), allowedDomainReachable: String(p0.allowedUrl).startsWith('HTTP 2') || String(p0.allowedUrl).startsWith('HTTP 3') },
   P1_inheritsUserRules: same(p0.denyRead, p1.denyRead) && p0.allowedUrl === p1.allowedUrl && p0.writeTest === p1.writeTest,
   P1_cliConnected: p1.cli?.ok === true,
   P2_lostSomeRule: !(same(p0.denyRead, p2.denyRead) && p0.allowedUrl === p2.allowedUrl),
 };
 const out = { codex: '0.166.0', results, verdict, businessCalls: host.businessCalls, peerLog: host.peerLog, userConfigUnchanged: cfgBefore !== null && cfgBefore === fp() };
-mkdirSync(join(here, 'results'), { recursive: true }); writeFileSync(join(here, 'results', 'a02-0.166.0.json'), JSON.stringify(out, null, 2) + '\n');
+writeFileSync(join(here, 'results', only.length ? `a02-0.166.0-${only.join('-')}.json` : 'a02-0.166.0.json'), JSON.stringify(out, null, 2) + '\n');
 console.log(JSON.stringify(out, null, 1));
 await host.close(); process.exit(0);

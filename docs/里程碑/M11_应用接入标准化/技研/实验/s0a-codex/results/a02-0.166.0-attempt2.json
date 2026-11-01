@@ -1,0 +1,87 @@
+{
+  "codex": "0.166.0",
+  "results": [
+    {
+      "id": "P0",
+      "codexExit": 0,
+      "cli": null,
+      "tokenLeaked": false,
+      "stderrTail": [
+        "2026-11-01T01:12:37.679144Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---",
+        "2026-11-01T01:12:47.557209Z ERROR codex_core::tools::router: error=exec_command failed: ProcessFailed { message: \"Network access to \\\"example.com\\\" was blocked: local/private network addresses are blocked by the sandbox policy.\" }"
+      ]
+    },
+    {
+      "id": "P1",
+      "codexExit": 0,
+      "cli": {
+        "attempted": true,
+        "connected": true,
+        "ok": true,
+        "code": null,
+        "project": "A"
+      },
+      "denyRead": "ERR:EPERM",
+      "writeTest": "OK",
+      "allowedUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "otherUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "externalTcp443": "ERR:EPERM",
+      "tokenLeaked": false,
+      "stderrTail": [
+        "2026-11-01T01:13:05.677647Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---",
+        "2026-11-01T01:13:11.199600Z ERROR codex_core::tools::router: error=exec_command failed: ProcessFailed { message: \"Network access to \\\"example.com\\\" was blocked: local/private network addresses are blocked by the sandbox policy.\" }"
+      ]
+    },
+    {
+      "id": "P2",
+      "codexExit": 0,
+      "cli": {
+        "attempted": true,
+        "connected": true,
+        "ok": true,
+        "code": null,
+        "project": "A"
+      },
+      "denyRead": "READ_OK",
+      "writeTest": "OK",
+      "allowedUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "otherUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "externalTcp443": "ERR:EPERM",
+      "tokenLeaked": false,
+      "stderrTail": [
+        "2026-11-01T01:13:26.786816Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---",
+        "2026-11-01T01:13:34.430151Z ERROR codex_core::tools::router: error=exec_command failed: ProcessFailed { message: \"Network access to \\\"example.com\\\" was blocked: domain is not on the allowlist for the current sandbox mode.\" }"
+      ]
+    }
+  ],
+  "verdict": {
+    "valid": false,
+    "reason": "至少一轮没有得到探针结果，结论无效"
+  },
+  "businessCalls": 2,
+  "peerLog": [
+    {
+      "runId": "8b6c3190",
+      "helperMs": 1,
+      "peerState": "running",
+      "executableOk": true,
+      "inExpectedTree": true,
+      "ancestorCount": 6,
+      "op": "bug.list",
+      "code": "OK",
+      "businessRan": true
+    },
+    {
+      "runId": "93811692",
+      "helperMs": 2,
+      "peerState": "running",
+      "executableOk": true,
+      "inExpectedTree": true,
+      "ancestorCount": 6,
+      "op": "bug.list",
+      "code": "OK",
+      "businessRan": true
+    }
+  ],
+  "userConfigUnchanged": true
+}
