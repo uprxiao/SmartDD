@@ -10,6 +10,7 @@ import type { RunContext } from './run-registry';
 import { digest } from './manifest';
 import { encodeClaudeDir } from '../tasks/native-sessions';
 import { NativeUserInputs, type HostUserInputReceipt } from './native-user-inputs';
+import { runPlanSkillView } from './application-skill-view';
 
 const LIMIT = { tail: 4 * 1024 * 1024, line: 1024 * 1024, head: 65536, entries: 4096, records: 8192, proofs: 64 };
 /** Fallback used only when no registry is wired (isolated unit fixtures); production queries the adapter registry. */
@@ -171,7 +172,7 @@ export class NativeUserMessages {
     try{
       const {context,registration}=this.context(runId,'L2');
       if(context.snapshot.runner!=='codex')return async()=>empty();
-      const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return async()=>empty();
       const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[],applicationScope:context.applicationScope?.slice()},fixed=structuredClone(targets),through=this.now();
       let consumed=false;
@@ -189,7 +190,7 @@ export class NativeUserMessages {
     try{
       const {context}=this.context(runId,'L2');
       if(context.snapshot.runner!=='codex')return [];
-      const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
       return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
     }catch{return [];}

@@ -2,7 +2,7 @@
  "schema": "willyou-test-round-v1",
  "runId": "M11-R1-20261101T070500Z-resume",
  "milestone": "M11",
- "updatedAt": "2026-11-01T10:53:39.675340+00:00",
+ "updatedAt": "2026-11-01T11:40:55.280347+00:00",
  "agents": {
   "coordinator": "Claude Code（串行执行，未启用子Agent）"
  },
@@ -112,6 +112,15 @@
    "remaining": "3 tests still red and were already red behind the load error: prototype-skill-layout x2 expect v1 package `tools` (packages are now v2 `capabilities`); prototype-evidence finds multiple role=status elements. Not fixed yet.",
    "fix2": "Prototype package section reads retainedV1Definitions (approved R0.9 baseline 4de34cbba predates the v2 migration 9ee3ca61; a v2 capability list needs a new prototype increment and user review). prototype-evidence test queries all role=status elements instead of assuming one.",
    "verification": "renderer applications 49 files / 528 tests passed"
+  },
+  {
+   "id": "M11-R1-D04",
+   "class": "product",
+   "status": "fixed-pending-real-app-retest",
+   "symptom": "attempt-006 real App: Codex read the ZenTao bug-analysis Skill and called the CLI, but session diagnostics showed Skill discovery/read unverified and capability_skill_observations stayed empty",
+   "cause": "Templated Skills are delivered under per-run names fixed in the run plan (…-99ab44649810), while diagnostics and native evidence matched the session snapshot projection name (…-4f98bcc31608)",
+   "fix": "runPlanSkillView in application-skill-view.ts; session-diagnostics.ts and native-user-messages.ts match the run plan's delivered name/path; runs without a plan keep the old behavior",
+   "verification": "5 files 363 tests passed; new D04 regression test fails without the fix and passes with it"
   }
  ],
  "environment": [
@@ -122,7 +131,7 @@
  "accounting": {
   "formalPassesAdded": 0
  },
- "next": "S9: per-case closure against final package; self-check (S11) and remaining runner branches still open",
+ "next": "Repackage, verify diagnostics show verified native Skill read in real App, then S9 per-case closure",
  "driverChanges": [
   {
    "file": "scripts/applications/m11-zen-cli-ui.mjs",

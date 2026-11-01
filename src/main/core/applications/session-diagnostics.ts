@@ -6,7 +6,7 @@ import {readClaudeSlot} from './claude-delivery-state';
 import {inspectClaudeDeliveryCopies} from './claude-delivery-copies';
 import {lstatSync,openSync,closeSync,fstatSync,readSync,constants} from 'node:fs';
 import type {SkillReadTarget,SkillReadObservation} from './codex-skill-read-evidence';
-import {join,relative,isAbsolute} from 'node:path';
+import {join,relative,isAbsolute,dirname} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {applicationIdSchema,type ApplicationProvider} from '@shared/application-connections';
@@ -25,9 +25,15 @@ import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
 import {verifyApplicationRunPlan} from './run-plan';
+import type {ApplicationRunPlan} from '@shared/application-run-plan';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import type {SessionRunPlanDiagnostic} from '@shared/application-session-diagnostics';
 const LEVELS=['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const;
+function storedRunPlan(store:ResourceStore,runId:string):ApplicationRunPlan|null{
+ const row=store.sqlite.prepare("SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?").get('application-run-plan:'+runId) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;
+ if(!row||row.kind!=='application-run-plan'||row.owner_store_id!==store.storeId||row.state!=='committed')return null;
+ try{const plan=verifyApplicationRunPlan(JSON.parse(row.plan_json));return plan.runId===runId?plan:null;}catch{return null;}
+}
 /** Reads the immutable plan recorded for this run. Absent plan is not an error (legacy or restricted runs). */
 function runPlanDiagnostic(store:ResourceStore,runId:string,adapterHash:string|null):{plan:SessionRunPlanDiagnostic|null;issue:string|null}{
  const row=store.sqlite.prepare("SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?").get('application-run-plan:'+runId) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;
@@ -173,10 +179,14 @@ export class ApplicationSessionDiagnostics {
   // Native-only history has lifecycle authority but no fixed package/Skill selection.
   if(before.selection!=='fixed'||!runId||(expectedRunId!==undefined&&runId!==expectedRunId)||!this.deps.skillReads)return before;
   const observed=new Map<string,SkillReadObservation[]>(),discovered=new Map<string,SkillReadObservation[]>();
+  // Templated Skills are delivered under per-run names fixed in the run plan; observe those, not the source projection.
+  const plan=storedRunPlan(this.store,runId);
   for(const app of before.applications){
    if(app.resourceState!=='verified'||!app.skills.length)continue;
    try{
-    const targets=app.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill source required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('Skill source changed');return {id:skill.id,nativeName:skill.name,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
+    const delivered=plan?.skills.filter(s=>s.appId===app.appId)??[];
+    const runSkills=app.skills.map(skill=>{const v=delivered.find(d=>d.skillId===skill.id);return v&&v.nativeName!==skill.name?{...skill,name:v.nativeName,projectionPath:join(dirname(dirname(skill.projectionPath)),v.nativeName,'SKILL.md')}:skill;});
+    const targets=runSkills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill source required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('Skill source changed');return {id:skill.id,nativeName:skill.name,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
     observed.set(app.appId,await this.deps.skillReads(runId,targets));
     if(this.deps.skillDiscoveries)discovered.set(app.appId,await this.deps.skillDiscoveries(runId,targets));
    }catch{/* Unavailable evidence remains unverified. */}

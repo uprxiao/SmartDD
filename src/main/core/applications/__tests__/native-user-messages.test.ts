@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync, appendFileSync, renameSync, symlinkSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { applicationNativeSkillName, capabilitySessionSnapshotSchema } from '@shared/application-session';
@@ -208,4 +208,14 @@ describe('M11 S10 Codex 0.166.0 real-log fixture',()=>{
   const skill=current.snapshot.packages[0].skills[0];
   expect(await messages.skillReads(current.run.runId,[{id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'x'}])).toEqual([]);
  });
+});
+it('M11-R1-D04: L2 Skill read evidence matches the per-run Skill name fixed in the run plan, not the source projection',async()=>{
+ setup('codex','0.166.0',()=>['L0.skill','L0.mcp','L0.cli','L1','L2']);
+ const pack=current.snapshot.packages[0],skill=pack.skills[0],renamed=skill.nativeName+'-run',content='Complete fixed skill\n';
+ current.plan={skills:[{appId:pack.appId,skillId:skill.skillId,nativeName:renamed,templateHash:'a'.repeat(64),parametersHash:'a'.repeat(64),renderedHash:'a'.repeat(64)}]} as unknown as RunContext['plan'];
+ const path=join(dirname(dirname(skill.projectionPath)),renamed,'SKILL.md');
+ write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call',name:'exec_command',call_id:'run-read',arguments:JSON.stringify({cmd:"/bin/cat '"+path+"'"})}});
+ write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'function_call_output',call_id:'run-read',output:'Chunk ID: abc123\nWall time: 0.0100 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\n'+content}});
+ expect(await messages.skillReads(current.run.runId,[{id:skill.skillId,nativeName:renamed,path,content}])).toMatchObject([{skillId:skill.skillId,callId:'run-read'}]);
+ expect(await messages.skillReads(current.run.runId,[{id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content}])).toEqual([]);
 });
