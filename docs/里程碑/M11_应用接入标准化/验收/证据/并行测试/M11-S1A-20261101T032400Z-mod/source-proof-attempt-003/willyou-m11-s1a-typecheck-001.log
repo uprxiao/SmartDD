@@ -1,0 +1,12 @@
+
+> smartdd@0.0.9 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/modules/registry.ts(55,24): error TS2352: Conversion of type '{ api: 1; applications: { id: string; slots: string[]; stopBeforeSwitch: boolean; }[]; providers: { id: string; appId: string; configApiMajor: 1; configSchemaVersion?: number; configSchema: z.ZodType<HostedConfiguration, unknown, z.core.$ZodTypeInternals<...>>; authentication: { kind: "secret"; modes: readonly strin...' to type 'HostApplicationDefinitions<output<T[number]["providers"][number]["configSchema"]>, ModuleApplicationId<T>>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'providers' are incompatible.
+    Type '{ id: string; appId: string; configApiMajor: 1; configSchemaVersion?: number | undefined; configSchema: ZodType<HostedConfiguration, unknown, $ZodTypeInternals<HostedConfiguration, unknown>>; authentication: { ...; } | { ...; }; permissions: { ...; }; readDefaultKeys?: readonly string[] | undefined; validateCandidat...' is not comparable to type 'readonly HostProvider<output<T[number]["providers"][number]["configSchema"]>, ModuleApplicationId<T>>[]'.
+      Type '{ id: string; appId: string; configApiMajor: 1; configSchemaVersion?: number | undefined; configSchema: ZodType<HostedConfiguration, unknown, $ZodTypeInternals<HostedConfiguration, unknown>>; authentication: { ...; } | { ...; }; permissions: { ...; }; readDefaultKeys?: readonly string[] | undefined; validateCandidat...' is not comparable to type 'HostProvider<output<T[number]["providers"][number]["configSchema"]>, ModuleApplicationId<T>>'.
+        Types of property 'configSchema' are incompatible.
+          Type 'ZodType<HostedConfiguration, unknown, $ZodTypeInternals<HostedConfiguration, unknown>>' is not comparable to type 'ZodType<output<T[number]["providers"][number]["configSchema"]>, unknown, $ZodTypeInternals<output<T[number]["providers"][number]["configSchema"]>, unknown>>'.
+            Type 'HostedConfiguration' is not comparable to type 'output<T[number]["providers"][number]["configSchema"]>'.
+ ELIFECYCLE  Command failed with exit code 2.

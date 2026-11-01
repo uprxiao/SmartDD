@@ -1,0 +1,74 @@
+
+> smartdd@0.0.9 test /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/module-registry.test.ts src/renderer/features/applications/workspace.test.tsx src/renderer/features/applications/panels.test.tsx src/renderer/features/applications/zentao-pagination.test.tsx src/renderer/features/applications/zentao-presentation.test.tsx --maxWorkers=1 --no-file-parallelism --no-cache
+
+[1101/112118.085213:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/Documents/ChatGPT/SmartDD-m10
+
+[1101/112118.440306:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/applications/workspace.test.tsx (78 tests | 2 failed) 1405ms
+     × loads the trusted impact before a switch, excludes unrelated local terminals and cancel ignores the late reply 15ms
+   × SF ambiguous ZenTao requires original impact/confirmation and cancellation keeps the old unconfirmed state 16ms
+[1101/112120.733214:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1101/112121.615580:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1101/112122.417896:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1101/112122.649540:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/applications/workspace.test.tsx > actual production application forms with explicit RPC fixtures > loads the trusted impact before a switch, excludes unrelated local terminals and cancel ignores the late reply
+AssertionError: expected "vi.fn()" to be called with arguments: [ { kind: 'switch', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
++     "appId": "zentao",
+      "expectedRevision": 1,
+      "kind": "switch",
+      "projectId": "project-1",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/features/applications/workspace.test.tsx:126:57
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/applications/workspace.test.tsx > SF ambiguous ZenTao requires original impact/confirmation and cancellation keeps the old unconfirmed state
+AssertionError: expected "vi.fn()" to be called with arguments: [ { kind: 'switch', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
++     "appId": "zentao",
+      "expectedRevision": 1,
+      "kind": "switch",
+      "projectId": "project-1",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/features/applications/workspace.test.tsx:242:456
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  2 failed | 127 passed (129)
+   Start at  11:21:18
+   Duration  4.67s (transform 318ms, setup 0ms, import 926ms, tests 2.42s, environment 963ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

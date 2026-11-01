@@ -1,3 +1,4 @@
+import {applicationMetadata} from '@shared/application-provider-metadata';
 // @vitest-environment jsdom
 import {cleanup,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
@@ -12,7 +13,7 @@ const connection='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64),refe
 const presentation=parseZentaoPresentation({bug:{pri:'优先级',priList:['','P0','P1','P2'],severityList:{3:'较大'},typeList:{codeerror:'代码错误'},statusList:{active:'激活'}}},'bug')!;
 const fields={title:'字段显示用例',project:'1521',projectName:'示例项目',product:'96',productName:'示例产品',module:'7773',moduleTitle:'测试模块',openedBuild:[{id:'1579',title:'dev-beta'}],pri:'3',severity:'3',type:'codeerror',status:'active'};
 const detail=(ready=true)=>({kind:'bug',id:'7',reference,fields,body:null,history:null,attachments:[],complete:true,missing:[],presentation:ready?presentation:{available:false,labels:{},choices:{}}});
-const app:CatalogItem={appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
+const app:CatalogItem={...applicationMetadata('zentao'),appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
 const ok=<T,>(value:T)=>({ok:true as const,value});let client:QueryClient;
 async function open(){client=new QueryClient({defaultOptions:{queries:{retry:false}}});render(<QueryClientProvider client={client}><ZentaoPanel projectId="own" app={app}/></QueryClientProvider>);fireEvent.click(await screen.findByRole('button',{name:/字段显示用例/}));return screen.findByRole('dialog');}
 beforeEach(()=>{

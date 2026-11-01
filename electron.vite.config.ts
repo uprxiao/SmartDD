@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 
+// The renderer consumes only generated data; it never imports main-process modules.
+execFileSync(process.execPath, ['scripts/applications/generate-module-metadata.mjs', '--write'], { stdio: 'inherit' });
+
 const alias = {
   '@root': resolve('.'),
   '@shared': resolve('src/shared'),

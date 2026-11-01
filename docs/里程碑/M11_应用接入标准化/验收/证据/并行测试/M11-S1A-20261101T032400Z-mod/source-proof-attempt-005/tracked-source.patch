@@ -1,0 +1,1017 @@
+diff --git a/electron.vite.config.ts b/electron.vite.config.ts
+index 431a1ec5e..83e6f3b11 100644
+--- a/electron.vite.config.ts
++++ b/electron.vite.config.ts
+@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
+ import react from '@vitejs/plugin-react';
+ import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+ 
++// The renderer consumes only generated data; it never imports main-process modules.
++execFileSync(process.execPath, ['scripts/applications/generate-module-metadata.mjs', '--write'], { stdio: 'inherit' });
++
+ const alias = {
+   '@root': resolve('.'),
+   '@shared': resolve('src/shared'),
+diff --git a/scripts/prepare-test-resources.mjs b/scripts/prepare-test-resources.mjs
+index aacc56110..8fb7da40a 100644
+--- a/scripts/prepare-test-resources.mjs
++++ b/scripts/prepare-test-resources.mjs
+@@ -9,6 +9,7 @@ import {buildProcessIdentity} from './applications/build.mjs';
+ import {buildApplicationRuntime} from './applications/build-runtime.mjs';
+ 
+ const output=resolve(process.argv[2]??'out');
++execFileSync(process.execPath,['scripts/applications/generate-module-metadata.mjs','--write'],{stdio:'inherit'});
+ buildFileBroker({output:join(output,'native/willyou-files')});
+ const identityHelper=buildProcessIdentity({output:join(output,'native/willyou-process-identity')});
+ let nativeProbe=null;
+diff --git a/src/main/core/applications/__tests__/application-run-policy.test.ts b/src/main/core/applications/__tests__/application-run-policy.test.ts
+index e3545271a..1ab31fab8 100644
+--- a/src/main/core/applications/__tests__/application-run-policy.test.ts
++++ b/src/main/core/applications/__tests__/application-run-policy.test.ts
+@@ -16,4 +16,12 @@ describe('trusted application stop scope and launch policy',()=>{
+  it('does not silently classify a corrupt original snapshot as unrelated',()=>{f.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_hash=? WHERE task_id=?').run('0'.repeat(64),f.snapshot.taskId);expect(()=>scope()).toThrow('无法核验');expect(f.sqlite.prepare('SELECT retention_state FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId)).toEqual({retention_state:'active'});});
+  it('keeps verifiable unknown native history outside the M10 stop set but refuses corrupted scope metadata',async()=>{const taskId=randomUUID();await f.sessions.holdUnknown({taskId,projectId:'p1',runner:'claude-code',stateRoot:f.snapshot.native.stateRoot,cwd:f.snapshot.native.cwd,sessionId:'original-unknown-native',reason:'history-unknown'});const row=f.sqlite.prepare('SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {snapshot_hash:string};const run=await f.runs.reserveNativeGuard({taskId,projectId:'p1',runner:'claude-code',snapshotHash:row.snapshot_hash,resourceIds:[f.adapter.resourceId],verify:async()=>{}});await run.prepare();await run.cli.arm();reader.identities.set(200002,'darwin-proc-v1:200:2');await run.cli.attach(200002);expect(taskUsesApplication(f.store,'p1',taskId,'zentao')).toBe(false);f.sqlite.prepare('UPDATE capability_session_snapshots SET schema_version=2 WHERE task_id=?').run(taskId);expect(()=>taskUsesApplication(f.store,'p1',taskId,'zentao')).toThrow('无法核验');f.sqlite.prepare('UPDATE capability_session_snapshots SET schema_version=0 WHERE task_id=?').run(taskId);reader.identities.delete(200002);await run.cli.exited();});
+  it('gates only the selected application in the project with a pending switch',()=>{f.sqlite.prepare('INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,pending_operation_id,updated_at) VALUES(?,?,?,?,?,?,?)').run('p1','zentao',1,1,1,randomUUID(),new Date().toISOString());expect(()=>assertNoPendingApplicationSwitch(f.store,f.snapshot)).toThrow('正在切换');expect(()=>assertNoPendingApplicationSwitch(f.store,{projectId:'p1',packages:[]})).not.toThrow();expect(()=>assertNoPendingApplicationSwitch(f.store,{projectId:'p2',packages:f.snapshot.packages})).not.toThrow();f.sqlite.prepare("UPDATE application_project_settings SET pending_operation_id=NULL WHERE project_id='p1'").run();expect(()=>assertNoPendingApplicationSwitch(f.store,f.snapshot)).not.toThrow();});
++ it('uses a registered module policy for a new application instead of an application-name branch',()=>{
++  f.sqlite.prepare('INSERT INTO application_host_applications VALUES(?)').run('third');
++  f.sqlite.prepare('INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,pending_operation_id,updated_at) VALUES(?,?,?,?,?,?,?)').run('p1','third',1,1,1,randomUUID(),new Date().toISOString());
++  const snapshot={projectId:'p1',packages:[{appId:'third'}]},policy={appIds:()=>['third'],module:()=>({stopBeforeSwitch:true,presentation:{displayName:'第三方'}})};
++  expect(()=>assertNoPendingApplicationSwitch(f.store,snapshot,policy)).toThrow('切换第三方连接');
++  expect(()=>assertNoPendingApplicationSwitch(f.store,snapshot,{...policy,module:()=>({stopBeforeSwitch:false,presentation:{displayName:'第三方'}})})).not.toThrow();
++  expect(()=>assertNoPendingApplicationSwitch(f.store,{...snapshot,projectId:'p2'},policy)).not.toThrow();
++ });
+ });
+diff --git a/src/main/core/applications/__tests__/mail-read-data.test.ts b/src/main/core/applications/__tests__/mail-read-data.test.ts
+index 3f8eefb7c..cfe09c0c5 100644
+--- a/src/main/core/applications/__tests__/mail-read-data.test.ts
++++ b/src/main/core/applications/__tests__/mail-read-data.test.ts
+@@ -399,7 +399,7 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
+  nativeIt('retains the last cancelled shared producer and its package lease until its actual work settles',async()=>{
+   add(1);let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(resolve=>entered=resolve),gate=new Promise<void>(resolve=>release=resolve),original=MailWorkerClient.prototype.scanBatch;
+   vi.spyOn(MailWorkerClient.prototype,'scanBatch').mockImplementationOnce(async function(this:MailWorkerClient,...args){entered();await gate;return original.apply(this,args);});
+-  const abort=new AbortController(),pending=ui(scope=>app.mailReads.query(scope,{}),'p1',abort.signal);void pending.catch(()=>{});await ready;abort.abort();await expect(pending).rejects.toMatchObject({code:'CANCELED'});
++  const abort=new AbortController(),pending=ui(scope=>app.mailReads.query(scope,{}),'p1',abort.signal);void pending.catch(()=>{});await Promise.race([ready,pending.then(()=>{throw new Error('Import completed before entering the controlled source read');},error=>{throw error;})]);abort.abort();await expect(pending).rejects.toMatchObject({code:'CANCELED'});
+   let closed=false;const closing=app.dispose().then(()=>{closed=true;});
+   try{await Promise.resolve();expect(closed).toBe(false);expect(f.sqlite.prepare("SELECT state FROM application_data_operations WHERE caller_kind='index-job'").get()).toEqual({state:'running'});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:1});}finally{release();}
+   await closing;expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='index-job' AND state='active'").get()).toEqual({n:0});expect(f.sqlite.prepare("SELECT state FROM application_index_waiters").get()).toEqual({state:'cancelled'});
+@@ -491,7 +491,7 @@ describe.skipIf(process.platform!=='darwin')('actual fixed-package mail query/re
+  nativeIt('does not commit an attachment when cancellation arrives while actual source work is pending',async()=>{
+   const path=join(workspace,'cancel.bin');writeFileSync(path,Buffer.alloc(1024,7));const root=(await files.roots.open(fileOwner,{kind:'project',projectId:'p1'})).roots[0],original=files.terminalSource.bind(files);let release!:()=>void,entered!:()=>void;const ready=new Promise<void>(r=>entered=r),gate=new Promise<void>(r=>release=r);
+   vi.spyOn(files,'terminalSource').mockImplementationOnce(async(...args)=>{const source=await original(...args);return{...source,read:async(...input)=>{entered();await gate;return source.read(...input);}};});const ref=await app.captureAttachment(sender,'p1',{kind:'path',path:{lease:root.lease,generation:root.generation,relativePath:'cancel.bin'},directory:false}),abort=new AbortController();
+-  const pending=app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.cancel-import',operations:['mail.draft'],semantics:'write',signal:abort.signal},scope=>app.data.mail.execute(scope,'mail.attachment.import',{source:{kind:'workspace-file',referenceId:ref.referenceId,expectedHash:ref.expectedHash,filename:'cancel.bin',contentType:'application/octet-stream'}}));void pending.catch(()=>{});await ready;abort.abort();try{expect(f.sqlite.prepare('SELECT count(*) n FROM mail_attachment_objects').get()).toEqual({n:0});}finally{release();}await expect(pending).rejects.toMatchObject({code:'CANCELED'});expect(f.sqlite.prepare('SELECT count(*) n FROM mail_attachment_objects').get()).toEqual({n:0});
++  const pending=app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.cancel-import',operations:['mail.draft'],semantics:'write',signal:abort.signal},scope=>app.data.mail.execute(scope,'mail.attachment.import',{source:{kind:'workspace-file',referenceId:ref.referenceId,expectedHash:ref.expectedHash,filename:'cancel.bin',contentType:'application/octet-stream'}}));void pending.catch(()=>{});await Promise.race([ready,pending.then(()=>{throw new Error('Import completed before entering the controlled source read');},error=>{throw error;})]);abort.abort();try{expect(f.sqlite.prepare('SELECT count(*) n FROM mail_attachment_objects').get()).toEqual({n:0});}finally{release();}await expect(pending).rejects.toMatchObject({code:'CANCELED'});expect(f.sqlite.prepare('SELECT count(*) n FROM mail_attachment_objects').get()).toEqual({n:0});
+  });
+  nativeIt('rejects a file modified between native chunks without saving a mixed attachment',async()=>{
+   const path=join(workspace,'changing.bin');writeFileSync(path,Buffer.alloc(2*1024*1024+7,1));const root=(await files.roots.open(fileOwner,{kind:'project',projectId:'p1'})).roots[0],original=files.terminalSource.bind(files);
+diff --git a/src/main/core/applications/__tests__/selection-service.test.ts b/src/main/core/applications/__tests__/selection-service.test.ts
+index cd99183ee..ad651abcc 100644
+--- a/src/main/core/applications/__tests__/selection-service.test.ts
++++ b/src/main/core/applications/__tests__/selection-service.test.ts
+@@ -96,7 +96,7 @@ describe('explicit project application slots and stop-before-switch', () => {
+     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
+     const selected = await service.select(selectZen(a.id, 0)); expect(stop).not.toHaveBeenCalled(); live = 1;
+     const changed = await service.select(selectZen(b.id, selected.revision));
+-    expect(stop).toHaveBeenCalledExactlyOnceWith('p1'); expect(changed.connections.zentao).toBe(b.id); expect(changed.revision).toBe(selected.revision + 1); expect(changed.pendingOperationId).toBeNull();
++    expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao'); expect(changed.connections.zentao).toBe(b.id); expect(changed.revision).toBe(selected.revision + 1); expect(changed.pendingOperationId).toBeNull();
+   });
+   it.each([false, true])('preserves the prior connection when stopped=%s does not prove all runs exited', async stopped => {
+     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
+@@ -144,7 +144,7 @@ it('PQ records a transaction failure after confirmed stop without claiming that
+  await service.setAdded('zentao',true,0);const a=await connection('zentao','pq-a'),b=await connection('zentao','pq-b'),old=await service.select(selectZen(a.id,0));live=2;
+  sqlite.exec(`CREATE TEMP TRIGGER pq_commit_abort BEFORE INSERT ON main.application_project_bindings WHEN NEW.connection_id='${b.id}' BEGIN SELECT RAISE(ABORT,'PQ_OWN_COMMIT_FAILURE');END;`);
+  try{await expect(service.select(selectZen(b.id,old.revision))).rejects.toThrow('PQ_OWN_COMMIT_FAILURE');}finally{sqlite.exec('DROP TRIGGER pq_commit_abort');}
+- expect(live).toBe(0);expect(stop).toHaveBeenCalledExactlyOnceWith('p1');expect(service.projectSettings('p1','zentao')).toEqual(old);
++ expect(live).toBe(0);expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');expect(service.projectSettings('p1','zentao')).toEqual(old);
+  expect(sqlite.prepare("SELECT state,error_code FROM application_binding_changes WHERE state='failed'").all()).toEqual([{state:'failed',error_code:'CAPABILITY_UNAVAILABLE'}]);
+  const retried=await service.select(selectZen(b.id,old.revision));expect(retried.connections.zentao).toBe(b.id);expect(retried.revision).toBe(old.revision+1);
+ });
+@@ -157,7 +157,7 @@ it('PQ retains the stop-failure category for an unexpected stop exception before
+ it('SD never labels a conflict after stopping runs as an initial no-effect rejection',async()=>{
+  await service.setAdded('zentao',true,0);const a=await connection('zentao'),b=await connection('zentao','b'),old=await service.select(selectZen(a.id,0));live=1;
+  stop.mockImplementationOnce(async()=>{live=0;sqlite.prepare("UPDATE application_project_settings SET binding_revision=binding_revision+1 WHERE project_id='p1'AND app_id='zentao'").run();return true;});
+- let error:unknown;try{await service.select(selectZen(b.id,old.revision));}catch(value){error=value;}expect(error).toMatchObject({code:'REVISION_CONFLICT'});expect((error as Error).constructor).toBe(ApplicationError);expect(stop).toHaveBeenCalledExactlyOnceWith('p1');expect(live).toBe(0);expect(service.projectSettings('p1','zentao')).toMatchObject({connections:{zentao:a.id},pendingOperationId:null});
++ let error:unknown;try{await service.select(selectZen(b.id,old.revision));}catch(value){error=value;}expect(error).toMatchObject({code:'REVISION_CONFLICT'});expect((error as Error).constructor).toBe(ApplicationError);expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');expect(live).toBe(0);expect(service.projectSettings('p1','zentao')).toMatchObject({connections:{zentao:a.id},pendingOperationId:null});
+ });
+ 
+ describe('SF explicit recovery keeps strict business reads and untouched raw slots',()=>{
+@@ -183,6 +183,6 @@ describe('SF explicit recovery keeps strict business reads and untouched raw slo
+  });
+  it.each(['success','stop-failure','changed-during-stop'] as const)('stops before recovering ambiguous ZenTao identity: %s',async outcome=>{
+   await service.setAdded('zentao',true,0);const a=await connection('zentao','sf-z');await service.select(selectZen(a.id,0));sqlite.prepare("UPDATE application_project_bindings SET identity_revision=identity_revision+1 WHERE project_id='p1' AND app_id='zentao'").run();const before=rows(),v=service.projectView('p1','zentao');live=1;stop.mockImplementationOnce(async()=>{expect(rows()).toEqual(before);if(outcome==='stop-failure')return false;live=0;if(outcome==='changed-during-stop')sqlite.prepare('UPDATE application_connections SET revision=revision+1 WHERE id=?').run(a.id);return true;});const input:ProjectApplicationSelectionInput={projectId:'p1',appId:'zentao',enabled:true,expectedRevision:v.revision,connections:{zentao:a.id},repair:{slot:'zentao',fingerprint:v.repair!.fingerprint}};
+-  if(outcome==='success'){const next=await service.select(input);expect(next.repair).toBeUndefined();expect(service.requireEnabled('p1','zentao').connections.zentao).toBe(a.id);}else{let error:unknown;try{await service.select(input);}catch(e){error=e;}expect(error).toBeInstanceOf(ApplicationError);expect((error as Error).constructor).toBe(ApplicationError);expect(rows()).toEqual(before);expect(service.projectView('p1','zentao').pendingOperationId).toBeNull();}expect(stop).toHaveBeenCalledExactlyOnceWith('p1');
++  if(outcome==='success'){const next=await service.select(input);expect(next.repair).toBeUndefined();expect(service.requireEnabled('p1','zentao').connections.zentao).toBe(a.id);}else{let error:unknown;try{await service.select(input);}catch(e){error=e;}expect(error).toBeInstanceOf(ApplicationError);expect((error as Error).constructor).toBe(ApplicationError);expect(rows()).toEqual(before);expect(service.projectView('p1','zentao').pendingOperationId).toBeNull();}expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');
+  });
+ });
+diff --git a/src/main/core/applications/__tests__/zentao-data.test.ts b/src/main/core/applications/__tests__/zentao-data.test.ts
+index 501d2a572..24be29fba 100644
+--- a/src/main/core/applications/__tests__/zentao-data.test.ts
++++ b/src/main/core/applications/__tests__/zentao-data.test.ts
+@@ -94,6 +94,11 @@ beforeEach(async()=>{
+ afterEach(async()=>{held?.();heldAuthResponse?.();vi.restoreAllMocks();await app.dispose();await owned.cli.exited();for(const socket of sockets)socket.destroy();await new Promise<void>(r=>server.close(()=>r()));f.cleanup();});
+ 
+ describe('original ZenTao tools to actual provider and host-scoped business resources',()=>{
++ it('M11 retains the original local ZenTao reference validator after module composition',async()=>{
++  const current=await app.zentaoWork(sender,'p1',{kind:'bug'}),reference=current.items[0].reference;
++  expect(()=>app.data.zentao.assertStoredReference('p1','bug',reference)).not.toThrow();
++  expect(()=>app.data.zentao.assertStoredReference('p2','bug',reference)).toThrow(expect.objectContaining({code:'NOT_FOUND'}));
++ });
+  it('keeps frozen Agent outputs unchanged while UI alone receives cached instance display metadata',async()=>{
+   const agentList=await list();expect(agentList).not.toHaveProperty('presentation');const agentDetail=await detail(agentList.items[0].reference);expect(agentDetail).not.toHaveProperty('presentation');expect(paths.filter(path=>path.includes('/langs'))).toHaveLength(0);
+   const uiList=await app.zentaoWork(sender,'p1',{kind:'bug'});expect(uiList.presentation?.choices.status.active).toBe('激活');
+diff --git a/src/main/core/applications/application-impact.ts b/src/main/core/applications/application-impact.ts
+index f35eb1f61..7c85747d1 100644
+--- a/src/main/core/applications/application-impact.ts
++++ b/src/main/core/applications/application-impact.ts
+@@ -3,6 +3,7 @@ import {applicationImpactQuerySchema,type ApplicationImpact,type ApplicationImpa
+ import type {ApplicationId,ApplicationProvider} from '@shared/application-connections';
+ import type {ResourceStore} from './resource-store';
+ import {taskUsesApplication} from './application-run-policy';
++import {builtinApplicationModules} from './modules';
+ type Connection={id:string;name:string;providerId:ApplicationProvider;enabled:number;authorization:'connected'|'disconnected'};
+ const changed=()=>new ApplicationError('REVISION_CONFLICT','配置已变化，请关闭并重新打开此操作');
+ /** Pure SQL metadata view. Revocation impact remains inspectable even if package
+@@ -25,9 +26,12 @@ export class ApplicationImpactService {
+    connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE app_id=? ORDER BY name,id').all(appId) as Connection[];
+    projectIds=(db.prepare('SELECT project_id AS id FROM application_project_settings WHERE app_id=? ORDER BY project_id').all(appId) as {id:string}[]).map(p=>p.id);
+   }else{
+-   appId='zentao';const project=db.prepare('SELECT 1 FROM projects WHERE id=?').get(q.projectId);if(!project)throw new ApplicationError('NOT_FOUND','该项目不存在');
+-   const setting=db.prepare("SELECT binding_revision AS revision,pending_operation_id AS pending FROM application_project_settings WHERE project_id=? AND app_id='zentao'").get(q.projectId) as {revision:number;pending:string|null}|undefined;
+-   if((setting?.revision??0)!==q.expectedRevision)throw changed();if(setting&&setting.pending!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换禅道连接，请稍后核对');
++   // Pre-M11 callers omitted the application because only one module required a stop.
++   const legacy=builtinApplicationModules.appIds().filter(id=>builtinApplicationModules.module(id).stopBeforeSwitch);
++   if(!q.appId&&legacy.length!==1)throw new ApplicationError('INVALID_INPUT','请明确需要切换的应用');
++   appId=q.appId??legacy[0];const module=builtinApplicationModules.module(appId),project=db.prepare('SELECT 1 FROM projects WHERE id=?').get(q.projectId);if(!project)throw new ApplicationError('NOT_FOUND','该项目不存在');
++   const setting=db.prepare('SELECT binding_revision AS revision,pending_operation_id AS pending FROM application_project_settings WHERE project_id=? AND app_id=?').get(q.projectId,appId) as {revision:number;pending:string|null}|undefined;
++   if((setting?.revision??0)!==q.expectedRevision)throw changed();if(setting&&setting.pending!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换'+module.presentation.displayName+'连接，请稍后核对');
+    connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE id IN (SELECT connection_id FROM application_project_bindings WHERE project_id=? AND app_id=?) ORDER BY name,id').all(q.projectId,appId) as Connection[];projectIds=[q.projectId];
+   }
+   const projects=projectIds.map(id=>{
+@@ -39,7 +43,7 @@ export class ApplicationImpactService {
+   const runs:ApplicationImpact['runs']=[];
+   if(q.kind==='switch'){
+    const rows=db.prepare("SELECT r.run_id AS id,r.task_id AS taskId,r.state,r.project_id AS runProject,t.title,t.project_id AS taskProject FROM capability_runs r LEFT JOIN tasks t ON t.id=r.task_id WHERE (r.project_id=? OR t.project_id=?) AND r.state NOT IN ('stopped','failed') ORDER BY r.started_at,r.run_id").all(q.projectId,q.projectId) as {id:string;taskId:string;state:string;runProject:string;title:string|null;taskProject:string|null}[];
+-   for(const row of rows){if(row.runProject!==q.projectId||row.taskProject!==null&&row.taskProject!==q.projectId)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','受影响会话的项目归属待核查');if(taskUsesApplication(this.store,q.projectId,row.taskId,'zentao'))runs.push({id:row.id,taskId:row.taskId,title:row.title??'会话 '+row.taskId,state:row.state});}
++   for(const row of rows){if(row.runProject!==q.projectId||row.taskProject!==null&&row.taskProject!==q.projectId)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','受影响会话的项目归属待核查');if(taskUsesApplication(this.store,q.projectId,row.taskId,appId))runs.push({id:row.id,taskId:row.taskId,title:row.title??'会话 '+row.taskId,state:row.state});}
+   }
+   return{kind:q.kind,appId,checkedAt:new Date().toISOString(),connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.providerId,enabled:c.enabled===1,authorization:c.authorization})),projects,runs};
+  }
+diff --git a/src/main/core/applications/application-run-policy.ts b/src/main/core/applications/application-run-policy.ts
+index 22b2438ad..565793aed 100644
+--- a/src/main/core/applications/application-run-policy.ts
++++ b/src/main/core/applications/application-run-policy.ts
+@@ -5,6 +5,7 @@ import { canonicalJson,digest } from './manifest';
+ import { selectionHash } from './session-registry';
+ import { readLaunchRestriction } from './launch-restriction';
+ import type { ResourceStore } from './resource-store';
++import {builtinApplicationModules} from './modules';
+ const unresolved=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验受影响会话的应用范围，已保留原连接选择');
+ /** Read-only stop classification, never business authority. Include preparations
+  * with a fixed selection; valid native-only runs have no loaded application. */
+@@ -41,27 +42,20 @@ export function taskUsesApplication(store:ResourceStore,projectId:string,taskId:
+   return false;
+  }catch{throw unresolved();}
+ }
+-/** ZenTao switching is an explicit launch policy exception; health and ordinary
+- * application revocation remain per-business-call checks. Other selections run. */
+-export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{projectId:string;packages:readonly{appId:string}[]}):void{
+- if(!snapshot.packages.some(p=>p.appId==='zentao'))return;
+- const row=store.sqlite.prepare("SELECT pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id='zentao'").get(snapshot.projectId) as {pending_operation_id:string|null}|undefined;
+- if(row&&row.pending_operation_id!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换禅道连接，请稍后启动或继续相关会话');
++/** A stop-before-switch policy belongs to the registered module, not a hardcoded application. */
++export interface ApplicationSwitchPolicies {appIds():readonly string[];module(id:string):{stopBeforeSwitch:boolean;presentation:{displayName:string}}}
++export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{projectId:string;packages:readonly{appId:string}[]},policies:ApplicationSwitchPolicies=builtinApplicationModules):void{
++ const known=new Set(policies.appIds());
++ for(const selected of snapshot.packages){
++  if(!known.has(selected.appId))continue;const module=policies.module(selected.appId);if(!module.stopBeforeSwitch)continue;
++  const row=store.sqlite.prepare('SELECT pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id=?').get(snapshot.projectId,selected.appId) as {pending_operation_id:string|null}|undefined;
++  if(row&&row.pending_operation_id!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换'+module.presentation.displayName+'连接，请稍后启动或继续相关会话');
++ }
+ }
+ 
+ /** Current source context for the Agent, appended by the host to its original
+  * tool description. Does not alter the frozen name, schemas, version or rights. */
+ export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
+- if(appId!=='zentao')return null;const selected=snapshot.packages.find(p=>p.appId===appId);if(!selected)return null;
+- const row=store.sqlite.prepare(`SELECT s.pending_operation_id,b.connection_id,b.identity_revision,c.name,c.app_id,c.provider_id,c.identity_revision AS actual_identity_revision
+-  FROM application_project_settings s LEFT JOIN application_project_bindings b ON b.project_id=s.project_id AND b.app_id=s.app_id AND b.slot='zentao'
+-  LEFT JOIN application_connections c ON c.id=b.connection_id WHERE s.project_id=? AND s.app_id='zentao'`).get(snapshot.projectId) as {pending_operation_id:string|null;connection_id:string|null;identity_revision:number|null;name:string|null;app_id:string|null;provider_id:string|null;actual_identity_revision:number|null}|undefined;
+- if(row&&row.pending_operation_id!==null)return '项目正在切换禅道连接；本次相关新调用暂不可用，不要自动重放旧请求。';
+- if(selected.bindings.length>1)return '原会话禅道来源身份待核验；请检查项目选用，不要推定来源或改投旧请求。';
+- const original=selected.bindings[0]??null,current=row?.connection_id??null;
+- if(current&&(row?.app_id!=='zentao'||row.provider_id!=='zentao'||row.identity_revision!==row.actual_identity_revision))return '当前禅道来源身份待核验；不要将旧来源对象引用改投其他连接。';
+- if((original?.connectionId??null)===current&&(!original||original.identityRevision===row?.identity_revision))return null;
+- const label=(id:string|null,name:string|null)=>id?JSON.stringify((name??'原连接').slice(0,128))+' ('+id.slice(0,128)+')':'未选用';
+- const old=original?store.sqlite.prepare('SELECT name FROM application_connections WHERE id=?').get(original.connectionId) as {name:string}|undefined:undefined;
+- return '禅道来源已变化：本会话创建时为 '+label(original?.connectionId??null,old?.name??null)+'，本项目当前为 '+label(current,row?.name??null)+'。沿用原工具版本与动作上限；旧来源对象引用不会改投当前来源，需在当前来源重新查询。';
++ if(!builtinApplicationModules.appIds().some(id=>id===appId))return null;
++ return builtinApplicationModules.module(appId).connectionNotice?.(store,snapshot,appId)??null;
+ }
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index b9ca87888..6862d8ad1 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -33,11 +33,11 @@ import type {MailDraftDataView,MailDraftListData} from '@shared/application-data
+ import { dirname, join } from 'node:path';
+ import { z } from 'zod';
+ import { ApplicationError } from '@shared/applications';
+-import { connectionConfigSchema,applicationIdSchema, projectApplicationSelectionSchema, providerApplication, saveConnectionSchema, type ApplicationId, type ProjectApplicationSelectionInput, type SaveApplicationConnection } from '@shared/application-connections';
++import { connectionConfigSchema,applicationIdSchema, type ApplicationId, type ProjectApplicationSelectionInput, type SaveApplicationConnection } from '@shared/application-connections';
+ import type { FileService } from '../files/file-service';
+ import { WorkspaceAttachmentReferences } from './workspace-attachment-references';
+ import type { MailSourceRef } from '@shared/application-mail-data';
+-import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
++import type { ZentaoWorkInput,ZentaoDetailInput,ZentaoWorkData,ZentaoDetailData } from '@shared/application-zentao';
+ import type { SecretsStore } from '../../secrets';
+ import type { ProjectService } from '../projects/project-service';
+ import type { TaskService } from '../tasks/task-service';
+@@ -62,7 +62,7 @@ import { NativeUserMessages } from './native-user-messages';
+ import { MailUserAuthorizations } from './mail-user-authorizations';
+ import { MailReadDataService } from './mail-read-data-service';
+ import { MailDraftDataService } from './draft-data-service';
+-import { ZentaoDataService } from './zentao-data-service';
++import {builtinApplicationModules} from './modules';
+ import { ApplicationBusinessDataService } from './business-data-service';
+ import { BuiltinPackageRegistry } from './builtin-package-registry';
+ import type { CapabilityRunRegistry } from './run-registry';
+@@ -109,16 +109,16 @@ export class ApplicationService {
+     this.activity=new ApplicationActivityService(store);
+     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null,mailSendScope:context=>context.applicationScope&&!context.applicationScope.includes('mail')?null:this.nativeMailScope(context.run.projectId)});
+     this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
+-    this.builtin=new BuiltinPackageRegistry(store);
++    this.builtin=new BuiltinPackageRegistry(store,builtinApplicationModules);
+     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
+-    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:id=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,'zentao')),runningInProject:id=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,'zentao'))});
++    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId))});
+     this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty,prepareStoppedSkillRead:(runId,targets)=>this.nativeMessages.prepareStoppedSkillRead(runId,targets),skillReads:(runId,targets)=>this.nativeMessages.skillReads(runId,targets),skillDiscoveries:(runId,targets)=>this.nativeMessages.skillDiscoveries(runId,targets)});
+     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,uiReadRetryDelays:options.uiReadRetryDelays,uiReadTimeoutMs:options.uiReadTimeoutMs,assertRun:id=>{
+       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
+     }});
+     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
+     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
+-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);this.data=new ApplicationBusinessDataService(new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments}),new ZentaoDataService(this.contexts,this.resources,this.selections),this.mailReads,this.mailSends);
++    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);const draftData=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments});this.data=new ApplicationBusinessDataService({registry:this.connections.registry,hosts:builtinApplicationModules.createHosts({store,contexts:this.contexts,resources:this.resources,selections:this.selections,retained:new Map([['mail',{drafts:draftData,reads:this.mailReads,sends:this.mailSends}]])})});
+     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.observeInput(sender,target,data),uncertain:(sender,target)=>{this.nativeInputs.uncertain(sender,target);this.notifyInvalidSources();}});}
+   }
+   private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
+@@ -153,9 +153,9 @@ export class ApplicationService {
+   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
+   activityDetail(sender:ApplicationUiSender,kind:'operation'|'send',id:string){this.options.requireSender(sender);const detail=this.activity.detail(kind,id),result=detail.item.projectId&&existsSync(join(this.blobs.root,'attachment-exports'))?this.attachmentExportService().forOperation(detail.item.projectId,id):undefined;return{...detail,...(result?{attachmentSave:result}:{}),recoveryIssue:this.mailRecoveryIssue};}
+   catalog(sender:ApplicationUiSender){
+-    this.options.requireSender(sender);return(['zentao','mail'] as const).map(appId=>{
++    this.options.requireSender(sender);return builtinApplicationModules.appIds().map(appId=>{
+       const active=this.builtin.packages.active(appId),versions=this.builtin.packages.list().filter(p=>p.appId===appId),current=versions.find(p=>p.packageHash===active?.packageHash);
+-      return{...this.selections.catalogState(appId),displayName:current?.manifest.displayName??(appId==='mail'?'邮件':'禅道'),description:current?.manifest.description??'',defaultPackageHash:active?.packageHash??null,version:current?.version??null,skills:current?.manifest.skills.map(s=>({id:s.id,description:s.description}))??[],tools:current?.manifest.tools.map(t=>({name:t.name,permission:t.permission,readOnly:t.annotations.readOnlyHint}))??[],versions:versions.map(p=>({packageHash:p.packageHash,version:p.version,state:p.state,defaultForNewSessions:p.packageHash===active?.packageHash})),connectionCount:this.connections.count(appId)};
++      return{...this.selections.catalogState(appId),displayName:current?.manifest.displayName??builtinApplicationModules.module(appId).presentation.displayName,presentation:structuredClone(builtinApplicationModules.module(appId).presentation),slots:[...builtinApplicationModules.module(appId).slots],stopBeforeSwitch:builtinApplicationModules.module(appId).stopBeforeSwitch,providers:builtinApplicationModules.module(appId).providers.map(p=>builtinApplicationModules.providerPresentation(p.id)),description:current?.manifest.description??'',defaultPackageHash:active?.packageHash??null,version:current?.version??null,skills:current?.manifest.skills.map(s=>({id:s.id,description:s.description}))??[],tools:current?.manifest.tools.map(t=>({name:t.name,permission:t.permission,readOnly:t.annotations.readOnlyHint}))??[],versions:versions.map(p=>({packageHash:p.packageHash,version:p.version,state:p.state,defaultForNewSessions:p.packageHash===active?.packageHash})),connectionCount:this.connections.count(appId)};
+     });
+   }
+   private management<T>(sender:ApplicationUiSender,appId:ApplicationId,action:string,semantics:'read'|'write',work:(context:import('./execution-context').ApplicationExecutionContext)=>Promise<T>,projectId?:string):Promise<T>{
+@@ -165,28 +165,28 @@ export class ApplicationService {
+   setAdded(sender:ApplicationUiSender,appId:ApplicationId,added:boolean,expectedRevision:number){return this.management(sender,appId,'application.add','write',()=>this.selections.setAdded(appId,z.boolean().parse(added),z.number().int().nonnegative().parse(expectedRevision)));}
+   setEnabled(sender:ApplicationUiSender,appId:ApplicationId,enabled:boolean,expectedRevision:number){return this.management(sender,appId,'application.enable','write',()=>this.selections.setGlobalEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
+   projectSettings(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.selections.projectView(projectId,appId),projectId);}
+-  select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=projectApplicationSelectionSchema.parse(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
++  select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=this.connections.registry.parseSelection(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
+   listConnections(sender:ApplicationUiSender,appId:ApplicationId){return this.management(sender,appId,'connection.list','read',async()=>this.connections.list(appId));}
+-  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=saveConnectionSchema.parse(input),appId=providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},async context=>{if(value.id){const known=this.connections.get(value.id);if(known.appId!==appId)throw new ApplicationError('SCOPE_DENIED','原连接不属于当前应用');await this.contexts.subject(context,'connection',known.id);}const tested=await this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work));await this.contexts.subject(context,'connection',tested.connectionId);return tested;});}
++  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=this.connections.registry.parseSave(input),appId=this.connections.registry.providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},async context=>{if(value.id){const known=this.connections.get(value.id);if(known.appId!==appId)throw new ApplicationError('SCOPE_DENIED','原连接不属于当前应用');await this.contexts.subject(context,'connection',known.id);}const tested=await this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work));await this.contexts.subject(context,'connection',tested.connectionId);return tested;});}
+   saveConnection(sender:ApplicationUiSender,appId:ApplicationId,operationId:string,candidateHash:string,acceptedImpactHash?:string){
+     uuid.parse(operationId);z.string().regex(/^[a-f0-9]{64}$/).parse(candidateHash);
+     return this.management(sender,appId,'connection.save','write',async context=>{
+       const row=this.store.sqlite.prepare('SELECT candidate_json FROM application_secret_changes WHERE operation_id=?').get(operationId) as {candidate_json:string}|undefined;
+-      if(!row)throw new ApplicationError('NOT_FOUND','该连接测试不存在');const candidate=JSON.parse(row.candidate_json) as {id:string;config:{kind:'zentao'|'foxmail'|'smtp'}};
+-      if(providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');await this.contexts.subject(context,'connection',candidate.id);const saved=await this.connections.commitCandidate(operationId,candidateHash,acceptedImpactHash);await this.contexts.subject(context,'connection',saved.id);return saved;
++      if(!row)throw new ApplicationError('NOT_FOUND','该连接测试不存在');const candidate=JSON.parse(row.candidate_json) as {id:string;config:{kind:string}};
++      if(this.connections.registry.providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');await this.contexts.subject(context,'connection',candidate.id);const saved=await this.connections.commitCandidate(operationId,candidateHash,acceptedImpactHash);await this.contexts.subject(context,'connection',saved.id);return saved;
+     });
+   }
+   discardConnectionTest(sender:ApplicationUiSender,appId:ApplicationId,operationId:string){
+     uuid.parse(operationId);return this.management(sender,appId,'connection.test.discard','write',async()=>{
+       const row=this.store.sqlite.prepare('SELECT candidate_json FROM application_secret_changes WHERE operation_id=?').get(operationId) as {candidate_json:string}|undefined;
+-      if(!row)throw new ApplicationError('NOT_FOUND','该连接测试不存在');const candidate=JSON.parse(row.candidate_json) as {config:{kind:'zentao'|'foxmail'|'smtp'}};
+-      if(providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');await this.connections.discardCandidate(operationId);
++      if(!row)throw new ApplicationError('NOT_FOUND','该连接测试不存在');const candidate=JSON.parse(row.candidate_json) as {config:{kind:string}};
++      if(this.connections.registry.providerApplication(candidate.config.kind)!==appId)throw new ApplicationError('SCOPE_DENIED','测试结果不属于当前应用');await this.connections.discardCandidate(operationId);
+     });
+   }
+   setConnectionEnabled(sender:ApplicationUiSender,id:string,enabled:boolean,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.enable','write',async context=>{await this.contexts.subject(context,'connection',id);return this.connections.setEnabled(id,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision));});}
+   disconnect(sender:ApplicationUiSender,id:string,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.disconnect','write',async context=>{await this.contexts.subject(context,'connection',id);return this.connections.disconnect(id,z.number().int().nonnegative().parse(expectedRevision));});}
+-  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},async context=>await this.data.mail.execute(context,'mail.draft.list',input) as MailDraftListData);}
+-  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},async context=>{const value=await this.data.mail.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}) as {draft:MailDraftDataView};const current=this.store.sqlite.prepare('SELECT current_revision AS revision FROM mail_drafts WHERE id=? AND project_id=?').get(draftId,projectId) as {revision:number}|undefined;if(!current||!Number.isInteger(current.revision)||current.revision<value.draft.revision)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','草稿当前修订记录缺失或损坏');return{...value,currentRevision:current.revision,sendRecord:readDraftSendHistory(this.store,this.activity,projectId,value.draft)};});}
++  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},async context=>await this.data.execute(context,'mail.draft.list',input) as MailDraftListData);}
++  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},async context=>{const value=await this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}) as {draft:MailDraftDataView};const current=this.store.sqlite.prepare('SELECT current_revision AS revision FROM mail_drafts WHERE id=? AND project_id=?').get(draftId,projectId) as {revision:number}|undefined;if(!current||!Number.isInteger(current.revision)||current.revision<value.draft.revision)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','草稿当前修订记录缺失或损坏');return{...value,currentRevision:current.revision,sendRecord:readDraftSendHistory(this.store,this.activity,projectId,value.draft)};});}
+   mailAttachmentList(sender:ApplicationUiSender,projectId:string,input:unknown){const source=mailAttachmentSourceSchema.parse(input);return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.list',operations:['mail.read'],semantics:'read'},context=>this.mailReads.read(context,source));}
+   viewAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){const target=mailAttachmentTargetSchema.parse(input);return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.view',operations:[target.kind==='draft'?'mail.draft':'mail.read'],semantics:'read'},context=>this.attachmentViews.view(context,target));}
+   async readAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){
+@@ -236,15 +236,15 @@ export class ApplicationService {
+   authorizeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.authorize',operations:['mail.send'],semantics:'write'},context=>this.mailSends.confirm(context,sender,input));}
+   cancelSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.cancel',operations:['mail.draft'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.cancel',{intentId}));}
+   captureAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.capture',operations:['mail.draft'],semantics:'read'},scope=>this.fileAttachments.capture(scope,sender,input));}
+-  replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.reply.create',input));}
+-  importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.mail.execute(scope,'mail.attachment.import',input));}
++  replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.execute(scope,'mail.reply.create',input));}
++  importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.execute(scope,'mail.attachment.import',input));}
+   mailQuery(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.query',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.query(scope,input));}
+   mailStatus(sender:ApplicationUiSender,projectId:string,input:unknown={},requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.status',operations:['mail.read'],semantics:'read',signal},scope=>this.mailReads.queryStatus(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+   mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.read(scope,{reference}));}
+   mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.resource(scope,input));}
+   cancelUiRead(sender:ApplicationUiSender,requestId:string){this.options.requireSender(sender);return this.uiReads.cancel(sender,requestId);}
+-  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.zentao.execute(scope,'zentao.work.list',input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+-  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.zentao.execute(scope,'zentao.object.get',input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
++  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.execute(scope,'zentao.work.list',input) as Promise<ZentaoWorkData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
++  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.execute(scope,'zentao.object.get',input) as Promise<ZentaoDetailData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+   zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.resources.read(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+   /** Shared only inside this host; every business read must still check its own execution context. */
+   mailCache():Promise<MailCache>{
+diff --git a/src/main/core/applications/business-data-service.ts b/src/main/core/applications/business-data-service.ts
+index 9c07b482a..b79732db3 100644
+--- a/src/main/core/applications/business-data-service.ts
++++ b/src/main/core/applications/business-data-service.ts
+@@ -6,15 +6,17 @@ import type { MailSendDataService } from './mail-send-data-service';
+ import type { MailReadDataService } from './mail-read-data-service';
+ import type { ZentaoDataService } from './zentao-data-service';
+ import type {ApplicationHostCatalog} from './host-application-registry';
+-interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:ApplicationDataHost}[]}
++type RegisteredData=ApplicationDataHost&{legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
++interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[]}
+ export class ApplicationBusinessDataService implements ApplicationDataHost {
+   private readonly builtinMail?:MailDraftDataService;
+   private readonly builtinZentao?:ZentaoDataService;
+-  get mail():MailDraftDataService{if(!this.builtinMail)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置邮件Data API');return this.builtinMail;}
+-  get zentao():ZentaoDataService{if(!this.builtinZentao)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置禅道Data API');return this.builtinZentao;}
++  /** Compatibility accessors for retained internal M10 consumers. New callers use the generic dispatch below. */
++  get mail():MailDraftDataService{const service=this.builtinMail??this.hosts.get('mail')?.legacyData;if(!service||typeof Reflect.get(service,'execute')!=='function')throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置邮件Data API');return service as MailDraftDataService;}
++  get zentao():ZentaoDataService{const service=this.builtinZentao??this.hosts.get('zentao');if(!service||typeof Reflect.get(service,'assertStoredReference')!=='function')throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置禅道Data API');return service as ZentaoDataService;}
+   readonly mailRead?:MailReadDataService;
+   readonly mailSend?:MailSendDataService;
+-  private readonly hosts=new Map<string,ApplicationDataHost>();
++  private readonly hosts=new Map<string,RegisteredData>();
+   constructor(registration:RegisteredHostData);
+   constructor(mail:MailDraftDataService,zentao:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService);
+   constructor(first:MailDraftDataService|RegisteredHostData,zentao?:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService){
+@@ -26,13 +28,14 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+       if(!zentao)throw new ApplicationError('INVALID_INPUT','内置应用Data API未准备');
+       this.builtinMail=first;this.builtinZentao=zentao;this.mailRead=mailRead;this.mailSend=mailSend;
+       this.hosts.set('zentao',zentao);
+-      this.hosts.set('mail',{resolve:(version,method,binding)=>mailSend&&method.startsWith('mail.send.')?mailSend.resolve(version,method,binding):mailRead&&['mail.query','mail.read','mail.resource.read'].includes(method)?mailRead.resolve(version,method,binding):first.resolve(version,method,binding)});
++      const target=(method:string)=>mailSend&&method.startsWith('mail.send.')?mailSend:mailRead&&['mail.query','mail.read','mail.resource.read'].includes(method)?mailRead:first;
++      this.hosts.set('mail',{resolve:(version,method,binding)=>target(method).resolve(version,method,binding),execute:(context,method,input)=>target(method).execute(context,method,input)});
+     }
+   }
+   resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){
+     const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.resolve(version,method,binding);
+   }
+   execute(context:ApplicationExecutionContext,method:string,input:unknown){
+-    if(context.appId==='mail'&&this.builtinMail)return this.mailSend&&method.startsWith('mail.send.')?this.mailSend.execute(context,method,input):this.mailRead&&['mail.query','mail.read','mail.resource.read'].includes(method)?this.mailRead.execute(context,method,input):this.mail.execute(context,method,input);if(context.appId==='zentao'&&this.builtinZentao)return this.zentao.execute(context,method,input);throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');
++    const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);
+   }
+ }
+diff --git a/src/main/core/applications/config-view-registry.ts b/src/main/core/applications/config-view-registry.ts
+index 96334d8c2..b420c318e 100644
+--- a/src/main/core/applications/config-view-registry.ts
++++ b/src/main/core/applications/config-view-registry.ts
+@@ -1,7 +1,8 @@
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import {connectionConfigSchema,type ConnectionConfig} from '@shared/application-connections';
++import {type ConnectionConfig} from '@shared/application-connections';
+ import {canonicalJson,digest} from './manifest';
++import {builtinApplicationModules} from './modules';
+ 
+ export interface ConfigViewKey {providerId:string;sourceSchemaVersion:number;targetApiMajor:number;identityContractMajor:number}
+ export interface ConfigViewConverter<V extends {kind:string}=ConnectionConfig> extends ConfigViewKey {
+@@ -39,5 +40,12 @@ export class ConfigViewRegistry<V extends {kind:string}=ConnectionConfig> {
+   }catch{throw incompatible();}
+  }
+ }
+-const auth=(source:unknown)=>{const config=source as ConnectionConfig;return config.kind==='foxmail'?'local-readonly':config.authMode;};
+-export const builtinConfigViews=new ConfigViewRegistry(['zentao','foxmail','smtp'].map(providerId=>({providerId,sourceSchemaVersion:1,targetApiMajor:1,identityContractMajor:1,implementationVersion:'1',sourceSchema:connectionConfigSchema,targetSchema:connectionConfigSchema,outputAuthentication:auth,authModes:providerId==='foxmail'?['local-readonly']:providerId==='smtp'?['password']:['token','password'],authentication:auth,convert:(source:unknown)=>source})));
++let current:ConfigViewRegistry<ConnectionConfig>|undefined;
++// Resolve lazily after module composition; initialization never follows the
++// connection/context import cycle into a partially initialized registry.
++export const builtinConfigViews:Pick<ConfigViewRegistry<ConnectionConfig>,'resolve'>={resolve:(...args)=>{
++ // The compiled tuple supplies all current configuration variants. Retained
++ // converters still validate their exact target schema before returning a view.
++ current??=new ConfigViewRegistry(builtinApplicationModules.configViews() as unknown as readonly ConfigViewConverter<ConnectionConfig>[]);
++ return current.resolve(...args);
++}};
+diff --git a/src/main/core/applications/host-application-registry.ts b/src/main/core/applications/host-application-registry.ts
+index 982f7ea6b..8d38364a2 100644
+--- a/src/main/core/applications/host-application-registry.ts
++++ b/src/main/core/applications/host-application-registry.ts
+@@ -1,8 +1,7 @@
+ import {z} from 'zod';
+-import {isAbsolute} from 'node:path';
+ import type Database from 'better-sqlite3';
+ import {ApplicationError} from '@shared/applications';
+-import {connectionConfigSchema,type ApplicationId,type ConnectionConfig,type ApplicationConnection,type SaveApplicationConnection,type VerifiedConnectionIdentity,type VerifiedConnectionCandidate,type ProjectApplicationSelection,type ProjectApplicationSelectionInput} from '@shared/application-connections';
++import {type ApplicationId,type ConnectionConfig,type ApplicationConnection,type SaveApplicationConnection,type VerifiedConnectionIdentity,type VerifiedConnectionCandidate,type ProjectApplicationSelection,type ProjectApplicationSelectionInput} from '@shared/application-connections';
+ 
+ export interface HostedConfiguration {kind:string}
+ /** Main-process compiled identities only; persisted rows never implement this catalog. */
+@@ -98,10 +97,4 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
+   }).immediate();
+  }
+ }
+-export const builtinHostApplications:HostApplicationDefinitions<ConnectionConfig,ApplicationId>={api:1,applications:[{id:'zentao',slots:['zentao'],stopBeforeSwitch:true},{id:'mail',slots:['foxmail','smtp'],stopBeforeSwitch:false}],providers:[
+- {id:'zentao',appId:'zentao',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['token','password']},permissions:{read:'zentao.read',write:'zentao.read'}},
+- {id:'foxmail',appId:'mail',readDefaultKeys:['queryDays'],configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'none',mode:'local-readonly'},permissions:{read:'mail.read',write:'mail.read'},validateCandidate:(config,previous)=>{
+-  if(config.kind!=='foxmail')throw new ApplicationError('INVALID_INPUT','来源类型不符');if(!isAbsolute(config.sourcePath))throw new ApplicationError('INVALID_INPUT','请选择本机Foxmail的完整来源路径');if(previous?.kind==='foxmail'&&previous.sourcePath!==config.sourcePath)throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION','已有来源路径不能覆盖，请新建来源并显式选用');
+- }},
+- {id:'smtp',appId:'mail',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['password']},permissions:{read:'mail.send',write:'mail.send'}},
+-]};
++export {builtinHostApplications} from './modules';
+diff --git a/src/main/core/applications/providers/connection-verifier.ts b/src/main/core/applications/providers/connection-verifier.ts
+index e03925548..754307ffb 100644
+--- a/src/main/core/applications/providers/connection-verifier.ts
++++ b/src/main/core/applications/providers/connection-verifier.ts
+@@ -1,14 +1,13 @@
+ import type { ConnectionConfig, VerifiedConnectionIdentity } from '@shared/application-connections';
+ import type { ConnectionVerifier } from '../connection-service';
+-import { ZentaoClient } from './zentao';
+-import { verifySmtp } from './smtp';
+-import { MailWorkerClient } from './mail-worker-client';
++import { ApplicationError } from '@shared/applications';
++import { builtinApplicationModules } from '../modules';
+ export class ProviderConnectionVerifier implements ConnectionVerifier {
+   constructor(private readonly mailWorker: string,private readonly foxmailNative: string) {}
+   async verify(config: ConnectionConfig,secret: string | null,signal: AbortSignal): Promise<VerifiedConnectionIdentity> {
+-    if (config.kind === 'smtp') return verifySmtp(config,secret,signal);
+-    if (config.kind === 'zentao') { const client = new ZentaoClient(config,secret); try { return await client.verify(signal); } finally { client.close(); } }
+-    const client = new MailWorkerClient(this.mailWorker,this.foxmailNative);
+-    try { return await client.verify(config,signal); } finally { await client.close(); }
++    const provider = builtinApplicationModules.provider(config.kind);
++    const identity = await provider.verify(config,secret,signal,{mailWorker:this.mailWorker,foxmailNative:this.foxmailNative});
++    if(identity.providerId!==config.kind)throw new ApplicationError('AUTH_FAILED','连接校验器返回了其他来源身份');
++    return {...identity,providerId:config.kind};
+   }
+ }
+diff --git a/src/main/core/applications/selection-service.ts b/src/main/core/applications/selection-service.ts
+index a2337af0f..bf8ff569e 100644
+--- a/src/main/core/applications/selection-service.ts
++++ b/src/main/core/applications/selection-service.ts
+@@ -10,8 +10,8 @@ import type { ResourceStore } from './resource-store';
+ 
+ export interface ApplicationSelectionDeps {
+   requireProject(projectId: string): unknown;
+-  stopProjectRuns(projectId: string): Promise<boolean>;
+-  runningInProject(projectId: string): number;
++  stopProjectRuns(projectId: string, appId: string): Promise<boolean>;
++  runningInProject(projectId: string, appId: string): number;
+ }
+ export interface ApplicationCatalogState<A extends string=ApplicationId> { appId: A; added: boolean; enabled: boolean; revision: number }
+ 
+@@ -104,14 +104,14 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
+     if (!needsStop) return value.repair?this.projectView(value.projectId,value.appId):this.projectSettings(value.projectId,value.appId);
+     let stopConfirmed = false;
+     try {
+-      const stopped = await this.deps.stopProjectRuns(value.projectId);
+-      if (!stopped || this.deps.runningInProject(value.projectId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '相关终端尚未确认结束，已保留原连接选择');
++      const stopped = await this.deps.stopProjectRuns(value.projectId, value.appId);
++      if (!stopped || this.deps.runningInProject(value.projectId, value.appId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '相关终端尚未确认结束，已保留原连接选择');
+       stopConfirmed = true;
+       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+         this.validateSelection(value);
+         const current = this.selectionForInput(value);
+         if (current.revision !== value.expectedRevision || current.pendingOperationId !== operationId) throw new ApplicationError('REVISION_CONFLICT', '等待停止期间项目选择已变化');
+-        if (this.deps.runningInProject(value.projectId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '项目又有终端运行，已保留原选择');
++        if (this.deps.runningInProject(value.projectId, value.appId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '项目又有终端运行，已保留原选择');
+         this.commitSelection(value, operationId);
+       }).immediate());
+       return value.repair?this.projectView(value.projectId,value.appId):this.projectSettings(value.projectId,value.appId);
+diff --git a/src/main/core/applications/session-diagnostics.ts b/src/main/core/applications/session-diagnostics.ts
+index 8f27a89a1..08a9fce8f 100644
+--- a/src/main/core/applications/session-diagnostics.ts
++++ b/src/main/core/applications/session-diagnostics.ts
+@@ -9,7 +9,8 @@ import type {SkillReadTarget,SkillReadObservation} from './codex-skill-read-evid
+ import {join,relative,isAbsolute} from 'node:path';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import type {ApplicationId,ApplicationProvider} from '@shared/application-connections';
++import {applicationIdSchema,type ApplicationProvider} from '@shared/application-connections';
++import {builtinApplicationModules} from './modules';
+ import type {ApplicationSessionDiagnostic,SessionApplicationDiagnostic,SessionRunDiagnostic,SessionPreparationEvidence,SessionBridgeEvidence} from '@shared/application-session-diagnostics';
+ import type {ResourceRecord,ResourceStore} from './resource-store';
+ import type {CapabilityRunRegistry} from './run-registry';
+@@ -24,7 +25,7 @@ import {canonicalJson,digest} from './manifest';
+ import {withResourceLock} from './resource-lock';
+ import {readLaunchRestriction} from './launch-restriction';
+ const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
+-const skillObservationSchema=z.object({runId:id,appId:z.enum(['mail','zentao']),skillId:id,kind:z.enum(['discovery','read']),packageHash:hash,recordHash:hash,observedAt:z.iso.datetime(),cliVersion:z.string().min(1).max(128)}).strict();
++const skillObservationSchema=z.object({runId:id,appId:applicationIdSchema,skillId:id,kind:z.enum(['discovery','read']),packageHash:hash,recordHash:hash,observedAt:z.iso.datetime(),cliVersion:z.string().min(1).max(128)}).strict();
+ const path=z.string().min(1).max(4096).refine(v=>v.startsWith('/')&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v));
+ const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:hash,cliVersion:z.string().min(1).max(128).regex(/^[\x20-\x7e]+$/).nullable(),adapterHash:hash,state:z.enum(['prepared','unavailable']),issueCode:issue.nullable(),manifestPath:path,configPaths:z.array(path).max(16),preparedAt:z.iso.datetime()}).strict();
+ const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
+@@ -217,10 +218,10 @@ export class ApplicationSessionDiagnostics {
+   let excluded:ReturnType<typeof readApplicationRunScope>=null;
+   if(currentRun&&session)try{excluded=readApplicationRunScope(this.store,currentRun.id,session.snapshot);}catch{issues.push('RESOURCE_RECOVERY_REQUIRED');}
+   const applications:SessionApplicationDiagnostic[]=[];
+-  for(const name of appIds){if(name!=='mail'&&name!=='zentao')continue;const appId:ApplicationId=name,fixed=session?.snapshot.packages.find(p=>p.appId===appId);let defaultVersion:string|null=null;try{const active=this.packages.active(appId);if(active)defaultVersion=this.packages.get(active.packageHash).version;}catch{/* keep fixed identity, do not substitute default */}
++  for(const name of appIds){const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)continue;const fixed=session?.snapshot.packages.find(p=>p.appId===appId);let defaultVersion:string|null=null;try{const active=this.packages.active(appId);if(active)defaultVersion=this.packages.get(active.packageHash).version;}catch{/* keep fixed identity, do not substitute default */}
+    let policy:SessionApplicationDiagnostic['policy']='unverified';try{if(task.project_id){this.selections.requireEnabled(task.project_id,appId);policy='enabled';}}catch{policy='disabled';}
+    const connections:SessionApplicationDiagnostic['connections']=[];
+-   for(const slot of (appId==='mail'?['foxmail','smtp']:['zentao']) as ApplicationProvider[]){
++   for(const slot of builtinApplicationModules.module(appId).slots as readonly ApplicationProvider[]){
+     const original=fixed?.bindings.find(b=>b.bindingId.endsWith(':'+slot));let originalName:string|null=null;if(original)try{originalName=this.connections.get(original.connectionId).name;}catch{/* preserve original id even if metadata is missing */}
+     let connectionId:string|null=null,selectionState:'same'|'changed'|'missing'|'unverified'='unverified';try{if(task.project_id){const selected=this.selections.connectionSlot(task.project_id,appId,slot);connectionId=selected.connectionId;selectionState=connectionId?(original?.connectionId===connectionId&&original.identityRevision===selected.identityRevision?'same':'changed'):'missing';}}catch{/* disabled or corrupt slot does not grant */}
+     let label:string|null=null,health='unverified',testedAt:string|null=null,compatibility:'compatible'|'incompatible'|'unverified'='unverified',issueCode:string|null=null;
+@@ -230,7 +231,7 @@ export class ApplicationSessionDiagnostics {
+    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\'succeeded\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;
+    const latest=currentRun&&fixed?db.prepare('SELECT error_code,effect_state,attempt_count FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=? ORDER BY started_at DESC,operation_id DESC LIMIT 1').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {error_code:string|null;effect_state:string|null;attempt_count:number}|undefined:undefined;
+    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
+-   applications.push({appId,name:appId==='mail'?'邮件':'禅道',fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
++   applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
+   }
+   const deliveryCopies=task.runner==='claude'?inspectClaudeDeliveryCopies(this.store,taskId):null;
+   return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
+diff --git a/src/renderer/core/navigation.ts b/src/renderer/core/navigation.ts
+index 5f0877ef7..a276c67e7 100644
+--- a/src/renderer/core/navigation.ts
++++ b/src/renderer/core/navigation.ts
+@@ -1,3 +1,4 @@
++import type {ApplicationId} from '@shared/application-connections';
+ import type {ApplicationActivityQuery} from '@shared/application-activity';
+ import { makeAutoObservable } from 'mobx';
+ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
+@@ -6,7 +7,7 @@ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/
+ export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
+ export type ViewId = (typeof VIEW_IDS)[number];
+ 
+-export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects' | 'activity';
++export type ApplicationPage = 'catalog' | 'projects' | 'activity' | ApplicationId;
+ export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
+ 
+ export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
+diff --git a/src/renderer/features/applications/activity.tsx b/src/renderer/features/applications/activity.tsx
+index 43cf283aa..ccdb550ce 100644
+--- a/src/renderer/features/applications/activity.tsx
++++ b/src/renderer/features/applications/activity.tsx
+@@ -1,6 +1,6 @@
+ import {MailAttachmentsDialog} from './mail-attachments';
+ import {useEffect,useRef,useState} from 'react';
+-import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
++import {useInfiniteQuery,useQuery,useQueryClient,useQueries} from '@tanstack/react-query';
+ import {ArrowUpRight} from 'lucide-react';
+ import type {ApplicationActivityItem,ApplicationActivityQuery} from '@shared/application-activity';
+ import type {ApplicationConnection,ApplicationId} from '@shared/application-connections';
+@@ -8,7 +8,8 @@ import {rpc} from '@renderer/lib/ipc';
+ import {navigation} from '@renderer/core/navigation';
+ import {useProjectList} from '@renderer/lib/hooks/useProjects';
+ import {AppDialog,AppEmpty,AppMark,timeText} from './controls';
+-import {appNames,unwrap,useConnections} from './api';
++import {appNames,unwrap} from './api';
++import {applicationModuleMetadata} from '@shared/application-provider-metadata';
+ import {DraftDetail,sendState} from './mail-panel';
+ import {ConnectionForm} from './connection-form';
+ const actions:Record<string,string>={
+@@ -26,18 +27,19 @@ const caller=(item:ApplicationActivityItem)=>item.callerKind==='ui'?'界面操
+ const category=(item:ApplicationActivityItem)=>item.kind==='send'?'SMTP 发送':/send[._]execute/.test(item.action)?'发送请求':/draft|reply|attachment/.test(item.action)?'草稿与附件':/connection|^application\./.test(item.action)?'配置与状态':item.semantics==='read'?'读取':'本地操作';
+ export function ActivityWorkspace({initialFilter={}}:{initialFilter?:ApplicationActivityQuery}){
+  const [appId,setAppId]=useState<ApplicationId|''>(initialFilter.appId??''),[connectionId,setConnectionId]=useState(initialFilter.connectionId??''),[projectId,setProjectId]=useState(initialFilter.projectId??''),[selected,setSelected]=useState<{kind:'operation'|'send';id:string}|null>(null);
+- const mail=useConnections('mail'),zentao=useConnections('zentao'),{data:projects=[]}=useProjectList();
+- const connections=[...(mail.data??[]),...(zentao.data??[])].filter(c=>!appId||c.appId===appId);
++ const connectionQueries=useQueries({queries:applicationModuleMetadata.map(module=>({queryKey:['applications','connections',module.appId],queryFn:async()=>unwrap(await rpc.applications.connections(module.appId as ApplicationId)),retry:false}))}),{data:projects=[]}=useProjectList();
++ const allConnections=connectionQueries.flatMap(query=>query.data??[]).sort((a,b)=>a.appId.localeCompare(b.appId)),connectionError=connectionQueries.find(query=>query.error)?.error;
++ const connections=allConnections.filter(c=>!appId||c.appId===appId);
+  const filter={...(appId?{appId}:{}),...(connectionId?{connectionId}:{}),...(projectId?{projectId}:{})};
+  const query=useInfiniteQuery({queryKey:['applications','activity',filter],initialPageParam:null as string|null,queryFn:async({pageParam})=>unwrap(await rpc.applications.activity({...filter,limit:50,cursor:pageParam})),getNextPageParam:last=>last.nextCursor??undefined,retry:false,refetchOnWindowFocus:false});
+  const items=query.data?.pages.flatMap(p=>p.items)??[];
+  return <><header className="m10-page-head"><div><h1>调用记录</h1><p>查看操作来源、当前阶段和需要恢复的事项。</p></div><button className="m10-button secondary" disabled={query.isFetching} onClick={()=>void query.refetch()}>刷新记录</button></header>
+- <div className="m10-activity-filters"><label>应用<select aria-label="按应用筛选记录" value={appId} onChange={e=>{setAppId(e.target.value as ApplicationId|'');setConnectionId('');}}><option value="">全部应用</option><option value="zentao">禅道</option><option value="mail">邮件</option></select></label><label>连接<select aria-label="按连接筛选记录" value={connectionId} onChange={e=>setConnectionId(e.target.value)}><option value="">全部连接</option>{connections.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}{connectionId&&!connections.some(c=>c.id===connectionId)&&<option value={connectionId}>原记录连接</option>}</select></label><label>项目<select aria-label="按项目筛选记录" value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">全部项目</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}{projectId&&!projects.some(p=>p.id===projectId)&&<option value={projectId}>原记录项目</option>}</select></label></div>
++ <div className="m10-activity-filters"><label>应用<select aria-label="按应用筛选记录" value={appId} onChange={e=>{setAppId(e.target.value as ApplicationId|'');setConnectionId('');}}><option value="">全部应用</option>{applicationModuleMetadata.map(module=><option value={module.appId} key={module.appId}>{module.presentation.displayName}</option>)}</select></label><label>连接<select aria-label="按连接筛选记录" value={connectionId} onChange={e=>setConnectionId(e.target.value)}><option value="">全部连接</option>{connections.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}{connectionId&&!connections.some(c=>c.id===connectionId)&&<option value={connectionId}>原记录连接</option>}</select></label><label>项目<select aria-label="按项目筛选记录" value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">全部项目</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}{projectId&&!projects.some(p=>p.id===projectId)&&<option value={projectId}>原记录项目</option>}</select></label></div>
+  {query.data?.pages[0]?.recoveryIssue&&<p className="m10-note" role="alert">{query.data.pages[0].recoveryIssue.message}</p>}
+- {(mail.error||zentao.error)&&<p className="m10-note" role="alert">连接名称未全部载入，已有记录按原连接身份保留。{(mail.error??zentao.error)?.message}</p>}
++ {connectionError&&<p className="m10-note" role="alert">连接名称未全部载入，已有记录按原连接身份保留。{connectionError?.message}</p>}
+  {query.isPending||(query.isFetching&&query.isError)?<AppEmpty loading title="正在读取调用记录" text="读取本机持久操作账与发送结果。"/>:query.error?<AppEmpty error title="调用记录读取未完成" text={query.error.message} action="重试读取" onAction={()=>void query.refetch()}/>:<>{items.length===0&&<AppEmpty title="当前筛选没有调用记录" text="读取、草稿、配置和发送操作会按实际来源保留在这里。"/>}<div className="m10-activity-list">{items.map(item=><button className="m10-activity-row" key={item.kind+':'+item.id} onClick={()=>setSelected({kind:item.kind,id:item.id})}><AppMark app={item.appId}/><span className="m10-activity-copy"><strong>{activityAction(item)}<small className="m10-inline-label">{category(item)}</small></strong><small>{item.projectName??(item.projectId?'已删除项目':'全局配置')} · {item.connections.map(c=>c.name??'原连接').join('、')||'未涉及连接'} · {caller(item)}{item.taskTitle?' · '+item.taskTitle:''}</small><small>{timeText(item.startedAt,'未记录')}{item.attemptCount?' · '+item.attemptCount+' 次尝试':''}{item.errorCode?' · '+item.errorCode:''}</small></span><span className={'m10-state '+(item.state==='succeeded'||item.state==='server-accepted'?'ready':item.state==='failed'||item.state==='unknown'?item.state:'')}>{activityState(item)}</span></button>)}</div>{query.hasNextPage&&<button className="m10-button secondary" disabled={query.isFetchingNextPage} onClick={()=>void query.fetchNextPage()}>读取更早记录</button>}</>}
+  <p className="m10-muted">调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。</p>
+- {selected&&<ActivityDetail key={selected.kind+':'+selected.id} {...selected} connections={[...(mail.data??[]),...(zentao.data??[])]} onClose={()=>setSelected(null)} onLinkedSend={id=>setSelected({kind:'send',id})}/>}
++ {selected&&<ActivityDetail key={selected.kind+':'+selected.id} {...selected} connections={allConnections} onClose={()=>setSelected(null)} onLinkedSend={id=>setSelected({kind:'send',id})}/>}
+  </>;
+ }
+ function ActivityDetail({kind,id,connections,onClose,onLinkedSend}:{kind:'operation'|'send';id:string;connections:ApplicationConnection[];onClose:()=>void;onLinkedSend?:(id:string)=>void}){
+diff --git a/src/renderer/features/applications/api.ts b/src/renderer/features/applications/api.ts
+index c0d7c4565..edf5841e3 100644
+--- a/src/renderer/features/applications/api.ts
++++ b/src/renderer/features/applications/api.ts
+@@ -6,12 +6,13 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
+ import {applicationsChangedEvent} from '@shared/events';
+ import type {ApplicationDataReply} from '@shared/application-data';
+ import type {ApplicationId} from '@shared/application-connections';
++import {applicationModuleMetadata} from '@shared/application-provider-metadata';
+ import {rpcErrorMessage} from '@shared/ipc/rpc';
+ import {events,rpc} from '@renderer/lib/ipc';
+ export type CatalogItem=Extract<Awaited<ReturnType<typeof rpc.applications.catalog>>,{ok:true}>['value'][number];
+ export class ApplicationUiError extends Error {constructor(readonly code:string,message:string){super(message);}}
+ export function unwrap<T>(reply:ApplicationDataReply<T>):T {if(!reply.ok)throw new ApplicationUiError(reply.code,reply.message);return reply.value;}
+-export const appNames:Record<ApplicationId,string>={zentao:'禅道',mail:'邮件'};
++export const appNames=Object.fromEntries(applicationModuleMetadata.map(m=>[m.appId,m.presentation.displayName])) as Record<ApplicationId,string>;
+ // Display only;null prototype keeps unknown Skill IDs from inheriting labels.
+ export const skillNames:Readonly<Record<string,string>>=Object.freeze(Object.assign(Object.create(null) as Record<string,string>,skillLabels));
+ export function useApplicationEvents(){const client=useQueryClient();useEffect(()=>events.on(applicationsChangedEvent,change=>{
+diff --git a/src/renderer/features/applications/connection-form.tsx b/src/renderer/features/applications/connection-form.tsx
+index f3d00c8a0..5457e85ca 100644
+--- a/src/renderer/features/applications/connection-form.tsx
++++ b/src/renderer/features/applications/connection-form.tsx
+@@ -2,36 +2,34 @@ import {useEffect,useRef,useState} from 'react';
+ import {CircleCheck,FolderOpen,LoaderCircle,RefreshCw,ShieldCheck} from 'lucide-react';
+ import {providerApplication,saveConnectionSchema,type ApplicationConnection,type ApplicationProvider,type ConnectionConfig,type SaveApplicationConnection,type VerifiedConnectionCandidate} from '@shared/application-connections';
+ import {rpcErrorMessage} from '@shared/ipc/rpc';
++import {applicationProviderMetadata,applicationProviderFields} from '@shared/application-provider-metadata';
++import type {ApplicationFormField} from '@shared/application-presentation';
+ import {rpc} from '@renderer/lib/ipc';
+ import {AppDialog,Field} from './controls';
+ import {unwrap} from './api';
+-const initial=(kind:ApplicationProvider):ConnectionConfig=>kind==='zentao'?{kind,baseUrl:'',username:'',authMode:'token'}:kind==='foxmail'?{kind,sourcePath:'',account:'',queryDays:30}:{kind,host:'',port:465,username:'',fromAddress:'',authMode:'password',mode:'implicit-tls'};
+-const titles={zentao:'禅道',foxmail:'Foxmail 本地读取',smtp:'SMTP 发件'};
+-// Keep validation useful to the user; schema diagnostics are an internal detail.
++// Validation text and controls come from the same compiled module metadata as the host catalog.
+ function validationMessage(issue:{path:PropertyKey[];code:string},kind:ApplicationProvider){
+  const path=issue.path.join('.');
+  if(path==='name')return issue.code==='too_big'?'连接名称最多120个字符。':issue.code==='too_small'?'请输入连接名称。':'请输入不含控制字符的连接名称。';
+- const messages:Record<string,string>={
+-  'config.sourcePath':'请选择完整的本地来源路径。','config.account':'请明确填写这个本地来源的邮箱账号。','config.queryDays':'请输入1–100之间的整数天数。',
+-  'config.baseUrl':'请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。','config.username':kind==='smtp'?'请输入有效的SMTP登录账号。':'请输入有效的用户名。',
+-  'config.host':'请填写邮件服务主机名。','config.port':'端口必须为1–65535之间的整数。','config.fromAddress':'请输入有效的发件地址。',
+-  'config.authMode':kind==='zentao'?'不支持的禅道认证方式。':'不支持的发件认证方式。','config.mode':'不支持的 SMTP 连接方式。','secret':'请核对认证信息。',
+- };
+- return messages[path]??'请核对连接配置后再测试。';
++ const provider=applicationProviderMetadata(kind),field=applicationProviderFields(provider).find(field=>'config.'+field.key===path);
++ if(field)return field.validation;
++ if(path==='config.authMode')return provider.secret?.authModeValidation??'不支持的认证方式。';
++ return path==='secret'?'请核对认证信息。':'请核对连接配置后再测试。';
+ }
+ /** Secrets live only in this form. Main owns test receipts; any edit invalidates the receipt. */
+ export function ConnectionForm({kind,connection,onClose,onSaved}:{kind:ApplicationProvider;connection?:ApplicationConnection;onClose:()=>void;onSaved:()=>Promise<unknown>}){
+- const [name,setName]=useState(connection?.name??''),[config,setConfig]=useState<ConnectionConfig>(connection?.config??initial(kind)),[secret,setSecret]=useState(''),[candidate,setCandidate]=useState<VerifiedConnectionCandidate|null>(null),[phase,setPhase]=useState<'idle'|'testing'|'ready'|'saving'>('idle'),[error,setError]=useState(''),[acceptImpact,setAcceptImpact]=useState(false);
++ const provider=applicationProviderMetadata(kind);
++ const [name,setName]=useState(connection?.name??''),[config,setConfig]=useState<ConnectionConfig>(connection?.config??({...provider.initial} as ConnectionConfig)),[secret,setSecret]=useState(''),[candidate,setCandidate]=useState<VerifiedConnectionCandidate|null>(null),[phase,setPhase]=useState<'idle'|'testing'|'ready'|'saving'>('idle'),[error,setError]=useState(''),[acceptImpact,setAcceptImpact]=useState(false);
+  const live=useRef(true),receipt=useRef<VerifiedConnectionCandidate|null>(null),generation=useRef(0),committed=useRef(false),appId=providerApplication(kind);
+  const discard=(value:VerifiedConnectionCandidate|null)=>{if(value)void rpc.applications.discardConnectionTest(appId,value.operationId).catch(()=>{});};
+  useEffect(()=>{live.current=true;return()=>{live.current=false;generation.current++;if(!committed.current)discard(receipt.current);receipt.current=null;};},[]);
+  const invalidate=()=>{generation.current++;discard(receipt.current);receipt.current=null;setCandidate(null);setPhase('idle');setAcceptImpact(false);setError('');};
+- const change=(patch:Partial<ConnectionConfig>)=>{invalidate();setConfig(current=>({...current,...patch}) as ConnectionConfig);};
++ const change=(patch:Record<string,unknown>)=>{invalidate();setConfig(current=>({...current,...patch}) as ConnectionConfig);};
+  const test=async()=>{
+   if(phase==='testing'||phase==='saving')return;invalidate();const attempt=generation.current;
+   const input:SaveApplicationConnection={...(connection?{id:connection.id}:{}),name,config,expectedRevision:connection?.revision??0,...(secret?{secret}:{})};const parsed=saveConnectionSchema.safeParse(input);
+   if(!parsed.success){setError(parsed.error.issues[0]?validationMessage(parsed.error.issues[0],kind):'请核对连接配置后再测试。');return;}
+-  if(config.kind!=='foxmail'&&!secret&&!connection?.hasSecret){setError('请填写认证凭据后再测试连接');return;}setPhase('testing');
++  if(provider.secret&&!secret&&!connection?.hasSecret){setError('请填写认证凭据后再测试连接');return;}setPhase('testing');
+   try{const value=unwrap(await rpc.applications.testConnection(parsed.data));if(!live.current||attempt!==generation.current){discard(value);return;}receipt.current=value;setCandidate(value);setPhase('ready');}
+   catch(error){if(live.current&&attempt===generation.current){setError(rpcErrorMessage(error));setPhase('idle');}}
+  };
+@@ -41,14 +39,19 @@ export function ConnectionForm({kind,connection,onClose,onSaved}:{kind:Applicati
+   catch(error){if(live.current){setError(rpcErrorMessage(error));setPhase('idle');discard(receipt.current);receipt.current=null;setCandidate(null);}}
+  };
+  const locked=phase==='testing'||phase==='saving';
+- return <AppDialog closingDisabled={phase==='saving'} title={(connection?'编辑／重新连接':'添加')+titles[kind]+'连接'} onClose={()=>{if(phase!=='saving')onClose();}}><form onSubmit={event=>{event.preventDefault();void save();}}>
++ const field=(definition:ApplicationFormField)=>{
++  const raw=Reflect.get(config,definition.key),value=definition.type==='number'?(typeof raw==='number'&&!Number.isNaN(raw)?raw:''):String(raw??''),disabled=!!connection&&definition.immutable;
++  const input=definition.type==='select'?<select aria-label={definition.label} disabled={disabled} value={value} onChange={e=>change({[definition.key]:e.target.value})}>{definition.options?.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select>:<input aria-label={definition.label} type={definition.type==='directory'?'text':definition.type} disabled={disabled} value={value} min={definition.min} max={definition.max} step={definition.step} onChange={e=>change({[definition.key]:definition.type==='number'?(e.target.value===''?Number.NaN:Number(e.target.value)):e.target.value})} placeholder={definition.placeholder} autoComplete={definition.autoComplete} required={definition.required}/>;
++  return <Field key={definition.key} title={definition.title} note={definition.note}>{definition.type==='directory'?<div className="m10-input-action">{input}<button type="button" className="m10-button secondary" disabled={disabled} onClick={()=>void rpc.dialog.pickDirectory(String(raw||'')||undefined).then(path=>{if(path&&live.current)change({[definition.key]:path});}).catch(error=>setError(rpcErrorMessage(error)))}><FolderOpen size={14}/>选择目录</button></div>:input}</Field>;
++ };
++ const secretTitle=provider.secret?.conditionalTitle&&Reflect.get(config,provider.secret.conditionalTitle.field)===provider.secret.conditionalTitle.value?provider.secret.conditionalTitle.title:provider.secret?.title;
++ return <AppDialog closingDisabled={phase==='saving'} title={(connection?'编辑／重新连接':'添加')+provider.title+'连接'} onClose={()=>{if(phase!=='saving')onClose();}}><form onSubmit={event=>{event.preventDefault();void save();}}>
+   <p className="m10-form-intro"><ShieldCheck size={17}/>认证信息由本机加密存储管理。连接测试不发送邮件。</p>
+   {connection&&<p className="m10-note">仅更新同一身份的配置或认证。更换服务、账号或本地来源请添加新连接，再到项目中明确选择。</p>}
+   <fieldset disabled={locked} className="m10-form-fields"><Field title="连接名称"><input aria-label="连接名称" maxLength={120} value={name} onChange={event=>{invalidate();setName(event.target.value);}} required/></Field>
+-  {config.kind==='zentao'&&<><Field title="服务地址"><input aria-label="禅道服务地址" type="url" disabled={!!connection} value={config.baseUrl} onChange={e=>change({baseUrl:e.target.value})} placeholder="https://zentao.example.com/" required/></Field><Field title="账号"><input aria-label="禅道账号" disabled={!!connection} value={config.username} onChange={e=>change({username:e.target.value})} autoComplete="off" required/></Field><Field title="认证方式"><select aria-label="禅道认证方式" value={config.authMode} onChange={e=>change({authMode:e.target.value as 'token'|'password'})}><option value="token">Token</option><option value="password">密码</option></select></Field></>}
+-  {config.kind==='foxmail'&&<><Field title="Foxmail 本地来源" note="选择单个本机邮箱账号的来源目录或 messages.db；只读原文件，不触发收信。"><div className="m10-input-action"><input aria-label="Foxmail 本地来源" disabled={!!connection} value={config.sourcePath} onChange={e=>change({sourcePath:e.target.value})} placeholder="本机来源完整路径" required/><button type="button" className="m10-button secondary" disabled={!!connection} onClick={()=>void rpc.dialog.pickDirectory(config.sourcePath||undefined).then(path=>{if(path&&live.current)change({sourcePath:path});}).catch(error=>setError(rpcErrorMessage(error)))}><FolderOpen size={14}/>选择目录</button></div></Field><Field title="邮箱账号"><input aria-label="Foxmail 邮箱账号" disabled={!!connection} value={config.account} onChange={e=>change({account:e.target.value})} placeholder="me@example.com" required/></Field><Field title="默认查询天数" note="含当天，按本机时区计算；查询范围与缓存保留时间独立。"><input aria-label="邮件查询天数" type="number" min={1} max={100} step={1} value={Number.isNaN(config.queryDays)?'':config.queryDays} onChange={e=>change({queryDays:e.target.value===''?Number.NaN:Number(e.target.value)})} required/></Field></>}
+-  {config.kind==='smtp'&&<><p className="m10-muted">通过独立 SMTP 服务器发送，在 WillYou 保留结果，不写入 Foxmail 已发送。</p><div className="m10-form-grid"><Field title="服务主机"><input aria-label="SMTP 服务主机" disabled={!!connection} value={config.host} onChange={e=>change({host:e.target.value})} required/></Field><Field title="端口"><input aria-label="SMTP 端口" type="number" min={1} max={65535} value={Number.isNaN(config.port)?'':config.port} onChange={e=>change({port:e.target.value===''?Number.NaN:Number(e.target.value)})} required/></Field></div><Field title="连接方式"><select aria-label="SMTP 连接方式" value={config.mode} onChange={e=>change({mode:e.target.value as 'plain'|'starttls'|'implicit-tls'})}><option value="implicit-tls">隐式 TLS</option><option value="starttls">STARTTLS</option><option value="plain">不加密（按服务配置）</option></select></Field><Field title="登录账号"><input aria-label="SMTP 登录账号" disabled={!!connection} value={config.username} onChange={e=>change({username:e.target.value})} autoComplete="off" required/></Field><Field title="发件地址"><input aria-label="SMTP 发件地址" type="email" disabled={!!connection} value={config.fromAddress} onChange={e=>change({fromAddress:e.target.value})} required/></Field></>}
+-  {config.kind!=='foxmail'&&<Field title={config.kind==='zentao'&&config.authMode==='token'?'Token':'认证密码'} note={connection?.hasSecret?'留空沿用当前本机凭据；输入新值会在保存时轮换。':'不会从 Foxmail 或其他连接中提取密码。'}><input aria-label="认证凭据" type="password" value={secret} onChange={e=>{invalidate();setSecret(e.target.value);}} autoComplete="new-password" required={!connection?.hasSecret}/></Field>}</fieldset>
++  {provider.intro&&<p className="m10-muted">{provider.intro}</p>}
++  {provider.groups.map((group,index)=>'row' in group?<div className="m10-form-grid" key={index}>{group.row.map(field)}</div>:field(group))}
++  {provider.secret&&<Field title={secretTitle??'认证密码'} note={connection?.hasSecret?'留空沿用当前本机凭据；输入新值会在保存时轮换。':'不会从 Foxmail 或其他连接中提取密码。'}><input aria-label="认证凭据" type="password" value={secret} onChange={e=>{invalidate();setSecret(e.target.value);}} autoComplete="new-password" required={!connection?.hasSecret}/></Field>}</fieldset>
+   <div className={'m10-test-status '+phase} role="status">{phase==='testing'?<><LoaderCircle size={16}/>正在测试连接…</>:phase==='ready'?<><CircleCheck size={16}/>身份验证通过，可保存连接</>:phase==='saving'?'正在保存…':'保存前请测试；修改字段后需要重新测试。'}</div>
+   {candidate&&candidate.compatibility.impacts.length>0&&<section className="m10-note m10-connection-preflight" aria-label="配置兼容预检"><p>此配置可能影响历史版本：</p><ul>{candidate.compatibility.impacts.map((impact,i)=><li key={i}>v{impact.version}{impact.taskId?' · 会话 '+impact.taskId:''} · {impact.reason}</li>)}</ul><label className="m10-check"><input type="checkbox" checked={acceptImpact} onChange={e=>setAcceptImpact(e.target.checked)}/>已核对影响，仍保存此配置</label></section>}
+   {error&&<p className="m10-note" role="alert">{error}</p>}
+diff --git a/src/renderer/features/applications/controls.tsx b/src/renderer/features/applications/controls.tsx
+index b1a128aad..8ebd7834a 100644
+--- a/src/renderer/features/applications/controls.tsx
++++ b/src/renderer/features/applications/controls.tsx
+@@ -1,7 +1,8 @@
+ import {useEffect,useRef,type ComponentType,type ReactNode} from 'react';
+-import {CircleAlert,LoaderCircle,Mail,Search,X} from 'lucide-react';
++import {CircleAlert,LoaderCircle,Mail,Link2,Search,X} from 'lucide-react';
+ import type {ApplicationId} from '@shared/application-connections';
+-export function AppMark({app,large=false}:{app:ApplicationId;large?:boolean}){return <span className={'m10-appmark '+app+(large?' large':'')}>{app==='mail'?<Mail size={large?31:23} strokeWidth={1.7}/>:<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 10h16L10 22h14M7 16h6" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}</span>;}
++import {applicationMetadata} from '@shared/application-provider-metadata';
++export function AppMark({app,large=false}:{app:ApplicationId;large?:boolean}){const mark=applicationMetadata(app).presentation.mark;return <span className={'m10-appmark '+app+(large?' large':'')}>{mark==='envelope'?<Mail size={large?31:23} strokeWidth={1.7}/>:mark==='zigzag'?<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 10h16L10 22h14M7 16h6" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/></svg>:<Link2 size={large?31:23} strokeWidth={1.7}/>}</span>;}
+ export function IconButton({icon:Icon,label,onClick,disabled=false,expanded}:{icon:ComponentType<{size?:number;strokeWidth?:number}>;label:string;onClick:()=>void;disabled?:boolean;expanded?:boolean}){return <button type="button" className="m10-icon" title={label} aria-label={label} aria-expanded={expanded} disabled={disabled} onClick={onClick}><Icon size={17} strokeWidth={1.6}/></button>;}
+ export function AppSwitch({checked,label,disabled,onChange}:{checked:boolean;label:string;disabled?:boolean;onChange:(checked:boolean)=>void}){return <button type="button" className={'m10-switch '+(checked?'on':'')} role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={()=>onChange(!checked)}><span/></button>;}
+ export function AppDialog({title,children,onClose,wide=false,closingDisabled=false,className='',heading}:{title:string;children:ReactNode;onClose:()=>void;wide?:boolean;closingDisabled?:boolean;className?:string;heading?:ReactNode}){
+diff --git a/src/renderer/features/applications/panels.test.tsx b/src/renderer/features/applications/panels.test.tsx
+index 269d0bdae..998eeedaf 100644
+--- a/src/renderer/features/applications/panels.test.tsx
++++ b/src/renderer/features/applications/panels.test.tsx
+@@ -1,3 +1,4 @@
++import {applicationMetadata} from '@shared/application-provider-metadata';
+ // @vitest-environment jsdom
+ import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+@@ -9,7 +10,7 @@ import type {CatalogItem} from './api';
+ const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),cancelUiRead:vi.fn().mockResolvedValue({ok:true,value:{canceled:true}}),zentaoWork:vi.fn(),zentaoObject:vi.fn(),zentaoResource:vi.fn(),mailStatus:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),drafts:vi.fn(),draft:vi.fn(),resource:vi.fn(),prepareSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),executeSend:vi.fn(),send:vi.fn(),cancelSend:vi.fn()}));
+ vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:()=>()=>{}}}));
+ const ok=<T,>(value:T)=>({ok:true as const,value}),id='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64),now='2026-10-20T00:00:00Z';
+-const app=(appId:'mail'|'zentao'):CatalogItem=>({appId,added:true,enabled:true,revision:1,displayName:appId,description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1});
++const app=(appId:'mail'|'zentao'):CatalogItem=>({...applicationMetadata(appId),appId,added:true,enabled:true,revision:1,displayName:appId,description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1});
+ const source={connectionId:id,identityRevision:1,nativeId:'12',contentRevision:hash};
+ const resource={id,revision:hash,mediaType:'text/plain',size:7};
+ const content={mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['to@example.test'],cc:['cc@example.test'],bcc:['private@example.test'],subject:'Private draft',text:resource,html:null,inReplyTo:null,references:[],attachmentIds:[]};
+diff --git a/src/renderer/features/applications/project-applications.tsx b/src/renderer/features/applications/project-applications.tsx
+index 30569faa9..d1f61b758 100644
+--- a/src/renderer/features/applications/project-applications.tsx
++++ b/src/renderer/features/applications/project-applications.tsx
+@@ -1,5 +1,6 @@
+ import {ApplicationTerminalButton} from './terminal-insertion';
+ import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
++import {applicationConnectionSummary} from '@shared/application-provider-metadata';
+ import {ApplicationImpactView,impactReady} from './impact';
+ import {useEffect,useLayoutEffect,useRef,useState} from 'react';
+ import {ArrowUpRight,ChevronRight,Database,SquareTerminal,Zap} from 'lucide-react';
+@@ -11,7 +12,7 @@ import {rpc} from '@renderer/lib/ipc';
+ import {appNames,skillNames,unwrap,useApplicationImpact,useApplicationAction,useCatalog,useConnections,useProjectApplication,type CatalogItem} from './api';
+ import {AppDialog,AppEmpty,AppMark,AppSwitch,connectionState} from './controls';
+ type Project={id:string;name:string;archivedAt:number|null};
+-const sourceText=(connection:ApplicationConnection)=>connection.config.kind==='zentao'?connection.config.username+' · '+connection.config.baseUrl:connection.config.kind==='foxmail'?connection.config.account+' · '+connection.config.sourcePath:connection.config.fromAddress+' · '+connection.config.host;
++const sourceText=(connection:ApplicationConnection)=>applicationConnectionSummary(connection.config).summary;
+ export const ProjectApplications=observer(function ProjectApplications({project}:{project:Project}){
+  const catalog=useCatalog();
+  if(catalog.isPending)return <AppEmpty loading title="正在加载项目应用" text="正在读取本机应用与项目选用。"/>;
+@@ -30,21 +31,22 @@ const ProjectApplication=observer(function ProjectApplication({project,app}:{pro
+  // Native disabled radios lose focus while the original async selection commits.
+  // Return only this interaction's target; another input/navigation cancels ownership.
+  useLayoutEffect(()=>{const target=selectionFocus.current;if(!target)return;if(!target.isConnected){selectionFocus.current=null;return;}if(disabled)return;selectionFocus.current=null;if(document.activeElement===document.body||document.activeElement===target)target.focus({preventScroll:true});});
+- const impact=useApplicationImpact(switchTo?{kind:'switch',projectId:project.id,expectedRevision:switchTo.expectedRevision}:null);
+- const currentZen=connections.data?.find(c=>c.id===selection?.connections.zentao);
++ const impact=useApplicationImpact(switchTo?{kind:'switch',appId:app.appId,projectId:project.id,expectedRevision:switchTo.expectedRevision}:null);
++ const switchingSlot=switchTo?app.providers.map(p=>p.id as ApplicationProvider).find(slot=>selection?.repair?.slots.includes(slot)||selection?.connections[slot]!==switchTo.connections[slot]):undefined;
++ const currentConnection=switchingSlot?connections.data?.find(c=>c.id===selection?.connections[switchingSlot]):undefined;
+  const terminalSkill=app.skills.find(skill=>Object.hasOwn(APPLICATION_SKILL_EXAMPLES,app.appId+':'+skill.id)),canUseTerminal=!!terminalSkill&&app.added&&app.enabled&&!!selection?.enabled&&!selection.repair&&!disabled&&!query.isFetching&&!query.error&&!connections.error;
+  const commit=async(input:ProjectApplicationSelectionInput,target?:HTMLInputElement)=>{selectionFocus.current=target&&document.activeElement===target?target:null;const done=await action.run('selection',async()=>{unwrap(await rpc.applications.select(input));await tasksStore.refresh();});if(done)setSwitchTo(null);};
+  const change=(slot:ApplicationProvider,id:string|null,target:HTMLInputElement)=>{
+   if(!selection||disabled)return;const next:ProjectApplicationSelectionInput={projectId:project.id,appId:app.appId,expectedRevision:selection.revision,enabled:selection.enabled,connections:{...selection.connections,[slot]:id},...(selection.repair?{repair:{slot,fingerprint:selection.repair.fingerprint}}:{})};
+-  if(slot==='zentao'&&(selection.repair||selection.connections.zentao&&selection.connections.zentao!==id)){action.setError('');setSwitchTo(next);}else void commit(next,target);
++  if(app.stopBeforeSwitch&&(selection.repair||selection.connections[slot]&&selection.connections[slot]!==id)){action.setError('');setSwitchTo(next);}else void commit(next,target);
+  };
+- const options=(slot:ApplicationProvider,label:string)=><fieldset><legend>{slot==='smtp'?'SMTP发件账号':label} · 最多一个</legend>{selection?.repair?.slots.includes(slot)&&<p className="m10-note" role="alert">已保存的{label}存在异常多选或身份变化，当前不使用旧选择；请明确重新选择。</p>}<div className="m10-project-connections"><label><input type="radio" name={project.id+'-'+slot} aria-label={label+'不选用'} checked={!selection?.repair?.slots.includes(slot)&&!selection?.connections[slot]} disabled={disabled} onChange={event=>change(slot,null,event.currentTarget)}/><span><strong>不选用</strong><small>{slot==='smtp'?'仍可保存草稿；发送时需要有效发件账号。':'查询时提示来源未配置，不自动选择其他连接。'}</small></span></label>{connections.data?.filter(c=>c.providerId===slot).map(c=><label key={c.id}><input type="radio" name={project.id+'-'+slot} aria-label={'为'+project.name+'选用'+c.name} checked={selection?.connections[slot]===c.id} disabled={disabled} onChange={event=>change(slot,c.id,event.currentTarget)}/><span><strong title={c.name}>{c.name}</strong><small>{sourceText(c)}<br/>{connectionState(c)}{c.healthCode?' · '+c.healthCode:''}</small></span></label>)}</div></fieldset>;
++ const options=(slot:ApplicationProvider,label:string)=><fieldset key={slot}><legend>{app.providers.find(p=>p.id===slot)?.project.unselectedTitle??label} · 最多一个</legend>{selection?.repair?.slots.includes(slot)&&<p className="m10-note" role="alert">已保存的{label}存在异常多选或身份变化，当前不使用旧选择；请明确重新选择。</p>}<div className="m10-project-connections"><label><input type="radio" name={project.id+'-'+slot} aria-label={label+'不选用'} checked={!selection?.repair?.slots.includes(slot)&&!selection?.connections[slot]} disabled={disabled} onChange={event=>change(slot,null,event.currentTarget)}/><span><strong>不选用</strong><small>{app.providers.find(p=>p.id===slot)?.project.unselectedNote}</small></span></label>{connections.data?.filter(c=>c.providerId===slot).map(c=><label key={c.id}><input type="radio" name={project.id+'-'+slot} aria-label={'为'+project.name+'选用'+c.name} checked={selection?.connections[slot]===c.id} disabled={disabled} onChange={event=>change(slot,c.id,event.currentTarget)}/><span><strong title={c.name}>{c.name}</strong><small>{sourceText(c)}<br/>{connectionState(c)}{c.healthCode?' · '+c.healthCode:''}</small></span></label>)}</div></fieldset>;
+  return <section className="m10-project-application"><header><AppMark app={app.appId}/><div><strong>{app.displayName}<span className="m10-package-version">v{app.version??'—'} · 新会话默认</span></strong><p>{app.skills.length} 个 Skill · 旧会话保留创建时的版本</p></div><span className={'m10-state '+(selection?.enabled&&app.enabled?'ready':'')}>{!app.added?'尚未添加':!app.enabled?'应用已全局停用':selection?.enabled?'项目已启用':'未启用'}</span><AppSwitch label={'为'+project.name+'启用'+appNames[app.appId]} checked={selection?.enabled??false} disabled={disabled||!!selection?.repair} onChange={enabled=>selection&&void commit({projectId:project.id,appId:app.appId,enabled,expectedRevision:selection.revision,connections:selection.connections})}/></header>
+-  <div className="m10-project-application-body">{loading?<p role="status">正在读取连接…</p>:readError?<AppEmpty error title="无法读取项目选用" text={readError.message} action="重新载入" onAction={()=>{void query.refetch();void connections.refetch();}}/>:<><p className="m10-muted">{app.appId==='zentao'?'每项目仅一个生效连接；停用或认证失败不会自动切换账号。':'每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。'}</p><div className="m10-mail-connections">{app.appId==='zentao'?options('zentao','禅道连接'):<>{options('foxmail','本地读取来源')}{options('smtp','SMTP 发件账号')}</>}</div></>}
++  <div className="m10-project-application-body">{loading?<p role="status">正在读取连接…</p>:readError?<AppEmpty error title="无法读取项目选用" text={readError.message} action="重新载入" onAction={()=>{void query.refetch();void connections.refetch();}}/>:<><p className="m10-muted">{app.presentation.projectNote}</p><div className="m10-mail-connections">{app.providers.map(provider=>options(provider.id as ApplicationProvider,provider.project.title))}</div></>}
+    {!app.added&&<button className="m10-button secondary" onClick={()=>navigation.openApplications(app.appId,project.id)}>先添加{app.displayName}应用</button>}{selection?.pendingOperationId&&<p className="m10-note" role="status">项目连接变更尚未结束；保留已登记选择，完成后重新载入。</p>}
+    {action.error&&<p className="m10-note" role="alert">{action.error}</p>}<div className="m10-project-skills"><Zap size={14}/><span>{app.skills.map(s=>skillNames[s.id]??s.id).join('、')}</span><small>随应用启用</small></div>
+    <footer><button onClick={()=>navigation.openApplications(app.appId,project.id)}>查看应用与连接<ChevronRight size={13}/></button>{canUseTerminal&&terminalSkill?<ApplicationTerminalButton projectId={project.id} source={{kind:'skill',appId:app.appId,skillId:terminalSkill.id}} compact label="在 WillYou 终端使用"/>:<button className="m10-button secondary" disabled title="请先启用本项目应用并核对可用的配套 Skill"><SquareTerminal size={14}/>在 WillYou 终端使用</button>}</footer>
+   </div>
+-  {switchTo&&<AppDialog closingDisabled={!!action.busy} title="切换项目禅道连接" onClose={()=>{if(!action.busy)setSwitchTo(null);}}><p className="m10-modal-copy">{currentZen?.name??(selection?.repair?'异常旧选择':'当前连接')} → {connections.data?.find(c=>c.id===switchTo.connections.zentao)?.name??'不选用'}<br/>仅影响 {project.name}。停止此项目相关运行后提交；原引用保留原来源，停止失败保留原选择。</p><ApplicationImpactView query={impact}/>{action.error&&<p className="m10-note" role="alert">{action.error}</p>}<footer><button className="m10-button secondary" disabled={!!action.busy} onClick={()=>setSwitchTo(null)}>取消</button><button className="m10-button primary" disabled={!!action.busy||!impactReady(impact)} onClick={()=>{if(impactReady(impact))void commit(switchTo);}}>{action.busy?'正在停止并切换…':impactReady(impact)&&impact.data!.runs.length?'停止相关运行并切换':'切换连接'}</button></footer></AppDialog>}
++  {switchTo&&<AppDialog closingDisabled={!!action.busy} title={app.presentation.switchTitle} onClose={()=>{if(!action.busy)setSwitchTo(null);}}><p className="m10-modal-copy">{currentConnection?.name??(selection?.repair?'异常旧选择':'当前连接')} → {connections.data?.find(c=>switchingSlot&&c.id===switchTo.connections[switchingSlot])?.name??'不选用'}<br/>仅影响 {project.name}。停止此项目相关运行后提交；原引用保留原来源，停止失败保留原选择。</p><ApplicationImpactView query={impact}/>{action.error&&<p className="m10-note" role="alert">{action.error}</p>}<footer><button className="m10-button secondary" disabled={!!action.busy} onClick={()=>setSwitchTo(null)}>取消</button><button className="m10-button primary" disabled={!!action.busy||!impactReady(impact)} onClick={()=>{if(impactReady(impact))void commit(switchTo);}}>{action.busy?'正在停止并切换…':impactReady(impact)&&impact.data!.runs.length?'停止相关运行并切换':'切换连接'}</button></footer></AppDialog>}
+  </section>;
+ });
+diff --git a/src/renderer/features/applications/session-applications.tsx b/src/renderer/features/applications/session-applications.tsx
+index 3fc64bb0f..7258dbe29 100644
+--- a/src/renderer/features/applications/session-applications.tsx
++++ b/src/renderer/features/applications/session-applications.tsx
+@@ -6,7 +6,9 @@ import {useQuery} from '@tanstack/react-query';
+ import {RefreshCw} from 'lucide-react';
+ import {rpc} from '@renderer/lib/ipc';
+ import {navigation} from '@renderer/core/navigation';
+-import {unwrap,skillNames} from './api';
++import {unwrap,skillNames,appNames} from './api';
++import type {ApplicationId} from '@shared/application-connections';
++import {applicationProviderMetadata} from '@shared/application-provider-metadata';
+ import {AppDialog,AppEmpty,AppMark,Field,timeText} from './controls';
+ import type {SessionRunDiagnostic} from '@shared/application-session-diagnostics';
+ const healthLabel:Record<string,string>={healthy:'上次验证可用',unverified:'待检查',unavailable:'当前不可用',disabled:'已停用',disconnected:'已断开'};
+@@ -29,7 +31,7 @@ function CapabilityPreparation({run}:{run:SessionRunDiagnostic}){
+  if(!preparation)return null;
+  if(preparation.schema===1)return <p className="m10-muted">该运行未记录逐项准备证据；不从当前默认配置推断。</p>;
+  const label={application:'应用', 'standard-skill':'独立 Skill','project-mcp':'项目 MCP'},sourceLabel={skill:'Skill',mcp:'MCP',plugin:'插件', 'native-tool':'原生工具','skill-config':'Skill 启停配置',projection:'投影路径',resource:'固定资源',policy:'项目设置'};
+- return <details className="m10-runtime-demo"><summary>本次能力准备与冲突来源</summary><p className="m10-muted">仅记录准备结果，不证明 Agent 已发现或读取。以下为该运行准备时的选择与来源；不会修改用户配置。</p>{preparation.capabilities.map(item=><section key={item.kind+':'+item.id} aria-label={label[item.kind]+' '+item.name}><strong>{item.kind==='application'?(item.id==='mail'?'邮件':item.id==='zentao'?'禅道':item.name):item.name}</strong><p>{label[item.kind]} · {run.restriction?'本轮已停用；保留原准备记录':run.restrictionIssue?'本轮启动限制待核查':item.state==='prepared'?'宿主已准备，使用未验证':item.state==='disabled'?'准备时已停用':item.state==='unverified'?'准备状态未核实':'本次未准备'}{item.issueCode?' · '+item.issueCode:''}</p>{item.sources.map((source,index)=><p className="m10-message-id" key={index}>{sourceLabel[source.kind]}：{source.name}<br/>{source.path?'目标／来源：'+source.path:'具体路径未记录'}{source.configurationPath&&<><br/>配置文件：{source.configurationPath}</>}{source.location==='profile-arguments'&&<><br/>来源：启动配置参数（不展示参数值）</>}{source.location==='unrecorded'&&<><br/>配置来源未记录</>}</p>)}</section>)}</details>;
++ return <details className="m10-runtime-demo"><summary>本次能力准备与冲突来源</summary><p className="m10-muted">仅记录准备结果，不证明 Agent 已发现或读取。以下为该运行准备时的选择与来源；不会修改用户配置。</p>{preparation.capabilities.map(item=><section key={item.kind+':'+item.id} aria-label={label[item.kind]+' '+item.name}><strong>{item.kind==='application'?(appNames[item.id as ApplicationId]??item.name):item.name}</strong><p>{label[item.kind]} · {run.restriction?'本轮已停用；保留原准备记录':run.restrictionIssue?'本轮启动限制待核查':item.state==='prepared'?'宿主已准备，使用未验证':item.state==='disabled'?'准备时已停用':item.state==='unverified'?'准备状态未核实':'本次未准备'}{item.issueCode?' · '+item.issueCode:''}</p>{item.sources.map((source,index)=><p className="m10-message-id" key={index}>{sourceLabel[source.kind]}：{source.name}<br/>{source.path?'目标／来源：'+source.path:'具体路径未记录'}{source.configurationPath&&<><br/>配置文件：{source.configurationPath}</>}{source.location==='profile-arguments'&&<><br/>来源：启动配置参数（不展示参数值）</>}{source.location==='unrecorded'&&<><br/>配置来源未记录</>}</p>)}</section>)}</details>;
+ }
+ function ApplicationConflictSources({run,appId}:{run:SessionRunDiagnostic|null;appId:string}){
+  const [open,setOpen]=useState(false),preparation=run?.preparation,item=preparation?.schema===2?preparation.capabilities.find(i=>i.kind==='application'&&i.id===appId):undefined;
+@@ -41,7 +43,7 @@ function RunEvidence({run}:{run:SessionRunDiagnostic}){
+ export function SessionApplicationsPanel({taskId,onClose,runIdentity='',projectName}:{taskId:string;onClose:()=>void;runIdentity?:string;projectName?:string|null}){
+  const query=useQuery({queryKey:['applications','session',taskId,runIdentity],queryFn:async()=>unwrap(await rpc.applications.session(taskId)),retry:false,refetchOnWindowFocus:false});
+  const [notice,setNotice]=useState(''),[newSessionFor,setNewSessionFor]=useState<string|null>(null);const value=query.isFetching||query.error?undefined:query.data;
+- const configure=(app:'mail'|'zentao')=>{if(!value)return;onClose();navigation.openApplications(app,value.projectId??undefined);};
++ const configure=(app:ApplicationId)=>{if(!value)return;onClose();navigation.openApplications(app,value.projectId??undefined);};
+  if(newSessionFor===taskId&&query.data?.canNewSession&&query.data.projectId)return <NewApplicationSession key={taskId} title={query.data.title} projectId={query.data.projectId} onBack={()=>setNewSessionFor(null)} onPrepared={onClose}/>;
+  return <AppDialog title="会话应用" wide className="m10-session-dialog" heading={<div><h2>会话应用</h2>{value&&<p className="m10-dialog-subtitle">{projectName?projectName:value.projectId?"项目名未记录":"未关联项目"} · <span data-testid="session-current-title">{value.title}</span></p>}</div>} onClose={onClose}><div className="m10-session-applications" data-testid="session-applications">
+  {query.isPending||query.isFetching?<AppEmpty loading title="正在核对原会话" text="读取固定版本、本次运行与独立证据。"/>:query.error?<AppEmpty error title="会话诊断未完成" text={query.error.message} action="重试读取" onAction={()=>void query.refetch()}/>:value&&<>
+@@ -56,7 +58,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity='',projectN
+  {!!app.evidence.skillDiscoveryObservations?.length&&<details><summary>本次 Skill 发现证据</summary>{app.evidence.skillDiscoveryObservations.map(item=><p className="m10-message-id" key={item.skillId+item.callId}>{item.skillId}<br/>时间：{item.observedAt}<br/>所属运行：{item.runId}<br/>记录校验：{item.recordHash}</p>)}</details>}
+  {!!app.evidence.skillReadObservations?.length&&<details><summary>本次 Skill 读取证据</summary>{app.evidence.skillReadObservations.map(read=><p className="m10-message-id" key={read.skillId+read.callId}>{read.skillId}<br/>时间：{read.observedAt}<br/>所属运行：{read.runId}<br/>记录校验：{read.recordHash}</p>)}</details>}
+  {app.evidence.latestErrorCode&&<p className="m10-note" role="status" aria-label={app.name+'最近调用结果'}>{applicationCallFeedback(app.evidence.latestErrorCode,app.evidence.latestEffectState,app.evidence.latestAttemptCount)}</p>}
+- {app.connections.map(connection=><p key={connection.slot}>{connection.slot==='smtp'?'发件账号':connection.slot==='foxmail'?'邮件来源':'禅道连接'}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
++ {app.connections.map(connection=><p key={connection.slot}>{applicationProviderMetadata(connection.slot).diagnosticTitle??applicationProviderMetadata(connection.slot).project.title}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
+  {value.projectId&&app.skills.map(skill=><ApplicationTerminalButton key={skill.id} projectId={value.projectId!} source={{kind:'skill',appId:app.appId,skillId:skill.id}} onInserted={onClose} disabled={!!app.issueCode||app.resourceState!=='verified'||value.currentRun?.preparation?.state!=='prepared'||!!value.currentRun?.restriction||!!value.currentRun?.restrictionIssue} label="插入示例到终端" variant="example"/>)}<details className="m10-session-sources"><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
+  <DeliveryCopies value={value.deliveryCopies}/>
+  {!!value.recentRuns.length&&<details><summary>最近 {value.recentRuns.length} 次{value.recentRuns.some(run=>!['stopped','failed'].includes(run.state))?'其他运行记录':'历史运行证据'}</summary>{value.recentRuns.map(run=><section className="m10-session-history" key={run.id}><RunEvidence run={run}/></section>)}</details>}
+diff --git a/src/renderer/features/applications/workspace.test.tsx b/src/renderer/features/applications/workspace.test.tsx
+index 962532683..5d267fdbc 100644
+--- a/src/renderer/features/applications/workspace.test.tsx
++++ b/src/renderer/features/applications/workspace.test.tsx
+@@ -1,3 +1,4 @@
++import {applicationMetadata} from '@shared/application-provider-metadata';
+ // @vitest-environment jsdom
+ import {act,cleanup,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
+ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+@@ -13,7 +14,7 @@ const m=vi.hoisted(()=>({impact:vi.fn(),versions:vi.fn(async()=>({ok:true,value:
+ vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projectList,get:m.projectGet},dialog:{pickDirectory:vi.fn()}},events:{on:()=>()=>{}}}));
+ vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
+ const uid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+-const app=(id:ApplicationId,added=true):CatalogItem=>({appId:id,added,enabled:added,revision:3,displayName:id==='mail'?'邮件':'禅道',description:id==='mail'?'本机邮件与草稿':'本人 Bug 与研发需求',defaultPackageHash:'a'.repeat(64),version:'1.0.0',skills:[{id:id==='mail'?'work-assistant':'bug-analysis',description:'Private fixture skill'}],tools:[],versions:[],connectionCount:0});
++const app=(id:ApplicationId,added=true):CatalogItem=>({...applicationMetadata(id),appId:id,added,enabled:added,revision:3,displayName:id==='mail'?'邮件':'禅道',description:id==='mail'?'本机邮件与草稿':'本人 Bug 与研发需求',defaultPackageHash:'a'.repeat(64),version:'1.0.0',skills:[{id:id==='mail'?'work-assistant':'bug-analysis',description:'Private fixture skill'}],tools:[],versions:[],connectionCount:0});
+ const candidate=(n=1):VerifiedConnectionCandidate=>({operationId:uid(n),connectionId:uid(100+n),candidateHash:'b'.repeat(64),expectedRevision:0,identity:{providerId:'zentao',serviceId:'private-service',accountId:'private-user',contractMajor:1},compatibility:{connectionId:null,expectedRevision:0,configHash:'c'.repeat(64),referenceHash:'d'.repeat(64),impacts:[],planHash:'e'.repeat(64)},expiresAt:new Date(Date.now()+60000).toISOString()});
+ const connection=(id:number,kind:'foxmail'|'smtp'|'zentao',name:string):ApplicationConnection=>({id:uid(id),appId:kind==='zentao'?'zentao':'mail',providerId:kind,name,config:kind==='zentao'?{kind,baseUrl:'https://private.example.test/',username:'private-user',authMode:'token'}:kind==='foxmail'?{kind,sourcePath:'/private/fixture/'+id,account:name+'@example.test',queryDays:30}:{kind,host:'smtp.private.example.test',port:465,username:name+'@example.test',fromAddress:name+'@example.test',authMode:'password',mode:'implicit-tls'},revision:7,configRevision:1,identityRevision:1,secretRevision:1,policyRevision:1,identity:{providerId:kind,serviceId:'private-service-'+id,accountId:name,contractMajor:1},enabled:true,authorization:'connected',health:'healthy',healthCode:null,healthMessage:null,testedAt:new Date().toISOString(),hasSecret:kind!=='foxmail',cleanupPending:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+ const project={id:'project-1',name:'隔离项目',archivedAt:null};let catalog:CatalogItem[],connections:ApplicationConnection[],settings:Record<ApplicationId,ProjectApplicationSelection>,client:QueryClient;
+@@ -122,7 +123,7 @@ describe('actual production application forms with explicit RPC fixtures',()=>{
+ 
+  it('loads the trusted impact before a switch, excludes unrelated local terminals and cancel ignores the late reply',async()=>{
+   let finish!:(value:unknown)=>void;m.impact.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));m.tasks=[{id:'ordinary',projectId:project.id,ptyId:'live',title:'未加载禅道的本项目任务'}];mount(<ProjectApplications project={project}/>);fireEvent.click(await screen.findByRole('radio',{name:'为隔离项目选用禅道 B'}));
+-  await screen.findByText('正在核对影响范围…');expect(m.impact).toHaveBeenCalledWith({kind:'switch',projectId:project.id,expectedRevision:1});expect((screen.getByRole('button',{name:'切换连接'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.queryByText('未加载禅道的本项目任务')).toBeNull();expect(screen.queryByText('没有需要停止的运行。')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'取消'}));finish(ok({kind:'switch',appId:'zentao',checkedAt:'2026-10-22T00:00:00Z',connections:[],projects:[],runs:[]}));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(m.select).not.toHaveBeenCalled();
++  await screen.findByText('正在核对影响范围…');expect(m.impact).toHaveBeenCalledWith({kind:'switch',appId:'zentao',projectId:project.id,expectedRevision:1});expect((screen.getByRole('button',{name:'切换连接'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.queryByText('未加载禅道的本项目任务')).toBeNull();expect(screen.queryByText('没有需要停止的运行。')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'取消'}));finish(ok({kind:'switch',appId:'zentao',checkedAt:'2026-10-22T00:00:00Z',connections:[],projects:[],runs:[]}));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(m.select).not.toHaveBeenCalled();
+  });
+  it('keeps a stale switch read-only until impact reload succeeds and still uses the original revision for the write',async()=>{
+   m.impact.mockResolvedValueOnce({ok:false,code:'REVISION_CONFLICT',message:'项目选用已变化，请重新打开此操作'});mount(<ProjectApplications project={project}/>);fireEvent.click(await screen.findByRole('radio',{name:'为隔离项目选用禅道 B'}));await screen.findByText('项目选用已变化，请重新打开此操作');expect((screen.getByRole('button',{name:'切换连接'}) as HTMLButtonElement).disabled).toBe(true);fireEvent.click(screen.getByRole('button',{name:'重试影响核对'}));await screen.findByText('没有需要停止的运行。');expect((screen.getByRole('radio',{name:'为隔离项目选用禅道 A'}) as HTMLInputElement).checked).toBe(true);expect(m.impact).toHaveBeenCalledTimes(2);fireEvent.click(screen.getByRole('button',{name:'切换连接'}));await waitFor(()=>expect(m.select).toHaveBeenCalledWith(expect.objectContaining({expectedRevision:1})));
+@@ -238,7 +239,7 @@ it('SF renders unconfirmed slots without selecting None and sends exactly the ex
+  fireEvent.click(screen.getByRole('radio',{name:'为隔离项目选用来源 B'}));await waitFor(()=>expect(m.select).toHaveBeenCalledExactlyOnceWith({projectId:project.id,appId:'mail',expectedRevision:1,enabled:true,connections:{foxmail:uid(12),smtp:null},repair:{slot:'foxmail',fingerprint:'a'.repeat(64)}}));await waitFor(()=>expect(screen.getByRole('radio',{name:'为隔离项目选用来源 B'})).toHaveProperty('checked',true));expect(sender).toHaveProperty('checked',false);expect(settings.mail.repair?.slots).toEqual(['smtp']);
+ });
+ it('SF ambiguous ZenTao requires original impact/confirmation and cancellation keeps the old unconfirmed state',async()=>{
+- settings.zentao={...settings.zentao,connections:{zentao:null},repair:{slots:['zentao'],fingerprint:'c'.repeat(64)}};mount(<ProjectApplications project={project}/>);const none=await screen.findByRole('radio',{name:'禅道连接不选用'});expect(none).toHaveProperty('checked',false);fireEvent.click(screen.getByRole('radio',{name:'为隔离项目选用禅道 B'}));const dialog=await screen.findByRole('dialog');await within(dialog).findByRole('button',{name:'切换连接'});expect(m.impact).toHaveBeenCalledWith({kind:'switch',projectId:project.id,expectedRevision:1});fireEvent.click(within(dialog).getByRole('button',{name:'取消'}));expect(m.select).not.toHaveBeenCalled();expect(none).toHaveProperty('checked',false);expect(settings.zentao.repair?.slots).toEqual(['zentao']);
++ settings.zentao={...settings.zentao,connections:{zentao:null},repair:{slots:['zentao'],fingerprint:'c'.repeat(64)}};mount(<ProjectApplications project={project}/>);const none=await screen.findByRole('radio',{name:'禅道连接不选用'});expect(none).toHaveProperty('checked',false);fireEvent.click(screen.getByRole('radio',{name:'为隔离项目选用禅道 B'}));const dialog=await screen.findByRole('dialog');await within(dialog).findByRole('button',{name:'切换连接'});expect(m.impact).toHaveBeenCalledWith({kind:'switch',appId:'zentao',projectId:project.id,expectedRevision:1});fireEvent.click(within(dialog).getByRole('button',{name:'取消'}));expect(m.select).not.toHaveBeenCalled();expect(none).toHaveProperty('checked',false);expect(settings.zentao.repair?.slots).toEqual(['zentao']);
+ });
+ 
+ it('SG connection-directory retry removes its cached error and duplicate action until the original pending read ends',async()=>{
+diff --git a/src/renderer/features/applications/workspace.tsx b/src/renderer/features/applications/workspace.tsx
+index 9140d7dea..821025c49 100644
+--- a/src/renderer/features/applications/workspace.tsx
++++ b/src/renderer/features/applications/workspace.tsx
+@@ -6,6 +6,7 @@ import {useEffect,useRef,useState} from 'react';
+ import {observer} from 'mobx-react-lite';
+ import {ArrowLeft,ArrowUpRight,Check,ChevronDown,ChevronRight,Clock3,Folder,Link2,MoreHorizontal,Package,Plus,Puzzle,RefreshCw,Search,Send,Zap} from 'lucide-react';
+ import type {ApplicationConnection,ApplicationId,ApplicationProvider} from '@shared/application-connections';
++import {applicationConnectionSummary,applicationProviderMetadata} from '@shared/application-provider-metadata';
+ import {navigation} from '@renderer/core/navigation';
+ import {rpc} from '@renderer/lib/ipc';
+ import {useProject,useProjectList} from '@renderer/lib/hooks/useProjects';
+@@ -18,6 +19,9 @@ import {ZentaoPanel} from './zentao-panel';
+ import {MailPanel} from './mail-panel';
+ import {ActivityWorkspace} from './activity';
+ import './style.css';
++const businessPanels:Record<string,React.ComponentType<{projectId:string;app:CatalogItem}>>={'zentao-work':ZentaoPanel,'mail-work':MailPanel};
++const connectionIcons={send:Send,folder:Folder,link:Link2};
++function ConnectionIcon({provider}:{provider:ApplicationProvider}){const Icon=connectionIcons[applicationProviderMetadata(provider).icon];return <Icon size={18}/>;}
+ export const ApplicationsWorkspace=observer(function ApplicationsWorkspace(){
+  const catalog=useCatalog(),page=navigation.applicationPage,[query,setQuery]=useState(''),[filter,setFilter]=useState<'all'|'added'>('all'),action=useApplicationAction();
+  const content=useRef<HTMLDivElement>(null);
+@@ -32,11 +36,11 @@ export const ApplicationsWorkspace=observer(function ApplicationsWorkspace(){
+  const projectPicker=<label className="m10-project-picker"><Folder size={14}/><select aria-label="当前应用项目" value={selectedProjectId??''} onChange={e=>navigation.selectHomeProject(e.target.value||null)}><option value="">选择项目</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>;
+  const add=async(app:CatalogItem)=>{const success=await action.run('add-'+app.appId,async()=>{if(!app.added)unwrap(await rpc.applications.setAdded(app.appId,true,app.revision));});if(success){setAdding(false);navigation.openApplications(app.appId);}};
+  const shown=catalog.data?.filter(app=>(app.displayName+' '+app.description).toLowerCase().includes(query.toLowerCase())&&(filter==='all'||app.added))??[];
+- return <section className="m10-shell" aria-label="应用工作区"><aside className="m10-sidebar"><div className="m10-sidebar-title"><h2>自定义</h2><IconButton icon={Search} label="搜索应用目录" onClick={()=>{navigation.openApplications();requestAnimationFrame(()=>search.current?.focus());}}/></div><button className={'m10-nav '+(['catalog','mail','zentao'].includes(page)?'selected':'')} onClick={()=>navigation.openApplications()}><Puzzle size={17}/>应用</button><button className="m10-nav" onClick={()=>navigation.openSettings('capabilities')}><Zap size={17}/>技能</button><div className="m10-sidebar-label">已添加</div>{catalog.data?.filter(a=>a.added).map(app=><button key={app.appId} className={'m10-nav installed '+(page===app.appId?'selected':'')} onClick={()=>navigation.openApplications(app.appId)}><AppMark app={app.appId}/><span>{app.displayName}</span></button>)}{!catalog.data?.some(a=>a.added)&&<p className="m10-sidebar-empty">添加应用后在此显示</p>}<div className="m10-sidebar-label manage">管理</div><button className={'m10-nav '+(page==='projects'?'selected':'')} onClick={()=>navigation.openApplications('projects')}><Link2 size={17}/>项目选用</button><button className={'m10-nav '+(page==='activity'?'selected':'')} onClick={()=>navigation.openApplicationActivity()}><Clock3 size={17}/>调用记录</button><div className="m10-sidebar-bottom"><img src={appIcon} alt=""/><span>WillYou</span></div></aside>
+-  <div className="m10-main"><div ref={content} className={'m10-content '+(page==='mail'||page==='zentao'?'detail':'')}>
++ return <section className="m10-shell" aria-label="应用工作区"><aside className="m10-sidebar"><div className="m10-sidebar-title"><h2>自定义</h2><IconButton icon={Search} label="搜索应用目录" onClick={()=>{navigation.openApplications();requestAnimationFrame(()=>search.current?.focus());}}/></div><button className={'m10-nav '+((page==='catalog'||!!catalog.data?.some(app=>app.appId===page))?'selected':'')} onClick={()=>navigation.openApplications()}><Puzzle size={17}/>应用</button><button className="m10-nav" onClick={()=>navigation.openSettings('capabilities')}><Zap size={17}/>技能</button><div className="m10-sidebar-label">已添加</div>{catalog.data?.filter(a=>a.added).map(app=><button key={app.appId} className={'m10-nav installed '+(page===app.appId?'selected':'')} onClick={()=>navigation.openApplications(app.appId)}><AppMark app={app.appId}/><span>{app.displayName}</span></button>)}{!catalog.data?.some(a=>a.added)&&<p className="m10-sidebar-empty">添加应用后在此显示</p>}<div className="m10-sidebar-label manage">管理</div><button className={'m10-nav '+(page==='projects'?'selected':'')} onClick={()=>navigation.openApplications('projects')}><Link2 size={17}/>项目选用</button><button className={'m10-nav '+(page==='activity'?'selected':'')} onClick={()=>navigation.openApplicationActivity()}><Clock3 size={17}/>调用记录</button><div className="m10-sidebar-bottom"><img src={appIcon} alt=""/><span>WillYou</span></div></aside>
++  <div className="m10-main"><div ref={content} className={'m10-content '+(catalog.data?.some(app=>app.appId===page)?'detail':'')}>
+   {page!=='catalog'&&catalog.isPending?<AppEmpty loading title="正在加载应用" text="正在读取本机应用与连接状态。"/>:page!=='catalog'&&catalog.error?<AppEmpty error title="应用暂时无法加载" text={catalog.error.message} action="重试" onAction={()=>void catalog.refetch()}/>:<>
+    {page==='catalog'&&<><header className="m10-page-head"><div><h1>应用</h1><p>连接应用，让 WillYou 在你的各类工具中协同工作</p></div><div className="m10-head-actions"><label className="m10-search"><Search size={16}/><input ref={search} aria-label="搜索应用" placeholder="搜索应用" value={query} onChange={e=>setQuery(e.target.value)}/></label><IconButton icon={RefreshCw} label="刷新应用" disabled={catalog.isFetching} onClick={()=>void catalog.refetch()}/><div className="m10-menu-wrap"><button className="m10-button primary" aria-expanded={adding&&!catalogUnavailable} disabled={catalogUnavailable||!!action.busy} onClick={()=>setAdding(!adding)}>添加<ChevronDown size={14}/></button>{adding&&!catalogUnavailable&&<div className="m10-menu" role="menu" onKeyDown={e=>{if(e.key==='Escape')setAdding(false);}}>{catalog.data?.map(app=><button key={app.appId} role="menuitem" disabled={!!action.busy} onClick={()=>void add(app)}>添加{app.displayName}</button>)}</div>}</div></div></header><div className="m10-tabs" role="tablist" aria-label="应用筛选"><button role="tab" aria-selected={filter==='all'} onClick={()=>setFilter('all')}>全部</button><button role="tab" aria-selected={filter==='added'} onClick={()=>setFilter('added')}>已添加</button></div>{catalog.isPending?<AppEmpty loading title="正在加载应用" text="正在读取本机应用与连接状态。"/>:catalog.error?<AppEmpty error title="应用暂时无法加载" text={catalog.error.message} action="重试" onAction={()=>void catalog.refetch()}/>:!catalog.data?.length?<AppEmpty title="没有匹配的应用" text="请刷新应用列表后重试。"/>:<><h2 className="m10-section-title">工作应用<ChevronRight size={14}/></h2><div className="m10-catalog-grid">{shown.map(app=><div className="m10-catalog-item" key={app.appId}><button className="m10-catalog-open" onClick={()=>navigation.openApplications(app.appId)}><AppMark app={app.appId}/><span><strong>{app.displayName}<span className="m10-package-version">v{app.version??'—'}</span></strong><small>{app.description}</small><small>{app.skills.length} 个 Skill · 随应用提供</small></span></button><IconButton icon={app.added?MoreHorizontal:Plus} label={(app.added?'查看':'添加')+app.displayName} disabled={!!action.busy} onClick={()=>void add(app)}/></div>)}</div>{shown.length===0&&<AppEmpty title="没有匹配的应用" text="试试其他关键词，或切换到全部。"/>}<div className="m10-onboarding"><Link2 size={22}/><h3>连接一次，在项目中使用</h3><p>配置连接，在项目中启用应用，配套工具与 Skill 一起带入终端 Agent。</p><button onClick={()=>navigation.openApplications('projects')}>查看项目选用<ArrowUpRight size={14}/></button></div><div className="m10-later"><span>更多应用，后续接入</span><p>Jenkins 等应用沿用连接与调用框架，分别适配业务能力。</p><button onClick={()=>setFuture(true)}>了解扩展方式<ChevronRight size={14}/></button></div></>}</>}
+-   {(page==='mail'||page==='zentao')&&catalog.data?.find(a=>a.appId===page)&&<ApplicationDetail key={page} app={catalog.data.find(a=>a.appId===page)!} projectPicker={projectPicker} projectId={selectedProjectId}/>}
++   {catalog.data?.find(a=>a.appId===page)&&<ApplicationDetail key={page} app={catalog.data.find(a=>a.appId===page)!} projectPicker={projectPicker} projectId={selectedProjectId}/>}
+    {page==='activity'&&<ActivityWorkspace key={JSON.stringify(navigation.activityFilter)} initialFilter={navigation.activityFilter}/>}
+    {page==='projects'&&<><header className="m10-page-head"><div><h1>项目选用</h1><p>为项目启用应用，工具与配套 Skill 一起使用。</p></div>{projectPicker}</header>{projectList.isPending||projectList.isFetching&&!!projectList.error?<AppEmpty loading title="正在读取本机项目…" text="正在核对项目列表。"/>:projectList.error?<AppEmpty error title="项目列表读取失败" text={projectList.error.message} action="重试" onAction={()=>void projectList.refetch()}/>:selectedProjectId&&(projectRead.isPending||projectRead.isFetching&&!!projectRead.error)?<AppEmpty loading title="正在核对项目信息…" text="正在读取当前项目与应用选用前置。"/>:selectedProjectId&&projectRead.error?<AppEmpty error title="项目信息读取失败" text={projectRead.error.message} action="重试" onAction={()=>void projectRead.refetch()}/>:project&&projects.some(p=>p.id===project.id)?<ProjectApplications key={project.id} project={project}/>:<AppEmpty title="选择一个项目" text="从右上方选择本机项目，再分别配置它的应用和连接。" action="前往工作台" onAction={()=>navigation.newTask()}/>}</>}
+   </>}{action.error&&<p className="m10-note" role="alert">{action.error}</p>}
+@@ -50,18 +54,19 @@ function ApplicationDetail({app,projectPicker,projectId}:{app:CatalogItem;projec
+  const menuRoot=useRef<HTMLDivElement>(null);
+  useApplicationMenu(addMenu?'add':appMenu?'app':connectionMenu,()=>{setAddMenu(false);setAppMenu(false);setConnectionMenu(null);});
+  const refresh=async()=>{await catalog.refetch();await connections.refetch();};
++ const BusinessPanel=businessPanels[app.presentation.panel??''];
+  const configure=(kind:ApplicationProvider)=>{setAddMenu(false);setForm({kind});};
+  const confirm=async()=>{if(!confirmation||!impactReady(impact))return;const done=await action.run(confirmation.kind,async()=>{if(confirmation.kind==='remove')unwrap(await rpc.applications.setAdded(app.appId,false,app.revision));else unwrap(await rpc.applications.disconnect(confirmation.connection.id,confirmation.connection.revision));});if(done){setConfirmation(null);if(confirmation.kind==='remove')navigation.openApplications();}};
+- return <div ref={menuRoot}><button className="m10-back" onClick={()=>navigation.openApplications()}><ArrowLeft size={15}/>全部应用</button><div className="m10-app-heading"><AppMark app={app.appId} large/><div><h1>{app.displayName}<span className="m10-package-version">v{app.version??'—'}</span></h1><p>{app.appId==='mail'?'在项目 Agent 中查询、准备草稿与获准发送邮件':'查看指派给我的 Bug 和研发需求'}</p></div><div className="m10-menu-wrap"><button className="m10-button primary" disabled={!!action.busy} aria-expanded={addMenu} onClick={()=>{if(!app.added)void action.run('add',async()=>{unwrap(await rpc.applications.setAdded(app.appId,true,app.revision));});else if(app.appId==='zentao')configure('zentao');else {setAppMenu(false);setConnectionMenu(null);setAddMenu(!addMenu);}}}><Plus size={14}/>{app.added?'添加连接':'添加应用'}</button>{addMenu&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>configure('foxmail')}>本地读取来源</button><button role="menuitem" onClick={()=>configure('smtp')}>SMTP 发件账号</button></div>}</div><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label="应用更多操作" disabled={!app.added||!!action.busy} expanded={appMenu} onClick={()=>{setAddMenu(false);setConnectionMenu(null);setAppMenu(!appMenu);}}/>{appMenu&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setAppMenu(false);action.setError('');setConfirmation({kind:'remove'});}}>移除应用</button></div>}</div></div>
++ return <div ref={menuRoot}><button className="m10-back" onClick={()=>navigation.openApplications()}><ArrowLeft size={15}/>全部应用</button><div className="m10-app-heading"><AppMark app={app.appId} large/><div><h1>{app.displayName}<span className="m10-package-version">v{app.version??'—'}</span></h1><p>{app.presentation.heading??app.description}</p></div><div className="m10-menu-wrap"><button className="m10-button primary" disabled={!!action.busy} aria-expanded={addMenu} onClick={()=>{if(!app.added)void action.run('add',async()=>{unwrap(await rpc.applications.setAdded(app.appId,true,app.revision));});else if(app.providers.length===1)configure(app.providers[0].id as ApplicationProvider);else {setAppMenu(false);setConnectionMenu(null);setAddMenu(!addMenu);}}}><Plus size={14}/>{app.added?'添加连接':'添加应用'}</button>{addMenu&&<div className="m10-menu" role="menu">{app.providers.map(provider=><button key={provider.id} role="menuitem" onClick={()=>configure(provider.id as ApplicationProvider)}>{provider.project.title}</button>)}</div>}</div><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label="应用更多操作" disabled={!app.added||!!action.busy} expanded={appMenu} onClick={()=>{setAddMenu(false);setConnectionMenu(null);setAppMenu(!appMenu);}}/>{appMenu&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setAppMenu(false);action.setError('');setConfirmation({kind:'remove'});}}>移除应用</button></div>}</div></div>
+   <div className="m10-detail-grid"><div className="m10-detail-primary"><section className="m10-package-section" aria-label={app.displayName+'应用包'}><div className="m10-package-heading"><Package size={17}/><h2>应用包</h2><span className="m10-pill">v{app.version??'—'}</span><small>随 WillYou 交付</small></div><p className="m10-package-description">连接、工具与 {app.skills.length} 个 Skill 一起提供，在项目中选用后即可使用。</p><div className="m10-bundled-skills">{app.skills.map(skill=><article key={skill.id}><Zap size={16}/><div><strong>{skillNames[skill.id]??skill.id}<span className="m10-inline-label">随应用启用</span></strong><p>{skill.description}</p>{APPLICATION_SKILL_EXAMPLES[app.appId+':'+skill.id]&&<div className="m10-skill-example">{app.added&&app.enabled&&projectId?<ApplicationTerminalButton key={projectId+':'+skill.id} projectId={projectId} source={{kind:'skill',appId:app.appId,skillId:skill.id}} label="插入示例到终端"/>:<div className="m10-terminal-insertion"><p className="m10-muted">“{APPLICATION_SKILL_EXAMPLES[app.appId+':'+skill.id]}”</p><button className="m10-example" disabled>{!app.added?'请先添加应用':!app.enabled?'请先启用应用':'请先选择项目'}<ArrowUpRight size={13}/></button></div>}</div>}</div></article>)}</div><button className="m10-package-disclosure" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>查看工具与包内容<ChevronRight size={13} className={expanded?'expanded':''}/></button>{expanded&&<div className="m10-package-contents"><p>包含应用界面、连接表单、适配器、工具／MCP、配套 Skill、资源和数据迁移。</p>{app.tools.map(tool=><div key={tool.name}><Check size={13}/><span>{tool.name}</span><small>{tool.readOnly?'读取':applicationPermissionPresentation(tool.permission).effect}</small></div>)}<p>账号和业务数据独立于应用包保存。旧会话保留原包版本。</p></div>}</section>
+    <ApplicationVersionsPanel appId={app.appId}/>
+    <section className="m10-section"><div className="m10-section-heading"><h2>连接</h2><span>{connections.data?.length??0} 个连接</span>{app.added&&<AppSwitch checked={app.enabled} label={'全局启用'+app.displayName} disabled={!!action.busy} onChange={enabled=>void action.run('enable',async()=>{unwrap(await rpc.applications.setEnabled(app.appId,enabled,app.revision));})}/>}</div>
+-    {connections.isPending||connections.isFetching&&!!connections.error?<p role="status">正在读取连接…</p>:connections.error?<AppEmpty error title="连接加载失败" text={connections.error.message} action="重试" onAction={()=>void connections.refetch()}/>:connections.data?.map(c=><div className="m10-connection" key={c.id}><div className="m10-connection-icon">{c.providerId==='smtp'?<Send size={18}/>:c.providerId==='foxmail'?<Folder size={18}/>:<Link2 size={18}/>}</div><div className="m10-connection-copy"><strong title={c.name}>{c.name}</strong><small title={c.config.kind==='zentao'?c.config.baseUrl:c.config.kind==='foxmail'?c.config.sourcePath:c.config.host}>{c.config.kind==='zentao'?c.config.username+' · '+c.config.baseUrl:c.config.kind==='foxmail'?c.config.account+' · '+c.config.sourcePath:c.config.fromAddress+' · '+c.config.host}</small><span className={'m10-state '+(c.enabled&&c.authorization==='connected'&&c.health==='healthy'?'ready':'')}>{connectionState(c)}</span><small>上次验证：{timeText(c.testedAt)}{c.healthCode?' · '+c.healthCode:''}{c.cleanupPending?' · 凭据清理待完成':''}</small></div><AppSwitch checked={c.enabled} label={'启用'+c.name} disabled={!!action.busy} onChange={enabled=>void action.run('connection-'+c.id,async()=>{unwrap(await rpc.applications.setConnectionEnabled(c.id,enabled,c.revision));})}/><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label={'管理'+c.name} expanded={connectionMenu===c.id} onClick={()=>{setAppMenu(false);setAddMenu(false);setConnectionMenu(connectionMenu===c.id?null:c.id);}}/>{connectionMenu===c.id&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setConnectionMenu(null);setForm({kind:c.providerId,connection:c});}}>编辑／重新连接</button><button role="menuitem" disabled={!!action.busy} onClick={()=>{setConnectionMenu(null);action.setError('');setConfirmation({kind:'disconnect',connection:c});}}>断开连接</button></div>}</div></div>)}
+-    {!connections.isPending&&!connections.error&&!connections.data?.length&&<div className="m10-unconnected"><Link2 size={20}/><p>添加应用后，还需要连接你的账号{app.appId==='mail'?'或本地邮件来源':''}。</p>{app.added&&<button className="m10-button secondary" onClick={()=>configure(app.appId==='mail'?'foxmail':'zentao')}>配置连接</button>}</div>}
+-    {app.appId==='mail'&&app.added&&!connections.data?.some(c=>c.providerId==='smtp')&&<div className="m10-sender-row"><Send size={17}/><div><strong>邮件发送</strong><small>待配置 · 与本地读取分别连接</small></div><button className="m10-button secondary" onClick={()=>configure('smtp')}>配置发件通道</button></div>}
++    {connections.isPending||connections.isFetching&&!!connections.error?<p role="status">正在读取连接…</p>:connections.error?<AppEmpty error title="连接加载失败" text={connections.error.message} action="重试" onAction={()=>void connections.refetch()}/>:connections.data?.map(c=><div className="m10-connection" key={c.id}><div className="m10-connection-icon"><ConnectionIcon provider={c.providerId}/></div><div className="m10-connection-copy"><strong title={c.name}>{c.name}</strong><small title={applicationConnectionSummary(c.config).location}>{applicationConnectionSummary(c.config).summary}</small><span className={'m10-state '+(c.enabled&&c.authorization==='connected'&&c.health==='healthy'?'ready':'')}>{connectionState(c)}</span><small>上次验证：{timeText(c.testedAt)}{c.healthCode?' · '+c.healthCode:''}{c.cleanupPending?' · 凭据清理待完成':''}</small></div><AppSwitch checked={c.enabled} label={'启用'+c.name} disabled={!!action.busy} onChange={enabled=>void action.run('connection-'+c.id,async()=>{unwrap(await rpc.applications.setConnectionEnabled(c.id,enabled,c.revision));})}/><div className="m10-menu-wrap"><IconButton icon={MoreHorizontal} label={'管理'+c.name} expanded={connectionMenu===c.id} onClick={()=>{setAppMenu(false);setAddMenu(false);setConnectionMenu(connectionMenu===c.id?null:c.id);}}/>{connectionMenu===c.id&&<div className="m10-menu" role="menu"><button role="menuitem" onClick={()=>{setConnectionMenu(null);setForm({kind:c.providerId,connection:c});}}>编辑／重新连接</button><button role="menuitem" disabled={!!action.busy} onClick={()=>{setConnectionMenu(null);action.setError('');setConfirmation({kind:'disconnect',connection:c});}}>断开连接</button></div>}</div></div>)}
++    {!connections.isPending&&!connections.error&&!connections.data?.length&&<div className="m10-unconnected"><Link2 size={20}/><p>添加应用后，还需要连接你的账号{app.presentation.emptyConnectionSuffix}。</p>{app.added&&<button className="m10-button secondary" onClick={()=>configure(app.presentation.defaultProvider as ApplicationProvider)}>配置连接</button>}</div>}
++    {app.added&&app.providers.filter(provider=>provider.supplemental&&!connections.data?.some(c=>c.providerId===provider.id)).map(provider=><div className="m10-sender-row" key={provider.id}><Send size={17}/><div><strong>{provider.supplemental!.title}</strong><small>{provider.supplemental!.note}</small></div><button className="m10-button secondary" onClick={()=>configure(provider.id as ApplicationProvider)}>{provider.supplemental!.action}</button></div>)}
+    </section>
+    <section className="m10-section"><div className="m10-section-heading"><h2>项目中使用</h2>{projectPicker}</div><p className="m10-muted">为当前项目显式启用应用，并分别选用来源。启用不代表已有会话已经加载，旧会话保持原固定能力。</p><button className="m10-button secondary" onClick={()=>navigation.openApplications('projects')}>管理项目选用<ArrowUpRight size={13}/></button></section>
+-   <section className="m10-section">{projectId?(app.appId==='zentao'?<ZentaoPanel key={projectId} projectId={projectId} app={app}/>:<MailPanel key={projectId} projectId={projectId} app={app}/>):<AppEmpty title="选择一个项目" text="在上方选择项目，查看它的工作与业务数据。"/>}</section>
++   {BusinessPanel&&<section className="m10-section">{projectId?<BusinessPanel key={projectId} projectId={projectId} app={app}/>:<AppEmpty title="选择一个项目" text="在上方选择项目，查看它的工作与业务数据。"/>}</section>}
+   </div><aside className="m10-detail-meta"><h3>应用能力</h3>{[...new Set(app.tools.map(tool=>tool.permission))].map(permission=><div key={permission}><Check size={14}/><span>{applicationPermissionPresentation(permission).label}<small>{applicationPermissionPresentation(permission).effect}</small></span></div>)}<h3>作用范围</h3><p>连接统一管理，项目按需选用。停用后不再用于新调用，已发出的操作保留实际结果。</p><h3>本地数据</h3><p>配置与记录保存在本机，升级后继续使用。移除应用保留业务数据与历史包。</p></aside></div>
+   {action.error&&<p className="m10-note" role="alert">{action.error}</p>}{form&&<ConnectionForm key={form.connection?.id??form.kind} {...form} onClose={()=>setForm(null)} onSaved={refresh}/>}
+   {confirmation&&<AppDialog closingDisabled={!!action.busy} title={confirmation.kind==='remove'?'移除应用':'断开连接'} onClose={()=>{if(!action.busy)setConfirmation(null);}}><p className="m10-modal-copy">{confirmation.kind==='remove'?`移除“${app.displayName}”并关闭各项目对此应用的使用。保留连接配置、凭据、草稿、发送记录与历史版本；重新添加后需在项目中手动启用。`:`断开“${confirmation.connection.name}”后项目不能继续使用此连接。清除本机托管的凭据引用，保留非秘密配置、历史数据和项目选择；不表示远端 Token 已撤销。`}</p><ApplicationImpactView query={impact}/>{action.error&&<p className="m10-note" role="alert">{action.error}</p>}<footer><button className="m10-button secondary" disabled={!!action.busy} onClick={()=>setConfirmation(null)}>取消</button><button className="m10-button primary" disabled={!!action.busy||!impactReady(impact)} onClick={()=>void confirm()}>{action.busy?'正在处理…':confirmation.kind==='remove'?'移除应用':'断开连接'}</button></footer></AppDialog>}
+diff --git a/src/renderer/features/applications/zentao-pagination.test.tsx b/src/renderer/features/applications/zentao-pagination.test.tsx
+index 9433960b2..5d89dcda8 100644
+--- a/src/renderer/features/applications/zentao-pagination.test.tsx
++++ b/src/renderer/features/applications/zentao-pagination.test.tsx
+@@ -1,3 +1,4 @@
++import {applicationMetadata} from '@shared/application-provider-metadata';
+ // @vitest-environment jsdom
+ import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+@@ -13,7 +14,7 @@ const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),zentaoWork:
+ vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:(_event:unknown,callback:(value:unknown)=>void)=>{m.notify=callback;return()=>{m.notify=null;};}}}));
+ vi.mock('./terminal-insertion',()=>({ApplicationTerminalButton:()=>m.showTerminal?<button>插入当前终端</button>:null}));
+ const id='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64);
+-const app:CatalogItem={appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
++const app:CatalogItem={...applicationMetadata('zentao'),appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
+ const ok=<T,>(value:T)=>({ok:true as const,value});
+ const failed=()=>({ok:false as const,code:'CONNECTION_UNAVAILABLE' as const,message:'本次隔离分页请求失败'});
+ function page(kind:'bug'|'story',ids:string[],nextCursor:string|null=null):ZentaoWorkData{
+diff --git a/src/renderer/features/applications/zentao-presentation.test.tsx b/src/renderer/features/applications/zentao-presentation.test.tsx
+index 38a2cecde..f681a461d 100644
+--- a/src/renderer/features/applications/zentao-presentation.test.tsx
++++ b/src/renderer/features/applications/zentao-presentation.test.tsx
+@@ -1,3 +1,4 @@
++import {applicationMetadata} from '@shared/application-provider-metadata';
+ // @vitest-environment jsdom
+ import {cleanup,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
+ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+@@ -12,7 +13,7 @@ const connection='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64),refe
+ const presentation=parseZentaoPresentation({bug:{pri:'优先级',priList:['','P0','P1','P2'],severityList:{3:'较大'},typeList:{codeerror:'代码错误'},statusList:{active:'激活'}}},'bug')!;
+ const fields={title:'字段显示用例',project:'1521',projectName:'示例项目',product:'96',productName:'示例产品',module:'7773',moduleTitle:'测试模块',openedBuild:[{id:'1579',title:'dev-beta'}],pri:'3',severity:'3',type:'codeerror',status:'active'};
+ const detail=(ready=true)=>({kind:'bug',id:'7',reference,fields,body:null,history:null,attachments:[],complete:true,missing:[],presentation:ready?presentation:{available:false,labels:{},choices:{}}});
+-const app:CatalogItem={appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
++const app:CatalogItem={...applicationMetadata('zentao'),appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
+ const ok=<T,>(value:T)=>({ok:true as const,value});let client:QueryClient;
+ async function open(){client=new QueryClient({defaultOptions:{queries:{retry:false}}});render(<QueryClientProvider client={client}><ZentaoPanel projectId="own" app={app}/></QueryClientProvider>);fireEvent.click(await screen.findByRole('button',{name:/字段显示用例/}));return screen.findByRole('dialog');}
+ beforeEach(()=>{
+diff --git a/src/shared/application-connections.ts b/src/shared/application-connections.ts
+index 5e030a4a0..ded5cbfe3 100644
+--- a/src/shared/application-connections.ts
++++ b/src/shared/application-connections.ts
+@@ -1,9 +1,12 @@
+ import { z } from 'zod';
++import type { RegisteredApplicationConfiguration, RegisteredApplicationId, RegisteredApplicationProvider } from '../main/core/applications/modules';
++import moduleCatalog from './application-module-catalog.json';
++import { moduleConnectionConfigSchema, providerApplicationId } from './application-provider-metadata';
+ 
+-export const applicationIdSchema = z.enum(['zentao', 'mail']);
+-export type ApplicationId = z.infer<typeof applicationIdSchema>;
+-export const providerIdSchema = z.enum(['zentao', 'foxmail', 'smtp']);
+-export type ApplicationProvider = z.infer<typeof providerIdSchema>;
++export const applicationIdSchema = z.enum(moduleCatalog.applications.map(m => m.appId) as [RegisteredApplicationId, ...RegisteredApplicationId[]]);
++export type ApplicationId = RegisteredApplicationId;
++export const providerIdSchema = z.enum(moduleCatalog.applications.flatMap(m => m.providers.map(p => p.id)) as [RegisteredApplicationProvider, ...RegisteredApplicationProvider[]]);
++export type ApplicationProvider = RegisteredApplicationProvider;
+ const noControls = (s: string) => !/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/u.test(s);
+ const short = z.string().trim().min(1).max(512).refine(noControls, '字段包含控制字符');
+ const baseUrl = z.string().trim().max(2048).refine(value => {
+@@ -16,13 +19,14 @@ export const smtpConfigSchema = z.object({
+   kind: z.literal('smtp'), host: short.refine(s => !/[\s/@?#\\]/u.test(s), '发件服务器地址无效'), port: z.number().int().min(1).max(65535),
+   username: short, fromAddress: z.email().max(512), authMode: z.literal('password'), mode: z.enum(['plain', 'starttls', 'implicit-tls']),
+ }).strict();
++/** Retained v1 configuration-view contract. New management parsing uses the compiled module registry. */
+ export const connectionConfigSchema = z.discriminatedUnion('kind', [zentaoConfigSchema, foxmailConfigSchema, smtpConfigSchema]);
+-export type ConnectionConfig = z.infer<typeof connectionConfigSchema>;
++export type ConnectionConfig = RegisteredApplicationConfiguration;
+ export const verifiedConnectionIdentitySchema = z.object({ providerId: providerIdSchema, serviceId: short, accountId: short, contractMajor: z.literal(1) }).strict();
+ export type VerifiedConnectionIdentity = z.infer<typeof verifiedConnectionIdentitySchema>;
+ export const saveConnectionSchema = z.object({
+   id: z.uuid().optional(), expectedRevision: z.number().int().nonnegative(), name: z.string().trim().min(1).max(120).refine(noControls),
+-  config: connectionConfigSchema, secret: z.string().min(1).max(65536).optional(), acceptedImpactHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
++  config: moduleConnectionConfigSchema, secret: z.string().min(1).max(65536).optional(), acceptedImpactHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+ }).strict();
+ export type SaveApplicationConnection = z.infer<typeof saveConnectionSchema>;
+ export interface ApplicationConnection {
+@@ -37,10 +41,10 @@ export interface ConnectionCompatibilityImpact { packageHash: string; version: s
+ export interface ConnectionChangePlan { connectionId: string | null; expectedRevision: number; configHash: string; referenceHash: string; impacts: ConnectionCompatibilityImpact[]; planHash: string }
+ export const projectApplicationSelectionSchema = z.object({
+   projectId: z.string().min(1).max(128), appId: applicationIdSchema, expectedRevision: z.number().int().nonnegative(), enabled: z.boolean(),
+-  connections: z.object({ zentao: z.uuid().nullable().optional(), foxmail: z.uuid().nullable().optional(), smtp: z.uuid().nullable().optional() }).strict(),
++  connections: z.partialRecord(providerIdSchema, z.uuid().nullable()),
+   repair: z.object({slot:providerIdSchema,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional(),
+  }).strict().superRefine((value, ctx) => {
+-  const slots = value.appId === 'zentao' ? ['zentao'] : ['foxmail', 'smtp'];
++  const slots = moduleCatalog.applications.find(m => m.appId === value.appId)!.slots;
+   if (value.repair && !slots.includes(value.repair.slot)) ctx.addIssue({code:'custom',message:'恢复目标必须属于当前应用'});
+   if (slots.some(s => !Object.hasOwn(value.connections, s)) || Object.keys(value.connections).some(s => !slots.includes(s))) ctx.addIssue({ code: 'custom', message: '必须明确提供本应用的全部连接槽，未选用时使用null' });
+ });
+@@ -52,7 +56,7 @@ export interface ProjectApplicationSelection {
+   /** UI diagnostic only. Business callers must still use strict selection reads. */
+   repair?: {slots:ApplicationProvider[];fingerprint:string};
+ }
+-export const providerApplication = (provider: ApplicationProvider): ApplicationId => provider === 'zentao' ? 'zentao' : 'mail';
++export const providerApplication = (provider: ApplicationProvider): ApplicationId => providerApplicationId(provider);
+ 
+ export interface VerifiedConnectionCandidate {
+   operationId: string; connectionId: string; candidateHash: string; expectedRevision: number;
+diff --git a/src/shared/application-impact.ts b/src/shared/application-impact.ts
+index 18db7192a..e4ae56fe0 100644
+--- a/src/shared/application-impact.ts
++++ b/src/shared/application-impact.ts
+@@ -2,7 +2,7 @@ import {z} from 'zod';
+ import {applicationIdSchema,type ApplicationId,type ApplicationProvider} from './application-connections';
+ const revision=z.number().int().nonnegative();
+ export const applicationImpactQuerySchema=z.discriminatedUnion('kind',[
+- z.object({kind:z.literal('switch'),projectId:z.string().min(1).max(128),expectedRevision:revision}).strict(),
++ z.object({kind:z.literal('switch'),appId:applicationIdSchema.optional(),projectId:z.string().min(1).max(128),expectedRevision:revision}).strict(),
+  z.object({kind:z.literal('disconnect'),connectionId:z.uuid(),expectedRevision:revision}).strict(),
+  z.object({kind:z.literal('remove'),appId:applicationIdSchema,expectedRevision:revision}).strict(),
+ ]);

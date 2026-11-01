@@ -1,0 +1,91 @@
+{
+  "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+  "executionOrder": "sequential, only after coordinator explicitly grants the exclusive resource lease",
+  "commands": [
+    {
+      "phase": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "outerBudgetSeconds": 180,
+      "requiresEscalation": false,
+      "outputPrefix": "typecheck"
+    },
+    {
+      "phase": "metadata",
+      "argv": [
+        "node",
+        "scripts/applications/generate-module-metadata.mjs"
+      ],
+      "outerBudgetSeconds": 180,
+      "requiresEscalation": false,
+      "outputPrefix": "metadata",
+      "mode": "check only; no --write"
+    },
+    {
+      "phase": "mail-read",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/mail-read-data.test.ts",
+        "-t",
+        "does not commit an attachment when cancellation arrives while actual source work is pending",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/mail-read.vitest.json"
+      ],
+      "outerBudgetSeconds": 180,
+      "requiresEscalation": true,
+      "outputPrefix": "mail-read",
+      "scope": "exactly one named test",
+      "individualTestTimeout": "unchanged; original cancellation budget and no-persistence assertions retained in frozen source"
+    },
+    {
+      "phase": "zentao",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/zentao-data.test.ts",
+        "-t",
+        "M11 retains the original local ZenTao reference validator",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/zentao.vitest.json"
+      ],
+      "outerBudgetSeconds": 180,
+      "requiresEscalation": true,
+      "outputPrefix": "zentao",
+      "scope": "exactly one named test",
+      "individualTestTimeout": "unchanged; original cancellation budget and no-persistence assertions retained in frozen source"
+    },
+    {
+      "phase": "modules",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/module-registry.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/modules.vitest.json"
+      ],
+      "outerBudgetSeconds": 180,
+      "requiresEscalation": true,
+      "outputPrefix": "modules",
+      "scope": "entire file",
+      "individualTestTimeout": "unchanged; original cancellation budget and no-persistence assertions retained in frozen source"
+    }
+  ],
+  "noShellRegexInterpolation": true,
+  "buildsAllowed": false,
+  "sourceMutationAllowed": false
+}

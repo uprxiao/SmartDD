@@ -1,0 +1,135 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S1A-U",
+  "attempt": 1,
+  "status": "passed",
+  "scope": "Metadata check, typecheck, and the exact six requested unit/jsdom suites; no packaged App or visual acceptance",
+  "baseCommit": "59912158cc35941b4c6a203fbdf67518d6593a4f",
+  "sourceManifestSha256": "954678b2cb036b2808439c1159a10d3c31249f9dd57c3f82c910e9aa4a1ebf77",
+  "commands": {
+    "metadata": [
+      "node",
+      "scripts/applications/generate-module-metadata.mjs"
+    ],
+    "typecheck": [
+      "pnpm",
+      "typecheck"
+    ],
+    "tests": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/module-registry.test.ts",
+      "src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "src/renderer/features/applications/workspace.test.tsx",
+      "src/renderer/features/applications/panels.test.tsx",
+      "src/renderer/features/applications/zentao-pagination.test.tsx",
+      "src/renderer/features/applications/zentao-presentation.test.tsx",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--no-cache",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-001/vitest.json"
+    ]
+  },
+  "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-001",
+  "startedAt": "2026-11-01T03:25:23.477577+00:00",
+  "finishedAt": "2026-11-01T03:26:00.919092+00:00",
+  "phases": {
+    "metadata": {
+      "exitCode": 0,
+      "elapsedSeconds": 0.326,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:25:23.477577+00:00",
+      "finishedAt": "2026-11-01T03:25:23.803551+00:00"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "elapsedSeconds": 14.522,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:25:23.803832+00:00",
+      "finishedAt": "2026-11-01T03:25:38.325838+00:00"
+    },
+    "tests": {
+      "exitCode": 0,
+      "elapsedSeconds": 22.593,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:25:38.326328+00:00",
+      "finishedAt": "2026-11-01T03:26:00.919092+00:00"
+    }
+  },
+  "outerBudgetSecondsPerCommand": 180,
+  "individualTestTimeout": "Unmodified",
+  "metadataCheck": [
+    {
+      "metadata": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/shared/application-module-catalog.json",
+      "applications": 2,
+      "providers": 3,
+      "changed": false,
+      "written": false
+    }
+  ],
+  "selectionVerified": true,
+  "counts": {
+    "files": 6,
+    "testCases": 159,
+    "passed": 159,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/renderer/features/applications/panels.test.tsx",
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/renderer/features/applications/workspace.test.tsx",
+      "total": 78,
+      "passed": 78,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/renderer/features/applications/zentao-pagination.test.tsx",
+      "total": 21,
+      "passed": 21,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/renderer/features/applications/zentao-presentation.test.tsx",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "status": "passed"
+    }
+  ],
+  "perTestResults": "per-test-results.json",
+  "runtimePinVerified": true,
+  "originalRuntimeHash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+  "runtimePinProof": "runtime-pin-proof.json",
+  "failures": [],
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheUnchanged": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

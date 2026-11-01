@@ -1,3 +1,4 @@
+import type {ApplicationId} from '@shared/application-connections';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
 import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
@@ -6,7 +7,7 @@ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/
 export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type ApplicationPage = 'catalog' | 'zentao' | 'mail' | 'projects' | 'activity';
+export type ApplicationPage = 'catalog' | 'projects' | 'activity' | ApplicationId;
 export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
 
 export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';

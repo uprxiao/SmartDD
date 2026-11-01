@@ -1,0 +1,41 @@
+
+> smartdd@0.0.9 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/__tests__/business-data.test.ts(370,378): error TS2339: Property 'foxmail' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/mail-drafts.test.ts(43,5): error TS2322: Type 'ApplicationSelectionService<HostedConfiguration, any>' is not assignable to type 'ApplicationSelectionService<unknown, any>'.
+  The types of 'connections.registry.providers' are incompatible between these types.
+    Type 'Map<string, HostProvider<HostedConfiguration, any>>' is not assignable to type 'Map<string, HostProvider<unknown, any>>'.
+      Type 'HostProvider<HostedConfiguration, any>' is not assignable to type 'HostProvider<unknown, any>'.
+        Types of property 'validateCandidate' are incompatible.
+          Type '((config: HostedConfiguration, previous: HostedConfiguration | null, secretSupplied: boolean) => void) | undefined' is not assignable to type '((config: unknown, previous: unknown, secretSupplied: boolean) => void) | undefined'.
+            Type '(config: HostedConfiguration, previous: HostedConfiguration | null, secretSupplied: boolean) => void' is not assignable to type '(config: unknown, previous: unknown, secretSupplied: boolean) => void'.
+              Types of parameters 'config' and 'config' are incompatible.
+                Type 'unknown' is not assignable to type 'HostedConfiguration'.
+src/main/core/applications/__tests__/selection-service.test.ts(99,84): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/selection-service.test.ts(115,64): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/selection-service.test.ts(116,52): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/selection-service.test.ts(149,94): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/selection-service.test.ts(179,638): error TS2339: Property 'foxmail' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/selection-service.test.ts(186,159): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/task-capability-launcher.test.ts(751,61): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/task-capability-launcher.test.ts(786,368): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/task-capability-launcher.test.ts(788,40): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/task-capability-launcher.test.ts(803,569): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/task-capability-launcher.test.ts(804,39): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/__tests__/zentao-data.test.ts(221,68): error TS2339: Property 'zentao' does not exist on type 'Partial<Record<unknown, string | null>>'.
+src/main/core/applications/modules/index.ts(7,14): error TS7022: 'applicationModules' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/main/core/applications/modules/index.ts(10,13): error TS2456: Type alias 'RegisteredApplicationConfiguration' circularly references itself.
+src/main/core/applications/modules/index.ts(11,13): error TS2456: Type alias 'RegisteredApplicationId' circularly references itself.
+src/main/core/applications/modules/zentao/index.ts(13,14): error TS7022: 'zentaoModule' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/main/core/applications/modules/zentao/index.ts(30,11): error TS7023: 'verify' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+src/main/core/applications/modules/zentao/index.ts(30,49): error TS7022: 'client' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/main/core/applications/modules/zentao/index.ts(37,3): error TS7023: 'createData' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+src/main/core/applications/providers/zentao.ts(9,6): error TS2456: Type alias 'ZentaoConfig' circularly references itself.
+src/main/core/applications/providers/zentao.ts(56,15): error TS2502: 'config' is referenced directly or indirectly in its own type annotation.
+src/main/core/applications/selection-service.ts(19,72): error TS2716: Type parameter 'C' has a circular default.
+src/main/core/applications/zentao-data-service.ts(69,15): error TS2502: 'contexts' is referenced directly or indirectly in its own type annotation.
+src/main/core/applications/zentao-data-service.ts(69,122): error TS2502: 'selections' is referenced directly or indirectly in its own type annotation.
+src/shared/application-connections.ts(5,13): error TS2456: Type alias 'ApplicationId' circularly references itself.
+src/shared/application-connections.ts(21,13): error TS2456: Type alias 'ConnectionConfig' circularly references itself.
+ ELIFECYCLE  Command failed with exit code 2.

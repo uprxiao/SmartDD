@@ -1,0 +1,107 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S1A-R03",
+  "attempt": 1,
+  "status": "failed-needs-classification",
+  "scope": "Exact assigned remaining software tests; no formal case closed",
+  "sourceManifestSha256": "74d2d7b7dc4e5ca376620f3b1624a14198cf26e0b857bc92a44dcfe1cc081f1a",
+  "command": [
+    "pnpm",
+    "test",
+    "src/main/core/applications/__tests__/selection-service.test.ts",
+    "-t",
+    "(?:^| > | )(?:explicit project application slots and stop-before-switch(?: > | )starts new/imported projects unselected and never matches by project or account display name|explicit project application slots and stop-before-switch(?: > | )keeps independent nullable mail source and sender slots while draft use remains enabled|explicit project application slots and stop-before-switch(?: > | )rejects multiple/ambiguous slots and wrong provider roles in service and database|explicit project application slots and stop-before-switch(?: > | )stores exactly one source per slot and rejects a stale project revision|explicit project application slots and stop-before-switch(?: > | )rejects mail multi-selection in either slot and atomically chooses one concurrent revision|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted foxmail bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted smtp bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )stops project runs before committing another ZenTao source|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=false does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=true does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )holds a pending switch gate and rejects a competing selection without borrowing a later result|explicit project application slots and stop-before-switch(?: > | )keeps connection configuration and history while removal disables project use and re-add does not enable it|explicit project application slots and stop-before-switch(?: > | )does not commit a pending switch after removal changed the app authorization|explicit project application slots and stop-before-switch(?: > | )keeps selected identity separate from current connection health and disablement|PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop|PQ retains the stop-failure category for an unexpected stop exception before exit is confirmed|SD never labels a conflict after stopping runs as an initial no-effect rejection|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )offers an unconfirmed UI view,repairs one explicit identity slot and preserves the other until explicitly cleared|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects connection-change recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects enable recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects fingerprint recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-project recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-slot recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects pending recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )repairs one duplicate legacy slot while preserving the other duplicate and the independent project|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )never resets a missing slot revision to zero or makes it recoverable|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: changed-during-stop|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: stop-failure|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: success)$",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--no-cache",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R03/attempt-001/vitest.json"
+  ],
+  "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+  "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+  "startedAt": "2026-11-01T03:45:00.426402+00:00",
+  "finishedAt": "2026-11-01T03:45:09.186017+00:00",
+  "elapsedSeconds": 8.76,
+  "exitCode": 1,
+  "timedOut": false,
+  "outerBudgetSeconds": 180,
+  "individualTestTimeout": "Unmodified",
+  "selectionVerified": true,
+  "counts": {
+    "expected": 29,
+    "selectedReported": 29,
+    "passed": 23,
+    "failed": 6,
+    "selectedNotExecuted": 0,
+    "outsideSelection": 0,
+    "outsideExecuted": 0
+  },
+  "missingExpectedNames": [],
+  "duplicateExpectedNames": [],
+  "unexpectedExecutedNames": [],
+  "perTestResults": "per-test-results.json",
+  "failures": [
+    {
+      "fullName": "explicit project application slots and stop-before-switch > stops project runs before committing another ZenTao source",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 309.805875,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:99:18\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "fullName": "PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 238.6609580000004,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:147:36\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "fullName": "SD never labels a conflict after stopping runs as an initial no-effect rejection",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 246.78787499999999,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:160:231\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "fullName": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: success",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 195.48379099999966,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:186:478\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "fullName": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: stop-failure",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 173.5864160000001,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:186:478\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "fullName": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: changed-during-stop",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 162.16137499999968,
+      "failureMessages": [
+        "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'p1' ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"p1\",\n+   \"zentao\",\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/tmp/willyou-m11-s1a/source-attempt-003/src/main/core/applications/__tests__/selection-service.test.ts:186:478\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "criticalChanges": [],
+  "sharedCacheUnchangedDuringGroup": true,
+  "fullSequenceIntegrityReceipt": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/sequence-R01-R07-attempt-001/inputs-after.json",
+  "inputBoundary": "Full source and dependencies checked at sequence edges; group checks critical inputs/cache. Final receipt must be consulted for complete sequence integrity.",
+  "cleanup": "cleanup.json",
+  "resourceState": "local-processes-stopped; sequence-read-lease-active"
+}

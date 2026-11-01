@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {applicationIdSchema,type ApplicationId,type ApplicationProvider} from './application-connections';
 const revision=z.number().int().nonnegative();
 export const applicationImpactQuerySchema=z.discriminatedUnion('kind',[
- z.object({kind:z.literal('switch'),projectId:z.string().min(1).max(128),expectedRevision:revision}).strict(),
+ z.object({kind:z.literal('switch'),appId:applicationIdSchema.optional(),projectId:z.string().min(1).max(128),expectedRevision:revision}).strict(),
  z.object({kind:z.literal('disconnect'),connectionId:z.uuid(),expectedRevision:revision}).strict(),
  z.object({kind:z.literal('remove'),appId:applicationIdSchema,expectedRevision:revision}).strict(),
 ]);

@@ -1,8 +1,7 @@
 import {z} from 'zod';
-import {isAbsolute} from 'node:path';
 import type Database from 'better-sqlite3';
 import {ApplicationError} from '@shared/applications';
-import {connectionConfigSchema,type ApplicationId,type ConnectionConfig,type ApplicationConnection,type SaveApplicationConnection,type VerifiedConnectionIdentity,type VerifiedConnectionCandidate,type ProjectApplicationSelection,type ProjectApplicationSelectionInput} from '@shared/application-connections';
+import {type ApplicationId,type ConnectionConfig,type ApplicationConnection,type SaveApplicationConnection,type VerifiedConnectionIdentity,type VerifiedConnectionCandidate,type ProjectApplicationSelection,type ProjectApplicationSelectionInput} from '@shared/application-connections';
 
 export interface HostedConfiguration {kind:string}
 /** Main-process compiled identities only; persisted rows never implement this catalog. */
@@ -98,10 +97,4 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
   }).immediate();
  }
 }
-export const builtinHostApplications:HostApplicationDefinitions<ConnectionConfig,ApplicationId>={api:1,applications:[{id:'zentao',slots:['zentao'],stopBeforeSwitch:true},{id:'mail',slots:['foxmail','smtp'],stopBeforeSwitch:false}],providers:[
- {id:'zentao',appId:'zentao',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['token','password']},permissions:{read:'zentao.read',write:'zentao.read'}},
- {id:'foxmail',appId:'mail',readDefaultKeys:['queryDays'],configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'none',mode:'local-readonly'},permissions:{read:'mail.read',write:'mail.read'},validateCandidate:(config,previous)=>{
-  if(config.kind!=='foxmail')throw new ApplicationError('INVALID_INPUT','来源类型不符');if(!isAbsolute(config.sourcePath))throw new ApplicationError('INVALID_INPUT','请选择本机Foxmail的完整来源路径');if(previous?.kind==='foxmail'&&previous.sourcePath!==config.sourcePath)throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION','已有来源路径不能覆盖，请新建来源并显式选用');
- }},
- {id:'smtp',appId:'mail',configApiMajor:1,configSchema:connectionConfigSchema,authentication:{kind:'secret',modes:['password']},permissions:{read:'mail.send',write:'mail.send'}},
-]};
+export {builtinHostApplications} from './modules';

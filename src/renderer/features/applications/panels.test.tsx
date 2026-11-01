@@ -1,3 +1,4 @@
+import {applicationMetadata} from '@shared/application-provider-metadata';
 // @vitest-environment jsdom
 import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
@@ -9,7 +10,7 @@ import type {CatalogItem} from './api';
 const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),cancelUiRead:vi.fn().mockResolvedValue({ok:true,value:{canceled:true}}),zentaoWork:vi.fn(),zentaoObject:vi.fn(),zentaoResource:vi.fn(),mailStatus:vi.fn(),mailCacheStatus:vi.fn(),clearMailCache:vi.fn(),drafts:vi.fn(),draft:vi.fn(),resource:vi.fn(),prepareSend:vi.fn(),reviewSend:vi.fn(),authorizeSend:vi.fn(),executeSend:vi.fn(),send:vi.fn(),cancelSend:vi.fn()}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:()=>()=>{}}}));
 const ok=<T,>(value:T)=>({ok:true as const,value}),id='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64),now='2026-10-20T00:00:00Z';
-const app=(appId:'mail'|'zentao'):CatalogItem=>({appId,added:true,enabled:true,revision:1,displayName:appId,description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1});
+const app=(appId:'mail'|'zentao'):CatalogItem=>({...applicationMetadata(appId),appId,added:true,enabled:true,revision:1,displayName:appId,description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1});
 const source={connectionId:id,identityRevision:1,nativeId:'12',contentRevision:hash};
 const resource={id,revision:hash,mediaType:'text/plain',size:7};
 const content={mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['to@example.test'],cc:['cc@example.test'],bcc:['private@example.test'],subject:'Private draft',text:resource,html:null,inReplyTo:null,references:[],attachmentIds:[]};

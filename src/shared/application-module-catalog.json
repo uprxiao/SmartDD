@@ -1,0 +1,394 @@
+{
+  "schema": "willyou-app-module-catalog-v1",
+  "applications": [
+    {
+      "appId": "zentao",
+      "slots": [
+        "zentao"
+      ],
+      "stopBeforeSwitch": true,
+      "presentation": {
+        "displayName": "禅道",
+        "heading": "查看指派给我的 Bug 和研发需求",
+        "mark": "zigzag",
+        "projectNote": "每项目仅一个生效连接；停用或认证失败不会自动切换账号。",
+        "emptyConnectionSuffix": "",
+        "defaultProvider": "zentao",
+        "panel": "zentao-work",
+        "switchTitle": "切换项目禅道连接"
+      },
+      "providers": [
+        {
+          "id": "zentao",
+          "appId": "zentao",
+          "title": "禅道",
+          "diagnosticTitle": "禅道连接",
+          "initial": {
+            "kind": "zentao",
+            "baseUrl": "",
+            "username": "",
+            "authMode": "token"
+          },
+          "icon": "link",
+          "summaryFields": [
+            "username",
+            "baseUrl"
+          ],
+          "locationField": "baseUrl",
+          "project": {
+            "title": "禅道连接",
+            "unselectedNote": "查询时提示来源未配置，不自动选择其他连接。"
+          },
+          "groups": [
+            {
+              "key": "baseUrl",
+              "title": "服务地址",
+              "label": "禅道服务地址",
+              "type": "url",
+              "format": "http-base-url",
+              "required": true,
+              "immutable": true,
+              "placeholder": "https://zentao.example.com/",
+              "validation": "请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。"
+            },
+            {
+              "key": "username",
+              "title": "账号",
+              "label": "禅道账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "autoComplete": "off",
+              "validation": "请输入有效的用户名。"
+            },
+            {
+              "key": "authMode",
+              "title": "认证方式",
+              "label": "禅道认证方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "token",
+                  "label": "Token"
+                },
+                {
+                  "value": "password",
+                  "label": "密码"
+                }
+              ],
+              "validation": "不支持的禅道认证方式。"
+            }
+          ],
+          "secret": {
+            "title": "认证密码",
+            "conditionalTitle": {
+              "field": "authMode",
+              "value": "token",
+              "title": "Token"
+            },
+            "authModeValidation": "不支持的禅道认证方式。"
+          },
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "zentao"
+              },
+              "baseUrl": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "authMode": {
+                "type": "string",
+                "enum": [
+                  "token",
+                  "password"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "baseUrl",
+              "username",
+              "authMode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "appId": "mail",
+      "slots": [
+        "foxmail",
+        "smtp"
+      ],
+      "stopBeforeSwitch": false,
+      "presentation": {
+        "displayName": "邮件",
+        "heading": "在项目 Agent 中查询、准备草稿与获准发送邮件",
+        "mark": "envelope",
+        "projectNote": "每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。",
+        "emptyConnectionSuffix": "或本地邮件来源",
+        "defaultProvider": "foxmail",
+        "panel": "mail-work",
+        "switchTitle": "切换项目邮件连接"
+      },
+      "providers": [
+        {
+          "id": "foxmail",
+          "appId": "mail",
+          "title": "Foxmail 本地读取",
+          "diagnosticTitle": "邮件来源",
+          "initial": {
+            "kind": "foxmail",
+            "sourcePath": "",
+            "account": "",
+            "queryDays": 30
+          },
+          "icon": "folder",
+          "summaryFields": [
+            "account",
+            "sourcePath"
+          ],
+          "locationField": "sourcePath",
+          "project": {
+            "title": "本地读取来源",
+            "unselectedNote": "查询时提示来源未配置，不自动选择其他连接。"
+          },
+          "groups": [
+            {
+              "key": "sourcePath",
+              "title": "Foxmail 本地来源",
+              "label": "Foxmail 本地来源",
+              "type": "directory",
+              "required": true,
+              "immutable": true,
+              "placeholder": "本机来源完整路径",
+              "note": "选择单个本机邮箱账号的来源目录或 messages.db；只读原文件，不触发收信。",
+              "validation": "请选择完整的本地来源路径。"
+            },
+            {
+              "key": "account",
+              "title": "邮箱账号",
+              "label": "Foxmail 邮箱账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "placeholder": "me@example.com",
+              "validation": "请明确填写这个本地来源的邮箱账号。"
+            },
+            {
+              "key": "queryDays",
+              "title": "默认查询天数",
+              "label": "邮件查询天数",
+              "type": "number",
+              "required": true,
+              "min": 1,
+              "max": 100,
+              "step": 1,
+              "note": "含当天，按本机时区计算；查询范围与缓存保留时间独立。",
+              "validation": "请输入1–100之间的整数天数。"
+            }
+          ],
+          "secret": null,
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "foxmail"
+              },
+              "sourcePath": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "account": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "queryDays": {
+                "default": 30,
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "kind",
+              "sourcePath",
+              "account",
+              "queryDays"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "smtp",
+          "appId": "mail",
+          "title": "SMTP 发件",
+          "diagnosticTitle": "发件账号",
+          "initial": {
+            "kind": "smtp",
+            "host": "",
+            "port": 465,
+            "username": "",
+            "fromAddress": "",
+            "authMode": "password",
+            "mode": "implicit-tls"
+          },
+          "intro": "通过独立 SMTP 服务器发送，在 WillYou 保留结果，不写入 Foxmail 已发送。",
+          "icon": "send",
+          "summaryFields": [
+            "fromAddress",
+            "host"
+          ],
+          "locationField": "host",
+          "project": {
+            "title": "SMTP 发件账号",
+            "unselectedTitle": "SMTP发件账号",
+            "unselectedNote": "仍可保存草稿；发送时需要有效发件账号。"
+          },
+          "supplemental": {
+            "title": "邮件发送",
+            "note": "待配置 · 与本地读取分别连接",
+            "action": "配置发件通道"
+          },
+          "groups": [
+            {
+              "row": [
+                {
+                  "key": "host",
+                  "title": "服务主机",
+                  "label": "SMTP 服务主机",
+                  "type": "text",
+                  "format": "host",
+                  "required": true,
+                  "immutable": true,
+                  "validation": "请填写邮件服务主机名。"
+                },
+                {
+                  "key": "port",
+                  "title": "端口",
+                  "label": "SMTP 端口",
+                  "type": "number",
+                  "required": true,
+                  "min": 1,
+                  "max": 65535,
+                  "validation": "端口必须为1–65535之间的整数。"
+                }
+              ]
+            },
+            {
+              "key": "mode",
+              "title": "连接方式",
+              "label": "SMTP 连接方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "implicit-tls",
+                  "label": "隐式 TLS"
+                },
+                {
+                  "value": "starttls",
+                  "label": "STARTTLS"
+                },
+                {
+                  "value": "plain",
+                  "label": "不加密（按服务配置）"
+                }
+              ],
+              "validation": "不支持的 SMTP 连接方式。"
+            },
+            {
+              "key": "username",
+              "title": "登录账号",
+              "label": "SMTP 登录账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "autoComplete": "off",
+              "validation": "请输入有效的SMTP登录账号。"
+            },
+            {
+              "key": "fromAddress",
+              "title": "发件地址",
+              "label": "SMTP 发件地址",
+              "type": "email",
+              "required": true,
+              "immutable": true,
+              "validation": "请输入有效的发件地址。"
+            }
+          ],
+          "secret": {
+            "title": "认证密码",
+            "authModeValidation": "不支持的发件认证方式。"
+          },
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "smtp"
+              },
+              "host": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "fromAddress": {
+                "type": "string",
+                "maxLength": 512,
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "authMode": {
+                "type": "string",
+                "const": "password"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "plain",
+                  "starttls",
+                  "implicit-tls"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "host",
+              "port",
+              "username",
+              "fromAddress",
+              "authMode",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    }
+  ]
+}

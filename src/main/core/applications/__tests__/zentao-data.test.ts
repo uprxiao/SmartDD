@@ -94,6 +94,11 @@ beforeEach(async()=>{
 afterEach(async()=>{held?.();heldAuthResponse?.();vi.restoreAllMocks();await app.dispose();await owned.cli.exited();for(const socket of sockets)socket.destroy();await new Promise<void>(r=>server.close(()=>r()));f.cleanup();});
 
 describe('original ZenTao tools to actual provider and host-scoped business resources',()=>{
+ it('M11 retains the original local ZenTao reference validator after module composition',async()=>{
+  const current=await app.zentaoWork(sender,'p1',{kind:'bug'}),reference=current.items[0].reference;
+  expect(()=>app.data.zentao.assertStoredReference('p1','bug',reference)).not.toThrow();
+  expect(()=>app.data.zentao.assertStoredReference('p2','bug',reference)).toThrow(expect.objectContaining({code:'NOT_FOUND'}));
+ });
  it('keeps frozen Agent outputs unchanged while UI alone receives cached instance display metadata',async()=>{
   const agentList=await list();expect(agentList).not.toHaveProperty('presentation');const agentDetail=await detail(agentList.items[0].reference);expect(agentDetail).not.toHaveProperty('presentation');expect(paths.filter(path=>path.includes('/langs'))).toHaveLength(0);
   const uiList=await app.zentaoWork(sender,'p1',{kind:'bug'});expect(uiList.presentation?.choices.status.active).toBe('激活');

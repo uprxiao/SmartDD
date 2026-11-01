@@ -1,0 +1,123 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S1A-U",
+  "attempt": 3,
+  "status": "passed",
+  "scope": "Approved five-command compatibility regression; original mail legacy service cancellation path, actual ZenTao stored-reference validator, module registry; no generic-entry substitution",
+  "baseCommit": "59912158cc35941b4c6a203fbdf67518d6593a4f",
+  "sourceManifestSha256": "74d2d7b7dc4e5ca376620f3b1624a14198cf26e0b857bc92a44dcfe1cc081f1a",
+  "preparedManifestSha256": "97afa44abf93265bddd5446dedf616d3253b8072c18c7cb4c67c7078cf5dd435",
+  "preparedReceiptRecheckedBeforeExecution": true,
+  "exclusiveLeaseGrantedAfterCGroupCleanup": true,
+  "commands": {
+    "typecheck": [
+      "pnpm",
+      "typecheck"
+    ],
+    "metadata": [
+      "node",
+      "scripts/applications/generate-module-metadata.mjs"
+    ],
+    "mail-read": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/mail-read-data.test.ts",
+      "-t",
+      "does not commit an attachment when cancellation arrives while actual source work is pending",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--no-cache",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/mail-read.vitest.json"
+    ],
+    "zentao": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/zentao-data.test.ts",
+      "-t",
+      "M11 retains the original local ZenTao reference validator",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--no-cache",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/zentao.vitest.json"
+    ],
+    "modules": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/module-registry.test.ts",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--no-cache",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-003/modules.vitest.json"
+    ]
+  },
+  "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+  "startedAt": "2026-11-01T03:37:32.877075+00:00",
+  "finishedAt": "2026-11-01T03:38:31.070964+00:00",
+  "phases": {
+    "typecheck": {
+      "exitCode": 0,
+      "elapsedSeconds": 14.331,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:37:32.877075+00:00",
+      "finishedAt": "2026-11-01T03:37:47.208032+00:00"
+    },
+    "metadata": {
+      "exitCode": 0,
+      "elapsedSeconds": 0.325,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:37:47.208448+00:00",
+      "finishedAt": "2026-11-01T03:37:47.533102+00:00"
+    },
+    "mail-read": {
+      "exitCode": 0,
+      "elapsedSeconds": 6.17,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:38:21.532189+00:00",
+      "finishedAt": "2026-11-01T03:38:27.702012+00:00"
+    },
+    "zentao": {
+      "exitCode": 0,
+      "elapsedSeconds": 2.826,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:38:27.702602+00:00",
+      "finishedAt": "2026-11-01T03:38:30.528212+00:00"
+    },
+    "modules": {
+      "exitCode": 0,
+      "elapsedSeconds": 0.542,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:38:30.528652+00:00",
+      "finishedAt": "2026-11-01T03:38:31.070964+00:00"
+    }
+  },
+  "outerBudgetSecondsPerCommand": 180,
+  "individualTestTimeout": "Unmodified; original cancellation native test budget 15000ms retained, no --testTimeout override",
+  "metadataCheck": "{\"metadata\":\"/private/tmp/willyou-m11-s1a/source-attempt-003/src/shared/application-module-catalog.json\",\"applications\":2,\"providers\":3,\"changed\":false,\"written\":false}",
+  "selectionVerified": true,
+  "counts": {
+    "testCommands": 3,
+    "freshExecuted": 9,
+    "passed": 9,
+    "failed": 0,
+    "filteredNotCountedAsPass": 114
+  },
+  "perTestResults": "per-test-results.json",
+  "originalEntryProof": [
+    "mail-read-data.test.ts:494 still invokes app.data.mail.execute through withUi and asserts zero attachment objects around cancellation",
+    "zentao-data.test.ts:97-100 invokes app.data.zentao.assertStoredReference, accepts p1 and rejects cross-project p2"
+  ],
+  "failures": [],
+  "originalRedEvidence": "Original C-group failure evidence retained by coordinator; no prior result overwritten.",
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheUnchanged": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

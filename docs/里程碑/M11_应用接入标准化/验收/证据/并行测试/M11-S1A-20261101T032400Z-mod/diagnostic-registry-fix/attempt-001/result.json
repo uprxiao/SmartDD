@@ -1,0 +1,90 @@
+{
+  "schema": "willyou-test-batch-result-v1",
+  "batch": "M11-S1A-diagnostic-registry-fix",
+  "attempt": 1,
+  "status": "passed",
+  "source": "/private/tmp/willyou-m11-s1a/source-attempt-005",
+  "sourceManifestSha256": "56d94e2251bf7970467049d97ca850754a2954106bdd103bb88b85261c225527",
+  "scope": "Metadata check-only, typecheck, unchanged complete session-diagnostics test file; software evidence only",
+  "commands": [
+    {
+      "name": "metadata",
+      "argv": [
+        "node",
+        "scripts/applications/generate-module-metadata.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-005",
+      "pid": 19648,
+      "processGroup": 19648,
+      "supervisorPid": 19646,
+      "startedAt": "2026-11-01T04:16:12.737194+00:00",
+      "outerBudgetSeconds": 180,
+      "individualTestTimeout": "Unmodified",
+      "exitCode": 0,
+      "timedOut": false,
+      "finishedAt": "2026-11-01T04:16:13.249504+00:00",
+      "elapsedSeconds": 0.512
+    },
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-005",
+      "pid": 19657,
+      "processGroup": 19657,
+      "supervisorPid": 19646,
+      "startedAt": "2026-11-01T04:16:13.249937+00:00",
+      "outerBudgetSeconds": 180,
+      "individualTestTimeout": "Unmodified",
+      "exitCode": 0,
+      "timedOut": false,
+      "finishedAt": "2026-11-01T04:16:35.948587+00:00",
+      "elapsedSeconds": 22.699
+    },
+    {
+      "name": "diagnostics",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/session-diagnostics.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/diagnostic-registry-fix/attempt-001/vitest.json"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-005",
+      "pid": 19887,
+      "processGroup": 19887,
+      "supervisorPid": 19646,
+      "startedAt": "2026-11-01T04:16:35.949024+00:00",
+      "outerBudgetSeconds": 180,
+      "individualTestTimeout": "Unmodified",
+      "exitCode": 0,
+      "timedOut": false,
+      "finishedAt": "2026-11-01T04:17:09.465416+00:00",
+      "elapsedSeconds": 33.517
+    }
+  ],
+  "counts": {
+    "files": 1,
+    "reportedTotal": 35,
+    "observedTests": 35,
+    "passed": 35,
+    "failed": 0,
+    "notExecuted": 0
+  },
+  "fullAssignedFileVerified": true,
+  "perTestResults": "per-test-results.json",
+  "failures": [],
+  "integrityPassed": true,
+  "allOwnProcessesStopped": true,
+  "resourceLeaseReleased": true,
+  "formalM11CasePassesAdded": 0,
+  "failureClassification": "No failures observed",
+  "finishedAt": "2026-11-01T04:17:09.977646+00:00",
+  "cleanup": "cleanup.json"
+}

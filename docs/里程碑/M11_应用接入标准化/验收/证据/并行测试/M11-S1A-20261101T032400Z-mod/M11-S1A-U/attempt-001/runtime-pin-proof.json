@@ -1,0 +1,26 @@
+{
+  "expectedRuntimeHash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+  "passed": true,
+  "frozenIndex": [
+    {
+      "id": "applications",
+      "indexedHash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+      "path": "runtimes/adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+      "matchesOriginalRuntime": true
+    }
+  ],
+  "verificationChain": [
+    "builtin-packages.test.ts beforeAll executes build-runtime.mjs and build-bundles.mjs against private output",
+    "build-bundles.mjs:25 rejects whenever newly computed runtimeHash differs from metadata.runtime.hash",
+    "resources/applications/definitions.mjs:3 retains the expected runtime hash",
+    "builtin-packages.test.ts:103-106 verifies package runtime hashes equal the rebuilt indexed runtime"
+  ],
+  "controlTest": [
+    {
+      "fullName": "complete trusted built-in mail and ZenTao packages > builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime",
+      "status": "passed",
+      "durationMs": 132.22395899999992,
+      "failureMessages": []
+    }
+  ]
+}

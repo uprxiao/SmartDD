@@ -6,12 +6,13 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {applicationsChangedEvent} from '@shared/events';
 import type {ApplicationDataReply} from '@shared/application-data';
 import type {ApplicationId} from '@shared/application-connections';
+import {applicationModuleMetadata} from '@shared/application-provider-metadata';
 import {rpcErrorMessage} from '@shared/ipc/rpc';
 import {events,rpc} from '@renderer/lib/ipc';
 export type CatalogItem=Extract<Awaited<ReturnType<typeof rpc.applications.catalog>>,{ok:true}>['value'][number];
 export class ApplicationUiError extends Error {constructor(readonly code:string,message:string){super(message);}}
 export function unwrap<T>(reply:ApplicationDataReply<T>):T {if(!reply.ok)throw new ApplicationUiError(reply.code,reply.message);return reply.value;}
-export const appNames:Record<ApplicationId,string>={zentao:'禅道',mail:'邮件'};
+export const appNames=Object.fromEntries(applicationModuleMetadata.map(m=>[m.appId,m.presentation.displayName])) as Record<ApplicationId,string>;
 // Display only;null prototype keeps unknown Skill IDs from inheriting labels.
 export const skillNames:Readonly<Record<string,string>>=Object.freeze(Object.assign(Object.create(null) as Record<string,string>,skillLabels));
 export function useApplicationEvents(){const client=useQueryClient();useEffect(()=>events.on(applicationsChangedEvent,change=>{

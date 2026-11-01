@@ -1,0 +1,1196 @@
+{
+  "source": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+  "groups": [
+    {
+      "id": "M11-S1A-R01",
+      "title": "Configuration conversion contract and extension schemas",
+      "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+      "count": 8,
+      "expectedNames": [
+        "host-owned configuration conversion > projects explicit schema2 into api1 without changing source or losing authentication",
+        "host-owned configuration conversion > refuses absent source/target/identity conversions rather than claiming compatibility",
+        "host-owned configuration conversion > refuses unknown fields and authentication that cannot be expressed by the old contract",
+        "host-owned configuration conversion > rejects downgrade, exception and credential-bearing conversion outputs with controlled errors",
+        "host-owned configuration conversion > rejects duplicate keys and changes evidence hash when implementation changes",
+        "host-owned configuration conversion > retains built-in api1 fields and rejects extra security settings",
+        "supports an explicitly registered extension target schema without assuming built-in fields",
+        "refuses schemas that silently strip undeclared input or output fields"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > projects explicit schema2 into api1 without changing source or losing authentication",
+          "line": 9,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > refuses absent source/target/identity conversions rather than claiming compatibility",
+          "line": 10,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > refuses unknown fields and authentication that cannot be expressed by the old contract",
+          "line": 11,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > rejects downgrade, exception and credential-bearing conversion outputs with controlled errors",
+          "line": 12,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > rejects duplicate keys and changes evidence hash when implementation changes",
+          "line": 13,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "host-owned configuration conversion > retains built-in api1 fields and rejects extra security settings",
+          "line": 14,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "supports an explicitly registered extension target schema without assuming built-in fields",
+          "line": 17,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/config-view-registry.test.ts",
+          "name": "refuses schemas that silently strip undeclared input or output fields",
+          "line": 24,
+          "column": 1
+        }
+      ],
+      "pattern": "(?:^| > | )(?:host-owned configuration conversion(?: > | )projects explicit schema2 into api1 without changing source or losing authentication|host-owned configuration conversion(?: > | )refuses absent source/target/identity conversions rather than claiming compatibility|host-owned configuration conversion(?: > | )refuses unknown fields and authentication that cannot be expressed by the old contract|host-owned configuration conversion(?: > | )rejects downgrade, exception and credential-bearing conversion outputs with controlled errors|host-owned configuration conversion(?: > | )rejects duplicate keys and changes evidence hash when implementation changes|host-owned configuration conversion(?: > | )retains built-in api1 fields and rejects extra security settings|supports an explicitly registered extension target schema without assuming built-in fields|refuses schemas that silently strip undeclared input or output fields)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/config-view-registry.test.ts",
+        "-t",
+        "(?:^| > | )(?:host-owned configuration conversion(?: > | )projects explicit schema2 into api1 without changing source or losing authentication|host-owned configuration conversion(?: > | )refuses absent source/target/identity conversions rather than claiming compatibility|host-owned configuration conversion(?: > | )refuses unknown fields and authentication that cannot be expressed by the old contract|host-owned configuration conversion(?: > | )rejects downgrade, exception and credential-bearing conversion outputs with controlled errors|host-owned configuration conversion(?: > | )rejects duplicate keys and changes evidence hash when implementation changes|host-owned configuration conversion(?: > | )retains built-in api1 fields and rejects extra security settings|supports an explicitly registered extension target schema without assuming built-in fields|refuses schemas that silently strip undeclared input or output fields)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R01/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R01/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R01/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "no-GUI"
+      ],
+      "estimatedSeconds": [
+        5,
+        20
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R02",
+      "title": "Connection revisions, candidates, schema views and encrypted storage boundary",
+      "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+      "count": 35,
+      "expectedNames": [
+        "current connection revisions, tested candidates and encrypted secret changes > RC rejects URL delimiters in an SMTP host before staging a secret: smtp.example.test#fragment",
+        "current connection revisions, tested candidates and encrypted secret changes > RC rejects URL delimiters in an SMTP host before staging a secret: smtp.example.test?account=fixture",
+        "current connection revisions, tested candidates and encrypted secret changes > keeps a tested candidate separate from saved state and exposes no credential references or values",
+        "current connection revisions, tested candidates and encrypted secret changes > rejects invalid config and unsafe URL fields without calling the provider",
+        "current connection revisions, tested candidates and encrypted secret changes > refuses unavailable encryption before verification without persisting plaintext or partial state",
+        "current connection revisions, tested candidates and encrypted secret changes > preserves unreadable saved configuration and refuses credential access: {\"kind\":\"zentao\",\"authMode\":\"unknown\"}",
+        "current connection revisions, tested candidates and encrypted secret changes > preserves unreadable saved configuration and refuses credential access: {invalid-json",
+        "current connection revisions, tested candidates and encrypted secret changes > M10-VA-01 reports unreadable, busy and unsupported local sources with distinct controlled text",
+        "current connection revisions, tested candidates and encrypted secret changes > keeps the old credential and configuration when a rotation fails, and sanitizes provider error text",
+        "current connection revisions, tested candidates and encrypted secret changes > preserves the old reference when staging a new secret fails before provider verification",
+        "current connection revisions, tested candidates and encrypted secret changes > discards only the staged rotation when verification identifies a different account",
+        "current connection revisions, tested candidates and encrypted secret changes > rolls back a failed connection commit and removes only its validated candidate secret",
+        "current connection revisions, tested candidates and encrypted secret changes > recovers obsolete-secret cleanup from disk after a newer rotation without reverting or deleting the current credential",
+        "current connection revisions, tested candidates and encrypted secret changes > uses CAS for concurrent rotations and only cleans the losing operation secret",
+        "current connection revisions, tested candidates and encrypted secret changes > rejects a tested plan after a concurrent same-identity config edit without overwriting the winning configuration",
+        "current connection revisions, tested candidates and encrypted secret changes > requires a new connection for a verified accountId identity change",
+        "current connection revisions, tested candidates and encrypted secret changes > requires a new connection for a verified serviceId identity change",
+        "current connection revisions, tested candidates and encrypted secret changes > stores Foxmail without an SMTP secret and refuses replacing the source path in place",
+        "current connection revisions, tested candidates and encrypted secret changes > keeps SMTP mode and port explicit and separate from source configuration",
+        "current connection revisions, tested candidates and encrypted secret changes > PA retains a legacy shared credential until the last authorized connection is disconnected,including recovery",
+        "current connection revisions, tested candidates and encrypted secret changes > PA keeps both shared-reference connections revoked when deleting the final reference fails,then recovers once",
+        "current connection revisions, tested candidates and encrypted secret changes > revokes before secret cleanup, then recovers cleanup without restoring authorization",
+        "current connection revisions, tested candidates and encrypted secret changes > keeps a credential on disable and makes stale in-flight candidate results ineffective",
+        "current connection revisions, tested candidates and encrypted secret changes > cancels a newly visible candidate before verification starts and removes only its staged credential",
+        "current connection revisions, tested candidates and encrypted secret changes > cancels a pending candidate and ignores a provider result arriving after cancellation",
+        "current connection revisions, tested candidates and encrypted secret changes > bounds a provider that does not finish and discards its staged credential",
+        "current connection revisions, tested candidates and encrypted secret changes > expires a validated candidate without losing an existing credential",
+        "current connection revisions, tested candidates and encrypted secret changes > reports incompatible fixed-package authentication and commits only the explicitly reviewed plan",
+        "current connection revisions, tested candidates and encrypted secret changes > rejects a compatibility plan if a new historical package reference appeared after testing",
+        "host-parent connection verification cancellation > does not invoke a provider or stage credentials for an already cancelled parent",
+        "host-parent connection verification cancellation > does not stage a credential or start a provider after cancellation while C acquisition was queued",
+        "host-parent connection verification cancellation > propagates a parent cancellation and discards only its candidate despite a late successful provider result",
+        "configuration conversion evidence at candidate commit > rejects a candidate when converter implementation changes after verification",
+        "configuration conversion evidence at candidate commit > reports a missing converter for the active package without staging a false compatible claim",
+        "refuses a converter output that violates the retained package input schema"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > RC rejects URL delimiters in an SMTP host before staging a secret: smtp.example.test#fragment",
+          "line": 43,
+          "column": 77
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > RC rejects URL delimiters in an SMTP host before staging a secret: smtp.example.test?account=fixture",
+          "line": 43,
+          "column": 77
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > keeps a tested candidate separate from saved state and exposes no credential references or values",
+          "line": 46,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > rejects invalid config and unsafe URL fields without calling the provider",
+          "line": 56,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > refuses unavailable encryption before verification without persisting plaintext or partial state",
+          "line": 61,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > preserves unreadable saved configuration and refuses credential access: {\"kind\":\"zentao\",\"authMode\":\"unknown\"}",
+          "line": 66,
+          "column": 80
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > preserves unreadable saved configuration and refuses credential access: {invalid-json",
+          "line": 66,
+          "column": 80
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > M10-VA-01 reports unreadable, busy and unsupported local sources with distinct controlled text",
+          "line": 80,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > keeps the old credential and configuration when a rotation fails, and sanitizes provider error text",
+          "line": 90,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > preserves the old reference when staging a new secret fails before provider verification",
+          "line": 97,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > discards only the staged rotation when verification identifies a different account",
+          "line": 104,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > rolls back a failed connection commit and removes only its validated candidate secret",
+          "line": 111,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > recovers obsolete-secret cleanup from disk after a newer rotation without reverting or deleting the current credential",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > uses CAS for concurrent rotations and only cleans the losing operation secret",
+          "line": 132,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > rejects a tested plan after a concurrent same-identity config edit without overwriting the winning configuration",
+          "line": 143,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > requires a new connection for a verified accountId identity change",
+          "line": 154,
+          "column": 45
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > requires a new connection for a verified serviceId identity change",
+          "line": 154,
+          "column": 45
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > stores Foxmail without an SMTP secret and refuses replacing the source path in place",
+          "line": 159,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > keeps SMTP mode and port explicit and separate from source configuration",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > PA retains a legacy shared credential until the last authorized connection is disconnected,including recovery",
+          "line": 171,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > PA keeps both shared-reference connections revoked when deleting the final reference fails,then recovers once",
+          "line": 174,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > revokes before secret cleanup, then recovers cleanup without restoring authorization",
+          "line": 177,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > keeps a credential on disable and makes stale in-flight candidate results ineffective",
+          "line": 185,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > cancels a newly visible candidate before verification starts and removes only its staged credential",
+          "line": 193,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > cancels a pending candidate and ignores a provider result arriving after cancellation",
+          "line": 203,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > bounds a provider that does not finish and discards its staged credential",
+          "line": 214,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > expires a validated candidate without losing an existing credential",
+          "line": 220,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > reports incompatible fixed-package authentication and commits only the explicitly reviewed plan",
+          "line": 226,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "current connection revisions, tested candidates and encrypted secret changes > rejects a compatibility plan if a new historical package reference appeared after testing",
+          "line": 235,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "host-parent connection verification cancellation > does not invoke a provider or stage credentials for an already cancelled parent",
+          "line": 247,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "host-parent connection verification cancellation > does not stage a credential or start a provider after cancellation while C acquisition was queued",
+          "line": 250,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "host-parent connection verification cancellation > propagates a parent cancellation and discards only its candidate despite a late successful provider result",
+          "line": 254,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "configuration conversion evidence at candidate commit > rejects a candidate when converter implementation changes after verification",
+          "line": 263,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "configuration conversion evidence at candidate commit > reports a missing converter for the active package without staging a false compatible claim",
+          "line": 271,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/connection-service.test.ts",
+          "name": "refuses a converter output that violates the retained package input schema",
+          "line": 280,
+          "column": 1
+        }
+      ],
+      "pattern": "(?:^| > | )(?:current connection revisions, tested candidates and encrypted secret changes(?: > | )RC rejects URL delimiters in an SMTP host before staging a secret: smtp\\.example\\.test#fragment|current connection revisions, tested candidates and encrypted secret changes(?: > | )RC rejects URL delimiters in an SMTP host before staging a secret: smtp\\.example\\.test\\?account=fixture|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps a tested candidate separate from saved state and exposes no credential references or values|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects invalid config and unsafe URL fields without calling the provider|current connection revisions, tested candidates and encrypted secret changes(?: > | )refuses unavailable encryption before verification without persisting plaintext or partial state|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves unreadable saved configuration and refuses credential access: \\{\"kind\":\"zentao\",\"authMode\":\"unknown\"\\}|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves unreadable saved configuration and refuses credential access: \\{invalid-json|current connection revisions, tested candidates and encrypted secret changes(?: > | )M10-VA-01 reports unreadable, busy and unsupported local sources with distinct controlled text|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps the old credential and configuration when a rotation fails, and sanitizes provider error text|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves the old reference when staging a new secret fails before provider verification|current connection revisions, tested candidates and encrypted secret changes(?: > | )discards only the staged rotation when verification identifies a different account|current connection revisions, tested candidates and encrypted secret changes(?: > | )rolls back a failed connection commit and removes only its validated candidate secret|current connection revisions, tested candidates and encrypted secret changes(?: > | )recovers obsolete-secret cleanup from disk after a newer rotation without reverting or deleting the current credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )uses CAS for concurrent rotations and only cleans the losing operation secret|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects a tested plan after a concurrent same-identity config edit without overwriting the winning configuration|current connection revisions, tested candidates and encrypted secret changes(?: > | )requires a new connection for a verified accountId identity change|current connection revisions, tested candidates and encrypted secret changes(?: > | )requires a new connection for a verified serviceId identity change|current connection revisions, tested candidates and encrypted secret changes(?: > | )stores Foxmail without an SMTP secret and refuses replacing the source path in place|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps SMTP mode and port explicit and separate from source configuration|current connection revisions, tested candidates and encrypted secret changes(?: > | )PA retains a legacy shared credential until the last authorized connection is disconnected,including recovery|current connection revisions, tested candidates and encrypted secret changes(?: > | )PA keeps both shared-reference connections revoked when deleting the final reference fails,then recovers once|current connection revisions, tested candidates and encrypted secret changes(?: > | )revokes before secret cleanup, then recovers cleanup without restoring authorization|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps a credential on disable and makes stale in-flight candidate results ineffective|current connection revisions, tested candidates and encrypted secret changes(?: > | )cancels a newly visible candidate before verification starts and removes only its staged credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )cancels a pending candidate and ignores a provider result arriving after cancellation|current connection revisions, tested candidates and encrypted secret changes(?: > | )bounds a provider that does not finish and discards its staged credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )expires a validated candidate without losing an existing credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )reports incompatible fixed-package authentication and commits only the explicitly reviewed plan|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects a compatibility plan if a new historical package reference appeared after testing|host-parent connection verification cancellation(?: > | )does not invoke a provider or stage credentials for an already cancelled parent|host-parent connection verification cancellation(?: > | )does not stage a credential or start a provider after cancellation while C acquisition was queued|host-parent connection verification cancellation(?: > | )propagates a parent cancellation and discards only its candidate despite a late successful provider result|configuration conversion evidence at candidate commit(?: > | )rejects a candidate when converter implementation changes after verification|configuration conversion evidence at candidate commit(?: > | )reports a missing converter for the active package without staging a false compatible claim|refuses a converter output that violates the retained package input schema)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/connection-service.test.ts",
+        "-t",
+        "(?:^| > | )(?:current connection revisions, tested candidates and encrypted secret changes(?: > | )RC rejects URL delimiters in an SMTP host before staging a secret: smtp\\.example\\.test#fragment|current connection revisions, tested candidates and encrypted secret changes(?: > | )RC rejects URL delimiters in an SMTP host before staging a secret: smtp\\.example\\.test\\?account=fixture|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps a tested candidate separate from saved state and exposes no credential references or values|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects invalid config and unsafe URL fields without calling the provider|current connection revisions, tested candidates and encrypted secret changes(?: > | )refuses unavailable encryption before verification without persisting plaintext or partial state|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves unreadable saved configuration and refuses credential access: \\{\"kind\":\"zentao\",\"authMode\":\"unknown\"\\}|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves unreadable saved configuration and refuses credential access: \\{invalid-json|current connection revisions, tested candidates and encrypted secret changes(?: > | )M10-VA-01 reports unreadable, busy and unsupported local sources with distinct controlled text|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps the old credential and configuration when a rotation fails, and sanitizes provider error text|current connection revisions, tested candidates and encrypted secret changes(?: > | )preserves the old reference when staging a new secret fails before provider verification|current connection revisions, tested candidates and encrypted secret changes(?: > | )discards only the staged rotation when verification identifies a different account|current connection revisions, tested candidates and encrypted secret changes(?: > | )rolls back a failed connection commit and removes only its validated candidate secret|current connection revisions, tested candidates and encrypted secret changes(?: > | )recovers obsolete-secret cleanup from disk after a newer rotation without reverting or deleting the current credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )uses CAS for concurrent rotations and only cleans the losing operation secret|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects a tested plan after a concurrent same-identity config edit without overwriting the winning configuration|current connection revisions, tested candidates and encrypted secret changes(?: > | )requires a new connection for a verified accountId identity change|current connection revisions, tested candidates and encrypted secret changes(?: > | )requires a new connection for a verified serviceId identity change|current connection revisions, tested candidates and encrypted secret changes(?: > | )stores Foxmail without an SMTP secret and refuses replacing the source path in place|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps SMTP mode and port explicit and separate from source configuration|current connection revisions, tested candidates and encrypted secret changes(?: > | )PA retains a legacy shared credential until the last authorized connection is disconnected,including recovery|current connection revisions, tested candidates and encrypted secret changes(?: > | )PA keeps both shared-reference connections revoked when deleting the final reference fails,then recovers once|current connection revisions, tested candidates and encrypted secret changes(?: > | )revokes before secret cleanup, then recovers cleanup without restoring authorization|current connection revisions, tested candidates and encrypted secret changes(?: > | )keeps a credential on disable and makes stale in-flight candidate results ineffective|current connection revisions, tested candidates and encrypted secret changes(?: > | )cancels a newly visible candidate before verification starts and removes only its staged credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )cancels a pending candidate and ignores a provider result arriving after cancellation|current connection revisions, tested candidates and encrypted secret changes(?: > | )bounds a provider that does not finish and discards its staged credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )expires a validated candidate without losing an existing credential|current connection revisions, tested candidates and encrypted secret changes(?: > | )reports incompatible fixed-package authentication and commits only the explicitly reviewed plan|current connection revisions, tested candidates and encrypted secret changes(?: > | )rejects a compatibility plan if a new historical package reference appeared after testing|host-parent connection verification cancellation(?: > | )does not invoke a provider or stage credentials for an already cancelled parent|host-parent connection verification cancellation(?: > | )does not stage a credential or start a provider after cancellation while C acquisition was queued|host-parent connection verification cancellation(?: > | )propagates a parent cancellation and discards only its candidate despite a late successful provider result|configuration conversion evidence at candidate commit(?: > | )rejects a candidate when converter implementation changes after verification|configuration conversion evidence at candidate commit(?: > | )reports a missing converter for the active package without staging a false compatible claim|refuses a converter output that violates the retained package input schema)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R02/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R02/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R02/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services"
+      ],
+      "estimatedSeconds": [
+        10,
+        45
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R03",
+      "title": "Explicit project slots, revisions and stop-before-switch",
+      "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+      "count": 29,
+      "expectedNames": [
+        "explicit project application slots and stop-before-switch > starts new/imported projects unselected and never matches by project or account display name",
+        "explicit project application slots and stop-before-switch > keeps independent nullable mail source and sender slots while draft use remains enabled",
+        "explicit project application slots and stop-before-switch > rejects multiple/ambiguous slots and wrong provider roles in service and database",
+        "explicit project application slots and stop-before-switch > stores exactly one source per slot and rejects a stale project revision",
+        "explicit project application slots and stop-before-switch > rejects mail multi-selection in either slot and atomically chooses one concurrent revision",
+        "explicit project application slots and stop-before-switch > rejects ambiguous persisted foxmail bindings without silently choosing an account",
+        "explicit project application slots and stop-before-switch > rejects ambiguous persisted smtp bindings without silently choosing an account",
+        "explicit project application slots and stop-before-switch > stops project runs before committing another ZenTao source",
+        "explicit project application slots and stop-before-switch > preserves the prior connection when stopped=false does not prove all runs exited",
+        "explicit project application slots and stop-before-switch > preserves the prior connection when stopped=true does not prove all runs exited",
+        "explicit project application slots and stop-before-switch > holds a pending switch gate and rejects a competing selection without borrowing a later result",
+        "explicit project application slots and stop-before-switch > keeps connection configuration and history while removal disables project use and re-add does not enable it",
+        "explicit project application slots and stop-before-switch > does not commit a pending switch after removal changed the app authorization",
+        "explicit project application slots and stop-before-switch > keeps selected identity separate from current connection health and disablement",
+        "PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop",
+        "PQ retains the stop-failure category for an unexpected stop exception before exit is confirmed",
+        "SD never labels a conflict after stopping runs as an initial no-effect rejection",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > offers an unconfirmed UI view,repairs one explicit identity slot and preserves the other until explicitly cleared",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects connection-change recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects enable recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects fingerprint recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects other-project recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects other-slot recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > rejects pending recovery interference without cleaning or selecting anything",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > repairs one duplicate legacy slot while preserving the other duplicate and the independent project",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > never resets a missing slot revision to zero or makes it recoverable",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: changed-during-stop",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: stop-failure",
+        "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: success"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > starts new/imported projects unselected and never matches by project or account display name",
+          "line": 37,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > keeps independent nullable mail source and sender slots while draft use remains enabled",
+          "line": 42,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > rejects multiple/ambiguous slots and wrong provider roles in service and database",
+          "line": 50,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > stores exactly one source per slot and rejects a stale project revision",
+          "line": 58,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > rejects mail multi-selection in either slot and atomically chooses one concurrent revision",
+          "line": 64,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > rejects ambiguous persisted foxmail bindings without silently choosing an account",
+          "line": 75,
+          "column": 38
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > rejects ambiguous persisted smtp bindings without silently choosing an account",
+          "line": 75,
+          "column": 38
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > stops project runs before committing another ZenTao source",
+          "line": 95,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > preserves the prior connection when stopped=false does not prove all runs exited",
+          "line": 101,
+          "column": 24
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > preserves the prior connection when stopped=true does not prove all runs exited",
+          "line": 101,
+          "column": 24
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > holds a pending switch gate and rejects a competing selection without borrowing a later result",
+          "line": 107,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > keeps connection configuration and history while removal disables project use and re-add does not enable it",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > does not commit a pending switch after removal changed the app authorization",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "explicit project application slots and stop-before-switch > keeps selected identity separate from current connection health and disablement",
+          "line": 134,
+          "column": 3
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop",
+          "line": 143,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "PQ retains the stop-failure category for an unexpected stop exception before exit is confirmed",
+          "line": 151,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SD never labels a conflict after stopping runs as an initial no-effect rejection",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > offers an unconfirmed UI view,repairs one explicit identity slot and preserves the other until explicitly cleared",
+          "line": 167,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects connection-change recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects enable recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects fingerprint recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects other-project recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects other-slot recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > rejects pending recovery interference without cleaning or selecting anything",
+          "line": 173,
+          "column": 102
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > repairs one duplicate legacy slot while preserving the other duplicate and the independent project",
+          "line": 178,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > never resets a missing slot revision to zero or makes it recoverable",
+          "line": 181,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: changed-during-stop",
+          "line": 184,
+          "column": 67
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: stop-failure",
+          "line": 184,
+          "column": 67
+        },
+        {
+          "file": "src/main/core/applications/__tests__/selection-service.test.ts",
+          "name": "SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: success",
+          "line": 184,
+          "column": 67
+        }
+      ],
+      "pattern": "(?:^| > | )(?:explicit project application slots and stop-before-switch(?: > | )starts new/imported projects unselected and never matches by project or account display name|explicit project application slots and stop-before-switch(?: > | )keeps independent nullable mail source and sender slots while draft use remains enabled|explicit project application slots and stop-before-switch(?: > | )rejects multiple/ambiguous slots and wrong provider roles in service and database|explicit project application slots and stop-before-switch(?: > | )stores exactly one source per slot and rejects a stale project revision|explicit project application slots and stop-before-switch(?: > | )rejects mail multi-selection in either slot and atomically chooses one concurrent revision|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted foxmail bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted smtp bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )stops project runs before committing another ZenTao source|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=false does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=true does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )holds a pending switch gate and rejects a competing selection without borrowing a later result|explicit project application slots and stop-before-switch(?: > | )keeps connection configuration and history while removal disables project use and re-add does not enable it|explicit project application slots and stop-before-switch(?: > | )does not commit a pending switch after removal changed the app authorization|explicit project application slots and stop-before-switch(?: > | )keeps selected identity separate from current connection health and disablement|PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop|PQ retains the stop-failure category for an unexpected stop exception before exit is confirmed|SD never labels a conflict after stopping runs as an initial no-effect rejection|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )offers an unconfirmed UI view,repairs one explicit identity slot and preserves the other until explicitly cleared|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects connection-change recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects enable recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects fingerprint recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-project recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-slot recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects pending recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )repairs one duplicate legacy slot while preserving the other duplicate and the independent project|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )never resets a missing slot revision to zero or makes it recoverable|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: changed-during-stop|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: stop-failure|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: success)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/selection-service.test.ts",
+        "-t",
+        "(?:^| > | )(?:explicit project application slots and stop-before-switch(?: > | )starts new/imported projects unselected and never matches by project or account display name|explicit project application slots and stop-before-switch(?: > | )keeps independent nullable mail source and sender slots while draft use remains enabled|explicit project application slots and stop-before-switch(?: > | )rejects multiple/ambiguous slots and wrong provider roles in service and database|explicit project application slots and stop-before-switch(?: > | )stores exactly one source per slot and rejects a stale project revision|explicit project application slots and stop-before-switch(?: > | )rejects mail multi-selection in either slot and atomically chooses one concurrent revision|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted foxmail bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )rejects ambiguous persisted smtp bindings without silently choosing an account|explicit project application slots and stop-before-switch(?: > | )stops project runs before committing another ZenTao source|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=false does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )preserves the prior connection when stopped=true does not prove all runs exited|explicit project application slots and stop-before-switch(?: > | )holds a pending switch gate and rejects a competing selection without borrowing a later result|explicit project application slots and stop-before-switch(?: > | )keeps connection configuration and history while removal disables project use and re-add does not enable it|explicit project application slots and stop-before-switch(?: > | )does not commit a pending switch after removal changed the app authorization|explicit project application slots and stop-before-switch(?: > | )keeps selected identity separate from current connection health and disablement|PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop|PQ retains the stop-failure category for an unexpected stop exception before exit is confirmed|SD never labels a conflict after stopping runs as an initial no-effect rejection|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )offers an unconfirmed UI view,repairs one explicit identity slot and preserves the other until explicitly cleared|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects connection-change recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects enable recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects fingerprint recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-project recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects other-slot recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )rejects pending recovery interference without cleaning or selecting anything|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )repairs one duplicate legacy slot while preserving the other duplicate and the independent project|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )never resets a missing slot revision to zero or makes it recoverable|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: changed-during-stop|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: stop-failure|SF explicit recovery keeps strict business reads and untouched raw slots(?: > | )stops before recovering ambiguous ZenTao identity: success)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R03/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R03/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R03/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services"
+      ],
+      "estimatedSeconds": [
+        10,
+        45
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R04",
+      "title": "Read-only impact and trusted run scope",
+      "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+      "count": 7,
+      "expectedNames": [
+        "read-only application impact from relational bindings and trusted run scope > refuses a run whose C project was changed away from its actual task instead of reporting empty scope",
+        "read-only application impact from relational bindings and trusted run scope > lists disabled and archived references, emits only non-secret metadata, and does not change any row",
+        "read-only application impact from relational bindings and trusted run scope > can explain revocation even when an immutable package and the original snapshot are damaged",
+        "read-only application impact from relational bindings and trusted run scope > reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run",
+        "read-only application impact from relational bindings and trusted run scope > refuses unknown switch scope and keeps it intact instead of showing no affected runs",
+        "read-only application impact from relational bindings and trusted run scope > checks exact revisions and pending switch state without selecting or mutating",
+        "read-only application impact from relational bindings and trusted run scope > distinguishes empty scope and missing targets and rejects caller authority or SQL fields"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > refuses a run whose C project was changed away from its actual task instead of reporting empty scope",
+          "line": 13,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > lists disabled and archived references, emits only non-secret metadata, and does not change any row",
+          "line": 17,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > can explain revocation even when an immutable package and the original snapshot are damaged",
+          "line": 18,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run",
+          "line": 19,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > refuses unknown switch scope and keeps it intact instead of showing no affected runs",
+          "line": 20,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > checks exact revisions and pending switch state without selecting or mutating",
+          "line": 21,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/application-impact.test.ts",
+          "name": "read-only application impact from relational bindings and trusted run scope > distinguishes empty scope and missing targets and rejects caller authority or SQL fields",
+          "line": 22,
+          "column": 2
+        }
+      ],
+      "pattern": "(?:^| > | )(?:read-only application impact from relational bindings and trusted run scope(?: > | )refuses a run whose C project was changed away from its actual task instead of reporting empty scope|read-only application impact from relational bindings and trusted run scope(?: > | )lists disabled and archived references, emits only non-secret metadata, and does not change any row|read-only application impact from relational bindings and trusted run scope(?: > | )can explain revocation even when an immutable package and the original snapshot are damaged|read-only application impact from relational bindings and trusted run scope(?: > | )reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run|read-only application impact from relational bindings and trusted run scope(?: > | )refuses unknown switch scope and keeps it intact instead of showing no affected runs|read-only application impact from relational bindings and trusted run scope(?: > | )checks exact revisions and pending switch state without selecting or mutating|read-only application impact from relational bindings and trusted run scope(?: > | )distinguishes empty scope and missing targets and rejects caller authority or SQL fields)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/application-impact.test.ts",
+        "-t",
+        "(?:^| > | )(?:read-only application impact from relational bindings and trusted run scope(?: > | )refuses a run whose C project was changed away from its actual task instead of reporting empty scope|read-only application impact from relational bindings and trusted run scope(?: > | )lists disabled and archived references, emits only non-secret metadata, and does not change any row|read-only application impact from relational bindings and trusted run scope(?: > | )can explain revocation even when an immutable package and the original snapshot are damaged|read-only application impact from relational bindings and trusted run scope(?: > | )reports only loaded/preparing C runs, retains orphan identities, and excludes a verifiable native-only run|read-only application impact from relational bindings and trusted run scope(?: > | )refuses unknown switch scope and keeps it intact instead of showing no affected runs|read-only application impact from relational bindings and trusted run scope(?: > | )checks exact revisions and pending switch state without selecting or mutating|read-only application impact from relational bindings and trusted run scope(?: > | )distinguishes empty scope and missing targets and rejects caller authority or SQL fields)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R04/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R04/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R04/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services",
+        "private-Unix-sockets",
+        "private-generated-runtime-and-bundles-only",
+        "synthetic-Agent-version-fixtures-only",
+        "require_escalated-for-local-listening"
+      ],
+      "estimatedSeconds": [
+        15,
+        55
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R05",
+      "title": "Host Data API: draft/resource identity, scopes, credentials and lifecycle",
+      "file": "src/main/core/applications/__tests__/business-data.test.ts",
+      "count": 24,
+      "expectedNames": [
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > creates without either external slot and lets the other supported Agent and UI read the same business object",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > continues across Agents with CAS and preserves revision-bound original body resources",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps immutable resource identities across a business-service restart and expires old actor capabilities",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > copies an owned draft to a distinct object without new source access",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > cannot fake reply provenance or silently substitute a model-supplied project or approval",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects cross-project drafts and references even when their valid IDs and hashes are known",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects changed resource metadata, oversized chunks and offsets past the original length",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > does not trust JSON copies of host scopes or callers",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > records UI and Agent roles separately without inventing tasks for UI reads",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > permits configuration while project use is off but cannot upgrade configuration scope to reading or sending",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > gives an index child its own read-only identity and parent reference without a fake model task",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects an in-flight result after global disable and reenable, preserving the original operation record",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > changes source and SMTP slots without invalidating independent local draft operations",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > pins the exact source of an in-flight read and denies source ABA even when the original account is selected again",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > binds credential handles to the originally pinned connection despite mutation of returned metadata",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > defers credential access, rejects copied handles, uses a rotated secret and denies an ended operation",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > requires an operation-pinned source for configuration views even when its project has selected the connection",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects incompatible fixed-package configuration before reading the selected credential",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > returns cached business receipts only while the original authorization generation remains valid and never duplicates writes",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps pending UI resource leases until ignored cancellation actually settles",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown",
+        "host-scoped Data API with original mail package, SQLite, drafts and resources > waits for actual UI work on service shutdown and rejects its eventual result"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > creates without either external slot and lets the other supported Agent and UI read the same business object",
+          "line": 77,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > continues across Agents with CAS and preserves revision-bound original body resources",
+          "line": 82,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps immutable resource identities across a business-service restart and expires old actor capabilities",
+          "line": 89,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > copies an owned draft to a distinct object without new source access",
+          "line": 95,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > cannot fake reply provenance or silently substitute a model-supplied project or approval",
+          "line": 98,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects cross-project drafts and references even when their valid IDs and hashes are known",
+          "line": 103,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects changed resource metadata, oversized chunks and offsets past the original length",
+          "line": 108,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text",
+          "line": 114,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > does not trust JSON copies of host scopes or callers",
+          "line": 119,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > records UI and Agent roles separately without inventing tasks for UI reads",
+          "line": 125,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > permits configuration while project use is off but cannot upgrade configuration scope to reading or sending",
+          "line": 131,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > gives an index child its own read-only identity and parent reference without a fake model task",
+          "line": 136,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects an in-flight result after global disable and reenable, preserving the original operation record",
+          "line": 143,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > changes source and SMTP slots without invalidating independent local draft operations",
+          "line": 147,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > pins the exact source of an in-flight read and denies source ABA even when the original account is selected again",
+          "line": 151,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > binds credential handles to the originally pinned connection despite mutation of returned metadata",
+          "line": 156,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > defers credential access, rejects copied handles, uses a rotated secret and denies an ended operation",
+          "line": 165,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > requires an operation-pinned source for configuration views even when its project has selected the connection",
+          "line": 180,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > rejects incompatible fixed-package configuration before reading the selected credential",
+          "line": 189,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit",
+          "line": 197,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > returns cached business receipts only while the original authorization generation remains valid and never duplicates writes",
+          "line": 202,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps pending UI resource leases until ignored cancellation actually settles",
+          "line": 207,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown",
+          "line": 213,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "host-scoped Data API with original mail package, SQLite, drafts and resources > waits for actual UI work on service shutdown and rejects its eventual result",
+          "line": 221,
+          "column": 2
+        }
+      ],
+      "pattern": "(?:^| > | )(?:host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )creates without either external slot and lets the other supported Agent and UI read the same business object|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )continues across Agents with CAS and preserves revision-bound original body resources|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps immutable resource identities across a business-service restart and expires old actor capabilities|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )copies an owned draft to a distinct object without new source access|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )cannot fake reply provenance or silently substitute a model-supplied project or approval|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects cross-project drafts and references even when their valid IDs and hashes are known|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects changed resource metadata, oversized chunks and offsets past the original length|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )does not trust JSON copies of host scopes or callers|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )records UI and Agent roles separately without inventing tasks for UI reads|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )permits configuration while project use is off but cannot upgrade configuration scope to reading or sending|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )gives an index child its own read-only identity and parent reference without a fake model task|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects an in-flight result after global disable and reenable, preserving the original operation record|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )changes source and SMTP slots without invalidating independent local draft operations|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )pins the exact source of an in-flight read and denies source ABA even when the original account is selected again|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )binds credential handles to the originally pinned connection despite mutation of returned metadata|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )defers credential access, rejects copied handles, uses a rotated secret and denies an ended operation|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )requires an operation-pinned source for configuration views even when its project has selected the connection|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects incompatible fixed-package configuration before reading the selected credential|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )returns cached business receipts only while the original authorization generation remains valid and never duplicates writes|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps pending UI resource leases until ignored cancellation actually settles|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )waits for actual UI work on service shutdown and rejects its eventual result)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/business-data.test.ts",
+        "-t",
+        "(?:^| > | )(?:host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )creates without either external slot and lets the other supported Agent and UI read the same business object|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )continues across Agents with CAS and preserves revision-bound original body resources|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps immutable resource identities across a business-service restart and expires old actor capabilities|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )copies an owned draft to a distinct object without new source access|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )cannot fake reply provenance or silently substitute a model-supplied project or approval|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects cross-project drafts and references even when their valid IDs and hashes are known|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects changed resource metadata, oversized chunks and offsets past the original length|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )chunks split Chinese UTF-8 byte sequences losslessly rather than corrupting text|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )does not trust JSON copies of host scopes or callers|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )records UI and Agent roles separately without inventing tasks for UI reads|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )permits configuration while project use is off but cannot upgrade configuration scope to reading or sending|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )gives an index child its own read-only identity and parent reference without a fake model task|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects an in-flight result after global disable and reenable, preserving the original operation record|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )changes source and SMTP slots without invalidating independent local draft operations|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )pins the exact source of an in-flight read and denies source ABA even when the original account is selected again|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )binds credential handles to the originally pinned connection despite mutation of returned metadata|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )defers credential access, rejects copied handles, uses a rotated secret and denies an ended operation|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )requires an operation-pinned source for configuration views even when its project has selected the connection|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )rejects incompatible fixed-package configuration before reading the selected credential|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )uses current same-identity secret rotations without invalidating a read or storing credentials in the operation audit|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )returns cached business receipts only while the original authorization generation remains valid and never duplicates writes|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps pending UI resource leases until ignored cancellation actually settles|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )keeps a native verification activity leased after its bounded caller cancels and waits for it on shutdown|host-scoped Data API with original mail package, SQLite, drafts and resources(?: > | )waits for actual UI work on service shutdown and rejects its eventual result)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R05/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R05/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R05/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services",
+        "private-Unix-sockets",
+        "private-generated-runtime-and-bundles-only",
+        "synthetic-Agent-version-fixtures-only",
+        "require_escalated-for-local-listening"
+      ],
+      "estimatedSeconds": [
+        50,
+        135
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R06",
+      "title": "Durable business resources, pagination and local cache lifecycle",
+      "file": "src/main/core/applications/__tests__/business-data.test.ts",
+      "count": 10,
+      "expectedNames": [
+        "durable business resource boundaries and pagination > returns stable,lossless binary attachment chunks from the durable copy rather than a source path",
+        "durable business resource boundaries and pagination > keeps an existing reference unchanged when the same logical revision is offered different content",
+        "durable business resource boundaries and pagination > paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor",
+        "durable business resource boundaries and pagination > invalidates old local operations when project enablement changes off and on even without changing any external slot",
+        "does not begin a queued configuration provider after host shutdown while C acquisition was pending",
+        "actual host composition for U-local mail cache management > reports persistent mail storage and original package usage separately from the rebuildable cache",
+        "actual host composition for U-local mail cache management > leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests",
+        "actual host composition for U-local mail cache management > lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts",
+        "actual host composition for U-local mail cache management > does not create a cache for forged or destroyed UI senders",
+        "actual host composition for U-local mail cache management > preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "durable business resource boundaries and pagination > returns stable,lossless binary attachment chunks from the durable copy rather than a source path",
+          "line": 230,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "durable business resource boundaries and pagination > keeps an existing reference unchanged when the same logical revision is offered different content",
+          "line": 236,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "durable business resource boundaries and pagination > paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor",
+          "line": 240,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "durable business resource boundaries and pagination > invalidates old local operations when project enablement changes off and on even without changing any external slot",
+          "line": 247,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "does not begin a queued configuration provider after host shutdown while C acquisition was pending",
+          "line": 254,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "actual host composition for U-local mail cache management > reports persistent mail storage and original package usage separately from the rebuildable cache",
+          "line": 265,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "actual host composition for U-local mail cache management > leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests",
+          "line": 277,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "actual host composition for U-local mail cache management > lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts",
+          "line": 280,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "actual host composition for U-local mail cache management > does not create a cache for forged or destroyed UI senders",
+          "line": 285,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "actual host composition for U-local mail cache management > preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown",
+          "line": 288,
+          "column": 2
+        }
+      ],
+      "pattern": "(?:^| > | )(?:durable business resource boundaries and pagination(?: > | )returns stable,lossless binary attachment chunks from the durable copy rather than a source path|durable business resource boundaries and pagination(?: > | )keeps an existing reference unchanged when the same logical revision is offered different content|durable business resource boundaries and pagination(?: > | )paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor|durable business resource boundaries and pagination(?: > | )invalidates old local operations when project enablement changes off and on even without changing any external slot|does not begin a queued configuration provider after host shutdown while C acquisition was pending|actual host composition for U-local mail cache management(?: > | )reports persistent mail storage and original package usage separately from the rebuildable cache|actual host composition for U-local mail cache management(?: > | )leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests|actual host composition for U-local mail cache management(?: > | )lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts|actual host composition for U-local mail cache management(?: > | )does not create a cache for forged or destroyed UI senders|actual host composition for U-local mail cache management(?: > | )preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/business-data.test.ts",
+        "-t",
+        "(?:^| > | )(?:durable business resource boundaries and pagination(?: > | )returns stable,lossless binary attachment chunks from the durable copy rather than a source path|durable business resource boundaries and pagination(?: > | )keeps an existing reference unchanged when the same logical revision is offered different content|durable business resource boundaries and pagination(?: > | )paginates project drafts without duplicating or silently omitting objects and rejects a foreign-project cursor|durable business resource boundaries and pagination(?: > | )invalidates old local operations when project enablement changes off and on even without changing any external slot|does not begin a queued configuration provider after host shutdown while C acquisition was pending|actual host composition for U-local mail cache management(?: > | )reports persistent mail storage and original package usage separately from the rebuildable cache|actual host composition for U-local mail cache management(?: > | )leaves the cache unopened for ordinary drafts and opens one engine for concurrent status requests|actual host composition for U-local mail cache management(?: > | )lets trusted management reclaim cache independently of project or connection enablement while retaining business drafts|actual host composition for U-local mail cache management(?: > | )does not create a cache for forged or destroyed UI senders|actual host composition for U-local mail cache management(?: > | )preserves an actual active cache reader through UI clear and waits for its settlement during host shutdown)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R06/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R06/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R06/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services",
+        "private-Unix-sockets",
+        "private-generated-runtime-and-bundles-only",
+        "synthetic-Agent-version-fixtures-only",
+        "require_escalated-for-local-listening"
+      ],
+      "estimatedSeconds": [
+        30,
+        100
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    },
+    {
+      "id": "M11-S1A-R07",
+      "title": "Trusted UI forms, diagnostics, failure provenance and status cancellation",
+      "file": "src/main/core/applications/__tests__/business-data.test.ts",
+      "count": 12,
+      "expectedNames": [
+        "trusted connection form candidate lifecycle > tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks",
+        "trusted connection form candidate lifecycle > discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection",
+        "trusted upgrade diagnostics through application service > rejects a subframe before inspecting versions or distribution",
+        "trusted upgrade diagnostics through application service > returns an unavailable report without leaking filesystem exceptions or discarding existing inventory",
+        "trusted upgrade diagnostics through application service > reports affected connection identity without exposing configuration or changing business state",
+        "keeps application catalog and unrelated connection management available with one corrupt config",
+        "SD records original selection pending precondition as failed without any binding effect",
+        "SD records original selection stale precondition as failed without any binding effect",
+        "SD a same-code ordinary error after a write stays unknown and existing unknown is never rewritten",
+        "SD a selection rejection cannot classify an unrelated write action as failed",
+        "SF exposes UI diagnosis but grants a recovered source only through the audited explicit selection path",
+        "SL mail status cancellation reaches only its own context and keeps a lease until ignored work settles"
+      ],
+      "tests": [
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "trusted connection form candidate lifecycle > tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks",
+          "line": 296,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "trusted connection form candidate lifecycle > discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection",
+          "line": 315,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "trusted upgrade diagnostics through application service > rejects a subframe before inspecting versions or distribution",
+          "line": 326,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "trusted upgrade diagnostics through application service > returns an unavailable report without leaking filesystem exceptions or discarding existing inventory",
+          "line": 330,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "trusted upgrade diagnostics through application service > reports affected connection identity without exposing configuration or changing business state",
+          "line": 334,
+          "column": 2
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "keeps application catalog and unrelated connection management available with one corrupt config",
+          "line": 341,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SD records original selection pending precondition as failed without any binding effect",
+          "line": 354,
+          "column": 36
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SD records original selection stale precondition as failed without any binding effect",
+          "line": 354,
+          "column": 36
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SD a same-code ordinary error after a write stays unknown and existing unknown is never rewritten",
+          "line": 360,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SD a selection rejection cannot classify an unrelated write action as failed",
+          "line": 364,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SF exposes UI diagnosis but grants a recovered source only through the audited explicit selection path",
+          "line": 369,
+          "column": 1
+        },
+        {
+          "file": "src/main/core/applications/__tests__/business-data.test.ts",
+          "name": "SL mail status cancellation reaches only its own context and keeps a lease until ignored work settles",
+          "line": 377,
+          "column": 1
+        }
+      ],
+      "pattern": "(?:^| > | )(?:trusted connection form candidate lifecycle(?: > | )tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks|trusted connection form candidate lifecycle(?: > | )discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection|trusted upgrade diagnostics through application service(?: > | )rejects a subframe before inspecting versions or distribution|trusted upgrade diagnostics through application service(?: > | )returns an unavailable report without leaking filesystem exceptions or discarding existing inventory|trusted upgrade diagnostics through application service(?: > | )reports affected connection identity without exposing configuration or changing business state|keeps application catalog and unrelated connection management available with one corrupt config|SD records original selection pending precondition as failed without any binding effect|SD records original selection stale precondition as failed without any binding effect|SD a same-code ordinary error after a write stays unknown and existing unknown is never rewritten|SD a selection rejection cannot classify an unrelated write action as failed|SF exposes UI diagnosis but grants a recovered source only through the audited explicit selection path|SL mail status cancellation reaches only its own context and keeps a lease until ignored work settles)$",
+      "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-003",
+      "argv": [
+        "pnpm",
+        "test",
+        "src/main/core/applications/__tests__/business-data.test.ts",
+        "-t",
+        "(?:^| > | )(?:trusted connection form candidate lifecycle(?: > | )tests configuration and reads an owned UI draft with all Agent runs stopped and without creating tasks|trusted connection form candidate lifecycle(?: > | )discards an abandoned validated candidate and its uncommitted secret without disconnecting a saved connection|trusted upgrade diagnostics through application service(?: > | )rejects a subframe before inspecting versions or distribution|trusted upgrade diagnostics through application service(?: > | )returns an unavailable report without leaking filesystem exceptions or discarding existing inventory|trusted upgrade diagnostics through application service(?: > | )reports affected connection identity without exposing configuration or changing business state|keeps application catalog and unrelated connection management available with one corrupt config|SD records original selection pending precondition as failed without any binding effect|SD records original selection stale precondition as failed without any binding effect|SD a same-code ordinary error after a write stays unknown and existing unknown is never rewritten|SD a selection rejection cannot classify an unrelated write action as failed|SF exposes UI diagnosis but grants a recovered source only through the audited explicit selection path|SL mail status cancellation reaches only its own context and keeps a lease until ignored work settles)$",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R07/attempt-001/vitest.json"
+      ],
+      "logPath": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R07/attempt-001/test.log",
+      "evidenceDirectory": "/private/tmp/willyou-m11-s1a/evidence/composition-remainders/M11-S1A-R07/attempt-001",
+      "resourceNeeds": [
+        "shared-dependencies-readonly",
+        "private-filesystem",
+        "private-SQLite",
+        "no-GUI",
+        "no-real-external-services",
+        "private-Unix-sockets",
+        "private-generated-runtime-and-bundles-only",
+        "synthetic-Agent-version-fixtures-only",
+        "require_escalated-for-local-listening"
+      ],
+      "estimatedSeconds": [
+        35,
+        110
+      ],
+      "estimateBasis": "Planning estimate only; full beforeEach/afterEach retained. No new timing measurement or assertion execution was performed.",
+      "outerProtectionSeconds": 180,
+      "individualThresholdsUnchanged": true,
+      "status": "prepared-awaiting-coordinator-resource-grant",
+      "testExecutions": 0
+    }
+  ],
+  "expectedUniqueTests": 125
+}

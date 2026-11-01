@@ -1,0 +1,114 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "groupId": "M11-S1A-U",
+  "attempt": 2,
+  "status": "passed",
+  "scope": "Targeted module-registry and application-run-policy suites plus typecheck/metadata check; no GUI or builds",
+  "baseCommit": "59912158cc35941b4c6a203fbdf67518d6593a4f",
+  "sourceManifestSha256": "bd595a315aa96c7fa443cd4057fe358efa8d79a3aeec252d2f4b11744088aaec",
+  "changesSinceAttempt001": [
+    "scripts/applications/m11-module-forms-ui.mjs",
+    "src/main/core/applications/__tests__/application-run-policy.test.ts",
+    "src/main/core/applications/__tests__/module-registry.test.ts",
+    "src/main/core/applications/application-run-policy.ts",
+    "src/main/core/applications/modules/registry.ts",
+    "src/main/core/applications/modules/zentao/index.ts",
+    "src/main/core/applications/modules/zentao/run-policy.ts"
+  ],
+  "commands": {
+    "metadata": [
+      "node",
+      "scripts/applications/generate-module-metadata.mjs"
+    ],
+    "typecheck": [
+      "pnpm",
+      "typecheck"
+    ],
+    "tests": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/module-registry.test.ts",
+      "src/main/core/applications/__tests__/application-run-policy.test.ts",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--no-cache",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-s1a/evidence/units/attempt-002/vitest.json"
+    ]
+  },
+  "cwd": "/private/tmp/willyou-m11-s1a/source-attempt-002",
+  "startedAt": "2026-11-01T03:30:04.585447+00:00",
+  "finishedAt": "2026-11-01T03:30:37.202227+00:00",
+  "phases": {
+    "metadata": {
+      "exitCode": 0,
+      "elapsedSeconds": 0.319,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:30:04.585447+00:00",
+      "finishedAt": "2026-11-01T03:30:04.904096+00:00"
+    },
+    "typecheck": {
+      "exitCode": 0,
+      "elapsedSeconds": 16.406,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:30:04.904714+00:00",
+      "finishedAt": "2026-11-01T03:30:21.310715+00:00"
+    },
+    "tests": {
+      "exitCode": 0,
+      "elapsedSeconds": 6.121,
+      "timedOut": false,
+      "startedAt": "2026-11-01T03:30:31.081211+00:00",
+      "finishedAt": "2026-11-01T03:30:37.202227+00:00"
+    }
+  },
+  "outerBudgetSecondsPerCommand": 180,
+  "individualTestTimeout": "Unmodified",
+  "metadataCheck": [
+    {
+      "metadata": "/private/tmp/willyou-m11-s1a/source-attempt-002/src/shared/application-module-catalog.json",
+      "applications": 2,
+      "providers": 3,
+      "changed": false,
+      "written": false
+    }
+  ],
+  "selectionVerified": true,
+  "counts": {
+    "files": 2,
+    "testCases": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-002/src/main/core/applications/__tests__/application-run-policy.test.ts",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "status": "passed"
+    },
+    {
+      "file": "/private/tmp/willyou-m11-s1a/source-attempt-002/src/main/core/applications/__tests__/module-registry.test.ts",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "passed"
+    }
+  ],
+  "perTestResults": "per-test-results.json",
+  "failures": [],
+  "priorEvidence": {
+    "attempt": "../attempt-001",
+    "manifestSha256": "27901e875052d80528e2d5a5c211fb38c25fe7a5bc9f79cb51fa1e18e2de72e1",
+    "reuseBoundary": "Coordinator may retain unaffected prior predicates only. This attempt reports only its fresh 16 tests, no additive or blanket combined pass count."
+  },
+  "formalCasePassesAdded": 0,
+  "sourceChanges": [],
+  "dependencyAndOutputChanges": [],
+  "sharedCacheUnchanged": true,
+  "cleanup": "cleanup.json",
+  "resourceState": "released"
+}

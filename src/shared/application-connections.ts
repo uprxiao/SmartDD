@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import type { RegisteredApplicationConfiguration, RegisteredApplicationId, RegisteredApplicationProvider } from '../main/core/applications/modules';
+import moduleCatalog from './application-module-catalog.json';
+import { moduleConnectionConfigSchema, providerApplicationId } from './application-provider-metadata';
 
-export const applicationIdSchema = z.enum(['zentao', 'mail']);
-export type ApplicationId = z.infer<typeof applicationIdSchema>;
-export const providerIdSchema = z.enum(['zentao', 'foxmail', 'smtp']);
-export type ApplicationProvider = z.infer<typeof providerIdSchema>;
+export const applicationIdSchema = z.enum(moduleCatalog.applications.map(m => m.appId) as [RegisteredApplicationId, ...RegisteredApplicationId[]]);
+export type ApplicationId = RegisteredApplicationId;
+export const providerIdSchema = z.enum(moduleCatalog.applications.flatMap(m => m.providers.map(p => p.id)) as [RegisteredApplicationProvider, ...RegisteredApplicationProvider[]]);
+export type ApplicationProvider = RegisteredApplicationProvider;
 const noControls = (s: string) => !/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/u.test(s);
 const short = z.string().trim().min(1).max(512).refine(noControls, '字段包含控制字符');
 const baseUrl = z.string().trim().max(2048).refine(value => {
@@ -16,13 +19,14 @@ export const smtpConfigSchema = z.object({
   kind: z.literal('smtp'), host: short.refine(s => !/[\s/@?#\\]/u.test(s), '发件服务器地址无效'), port: z.number().int().min(1).max(65535),
   username: short, fromAddress: z.email().max(512), authMode: z.literal('password'), mode: z.enum(['plain', 'starttls', 'implicit-tls']),
 }).strict();
+/** Retained v1 configuration-view contract. New management parsing uses the compiled module registry. */
 export const connectionConfigSchema = z.discriminatedUnion('kind', [zentaoConfigSchema, foxmailConfigSchema, smtpConfigSchema]);
-export type ConnectionConfig = z.infer<typeof connectionConfigSchema>;
+export type ConnectionConfig = RegisteredApplicationConfiguration;
 export const verifiedConnectionIdentitySchema = z.object({ providerId: providerIdSchema, serviceId: short, accountId: short, contractMajor: z.literal(1) }).strict();
 export type VerifiedConnectionIdentity = z.infer<typeof verifiedConnectionIdentitySchema>;
 export const saveConnectionSchema = z.object({
   id: z.uuid().optional(), expectedRevision: z.number().int().nonnegative(), name: z.string().trim().min(1).max(120).refine(noControls),
-  config: connectionConfigSchema, secret: z.string().min(1).max(65536).optional(), acceptedImpactHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  config: moduleConnectionConfigSchema, secret: z.string().min(1).max(65536).optional(), acceptedImpactHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 }).strict();
 export type SaveApplicationConnection = z.infer<typeof saveConnectionSchema>;
 export interface ApplicationConnection {
@@ -37,10 +41,10 @@ export interface ConnectionCompatibilityImpact { packageHash: string; version: s
 export interface ConnectionChangePlan { connectionId: string | null; expectedRevision: number; configHash: string; referenceHash: string; impacts: ConnectionCompatibilityImpact[]; planHash: string }
 export const projectApplicationSelectionSchema = z.object({
   projectId: z.string().min(1).max(128), appId: applicationIdSchema, expectedRevision: z.number().int().nonnegative(), enabled: z.boolean(),
-  connections: z.object({ zentao: z.uuid().nullable().optional(), foxmail: z.uuid().nullable().optional(), smtp: z.uuid().nullable().optional() }).strict(),
+  connections: z.partialRecord(providerIdSchema, z.uuid().nullable()),
   repair: z.object({slot:providerIdSchema,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional(),
  }).strict().superRefine((value, ctx) => {
-  const slots = value.appId === 'zentao' ? ['zentao'] : ['foxmail', 'smtp'];
+  const slots = moduleCatalog.applications.find(m => m.appId === value.appId)!.slots;
   if (value.repair && !slots.includes(value.repair.slot)) ctx.addIssue({code:'custom',message:'恢复目标必须属于当前应用'});
   if (slots.some(s => !Object.hasOwn(value.connections, s)) || Object.keys(value.connections).some(s => !slots.includes(s))) ctx.addIssue({ code: 'custom', message: '必须明确提供本应用的全部连接槽，未选用时使用null' });
 });
@@ -52,7 +56,7 @@ export interface ProjectApplicationSelection {
   /** UI diagnostic only. Business callers must still use strict selection reads. */
   repair?: {slots:ApplicationProvider[];fingerprint:string};
 }
-export const providerApplication = (provider: ApplicationProvider): ApplicationId => provider === 'zentao' ? 'zentao' : 'mail';
+export const providerApplication = (provider: ApplicationProvider): ApplicationId => providerApplicationId(provider);
 
 export interface VerifiedConnectionCandidate {
   operationId: string; connectionId: string; candidateHash: string; expectedRevision: number;

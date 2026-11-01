@@ -1,6 +1,6 @@
 import {MailAttachmentsDialog} from './mail-attachments';
 import {useEffect,useRef,useState} from 'react';
-import {useInfiniteQuery,useQuery,useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery,useQuery,useQueryClient,useQueries} from '@tanstack/react-query';
 import {ArrowUpRight} from 'lucide-react';
 import type {ApplicationActivityItem,ApplicationActivityQuery} from '@shared/application-activity';
 import type {ApplicationConnection,ApplicationId} from '@shared/application-connections';
@@ -8,7 +8,8 @@ import {rpc} from '@renderer/lib/ipc';
 import {navigation} from '@renderer/core/navigation';
 import {useProjectList} from '@renderer/lib/hooks/useProjects';
 import {AppDialog,AppEmpty,AppMark,timeText} from './controls';
-import {appNames,unwrap,useConnections} from './api';
+import {appNames,unwrap} from './api';
+import {applicationModuleMetadata} from '@shared/application-provider-metadata';
 import {DraftDetail,sendState} from './mail-panel';
 import {ConnectionForm} from './connection-form';
 const actions:Record<string,string>={
@@ -26,18 +27,19 @@ const caller=(item:ApplicationActivityItem)=>item.callerKind==='ui'?'界面操�
 const category=(item:ApplicationActivityItem)=>item.kind==='send'?'SMTP 发送':/send[._]execute/.test(item.action)?'发送请求':/draft|reply|attachment/.test(item.action)?'草稿与附件':/connection|^application\./.test(item.action)?'配置与状态':item.semantics==='read'?'读取':'本地操作';
 export function ActivityWorkspace({initialFilter={}}:{initialFilter?:ApplicationActivityQuery}){
  const [appId,setAppId]=useState<ApplicationId|''>(initialFilter.appId??''),[connectionId,setConnectionId]=useState(initialFilter.connectionId??''),[projectId,setProjectId]=useState(initialFilter.projectId??''),[selected,setSelected]=useState<{kind:'operation'|'send';id:string}|null>(null);
- const mail=useConnections('mail'),zentao=useConnections('zentao'),{data:projects=[]}=useProjectList();
- const connections=[...(mail.data??[]),...(zentao.data??[])].filter(c=>!appId||c.appId===appId);
+ const connectionQueries=useQueries({queries:applicationModuleMetadata.map(module=>({queryKey:['applications','connections',module.appId],queryFn:async()=>unwrap(await rpc.applications.connections(module.appId as ApplicationId)),retry:false}))}),{data:projects=[]}=useProjectList();
+ const allConnections=connectionQueries.flatMap(query=>query.data??[]).sort((a,b)=>a.appId.localeCompare(b.appId)),connectionError=connectionQueries.find(query=>query.error)?.error;
+ const connections=allConnections.filter(c=>!appId||c.appId===appId);
  const filter={...(appId?{appId}:{}),...(connectionId?{connectionId}:{}),...(projectId?{projectId}:{})};
  const query=useInfiniteQuery({queryKey:['applications','activity',filter],initialPageParam:null as string|null,queryFn:async({pageParam})=>unwrap(await rpc.applications.activity({...filter,limit:50,cursor:pageParam})),getNextPageParam:last=>last.nextCursor??undefined,retry:false,refetchOnWindowFocus:false});
  const items=query.data?.pages.flatMap(p=>p.items)??[];
  return <><header className="m10-page-head"><div><h1>调用记录</h1><p>查看操作来源、当前阶段和需要恢复的事项。</p></div><button className="m10-button secondary" disabled={query.isFetching} onClick={()=>void query.refetch()}>刷新记录</button></header>
- <div className="m10-activity-filters"><label>应用<select aria-label="按应用筛选记录" value={appId} onChange={e=>{setAppId(e.target.value as ApplicationId|'');setConnectionId('');}}><option value="">全部应用</option><option value="zentao">禅道</option><option value="mail">邮件</option></select></label><label>连接<select aria-label="按连接筛选记录" value={connectionId} onChange={e=>setConnectionId(e.target.value)}><option value="">全部连接</option>{connections.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}{connectionId&&!connections.some(c=>c.id===connectionId)&&<option value={connectionId}>原记录连接</option>}</select></label><label>项目<select aria-label="按项目筛选记录" value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">全部项目</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}{projectId&&!projects.some(p=>p.id===projectId)&&<option value={projectId}>原记录项目</option>}</select></label></div>
+ <div className="m10-activity-filters"><label>应用<select aria-label="按应用筛选记录" value={appId} onChange={e=>{setAppId(e.target.value as ApplicationId|'');setConnectionId('');}}><option value="">全部应用</option>{applicationModuleMetadata.map(module=><option value={module.appId} key={module.appId}>{module.presentation.displayName}</option>)}</select></label><label>连接<select aria-label="按连接筛选记录" value={connectionId} onChange={e=>setConnectionId(e.target.value)}><option value="">全部连接</option>{connections.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}{connectionId&&!connections.some(c=>c.id===connectionId)&&<option value={connectionId}>原记录连接</option>}</select></label><label>项目<select aria-label="按项目筛选记录" value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">全部项目</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}{projectId&&!projects.some(p=>p.id===projectId)&&<option value={projectId}>原记录项目</option>}</select></label></div>
  {query.data?.pages[0]?.recoveryIssue&&<p className="m10-note" role="alert">{query.data.pages[0].recoveryIssue.message}</p>}
- {(mail.error||zentao.error)&&<p className="m10-note" role="alert">连接名称未全部载入，已有记录按原连接身份保留。{(mail.error??zentao.error)?.message}</p>}
+ {connectionError&&<p className="m10-note" role="alert">连接名称未全部载入，已有记录按原连接身份保留。{connectionError?.message}</p>}
  {query.isPending||(query.isFetching&&query.isError)?<AppEmpty loading title="正在读取调用记录" text="读取本机持久操作账与发送结果。"/>:query.error?<AppEmpty error title="调用记录读取未完成" text={query.error.message} action="重试读取" onAction={()=>void query.refetch()}/>:<>{items.length===0&&<AppEmpty title="当前筛选没有调用记录" text="读取、草稿、配置和发送操作会按实际来源保留在这里。"/>}<div className="m10-activity-list">{items.map(item=><button className="m10-activity-row" key={item.kind+':'+item.id} onClick={()=>setSelected({kind:item.kind,id:item.id})}><AppMark app={item.appId}/><span className="m10-activity-copy"><strong>{activityAction(item)}<small className="m10-inline-label">{category(item)}</small></strong><small>{item.projectName??(item.projectId?'已删除项目':'全局配置')} · {item.connections.map(c=>c.name??'原连接').join('、')||'未涉及连接'} · {caller(item)}{item.taskTitle?' · '+item.taskTitle:''}</small><small>{timeText(item.startedAt,'未记录')}{item.attemptCount?' · '+item.attemptCount+' 次尝试':''}{item.errorCode?' · '+item.errorCode:''}</small></span><span className={'m10-state '+(item.state==='succeeded'||item.state==='server-accepted'?'ready':item.state==='failed'||item.state==='unknown'?item.state:'')}>{activityState(item)}</span></button>)}</div>{query.hasNextPage&&<button className="m10-button secondary" disabled={query.isFetchingNextPage} onClick={()=>void query.fetchNextPage()}>读取更早记录</button>}</>}
  <p className="m10-muted">调用完成、授权依据和实际发送结果分别记录。SMTP 服务器接受不代表送达或已读；未知结果先核实，刷新不会重发。</p>
- {selected&&<ActivityDetail key={selected.kind+':'+selected.id} {...selected} connections={[...(mail.data??[]),...(zentao.data??[])]} onClose={()=>setSelected(null)} onLinkedSend={id=>setSelected({kind:'send',id})}/>}
+ {selected&&<ActivityDetail key={selected.kind+':'+selected.id} {...selected} connections={allConnections} onClose={()=>setSelected(null)} onLinkedSend={id=>setSelected({kind:'send',id})}/>}
  </>;
 }
 function ActivityDetail({kind,id,connections,onClose,onLinkedSend}:{kind:'operation'|'send';id:string;connections:ApplicationConnection[];onClose:()=>void;onLinkedSend?:(id:string)=>void}){

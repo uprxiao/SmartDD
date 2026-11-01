@@ -1,0 +1,11 @@
+
+> smartdd@0.0.9 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/config-view-registry.ts(47,35): error TS2352: Conversion of type 'readonly ConfigViewConverter<HostedConfiguration>[]' to type 'readonly ConfigViewConverter<RegisteredApplicationConfiguration>[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'ConfigViewConverter<HostedConfiguration>' is not comparable to type 'ConfigViewConverter<RegisteredApplicationConfiguration>'.
+    Types of property 'targetSchema' are incompatible.
+      Type 'ZodType<HostedConfiguration, unknown, $ZodTypeInternals<HostedConfiguration, unknown>>' is not comparable to type 'ZodType<RegisteredApplicationConfiguration, unknown, $ZodTypeInternals<RegisteredApplicationConfiguration, unknown>>'.
+        Type 'HostedConfiguration' is not comparable to type 'RegisteredApplicationConfiguration'.
+          Type 'HostedConfiguration' is missing the following properties from type '{ kind: "smtp"; host: string; port: number; username: string; fromAddress: string; authMode: "password"; mode: "implicit-tls" | "starttls" | "plain"; }': host, port, username, fromAddress, and 2 more.
+ ELIFECYCLE  Command failed with exit code 2.

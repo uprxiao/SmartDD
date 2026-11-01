@@ -9,6 +9,7 @@ import {buildProcessIdentity} from './applications/build.mjs';
 import {buildApplicationRuntime} from './applications/build-runtime.mjs';
 
 const output=resolve(process.argv[2]??'out');
+execFileSync(process.execPath,['scripts/applications/generate-module-metadata.mjs','--write'],{stdio:'inherit'});
 buildFileBroker({output:join(output,'native/willyou-files')});
 const identityHelper=buildProcessIdentity({output:join(output,'native/willyou-process-identity')});
 let nativeProbe=null;

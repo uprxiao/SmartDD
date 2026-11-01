@@ -96,7 +96,7 @@ describe('explicit project application slots and stop-before-switch', () => {
     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
     const selected = await service.select(selectZen(a.id, 0)); expect(stop).not.toHaveBeenCalled(); live = 1;
     const changed = await service.select(selectZen(b.id, selected.revision));
-    expect(stop).toHaveBeenCalledExactlyOnceWith('p1'); expect(changed.connections.zentao).toBe(b.id); expect(changed.revision).toBe(selected.revision + 1); expect(changed.pendingOperationId).toBeNull();
+    expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao'); expect(changed.connections.zentao).toBe(b.id); expect(changed.revision).toBe(selected.revision + 1); expect(changed.pendingOperationId).toBeNull();
   });
   it.each([false, true])('preserves the prior connection when stopped=%s does not prove all runs exited', async stopped => {
     await service.setAdded('zentao', true, 0); const a = await connection('zentao'), b = await connection('zentao', 'b');
@@ -144,7 +144,7 @@ it('PQ records a transaction failure after confirmed stop without claiming that 
  await service.setAdded('zentao',true,0);const a=await connection('zentao','pq-a'),b=await connection('zentao','pq-b'),old=await service.select(selectZen(a.id,0));live=2;
  sqlite.exec(`CREATE TEMP TRIGGER pq_commit_abort BEFORE INSERT ON main.application_project_bindings WHEN NEW.connection_id='${b.id}' BEGIN SELECT RAISE(ABORT,'PQ_OWN_COMMIT_FAILURE');END;`);
  try{await expect(service.select(selectZen(b.id,old.revision))).rejects.toThrow('PQ_OWN_COMMIT_FAILURE');}finally{sqlite.exec('DROP TRIGGER pq_commit_abort');}
- expect(live).toBe(0);expect(stop).toHaveBeenCalledExactlyOnceWith('p1');expect(service.projectSettings('p1','zentao')).toEqual(old);
+ expect(live).toBe(0);expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');expect(service.projectSettings('p1','zentao')).toEqual(old);
  expect(sqlite.prepare("SELECT state,error_code FROM application_binding_changes WHERE state='failed'").all()).toEqual([{state:'failed',error_code:'CAPABILITY_UNAVAILABLE'}]);
  const retried=await service.select(selectZen(b.id,old.revision));expect(retried.connections.zentao).toBe(b.id);expect(retried.revision).toBe(old.revision+1);
 });
@@ -157,7 +157,7 @@ it('PQ retains the stop-failure category for an unexpected stop exception before
 it('SD never labels a conflict after stopping runs as an initial no-effect rejection',async()=>{
  await service.setAdded('zentao',true,0);const a=await connection('zentao'),b=await connection('zentao','b'),old=await service.select(selectZen(a.id,0));live=1;
  stop.mockImplementationOnce(async()=>{live=0;sqlite.prepare("UPDATE application_project_settings SET binding_revision=binding_revision+1 WHERE project_id='p1'AND app_id='zentao'").run();return true;});
- let error:unknown;try{await service.select(selectZen(b.id,old.revision));}catch(value){error=value;}expect(error).toMatchObject({code:'REVISION_CONFLICT'});expect((error as Error).constructor).toBe(ApplicationError);expect(stop).toHaveBeenCalledExactlyOnceWith('p1');expect(live).toBe(0);expect(service.projectSettings('p1','zentao')).toMatchObject({connections:{zentao:a.id},pendingOperationId:null});
+ let error:unknown;try{await service.select(selectZen(b.id,old.revision));}catch(value){error=value;}expect(error).toMatchObject({code:'REVISION_CONFLICT'});expect((error as Error).constructor).toBe(ApplicationError);expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');expect(live).toBe(0);expect(service.projectSettings('p1','zentao')).toMatchObject({connections:{zentao:a.id},pendingOperationId:null});
 });
 
 describe('SF explicit recovery keeps strict business reads and untouched raw slots',()=>{
@@ -183,6 +183,6 @@ describe('SF explicit recovery keeps strict business reads and untouched raw slo
  });
  it.each(['success','stop-failure','changed-during-stop'] as const)('stops before recovering ambiguous ZenTao identity: %s',async outcome=>{
   await service.setAdded('zentao',true,0);const a=await connection('zentao','sf-z');await service.select(selectZen(a.id,0));sqlite.prepare("UPDATE application_project_bindings SET identity_revision=identity_revision+1 WHERE project_id='p1' AND app_id='zentao'").run();const before=rows(),v=service.projectView('p1','zentao');live=1;stop.mockImplementationOnce(async()=>{expect(rows()).toEqual(before);if(outcome==='stop-failure')return false;live=0;if(outcome==='changed-during-stop')sqlite.prepare('UPDATE application_connections SET revision=revision+1 WHERE id=?').run(a.id);return true;});const input:ProjectApplicationSelectionInput={projectId:'p1',appId:'zentao',enabled:true,expectedRevision:v.revision,connections:{zentao:a.id},repair:{slot:'zentao',fingerprint:v.repair!.fingerprint}};
-  if(outcome==='success'){const next=await service.select(input);expect(next.repair).toBeUndefined();expect(service.requireEnabled('p1','zentao').connections.zentao).toBe(a.id);}else{let error:unknown;try{await service.select(input);}catch(e){error=e;}expect(error).toBeInstanceOf(ApplicationError);expect((error as Error).constructor).toBe(ApplicationError);expect(rows()).toEqual(before);expect(service.projectView('p1','zentao').pendingOperationId).toBeNull();}expect(stop).toHaveBeenCalledExactlyOnceWith('p1');
+  if(outcome==='success'){const next=await service.select(input);expect(next.repair).toBeUndefined();expect(service.requireEnabled('p1','zentao').connections.zentao).toBe(a.id);}else{let error:unknown;try{await service.select(input);}catch(e){error=e;}expect(error).toBeInstanceOf(ApplicationError);expect((error as Error).constructor).toBe(ApplicationError);expect(rows()).toEqual(before);expect(service.projectView('p1','zentao').pendingOperationId).toBeNull();}expect(stop).toHaveBeenCalledExactlyOnceWith('p1','zentao');
  });
 });

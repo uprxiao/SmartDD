@@ -1,3 +1,4 @@
+import {applicationMetadata} from '@shared/application-provider-metadata';
 // @vitest-environment jsdom
 import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
@@ -13,7 +14,7 @@ const m=vi.hoisted(()=>({projectSettings:vi.fn(),connections:vi.fn(),zentaoWork:
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:(_event:unknown,callback:(value:unknown)=>void)=>{m.notify=callback;return()=>{m.notify=null;};}}}));
 vi.mock('./terminal-insertion',()=>({ApplicationTerminalButton:()=>m.showTerminal?<button>插入当前终端</button>:null}));
 const id='00000000-0000-4000-8000-000000000001',hash='a'.repeat(64);
-const app:CatalogItem={appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
+const app:CatalogItem={...applicationMetadata('zentao'),appId:'zentao',added:true,enabled:true,revision:1,displayName:'禅道',description:'',version:'1.0.0',defaultPackageHash:hash,skills:[],tools:[],versions:[],connectionCount:1};
 const ok=<T,>(value:T)=>({ok:true as const,value});
 const failed=()=>({ok:false as const,code:'CONNECTION_UNAVAILABLE' as const,message:'本次隔离分页请求失败'});
 function page(kind:'bug'|'story',ids:string[],nextCursor:string|null=null):ZentaoWorkData{

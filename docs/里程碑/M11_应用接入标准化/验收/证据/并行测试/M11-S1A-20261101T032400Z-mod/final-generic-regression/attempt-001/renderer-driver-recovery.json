@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-01T04:15:52.859480+00:00",
+  "originalScriptSha256": "7f7702c3120c43255d3ee7b19e5ee68fdd35b1621815465f75621bed6a23848e",
+  "derivedRunFunctionSha256": "81bc1c2285515f8af3a7a8e09b0d3e0d2ffa3cf37b6a0ba00b80731b7bb9c2eb",
+  "privateDriverChanges": [
+    {
+      "from": "names={x['name'] for x in executed};expected=set(expected_names);missing=sorted(expected-names);unexpected=sorted(names-expected)",
+      "to": "names=Counter(x['name'] for x in executed);expected=Counter(expected_names);missing=sorted((expected-names).elements());unexpected=sorted((names-expected).elements())"
+    },
+    {
+      "from": "'expectedCount':len(expected)",
+      "to": "'expectedCount':len(expected_names),'uniqueExpectedNames':len(expected),'duplicateCollectionLabels':sum(expected.values())-len(expected)"
+    },
+    {
+      "from": "len(executed)==len(expected) and len(names)==len(executed)",
+      "to": "len(executed)==len(expected_names) and names==expected"
+    }
+  ],
+  "collectionOnlyDuplicateLabels": true,
+  "testFilesToRun": [
+    "src/renderer/features/applications/session-applications.test.tsx",
+    "src/renderer/features/applications/activity.test.tsx"
+  ],
+  "testCallbacksOrExpectationsChanged": false
+}

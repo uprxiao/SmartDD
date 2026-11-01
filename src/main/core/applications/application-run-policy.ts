@@ -5,6 +5,7 @@ import { canonicalJson,digest } from './manifest';
 import { selectionHash } from './session-registry';
 import { readLaunchRestriction } from './launch-restriction';
 import type { ResourceStore } from './resource-store';
+import {builtinApplicationModules} from './modules';
 const unresolved=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验受影响会话的应用范围，已保留原连接选择');
 /** Read-only stop classification, never business authority. Include preparations
  * with a fixed selection; valid native-only runs have no loaded application. */
@@ -41,27 +42,20 @@ export function taskUsesApplication(store:ResourceStore,projectId:string,taskId:
   return false;
  }catch{throw unresolved();}
 }
-/** ZenTao switching is an explicit launch policy exception; health and ordinary
- * application revocation remain per-business-call checks. Other selections run. */
-export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{projectId:string;packages:readonly{appId:string}[]}):void{
- if(!snapshot.packages.some(p=>p.appId==='zentao'))return;
- const row=store.sqlite.prepare("SELECT pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id='zentao'").get(snapshot.projectId) as {pending_operation_id:string|null}|undefined;
- if(row&&row.pending_operation_id!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换禅道连接，请稍后启动或继续相关会话');
+/** A stop-before-switch policy belongs to the registered module, not a hardcoded application. */
+export interface ApplicationSwitchPolicies {appIds():readonly string[];module(id:string):{stopBeforeSwitch:boolean;presentation:{displayName:string}}}
+export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{projectId:string;packages:readonly{appId:string}[]},policies:ApplicationSwitchPolicies=builtinApplicationModules):void{
+ const known=new Set(policies.appIds());
+ for(const selected of snapshot.packages){
+  if(!known.has(selected.appId))continue;const module=policies.module(selected.appId);if(!module.stopBeforeSwitch)continue;
+  const row=store.sqlite.prepare('SELECT pending_operation_id FROM application_project_settings WHERE project_id=? AND app_id=?').get(snapshot.projectId,selected.appId) as {pending_operation_id:string|null}|undefined;
+  if(row&&row.pending_operation_id!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换'+module.presentation.displayName+'连接，请稍后启动或继续相关会话');
+ }
 }
 
 /** Current source context for the Agent, appended by the host to its original
  * tool description. Does not alter the frozen name, schemas, version or rights. */
 export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
- if(appId!=='zentao')return null;const selected=snapshot.packages.find(p=>p.appId===appId);if(!selected)return null;
- const row=store.sqlite.prepare(`SELECT s.pending_operation_id,b.connection_id,b.identity_revision,c.name,c.app_id,c.provider_id,c.identity_revision AS actual_identity_revision
-  FROM application_project_settings s LEFT JOIN application_project_bindings b ON b.project_id=s.project_id AND b.app_id=s.app_id AND b.slot='zentao'
-  LEFT JOIN application_connections c ON c.id=b.connection_id WHERE s.project_id=? AND s.app_id='zentao'`).get(snapshot.projectId) as {pending_operation_id:string|null;connection_id:string|null;identity_revision:number|null;name:string|null;app_id:string|null;provider_id:string|null;actual_identity_revision:number|null}|undefined;
- if(row&&row.pending_operation_id!==null)return '项目正在切换禅道连接；本次相关新调用暂不可用，不要自动重放旧请求。';
- if(selected.bindings.length>1)return '原会话禅道来源身份待核验；请检查项目选用，不要推定来源或改投旧请求。';
- const original=selected.bindings[0]??null,current=row?.connection_id??null;
- if(current&&(row?.app_id!=='zentao'||row.provider_id!=='zentao'||row.identity_revision!==row.actual_identity_revision))return '当前禅道来源身份待核验；不要将旧来源对象引用改投其他连接。';
- if((original?.connectionId??null)===current&&(!original||original.identityRevision===row?.identity_revision))return null;
- const label=(id:string|null,name:string|null)=>id?JSON.stringify((name??'原连接').slice(0,128))+' ('+id.slice(0,128)+')':'未选用';
- const old=original?store.sqlite.prepare('SELECT name FROM application_connections WHERE id=?').get(original.connectionId) as {name:string}|undefined:undefined;
- return '禅道来源已变化：本会话创建时为 '+label(original?.connectionId??null,old?.name??null)+'，本项目当前为 '+label(current,row?.name??null)+'。沿用原工具版本与动作上限；旧来源对象引用不会改投当前来源，需在当前来源重新查询。';
+ if(!builtinApplicationModules.appIds().some(id=>id===appId))return null;
+ return builtinApplicationModules.module(appId).connectionNotice?.(store,snapshot,appId)??null;
 }

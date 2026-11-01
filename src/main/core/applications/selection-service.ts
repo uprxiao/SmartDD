@@ -10,8 +10,8 @@ import type { ResourceStore } from './resource-store';
 
 export interface ApplicationSelectionDeps {
   requireProject(projectId: string): unknown;
-  stopProjectRuns(projectId: string): Promise<boolean>;
-  runningInProject(projectId: string): number;
+  stopProjectRuns(projectId: string, appId: string): Promise<boolean>;
+  runningInProject(projectId: string, appId: string): number;
 }
 export interface ApplicationCatalogState<A extends string=ApplicationId> { appId: A; added: boolean; enabled: boolean; revision: number }
 
@@ -104,14 +104,14 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
     if (!needsStop) return value.repair?this.projectView(value.projectId,value.appId):this.projectSettings(value.projectId,value.appId);
     let stopConfirmed = false;
     try {
-      const stopped = await this.deps.stopProjectRuns(value.projectId);
-      if (!stopped || this.deps.runningInProject(value.projectId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '相关终端尚未确认结束，已保留原连接选择');
+      const stopped = await this.deps.stopProjectRuns(value.projectId, value.appId);
+      if (!stopped || this.deps.runningInProject(value.projectId, value.appId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '相关终端尚未确认结束，已保留原连接选择');
       stopConfirmed = true;
       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
         this.validateSelection(value);
         const current = this.selectionForInput(value);
         if (current.revision !== value.expectedRevision || current.pendingOperationId !== operationId) throw new ApplicationError('REVISION_CONFLICT', '等待停止期间项目选择已变化');
-        if (this.deps.runningInProject(value.projectId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '项目又有终端运行，已保留原选择');
+        if (this.deps.runningInProject(value.projectId, value.appId) !== 0) throw new ApplicationError('RUN_STOP_FAILED', '项目又有终端运行，已保留原选择');
         this.commitSelection(value, operationId);
       }).immediate());
       return value.repair?this.projectView(value.projectId,value.appId):this.projectSettings(value.projectId,value.appId);

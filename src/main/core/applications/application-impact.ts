@@ -3,6 +3,7 @@ import {applicationImpactQuerySchema,type ApplicationImpact,type ApplicationImpa
 import type {ApplicationId,ApplicationProvider} from '@shared/application-connections';
 import type {ResourceStore} from './resource-store';
 import {taskUsesApplication} from './application-run-policy';
+import {builtinApplicationModules} from './modules';
 type Connection={id:string;name:string;providerId:ApplicationProvider;enabled:number;authorization:'connected'|'disconnected'};
 const changed=()=>new ApplicationError('REVISION_CONFLICT','配置已变化，请关闭并重新打开此操作');
 /** Pure SQL metadata view. Revocation impact remains inspectable even if package
@@ -25,9 +26,12 @@ export class ApplicationImpactService {
    connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE app_id=? ORDER BY name,id').all(appId) as Connection[];
    projectIds=(db.prepare('SELECT project_id AS id FROM application_project_settings WHERE app_id=? ORDER BY project_id').all(appId) as {id:string}[]).map(p=>p.id);
   }else{
-   appId='zentao';const project=db.prepare('SELECT 1 FROM projects WHERE id=?').get(q.projectId);if(!project)throw new ApplicationError('NOT_FOUND','该项目不存在');
-   const setting=db.prepare("SELECT binding_revision AS revision,pending_operation_id AS pending FROM application_project_settings WHERE project_id=? AND app_id='zentao'").get(q.projectId) as {revision:number;pending:string|null}|undefined;
-   if((setting?.revision??0)!==q.expectedRevision)throw changed();if(setting&&setting.pending!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换禅道连接，请稍后核对');
+   // Pre-M11 callers omitted the application because only one module required a stop.
+   const legacy=builtinApplicationModules.appIds().filter(id=>builtinApplicationModules.module(id).stopBeforeSwitch);
+   if(!q.appId&&legacy.length!==1)throw new ApplicationError('INVALID_INPUT','请明确需要切换的应用');
+   appId=q.appId??legacy[0];const module=builtinApplicationModules.module(appId),project=db.prepare('SELECT 1 FROM projects WHERE id=?').get(q.projectId);if(!project)throw new ApplicationError('NOT_FOUND','该项目不存在');
+   const setting=db.prepare('SELECT binding_revision AS revision,pending_operation_id AS pending FROM application_project_settings WHERE project_id=? AND app_id=?').get(q.projectId,appId) as {revision:number;pending:string|null}|undefined;
+   if((setting?.revision??0)!==q.expectedRevision)throw changed();if(setting&&setting.pending!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换'+module.presentation.displayName+'连接，请稍后核对');
    connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE id IN (SELECT connection_id FROM application_project_bindings WHERE project_id=? AND app_id=?) ORDER BY name,id').all(q.projectId,appId) as Connection[];projectIds=[q.projectId];
   }
   const projects=projectIds.map(id=>{
@@ -39,7 +43,7 @@ export class ApplicationImpactService {
   const runs:ApplicationImpact['runs']=[];
   if(q.kind==='switch'){
    const rows=db.prepare("SELECT r.run_id AS id,r.task_id AS taskId,r.state,r.project_id AS runProject,t.title,t.project_id AS taskProject FROM capability_runs r LEFT JOIN tasks t ON t.id=r.task_id WHERE (r.project_id=? OR t.project_id=?) AND r.state NOT IN ('stopped','failed') ORDER BY r.started_at,r.run_id").all(q.projectId,q.projectId) as {id:string;taskId:string;state:string;runProject:string;title:string|null;taskProject:string|null}[];
-   for(const row of rows){if(row.runProject!==q.projectId||row.taskProject!==null&&row.taskProject!==q.projectId)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','受影响会话的项目归属待核查');if(taskUsesApplication(this.store,q.projectId,row.taskId,'zentao'))runs.push({id:row.id,taskId:row.taskId,title:row.title??'会话 '+row.taskId,state:row.state});}
+   for(const row of rows){if(row.runProject!==q.projectId||row.taskProject!==null&&row.taskProject!==q.projectId)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','受影响会话的项目归属待核查');if(taskUsesApplication(this.store,q.projectId,row.taskId,appId))runs.push({id:row.id,taskId:row.taskId,title:row.title??'会话 '+row.taskId,state:row.state});}
   }
   return{kind:q.kind,appId,checkedAt:new Date().toISOString(),connections:connections.map(c=>({id:c.id,name:c.name,providerId:c.providerId,enabled:c.enabled===1,authorization:c.authorization})),projects,runs};
  }

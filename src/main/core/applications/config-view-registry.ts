@@ -1,7 +1,8 @@
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
-import {connectionConfigSchema,type ConnectionConfig} from '@shared/application-connections';
+import {type ConnectionConfig} from '@shared/application-connections';
 import {canonicalJson,digest} from './manifest';
+import {builtinApplicationModules} from './modules';
 
 export interface ConfigViewKey {providerId:string;sourceSchemaVersion:number;targetApiMajor:number;identityContractMajor:number}
 export interface ConfigViewConverter<V extends {kind:string}=ConnectionConfig> extends ConfigViewKey {
@@ -39,5 +40,12 @@ export class ConfigViewRegistry<V extends {kind:string}=ConnectionConfig> {
   }catch{throw incompatible();}
  }
 }
-const auth=(source:unknown)=>{const config=source as ConnectionConfig;return config.kind==='foxmail'?'local-readonly':config.authMode;};
-export const builtinConfigViews=new ConfigViewRegistry(['zentao','foxmail','smtp'].map(providerId=>({providerId,sourceSchemaVersion:1,targetApiMajor:1,identityContractMajor:1,implementationVersion:'1',sourceSchema:connectionConfigSchema,targetSchema:connectionConfigSchema,outputAuthentication:auth,authModes:providerId==='foxmail'?['local-readonly']:providerId==='smtp'?['password']:['token','password'],authentication:auth,convert:(source:unknown)=>source})));
+let current:ConfigViewRegistry<ConnectionConfig>|undefined;
+// Resolve lazily after module composition; initialization never follows the
+// connection/context import cycle into a partially initialized registry.
+export const builtinConfigViews:Pick<ConfigViewRegistry<ConnectionConfig>,'resolve'>={resolve:(...args)=>{
+ // The compiled tuple supplies all current configuration variants. Retained
+ // converters still validate their exact target schema before returning a view.
+ current??=new ConfigViewRegistry(builtinApplicationModules.configViews() as unknown as readonly ConfigViewConverter<ConnectionConfig>[]);
+ return current.resolve(...args);
+}};

@@ -1,0 +1,90 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > explicit project application slots and stop-before-switch > stops project runs before committing another ZenTao source
+AssertionError: expected "vi.fn()" to be called once with arguments: [ 'p1' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "p1",
++   "zentao",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/applications/__tests__/selection-service.test.ts:99:18
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > PQ records a transaction failure after confirmed stop without claiming that the runs failed to stop
+AssertionError: expected "vi.fn()" to be called once with arguments: [ 'p1' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "p1",
++   "zentao",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/applications/__tests__/selection-service.test.ts:147:36
+    145|  sqlite.exec(`CREATE TEMP TRIGGER pq_commit_abort BEFORE INSERT ON mai…
+    146|  try{await expect(service.select(selectZen(b.id,old.revision))).reject…
+    147|  expect(live).toBe(0);expect(stop).toHaveBeenCalledExactlyOnceWith('p1…
+       |                                    ^
+    148|  expect(sqlite.prepare("SELECT state,error_code FROM application_bindi…
+    149|  const retried=await service.select(selectZen(b.id,old.revision));expe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > SD never labels a conflict after stopping runs as an initial no-effect rejection
+AssertionError: expected "vi.fn()" to be called once with arguments: [ 'p1' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "p1",
++   "zentao",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/applications/__tests__/selection-service.test.ts:160:231
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: success
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: stop-failure
+ FAIL  src/main/core/applications/__tests__/selection-service.test.ts > SF explicit recovery keeps strict business reads and untouched raw slots > stops before recovering ambiguous ZenTao identity: changed-during-stop
+AssertionError: expected "vi.fn()" to be called once with arguments: [ 'p1' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "p1",
++   "zentao",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/applications/__tests__/selection-service.test.ts:186:478
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
