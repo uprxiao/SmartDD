@@ -13,7 +13,7 @@ import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
 import {zentaoPresentationPaintExpression} from './fixtures/zentao-presentation-paint.mjs';
 
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,pin=process.env.WILLYOU_ACCEPTANCE_ASAR_SHA;
-assert(executable?.startsWith('/private/tmp/willyou-m10-')&&/^[a-f0-9]{64}$/.test(pin??''));
+assert(/^\/private\/tmp\/willyou-m1[0-9]-/.test(executable??'')&&/^[a-f0-9]{64}$/.test(pin??''));
 const diagnosticTimeoutMs=Number(process.env.WILLYOU_ZENTAO_DIAG_TIMEOUT_MS??0);
 assert([0,120000].includes(diagnosticTimeoutMs),'Only the explicitly requested120s diagnostic is supported');
 const expectedRouteMtu=Number(process.env.WILLYOU_ZENTAO_EXPECT_MTU??0);
