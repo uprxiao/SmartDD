@@ -8,6 +8,7 @@ import {BRIDGE_LIMITS} from '@shared/application-bridge';
 import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
+import { effectiveLevels, type EffectiveLevels } from './agent-levels';
 import {applicationSkillSnapshotView} from './application-skill-view';
 import {readApplicationRunPlan,skillFilesHash} from './run-plan';
 import {readFileSync} from 'node:fs';
@@ -46,6 +47,8 @@ export class AgentAdapterRegistry {
     if(meta.levels)return meta.levels[cliVersion]??[];
     return RETAINED_NATIVE_MESSAGE_FORMATS[meta.agentId]?.includes(cliVersion)?['L0.skill','L0.mcp','L1','L2','L3']:[];
   }
+  /** Declared levels after the undeclared-version downgrade (§15.4). Diagnostics and delivery read this. */
+  effective(hash:string,cliVersion:string):EffectiveLevels{return effectiveLevels(this.levels(hash,cliVersion));}
   recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {
     const installed=this.verify(hash),meta=installed.metadata;
     if(!meta.cliVersions.includes(cliVersion)||!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return{capability:'unverified'};

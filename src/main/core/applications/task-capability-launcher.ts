@@ -149,6 +149,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(!native||!this.cliReady||input.profile.runner!=='codex')return;
     const selected=snapshot?.packages??this.selectedApps(input.projectId),needs=selected.some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return manifest.schema==='smartdd-app-package-v2'&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);});if(!needs)return;
     const adapter=snapshot?this.support.adapters.get(snapshot.adapterBinding.hash):this.currentAdapter('codex',native.version);if(!adapter)return;const metadata='metadata'in adapter?adapter.metadata:this.support.adapters.get(adapter.hash).metadata;if(metadata.cliEntry!=='supported')return;
+    // §15.4: CLI is delivered only for a version whose declared levels include L0.cli; undeclared versions fail closed.
+    if(!this.support.adapters.effective(adapter.hash,native.version).levels.includes('L0.cli'))return;
     this.planningCliPolicies.set(input.taskId,await(this.options.inspectSandbox??inspectCodexCliSandbox)(input,native));
   }
   private cliAuthorizationStamp(context:import('./run-registry').RunContext):string{
