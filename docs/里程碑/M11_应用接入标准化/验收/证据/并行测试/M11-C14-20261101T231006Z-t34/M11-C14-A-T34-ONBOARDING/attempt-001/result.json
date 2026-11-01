@@ -1,0 +1,212 @@
+{
+  "schema": "m11-t34-onboarding-ui-v1",
+  "startedAt": "2026-11-01T23:09:46.487Z",
+  "root": "/private/tmp/willyou-m11-t34-W4PBVW",
+  "branch": "feature/0.1.0",
+  "commit": "14994633ab65ee6521a9097f1166d3f832499f5c",
+  "layer": "A: packaged App; catalog, connection form, test/save and project selection through the real UI",
+  "keychainAccess": "login keychain linked into the isolated HOME for safeStorage writes",
+  "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+  "system": {
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "checks": [
+    {
+      "name": "Onboarded application listed under its declared name and opened from the catalog",
+      "at": "2026-11-01T23:09:49.360Z",
+      "passed": true,
+      "shape": "list-with-card",
+      "cardText": "接入标准示例v1.0.0 受控本机 MCP 与 CLI 上游参考；仅合成 Token、键前缀范围和修订保护，不访问真实三方系统。 1 个 Skill · 随应用提供"
+    },
+    {
+      "name": "Application added through the page and connection entry becomes available",
+      "at": "2026-11-01T23:09:49.636Z",
+      "passed": true,
+      "state": "已添加"
+    },
+    {
+      "name": "Connection form rendered from the module configuration view",
+      "at": "2026-11-01T23:09:49.692Z",
+      "passed": true,
+      "labels": [
+        "连接名称",
+        "样本服务",
+        "允许的键前缀",
+        "上游方式",
+        "认证凭据"
+      ],
+      "transport": [
+        "mcp",
+        "cli"
+      ]
+    },
+    {
+      "name": "Reference connection tested through the page",
+      "at": "2026-11-01T23:09:49.862Z",
+      "passed": true,
+      "outcome": "身份验证通过，可保存连接"
+    },
+    {
+      "name": "Connection saved through the page with the declared configuration",
+      "at": "2026-11-01T23:09:50.302Z",
+      "passed": true,
+      "connectionId": "19a67874-69f6-4ee2-9283-1994e0f4b929"
+    },
+    {
+      "name": "Onboarded application selected for the project from the page",
+      "at": "2026-11-01T23:09:53.041Z",
+      "passed": true,
+      "enabled": true,
+      "connection": "19a67874-69f6-4ee2-9283-1994e0f4b929"
+    }
+  ],
+  "observations": [
+    {
+      "kind": "display",
+      "detail": "Dialog title duplicates the suffix: 添加本机样本连接连接"
+    }
+  ],
+  "status": "passed-onboarding-ui",
+  "formalCasePassesAdded": 0,
+  "pid": 95996,
+  "projectId": "024f7cb6-02ce-488b-aef8-f69536639c35",
+  "catalogEntry": {
+    "appId": "sample-kv",
+    "revision": 0,
+    "displayName": "接入标准示例",
+    "version": "1.0.0"
+  },
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 95996,
+    "checkedInputs": 40
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 95996,
+      "checkedInputs": 40
+    }
+  ],
+  "catalogShape": "list-with-card",
+  "cardText": "接入标准示例v1.0.0 受控本机 MCP 与 CLI 上游参考；仅合成 Token、键前缀范围和修订保护，不访问真实三方系统。 1 个 Skill · 随应用提供",
+  "addedState": "已添加",
+  "form": {
+    "title": "添加本机样本连接连接",
+    "fields": [
+      {
+        "label": "连接名称",
+        "tag": "INPUT",
+        "type": "text",
+        "required": true
+      },
+      {
+        "label": "样本服务",
+        "tag": "INPUT",
+        "type": "text",
+        "required": true
+      },
+      {
+        "label": "允许的键前缀",
+        "tag": "INPUT",
+        "type": "text",
+        "required": true
+      },
+      {
+        "label": "上游方式",
+        "tag": "SELECT",
+        "type": "select-one",
+        "required": false,
+        "options": [
+          "mcp",
+          "cli"
+        ]
+      },
+      {
+        "label": "认证凭据",
+        "tag": "INPUT",
+        "type": "password",
+        "required": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "取消",
+        "disabled": false
+      },
+      {
+        "text": "测试连接",
+        "disabled": false
+      },
+      {
+        "text": "保存连接",
+        "disabled": true
+      }
+    ]
+  },
+  "filled": [
+    {
+      "label": "关闭弹窗",
+      "value": ""
+    },
+    {
+      "label": "连接名称",
+      "value": "本机样本"
+    },
+    {
+      "label": "样本服务",
+      "value": "reference"
+    },
+    {
+      "label": "允许的键前缀",
+      "value": "demo:"
+    },
+    {
+      "label": "上游方式",
+      "value": "mcp"
+    },
+    {
+      "label": "认证凭据",
+      "value": "set"
+    }
+  ],
+  "testStatus": {
+    "settledText": "添加本机样本连接连接 认证信息由本机加密存储管理。连接测试不发送邮件。 连接名称 样本服务 允许的键前缀 上游方式 MCP CLI 合成 Token 不会从 Foxmail 或其他连接中提取密码。 身份验证通过，可保存连接 取消 测试连接 保存连接",
+    "ok": true,
+    "alert": null
+  },
+  "testOutcome": "身份验证通过，可保存连接",
+  "savedReplyKind": "ok,value",
+  "connection": {
+    "id": "19a67874-69f6-4ee2-9283-1994e0f4b929",
+    "config": {
+      "kind": "sample-kv",
+      "service": "reference",
+      "prefix": "demo:",
+      "transport": "mcp",
+      "authMode": "token"
+    },
+    "hasSecret": false
+  },
+  "pickProject": null,
+  "slotRadio": {
+    "checked": false
+  },
+  "selection": {
+    "projectId": "024f7cb6-02ce-488b-aef8-f69536639c35",
+    "appId": "sample-kv",
+    "enabled": false,
+    "revision": 1,
+    "pendingOperationId": null,
+    "connections": {
+      "sample-kv": "19a67874-69f6-4ee2-9283-1994e0f4b929"
+    },
+    "slotRevisions": {
+      "sample-kv": 1
+    }
+  },
+  "rendererErrors": [],
+  "ownAppCleanupComplete": true,
+  "finishedAt": "2026-11-01T23:09:53.096Z"
+}
