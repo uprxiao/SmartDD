@@ -244,13 +244,20 @@ try {
     const addLabel = await app.evaluate(
       'document.querySelector(".m10-button.primary")?.textContent.trim()',
     );
-    assert.equal(addLabel, "添加连接", "Installed application offers adding a connection");
+    assert.equal(
+      addLabel,
+      "添加连接",
+      "Installed application offers adding a connection",
+    );
     await click(".m10-button.primary");
     await app.waitFor('!!document.querySelector("[role=menuitem]")');
     const providers = await app.evaluate(
       '[...document.querySelectorAll("[role=menuitem]")].map(e=>e.textContent.trim())',
     );
-    assert(providers.length >= 2, "Mail offers its two declared providers: " + providers.join("|"));
+    assert(
+      providers.length >= 2,
+      "Mail offers its two declared providers: " + providers.join("|"),
+    );
     record.providers = providers;
     await click("[role=menuitem]", providers[0]);
     await app.waitFor('!!document.querySelector("dialog form")');
@@ -294,7 +301,9 @@ try {
     await nav("调用记录");
     await app.waitFor('!!document.querySelector(".m10-activity-list")', 10000);
     assert.equal(
-      await app.evaluate('document.querySelector(".m10-page-head h1")?.textContent.trim()'),
+      await app.evaluate(
+        'document.querySelector(".m10-page-head h1")?.textContent.trim()',
+      ),
       "调用记录",
       "Activity page keeps its product name",
     );

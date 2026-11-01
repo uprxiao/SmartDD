@@ -1,0 +1,60 @@
+{
+  "schema": "m11-parallel-round-v1",
+  "runId": "M11-C11-20261101T223640Z-t13",
+  "startedAt": "2026-11-01T22:36:40Z",
+  "updatedAt": "2026-11-01T22:36:40Z",
+  "coordinator": "codex",
+  "scope": "M11-T13 组件层＋真实包终端回显与会话诊断（浅色/深色各一次）",
+  "baseline": {
+    "source": "C7 frozen src",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "compileAttempts": 1,
+    "packaged": false,
+    "reusedFrom": "M11-C7",
+    "postFreezeChange": "仅驱动 scripts/applications/m11-t13-*.mjs 与文档变更，非生产输入"
+  },
+  "groups": [
+    {
+      "id": "M11-C11-A-T13-TERMINAL",
+      "case": "M11-T13",
+      "layer": "A",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C11-20261101T223640Z-t13/M11-C11-A-T13-TERMINAL",
+      "attempts": [
+        "attempt-light",
+        "attempt-dark"
+      ],
+      "status": "passed-9-checks-per-theme",
+      "resources": "UI+PTY serial"
+    },
+    {
+      "id": "M11-C11-C-T13-COMPONENT",
+      "case": "M11-T13",
+      "layer": "组件",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C11-20261101T223640Z-t13/M11-C11-C-T13-COMPONENT/attempt-001",
+      "attempts": [
+        "attempt-001"
+      ],
+      "status": "passed-49-files-529-tests"
+    }
+  ],
+  "accounting": {
+    "case": "M11-T13",
+    "from": "部分通过（组件＋A 子项）",
+    "to": "通过",
+    "basis": [
+      "浅色：真实包建任务(真实 Codex 0.166.0＋合成模型)、终端回显逐字一致、会话诊断 mail:mcp 生效入口、未验证项透明呈现、外部 CLI 拒绝、原生配置业务字段不变",
+      "深色：同 8 项＋主题应用断言，共 9 项",
+      "应用目录/连接表单/项目选用/调用记录：浅深各一轮",
+      "组件层 pnpm test src/renderer/features/applications → 49 文件 529 用例全绿"
+    ],
+    "formalPassesAdded": 1
+  },
+  "failuresRetained": [
+    "首四跑：项目名超 100 字被拒（输入校验）、卡片标题含版本号、自造“已添加/已安装”文案导致 0!==2、reload 导航竞态、findIndex 漏 list.、误点“移除应用”、导航名实为“调用记录”",
+    "终端跑1：诊断面板在证据采集瞬间显示“未验证”，断言改成与本轮证据一致",
+    "终端跑2：无 button[aria-label=关闭] 导致关闭失败，改为按钮/Escape 双路径",
+    "双主题首跑：驱动的 env 清洗丢弃 WILLYOU_T13_THEME，导致两跑都无主题；改为清洗前捕获"
+  ],
+  "next": "T37（口径已定）→ T34 → T09／T29 → T17 → T12／T28 升级；T21／T22 待用户 Story 数据"
+}
