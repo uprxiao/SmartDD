@@ -1,0 +1,47 @@
+{
+  "mode": "read-only",
+  "codexExit": 0,
+  "seconds": 26,
+  "eventCount": 9,
+  "brokerCalls": [],
+  "probeReports": [
+    {
+      "probe": "s0a",
+      "env": {
+        "WILLYOU_RUN_TOKEN": "present(len=64)",
+        "WILLYOU_RUN_CRED": "present(len=64)",
+        "WILLYOU_ENDPOINT": "present(len=69)"
+      },
+      "codexHints": {
+        "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+        "CODEX_MANAGED_PACKAGE_ROOT": "/Users/liubu/.local/lib/node_modules/@openai/codex",
+        "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+        "CODEX_SANDBOX": "seatbelt",
+        "CODEX_THREAD_ID": "01a19456-8447-7a01-a90d-a9ff844f11c6",
+        "CODEX_TOOL_CALL_ID": "exec-1b72ece9-a2ff-4990-bdaa-69fabcc7adc1",
+        "CODEX_MANAGED_BY_NPM": "1",
+        "CODEX_CI": "1",
+        "CODEX_VERSION": "0.166.0",
+        "CODEX_SESSION_ID": "01a19456-8447-7a01-a90d-a9ff844f11c6"
+      },
+      "chain": [
+        {
+          "error": "spawnSync ps EPERM"
+        }
+      ],
+      "channel": {
+        "attempted": true,
+        "connected": false,
+        "code": "EPERM"
+      },
+      "selfPid": 88988
+    }
+  ],
+  "stderrTail": "Reading additional input from stdin...\n2026-10-31T23:41:00.490017Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---\n",
+  "commandEvents": [
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"agent_message\",\"text\":\"我会只执行一次 `willyou-probe`，然后原样返回 stdout。\\n\"}}",
+    "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc willyou-probe\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc willyou-probe\",\"aggregated_output\":\"{\\\"probe\\\":\\\"s0a\\\",\\\"env\\\":{\\\"WILLYOU_RUN_TOKEN\\\":\\\"present(len=64)\\\",\\\"WILLYOU_RUN_CRED\\\":\\\"present(len=64)\\\",\\\"WILLYOU_ENDPOINT\\\":\\\"present(len=69)\\\"},\\\"codexHints\\\":{\\\"CODEX_SANDBOX_NETWORK_DISABLED\\\":\\\"1\\\",\\\"CODEX_MANAGED_PACKAGE_ROOT\\\":\\\"/Users/liubu/.local/lib/node_modules/@openai/codex\\\",\\\"CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS\\\":\\\"1\\\",\\\"CODEX_SANDBOX\\\":\\\"seatbelt\\\",\\\"CODEX_THREAD_ID\\\":\\\"01a19456-8447-7a01-a90d-a9ff844f11c6\\\",\\\"CODEX_TOOL_CALL_ID\\\":\\\"exe"
+  ],
+  "leakCheck": true
+}

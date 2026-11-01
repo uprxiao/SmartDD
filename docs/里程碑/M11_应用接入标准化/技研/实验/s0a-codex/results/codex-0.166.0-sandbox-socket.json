@@ -1,0 +1,44 @@
+{
+  "codex": "0.166.0",
+  "out": [
+    {
+      "id": "N1",
+      "label": "默认沙箱，不放行 socket",
+      "exit": 0,
+      "channel": {
+        "attempted": true,
+        "connected": false,
+        "code": "EPERM"
+      },
+      "brokerCalls": 0,
+      "stderr": ""
+    },
+    {
+      "id": "N2",
+      "label": "仅放行本宿主 socket（--allow-unix-socket）",
+      "exit": 0,
+      "channel": {
+        "attempted": true,
+        "connected": true,
+        "ok": true,
+        "code": null,
+        "project": "A"
+      },
+      "brokerCalls": 1,
+      "stderr": ""
+    },
+    {
+      "id": "N3",
+      "label": "放行另一个无关 socket（负例）",
+      "exit": 0,
+      "channel": {
+        "attempted": true,
+        "connected": false,
+        "code": "EPERM"
+      },
+      "brokerCalls": 0,
+      "stderr": ""
+    }
+  ],
+  "leakCheck": true
+}

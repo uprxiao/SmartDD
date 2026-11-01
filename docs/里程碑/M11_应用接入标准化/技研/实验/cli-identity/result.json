@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-10-31T23:17:45.330Z",
+  "node": "v22.23.1",
+  "platform": "darwin/arm64",
+  "results": [
+    {
+      "id": "E1",
+      "ok": true,
+      "note": "3连续+6并行共9个子进程均识别为运行A，返回项目A数据"
+    },
+    {
+      "id": "E2",
+      "ok": true,
+      "note": "运行A自报--project B被拒绝，且无B数据"
+    },
+    {
+      "id": "E3",
+      "ok": true,
+      "note": "只读运行写被拒；授予写的运行可写"
+    },
+    {
+      "id": "E4",
+      "ok": true,
+      "note": "无上下文CLI直接拒绝；伪造令牌被宿主拒绝"
+    },
+    {
+      "id": "E5",
+      "ok": true,
+      "note": "CLI 输出与诊断中无令牌；令牌仅经环境传入（CLI 不接受令牌参数）"
+    },
+    {
+      "id": "E6",
+      "ok": true,
+      "note": "撤销后旧令牌REVOKED；新运行可用；旧令牌不复活"
+    },
+    {
+      "id": "E7",
+      "ok": true,
+      "note": "过期令牌被拒绝"
+    },
+    {
+      "id": "E8",
+      "ok": true,
+      "note": "观察项（非通过判据）：同用户进程用 ps eww 能读到目标进程环境令牌"
+    },
+    {
+      "id": "E9",
+      "ok": true,
+      "note": "观察项：Node net 未暴露 SO_PEERCRED/LOCAL_PEERPID，宿主无法用对端PID验证调用者；身份只能依赖运行级令牌"
+    }
+  ],
+  "summary": "9/9"
+}

@@ -1,0 +1,54 @@
+{
+  "mode": "none",
+  "tag": "E1",
+  "cfgTemplates": [
+    "default_permissions=\"wy\"",
+    "permissions.wy.extends=\":read-only\"",
+    "permissions.wy.network.unix_sockets={\"<SOCK>\"=\"allow\"}"
+  ],
+  "codexExit": 0,
+  "seconds": 24,
+  "eventCount": 9,
+  "brokerCalls": [],
+  "probeReports": [
+    {
+      "probe": "s0a",
+      "env": {
+        "WILLYOU_RUN_TOKEN": "present(len=64)",
+        "WILLYOU_RUN_CRED": "present(len=64)",
+        "WILLYOU_ENDPOINT": "present(len=69)"
+      },
+      "codexHints": {
+        "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+        "CODEX_MANAGED_PACKAGE_ROOT": "/Users/liubu/.local/lib/node_modules/@openai/codex",
+        "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+        "CODEX_PERMISSION_PROFILE": "wy",
+        "CODEX_SANDBOX": "seatbelt",
+        "CODEX_THREAD_ID": "01a19469-6f7e-7d13-88c8-beab02d5afec",
+        "CODEX_TOOL_CALL_ID": "exec-c9d0af89-461d-4668-a171-667aee1e024b",
+        "CODEX_MANAGED_BY_NPM": "1",
+        "CODEX_CI": "1",
+        "CODEX_VERSION": "0.166.0",
+        "CODEX_SESSION_ID": "01a19469-6f7e-7d13-88c8-beab02d5afec"
+      },
+      "chain": [
+        {
+          "error": "spawnSync ps EPERM"
+        }
+      ],
+      "channel": {
+        "attempted": true,
+        "connected": false,
+        "code": "EPERM"
+      },
+      "selfPid": 95004
+    }
+  ],
+  "stderrTail": "Reading additional input from stdin...\n2026-11-01T00:01:42.239649Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---\n",
+  "commandEvents": [
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"agent_message\",\"text\":\"我会只执行一次 `willyou-probe`，然后原样输出它的 stdout。\\n\"}}",
+    "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc willyou-probe\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc willyou-probe\",\"aggregated_output\":\"{\\\"probe\\\":\\\"s0a\\\",\\\"env\\\":{\\\"WILLYOU_RUN_TOKEN\\\":\\\"present(len=64)\\\",\\\"WILLYOU_RUN_CRED\\\":\\\"present(len=64)\\\",\\\"WILLYOU_ENDPOINT\\\":\\\"present(len=69)\\\"},\\\"codexHints\\\":{\\\"CODEX_SANDBOX_NETWORK_DISABLED\\\":\\\"1\\\",\\\"CODEX_MANAGED_PACKAGE_ROOT\\\":\\\"/Users/liubu/.local/lib/node_modules/@openai/codex\\\",\\\"CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS\\\":\\\"1\\\",\\\"CODEX_PERMISSION_PROFILE\\\":\\\"wy\\\",\\\"CODEX_SANDBOX\\\":\\\"seatbelt\\\",\\\"CODEX_THREAD_ID\\\":\\\"01a19469-6f7e-7d13-88c8-beab02d"
+  ],
+  "leakCheck": true
+}
