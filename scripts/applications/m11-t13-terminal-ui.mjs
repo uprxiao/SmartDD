@@ -547,7 +547,11 @@ try {
  result.pid = app.processId;
  await app.evaluate(`document.title='A · M11 T13 · 终端与会话诊断';true`);
  const t13Theme =
-  requestedTheme === "dark" ? "ydark" : requestedTheme === "light" ? "ylight" : null;
+  requestedTheme === "dark"
+   ? "ydark"
+   : requestedTheme === "light"
+     ? "ylight"
+     : null;
  if (t13Theme) {
   await app.invoke("appSettings.update", "theme", t13Theme);
   result.t13Theme = t13Theme;

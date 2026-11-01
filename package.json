@@ -22,7 +22,7 @@
     "files:prepare-libreoffice": "python3 scripts/files/prepare-libreoffice.py",
     "test": "node scripts/run-tests.mjs",
     "test:prepare": "node scripts/prepare-test-resources.mjs",
-    "test:release": "node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs",
+    "test:release": "node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs scripts/applications/module-onboarding.test.mjs",
     "release:next": "node scripts/release/version.mjs",
     "release:check": "node scripts/release/metadata.mjs",
     "db:generate": "drizzle-kit generate",
@@ -33,7 +33,8 @@
     "probe:m4:ui": "pnpm build && node scripts/m4-ui-smoke.mjs",
     "probe:m5": "node scripts/m5-acceptance.mjs",
     "package": "node scripts/release/build.mjs --dir",
-    "package:release": "node scripts/release/build.mjs"
+    "package:release": "node scripts/release/build.mjs",
+    "check:onboarding": "node scripts/applications/check-module-onboarding.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",
