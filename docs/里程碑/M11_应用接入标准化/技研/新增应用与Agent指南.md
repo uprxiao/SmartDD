@@ -1,5 +1,13 @@
 # 新增应用与 Agent 指南（M11 S12）
 
+## 2026-11-02 C3实现接续
+
+基线：R0.9、C2提交699ab83b之后的C3冻结源。公共Runner身份结构化校验，实际可执行性必须通过启动时RunnerAdapterRegistry；AiProfileService保存前应用其profileSchema，任务通过同一生命周期方法运行。CapabilityDeliveryAdapterRegistry按独立Agent id/runner id登记受信机制，AgentAdapterRegistry仍核验固定CJS资源、计划与完整投影；原两内置机制复用，未增加真实Agent。原生格式独立注册，IO/预算/文件身份/输入回执仍在宿主。测试脚本第三Agent采用共享HOME投放机制、自身id/argv/会话格式，真实自有PTY新建/恢复、读取Skill并通过实际MCP调用成功；这不是pi/zcode等真实支持结论。
+
+版本日志自检为主进程方法AgentAdapterRegistry.selfCheck，未暴露RPC/MCP。结果只含判据布尔值、hash与时间，绑定适配hash、CLI版本和平台，记录在既有宿主operation journal；日志格式检查只能补L2，不能证明CLI身份/沙箱或L3。每次失败覆盖此前本机绿，原尝试保留。运行时与自检共用skill-observation-contract，避免兼容判断弱于宿主。NativeUserMessages和诊断继续只从注册表读取等级；已发布L3事实不由自检创造。
+
+S11未知版本MCP best-effort已由受信交付机制显式选择：注册表versionSupport统一判定；未知版本只能投放Skill/MCP，不给CLI token/沙箱、L2/L3或原话发送授权。有fallback实际MCP读取、无fallback明确unavailable、已固定会话恢复保留原绑定均在独立I夹具中通过。剩余：受影响完整回归归账、统一最终包及对应A/R验收。T26/T35仅I层/主链通过，未计整例；不将本节写成阶段交付。源码与红绿证据见本阶段最新执行记录与轮次。
+
 更新：2026-11-01。依据：[架构设计](架构设计.md) §4.2、§15.4–15.6，需求 R0.9（M11-R12、R15）。本文只写当前代码里的实际位置；设计里尚未落地的部分单列在“当前缺口”，不当作已经可用。
 
 ## 一、新增一个应用

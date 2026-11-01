@@ -91,17 +91,17 @@ export class SessionTail {
 
   private take(line: string): void {
     const { runner } = this.o;
-    const isError = ERROR_HINTS[runner].some((h) => line.includes(h));
+    const isError = (ERROR_HINTS[runner] ?? []).some((h) => line.includes(h));
     // Every reply is passed on: the profile's state is shared with other tasks and tests, and
     // ProfileHealth decides what is worth writing (latest wins).
-    if (!isError && !OK_HINTS[runner].some((h) => line.includes(h))) return;
+    if (!isError && !(OK_HINTS[runner] ?? []).some((h) => line.includes(h))) return;
     let json: unknown;
     try {
       json = JSON.parse(line);
     } catch {
       return;
     }
-    const ev = runner === 'claude' ? classifyClaudeLine(json) : classifyCodexLine(json);
+    const ev = runner === 'claude' ? classifyClaudeLine(json) : runner === 'codex' ? classifyCodexLine(json) : null;
     if (!ev) return;
     this.last = ev.category;
     this.o.onEvent(ev);

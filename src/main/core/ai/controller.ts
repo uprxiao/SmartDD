@@ -1,13 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { RUNNER_IDS, type AiProfileInput } from '@shared/ai-profiles';
+import { type AiProfileInput } from '@shared/ai-profiles';
 import { createRPCController } from '@shared/ipc/rpc';
 import type { Runner } from '@shared/types';
 import { PARENT_AGENT_VARS } from '../../launch-env';
 import type { AiProfileService } from './ai-profile-service';
 import type { ProfileHealth } from './profile-health';
-import { detectRunner } from './runner-detect';
 
 const defaultZshrc = () => join(homedir(), '.zshrc');
 
@@ -53,8 +52,8 @@ export function createAiProfileController(svc: AiProfileService, health: Profile
         for (const v of r.created) health.testInBackground(v.id, 'auto');
         return { ...r, created: r.created.map((v) => health.withChecking(v)) };
       },
-      detectRunners: () => Promise.all(RUNNER_IDS.map((r) => detectRunner(r, null, { env: detectEnv() }))),
-      detectRunner: (runner: Runner, executable: string | null) => detectRunner(runner, executable, { env: detectEnv() }),
+      detectRunners: () => Promise.all(svc.runnerAdapters.list().map(async adapter => ({ runner: adapter.id, ...await adapter.discoverExecutable(null, { env: detectEnv() }) }))),
+      detectRunner: async (runner: Runner, executable: string | null) => ({ runner, ...await svc.runnerAdapters.get(runner).discoverExecutable(executable, { env: detectEnv() }) }),
     }),
   };
 }

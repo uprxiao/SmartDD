@@ -28,6 +28,7 @@ export interface ProfileTestResult {
 
 export function testArgs(runner: Runner, profileArgs: string[], prompt: string): string[] {
   if (runner === 'claude') return [...profileArgs, '--print', '--no-session-persistence', '--output-format', 'text', prompt];
+  if (runner !== 'codex') throw new Error('当前运行器尚未登记自动连通性测试；可核验版本并启动原生任务');
   return [...profileArgs, 'exec', '--ephemeral', '--sandbox', 'read-only', '--skip-git-repo-check', '--color', 'never', prompt];
 }
 
@@ -69,6 +70,7 @@ export interface TestDeps {
 }
 
 export function runProfileTest(profile: ResolvedProfile, secrets: string[], d: TestDeps): Promise<ProfileTestResult> {
+  if (profile.runner !== 'claude' && profile.runner !== 'codex') return Promise.resolve({ category: 'unexpected', message: '当前运行器的自动连通性测试尚未验证；可核验版本并启动原生任务', ms: 0 });
   const code = d.code ?? `SMARTDD-OK-${randomBytes(4).toString('hex')}`;
   const prompt = `This is an automated connectivity check. Do not use any tools. Reply with exactly ${code} and nothing else.`;
   const base = { ...d.baseEnv };

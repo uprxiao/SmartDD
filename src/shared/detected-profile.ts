@@ -1,4 +1,5 @@
-import { RUNNERS, type AiProfileInput, type AiProfileView, type RunnerInfo } from './ai-profiles';
+import { runnerDescription } from './ai-profiles';
+import { type AiProfileInput, type AiProfileView, type RunnerInfo } from './ai-profiles';
 
 /** Detection locates a CLI; it must never rewrite a user's saved settings. */
 export function profileForRunner(profiles: AiProfileView[], runner: RunnerInfo['runner']): AiProfileView | undefined {
@@ -7,7 +8,7 @@ export function profileForRunner(profiles: AiProfileView[], runner: RunnerInfo['
 
 export function inputForDetectedRunner(info: RunnerInfo, profiles: AiProfileView[]): AiProfileInput {
   if (!info.path) throw new Error('CLI executable was not found');
-  const base = RUNNERS[info.runner].label;
+  const base = runnerDescription(info.runner).label;
   const names = new Set(profiles.map((p) => p.name.toLowerCase()));
   let name = base;
   for (let suffix = 2; names.has(name.toLowerCase()); suffix++) name = `${base} ${suffix}`;

@@ -4,6 +4,9 @@ import { defineConfig } from 'vitest/config';
 // `pnpm test` runs vitest under Electron's bundled Node (ELECTRON_RUN_AS_NODE=1) so
 // better-sqlite3, which postinstall builds against Electron's ABI, loads in tests.
 export default defineConfig({
+  // Set before even a filtered preflight so isolated runs never touch the
+  // shared dependency tree's results cache.
+  cacheDir: process.env.WILLYOU_TEST_CACHE_DIR || undefined,
   esbuild: { jsx: 'automatic' },
   resolve: {
     // Tests also mount shared prototype components. Use the renderer's React

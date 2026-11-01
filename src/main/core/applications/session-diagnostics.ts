@@ -28,6 +28,7 @@ import {verifyApplicationRunPlan} from './run-plan';
 import {runPlanSkillView} from './application-skill-view';
 import type {ApplicationRunPlan} from '@shared/application-run-plan';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
+import {builtinCapabilityDeliveryAdapters,type CapabilityDeliveryAdapterRegistry} from './capability-delivery-adapters';
 import type {SessionRunPlanDiagnostic} from '@shared/application-session-diagnostics';
 const LEVELS=['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const;
 function storedRunPlan(store:ResourceStore,runId:string):ApplicationRunPlan|null{
@@ -56,7 +57,7 @@ const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:h
 const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
 const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/),observedAt:z.iso.datetime(),source:z.literal('kernel-peer')}).strict();
 interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
-interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
+interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;deliveryAdapters?:CapabilityDeliveryAdapterRegistry;}
 const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
 function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
  const scope=readApplicationRunScope(store,runId,snapshot);
@@ -121,11 +122,11 @@ export class ApplicationSessionDiagnostics {
   let refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(session.snapshot.taskId) as {ref_id:string}[];
   try{
   const delivery=session.snapshot.runner==='claude-code'&&!session.snapshot.legacyBinding?readClaudeSlot(this.store,session.snapshot.taskId):null;
-  const scoped=!!delivery?.current||appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding;
+  const scoped=!!delivery?.current||appId!==undefined&&(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding;
   // Templated Skills of a codex run live under the per-run names fixed in that run's plan (M11-R1-D04).
-  const latest=session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?this.store.sqlite.prepare('SELECT run_id FROM capability_runs WHERE task_id=? ORDER BY started_at DESC,run_id DESC LIMIT 1').get(session.snapshot.taskId) as {run_id:string}|undefined:undefined;
+  const latest=(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding?this.store.sqlite.prepare('SELECT run_id FROM capability_runs WHERE task_id=? ORDER BY started_at DESC,run_id DESC LIMIT 1').get(session.snapshot.taskId) as {run_id:string}|undefined:undefined;
   const viewed=latest?runPlanSkillView(session.snapshot,storedRunPlan(this.store,latest.run_id)):session.snapshot;
-  const skills=[...viewed.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
+  const skills=[...viewed.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
    if(scoped){
     const projectionIds=delivery?.current?[delivery.current.resourceId]:refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
     refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,appId?[appId]:session.snapshot.packages.map(p=>p.appId),projectionIds).map(r=>({ref_id:r.refId}));
@@ -238,7 +239,7 @@ export class ApplicationSessionDiagnostics {
   const row=db.prepare('SELECT schema_version,snapshot_hash,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;legacy_status:string}|undefined;
   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];
   if(row&&![2,3].includes(row.schema_version)&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
-  if(row&&[2,3].includes(row.schema_version))try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
+  if(row&&[2,3].includes(row.schema_version))try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).forRunner(task.runner).id)throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
   // Find the owned terminal independently of wall-clock order. A clock rollback
   // must not let future-dated history hide the live run or reuse its call counts.
   let ownedRunId:string|null=null;try{const ptyId=this.deps.activePty?.(taskId);if(ptyId)ownedRunId=this.deps.runs()?.currentNativeRun(taskId,ptyId)?.runId??null;}catch{/* unknown ownership stays unverified */}

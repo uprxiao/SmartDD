@@ -1,0 +1,150 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C3-20261101T162613Z-4408",
+  "groupId": "M11-C3-I-VERSION",
+  "attempt": "attempt-001",
+  "executor": "/root/upstream_contract",
+  "sourceCommit": "699ab83b integration freeze",
+  "baselineManifestSha256": "fba38ddcf5bdca3e0f4c8951230e5767a2d853d30a167de7b14abee29675fd3c",
+  "startedAt": "2026-11-01T16:38:03.243000+00:00",
+  "finishedAt": "2026-11-01T16:41:37.588612+00:00",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "case": {
+    "id": "M11-T25",
+    "layersRequired": "I+A",
+    "executedLayer": "I only",
+    "status": "partial-failed-product",
+    "criteria": [
+      {
+        "criterion": "未登记Codex版本可经已声明只读MCP fallback实际读取",
+        "status": "failed-product",
+        "expected": "Version99.0.0 starts an unverified best-effort MCP run, publishes only corresponding MCP Skill, fixed run plan selects MCP fallback; draft-list executes common business provider and returns origin=mcp.",
+        "actual": "Real TaskService composition starts ordinary FakePTY but narrows entire run to native-only. No application run plan is stored; actual ApplicationToolService MCP read returns SCOPE_DENIED / 原生守护不签发应用工具、业务来源或凭据 (attemptCount0/not-started). runtime selfCheck failed AGENT_ADAPTER_UNSUPPORTED. No Skill fallback is delivered.",
+        "evidence": [
+          "t25-attempt-001-contract-vitest.json",
+          "t25-outcomes-77309.json"
+        ],
+        "defect": "M11-C3-T25-D01 (proposed; coordinator assigns canonical ID)"
+      },
+      {
+        "criterion": "无fallback的CLI能力本运行不可用、提示明确",
+        "status": "passed-I",
+        "actual": "Separate fresh test creates a distinct immutable mail1.1.2 CLI-only fixture package from allowed data bundle, preserving installed1.1.1 hash; unknown-version task remains ordinary Agent alive, CLI call denied, application diagnostic contains nonempty issue, no application MCP bridge injected.",
+        "evidence": [
+          "t25-attempt-001-contract-vitest.json",
+          "t25-outcomes actual nofallback record"
+        ]
+      },
+      {
+        "criterion": "L0.cli不交付、无令牌/额外socket权限、L2/L3关闭",
+        "status": "passed-I",
+        "actual": "FakePTY SpawnOptions contain no raw nor value-prefixed WILLYOU_RUN_TOKEN/WILLYOU_ENDPOINT; args contain no wy_cli_ permission profile or host CLI endpoint. Adapter effective levels exactly best-effort L0.skill/L0.mcp, verified=false and nativeSendEvidence=false; native message reader yields no user proof. Ordinary FakePTY task remains alive.",
+        "evidence": [
+          "t25-attempt-001-contract-vitest.json",
+          "t25-outcomes actual gate record"
+        ]
+      },
+      {
+        "criterion": "发送回到页面点击授权的呈现与操作",
+        "status": "not-executed-A",
+        "actual": "I proves native-message/send-authority remains closed. No App/UI or send action executed; page authorization presentation/click and any SMTP flow remain A-layer follow-up, not inferred from disabled native authority."
+      }
+    ],
+    "formalPassesAdded": 0,
+    "remaining": [
+      "Coordinator fixes unknown-version best-effort MCP application path and retests original product red plus affected scope",
+      "A-layer unknown-version/fallback/unavailable presentation and page authorization",
+      "No claim that whole T25 or final assembled package is accepted"
+    ]
+  },
+  "defect": {
+    "classification": "product",
+    "suggestedId": "M11-C3-T25-D01",
+    "rootCause": "ManagedTaskCapabilities.prepareOnce checks selected adapter.metadata.cliVersions and unconditionally calls prepareUnavailableSession for an undeclared native version; currentAdapter fallback explicitly chooses original unavailable/native-only behavior, bypassing R0.9 best-effort MCP downgrade.",
+    "files": [
+      "src/main/core/applications/task-capability-launcher.ts",
+      "src/main/core/applications/agent-adapter-registry.ts"
+    ],
+    "fixedByExecutor": false,
+    "actualResponse": {
+      "schema": 1,
+      "id": "99c5006c-0a3b-4acd-999a-90ca0dab4b71",
+      "status": "error",
+      "error": {
+        "code": "SCOPE_DENIED",
+        "message": "原生守护不签发应用工具、业务来源或凭据",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    }
+  },
+  "checks": {
+    "minimumRepresentativePreflightPassed": 1,
+    "preflightFiltered": 264,
+    "newContractTests": 3,
+    "newPassed": 2,
+    "newProductFailed": 1,
+    "oldLauncher265FilteredNotExecuted": 265,
+    "uniqueSoftwareInstances": 4,
+    "effectivePassed": 3,
+    "productFailed": 1,
+    "fullNodeTypecheck": "passed",
+    "formalCasePassesAdded": 0
+  },
+  "baselineVerification": {
+    "trackedChanges": [
+      "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "vitest.config.ts"
+    ],
+    "productionFilesChanged": [],
+    "privateChanges": "New T25 tests/helpers/imports only in private existing launcher test; separate private Vitest cacheDir",
+    "testBeforeSha256": "8d4e3ed1eab60b80ec1162471aed5d72327ac99b48dd5a075c28503d8914eaaa",
+    "testAfterSha256": "13c9c526da97974526d0c2d2294e2383eab4470ede11730d8d36cb7dc7f563cc",
+    "preservedOutNativeLockHashes": {
+      "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+      "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+      "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+      "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+    },
+    "dependencyRoot": "/Users/hx/hx/hxWork/SmartDD/node_modules"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C3-20261101T162613Z-4408-sgsd2h0s/version-worker",
+    "copiedFrom": "integration-baseline frozen directory copied to dedicated version-worker; original freeze unchanged",
+    "TaskPty": "Existing TestPtys only; real TaskService/profiles/selection/session/run/plan/service/data composition; version shell only answers --version and exits70 for other commands",
+    "privatePeerBoundary": "FixtureProcessReader and configured broker peer stubs are I preconditions, not actual kernel/real-Agent evidence",
+    "nativePtyOrAppStarted": false,
+    "nativeBuildOrInstall": false,
+    "MCPTransport": "Actual common MCP entry ApplicationToolService call on trusted current run; no external MCP/model subprocess/real PTY",
+    "data": "No user mail source, no real connection/secret/SMTP; mail.draft.list fixture uses project-local empty draft state",
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false,
+    "UI": "not granted/not used",
+    "heavy": "not granted/not used",
+    "cache": "private version-worker-vite-cache; shared dependencies read-only",
+    "packageVariants": "Independent test instances mail1.1.1 with MCP fallback and immutable mail1.1.2 without fallback; no installed original package mutated"
+  },
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'uses the declared MCP fallback without a token' --maxWorkers=1 --reporter=json --outputFile=t25-preflight-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'T25 unknown version' --maxWorkers=1 --reporter=json --outputFile=t25-attempt-001-contract-vitest.json",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json"
+  ],
+  "rawEvidence": {
+    "scenarioRecords": 3,
+    "includes": [
+      "Actual TaskService runtime snapshot and fixed package selection",
+      "Stored plan absence, full returned controlled error",
+      "Session diagnostic and effective level state",
+      "FakePTY command/env/args and live status",
+      "Variant old/new package hashes and original package verification"
+    ]
+  }
+}

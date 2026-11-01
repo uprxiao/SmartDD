@@ -1,3 +1,4 @@
+import { agentIdSchema } from '@shared/agent-id';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
@@ -8,7 +9,7 @@ import type {RunContext} from './run-registry';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().min(1).max(512);
 const exclusionSchema=z.object({appId:z.string().min(1).max(20),packageHash:hash,code:z.enum(['CAPABILITY_UNAVAILABLE','AGENT_CAPABILITY_NAME_CONFLICT','HOST_INCOMPATIBLE'])}).strict();
 export type ApplicationScopeExclusion=z.infer<typeof exclusionSchema>;
-const scopeFields=z.object({schema:z.literal(1),runId:z.uuid(),taskId:id,projectId:id,runner:z.enum(['claude-code','codex']),snapshotHash:hash,selectionHash:hash,ownerInstanceId:z.uuid(),ownerPid:z.number().int().positive(),ownerStartedAt:z.string().min(1),applications:z.array(z.object({appId:z.string().min(1).max(20),packageHash:hash}).strict()).min(1).max(32),excludedApplications:z.array(exclusionSchema).max(32).optional(),roots:z.array(z.object({refId:id,refKind:id,refHash:hash,relativePath:id}).strict()).min(1).max(4096),createdAt:z.iso.datetime(),evidenceHash:hash}).strict();
+const scopeFields=z.object({schema:z.literal(1),runId:z.uuid(),taskId:id,projectId:id,runner:agentIdSchema,snapshotHash:hash,selectionHash:hash,ownerInstanceId:z.uuid(),ownerPid:z.number().int().positive(),ownerStartedAt:z.string().min(1),applications:z.array(z.object({appId:z.string().min(1).max(20),packageHash:hash}).strict()).min(1).max(32),excludedApplications:z.array(exclusionSchema).max(32).optional(),roots:z.array(z.object({refId:id,refKind:id,refHash:hash,relativePath:id}).strict()).min(1).max(4096),createdAt:z.iso.datetime(),evidenceHash:hash}).strict();
 export const applicationRunScopeSchema=z.discriminatedUnion('schema',[scopeFields,scopeFields.extend({schema:z.literal(2),mode:z.literal('independent-capabilities'),applications:z.array(scopeFields.shape.applications.element).length(0)})]);
 export type ApplicationRunScope=z.infer<typeof applicationRunScopeSchema>;
 export const applicationScopeOperationId=(runId:string)=>'application-run-scope:'+runId;

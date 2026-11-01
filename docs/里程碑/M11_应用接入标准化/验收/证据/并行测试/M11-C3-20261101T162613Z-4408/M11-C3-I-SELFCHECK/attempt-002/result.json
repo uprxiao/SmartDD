@@ -1,0 +1,249 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C3-20261101T162613Z-4408",
+  "groupId": "M11-C3-I-SELFCHECK-RETEST",
+  "attempt": "attempt-002",
+  "executor": "/root/upstream_contract",
+  "sourceCommit": "699ab83b + frozen D02 only",
+  "baselineManifestSha256": "200be117d79f5cd05ce56d98a9a46838149ad931cd9959649b426fff6baceaaa",
+  "baseManifestSha256": "231be4abc3f882520b5a5ecf7bdcdb0d7ac7b13350a1505af8a2cace7a3002ff",
+  "productionDelta": [
+    {
+      "path": "src/main/core/applications/agent-format-self-check.ts",
+      "sha256": "de4b95efe0d735084236fef82d4da1b807284bec4d6434128f392d9a14920cf1"
+    },
+    {
+      "path": "src/main/core/applications/native-user-messages.ts",
+      "sha256": "5656cdbe2b35cbd06916bf1d747b2156324dc48c004d24f73901022ffd737128"
+    },
+    {
+      "path": "src/main/core/applications/skill-observation-contract.ts",
+      "sha256": "27610771b9d1f6463c97bbf270c3a443d8ded72c823d6d8614d8a2515af02862"
+    }
+  ],
+  "T35ProductionChangesIncluded": false,
+  "startedAt": "2026-11-01T16:31:53.382000+00:00",
+  "finishedAt": "2026-11-01T16:33:07.936087+00:00",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "sourceVerification": {
+    "unexpectedFrozenSourceChanges": [],
+    "productionChangesByExecutor": false,
+    "originalIndependentTestHashUnchanged": true,
+    "outNativeLockHashes": {
+      "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+      "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+      "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+      "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+    },
+    "dependencies": "same shared read-only node_modules; no install/build/test:prepare",
+    "cache": "private selfcheck-private-vite-cache, no simultaneous prior runner"
+  },
+  "cases": [
+    {
+      "id": "M11-T26",
+      "layer": "I software portion",
+      "status": "passed-software-with-valid-retained-evidence",
+      "criteria": [
+        {
+          "criterion": "兼容日志最多证明L2；正例观察必须满足真实宿主契约",
+          "status": "passed-rerun-and-retained",
+          "actual": "Original three malformed-positive cases rerun unchanged: empty callId, missing callId and unexpected raw now all produce failed status, checks.positive=false, proven=[] and no local L2. Both the compatibility checker and runtime now use the same strict observation validator. Valid positive/self-check and NativeUserMessages direct regressions also pass.",
+          "rawResults": [
+            {
+              "name": "malformed-positive-empty-call-id",
+              "at": "2026-11-01T16:31:54.213Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "failed",
+                  "checks": {
+                    "positive": false,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:31:54.211Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            },
+            {
+              "name": "malformed-positive-missing-call-id",
+              "at": "2026-11-01T16:31:54.646Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "failed",
+                  "checks": {
+                    "positive": false,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:31:54.645Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            },
+            {
+              "name": "malformed-positive-unexpected-raw-field",
+              "at": "2026-11-01T16:31:55.093Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "failed",
+                  "checks": {
+                    "positive": false,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:31:55.092Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            }
+          ],
+          "evidence": [
+            "selfcheck-attempt-002-original-reds-vitest.json",
+            "selfcheck-attempt-002-direct-regression-vitest.json",
+            {
+              "groupId": "M11-C3-I-SELFCHECK",
+              "attempt": "attempt-001",
+              "manifestSha256": "280abd3c9a3bc271370b8396b90544f5c8c0301c267984edd574f22c915d716a"
+            }
+          ]
+        },
+        {
+          "criterion": "变形/坏日志与单个负例产证据必须失败；绑定/持久化/字节损坏失败即关闭",
+          "status": "passed-retained-plus-direct-regression",
+          "actual": "Other18 independent green scenarios retained by exact unchanged test/source scope; new generic validator only tightens observation shape, while journal binding, latest-failure precedence, real SQLite reload and byte verification logic unchanged. Direct self-check5 regression tests cover changed logs/latest failure, single negative leak/missing negative, persisted scope and no L3.",
+          "evidence": [
+            {
+              "groupId": "M11-C3-I-SELFCHECK",
+              "attempt": "attempt-001",
+              "manifestSha256": "280abd3c9a3bc271370b8396b90544f5c8c0301c267984edd574f22c915d716a"
+            },
+            "selfcheck-attempt-002-direct-regression-vitest.json"
+          ]
+        },
+        {
+          "criterion": "任何本机日志自检不提升CLI/L3/原话发送授权",
+          "status": "passed-retained-plus-direct-regression",
+          "actual": "Original compatible userMessageParsed=true canary remains proof of parser behavior only; journal does not contain raw logs/user text. New red retests are now failed and effective fallback levels L0.skill/L0.mcp, nativeSendEvidence=false. Original published-L3 fact remains untouched, local proven never includes L3. Four unchanged pure agent-level tests retained.",
+          "evidence": [
+            {
+              "groupId": "M11-C3-I-SELFCHECK",
+              "attempt": "attempt-001",
+              "manifestSha256": "280abd3c9a3bc271370b8396b90544f5c8c0301c267984edd574f22c915d716a"
+            },
+            "selfcheck-attempt-002-direct-regression-vitest.json"
+          ]
+        }
+      ],
+      "remaining": [
+        "Coordinator completes S10/S11 prerequisites and final packaged baseline; no whole T26 pass credited by executor."
+      ],
+      "formalPassesAdded": 0
+    }
+  ],
+  "defect": {
+    "id": "M11-C3-D02",
+    "classification": "product",
+    "state": "fixed-retested-I",
+    "originalRedRetained": true,
+    "originalEvidence": {
+      "groupId": "M11-C3-I-SELFCHECK",
+      "attempt": "attempt-001",
+      "manifestSha256": "280abd3c9a3bc271370b8396b90544f5c8c0301c267984edd574f22c915d716a"
+    }
+  },
+  "checks": {
+    "originalRedCasesPassed": 3,
+    "independentOthersFilteredNotExecuted": 18,
+    "directAffectedRegressionPassed": 62,
+    "directAffectedFiles": [
+      {
+        "file": "agent-format-self-check.test.ts",
+        "passed": 5
+      },
+      {
+        "file": "native-user-messages.test.ts",
+        "passed": 57
+      }
+    ],
+    "failed": 0,
+    "newSelectedSoftwareInstances": 65,
+    "reusedOtherIndependentGreens": 18,
+    "reusedUnchangedPureLevelGreens": 4,
+    "launcherOrWholeOldMatrixRerun": false,
+    "formalPassesAdded": 0
+  },
+  "typecheck": "Not rerun per coordinator instruction. Original isolation missing-prototype limitation retained, no full public typecheck claim; coordinator owns complete workspace check.",
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/m11-c3-selfcheck-independent.test.ts -t 'does not certify a malformed positive observation' --maxWorkers=1 --reporter=json --outputFile=selfcheck-attempt-002-original-reds-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/native-user-messages.test.ts src/main/core/applications/__tests__/agent-format-self-check.test.ts --maxWorkers=1 --reporter=json --outputFile=selfcheck-attempt-002-direct-regression-vitest.json"
+  ],
+  "isolation": {
+    "privateSource": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C3-20261101T162613Z-4408-sgsd2h0s/selfcheck-retest",
+    "privateData": "fresh local synthetic SQLite fixtures only",
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false,
+    "UI": false,
+    "AppBuild": false,
+    "realAgentOrModel": false
+  },
+  "next": "Coordinator archives exact attempt002, closes D02 software defect and tracks stage/final-package prerequisites separately."
+}

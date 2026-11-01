@@ -15,6 +15,7 @@ import type { Runner } from '@shared/types';
 export function stateRootFor(runner: Runner, profileEnv: Record<string, string>, baseEnv: Record<string, string>): string {
   const home = profileEnv.HOME || baseEnv.HOME || homedir();
   if (runner === 'claude') return profileEnv.CLAUDE_CONFIG_DIR || baseEnv.CLAUDE_CONFIG_DIR || join(home, '.claude');
+  if (runner !== 'codex') throw new Error('当前运行器的能力预览尚未验证');
   return profileEnv.CODEX_HOME || baseEnv.CODEX_HOME || join(home, '.codex');
 }
 

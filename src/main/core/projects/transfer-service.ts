@@ -1,9 +1,10 @@
+import { runnerDescription } from '@shared/ai-profiles';
 import { createHash, randomUUID } from 'node:crypto';
 import { accessSync, constants, statSync } from 'node:fs';
 import { basename, isAbsolute, join } from 'node:path';
 import { eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
-import { RUNNERS, aiProfileInputSchema } from '@shared/ai-profiles';
+import { aiProfileInputSchema } from '@shared/ai-profiles';
 import { NEW_MAIN_DIR_REF, TRANSFER_CAPABILITIES, TRANSFER_LIMITS, transferDraftSchema, type DraftValidation, type ExportDescription, type ImportResult, type TransferDraft, type TransferPreview } from '@shared/project-transfer';
 import type { AppDb } from '../../db/client';
 import { aiProfiles, importedKeys, projectCapabilities, projectDatabases, projectDirs, projectImportReceipts, projects, projectServers } from '../../db/schema';
@@ -242,7 +243,7 @@ export class ProjectTransferService {
       const profile = p.profiles.find(p => p.ref === e.ref)!;
       const parsed = aiProfileInputSchema.safeParse({ ...profile, executable: e.executable, isDefault: false });
       if (!parsed.success) issues.push({ field: `profiles.${e.ref}`, message: 'AI 命令无效，请填写命令名或可执行文件路径' });
-      const command = e.executable || RUNNERS[profile.runner].command;
+      const command = e.executable || runnerDescription(profile.runner).command;
       return { ref: e.ref, command, available: parsed.success && this.commandAvailable(command) };
     });
     return { valid: issues.length === 0, issues, directories, profiles, counts: { directories: directories.length, databases: p.databases.length, servers: p.servers.length, profiles: selected.size } };

@@ -1,3 +1,5 @@
+import { agentIdSchema } from '@shared/agent-id';
+import { builtinCapabilityDeliveryAdapters, type CapabilityDeliveryAdapterRegistry } from './capability-delivery-adapters';
 import {verifyModernDiscoveryProjection,nativeGuardEntryUnavailable,nativeGuardCatalogOmissions,type NativeGuardDiscoveryProof,type NativeGuardDiscoverySelection} from './native-discovery-exclusions';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -27,7 +29,7 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.strin
 const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
 const entrySchema = z.object({ resourceId: z.string().regex(/^h-projection:[a-f0-9]{64}$/), storeId: uuid, path: z.string().min(1).max(4096), nativeName: name, sourceHash: hash, projectionHash: hash,format:z.literal('legacy-tree-v1').optional() }).strict().refine(e=>e.format?e.projectionHash===e.sourceHash&&/^smartdd-[a-z][a-z0-9-]{0,63}-[a-f0-9]{16}$/.test(e.nativeName)&&e.nativeName.endsWith('-'+e.sourceHash.slice(0,16)):/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e.nativeName)&&e.nativeName.length<=64,'共享目录格式、名称或摘要不同');
 export const catalogSchema = z.object({ schema: z.literal(1), homeId: hash, generation: hash, entries: z.array(entrySchema).max(4096) }).strict();
-const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: z.enum(['claude-code', 'codex']), phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
+const consumerSchema = z.object({ schema: z.literal(1), consumerId: uuid, runId: uuid, ptyId: uuid, homeId: hash, generation: hash, runner: agentIdSchema, phase: z.enum(['preparing', 'active', 'releasing']), owner: ownerSchema }).strict();
 const pendingSchema = z.object({ schema: z.literal(1), operationId: uuid, token: uuid, homeId: hash, owner: ownerSchema, baseGeneration: hash, baseEntries: z.array(entrySchema).max(4096), entries: z.array(entrySchema).min(1).max(4096), handoff: z.object({ fromOwner: ownerSchema, fromPlanHash: hash }).strict().optional(), phase: z.enum(['waiting', 'materializing', 'publishing', 'catalog-published']) }).strict();
 type Catalog = z.infer<typeof catalogSchema>;
 type Consumer = z.infer<typeof consumerSchema>;
@@ -132,12 +134,15 @@ export class DiscoveryCatalog {
     private readonly childIdentities:Record<string,{dev:number;ino:number}>={};
     private readonly owner: z.infer<typeof ownerSchema>;
     private readonly active = new Set<string>();
+    private readonly deliveryAdapters: CapabilityDeliveryAdapterRegistry;
     constructor(readonly store: ResourceStore, home: string, private readonly processes: ProcessIdentityReader, options: {
         instanceId?: string;
         checkpoint?: (phase: DiscoveryCheckpoint) => void;
         intentCheckpoint?:()=>void;
+        deliveryAdapters?: CapabilityDeliveryAdapterRegistry;
     } = {}) {
         this.home = realpathSync(home);
+        this.deliveryAdapters = options.deliveryAdapters ?? builtinCapabilityDeliveryAdapters;
         this.homeId = digest(this.home);
         this.instanceId = options.instanceId ?? randomUUID();
         this.checkpoint = options.checkpoint;
@@ -683,10 +688,10 @@ export class DiscoveryCatalog {
     private async cancelPending(pending: Pending): Promise<void> { await this.lock(async () => { this.mine(pending); if (!['waiting', 'materializing'].includes(pending.phase) || pending.entries.some(e => e.format!=='legacy-tree-v1'&&!pending.baseEntries.some(b => b.nativeName === e.nativeName) && present(dirname(e.path))))
         throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '目录已开始物化，须核对原操作后恢复'); await this.finishRecords(pending, 'removed', 'canceled'); unlinkSync(join(this.root, 'pending.json')); durableDirectory(this.root); }); }
     /** Callback only reserves C refs/leases; it must not fork or perform remote work. */
-    async reserveRun(generation:string,runner:'claude-code'|'codex',register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,false);}
+    async reserveRun(generation:string,runner:string,register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,false);}
     /** Zero business authority; only the registry's exact native-guard handle is accepted. */
-    async reserveNativeGuardRun(generation:string,runner:'claude-code'|'codex',register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,true);}
-    private async reserveDiscoveryRun(generation: string, runner: 'claude-code' | 'codex', register: (ids: {
+    async reserveNativeGuardRun(generation:string,runner:string,register:(ids:{runId:string;ptyId:string})=>Promise<OwnedCapabilityRun>):Promise<DiscoveryReservation>{return this.reserveDiscoveryRun(generation,runner,register,true);}
+    private async reserveDiscoveryRun(generation: string, runner: string, register: (ids: {
         runId: string;
         ptyId: string;
     }) => Promise<OwnedCapabilityRun>,nativeGuard:boolean): Promise<DiscoveryReservation> {
@@ -767,7 +772,7 @@ export class DiscoveryCatalog {
     verifyReference(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
         if(resource.kind!=='agent-projection'||resource.pathScope!=='H'||resource.scopeIdentity!==this.homeId||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_STATE_CHANGED','共享投影资源未就绪或实际HOME不同');
         const root=this.store.directory(resource),manifest=verifyOwnedBundle(root,resource.contentHash,this.store.storeId);
-        if(manifest.metadata.homeId!==this.homeId||snapshot.runner!=='codex')throw new ApplicationError('OWNERSHIP_CONFLICT','共享投影属于其他发现根');
+        if(manifest.metadata.homeId!==this.homeId||!this.deliveryAdapters.shared(snapshot.runner))throw new ApplicationError('OWNERSHIP_CONFLICT','共享投影属于其他发现根');
         const selections=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash}))];
         if(selections.some(s=>s.path===join(root,'SKILL.md')&&s.hash===manifest.metadata.sourceHash))return;
         // A per-run delivery keeps the fixed source selection; only its verified invocation view differs.

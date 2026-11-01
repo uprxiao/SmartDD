@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { InputIssue } from './projects';
 import { describeIssue } from './projects';
 import type { Runner } from './types';
+import { agentIdSchema } from './agent-id';
 
 // AI 配置 = 运行器（程序）+ 一组环境变量和启动参数（PRD F04）。
 
@@ -10,6 +11,8 @@ export const RUNNERS: Record<Runner, { label: string; command: string }> = {
   codex: { label: 'Codex', command: 'codex' },
 };
 export const RUNNER_IDS = Object.keys(RUNNERS) as Runner[];
+/** Historical or externally registered ids remain readable without guessing a builtin identity. */
+export const runnerDescription = (id: Runner) => RUNNERS[id] ?? { label: id, command: id };
 
 /**
  * Inherited variables that would silently pick another account. They are cleared before the
@@ -42,7 +45,7 @@ const envEntry = z.object({
 export const aiProfileInputSchema = z
   .object({
     name: z.string().trim().min(1).max(60),
-    runner: z.enum(['claude', 'codex']),
+    runner: agentIdSchema,
     /** null = the runner's own command, found on the login shell's PATH. */
     executable: z
       .string()

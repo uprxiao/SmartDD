@@ -1,3 +1,4 @@
+import { agentIdSchema } from './agent-id';
 import { z } from 'zod';
 import { isPackagePath } from './applications';
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -7,7 +8,7 @@ const name = z.string().min(1).max(64).regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
 const tool = z.string().min(1).max(256).regex(/^[A-Za-z_][A-Za-z0-9_.:-]*$/).refine(s => !['__proto__','constructor','prototype'].includes(s));
 const version = z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
 export const capabilitySessionSnapshotSchema = z.object({
-  schema: z.literal(2),taskId: id,projectId: id,createdAt: z.iso.datetime(),runner: z.enum(['claude-code','codex']),
+  schema: z.literal(2),taskId: id,projectId: id,createdAt: z.iso.datetime(),runner: agentIdSchema,
   adapterBinding: z.object({ id: id,version,hash,projectionFormatVersion: z.number().int().positive(),nativeToolNames: z.record(tool,tool) }).strict(),
   native: z.object({ sessionId: z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),stateRoot: absolute,cwd: absolute }).strict(),
   agentAtCreation: z.object({ version: z.string().min(1).max(128),adapterRevision: z.number().int().positive() }).strict(),

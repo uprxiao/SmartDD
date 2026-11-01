@@ -9,6 +9,9 @@ import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import { effectiveLevels, type EffectiveLevels } from './agent-levels';
+import { builtinNativeEvidenceAdapters, type NativeEvidenceAdapterRegistry } from './native-evidence-adapters';
+import { checkNativeFormat, readNativeFormatCheck, storeNativeFormatCheck, type NativeFormatCheckFixtures } from './agent-format-self-check';
+import { builtinCapabilityDeliveryAdapters, type CapabilityDeliveryAdapterRegistry } from './capability-delivery-adapters';
 import {applicationSkillSnapshotView} from './application-skill-view';
 import {readApplicationRunPlan,skillFilesHash} from './run-plan';
 import {readFileSync} from 'node:fs';
@@ -40,15 +43,34 @@ function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadP
 /** Adapters published before the M11 level table keep their original verified native message formats. */
 const RETAINED_NATIVE_MESSAGE_FORMATS: Readonly<Record<string, readonly string[]>> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
 export class AgentAdapterRegistry {
-  constructor(readonly store: ResourceStore) {}
+  constructor(readonly store: ResourceStore, private readonly nativeFormats: NativeEvidenceAdapterRegistry = builtinNativeEvidenceAdapters, readonly deliveryAdapters: CapabilityDeliveryAdapterRegistry = builtinCapabilityDeliveryAdapters) {}
   /** Single read point for declared levels (§15.4). Undeclared versions get no level; fail closed. */
   levels(hash:string,cliVersion:string):readonly AgentLevel[]{
+    const declared=this.declaredLevels(hash,cliVersion), check=this.selfCheckResult(hash,cliVersion);
+    return check?.status==='passed'?[...new Set([...declared,...check.proven])]:declared;
+  }
+  private declaredLevels(hash:string,cliVersion:string):readonly AgentLevel[]{
     const meta=this.get(hash).metadata;if(!meta.cliVersions.includes(cliVersion))return [];
     if(meta.levels)return meta.levels[cliVersion]??[];
     return RETAINED_NATIVE_MESSAGE_FORMATS[meta.agentId]?.includes(cliVersion)?['L0.skill','L0.mcp','L1','L2','L3']:[];
   }
   /** Declared levels after the undeclared-version downgrade (§15.4). Diagnostics and delivery read this. */
-  effective(hash:string,cliVersion:string):EffectiveLevels{return effectiveLevels(this.levels(hash,cliVersion));}
+  effective(hash:string,cliVersion:string):EffectiveLevels{
+    const declared=effectiveLevels(this.declaredLevels(hash,cliVersion)),check=this.selfCheckResult(hash,cliVersion);
+    return check?.status==='passed'?{...declared,levels:[...new Set([...declared.levels,...check.proven])]}:declared;
+  }
+  /** Host-only, deliberately absent from RPC/MCP. A format check proves neither CLI identity nor authorization. */
+  selfCheck(hash:string,cliVersion:string,fixtures:NativeFormatCheckFixtures){
+    const installed=this.verify(hash), result=checkNativeFormat(this.nativeFormats.get(installed.metadata.agentId),hash,cliVersion,fixtures);
+    this.verify(hash);storeNativeFormatCheck(this.store,result);return result;
+  }
+  selfCheckResult(hash:string,cliVersion:string){const result=readNativeFormatCheck(this.store,hash,cliVersion);if(result)this.verify(hash);return result;}
+  versionSupport(hash:string,cliVersion:string):'declared'|'best-effort'|'unsupported'{
+    const meta=this.get(hash).metadata;
+    if(!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return 'unsupported';
+    if(meta.cliVersions.includes(cliVersion))return 'declared';
+    return meta.projectionFormatVersion===1&&/^\d+\.\d+\.\d+$/.test(cliVersion)&&this.deliveryAdapters.get(meta.agentId).bestEffortMcp===true?'best-effort':'unsupported';
+  }
   recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {
     const installed=this.verify(hash),meta=installed.metadata;
     if(!meta.cliVersions.includes(cliVersion)||!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return{capability:'unverified'};
@@ -64,6 +86,7 @@ export class AgentAdapterRegistry {
   }
   async install(metadata: AgentAdapterMetadata,input: Readonly<Record<string,Uint8Array>>): Promise<InstalledAgentAdapter> {
     const parsed = agentAdapterMetadataSchema.safeParse(metadata); if (!parsed.success || !input[metadata.entry]) throw new ApplicationError('INVALID_PACKAGE','Agent适配器声明无效');
+    this.deliveryAdapters.get(parsed.data.agentId);
     const bundle = ownedBundle(parsed.data,input), id = `agent-adapter:${metadata.agentId}:${bundle.hash}`;
     const spec: PublishResource = { resourceId: id,kind: 'agent-adapter',contentHash: bundle.hash,relativePath: `agent-adapters/${metadata.agentId}/${metadata.version}/${bundle.hash}`,dependencies: [],materialize: stage => writeOwnedBundle(stage,bundle,this.store.storeId),verify: dir => { verifyOwnedBundle(dir,bundle.hash,this.store.storeId); },register: () => {
       const old = this.store.sqlite.prepare('SELECT adapter_hash FROM capability_agent_adapters WHERE agent_id=? AND version=?').get(metadata.agentId,metadata.version) as { adapter_hash: string } | undefined;
@@ -89,17 +112,20 @@ export class AgentAdapterRegistry {
   private preflight(installed: InstalledAgentAdapter,input: AgentLoadRequest,guardOmissions?:ReadonlySet<string>): void {
     const snapshot = input.snapshot, meta = installed.metadata;
     if (snapshot.runner !== meta.agentId || snapshot.adapterBinding.hash !== installed.hash || snapshot.adapterBinding.id !== meta.agentId || snapshot.adapterBinding.version !== meta.version || snapshot.adapterBinding.projectionFormatVersion !== meta.projectionFormatVersion) throw new ApplicationError('SNAPSHOT_CORRUPT','固定适配器与原快照不一致');
-    if (!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64') || !meta.cliVersions.includes(input.cliVersion)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
+    const support=this.versionSupport(installed.hash,input.cliVersion);
+    if (support==='unsupported') throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
+    if(support==='best-effort'&&input.cliSandbox)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','未声明版本不能注入CLI端点或沙箱放宽');
     if (input.native.runner !== snapshot.runner || input.native.stateRoot !== snapshot.native.stateRoot || input.native.cwd !== snapshot.native.cwd || input.native.sessionId !== snapshot.native.sessionId) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','加载时的原生身份或目录已改变');
     const applications=input.applicationScope===undefined?snapshot.packages:snapshot.packages.filter(p=>input.applicationScope!.includes(p.appId));
     if(input.claudeDelivery&&snapshot.runner!=='claude-code')throw new ApplicationError('INVALID_INPUT','原目录交付依据只适用于Claude');
     if(input.claudeDelivery&&(!input.pluginRoot||!input.pluginHash||input.claudeDelivery.taskId!==snapshot.taskId))throw new ApplicationError('SNAPSHOT_IMMUTABLE','Claude原目录交付必须包含原任务的实际插件路径及hash');
-    if(input.applicationScope&&((snapshot.runner!=='codex'&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
+    if(input.applicationScope&&((!this.deliveryAdapters.shared(snapshot.runner)&&!input.claudeDelivery)||snapshot.legacyBinding||new Set(input.applicationScope).size!==input.applicationScope.length||applications.length!==input.applicationScope.length))throw new ApplicationError('INVALID_INPUT','本轮应用加载范围须来自原固定选择且由受支持适配器处理');
     const standards=selectedStandardSkills(snapshot,input.standardSkillScope);
     if(input.standardSkillScope&&snapshot.runner==='claude-code'&&!input.claudeDelivery)throw new ApplicationError('INVALID_INPUT','标准Skill子集须经过本轮Claude原目录交付');
     if(input.applicationSkillDelivery||input.cliSandbox){
-      if(snapshot.runner!=='codex'||meta.cliEntry!=='supported'||!input.applicationSkillDelivery)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此适配器尚未验证本次CLI/Skill交付');
+      if(!this.deliveryAdapters.shared(snapshot.runner)||meta.cliEntry!=='supported'||!input.applicationSkillDelivery)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此适配器尚未验证本次CLI/Skill交付');
       const delivery=input.applicationSkillDelivery,runPlan=readApplicationRunPlan(this.store,input.runId,delivery.planHash),saved=this.store.sqlite.prepare('SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(snapshot.taskId) as {snapshot_hash:string}|undefined;
+      if(support==='best-effort'&&(runPlan.grades.cli||runPlan.allowed.some(c=>c.entry==='cli')))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','未声明版本只能使用本次MCP降级计划');
       if(!saved||runPlan.taskId!==snapshot.taskId||runPlan.projectId!==snapshot.projectId||saved.snapshot_hash!==runPlan.snapshotHash||digest(canonicalJson(snapshot))!==saved.snapshot_hash)throw new ApplicationError('SNAPSHOT_IMMUTABLE','本次交付不能替换原会话选择');
       const expected=runPlan.skills.map(s=>({appId:s.appId,skillId:s.skillId,nativeName:s.nativeName})),actual=delivery.skills.map(s=>({appId:s.appId,skillId:s.skillId,nativeName:s.nativeName}));
       if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('SCOPE_DENIED','实际Skill交付不等于固定运行计划');
@@ -118,7 +144,7 @@ export class AgentAdapterRegistry {
       const selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
       if (projection.metadata.taskId !== snapshot.taskId || projection.metadata.selectionHash !== selectionHash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','插件投影不属于原固定会话');
     }
-    if (snapshot.runner === 'codex') {
+    if (this.deliveryAdapters.shared(snapshot.runner)) {
       const catalog = input.catalog; if (!catalog) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','Codex受管目录清单尚未核验');
       if (new Set(catalog.entries.map(e => e.path)).size !== catalog.entries.length || new Set(catalog.entries.map(e => e.nativeName)).size !== catalog.entries.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','Codex受管目录或名称冲突');
       for (const entry of catalog.entries) {

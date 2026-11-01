@@ -1,0 +1,27 @@
+{
+  "engine": "actual Electron bundled Node / better-sqlite3",
+  "sqlite": "3.53.2",
+  "before": [
+    {
+      "id": 4,
+      "parent": 0,
+      "notused": 216,
+      "detail": "SCAN capability_resource_operations"
+    }
+  ],
+  "after": [
+    {
+      "id": 5,
+      "parent": 0,
+      "notused": 164,
+      "detail": "SEARCH capability_resource_operations USING INDEX sqlite_autoindex_capability_resource_operations_1 (operation_id>? AND operation_id<?)"
+    },
+    {
+      "id": 31,
+      "parent": 0,
+      "notused": 0,
+      "detail": "USE TEMP B-TREE FOR ORDER BY"
+    }
+  ],
+  "scope": "Query-plan check only; no wall-clock benchmark or production database"
+}

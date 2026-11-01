@@ -15,6 +15,7 @@ export interface RunnerDescription {
   readonly label: string;
   readonly sessionLabel: string;
   readonly command: string;
+  readonly isolatedEnvPrefixes?: readonly string[];
 }
 export type RunnerExecutable = Omit<RunnerInfo, 'runner'>;
 /** Normalized candidates; native headers and formats are parsed by the adapter. */
@@ -53,7 +54,7 @@ function nativeProbe(id: Runner) {
 
 const claude = Object.freeze<RunnerAdapter>({
   id: 'claude', stateEnvVar: 'CLAUDE_CONFIG_DIR', sessionIdStrategy: 'host', preserveImplicitStateRoot: true,
-  describe: () => ({ id: 'claude', agentId: 'claude-code', label: 'Claude Code', sessionLabel: 'Claude', command: 'claude' }),
+  describe: () => ({ id: 'claude', agentId: 'claude-code', label: 'Claude Code', sessionLabel: 'Claude', command: 'claude', isolatedEnvPrefixes: ['ANTHROPIC_'] }),
   profileSchema: () => aiProfileInputSchema.refine(profile => profile.runner === 'claude'),
   ...nativeProbe('claude'),
   defaultStateRoot: (home: string) => join(home, '.claude'),

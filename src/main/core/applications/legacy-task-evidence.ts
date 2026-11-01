@@ -11,7 +11,7 @@ export const legacyRuntimeMetadata=z.object({runId:z.uuid(),projectId:z.string()
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 export const legacyManifestSchema=z.object({schemaVersion:z.literal(1),projectId:z.string(),configVersion:z.number().int().nonnegative(),configHash:hash,runId:z.uuid(),files:z.record(z.string(),hash),requiredEnv:z.array(z.string()).max(512),pathEnv:z.record(z.string(),z.string()),pythonModules:z.array(z.string()).max(64),commands:z.array(z.string()).max(64),readablePaths:z.array(z.string()).max(256)}).strict();
 export interface LegacySkillVersion {id:string;skillId:string;name:string;version:string;hash:string}
-export interface LegacyTaskIdentity {taskId:string;projectId:string;runner:'claude-code'|'codex'}
+export interface LegacyTaskIdentity {taskId:string;projectId:string;runner:string}
 export interface LegacyTaskEvidence extends Readonly<LegacyTaskIdentity> {
  readonly schema:'m4-task-evidence-v1';readonly snapshotHash:string;readonly evidenceHash:string;readonly manifestHash:string;
  readonly runRoot:string;readonly runtimeHash:string;readonly runtimePath:string;readonly pluginRoot:string|null;readonly pluginName:string|null;

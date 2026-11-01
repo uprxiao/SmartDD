@@ -61,6 +61,11 @@ describe('testArgs', () => {
 });
 
 describe('runProfileTest', () => {
+  it('does not run Codex health flags for another registered Agent or label its missing optional check as broken configuration', async () => {
+    const value={...profile('ok'),runner:'scripted-test',command:'/must-not-run-another-agent'};
+    expect(()=>testArgs(value.runner,[],'probe')).toThrow('尚未登记');
+    expect(await runProfileTest(value,[],deps())).toMatchObject({category:'unexpected',ms:0});
+  });
   it('passes when the reply contains the code, with the profile env and one attempt only', async () => {
     const r = await runProfileTest(profile('ok'), [SECRET], deps());
     expect(r.category).toBe('ok');

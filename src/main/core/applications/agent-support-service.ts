@@ -9,18 +9,24 @@ import { RuntimeRegistry } from './runtime-registry';
 import { CapabilityBundleSource } from './bundle-source';
 import { applicationModuleMetadata } from '@shared/application-provider-metadata';
 import type { ApplicationId } from '@shared/application-connections';
+import type { AgentAdapterMetadata } from '@shared/agent-adapters';
+export interface AgentSupportOptions {
+  adapters?: AgentAdapterRegistry;
+  /** Compiled startup registrations only; never read from a renderer or application package. */
+  additionalAdapters?: readonly { metadata: AgentAdapterMetadata; files: Readonly<Record<string, Uint8Array>> }[];
+}
 /** App startup prepares immutable local bytes; failure is diagnostic and never throws into task startup. */
 export class AgentSupportService {
   readonly adapters: AgentAdapterRegistry;
   readonly legacy: LegacyCapabilityResourceAdopter;
   private state: AgentSupportState = { state: 'preparing',errorCode: null,legacyResourceCount: 0,runtimeHash: null,adapters: [],applications: [] };
   private starting?: Promise<void>;
-  constructor(readonly store: ResourceStore,private readonly capabilities: Pick<CapabilityService,'list' | 'runtimeIdentity'>,private readonly sourceRoot: string) { this.adapters=new AgentAdapterRegistry(store);this.legacy=new LegacyCapabilityResourceAdopter(store); }
+  constructor(readonly store: ResourceStore,private readonly capabilities: Pick<CapabilityService,'list' | 'runtimeIdentity'>,private readonly sourceRoot: string,private readonly options: AgentSupportOptions = {}) { this.adapters=options.adapters??new AgentAdapterRegistry(store);this.legacy=new LegacyCapabilityResourceAdopter(store); }
   status(): AgentSupportState { return structuredClone(this.state); }
   initialize(): Promise<void> { if(this.starting)return this.starting;this.starting=this.prepare();return this.starting; }
   private async prepare(): Promise<void> {
     try {
-      const source=new CapabilityBundleSource(this.sourceRoot),bundles=source.adapters(),runtime=source.runtime();
+      const source=new CapabilityBundleSource(this.sourceRoot),bundles=[...source.adapters(),...(this.options.additionalAdapters??[])],runtime=source.runtime();
       if(!['claude-code','codex'].every(id=>bundles.some(b=>b.metadata.agentId===id)))throw new ApplicationError('INVALID_PACKAGE','本版本缺少已声明的Agent适配资源');
       for(const bundle of bundles){const installed=await this.adapters.install(bundle.metadata,bundle.files);this.state.adapters.push({agentId:installed.metadata.agentId,version:installed.metadata.version,hash:installed.hash,cliVersions:installed.metadata.cliVersions,filesReady:true,nativeDiscovery:'unverified',bridgeRecovery:installed.metadata.bridgeRecovery==='supported'?(installed.metadata.cliVersions.every(version=>this.adapters.recovery(installed.hash,version).capability==='supported')?'supported':'unverified'):installed.metadata.bridgeRecovery,configReload:installed.metadata.configReload??'unverified',recoveryRequiresAgentRestart:installed.metadata.recoveryRequiresAgentRestart??null,recoveryEvidence:installed.metadata.recoveryEvidence??[]});}
       const installedRuntime=await new RuntimeRegistry(this.store).install(runtime);this.state.runtimeHash=installedRuntime.contentHash;

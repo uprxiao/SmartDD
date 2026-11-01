@@ -1,0 +1,49 @@
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -43,7 +43,8 @@
+ import {MacProcessIdentityReader} from '../process-identity';
+ import {encodeClaudeDir} from '../../tasks/native-sessions';
+ import {ApplicationToolService} from '../tool-service';
+-import {canonicalJson,digest} from '../manifest';
++import {canonicalJson,digest,validatePackageBundle} from '../manifest';
++import {builtinApplicationModules} from '../modules';
+ import {ApplicationAdapterRegistry} from '../application-adapter-registry';
+ import {BuiltinPackageRegistry} from '../builtin-package-registry';
+ import {CapabilityBundleSource} from '../bundle-source';
+@@ -126,6 +127,36 @@
+   cliPolicyAvailable=false;const running=await create(),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;
+   expect(plan.allowed).toMatchObject([{entry:'mcp'}]);expect(plan.applications[0]).toMatchObject({fallback:true});expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_ENDPOINT');expect(launch.args!.join(' ')).not.toContain('wy_cli_');
+   const text=readFileSync(join(home,'.agents/skills',plan.skills[0].nativeName,'SKILL.md'),'utf8');expect(text).toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain('willyou-app mail draft list');
++ });
++
++ // T25 private acceptance contract: FakePTY only; no actual Agent/App/native PTY.
++ const t25Outcomes:unknown[]=[];
++ const t25Record=(name:string,value:unknown)=>{t25Outcomes.push({name,at:new Date().toISOString(),value});writeFileSync(resolve('t25-outcomes-'+process.pid+'.json'),JSON.stringify(t25Outcomes,null,2)+'\n');};
++ const t25Unknown=()=>writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n',{mode:0o700});
++ async function t25Capture(running:Awaited<ReturnType<typeof create>>){
++  const runtime=running.task.runtimeSnapshot!,snapshot=(await managed.sessions.get(running.task.id)).snapshot,planRow=sqlite.prepare("SELECT plan_json FROM capability_resource_operations WHERE operation_id=? AND kind='application-run-plan'").get('application-run-plan:'+runtime.runId) as {plan_json:string}|undefined;
++  const plan=planRow?JSON.parse(planRow.plan_json):null,diagnostic=await applications.sessionDiagnostics.inspect(running.task.id),effective=support.adapters.effective(snapshot.adapterBinding.hash,'99.0.0');
++  return{runtime,snapshot,plan,diagnostic,effective,launch:ptys.launches[0],ptyLive:ptys.live.has(running.ptyId),skillFiles:(plan?.skills??[]).map((skill:{nativeName:string})=>{const path=join(home,'.agents/skills',skill.nativeName,'SKILL.md');return{path,text:existsSync(path)?readFileSync(path,'utf8'):null};})};
++ }
++ async function t25WithoutFallback(){
++  const distribution=join(root,'cli-distribution'),original=new CapabilityBundleSource(distribution),entry=original.index.apps.find(a=>a.appId==='mail')!,bundle=original.application(entry);if(bundle.manifest.schema!=='smartdd-app-package-v2')throw Error('v2 required');
++  const oldHash=entry.hash,manifest=structuredClone(bundle.manifest);manifest.version='1.1.2';for(const capability of manifest.capabilities)capability.binding={cli:{command:['mail','draft','list']}};
++  const checked=validatePackageBundle({manifest,files:bundle.files},builtinApplicationModules),relative='apps/mail/'+manifest.version+'/'+checked.packageHash,dir=join(distribution,relative);mkdirSync(dir,{recursive:true});
++  for(const[path,bytes]of Object.entries(checked.files)){mkdirSync(join(dir,path,'..'),{recursive:true});writeFileSync(join(dir,path),bytes);}writeFileSync(join(dir,'manifest.json'),canonicalJson(checked.manifest)+'\n');
++  const{indexHash:_,...index}=structuredClone(original.index);index.apps=index.apps.map(a=>a.appId==='mail'?{appId:'mail',version:manifest.version,hash:checked.packageHash,path:relative}:a);index.build.resourceSetHash=digest(canonicalJson({adapters:index.adapters,runtimes:index.runtimes,apps:index.apps}));writeFileSync(join(distribution,'index.json'),canonicalJson({...index,indexHash:digest(canonicalJson(index))})+'\n');
++  const source=new CapabilityBundleSource(distribution),builtin=new BuiltinPackageRegistry(support.store),installed=await builtin.install(source,source.index.apps.find(a=>a.appId==='mail')!);await builtin.packages.activate(installed.packageHash,builtin.packages.active('mail')!.generation);expect(builtin.assertTrusted(oldHash).packageHash).toBe(oldHash);return{oldHash,newHash:installed.packageHash};
++ }
++ it('T25 unknown version actually reads through the declared MCP fallback and receives only the matching SOP',async()=>{
++  t25Unknown();const running=await create(),value=await t25Capture(running),service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),response=await service.call(value.runtime.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v2',contractMajor:2,connectionId:null,arguments:{}});
++  t25Record('unknown-with-MCP-fallback',{...value,response});expect(value.ptyLive).toBe(true);expect(response).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',data:{items:[]},operation:{origin:'mcp'}}});expect(value.plan.applications[0]).toMatchObject({effectiveEntry:'mcp',fallback:true});expect(value.plan.allowed).toMatchObject([{capabilityId:'mail.draft.list',entry:'mcp'}]);expect(value.skillFiles.length).toBeGreaterThan(0);for(const skill of value.skillFiles){expect(skill.text).toContain('smartdd_mail_draft_list_v2');expect(skill.text).not.toContain('willyou-app mail draft list');}
++ });
++ it('T25 unknown version marks a CLI-only capability unavailable without injecting another entry or changing the installed original package',async()=>{
++  const packages=await t25WithoutFallback();t25Unknown();const running=await create(),value=await t25Capture(running),service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data),{entry:'cli'}),response=await service.call(value.runtime.runId,randomUUID(),{operation:'mail.draft.list',contractMajor:2,connectionId:null,arguments:{}}),application=value.diagnostic.applications.find(a=>a.appId==='mail');
++  t25Record('unknown-without-fallback',{...value,response,packages});expect(value.ptyLive).toBe(true);expect(response.status).toBe('error');expect(application).toBeDefined();expect(application!.issueCode).toEqual(expect.any(String));expect(application!.issueCode!.length).toBeGreaterThan(0);expect(value.runtime.mcp.some(m=>m.name.startsWith('wy_'))).toBe(false);expect(value.snapshot.packages[0].version).toBe('1.1.2');expect(value.snapshot.packages[0].packageHash).toBe(packages.newHash);expect(value.snapshot.packages[0].packageHash).not.toBe(packages.oldHash);
++ });
++ it('T25 unknown version delivers no CLI token or socket policy and closes L2 L3/native authorization while leaving page authorization as an A-layer requirement',async()=>{
++  t25Unknown();const running=await create(),value=await t25Capture(running),env=value.launch.env??{},args=value.launch.args??[],native=await applications.nativeMessages.read(value.runtime.runId);
++  t25Record('unknown-version-level-and-delivery-gates',{...value,native,pageAuthorizationPresentation:'A-layer not executed'});expect(value.ptyLive).toBe(true);for(const name of ['WILLYOU_RUN_TOKEN','WILLYOU_ENDPOINT']){expect(env).not.toHaveProperty(name);expect(env).not.toHaveProperty(VALUE_PREFIX+name);}expect(args.join(' ')).not.toContain('wy_cli_');expect(args.join(' ')).not.toContain(managed.cli!.endpoint);expect(value.effective.verified).toBe(false);expect(value.effective.levels).not.toContain('L0.cli');expect(value.effective.levels).not.toContain('L2');expect(value.effective.levels).not.toContain('L3');expect(value.effective.nativeSendEvidence).toBe(false);expect(native.messages).toEqual([]);
+  });
+  it('permanently rejects the old token after project authorization changes even if the selection is restored',async()=>{
+   await create();const token=ptys.launches[0].env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(await request(token)).toMatchObject({status:'ok'});

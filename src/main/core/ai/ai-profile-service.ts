@@ -4,8 +4,6 @@ import {
   aiProfileInputSchema,
   CHECK_STATUS_OF,
   describeProfileIssue,
-  ISOLATED_ENV_PREFIXES,
-  RUNNERS,
   type AiProfileData,
   type AiProfileInput,
   type AiProfileView,
@@ -20,6 +18,7 @@ import type { AppDb } from '../../db/client';
 import { aiProfiles, appSecrets } from '../../db/schema';
 import type { SecretsStore } from '../../secrets';
 import { maskPreview, parseZshrc, suggestedProfileName } from './zshrc-import';
+import { builtinRunnerAdapters, type RunnerAdapterRegistry } from '../tasks/runner-adapters';
 
 type ProfileRow = typeof aiProfiles.$inferSelect;
 interface StoredEnv {
@@ -76,8 +75,16 @@ export class AiProfileService {
   constructor(
     private readonly db: AppDb,
     private readonly secrets: SecretsStore,
-    private readonly now: () => number = Date.now
+    private readonly now: () => number = Date.now,
+    readonly runnerAdapters: RunnerAdapterRegistry = builtinRunnerAdapters
   ) {}
+
+  private parse(input: unknown): AiProfileData {
+    const common = parse(input), adapter = this.runnerAdapters.get(common.runner);
+    const result = adapter.profileSchema().safeParse(common);
+    if (!result.success) throw new Error('输入无效：运行器配置不符合已登记的字段约定');
+    return common;
+  }
 
   list(): AiProfileView[] {
     return this.db
@@ -97,7 +104,7 @@ export class AiProfileService {
   }
 
   create(input: AiProfileInput): AiProfileView {
-    const data = parse(input);
+    const data = this.parse(input);
     const id = randomUUID();
     const ts = this.now();
     this.db.transaction(() => {
@@ -124,7 +131,7 @@ export class AiProfileService {
   }
 
   update(id: string, input: AiProfileInput): AiProfileView {
-    const data = parse(input);
+    const data = this.parse(input);
     const row = this.require(id);
     this.db.transaction(() => {
       this.assertUniqueName(data.name, id);
@@ -188,10 +195,10 @@ export class AiProfileService {
       id,
       name: row.name,
       runner: row.runner,
-      command: row.executable ?? RUNNERS[row.runner].command,
+      command: row.executable ?? this.runnerAdapters.get(row.runner).describe().command,
       args: readArgs(row),
       env,
-      isolatePrefixes: ISOLATED_ENV_PREFIXES[row.runner],
+      isolatePrefixes: [...(this.runnerAdapters.get(row.runner).describe().isolatedEnvPrefixes ?? [])],
     };
   }
 

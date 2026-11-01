@@ -9,6 +9,10 @@ let root: string;
 beforeEach(() => (root = mkdtempSync(join(tmpdir(), 'smartdd-codex-home-'))));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
+it('does not infer a Codex state root for another registered Agent during static preview', () => {
+  expect(() => stateRootFor('scripted-test', { CODEX_HOME: '/another-agent' }, { HOME: root })).toThrow('能力预览尚未验证');
+});
+
 it.each(['claude', 'codex'] as const)('%s discovery follows the profile HOME and inherited explicit state root', (runner) => {
   const key = runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME';
   expect(stateRootFor(runner, { HOME: '/selected' }, { HOME: '/other' })).toBe(`/selected/.${runner}`);

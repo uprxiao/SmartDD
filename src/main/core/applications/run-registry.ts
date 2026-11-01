@@ -1,3 +1,4 @@
+import { agentIdSchema } from '@shared/agent-id';
 import {finishCapabilityRun,recoverCapabilityRuns} from './run-recovery';
 import {createNativeGuardDiscoveryProof,type NativeGuardDiscoverySelection,type NativeGuardDiscoveryProof} from './native-discovery-exclusions';
 import {captureNativeStaticRoots,nativeStaticSourceIds,verifyNativeStaticRoots,type NativeStaticRoot} from './native-static-roots';
@@ -27,7 +28,7 @@ export interface RunRow {
 }
 export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
-interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
+interface NativeGuardRequest {taskId:string;projectId:string;runner:string;snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
 interface OwnedRun { planHash?:string;delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 export interface RunContext { plan?:ApplicationRunPlan;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
 export interface RunRegistryDeps {
@@ -59,8 +60,8 @@ export interface OwnedCapabilityRun {
   stop(reason?: string): Promise<CapabilityRunRecord>;
 }
 // Only a handle minted by reserveGuard can request waiting-phase H admission.
-const nativeGuardReservations = new WeakMap<OwnedCapabilityRun,{store:ResourceStore;assert:(runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared')=>void}>();
-export function assertNativeGuardReservation(store:ResourceStore,run:OwnedCapabilityRun,runner:'claude-code'|'codex',resources:readonly string[],phase:'preparing'|'prepared'):void {
+const nativeGuardReservations = new WeakMap<OwnedCapabilityRun,{store:ResourceStore;assert:(runner:string,resources:readonly string[],phase:'preparing'|'prepared')=>void}>();
+export function assertNativeGuardReservation(store:ResourceStore,run:OwnedCapabilityRun,runner:string,resources:readonly string[],phase:'preparing'|'prepared'):void {
   const proof=nativeGuardReservations.get(run);
   if(!proof||proof.store!==store)throw new ApplicationError('SCOPE_DENIED','维护等待只允许当前宿主签发的普通原生守护');
   proof.assert(runner,resources,phase);
@@ -209,7 +210,7 @@ export class CapabilityRunRegistry {
     return this.reserveGuard(input,'fixed',reservation);
   }
   private async reserveGuard(input:NativeGuardRequest,kind:NativeGuard['kind'],reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
-    const parsed=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:z.string().regex(/^[a-f0-9]{64}$/),resourceIds:z.array(z.string().min(1).max(512)).min(1).max(4096)}).strict().safeParse({taskId:input.taskId,projectId:input.projectId,runner:input.runner,snapshotHash:input.snapshotHash,resourceIds:input.resourceIds});
+    const parsed=z.object({taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:agentIdSchema,snapshotHash:z.string().regex(/^[a-f0-9]{64}$/),resourceIds:z.array(z.string().min(1).max(512)).min(1).max(4096)}).strict().safeParse({taskId:input.taskId,projectId:input.projectId,runner:input.runner,snapshotHash:input.snapshotHash,resourceIds:input.resourceIds});
     if(!parsed.success||typeof input.verify!=='function'||reservation&&(!z.uuid().safeParse(reservation.runId).success||!z.uuid().safeParse(reservation.ptyId).success))throw new ApplicationError('INVALID_INPUT','原生历史守护身份无效');
     if(this.closed)throw new ApplicationError('CANCELED','运行服务已关闭');const value=parsed.data,runId=reservation?.runId??randomUUID(),ptyId=reservation?.ptyId??randomUUID(),processId=randomUUID(),leaseId=randomUUID();
     const staticRoots=captureNativeStaticRoots(this.store,value.resourceIds),guard:NativeGuard={kind,snapshotHash:value.snapshotHash,resources:Object.freeze([...new Set(value.resourceIds)]),staticRoots,verify:async()=>{

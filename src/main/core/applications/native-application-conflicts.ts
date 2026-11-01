@@ -1,3 +1,4 @@
+import { builtinCapabilityDeliveryAdapters, type CapabilityDeliveryAdapterRegistry } from './capability-delivery-adapters';
 import {dirname,resolve,isAbsolute} from 'node:path';
 import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import type {NativePreparationSource} from '@shared/application-session-diagnostics';
@@ -10,7 +11,7 @@ export interface NativeCapabilityConflicts {
 const safePath=(path:string|null|undefined)=>path&&isAbsolute(path)&&path.length<=4096&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(path)?path:null;
 /** Read-only attribution. Source locations are display evidence,never repair,
  * native loading or tool authority. Existing conflict sets remain the gates. */
-export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>}):NativeCapabilityConflicts{
+export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>},deliveryAdapters:CapabilityDeliveryAdapterRegistry=builtinCapabilityDeliveryAdapters):NativeCapabilityConflicts{
  const conflicts=new Set<string>(),standards=new Set<string>(),unavailableApplications=new Set<string>(),unavailableStandardSkills=new Set<string>(),sources=new Map<string,NativePreparationSource[]>();let projectMcp=false;
  const add=(key:string,source:NativePreparationSource)=>{const current=sources.get(key)??[];if(!current.some(s=>JSON.stringify(s)===JSON.stringify(source)))sources.set(key,[...current,source]);};
  const itemSource=(item:NativeLaunchContext['inventory'][number]):NativePreparationSource=>({kind:item.kind,name:item.name,path:safePath(item.path),configurationPath:null,location:item.path==='profile arguments'?'profile-arguments':safePath(item.path)?'file':'unrecorded'});
@@ -23,7 +24,7 @@ export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshot,nat
   if(item.kind==='mcp'&&item.name===applicationMcp){for(const p of snapshot.packages){conflicts.add(p.appId);add('application:'+p.appId,itemSource(item));}continue;}
   for(const p of snapshot.packages)if(item.kind==='skill'&&p.skills.some(s=>item.path===s.projectionPath||item.name===s.nativeName||item.name==='smartdd-session:'+s.nativeName)||item.kind==='native-tool'&&Object.keys(p.toolContractMajors).some(op=>snapshot.adapterBinding.nativeToolNames[op]===item.name)){conflicts.add(p.appId);add('application:'+p.appId,itemSource(item));}
  }
- if(snapshot.runner==='codex'&&native.userSkillConfig.some(item=>typeof item.path==='string'&&item.enabled===false)){
+ if(deliveryAdapters.shared(snapshot.runner)&&native.userSkillConfig.some(item=>typeof item.path==='string'&&item.enabled===false)){
   const provenance=new Map<string,NonNullable<NativeLaunchContext['skillConfigSources']>[number]>();
   // Preserve first-match attribution while resolving each source only once.
   for(const source of native.skillConfigSources??[]){const key=canonicalFuturePath(resolve(snapshot.native.cwd,source.path));if(!provenance.has(key))provenance.set(key,source);}

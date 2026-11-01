@@ -1,0 +1,10 @@
+ it('returns unified v2 data and resources while the page reads the same draft and CAS rejects stale updates',async()=>{
+  const application=await installV2();await selectMail();const running=await create(),runId=running.task.runtimeSnapshot!.runId,service=tools();
+  const first=await call(service,runId,'draft_create',{content:body});expect(first).toMatchObject({status:'ok',value:{schema:'willyou-app-result-v2',contractMajor:2,capabilityId:'mail.draft.create',source:{packageHash:application.packageHash,connections:[]},operation:{origin:'mcp',effectState:'completed'}}});
+  if(first.status!=='ok')throw Error(JSON.stringify(first));const value=first.value as import('@shared/application-result').ApplicationResultV2,draft=(value.data as {draft:import('@shared/application-data').MailDraftDataView}).draft;
+  expect(value.resources).toContainEqual(draft.content.text);const sender={sender:{id:991,isDestroyed:()=>false}} as unknown as import('electron').IpcMainInvokeEvent;
+  expect(await applications.viewDraft(sender,projectId,draft.id)).toMatchObject({draft:{id:draft.id,revision:1,content:draft.content}});
+  expect(await call(service,runId,'draft_update',{draftId:draft.id,expectedRevision:1,content:{...body,text:'second'}})).toMatchObject({status:'ok',value:{data:{draft:{revision:2}}}});
+  expect(await call(service,runId,'draft_update',{draftId:draft.id,expectedRevision:1,content:body})).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT',retryable:false}});
+  expect(await call(service,runId,'resource_read',{resource:draft.content.text,offset:0,length:100})).toMatchObject({status:'ok',value:{data:{data:'synthetic body',eof:true},operation:{effectState:'read-only'}}});
+ });

@@ -1,3 +1,4 @@
+import { agentIdSchema } from '@shared/agent-id';
 import type {ApplicationPackageManifest} from '@shared/application-capabilities';
 import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
@@ -240,7 +241,7 @@ export class CapabilitySessionRegistry {
     }).immediate());
   }
   async holdUnknown(input: { taskId: string;projectId: string | null;runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;reason: 'history-unknown' | 'snapshot-corrupt' }): Promise<void> {
-    const parsed = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId: z.string().min(1).max(128).nullable(),runner: z.enum(['claude-code','codex']),stateRoot: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),cwd: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),sessionId: z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),reason: z.enum(['history-unknown','snapshot-corrupt']) }).strict().safeParse(input);
+    const parsed = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId: z.string().min(1).max(128).nullable(),runner: agentIdSchema,stateRoot: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),cwd: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),sessionId: z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),reason: z.enum(['history-unknown','snapshot-corrupt']) }).strict().safeParse(input);
     if (!parsed.success) throw new ApplicationError('INVALID_INPUT','历史保留身份无效或包含未允许字段');
     input = parsed.data;
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {

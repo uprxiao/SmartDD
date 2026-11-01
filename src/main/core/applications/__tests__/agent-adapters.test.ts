@@ -10,7 +10,7 @@ import { agentFixture } from './agent-fixture';
 let f: Awaited<ReturnType<typeof agentFixture>>;
 beforeEach(async () => { f = await agentFixture(); }); afterEach(() => f.cleanup());
 describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixed adapter packages and actual complete Skill projection plans', () => {
-  it('M11 S0b delivers Codex 0.166.0 through a new fixed adapter without widening retained or unknown versions',async()=>{
+  it('M11 S0b selects fixed Codex 0.166.0 resources while unknown versions retain unverified MCP-only delivery',async()=>{
     const original=f.plan('codex'),retained=f.adapters.verify(original.adapterBinding.hash),source=bundledAgentAdapters().find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.2.0')!;
     const current=await f.adapters.install(source.metadata,source.files),snapshot=structuredClone(original);
     snapshot.adapterBinding={...snapshot.adapterBinding,version:current.metadata.version,hash:current.hash};snapshot.agentAtCreation.version='0.166.0';
@@ -21,11 +21,19 @@ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixe
     expect(flags.mcp_servers[bridge.serverName].command).toBe(process.execPath);
     for(const name of Object.keys(snapshot.packages[0].toolContractMajors))expect(flags.mcp_servers[bridge.serverName].tools[name]).toEqual({output_token_limit:BRIDGE_LIMITS.responseBytes});
     expect(plan.bridgeRecovery).toBe('unverified');expect(current.metadata.cliVersions).toEqual(['0.166.0']);
-    expect(()=>f.adapters.plan(current.hash,{...request,cliVersion:'0.166.1'})).toThrow('尚未验证');
+    expect(f.adapters.plan(current.hash,{...request,cliVersion:'0.166.1'}).agentId).toBe('codex');expect(f.adapters.effective(current.hash,'0.166.1')).toEqual({levels:['L0.skill','L0.mcp'],verified:false,nativeSendEvidence:false});
     expect(f.adapters.verify(retained.hash).manifest).toEqual(retained.manifest);
     const fixedOld=f.plan('codex');await f.sessions.create(fixedOld,f.home);const oldRequest=await f.request(fixedOld,request.catalog!);
-    expect(()=>f.adapters.plan(retained.hash,{...oldRequest,cliVersion:'0.166.0'})).toThrow('尚未验证');
+    expect(f.adapters.plan(retained.hash,{...oldRequest,cliVersion:'0.166.0'}).agentId).toBe('codex');expect(f.adapters.effective(retained.hash,'0.166.0').levels).not.toContain('L0.cli');expect(f.adapters.effective(retained.hash,'0.166.0').nativeSendEvidence).toBe(false);
     expect((await f.sessions.get(fixedOld.taskId)).snapshot.adapterBinding).toEqual(fixedOld.adapterBinding);
+  });
+  it('M11 T25 best-effort MCP never accepts an unknown-version CLI sandbox, leaves bytes fixed, and does not widen Claude or legacy delivery',async()=>{
+    const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const request=await f.request(snapshot),version='99.0.0',adapter=f.adapters.verify(snapshot.adapterBinding.hash),before=f.snapshotTree(f.store.directory(adapter.resource));
+    expect(f.adapters.versionSupport(adapter.hash,version)).toBe('best-effort');expect(f.adapters.plan(adapter.hash,{...request,cliVersion:version}).args).not.toContain('--permissions');
+    expect(()=>f.adapters.plan(adapter.hash,{...request,cliVersion:version,cliSandbox:{endpoint:'/private/tmp/wy-cli-denied/endpoint.sock',kind:'inherit',parent:':read-only',networkProxy:false,enableNetwork:false,existingNames:[],source:'test',digest:'a'.repeat(64)}})).toThrow('未声明版本不能注入');
+    expect(f.snapshotTree(f.store.directory(adapter.resource))).toEqual(before);expect(f.adapters.levels(adapter.hash,version)).toEqual([]);
+    expect(f.adapters.versionSupport(f.plan('claude-code').adapterBinding.hash,version)).toBe('unsupported');
+    expect(f.adapters.versionSupport(adapter.hash,'unverified')).toBe('unsupported');
   });
   it('keeps the original fixed Codex application response complete within its host budget without altering snapshot or global tool policy',async()=>{
     const snapshot=f.plan('codex');await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),original=await f.sessions.get(snapshot.taskId),adapter=f.adapters.verify(snapshot.adapterBinding.hash),entry=join(f.store.root,adapter.resource.relativePath,'index.cjs'),bytes=readFileSync(entry),inventory=structuredClone(input.inventory),userConfig=structuredClone(input.userSkillConfig);

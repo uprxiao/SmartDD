@@ -1,3 +1,4 @@
+import { runnerDescription } from '@shared/ai-profiles';
 import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronRight, CircleAlert, Ellipsis, FileInput, ShieldCheck, SquareTerminal, Loader2, Plus, RefreshCw, Stethoscope, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -8,7 +9,6 @@ import {
   joinArgs,
   PROFILE_COLORS,
   RUNNER_IDS,
-  RUNNERS,
   splitArgs,
   type AiProfileInput,
   type AiProfileView,
@@ -74,7 +74,7 @@ export function AiProfilesSection() {
         {profiles.length === 0 && <p className="text-sm text-foreground-passive">{t('aiProfiles.none')}</p>}
         {profiles.map((p) => <div key={p.id} data-testid="profile-card" data-profile-id={p.id} className="profile-row">
           <SquareTerminal className="profile-symbol" size={18} />
-          <button className="profile-main text-left" data-testid="profile-edit" onClick={() => open(p)}><strong>{p.name} {p.isDefault && <Badge data-testid="profile-default">{t('aiProfiles.default')}</Badge>}</strong><small>{RUNNERS[p.runner].label} · {p.executable ?? RUNNERS[p.runner].command}</small></button>
+          <button className="profile-main text-left" data-testid="profile-edit" onClick={() => open(p)}><strong>{p.name} {p.isDefault && <Badge data-testid="profile-default">{t('aiProfiles.default')}</Badge>}</strong><small>{runnerDescription(p.runner).label} · {p.executable ?? runnerDescription(p.runner).command}</small></button>
           <span className="status" title={healthTitle(t, p)}><HealthDot profile={p} /><span data-testid="profile-health-label">{healthLabel(t, healthState(p))}</span></span>
           <Button variant="ghost" size="xs" data-testid="profile-test" disabled={p.checking} onClick={() => void testProfile(p)}>{p.checking ? <Loader2 className="animate-spin" /> : <Stethoscope />}{t('aiProfiles.health.test')}</Button>
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={`${t('m6.more')}: ${p.name}`}><Ellipsis size={17} /></DropdownMenuTrigger><DropdownMenuContent align="end">
@@ -104,7 +104,7 @@ export function AiProfilesSection() {
 }
 
 function RunnerLine({ info }: { info: RunnerInfo }) {
-  return <div data-testid="runner-info" data-runner={info.runner} className="text-xs text-foreground-muted break-all"><strong>{RUNNERS[info.runner].label}</strong> · {info.path ?? info.command} {info.version}<span className="text-foreground-destructive">{info.error}</span></div>;
+  return <div data-testid="runner-info" data-runner={info.runner} className="text-xs text-foreground-muted break-all"><strong>{runnerDescription(info.runner).label}</strong> · {info.path ?? info.command} {info.version}<span className="text-foreground-destructive">{info.error}</span></div>;
 }
 
 /** Local CLI discovery and saved profiles are separate states, joined by an explicit action. */
@@ -139,7 +139,7 @@ function RunnerDetection({ profiles, onOpen }: { profiles: AiProfileView[]; onOp
       {q.error && <p role="alert" className="p-4 text-xs text-foreground-destructive">{rpcErrorMessage(q.error)}</p>}
       {q.data?.map((info) => {
         const existing = profileForRunner(profiles, info.runner);
-        return <div key={info.runner} data-testid="runner-info" data-runner={info.runner} className="detection-row"><span className="tool-icon"><SquareTerminal size={20} /></span><div className="detection-info"><div><strong>{RUNNERS[info.runner].label}</strong><span className={`status ${info.path ? 'success' : ''}`}>{info.path ? t('m6.detected') : t('m6.notDetected')}</span></div><code>{info.path ?? RUNNERS[info.runner].command}</code>{info.version && <small>{info.version}</small>}{info.error && <p className="text-xs text-foreground-destructive">{info.error}</p>}</div>
+        return <div key={info.runner} data-testid="runner-info" data-runner={info.runner} className="detection-row"><span className="tool-icon"><SquareTerminal size={20} /></span><div className="detection-info"><div><strong>{runnerDescription(info.runner).label}</strong><span className={`status ${info.path ? 'success' : ''}`}>{info.path ? t('m6.detected') : t('m6.notDetected')}</span></div><code>{info.path ?? runnerDescription(info.runner).command}</code>{info.version && <small>{info.version}</small>}{info.error && <p className="text-xs text-foreground-destructive">{info.error}</p>}</div>
           <Button variant={existing ? 'ghost' : 'outline'} size="sm" data-testid={`runner-add-${info.runner}`} disabled={adding !== null || (!info.path && !existing)} onClick={() => existing ? onOpen(existing) : void add(info)}>{adding === info.runner ? <Loader2 className="animate-spin" /> : existing ? <Check /> : <Plus />}{existing ? t('m6.added') : t('m6.addProfile')}{existing && <ChevronRight />}</Button>
         </div>;
       })}
@@ -259,17 +259,17 @@ function ProfileDialog({ profile, onClose }: { profile: AiProfileView | null; on
             <SelectContent>
               {RUNNER_IDS.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {RUNNERS[r].label}
+                  {runnerDescription(r).label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
       </div>
-      <Field id="profile-exe" label={t('aiProfiles.fields.executable')} hint={t('aiProfiles.executableHint', { command: RUNNERS[runner].command })}>
+      <Field id="profile-exe" label={t('aiProfiles.fields.executable')} hint={t('aiProfiles.executableHint', { command: runnerDescription(runner).command })}>
         <div className="flex gap-2">
           <div className="min-w-0 flex-1">
-            <PathInput id="profile-exe" kind="file" value={executable} onChange={setExecutable} placeholder={RUNNERS[runner].command} />
+            <PathInput id="profile-exe" kind="file" value={executable} onChange={setExecutable} placeholder={runnerDescription(runner).command} />
           </div>
           <Button type="button" variant="outline" disabled={checking} data-testid="profile-check" onClick={() => void runCheck()}>
             {t('aiProfiles.check')}

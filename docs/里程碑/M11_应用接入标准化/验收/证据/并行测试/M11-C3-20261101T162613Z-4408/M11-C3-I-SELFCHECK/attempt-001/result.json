@@ -1,0 +1,253 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C3-20261101T162613Z-4408",
+  "groupId": "M11-C3-I-SELFCHECK",
+  "attempt": "attempt-001",
+  "executor": "/root/upstream_contract",
+  "sourceCommit": "699ab83b",
+  "baselineManifestSha256": "231be4abc3f882520b5a5ecf7bdcdb0d7ac7b13350a1505af8a2cace7a3002ff",
+  "startedAt": "2026-11-01T16:27:04.979000+00:00",
+  "finishedAt": "2026-11-01T16:31:22.779060+00:00",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "cases": [
+    {
+      "id": "M11-T26",
+      "layer": "I software portion only",
+      "status": "partial-failed-product",
+      "criteria": [
+        {
+          "criterion": "兼容日志自检最多提升L2",
+          "status": "partial-product-red",
+          "actual": "Valid real Codex-format fixture passes and grants only local L2; persisted receipt reloaded by an independent real SQLite connection. However, three malformed positive Skill observation shapes are also incorrectly certified passed/L2, so compatibility checks are weaker than runtime contract.",
+          "rawProductResults": [
+            {
+              "name": "malformed-positive-empty-call-id",
+              "at": "2026-11-01T16:28:55.874Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "passed",
+                  "checks": {
+                    "positive": true,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [
+                    "L2"
+                  ],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:28:55.873Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp",
+                    "L2"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            },
+            {
+              "name": "malformed-positive-missing-call-id",
+              "at": "2026-11-01T16:28:56.326Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "passed",
+                  "checks": {
+                    "positive": true,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [
+                    "L2"
+                  ],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:28:56.325Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp",
+                    "L2"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            },
+            {
+              "name": "malformed-positive-unexpected-raw-field",
+              "at": "2026-11-01T16:28:56.765Z",
+              "value": {
+                "result": {
+                  "schema": 1,
+                  "adapterHash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+                  "cliVersion": "0.166.99",
+                  "platform": "darwin-arm64",
+                  "parserRevision": "bounded-native-format-check-v1",
+                  "sourceHash": "1896452adbdf5fb0519dd80150bccc64893ea01ee60b6d3094775c16dda58057",
+                  "status": "passed",
+                  "checks": {
+                    "positive": true,
+                    "malformed": true,
+                    "role-spoof": true,
+                    "truncated": true,
+                    "mixed-version": true,
+                    "over-budget": true
+                  },
+                  "proven": [
+                    "L2"
+                  ],
+                  "userMessageParsed": true,
+                  "checkedAt": "2026-11-01T16:28:56.764Z"
+                },
+                "effective": {
+                  "levels": [
+                    "L0.skill",
+                    "L0.mcp",
+                    "L2"
+                  ],
+                  "verified": false,
+                  "nativeSendEvidence": false
+                }
+              }
+            }
+          ],
+          "defect": "M11-C3-D02"
+        },
+        {
+          "criterion": "变形日志保持低等级，无误授权",
+          "status": "passed",
+          "actual": "Changed positive record format fails and newest failed journal attempt removes earlier local L2. A role-spoof negative producing only a read or only a discovery fails. Missing/empty/non-string values for every five required negative fail. Missing either positive parser fails. Invalid hash/version/platform/owner receipts are not loaded; corrupt latest JSON or illegal L3 proof cannot resurrect older green; actual installed Adapter byte corruption makes new check and receipt consumption throw without adding journal records.",
+          "evidence": [
+            "selfcheck-attempt-001-independent-vitest.json",
+            "selfcheck-independent-outcomes-74687.json"
+          ]
+        },
+        {
+          "criterion": "任何自检不能提升L3，即使用户消息解析成功",
+          "status": "passed",
+          "actual": "Compatible fixture has userMessageParsed=true for a unique synthetic user canary, but proven remains exactly[L2]; effective undeclared-version levels contain no L0.cli or L3 and nativeSendEvidence=false. Malformed-positive false L2 certifications also never enable CLI/L3/native send. Journal contains hash/result only, not full logs, target file path, catalog/tool payload or user canary. Previously published L3 remains a published fact; local checker does not add it.",
+          "evidence": [
+            "selfcheck-preflight-vitest.json",
+            "selfcheck-attempt-001-independent-vitest.json",
+            "selfcheck-attempt-001-regression-vitest.json"
+          ]
+        }
+      ],
+      "formalPassesAdded": 0,
+      "remaining": [
+        "M11-C3-D02 production fix and independent retest",
+        "T26 stage S10/S11 prerequisites and final packaged baseline remain coordinator scope; this delivery is not whole-case completion"
+      ]
+    }
+  ],
+  "checks": {
+    "preflight": {
+      "passed": 1,
+      "filteredNotExecuted": 4
+    },
+    "newIndependent": {
+      "total": 21,
+      "passed": 18,
+      "productFailed": 3,
+      "filtered": 0
+    },
+    "smallAffectedRegression": {
+      "passed": 8,
+      "filteredNotExecuted": 1,
+      "note": "Excludes the already-run preflight; together covers all9 original software checks once."
+    },
+    "uniqueSoftwareInstances": 30,
+    "effectivePassed": 27,
+    "productFailed": 3,
+    "launcher265OrFullAppMatrixRan": false,
+    "formalCasePassesAdded": 0
+  },
+  "defect": {
+    "id": "M11-C3-D02",
+    "classification": "product",
+    "file": "src/main/core/applications/agent-format-self-check.ts",
+    "method": "observed positive valid()",
+    "cause": "Self-check validates positive count/skillId/hash/time but not the strict host Skill observation shape. Empty/missing callId and unexpected raw fields incorrectly pass and persist local L2; NativeUserMessages runtime rejects these same shapes.",
+    "authorizationImpact": "False compatibility/L2 promotion only. CLI/L3/nativeSendEvidence remain closed; no actual send authorized.",
+    "productionFixByExecutor": false,
+    "expected": "Use same strict generic Skill observation contract in self-check and runtime before positive certification."
+  },
+  "baselineVerification": {
+    "productionFilesChangedByExecutor": [],
+    "outAndLockHashes": {
+      "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+      "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+      "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+      "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+    },
+    "outReference": {
+      "manifestSha256": "f73a580286d6368213677530d5ff969c0ae34517c2517003b27bc1cfe8f52e6d",
+      "scope": "Same C2 immutable resource/native hashes; verified unchanged."
+    },
+    "sharedDependencies": "/Users/hx/hx/hxWork/SmartDD/node_modules",
+    "nativeFormatCheckSha256": "a33d33f0a64553e5a28f83f6f77523f05cfaeb2f0b76163d94169d8f75018936",
+    "adapterRegistrySha256": "1b4a5f8a20acde229dc4812e7a6582ff84813cee91bc82d520cc0b39c024405a"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C3-20261101T162613Z-4408-sgsd2h0s/selfcheck-baseline",
+    "nativeOut": "private reuse; no build/test:prepare/install",
+    "dependencies": "shared read-only node_modules",
+    "cache": "private selfcheck-private-vite-cache configured before preflight",
+    "database": "Fresh agentFixture SQLite per test; persistence test uses separate real DB handle on same file, no in-memory-only mock",
+    "AdapterFault": "Only private installed resource bytes mutated and restored in finally, never frozen source Adapter resources",
+    "dailyCredentials": false,
+    "realNetworkOrExternalSend": false,
+    "UI": false,
+    "AppBuild": false,
+    "realAgentOrModel": false
+  },
+  "typecheck": {
+    "initial": "failed: five implicit callback parameter test errors plus one missing unrelated prototype module in isolation snapshot",
+    "testFix": "Only explicit erased parameter types added; no test assertion/behavior changed. Title no longer claims unforced timestamp ties.",
+    "scopedNodeCheck": "passed via private tsconfig.selfcheck-isolated.json",
+    "scopeExclusion": "src/shared/file-code-accessibility.test.tsx only, because frozen snapshot omits prototypes/m6-codex/src/FileCodeTextarea. Full node check therefore NOT claimed as passed; original failure log preserved.",
+    "privateConfigChanges": [
+      "Vitest cacheDir only",
+      "Additional private tsconfig extends node config and excludes that one unrelated missing-prototype test"
+    ]
+  },
+  "rawEvidence": {
+    "observationEntries": 31,
+    "productRedEntries": 3,
+    "all21TestResults": "Full JSON runner report + exact private test/fixture generator archived; actual journal/effective-result objects for red and green scenarios preserved.",
+    "syntheticOnly": true
+  },
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/agent-format-self-check.test.ts -t 'binds compatible native logs' --maxWorkers=1 --reporter=json --outputFile=selfcheck-preflight-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/m11-c3-selfcheck-independent.test.ts --maxWorkers=1 --reporter=json --outputFile=selfcheck-attempt-001-independent-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/agent-format-self-check.test.ts src/main/core/applications/agent-levels.test.ts -t 'changed logs|a single negative|published L3|a corrupt|agent level degradation' --maxWorkers=1 --reporter=json --outputFile=selfcheck-attempt-001-regression-vitest.json",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json",
+    "pnpm exec tsc --noEmit -p tsconfig.selfcheck-isolated.json"
+  ],
+  "next": "Coordinator freezes shared strict observation validator fix, then only3 original malformed-positive reds and necessary affected tests retest. Retain18 independent greens and9 original software greens."
+}

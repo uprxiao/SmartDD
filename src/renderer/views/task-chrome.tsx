@@ -1,3 +1,4 @@
+import { runnerDescription } from '@shared/ai-profiles';
 import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
 // Task details and runtime bar adapted from Yoda (Apache-2.0).
 // The single window title follows the approved Codex reference; the sidebar switches sessions.
@@ -6,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { profileModel, RUNNERS } from '@shared/ai-profiles';
+import { profileModel } from '@shared/ai-profiles';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { TaskView as Task } from '@shared/tasks';
 import type { Runner } from '@shared/types';
@@ -191,7 +192,7 @@ export const RuntimeBar = observer(function RuntimeBar({ task }: { task: Task })
       className="@container flex h-8 min-w-0 shrink-0 items-center gap-1.5 overflow-hidden border-t border-border bg-background-secondary px-2.5 text-[11px] whitespace-nowrap text-foreground-muted"
     >
       <img src={RUNNER_LOGOS[task.runner]} alt="" className="size-4 shrink-0 object-contain" />
-      <span className="truncate font-medium text-foreground @max-[720px]:hidden">{RUNNERS[task.runner].label}</span>
+      <span className="truncate font-medium text-foreground @max-[720px]:hidden">{runnerDescription(task.runner).label}</span>
       <span className="text-foreground-passive @max-[720px]:hidden">·</span>
       <span data-testid="runtime-profile" className="flex min-w-0 items-center gap-1">
         <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />

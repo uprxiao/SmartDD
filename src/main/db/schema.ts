@@ -6,7 +6,7 @@ import { blob, foreignKey, index, integer, primaryKey, sqliteTable, text, unique
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
-  runner: text('runner', { enum: ['claude', 'codex'] }).notNull(),
+  runner: text('runner').notNull(),
   cwd: text('cwd').notNull(),
   nativeSessionId: text('native_session_id'),
   title: text('title').notNull(),
@@ -136,7 +136,7 @@ export const projectServers = sqliteTable(
 export const aiProfiles = sqliteTable('ai_profiles', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  runner: text('runner', { enum: ['claude', 'codex'] }).notNull(),
+  runner: text('runner').notNull(),
   /** null: the runner's own command on the login shell's PATH. */
   executable: text('executable'),
   /** JSON [{ name, secret, value }]; value is null for secret variables. */
@@ -171,7 +171,7 @@ export const tasks = sqliteTable(
     cwd: text('cwd').notNull(),
     aiProfileId: text('ai_profile_id').references(() => aiProfiles.id, { onDelete: 'set null' }),
     aiProfileName: text('ai_profile_name'),
-    runner: text('runner', { enum: ['claude', 'codex'] }).notNull(),
+    runner: text('runner').notNull(),
     nativeSessionId: text('native_session_id'),
     title: text('title').notNull(),
     firstMessage: text('first_message').notNull().default(''),

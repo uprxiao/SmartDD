@@ -1,4 +1,5 @@
 import type { SkillReadTarget, SkillReadObservation } from './codex-skill-read-evidence';
+import { validSkillObservations } from './skill-observation-contract';
 import { builtinNativeEvidenceAdapters, type NativeEvidenceAdapterRegistry } from './native-evidence-adapters';
 import { constants } from 'node:fs';
 import { open, opendir, lstat, realpath } from 'node:fs/promises';
@@ -194,7 +195,7 @@ export class NativeUserMessages {
         const format=this.formats.get(context.snapshot.runner),parser=format[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'];
         if(!parser)return [];
         const observations=parser.call(format,boundedLines,targets,Date.parse(context.run.startedAt),through);
-        if(!Array.isArray(observations)||observations.length>targets.length||new Set(observations.map(o=>o?.skillId)).size!==observations.length||observations.some(o=>!o||Object.keys(o).some(key=>!['skillId','observedAt','callId','recordHash'].includes(key))||!targets.some(t=>t.id===o.skillId)||typeof o.callId!=='string'||!o.callId||o.callId.length>512||typeof o.recordHash!=='string'||!/^[a-f0-9]{64}$/.test(o.recordHash)||!Number.isFinite(Date.parse(o.observedAt))||Date.parse(o.observedAt)<Date.parse(context.run.startedAt)||Date.parse(o.observedAt)>through))return [];
+        if(!validSkillObservations(observations,targets,Date.parse(context.run.startedAt),through))return [];
         const after=await file.stat(),pathState=await lstat(located.file),again=Buffer.alloc(data.length),reread=await file.read(again,0,again.length,start);
         if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return [];
         if(!validate())return [];

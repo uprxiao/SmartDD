@@ -1,3 +1,4 @@
+import { agentIdSchema } from '@shared/agent-id';
 import {z} from 'zod';
 import {agentLoadRequestSchema} from '@shared/agent-adapters';
 import {constants,closeSync,fstatSync,lstatSync,openSync,readFileSync} from 'node:fs';
@@ -41,7 +42,7 @@ export function nativeGuardEntryUnavailable(entry:Entry,home:string,legacy=false
  }
 }
 
-interface CatalogBinding {runId:string;taskId:string;projectId:string;runner:'claude-code'|'codex';home:string;catalog:NonNullable<AgentLoadRequest['catalog']>}
+interface CatalogBinding {runId:string;taskId:string;projectId:string;runner:string;home:string;catalog:NonNullable<AgentLoadRequest['catalog']>}
 function boundCatalog(store:ResourceStore,input:CatalogBinding){
  const {catalog,home}=input,homeId=digest(home);if(digest(canonicalJson({homeId,entries:catalog.entries}))!==catalog.generation)throw recovery();
  const root=join(home,'.agents/smartdd-runtime'),marker=boundedJson(home,join(root,'.willyou-catalog-root.json'),4096),raw=boundedJson(home,join(root,'catalog.json'));
@@ -70,7 +71,7 @@ const hash=z.string().regex(/^[a-f0-9]{64}$/),absolute=z.string().min(1).max(409
 const modernGuardSelectionSchema=z.object({schema:z.literal('native-guard-discovery-omissions-v1'),home:absolute,catalog:agentLoadRequestSchema.shape.catalog.unwrap(),paths:z.array(absolute.refine(p=>p.endsWith('/SKILL.md'))).min(1).max(4096).refine(p=>new Set(p).size===p.length)}).strict();
 const guardSelectionSchema=z.discriminatedUnion('schema',[modernGuardSelectionSchema,modernGuardSelectionSchema.extend({schema:z.literal('native-guard-retention-omissions-v1')}).strict()]);
 export type NativeGuardDiscoverySelection=z.infer<typeof guardSelectionSchema>;
-const guardContextSchema=z.object({runId:z.uuid(),taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:z.enum(['claude-code','codex']),snapshotHash:hash,kind:z.enum(['history','fixed'])}).strict();
+const guardContextSchema=z.object({runId:z.uuid(),taskId:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId:z.string().min(1).max(128),runner:agentIdSchema,snapshotHash:hash,kind:z.enum(['history','fixed'])}).strict();
 export interface NativeGuardDiscoveryProof {readonly schema:'native-guard-discovery-proof-v1';readonly runId:string}
 interface GuardRecord {store:ResourceStore;selection:NativeGuardDiscoverySelection;context:z.infer<typeof guardContextSchema>;assertOwnedGuard:()=>void}
 const guards=new WeakMap<NativeGuardDiscoveryProof,GuardRecord>();
