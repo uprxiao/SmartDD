@@ -1,9 +1,10 @@
-import {mkdtempSync,realpathSync,readFileSync,lstatSync,existsSync,rmSync,mkdirSync} from 'node:fs';
+import {mkdtempSync,realpathSync,readFileSync,readdirSync,lstatSync,existsSync,rmSync,mkdirSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
-import {afterEach,beforeEach,describe,expect,it} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import {Client} from '@modelcontextprotocol/client';
 import {UpstreamSessionPool,type UpstreamDefinition} from '../upstream/session-pool';
 import {digest} from '../manifest';
 let root:string,pool:UpstreamSessionPool,leases:Awaited<ReturnType<UpstreamSessionPool['acquire']>>[];
@@ -42,7 +43,22 @@ describe('M11 reference upstream contracts with actual stdio MCP and CLI process
  it('refuses unisolatable tools, inherited run tokens and unsupported tool versions',async()=>{
   const base=definition('cli');await expect(pool.acquire({...base,isolation:'global' as 'private-home-xdg'},{id:'c',revision:1,scope:{prefix:'allowed:'},credential:null})).rejects.toMatchObject({code:'HOST_INCOMPATIBLE'});
   await expect(pool.acquire({...base,environment:{WILLYOU_RUN_TOKEN:'must-not-inherit'}},{id:'c',revision:1,scope:{prefix:'allowed:'},credential:null})).rejects.toMatchObject({code:'INVALID_INPUT'});
-  await expect(pool.acquire({...base,versions:['9.9.9']},{id:'c',revision:1,scope:{prefix:'allowed:'},credential:'SYNTHETIC_VERSION'})).rejects.toMatchObject({code:'CONNECTION_UNAVAILABLE'});
+  await expect(pool.acquire({...base,versions:['9.9.9']},{id:'c',revision:1,scope:{prefix:'allowed:'},credential:'SYNTHETIC_VERSION'})).rejects.toMatchObject({code:'HOST_INCOMPATIBLE',message:'上游CLI版本未声明'});
+ });
+ it.each(['mcp','cli'] as const)('keeps the controlled %s incompatibility reason and removes its private credential',async kind=>{
+  const unsupported={...definition(kind),versions:['9.9.9']};
+  await expect(pool.acquire(unsupported,{id:'version-negative',revision:1,scope:{prefix:'allowed:'},credential:'SYNTHETIC_VERSION_PRIVATE'})).rejects.toMatchObject({code:'HOST_INCOMPATIBLE',message:kind==='mcp'?'上游MCP版本未声明':'上游CLI版本未声明'});
+  expect(pool.status()).toEqual([]);
+  expect(readdirSync(join(root,'sessions'))).toEqual([]);
+ });
+ it('does not forward an untrusted SDK startup diagnostic containing credentials',async()=>{
+  const diagnostic='SYNTHETIC_PRIVATE_SDK_DIAGNOSTIC',connect=vi.spyOn(Client.prototype,'connect').mockRejectedValueOnce(new Error(diagnostic));
+  try{
+   const error=await pool.acquire(definition('mcp'),{id:'sdk-error',revision:1,scope:{prefix:'allowed:'},credential:diagnostic}).catch(error=>error);
+   expect(error).toMatchObject({code:'CONNECTION_UNAVAILABLE',message:'上游连接未就绪'});
+   expect(String(error)).not.toContain(diagnostic);expect(JSON.stringify(error)).not.toContain(diagnostic);
+   expect(pool.status()).toEqual([]);expect(readdirSync(join(root,'sessions'))).toEqual([]);
+  }finally{connect.mockRestore();}
  });
  it('closes all active sessions and removes private credentials on host disposal',async()=>{
   const mcp=await acquire(),cli=await acquire('cli'),a=mcp.invoke('sample-kv.entry.read',{key:'allowed:m',delayMs:1000},options()).catch(e=>e),b=cli.invoke('sample-kv.entry.read',{key:'allowed:c',delayMs:1000},options()).catch(e=>e);await new Promise<void>(ok=>setTimeout(ok,100));await pool.close();expect(await a).toMatchObject({code:'CANCELED'});expect(await b).toMatchObject({code:'CANCELED'});expect(existsSync(mcp.directory)).toBe(false);expect(existsSync(cli.directory)).toBe(false);

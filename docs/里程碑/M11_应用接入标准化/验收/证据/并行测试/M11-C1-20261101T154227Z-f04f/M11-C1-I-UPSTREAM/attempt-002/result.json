@@ -1,0 +1,121 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "groupId": "M11-C1-I-UPSTREAM-T05-RETEST",
+  "attempt": "attempt-002",
+  "executor": "/root/upstream_contract",
+  "startedAt": "2026-11-01T15:50:22.319000+00:00",
+  "finishedAt": "2026-11-01T15:50:51.729339+00:00",
+  "sourceCommit": "6c255b14",
+  "sourceBaselineSha256": "acd84127b4d6af64864b7a4248dd1161e141153cd48514627157e11d092b7ba6",
+  "productionDelta": [
+    {
+      "path": "src/main/core/applications/upstream/session-pool.ts",
+      "sha256": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/upstream-session-pool.test.ts",
+      "sha256": "3fa552895120e7b07d7aa5920086b9a9b9eb07b94ce0b4261e5447f2537ef7fa"
+    }
+  ],
+  "productionMutationByExecutor": false,
+  "unapprovedBaselineChanges": [],
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest",
+    "privateOut": true,
+    "privateCache": true,
+    "dependencies": "read-only shared node_modules",
+    "dailyCredentials": false,
+    "networkAndExternalSend": false,
+    "UI": false,
+    "realAgent": false,
+    "appBuild": false
+  },
+  "preservedInputHashes": {
+    "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+    "identityHelperSha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+    "resourceIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "sampleUpstreamSha256": "cfea6411082a57a194f2105356224038a0dba6a1fc6da268b75f507d600653c2"
+  },
+  "cases": [
+    {
+      "id": "M11-T05",
+      "layer": "I",
+      "status": "passed",
+      "criteria": [
+        {
+          "criterion": "原样复用与明确薄适配",
+          "status": "passed-reused",
+          "actual": "Original structured output and explicit host output transform both worked while fixed upstream hash stayed unchanged. No code path affecting these statements changed: production delta only classifies controlled startup errors.",
+          "evidenceRef": {
+            "groupId": "M11-C1-I-UPSTREAM",
+            "attempt": "attempt-001",
+            "manifestSha256": "9df1001ab5d2c4debc19beba6a23d98abcc0f67928cac12fb2d171d2a4dd33a4",
+            "test": "accepts native structured output and explicit host-only thin conversion without modifying the upstream"
+          }
+        },
+        {
+          "criterion": "结构化输出/认证不合条件不作业务成功",
+          "status": "passed-reused",
+          "actual": "Retain prior zero-exit plaintext/JSON success-string/wrong schema and unusable-authentication INVALID_RESPONSE checks. Their invoke()/process() code, tests, fixture source and fixed resources unchanged.",
+          "evidenceRef": {
+            "groupId": "M11-C1-I-UPSTREAM",
+            "attempt": "attempt-001",
+            "manifestSha256": "9df1001ab5d2c4debc19beba6a23d98abcc0f67928cac12fb2d171d2a4dd33a4"
+          }
+        },
+        {
+          "criterion": "不支持版本/配置给明确原因，未知SDK错误不泄密",
+          "status": "passed-rerun",
+          "actual": {
+            "versionError": {
+              "code": "HOST_INCOMPATIBLE",
+              "message": "上游CLI版本未声明"
+            },
+            "originalRedRecheck": "Original T05 explicit-reason assertion now passes unchanged",
+            "affectedSuite": "11/11 upstream cases passed, including MCP and CLI HOST_INCOMPATIBLE reason/credential-directory cleanup and synthetic secret-bearing unknown SDK diagnostic replaced with CONNECTION_UNAVAILABLE / 上游连接未就绪",
+            "isolationRejection": "HOST_INCOMPATIBLE for global-config tools",
+            "upstreamInvokeCountForUnsupportedVersion": 0
+          },
+          "evidence": [
+            "vitest.json",
+            "actual-version-error.json",
+            "upstream-session-pool.test.ts"
+          ]
+        }
+      ],
+      "defect": {
+        "id": "M11-C1-D01",
+        "classification": "product",
+        "state": "fixed-retested-I",
+        "originalRedRetained": true,
+        "originalEvidence": {
+          "groupId": "M11-C1-I-UPSTREAM",
+          "attempt": "attempt-001",
+          "manifestSha256": "9df1001ab5d2c4debc19beba6a23d98abcc0f67928cac12fb2d171d2a4dd33a4"
+        }
+      }
+    }
+  ],
+  "results": {
+    "selectedPassed": 12,
+    "failed": 0,
+    "filteredNotExecuted": 7,
+    "rerunOriginalT05Red": 1,
+    "affectedUpstreamSuite": 11,
+    "T03AndT04Reexecuted": false,
+    "wholePriorGreenMatrixReexecuted": false,
+    "testsDoNotReplaceFormalAccounting": true
+  },
+  "command": "pnpm test src/main/core/applications/__tests__/upstream-session-pool.test.ts src/main/core/applications/__tests__/m11-c1-upstream-contract.test.ts -t 'M11 reference upstream contracts|refuses private-config incompatibility' --maxWorkers=1 --reporter=json --outputFile=delivery-attempt-002-retest-vitest.json",
+  "notes": [
+    "Software-only retest; no new packagedApp/native/model acceptance claim.",
+    "All original T05 criteria satisfied by exact baseline scope plus valid retained evidence; coordinator reviews before ledger update."
+  ]
+}

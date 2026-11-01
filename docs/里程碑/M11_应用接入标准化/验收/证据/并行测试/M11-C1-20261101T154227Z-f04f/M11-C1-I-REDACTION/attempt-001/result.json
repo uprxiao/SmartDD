@@ -1,0 +1,141 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "groupId": "M11-C1-I-REDACTION",
+  "attempt": "attempt-001",
+  "caseId": "M11-T08",
+  "layer": "I",
+  "status": "passed",
+  "executor": "/root/upstream_contract",
+  "startedAt": "2026-11-01T15:53:29.081000+00:00",
+  "finishedAt": "2026-11-01T15:55:27.140725+00:00",
+  "sourceCommit": "6c255b14",
+  "baselineManifestSha256": "acd84127b4d6af64864b7a4248dd1161e141153cd48514627157e11d092b7ba6",
+  "baselineProductionDelta": [
+    {
+      "path": "src/main/core/applications/upstream/session-pool.ts",
+      "sha256": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/upstream-session-pool.test.ts",
+      "sha256": "3fa552895120e7b07d7aa5920086b9a9b9eb07b94ce0b4261e5447f2537ef7fa"
+    }
+  ],
+  "productionMutationByExecutor": false,
+  "unexpectedBaselineChanges": [],
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "isolation": {
+    "privateSource": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest",
+    "privateCache": true,
+    "privateOut": true,
+    "sharedDependenciesReadOnly": true,
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false,
+    "realModelOrAgent": false,
+    "UI": false,
+    "AppBuild": false,
+    "data": "local synthetic sample-kv via actual stdio MCP and CLI; fixture package switches managed entry to CLI",
+    "cipher": "reversible in-process test fixture; no Keychain claim"
+  },
+  "credentialDistinction": {
+    "thirdPartyBusinessSecret": "SYNTHETIC_M11_T08_<per-runner random UUID>; configured in the private connection and delivered to upstream only in private credential.json",
+    "hostRunToken": "different 32-byte host-generated token; only in native CLI environment WILLYOU_RUN_TOKEN alongside endpoint, absent from argv and public outputs",
+    "assertedNotEqual": true,
+    "noDailyCredentials": true
+  },
+  "criteria": [
+    {
+      "criterion": "CLI help、正常查询、错误及诊断覆盖",
+      "actual": "Two actual managed nativeCLI chains (upstream=mcp and upstream=cli) each execute --help, --list, normal read, out-of-scope read, invalid schema, and missing-context --list. Normal results require v2/origin=cli; scope/invalid input exit2 and missing context exit3. Diagnostics, activities, detailed public operation records and public connection views also inspected.",
+      "evidence": [
+        "t08-attempt-002-native-vitest.json",
+        "m11-c1-redaction.test.ts"
+      ]
+    },
+    {
+      "criterion": "Agent可见命令参数和交付Skill无三方密钥",
+      "actual": "Recorded real spawned executable argv arrays contain no third-party canary or runToken. Production SessionCapabilityProjector renders selected CLI entry; production DiscoveryCatalog publishes its Skill; actual published SKILL.md contains the usable CLI command and every delivered file excludes the business secret. Host launch environment intentionally contains the separate runToken, never the business secret.",
+      "evidence": [
+        "t08-attempt-002-native-vitest.json",
+        "m11-c1-redaction.test.ts"
+      ]
+    },
+    {
+      "criterion": "普通日志、结果及诊断无密钥",
+      "actual": "Across both upstream transports, 52 channel checks passed: publishedSkill, six native outputs plus their six actual argv arrays, session diagnostic, activity log and each activity detail, public rows from application_invocations/application_data_operations/capability_broker_denials/capability_run_preparations/capability_resource_operations, fixed runPlan, captured console.log/warn/error/info/debug, and public connection view. Business canary and runToken absent from all checked public data. Secure secret table and private upstream credential file deliberately excluded from the public/log channel scan.",
+      "evidence": [
+        "t08-attempt-002-native-vitest.json",
+        "m11-c1-redaction.test.ts"
+      ],
+      "rawSnapshotLimitation": "A subsequent parser-only runner overwrote the shared t08-observations.json, so the 52 native channel snapshots are NOT retained as raw values; their executed assertions/source and exact pass report remain. No green chain rerun was done solely for that auxiliary artifact. Subsequent test writer uses per-runner file names."
+    },
+    {
+      "criterion": "JSON stdout与诊断stderr分离",
+      "actual": "Every native stdout parsed as a single JSON line; help/catalog/success stderr empty; refusal stderr matches only willyou-app: <controlled uppercase code> newline. Both streams exclude business secret and runToken.",
+      "evidence": [
+        "t08-attempt-002-native-vitest.json",
+        "m11-c1-redaction.test.ts"
+      ]
+    },
+    {
+      "criterion": "无解析器泄密",
+      "actual": "A real private negative-control invocation proves malicious upstream stdout AND stderr contain the synthetic canary (only hashes and booleans retained). Invoking the unchanged UpstreamSessionPool against it returns controlled INVALID_RESPONSE / 上游结果无法按固定契约读取; public error including stack and captured ordinary console channels contain no canary.",
+      "evidence": [
+        "t08-attempt-003-parser-control-vitest.json",
+        "t08-attempt-003-observations.json",
+        "t08-malformed-upstream.cjs"
+      ]
+    }
+  ],
+  "checks": {
+    "uniqueEffectiveTests": 3,
+    "passed": 3,
+    "failedProduct": 0,
+    "mainchainSelectedPassed": 2,
+    "parserControlSelectedPassed": 1,
+    "filteredNotExecuted": true,
+    "nodeTypecheck": "passed; after that only observation-output filename changed to include process.pid, no executable assertion or type shape changed"
+  },
+  "history": [
+    {
+      "runner": "t08-attempt-001",
+      "result": "parser1 green, two chain fixture failures before business",
+      "cause": "Fixture published and added new Skill resource references after run.reserve fixed its protection dependency generations; production correctly denied changed resources.",
+      "classification": "fixture",
+      "fix": "Move real projection publication and reference registration before reserve, same production protection and original assertions."
+    },
+    {
+      "runner": "t08-attempt-002",
+      "result": "two complete chains passed; parser1 filtered, no prior parser rerun"
+    },
+    {
+      "runner": "t08-attempt-003",
+      "result": "parser1 passed after adding actual hostile stdout/stderr positive control; native2 filtered",
+      "reason": "Make parser canary validation non-vacuous, no production changes"
+    },
+    {
+      "artifact": "ordinary-channel snapshots",
+      "classification": "driver-evidence-collision",
+      "scope": "52 native raw channel snapshots overwritten by supplementary parser runner; assertion/source/pass report still valid; preserved existing red/parser artifacts and fixed future writer to include PID; no rerun to regenerate old values"
+    }
+  ],
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/m11-c1-redaction.test.ts --maxWorkers=1 --reporter=json --outputFile=t08-attempt-001-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/m11-c1-redaction.test.ts -t 'keeps the third-party secret' --maxWorkers=1 --reporter=json --outputFile=t08-attempt-002-native-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/m11-c1-redaction.test.ts -t 'does not echo secret-bearing upstream' --maxWorkers=1 --reporter=json --outputFile=t08-attempt-003-parser-control-vitest.json",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json"
+  ],
+  "hashes": {
+    "lockfile": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "sessionPool": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64",
+    "nativeCli": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+    "nativeIdentity": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+    "bundleIndex": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+    "originalSampleUpstream": "cfea6411082a57a194f2105356224038a0dba6a1fc6da268b75f507d600653c2"
+  },
+  "accounting": "Executor does not modify authoritative ledger; coordinator reviews acceptance evidence and explicitly noted raw-snapshot limitation."
+}

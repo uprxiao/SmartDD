@@ -49,7 +49,7 @@ function RunPlan({run}:{run:SessionRunDiagnostic}){
  const plan=run.runPlan;if(!plan)return null;
  return <section className="m10-run-plan" aria-label="本次运行计划"><header><strong>本次运行计划</strong><small className="m10-muted">Codex {plan.cliVersion} · {plan.verified?'已声明版本':'未声明版本，按降级处理'} · 启动时固定，运行中不切换入口</small></header>
   <ul className="m10-level-list" aria-label="适配等级">{plan.levels.map(item=><li key={item.level} data-state={item.state}><code>{item.level}</code><span>{LEVEL_TITLE[item.level]}</span><small>{LEVEL_STATE[item.state]}</small></li>)}</ul>
-  {!plan.nativeSendEvidence&&<p className="m10-muted">聊天原话授权与「已确认读取 Skill」在此版本上尚未验证，保持关闭：发送使用页面授权。</p>}
+  {!plan.nativeSendEvidence&&<p className="m10-muted">{plan.levels.some(item=>item.level==='L2'&&item.state==='declared')?'聊天原话授权在此版本上尚未验证，保持关闭：发送使用页面授权。':'聊天原话授权与「已确认读取 Skill」在此版本上尚未验证，保持关闭：发送使用页面授权。'}</p>}
   {plan.applications.map(app=><div key={app.appId} className="m10-plan-app" data-active={app.effectiveEntry==='unavailable'?'none':app.effectiveEntry}><strong>{appNames[app.appId as ApplicationId]??app.appId}</strong><span className="m10-state">{app.effectiveEntry==='unavailable'?'本次运行不可用':'生效入口 · '+ENTRY[app.effectiveEntry]}</span>{app.fallback&&<p className="m10-note" role="status">已降级为只读 {ENTRY[app.effectiveEntry]}：{app.reason??'主入口本次不可交付'}</p>}{app.effectiveEntry==='unavailable'&&app.reason&&<p className="m10-note" role="alert">{app.reason}</p>}<small className="m10-muted">服务端只放行本次生效入口；调用另一入口会被拒绝。</small></div>)}
  </section>;
 }

@@ -49,7 +49,7 @@
 | --- | --- |
 | `Runner` 类型 | 仍是 `'claude' \| 'codex'` 联合类型。新增真实 Agent 还要放宽它及 `agentAdapterMetadataSchema.agentId`；假第三 Agent 夹具只验证了接口形状（T35 仅软件部分） |
 | 其余 runner 分支 | `task-capability-launcher.ts`、`native-user-messages.ts` 等约 20 个文件仍有 claude／codex 分支，尚未全部迁入适配器 |
-| Codex 0.166.0 的 L2／L3 | 关闭。脱敏样本缺 Skill 读取正例，需一次真实 Codex 运行补样本 |
+| Codex 0.166.0 的 L2／L3 | L2已以脱敏真实日志声明（5bc62bb0），按运行Skill名字的D04及C1真实App读取复验通过；L3仍关闭，发送使用页面授权 |
 | 版本自检 | 只有判定函数 `raiseBySelfCheck`，未接入启动流程与诊断（T26 未完成） |
-| 诊断显示“未验证” | 属 S8，未实施 |
-| CI 检查“不允许改的文件无应用名分支” | 未实施（T34 判据之一） |
+| 诊断显示“未验证” | S8已实现；C1修复L2已声明时提示仍说读取关闭的矛盾，App/P浅深定向检查通过；T13全范围仍待收口 |
+| CI 检查“不允许改的文件无应用名分支” | 已有`sample-kv.test.ts`检查通用host/page无样本名分支并由默认测试收集；T34仍待新包真实页面选用/Agent等完整判据，不把该静态检查单算通过 |

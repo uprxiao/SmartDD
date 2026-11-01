@@ -54,6 +54,7 @@ export function confirmSenderIdentity(state, projectId, directoryOverride, at = 
 // ---------------- 会话运行计划（合成）----------------
 export const RUN_PLAN_SCENARIOS = [
   { id: 'declared', label: 'Codex 0.166.0 · 已声明版本' },
+  { id: 'l2', label: 'Codex 0.166.0 · Skill 发现／读取已验证（S10 增量）' },
   { id: 'fallback', label: 'Codex 未声明版本 · CLI 不交付，只读降级 MCP' },
   { id: 'sandbox', label: '用户沙箱无法证明等价 · 不注入 CLI' },
 ];
@@ -61,10 +62,10 @@ export const LEVELS = ['L0.skill', 'L0.mcp', 'L0.cli', 'L1', 'L2', 'L3'];
 const LEVEL_TITLE = { 'L0.skill': 'Skill 已交付', 'L0.mcp': 'MCP 可交付', 'L0.cli': 'CLI 可交付（含沙箱放行）', L1: '调用身份可核验', L2: '已验证发现／读取', L3: '聊天原话授权' };
 export const levelTitle = level => LEVEL_TITLE[level];
 
-/** 按场景合成适配等级：L2、L3 在 0.166.0 上尚未验证，始终关闭（需求 R0.9、架构 §15.4）。 */
+/** 保留 R0.9 评审场景；l2 对应 S10 已验证读取、L3 仍关闭的增量。 */
 export function adapterLevels(scenarioId) {
-  const declared = scenarioId === 'declared';
-  const on = new Set(declared ? ['L0.skill', 'L0.mcp', 'L0.cli', 'L1'] : ['L0.skill', 'L0.mcp', 'L1']);
+  const declared = scenarioId === 'declared' || scenarioId === 'l2';
+  const on = new Set(declared ? ['L0.skill', 'L0.mcp', 'L0.cli', 'L1', ...(scenarioId === 'l2' ? ['L2'] : [])] : ['L0.skill', 'L0.mcp', 'L1']);
   return LEVELS.map(level => ({ level, title: LEVEL_TITLE[level], state: on.has(level) ? (declared ? 'declared' : 'best-effort') : 'unverified' }));
 }
 
@@ -75,7 +76,7 @@ const ENTRY_NAME = { mcp: 'MCP', cli: 'CLI' };
 export function runPlanForApp(appId, scenarioId) {
   const spec = APP_ENTRY[appId];
   if (!spec) return null;
-  const cliDelivered = scenarioId === 'declared';
+  const cliDelivered = scenarioId === 'declared' || scenarioId === 'l2';
   const reasons = { declared: '', fallback: '该 Agent 版本未声明 CLI 交付，启动时按降级入口处理。', sandbox: '无法证明用户沙箱策略等价，不注入 CLI 放行，启动时按降级入口处理。' };
   if (spec.primary === 'mcp') return { appId, active: 'mcp', activeName: 'MCP', degraded: false, available: true, reason: '', note: '邮件主入口为 MCP；写能力不允许降级入口。' };
   if (cliDelivered) return { appId, active: 'cli', activeName: 'CLI', degraded: false, available: true, reason: '', note: '主入口 CLI；只读能力另声明降级入口 MCP，仅在启动时 CLI 不可交付才使用。' };

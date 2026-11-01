@@ -1,0 +1,58 @@
+{
+  "schema": "willyou-acceptance-decision-v1",
+  "recordedAt": "2026-11-01T15:45:44.957534+00:00",
+  "source": "Claude Code execution record a2afcef4-3ebe-4248-903c-6e810179d9d1.jsonl; only relevant question/answer retained",
+  "records": [
+    {
+      "line": 2793,
+      "timestamp": "2026-11-01T12:34:47.817Z",
+      "type": "question",
+      "input": {
+        "questions": [
+          {
+            "header": "R层判定",
+            "multiSelect": false,
+            "options": [
+              {
+                "description": "R 层验证的是真实 Codex 与 WillYou 的交付、沙箱、CLI、网关和诊断，不验证模型智力。按此标准，T01 立即收口，其余 R 层用例照此推进。不使用你的日常模型凭据。",
+                "label": "合成模型算 R 层（推荐）"
+              },
+              {
+                "description": "每条 R 层用例再用真实大模型跑一次。需要你提供可用于测试的模型配置和授权范围（会消耗额度，结果有随机性，可能需要多次运行）。",
+                "label": "必须用真实模型补跑"
+              },
+              {
+                "description": "合成模型作为通过依据；另外挑 T01 这一条用真实模型跑一次作为补充证据，也需要你提供测试用的模型配置。",
+                "label": "合成模型算，抽样补真实"
+              }
+            ],
+            "question": "M11 用例层级里的 R（真实 Codex CLI 流程），用本机合成模型代替真实大模型能否算通过？目前 T01 已跑通：真实打包 App、真实 Codex 0.166.0、包内 CLI、内核对端核验、会话诊断都真实；只有“模型决定调用哪个工具”这一步由测试驱动预设。这个判定会影响 T01、T06、T07、T12、T14、T15、T17、T20、T29、T30、T37 共 11 条用例。"
+          }
+        ]
+      },
+      "sourceLineSha256": "6240bb1d3f16a68cd8e231f6187f443690f0adc87cc6646b2b82b9646be0e0c3"
+    },
+    {
+      "line": 2794,
+      "timestamp": "2026-11-01T15:21:51.523Z",
+      "type": "answer",
+      "content": "Your questions have been answered: \"M11 用例层级里的 R（真实 Codex CLI 流程），用本机合成模型代替真实大模型能否算通过？目前 T01 已跑通：真实打包 App、真实 Codex 0.166.0、包内 CLI、内核对端核验、会话诊断都真实；只有“模型决定调用哪个工具”这一步由测试驱动预设。这个判定会影响 T01、T06、T07、T12、T14、T15、T17、T20、T29、T30、T37 共 11 条用例。\"=\"合成模型算 R 层（推荐）\". You can now continue with these answers in mind.",
+      "sourceLineSha256": "4b6b41209cb0e7c89b30a8fe2aa791021f9bef9bc97b3e2754bf6f7c15fa93e0"
+    }
+  ],
+  "currentSessionConfirmation": "用户再次询问合理性后明确回复“OK，那按照这个继续执行吧”",
+  "decision": "合成模型可计R层；真实App、Codex运行器、入口/鉴权/业务及诊断链路必须实际执行；不声明模型自主选择或真实三方数据已验收",
+  "affectedCases": [
+    "M11-T01",
+    "M11-T06",
+    "M11-T07",
+    "M11-T12",
+    "M11-T14",
+    "M11-T15",
+    "M11-T17",
+    "M11-T20",
+    "M11-T29",
+    "M11-T30",
+    "M11-T37"
+  ]
+}

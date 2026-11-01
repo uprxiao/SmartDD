@@ -1,0 +1,11 @@
+{
+  "groupId": "M11-C1-I-SOP",
+  "caseId": "M11-T16",
+  "status": "partial",
+  "actual": "Two required blocks passed. CLI/MCP routing and rendered SOP expectations passed, but an extra observation selected the first Codex planning call instead of identifying the actual owned run; cliSandbox assertion failed.",
+  "classification": "pending-driver-identity-diagnosis",
+  "softwarePassed": 2,
+  "softwareFailed": 1,
+  "next": "Match planning observation by owned runId; preserve original failure and re-run only this block.",
+  "resolvedDiagnosis": "Captured calls prove preflight and final planning both use the same runId. Driver must select the final call and compare its argv to the actual own Fake PTY spawn. Attempt-003 does so and passes; original business assertions and timeouts unchanged."
+}

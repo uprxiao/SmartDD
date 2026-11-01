@@ -99,9 +99,17 @@ test('run plan: mail is always MCP; zentao uses CLI when declared, read-only fal
   assert.equal(runPlanForApp('unknown', 'declared'), null);
 });
 
-test('adapter levels: L2 and L3 never enabled on 0.166.0; undeclared versions do not get CLI', () => {
+test('adapter levels: original review state stays closed; undeclared versions do not get CLI', () => {
   const by = scenario => Object.fromEntries(adapterLevels(scenario).map(l => [l.level, l.state]));
   assert.equal(by('declared')['L0.cli'], 'declared');
   assert.equal(by('declared').L2, 'unverified'); assert.equal(by('declared').L3, 'unverified');
   for (const s of ['fallback', 'sandbox']) { assert.equal(by(s)['L0.cli'], 'unverified'); assert.equal(by(s)['L0.skill'], 'best-effort'); assert.equal(by(s).L3, 'unverified'); }
+});
+
+test('S10 increment declares L2 without enabling chat authorization or switching entries', () => {
+  const by = Object.fromEntries(adapterLevels('l2').map(l => [l.level, l.state]));
+  assert.equal(by.L2, 'declared');
+  assert.equal(by.L3, 'unverified');
+  assert.equal(runPlanForApp('zentao', 'l2').active, 'cli');
+  assert.equal(runPlanForApp('mail', 'l2').active, 'mcp');
 });

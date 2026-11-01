@@ -1,0 +1,34 @@
+{
+  "thirdPartyCanarySha256": "579251e85d9099eaef3ca0691e51dfdd03f7dbce4723d1fd48b3b887ce9bf63f",
+  "thirdPartyCanaryBytes": 54,
+  "observations": [
+    {
+      "channel": "parser:negative-control-raw-upstream-channels",
+      "thirdPartyCanaryPresent": false,
+      "hostRunTokenPresent": false,
+      "value": {
+        "rawStdoutContainsSyntheticCanary": true,
+        "rawStderrContainsSyntheticCanary": true,
+        "stdoutSha256": "4ef9485b2297855b8d49d3522e3242953d4885e8bedf33b51ce8b88543eec5cb",
+        "stderrSha256": "3d224f340ff0d2ca51141ffe178484b8da0a9f88e0f16d4256e8ea218cc859f0",
+        "note": "Raw upstream transport is private and intentionally hostile; these bytes are never Agent/public output."
+      }
+    },
+    {
+      "channel": "parser:public-error",
+      "thirdPartyCanaryPresent": false,
+      "hostRunTokenPresent": false,
+      "value": {
+        "code": "INVALID_RESPONSE",
+        "message": "上游结果无法按固定契约读取",
+        "stack": "ApplicationError: 上游结果无法按固定契约读取\n    at UpstreamSessionPool.invoke (/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest/src/main/core/applications/upstream/session-pool.ts:96:62)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.invoke (/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest/src/main/core/applications/upstream/session-pool.ts:66:18)\n    at /private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest/src/main/core/applications/__tests__/m11-c1-redaction.test.ts:104:126\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    },
+    {
+      "channel": "parser:console-log-warn-error-info-debug",
+      "thirdPartyCanaryPresent": false,
+      "hostRunTokenPresent": false,
+      "value": []
+    }
+  ]
+}

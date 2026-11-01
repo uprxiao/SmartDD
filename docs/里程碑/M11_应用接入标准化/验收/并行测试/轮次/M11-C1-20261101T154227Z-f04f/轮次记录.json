@@ -1,0 +1,340 @@
+{
+  "schema": "willyou-test-round-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "milestone": "M11",
+  "updatedAt": "2026-11-01T15:57:59.372599+00:00",
+  "sourceCommit": "6c255b1437b283864e8a4bec5ccb7dcbfc6cb135",
+  "baseline": {
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/baseline",
+    "manifestSha256": "7290ed6d86d3ecdfe6393a56e38bd9327f8f8e264bb5359ca12b63d0f694c5a9",
+    "dependencies": "shared node_modules read-only; private out and cache per worker",
+    "preflight": {
+      "passed": true,
+      "tests": 12,
+      "resultSha256": "3dd73116db98783ecc8133cde90623cde16d6263759998bcd47c06745cb222ab"
+    }
+  },
+  "agents": {
+    "coordinator": "Codex /root",
+    "executors": [
+      "/root/zen_consistency",
+      "/root/upstream_contract"
+    ]
+  },
+  "boundary": "R0.9；macOS arm64；Codex 0.166.0；合成模型可计R层（用户23:21确认）；Story T21/T22暂缓；合成SMTP；不改版本不发布",
+  "groups": [
+    {
+      "id": "M11-C1-I-ZEN",
+      "cases": [
+        "M11-T02"
+      ],
+      "layers": "I",
+      "owner": "zen-consistency",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/zen-consistency",
+      "status": "delivered-accounted",
+      "resources": [
+        "lightweight-I"
+      ],
+      "criteria": [
+        "CLI、retained MCP v1、页面服务同一列表/详情/分块资源",
+        "继续分页，无漏页",
+        "来源、连接/修订、完整性和原始字段一致，包装符合各自版本"
+      ],
+      "oldEvidence": "S6 zentao-v2 has CLI/page partial checks; lacks full v1 and pagination comparison",
+      "next": "private targeted acceptance suite; no production edits",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C1-I-UPSTREAM",
+      "cases": [
+        "M11-T03",
+        "M11-T04",
+        "M11-T05"
+      ],
+      "layers": "I",
+      "owner": "upstream-contract",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-contract",
+      "status": "delivered-accounted",
+      "resources": [
+        "lightweight-I"
+      ],
+      "criteria": [
+        "T03 受管CLI到映射MCP能力，额外发现工具拒绝，入出schema错误准确且无密钥",
+        "T04 原始CLI哈希保持、连续查询/分页、argv边界和可控错误/统一结果",
+        "T05 原样/薄适配/不支持区分、版本/认证/非结构化输出失败不作成功"
+      ],
+      "oldEvidence": "upstream-session-pool 8 prior checks; extra tool/schema/pagination/unsupported output coverage requires explicit assertion",
+      "next": "private targeted acceptance suite; no production edits",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C1-I-UPSTREAM-T05-RETEST",
+      "cases": [
+        "M11-T05"
+      ],
+      "layers": "I",
+      "owner": "/root/upstream_contract",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest",
+      "status": "delivered-accounted",
+      "baselineManifestSha256": "acd84127b4d6af64864b7a4248dd1161e141153cd48514627157e11d092b7ba6",
+      "criteria": [
+        "复验原版本不支持红项明确HOST_INCOMPATIBLE/版本原因",
+        "MCP/CLI安全错误保持，原始SDK错误/密钥不外泄，私有目录清理"
+      ],
+      "oldEvidence": "T05原样/薄适配、结构/认证负例沿用attempt-001，只有上游open错误catch变更",
+      "next": "only version reason red test plus affected upstream regression; no UI/heavy",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C1-I-SOP",
+      "cases": [
+        "M11-T16"
+      ],
+      "layers": "I",
+      "owner": "/root/zen_consistency",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/zen-consistency",
+      "status": "delivered-accounted",
+      "baseline": "6c255b14; original source manifest, private out/cache; current UI/upstream delta outside group",
+      "criteria": [
+        "同一应用SOP原件内容身份不按模型复制",
+        "两个声明Agent适配器的实际交付信息/入口/范围",
+        "MCP/CLI支持与不支持明确；不宣称其它真实Agent"
+      ],
+      "oldEvidence": "S0b/S1 adapter tests partial; require per-original-case map",
+      "next": "targeted private I suite and frozen delivery",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C1-I-REDACTION",
+      "cases": [
+        "M11-T08"
+      ],
+      "layers": "I",
+      "owner": "/root/upstream_contract",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-retest",
+      "status": "delivered-accounted",
+      "baselineManifestSha256": "acd84127b4d6af64864b7a4248dd1161e141153cd48514627157e11d092b7ba6",
+      "criteria": [
+        "三方合成密钥在CLI帮助/查询/错误/诊断均不出现",
+        "检查Agent可见argv/Skill/普通日志/结果",
+        "JSON stdout和诊断stderr区分，无解析泄密"
+      ],
+      "oldEvidence": "T03–05包含部分secret负例，未覆盖T08全通道",
+      "next": "targeted private actual native CLI I suite",
+      "resourcesReleased": true
+    },
+    {
+      "id": "M11-C1-I-LEVELS",
+      "cases": [
+        "M11-T24"
+      ],
+      "layers": "I",
+      "owner": "/root/zen_consistency",
+      "isolation": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/zen-consistency",
+      "status": "delivered-accounted",
+      "criteria": [
+        "两适配器实际加载/交付/调用",
+        "L0+L1测试适配器无L2/L3且诊断准确",
+        "不改应用包/能力服务"
+      ],
+      "oldEvidence": "T16实际双适配器夹具复用；T24需有限等级实际加载",
+      "next": "targeted private I suite/delivery",
+      "resourcesReleased": true
+    }
+  ],
+  "resources": {
+    "UI": "free",
+    "heavy": "free",
+    "lightweight-I": []
+  },
+  "accounting": {
+    "receipts": [
+      {
+        "group": "M11-C1-DECISION",
+        "attempt": "001",
+        "case": "M11-T01",
+        "execution": "evidence-reuse-no-rerun",
+        "deliveryHash": "baaacb95a23bac4fe42c11b567dabde58d953463f5d1ded524293986c518ff34",
+        "archived": true,
+        "ledgerUpdated": true,
+        "addedUniquePasses": 1
+      },
+      {
+        "group": "M11-C1-I-ZEN",
+        "attempt": "attempt-001",
+        "deliveryHash": "7c649101aadb0619da8a54a46d9e70708fdfafe0d889b32536ba0b47bd8d2d7e",
+        "archived": true,
+        "review": "all file hashes checked; original step/expected and test implementation inspected; cleanup receipt verified",
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-I-ZEN",
+        "attempt": "attempt-002",
+        "deliveryHash": "efae9b77b4a394cb3fca8d74eff6757f7801f4b60127d4ebb8f3370c07ac50b3",
+        "archived": true,
+        "review": "all file hashes checked; original step/expected and test implementation inspected; cleanup receipt verified",
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-I-UPSTREAM",
+        "attempt": "attempt-001",
+        "deliveryHash": "9df1001ab5d2c4debc19beba6a23d98abcc0f67928cac12fb2d171d2a4dd33a4",
+        "archived": true,
+        "review": "all file hashes checked; original step/expected and test implementation inspected; cleanup receipt verified",
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-I-UPSTREAM",
+        "attempt": "002",
+        "case": "M11-T05",
+        "deliveryHash": "35a9adb6c5ee53475ce3e8c696040b56934dc9cdd9481de63c47895fbd9fd894",
+        "archived": true,
+        "ledgerUpdated": true,
+        "addedUniquePasses": 1
+      },
+      {
+        "group": "M11-C1-A",
+        "attempt": "001",
+        "deliveryHash": "b4b7c960091b24c387f7927d0df58885b9f229be693a857576f0b88e4707f117",
+        "archived": true,
+        "addedUniquePasses": 0,
+        "scope": "C1-D05 real App light/dark and prior CLI chain regression; not fullT13"
+      },
+      {
+        "group": "M11-C1-I-SOP",
+        "attempt": "attempt-001",
+        "deliveryHash": "17720f71a29a69928577e87103f8b85da4b44a9fca86348d7b3da69223d391fb",
+        "archived": true,
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-I-SOP",
+        "attempt": "attempt-002",
+        "deliveryHash": "87cb8af3975c84aefe313a12ec2f048c958544c9ab492038d1ba8f320525d5bf",
+        "archived": true,
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-I-SOP",
+        "attempt": "attempt-003",
+        "deliveryHash": "c3cbf750e3c2b6bcb48648d9341b7b29aa43c72d6efbb2ad0173b98116d52407",
+        "archived": true,
+        "ledgerUpdated": true
+      },
+      {
+        "group": "M11-C1-P",
+        "attempt": "001",
+        "deliveryHash": "3a3f94e9179e75b8f2dd2b3f31ce31355ccec00f82637d8265d87b93529a39f1",
+        "archived": true,
+        "addedUniquePasses": 0
+      },
+      {
+        "group": "M11-C1-P",
+        "attempt": "002",
+        "deliveryHash": "1a757c8b4cdb888b97e1a0fa58d8e09211b0095949948a38ed86847d33160d72",
+        "archived": true,
+        "addedUniquePasses": 0
+      },
+      {
+        "group": "M11-C1-P",
+        "attempt": "003",
+        "deliveryHash": "50a8a43661ca2f8e9bafa50ba6bb3276c762ec1b826290d0af9a0376b43e74a6",
+        "archived": true,
+        "addedUniquePasses": 0
+      },
+      {
+        "group": "M11-C1-I-REDACTION",
+        "attempt": "001",
+        "case": "M11-T08",
+        "deliveryHash": "766397c02daff5126614f60baa9f40629c9a2fb0184b1d0231a8a031c4dcf524",
+        "archived": true,
+        "ledgerUpdated": true,
+        "addedUniquePasses": 1
+      },
+      {
+        "group": "M11-C1-I-LEVELS",
+        "attempt": "001",
+        "case": "M11-T24",
+        "deliveryHash": "630ee8da27c1b6ea619e37459b5b29e677ec470aded4816344c5f593b7fdfc6e",
+        "archived": true,
+        "ledgerUpdated": true,
+        "addedUniquePasses": 1
+      }
+    ]
+  },
+  "next": "S10完整运行器/交付接口与假第三Agent（T35）、版本自检（T26）；然后统一新包和剩余A/R用例。Story暂缓不计通过。",
+  "defects": [
+    {
+      "id": "M11-C1-D05",
+      "summary": "L2声明已验证时仍提示读取未验证",
+      "status": "fixed-real-App-and-prototype-light-dark-passed",
+      "red": "/private/tmp/willyou-m11-c1-d05-red.json",
+      "green": "49 renderer tests + 12 prototype model tests",
+      "files": [
+        "src/renderer/features/applications/session-applications.tsx",
+        "prototypes/m6-codex/src/IntegrationPackageUI.jsx",
+        "prototypes/m6-codex/src/m11-preview-model.mjs"
+      ],
+      "evidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-A/attempt-001/result.json",
+      "prototypeEvidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-P/attempt-003/result.json"
+    },
+    {
+      "id": "M11-C1-D06",
+      "summary": "上游已知版本不支持被改成通用连接错误",
+      "status": "fixed-formal-T05-retest-passed",
+      "oldEvidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-I-UPSTREAM/attempt-001/result.json",
+      "files": [
+        "src/main/core/applications/upstream/session-pool.ts"
+      ],
+      "evidence": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-I-UPSTREAM/attempt-002/result.json"
+    }
+  ],
+  "packages": [
+    {
+      "path": "/private/tmp/willyou-m11-s7/package-c1-attempt-001/mac-arm64/WillYou.app",
+      "asarSha256": "63b8f128625f4b529d64e4a5632cb5e489dbc250da9c58537f57c572dc457d1b",
+      "sourceManifestSha256": "8eb75562e4103c8279d220904eb0f34977393bdb3ef8b11508ad7dd08e949fea",
+      "buildExitCode": 0,
+      "packageExitCode": 0,
+      "nativeSmoke": "passed: six native modules",
+      "status": "passed-targeted-cli-and-L2-UI-regression",
+      "version": "0.0.9"
+    }
+  ],
+  "scheduleNotes": [
+    {
+      "note": "协调者误将原生smoke与原型build的启动阶段短时重叠；两者exit0，无已知争用或重跑；后续重任务串行。",
+      "correctiveAction": "先核查资源释放后再启动下一重任务，UI仅单组。"
+    }
+  ],
+  "prototypeDriverHistory": {
+    "001": "ArrowDown changed no committed select value; timeout, 0 checks",
+    "002": "native macOS arrow codes plus Enter still unchanged; timeout,0 checks",
+    "003": "reused existing proven select type-ahead helper, exact actual value asserted; 4 checks passed; no production/prototype code changed between attempts",
+    "snapshotBoundary": "Only final driver independently captured; earlier input deltas recorded here. Red results/screenshots retained."
+  },
+  "status": "batch-complete-goal-continues",
+  "efficiency": {
+    "batchStartedAt": "2026-11-01T15:42:27+00:00",
+    "batchFinishedAt": "2026-11-01T15:57:59.372599+00:00",
+    "elapsedSeconds": 932.4,
+    "newWholeCases": [
+      "M11-T01",
+      "M11-T02",
+      "M11-T03",
+      "M11-T04",
+      "M11-T05",
+      "M11-T08",
+      "M11-T16",
+      "M11-T24"
+    ],
+    "newWholeCaseCount": 8,
+    "caseAccountingSource": "验收/测试用例.md; baseline2, current10, no denominator change",
+    "appBuildCount": 1,
+    "repeatedProductionBuilds": 0,
+    "waits": "no external prerequisites waited; Story kept deferred",
+    "rework": "P select driver two failures; T02 long grouping split; T16 planner-observer stage fixes; upstream fixture/snapshot-order errors retained",
+    "improvement": "reuse proven select driver at preflight; retain per-runner observation file names; match final planner call by runId and actual argv; shorten only incomplete test grouping without changing business contract",
+    "executionConcurrency": "two isolated lightweight I groups plus serialized coordinator UI/production edits; one recorded short native-smoke/prototype-build overlap corrected"
+  }
+}

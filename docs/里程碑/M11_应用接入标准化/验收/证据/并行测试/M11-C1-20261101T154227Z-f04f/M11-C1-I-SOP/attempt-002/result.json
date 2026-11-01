@@ -1,0 +1,12 @@
+{
+  "groupId": "M11-C1-I-SOP",
+  "caseId": "M11-T16",
+  "status": "partial",
+  "classification": "driver-observation-stage-error",
+  "actual": "The same runId has two successful adapter plan calls: preflight without cliSandbox, final launch plan with cliSandbox. Selecting first by runId still captured preflight, causing extra assertion failure. Actual CLI/MCP entry and rendered SOP assertions passed.",
+  "softwarePassed": 0,
+  "softwareFailed": 1,
+  "filtered": 2,
+  "next": "Choose last plan for owned runId and verify its argv are present in actual Fake PTY launch. Original business assertions and timeouts unchanged.",
+  "resolvedDiagnosis": "Captured calls prove preflight and final planning both use the same runId. Driver must select the final call and compare its argv to the actual own Fake PTY spawn. Attempt-003 does so and passes; original business assertions and timeouts unchanged."
+}

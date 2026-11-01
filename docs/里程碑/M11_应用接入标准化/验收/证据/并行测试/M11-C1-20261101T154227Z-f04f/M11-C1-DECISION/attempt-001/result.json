@@ -1,0 +1,44 @@
+{
+  "schema": "willyou-case-evidence-review-v1",
+  "case": "M11-T01",
+  "basedOn": "R0.9＋2026-11-01 R层口径确认",
+  "reviewedAt": "2026-11-01T15:45:44.957534+00:00",
+  "execution": "evidence-reuse-no-rerun",
+  "status": "passed",
+  "sourceCommit": "3b33e5b2b99790ec935c8bed6fa785123c716343",
+  "branch": "feature/0.1.0",
+  "platform": "darwin-arm64",
+  "cliVersion": "codex-cli 0.166.0",
+  "packageAsarSha256": "24e5188c2ae9dca2ead26419335ee1de34aa94e69f3ddda1285ef9eff1d534b4",
+  "originalExecution": {
+    "startedAt": "2026-11-01T12:31:19.463Z",
+    "finishedAt": "2026-11-01T12:31:31.223Z",
+    "evidence": "验收/证据/并行测试/M11-R1-20261101T070500Z-resume/M11-R1-A-zentao-cli-d04/attempt-001/result.json",
+    "sha256": "4915a9871b1068b15cf14b5a575737104a07f934de90aebb15e5a65ac5bfecaa"
+  },
+  "criteria": [
+    {
+      "criterion": "由真实UI启动Codex任务",
+      "actual": "真实输入框和按钮只创建一个任务；旧证据检查2",
+      "passed": true
+    },
+    {
+      "criterion": "读取Skill及发现能力",
+      "actual": "实际Codex exec读取按运行投放的bug-analysis Skill；两个Skill原生目录发现与bug-analysis读取记录匹配；应用级未读全保持unverified",
+      "passed": true
+    },
+    {
+      "criterion": "通过CLI查询本人Bug且宿主回执身份一致",
+      "actual": "包内willyou-app经真实内核对端验证与禅道provider访问合成HTTP，v2结果origin=cli、read-only、项目/连接身份与计划一致",
+      "passed": true
+    },
+    {
+      "criterion": "I＋A＋R层要求",
+      "actual": "实际App/IPC/PTY/Codex/CLI/网关/provider链路；模型与HTTP数据为合成，依用户确认计R，不声明真实模型自主调用或真实禅道验收",
+      "passed": true
+    }
+  ],
+  "formalPassAdded": 1,
+  "normalAndInjectedBoundary": "进程内可逆cipher仅测试加密夹具；原生Keychain不在本条证明范围；隔离HOME/CODEX_HOME/userData；无日常凭据",
+  "cleanup": "沿用原证据：cipherRestored=true, ownAppCleanupComplete=true；本次只读复核未启动App"
+}

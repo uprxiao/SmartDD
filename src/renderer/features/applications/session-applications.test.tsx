@@ -143,6 +143,14 @@ describe('QA P09 confirmed header grouping with real evidence boundaries',()=>{
 
 it('QA project applications entry opens only the diagnosed original project without starting or switching the task',async()=>{mount();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'项目应用'}));expect(m.openProject).toHaveBeenCalledExactlyOnceWith('p1','applications');expect(m.close).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();});
 describe('M11 S8 run plan diagnostics',()=>{
+ it('keeps observed Skill reading distinct from the still-unverified chat authorization level',async()=>{
+  const current={...run(),runPlan:{cliVersion:'0.166.0',verified:true,nativeSendEvidence:false,sandboxSource:'inherited-named-permissions',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:level==='L3'?'unverified' as const:'declared' as const})),applications:[]},runPlanIssue:null};
+  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();
+  const plan=await screen.findByLabelText('本次运行计划');
+  expect(within(plan).getByText('聊天原话授权在此版本上尚未验证，保持关闭：发送使用页面授权。')).toBeTruthy();
+  expect(plan.textContent).not.toContain('聊天原话授权与「已确认读取 Skill」在此版本上尚未验证');
+  expect(plan.querySelector('li[data-state=declared] code')?.textContent).toBe('L0.skill');
+ });
  it('shows declared levels, CLI entry and closed L2/L3 with page authorization note',async()=>{
   const current={...run(),runPlan:{cliVersion:'0.166.0',verified:true,nativeSendEvidence:false,sandboxSource:'inherited-named-permissions',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:['L2','L3'].includes(level)?'unverified' as const:'declared' as const})),applications:[{appId:'zentao',primaryEntry:'cli' as const,effectiveEntry:'cli' as const,fallback:false,reason:null}]},runPlanIssue:null};
   m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();

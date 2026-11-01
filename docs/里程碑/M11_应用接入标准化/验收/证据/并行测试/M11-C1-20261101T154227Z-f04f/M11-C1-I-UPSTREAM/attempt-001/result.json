@@ -1,0 +1,192 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "groupId": "M11-C1-I-UPSTREAM",
+  "attempt": "attempt-001",
+  "executor": "/root/upstream_contract",
+  "startedAt": "2026-11-01T15:45:44.230Z",
+  "finishedAt": "2026-11-01T15:48:38.941810+00:00",
+  "sourceCommit": "6c255b1437b283864e8a4bec5ccb7dcbfc6cb135",
+  "sourceManifestSha256": "7290ed6d86d3ecdfe6393a56e38bd9327f8f8e264bb5359ca12b63d0f694c5a9",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64"
+  },
+  "isolation": {
+    "privateSource": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-contract",
+    "privateOut": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-contract/out",
+    "privateCache": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C1-20261101T154227Z-f04f-93s5tpkl/upstream-contract-cache",
+    "dependencyRoot": "/Users/hx/hx/hxWork/SmartDD/node_modules",
+    "dailyCredentialsRead": false,
+    "realNetworkOrExternalSend": false,
+    "cipher": "reversible in-process synthetic fixture",
+    "agent": "native test-runner process is the managed ancestor; no real model or Agent task",
+    "UI": false,
+    "applicationPackage": "I-only fixture package: sample-kv 1.0.1 switches MCP binding to CLI; upstream remains unchanged; not an App build"
+  },
+  "baselineVerified": {
+    "productionFilesChanged": [],
+    "allowedPrivateConfigChange": "Vitest cacheDir only",
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+    "sampleUpstreamSha256": "cfea6411082a57a194f2105356224038a0dba6a1fc6da268b75f507d600653c2",
+    "sessionPoolSha256": "5768ec3bb3502a3269c077b61f9beefbafbfdf78dea8f363a7cf6305256a28db",
+    "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+    "identityHelperSha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+    "resourceIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b"
+  },
+  "cases": [
+    {
+      "id": "M11-T03",
+      "layer": "I",
+      "status": "passed",
+      "criteria": [
+        {
+          "criterion": "通过受管CLI调用已映射上游MCP能力",
+          "actual": "Actual out/native/willyou-app executed sample-kv entry read through ApplicationCliGateway with actual kernel peer verification, fixed run plan, ApplicationToolService, registered SampleKvData and real stdio MCP. A page-context write seeded demo:via-cli; returned v2 envelope origin=cli, same connection id, read-only, value reference-value revision1.",
+          "evidence": "delivery-attempt-002-native-vitest.json"
+        },
+        {
+          "criterion": "发现额外工具不自动获权",
+          "actual": "Real stdio Client.listTools observed not_mapped. Managed CLI catalog contained only declared read/write; invoking not_mapped exited2 with controlled denial and no new application_invocations row.",
+          "evidence": "delivery-attempt-002-native-vitest.json"
+        },
+        {
+          "criterion": "参数与结果schema错误、无密钥输出",
+          "actual": "key:number rejected INVALID_INPUT before application invocation; pool unknown capability/input rejected with unchanged upstream invoke count; MCP wrong result shape and secret-bearing isError content both returned controlled INVALID_RESPONSE without canary in exposed error.",
+          "evidence": [
+            "delivery-attempt-001-vitest.json",
+            "delivery-attempt-002-native-vitest.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M11-T04",
+      "layer": "I",
+      "status": "passed",
+      "criteria": [
+        {
+          "criterion": "原上游不改源码/原哈希保持；连续查询/分页",
+          "actual": "Fixed command and script SHA256 verified before/after all runs. Explicit page cursor loop returned first/raw-first then second/raw-second and null continuation; audited mapped args pageIndex1 then2, no omitted/duplicate records.",
+          "evidence": "delivery-attempt-001-vitest.json"
+        },
+        {
+          "criterion": "记录argv及参数边界",
+          "actual": "Hostile literal with quotes, shell metacharacters and newline round-tripped byte-for-byte in a single JSON argv (records,list,--json,JSON); touch sentinel never created. shell:false used by unchanged production pool.",
+          "evidence": "delivery-attempt-001-vitest.json"
+        },
+        {
+          "criterion": "统一结果/错误可解析",
+          "actual": "Actual managed nativeCLI->gateway->common executor->sample module->actual CLI upstream returned willyou-app-result-v2 with connection source, origin=cli, read-only; out-of-scope native call exited2 with JSON SCOPE_DENIED/read-only. Controlled CLI upstream stderr containing canary yielded safe INVALID_RESPONSE with no secret in returned JSON.",
+          "evidence": [
+            "delivery-attempt-004-native-t04-vitest.json",
+            "delivery-attempt-001-vitest.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M11-T05",
+      "layer": "I",
+      "status": "partial-failed-product",
+      "criteria": [
+        {
+          "criterion": "原样复用与明确薄适配",
+          "status": "passed",
+          "actual": "Native object returned directly; explicit trusted Zod output transform maps upstream rows tuples/next to records objects/nextCursor without changing original upstream source/hash.",
+          "evidence": "delivery-attempt-001-vitest.json"
+        },
+        {
+          "criterion": "结构化输出/认证不合条件不作成功",
+          "status": "passed",
+          "actual": "Zero-exit plaintext, JSON success string and wrong-shaped object rejected INVALID_RESPONSE; unusable authentication rejected and secret-bearing stderr not exposed; global config isolation rejected HOST_INCOMPATIBLE.",
+          "evidence": "delivery-attempt-001-vitest.json"
+        },
+        {
+          "criterion": "版本不支持需给明确原因",
+          "status": "failed",
+          "actual": {
+            "code": "CONNECTION_UNAVAILABLE",
+            "message": "上游连接未就绪"
+          },
+          "expected": "Known version incompatibility remains controlled HOST_INCOMPATIBLE and explicitly identifies version; no raw unknown error text leak.",
+          "evidence": [
+            "delivery-attempt-005-version-reason-vitest.json",
+            "delivery-attempt-006-version-carrier-vitest.json",
+            "delivery-version-error-observed.json"
+          ]
+        }
+      ],
+      "defect": {
+        "classification": "product",
+        "suggestedId": "M11-C1-D01",
+        "file": "src/main/core/applications/upstream/session-pool.ts",
+        "cause": "open emits controlled HOST_INCOMPATIBLE/version reason; acquire catch replaces all opening errors with generic CONNECTION_UNAVAILABLE.",
+        "productionFixApplied": false
+      }
+    }
+  ],
+  "checks": {
+    "uniqueTests": 10,
+    "effectivePassed": 9,
+    "productFailed": 1,
+    "filteredTestsNotCounted": true,
+    "typecheck": "full pnpm typecheck (002) passed; final node-only003 passed after capture-only instrumentation",
+    "formalAccounting": "Executor does not modify authoritative ledger; coordinator must review mapping before crediting T03/T04. T05 is NOT passed."
+  },
+  "history": [
+    {
+      "run": "001",
+      "result": "8 contract greens, native1 fixture failure",
+      "classification": "fixture",
+      "cause": "PureCLI test snapshot incorrectly retained applications MCP bridge; removed bridge in new private test only."
+    },
+    {
+      "run": "002",
+      "result": "native T03 1/1 passed; no original 8 rerun"
+    },
+    {
+      "run": "003",
+      "result": "native T04 new1 failed;1 filter",
+      "classification": "driver-expectation",
+      "cause": "Extra self-authored expectation assumed not-started but existing read invocation has effectState read-only even when scope denies upstream. Source diagnosis, then corrected to original read semantics; formal T04 expectation unchanged."
+    },
+    {
+      "run": "004",
+      "result": "native T04 1/1 passed;1 filter"
+    },
+    {
+      "run": "005",
+      "result": "T05 explicit version reason1 failed;7 filter",
+      "classification": "product",
+      "basis": "Tightened supplemental assertion to original explicit-unsupported-reason requirement, rather than mirroring generic code."
+    },
+    {
+      "run": "006",
+      "result": "Same T05 red with actual safe error carrier persisted;7 filter",
+      "classification": "product-diagnostic",
+      "newDiagnostic": "Added actual code/message artifact; no expected or production change."
+    },
+    {
+      "typecheck": "001",
+      "result": "new test unknown-type property errors2; test-only casts corrected"
+    },
+    {
+      "typecheck": "002",
+      "result": "full typecheck passed"
+    },
+    {
+      "typecheck": "003",
+      "result": "node typecheck passed after final observational code"
+    }
+  ],
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/m11-c1-upstream-native.test.ts src/main/core/applications/__tests__/m11-c1-upstream-contract.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery-attempt-001-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/m11-c1-upstream-native.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery-attempt-002-native-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/m11-c1-upstream-native.test.ts -t 'M11-T04 returns' --maxWorkers=1 --reporter=json",
+    "pnpm test src/main/core/applications/__tests__/m11-c1-upstream-contract.test.ts -t 'refuses private-config incompatibility' --maxWorkers=1 --reporter=json",
+    "pnpm typecheck",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json"
+  ]
+}

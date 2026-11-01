@@ -47,7 +47,14 @@ export class UpstreamSessionPool {
     }
     const selected=session,owner={};selected.owners.add(owner);let released=false;const calls=new Set<AbortController>();
     const release=async()=>{if(released)return;released=true;for(const call of calls)call.abort();selected.owners.delete(owner);await this.collect(selected);};
-    try{await selected.opening;}catch{await release();throw new ApplicationError('CONNECTION_UNAVAILABLE','上游连接未就绪');}
+    try{await selected.opening;}catch(error){
+      await release();
+      // These errors are created by this host with fixed, credential-free messages.
+      // Keep a known incompatibility/cancellation distinct from transport failure;
+      // never forward raw SDK, process or upstream diagnostics.
+      if(error instanceof ApplicationError)throw error;
+      throw new ApplicationError('CONNECTION_UNAVAILABLE','上游连接未就绪');
+    }
     return{key: selected.key,directory:selected.directory,invoke:async(capabilityId:string,args:unknown,options:{signal:AbortSignal;deadline:number;operationId:string;protection?:string|null})=>{
       if(released||selected.retired||selected.abort.signal.aborted)throw new ApplicationError('CANCELED','上游会话授权已结束');
       const mapping=selected.definition.capabilities[capabilityId];if(!mapping)throw new ApplicationError('SCOPE_DENIED','上游能力未在受信映射中声明');

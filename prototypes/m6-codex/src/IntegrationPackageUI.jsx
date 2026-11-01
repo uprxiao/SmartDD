@@ -133,7 +133,7 @@ function RunPlanPreview({ data, task, apps, snapshot }) {
     <header><strong>本次运行计划 · 合成演示</strong><small className="m10-muted">每次启动固定一次；恢复会话按当前版本重新生成，不沿用旧授权。</small></header>
     <label className="m10-field"><span>适配场景</span><select aria-label="运行计划场景" value={scenario} onChange={e => setScenario(e.target.value)}>{RUN_PLAN_SCENARIOS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
     <ul className="m10-level-list" aria-label="适配等级">{levels.map(item => <li key={item.level} data-state={item.state}><code>{item.level}</code><span>{item.title}</span><small>{tone[item.state]}</small></li>)}</ul>
-    <p className="m10-muted">聊天原话授权与「已确认读取 Skill」在 Codex 0.166.0 上尚未验证，保持关闭：发送使用页面授权，诊断不显示「已确认读取」。</p>
+    <p className="m10-muted">{levels.some(item => item.level === 'L2' && item.state === 'declared') ? '聊天原话授权在此版本上尚未验证，保持关闭：发送使用页面授权。' : '聊天原话授权与「已确认读取 Skill」在 Codex 0.166.0 上尚未验证，保持关闭：发送使用页面授权，诊断不显示「已确认读取」。'}</p>
     {apps.filter(app => snapshot?.packages?.some(p => p.id === app.id)).map(app => {
       const plan = runPlanForApp(app.id, scenario);
       if (!plan) return null;

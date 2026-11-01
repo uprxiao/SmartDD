@@ -1,0 +1,125 @@
+{
+  "schema": "willyou-test-group-result-v1",
+  "runId": "M11-C1-20261101T154227Z-f04f",
+  "groupId": "M11-C1-I-ZEN",
+  "attempt": "attempt-002",
+  "caseId": "M11-T02",
+  "status": "passed-I-recommended-for-coordinator-review",
+  "layersRequired": "I",
+  "layersExecuted": "I",
+  "source": {
+    "system": "macOS 26.6.1",
+    "arch": "arm64",
+    "electron": "42.11.14",
+    "layer": "I only: actual business services/SQLite/HTTP provider; simulated process identities and UI sender, reversible synthetic cipher; no real App, PTY or model",
+    "sourceCommit": "6c255b1437b283864e8a4bec5ccb7dcbfc6cb135",
+    "baselineManifestSha256": "7290ed6d86d3ecdfe6393a56e38bd9327f8f8e264bb5359ca12b63d0f694c5a9",
+    "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+  },
+  "startedAt": "2026-11-01T15:45:27.963000+00:00",
+  "finishedAt": "2026-11-01T15:48:06.123689+00:00",
+  "commands": [
+    {
+      "attempt": "attempt-001",
+      "command": "pnpm test src/main/core/applications/__tests__/m11-t02-entry-parity.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery/attempt-001/vitest-result.json",
+      "exitCode": 1,
+      "result": "3 passed, 1 long-group incomplete/failed; red retained"
+    },
+    {
+      "attempt": "attempt-002",
+      "command": "pnpm test src/main/core/applications/__tests__/m11-t02-entry-parity.test.ts --maxWorkers=1 --testNamePattern='compares detail metadata|compares complete' --reporter=verbose --reporter=json --outputFile=delivery/attempt-002/vitest-result.json",
+      "exitCode": 0,
+      "result": "5 passed, 3 filtered (not counted)"
+    },
+    {
+      "command": "pnpm exec tsc --noEmit -p tsconfig.node.json",
+      "exitCode": 0,
+      "result": "typecheck passed"
+    }
+  ],
+  "requiredCriteria": [
+    {
+      "criterion": "Three entries read the same list, detail and bounded resource bytes",
+      "status": "passed",
+      "actual": "CLI v2 capability service; retained production ZenTao 1.0.3 MCP v1 service; page business service. Same complete detail reference, raw fields, four resource kinds and full byte digests; only page has presentation metadata."
+    },
+    {
+      "criterion": "Continue pagination without omission or duplication",
+      "status": "passed",
+      "actual": "5 assigned-self Bug objects over pages 1/2/3 at limit2 for each entry; all expected IDs including >Number.MAX_SAFE_INTEGER string preserved. Request trace records 1,2,3 for all three entries."
+    },
+    {
+      "criterion": "Sources, connection revisions, completeness and raw fields agree while transport wrappers retain their versions",
+      "status": "passed",
+      "actual": "v1 returns raw data, v2 returns willyou-app-result-v2 with CLI read-only operation; actual source wrappers independently audited for all connection/config/policy/binding revisions and detail content hash. Same raw status/priorities/large custom field."
+    },
+    {
+      "criterion": "Do not claim missing or inconsistent data is complete",
+      "status": "passed",
+      "actual": "Duplicate later page and changed total yield identical INCOMPLETE_RESULT/no cursor across all entries. Missing description/history produce complete=false, explicit missing flags and null resources."
+    },
+    {
+      "criterion": "Identical permission judgments",
+      "status": "passed",
+      "actual": "Spoofed other connection in object reference refused NOT_FOUND in all three entries; valid assigned-self reads still succeed."
+    }
+  ],
+  "validSoftwareScenarios": [
+    {
+      "title": "continues all pages with no loss or duplicate and keeps each transport contract",
+      "attempt": "attempt-001",
+      "durationMs": 3153.695917
+    },
+    {
+      "title": "reports duplicate pages and changed totals as incomplete consistently, without a fabricated next page",
+      "attempt": "attempt-001",
+      "durationMs": 3406.4615830000002
+    },
+    {
+      "title": "keeps missing source fields and cross-source denials consistent while valid reads remain usable",
+      "attempt": "attempt-001",
+      "durationMs": 3909.2969169999997
+    },
+    {
+      "title": "compares detail metadata, exact raw fields and revisions across all entries",
+      "attempt": "attempt-002",
+      "durationMs": 2740.260792
+    },
+    {
+      "title": "compares complete body resource bytes via bounded continuation in all three entries",
+      "attempt": "attempt-002",
+      "durationMs": 5086.491
+    },
+    {
+      "title": "compares complete history resource bytes via bounded continuation in all three entries",
+      "attempt": "attempt-002",
+      "durationMs": 4634.445957999998
+    },
+    {
+      "title": "compares complete attachment resource bytes via bounded continuation in all three entries",
+      "attempt": "attempt-002",
+      "durationMs": 3597.8284170000006
+    },
+    {
+      "title": "compares complete long-field resource bytes via bounded continuation in all three entries",
+      "attempt": "attempt-002",
+      "durationMs": 3953.024708000001
+    }
+  ],
+  "uniqueValidSoftwareScenarioCount": 8,
+  "wholeCasePassRecommendation": 1,
+  "formalLedgerUpdatedByExecutor": false,
+  "testData": "5 synthetic Bug records, token synthetic-zt-token, local HTTP listener only; no real Story execution/data, no external send",
+  "relatedPackageHashes": {
+    "retainedV1": "c317fdc192c87f9d0a1a6b2d4b3e77e538c6e3f476cbf473089992de44d5dd4b",
+    "v2": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+  },
+  "provenanceAudit": "provenance-audit.json",
+  "knownBoundaries": [
+    "I tests call application entry services directly; no transport-level native CLI/MCP stdio, UI clicks or real model claims. T02 requires I only.",
+    "Original failed long group retained; split resource tests keep the inherited default 5000ms threshold and original business assertions.",
+    "Fixture process IDs are simulated, not OS child-process identity acceptance."
+  ],
+  "productDefectsObserved": [],
+  "resourceState": "all owned tests exited; synthetic HTTP services closed, sockets zero, all owned run records stopped; UI/heavy resources never acquired"
+}
