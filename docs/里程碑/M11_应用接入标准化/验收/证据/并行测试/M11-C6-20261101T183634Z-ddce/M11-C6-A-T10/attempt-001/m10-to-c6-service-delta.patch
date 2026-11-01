@@ -1,0 +1,11 @@
+--- f1f1728d68a8595e665d4833dff048189e63e0f8:src/main/core/applications/mail-read-data-service.ts
++++ C6freeze:src/main/core/applications/mail-read-data-service.ts
+@@ -95,6 +95,8 @@
+  async resourceBytes(context:ApplicationExecutionContext,input:ApplicationResourceRef,limit=25*1024*1024,queryDays?:number):Promise<Buffer>{
+   const parsed=applicationResourceRefSchema.safeParse(input);if(!parsed.success||parsed.data.size>limit||limit>40*1024*1024)throw new ApplicationError('TOO_LARGE','邮件资源无效或超过附件复制预算');const resource=parsed.data;
+   if(this.contexts.store.sqlite.prepare('SELECT 1 FROM application_data_resources WHERE resource_id=? AND project_id=? AND app_id=?').get(resource.id,context.projectId,'mail'))return this.resources.bytes(context,resource,limit);
++  // Durable draft/attachment/review resources above have no source-slot dependency.
++  await this.contexts.requireSlots(context,['foxmail']);
+   const target=this.window(await this.target(context),queryDays),cache=await this.cache(),locator=await cache.withRecord(target.sourceKey,'resource:'+context.projectId+':'+resource.id,async value=>locatorSchema.parse(value));
+   if(!locator)throw new ApplicationError('SOURCE_UNAVAILABLE','邮件缓存引用已回收，请重新读取原邮件以重建资源');if(canonicalJson(locator.resource)!==canonicalJson(resource))throw new ApplicationError('HASH_MISMATCH','资源引用不能替换原内容或类型');
+   const value=await this.nativeRead(target,locator.reference);let bytes:Buffer;

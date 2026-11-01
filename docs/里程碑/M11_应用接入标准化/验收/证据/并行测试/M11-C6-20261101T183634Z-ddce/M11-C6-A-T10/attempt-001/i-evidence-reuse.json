@@ -1,0 +1,59 @@
+{
+  "originalResultPath": "/Users/hx/hx/hxWork/SmartDD/docs/里程碑/M10_三方应用接入/验收/证据/software-ua-20261030/regular-result.json",
+  "originalResultSha256": "1b3d53a33b6c9a2a80ff144b8e026e8b1fd520df50fe8a64d78c388a4bfb56b1",
+  "originalManifestSha256": "71264e043c6f3c7a0cd9dba2d3a9d98a4558b21a169b3c37bbdf121a2176b10e",
+  "selectedSuiteAssertions": 62,
+  "passed": 62,
+  "newRuns": 0,
+  "sourceComparison": [
+    {
+      "path": "native/applications/foxmail.mm",
+      "m10Sha256": "a4f8d3d7d92f8168f61feadfa6df943429d39e98baaabd8e506fb6acc2c2d9a3",
+      "currentSha256": "17ba444a4362cd126ec0d86b0b63bbc92619f0a838e58cd0549157e08ff0a626",
+      "identical": false
+    },
+    {
+      "path": "src/main/core/applications/providers/mail-worker.ts",
+      "m10Sha256": "c07b3dbef27ebc97ed6343a36a4d285c6dae576dc13cf57710e310789daee1c3",
+      "currentSha256": "c07b3dbef27ebc97ed6343a36a4d285c6dae576dc13cf57710e310789daee1c3",
+      "identical": true
+    },
+    {
+      "path": "src/main/core/applications/providers/mail-worker-client.ts",
+      "m10Sha256": "58cc174c70f5618d6dc5afe9f3b164f589d97f976dd1308eba41c50301c9f87f",
+      "currentSha256": "58cc174c70f5618d6dc5afe9f3b164f589d97f976dd1308eba41c50301c9f87f",
+      "identical": true
+    },
+    {
+      "path": "src/shared/application-mail-data.ts",
+      "m10Sha256": "bab3dba979e1043f98e7db365cfef2f9aa4bbb410d39abd2f13cdd1019fe007f",
+      "currentSha256": "bab3dba979e1043f98e7db365cfef2f9aa4bbb410d39abd2f13cdd1019fe007f",
+      "identical": true
+    },
+    {
+      "path": "src/main/core/applications/mail-read-data-service.ts",
+      "m10Sha256": "36eff57c0b9510c5292a83f834494d9113a7439ef02cc98cd8946996f34da2c8",
+      "currentSha256": "54c0600d12cb74af20a9da69548fbe8cf89965b8c8627e3dd67306e1306f615a",
+      "identical": false
+    },
+    {
+      "path": "src/main/core/applications/__tests__/mail-read-data.test.ts",
+      "m10Sha256": "e8cd3e62a07f689795d95aa626bfd89d1f0f338552585193c436351d366d1cb4",
+      "currentSha256": "b78214a3e1aaf736513ab3b9ed6c8fc26ab3989bdacfdec6a3d1cfebde3c38e6",
+      "identical": false
+    }
+  ],
+  "boundary": "Original I/native checks retained only for their actual dates/pagination/identity/resources behavior. Current modular/v2 glue and new conditional-slot guard are covered by fresh actual App/Codex MCP path; no old whole-case count inferred.",
+  "reviewedDeltas": {
+    "mailReadService": {
+      "oldCommit": "f1f1728d68a8595e665d4833dff048189e63e0f8",
+      "patch": "m10-to-c6-service-delta.patch",
+      "change": "Only requireSlots foxmail before original-message resource branch; query/date/pagination/read logic byte-identical."
+    },
+    "nativeReader": {
+      "oldCommit": "d57967b470d7c9596bd763bbd2cf64e094178afb",
+      "patch": "m10-to-c6-native-delta.patch",
+      "change": "Clean PERSIST journal support and database budget256MiB to4096MiB only; small DELETE-journal query/date/MIME behavior unchanged."
+    }
+  }
+}

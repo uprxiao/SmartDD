@@ -1,0 +1,188 @@
+{
+  "schema": "m11-t18-t19-lightweight-I-v1",
+  "group": "M11-C5-T18-T19",
+  "formalCases": [
+    "T18",
+    "T19"
+  ],
+  "layer": "I",
+  "status": "failed-product-D10-preserved",
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m11-c5-t18-19-cache pnpm test src/main/core/applications/__tests__/m11-c5-t18-19-matrix.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery-t18-19/i-attempt-001/vitest.json",
+  "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/t18-19-worker",
+  "exitCode": 1,
+  "testResults": [
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T18 matching project selection uses directory identity and not editable alias",
+      "status": "passed",
+      "duration": 1427.2456660000003,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T18 opaque project selection uses directory identity and not editable alias",
+      "status": "passed",
+      "duration": 1434.5393330000002,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T18 mismatch project selection uses directory identity and not editable alias",
+      "status": "passed",
+      "duration": 1226.0166249999997,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T18 a persisted mismatching pair refuses reply preparation without creating a draft",
+      "status": "failed",
+      "duration": 1343.2723750000005,
+      "failureMessages": [
+        "AssertionError: expected { status: 'ok', value: { …(10) } } to match object { status: 'error', …(1) }\n(11 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1737:25)\n    at /private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/t18-19-worker/src/main/core/applications/__tests__/m11-c5-t18-19-matrix.test.ts:65:158\n    at file:///Users/hx/hx/hxWork/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T18 a persisted mismatching pair refuses send preparation before any SMTP effect",
+      "status": "passed",
+      "duration": 1305.6485000000002,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T19 foxmail-only keeps independent reads/drafts and gates send by conditional slots",
+      "status": "passed",
+      "duration": 1466.3679580000007,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T19 smtp-only keeps independent reads/drafts and gates send by conditional slots",
+      "status": "passed",
+      "duration": 1428.8673330000001,
+      "failureMessages": []
+    },
+    {
+      "name": "M11 T18/T19 current v2 capability matrix with explicit lightweight source fixtures T19 both keeps independent reads/drafts and gates send by conditional slots",
+      "status": "passed",
+      "duration": 1746.4258750000008,
+      "failureMessages": []
+    }
+  ],
+  "counts": {
+    "passed": 7,
+    "failed": 1,
+    "formalCasePassesAdded": 0
+  },
+  "failure": {
+    "id": "T18-mismatch-reply",
+    "layer": "I",
+    "at": "2026-11-01T18:34:09.124Z",
+    "actual": {
+      "boundary": "persisted bad-pair I injection only",
+      "reply": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.reply.create",
+          "data": {
+            "draft": {
+              "id": "489319a3-bceb-44c7-9789-a74cb994765e",
+              "revision": 1,
+              "state": "draft",
+              "contentHash": "8994bd266cd2c234f724765eb34d53bc178ec9a8791d3e699421e3431fb215ed",
+              "content": {
+                "mode": "reply",
+                "sourceMessageRef": {
+                  "connectionId": "9cfcac96-eaeb-48bd-9479-9b4f8b9cc718",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "senderConnectionId": "d20af4a1-8317-4181-93aa-8c4a4050aa81",
+                "to": [
+                  "sender@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "Re: Synthetic matrix source",
+                "text": {
+                  "id": "fa32d576-08fc-42a4-aea0-ffa57b021bae",
+                  "revision": "e09c20b3a18d507b577b63f699f2542967075920247183ff0aea56d996a5cd3e",
+                  "mediaType": "text/plain;charset=utf-8",
+                  "size": 31
+                },
+                "html": null,
+                "inReplyTo": "<matrix-source@example.test>",
+                "references": [
+                  "<matrix-source@example.test>"
+                ],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "activeIntentId": null,
+              "lastExecutionId": null,
+              "sourceTaskId": null,
+              "copiedFromDraftId": null,
+              "createdAt": "2026-11-01T18:34:09.060Z",
+              "updatedAt": "2026-11-01T18:34:09.060Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "1",
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "9cfcac96-eaeb-48bd-9479-9b4f8b9cc718",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 2
+              },
+              {
+                "slot": "smtp",
+                "connectionId": "d20af4a1-8317-4181-93aa-8c4a4050aa81",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "fa32d576-08fc-42a4-aea0-ffa57b021bae",
+              "revision": "e09c20b3a18d507b577b63f699f2542967075920247183ff0aea56d996a5cd3e",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 31
+            }
+          ],
+          "operation": {
+            "id": "f378f9dd-fa10-42a5-a795-dcc9c691c18c",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "sourceReads": 1,
+      "drafts": {
+        "n": 1
+      }
+    }
+  },
+  "classification": "T18 original mismatch-reply rejection missing. Project selection and send preparation reject correctly; reply draft actually created under persisted bad-pair fixture. Coordinator accepted as D10 and reports new public8 green after production fix; this executor did not rerun.",
+  "fixtureBoundary": "Only self-owned DB row injection models a pre-existing invalid pair that current real selector refuses. Native mail source is synthetic source/query seam. Real v2 capability, context, selection, draft and send-prepare services execute. Does not claim real native reader, App, Agent, MCP/CLI or UI.",
+  "expected": "T18 three identity types at selection/reply/send; mismatch reply must reject with no draft. T19 capability-specific slot availability, not whole-app failure.",
+  "remaining": "Actual new-package App/controlledCodex matrix, reply/read/new-draft UI action path and actual diagnostic views still prepared separately; valid T33 successful-send evidence will be reused.",
+  "cleanup": "cleanup.json",
+  "verification": "verification.json",
+  "rawEvidence": [
+    "vitest.json",
+    "raw-outcomes.json"
+  ],
+  "sourceContractCopies": "../preparation-001/contracts/",
+  "resourcesReleased": true
+}

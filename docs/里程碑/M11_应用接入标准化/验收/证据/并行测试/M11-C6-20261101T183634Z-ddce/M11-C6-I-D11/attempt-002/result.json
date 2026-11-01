@@ -1,0 +1,626 @@
+{
+  "schema": "m11-parallel-test-delivery-v1",
+  "runId": "M11-C6-20261101T183634Z-ddce",
+  "groupId": "M11-C6-I-D11-RETEST",
+  "defect": "D11",
+  "attempt": "attempt-002",
+  "status": "passed",
+  "layer": "I only",
+  "criteria": [
+    {
+      "id": "precondition-missing-smtp",
+      "previousStatus": "failed",
+      "status": "passed",
+      "criteria": "Same original explicit prerequisite rejection code, not-started, both invocation/data failed, no secret/auth/provider/prepare/intents/executions",
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "3079eea4-2849-4839-83db-7f883bffe88f",
+          "status": "error",
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "message": "连接槽 smtp：请先明确选用此项目的来源或发件连接",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次错误后重新明确操作"
+          },
+          "operationId": "eb54083d-f002-4f20-a97c-f267bb8992bd"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "eb54083d-f002-4f20-a97c-f267bb8992bd",
+            "state": "failed",
+            "effect_state": "not-started",
+            "error_code": "AUTH_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "eb54083d-f002-4f20-a97c-f267bb8992bd",
+            "state": "failed",
+            "error_code": "AUTH_REQUIRED"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        },
+        "policy": {
+          "state": "unconfigured",
+          "bindingHash": null,
+          "fromAddress": null,
+          "accountDirectory": null,
+          "method": null,
+          "confirmedAt": null,
+          "receiptId": null,
+          "canConfirm": false,
+          "message": "尚未选用SMTP发件账号。"
+        }
+      },
+      "evidence": "raw/precondition-missing-smtp.json"
+    },
+    {
+      "id": "precondition-unconfirmed-smtp",
+      "previousStatus": "failed",
+      "status": "passed",
+      "criteria": "Same original explicit prerequisite rejection code, not-started, both invocation/data failed, no secret/auth/provider/prepare/intents/executions",
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "56bad631-1949-4a33-be54-31a2c4dafa5e",
+          "status": "error",
+          "error": {
+            "code": "SENDER_IDENTITY_REQUIRED",
+            "message": "请确认该SMTP发件地址是你的发件身份。",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次错误后重新明确操作"
+          },
+          "operationId": "b092d924-8d46-451f-9bd5-833c5a5399cf"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "b092d924-8d46-451f-9bd5-833c5a5399cf",
+            "state": "failed",
+            "effect_state": "not-started",
+            "error_code": "SENDER_IDENTITY_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "b092d924-8d46-451f-9bd5-833c5a5399cf",
+            "state": "failed",
+            "error_code": "SENDER_IDENTITY_REQUIRED"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        },
+        "policy": {
+          "bindingHash": "de681acb08e2a97f57f499a6fddefb123d4b3c7c8fb24876d8b553e8eb22aab4",
+          "fromAddress": "fixture@example.test",
+          "accountDirectory": null,
+          "state": "needs-confirmation",
+          "method": null,
+          "confirmedAt": null,
+          "receiptId": null,
+          "canConfirm": true,
+          "message": "请确认该SMTP发件地址是你的发件身份。"
+        }
+      },
+      "evidence": "raw/precondition-unconfirmed-smtp.json"
+    },
+    {
+      "id": "precondition-mismatch",
+      "previousStatus": "failed",
+      "status": "passed",
+      "criteria": "Same original explicit prerequisite rejection code, not-started, both invocation/data failed, no secret/auth/provider/prepare/intents/executions",
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "e52f6ba7-f769-4235-8ab5-a6b940ddee94",
+          "status": "error",
+          "error": {
+            "code": "SENDER_IDENTITY_MISMATCH",
+            "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，请更换匹配的连接；不能用用户确认覆盖。",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次错误后重新明确操作"
+          },
+          "operationId": "e13a1947-64fa-40c5-a090-063b6519335a"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "e13a1947-64fa-40c5-a090-063b6519335a",
+            "state": "failed",
+            "effect_state": "not-started",
+            "error_code": "SENDER_IDENTITY_MISMATCH",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "e13a1947-64fa-40c5-a090-063b6519335a",
+            "state": "failed",
+            "error_code": "SENDER_IDENTITY_MISMATCH"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        },
+        "policy": {
+          "bindingHash": "7f24de46b17c5d0c35cf979efe4e33e4b9365bf8ffa5b4c2ad40555eaef04a03",
+          "fromAddress": "changed@example.test",
+          "accountDirectory": "fixture@example.test",
+          "state": "mismatch",
+          "method": null,
+          "confirmedAt": null,
+          "receiptId": null,
+          "canConfirm": false,
+          "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，请更换匹配的连接；不能用用户确认覆盖。"
+        }
+      },
+      "evidence": "raw/precondition-mismatch.json"
+    },
+    {
+      "id": "post-write-AUTH_REQUIRED",
+      "previousStatus": "passed",
+      "status": "passed",
+      "criteria": "Original post-write conservative assertions kept unchanged in frozen public test; actual prepare writes intent/review once, error remains unknown; no retry/cache-loss reexecution",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "2bce8ee4-a250-4028-bcfa-f0fd60cdf281",
+          "status": "error",
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "message": "D11 controlled AUTH_REQUIRED after actual persisted prepare",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "60cef9e3-9b79-4349-a1be-f538a1c96991"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "60cef9e3-9b79-4349-a1be-f538a1c96991",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "AUTH_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "60cef9e3-9b79-4349-a1be-f538a1c96991",
+            "state": "unknown",
+            "error_code": "AUTH_REQUIRED"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "2bce8ee4-a250-4028-bcfa-f0fd60cdf281",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "60cef9e3-9b79-4349-a1be-f538a1c96991"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": "raw/post-write-AUTH_REQUIRED.json"
+    },
+    {
+      "id": "post-write-TIMEOUT",
+      "previousStatus": "passed",
+      "status": "passed",
+      "criteria": "Original post-write conservative assertions kept unchanged in frozen public test; actual prepare writes intent/review once, error remains unknown; no retry/cache-loss reexecution",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "37af08b2-fcb2-4491-a1a0-050aef6445b2",
+          "status": "error",
+          "error": {
+            "code": "TIMEOUT",
+            "message": "D11 controlled TIMEOUT after actual persisted prepare",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "c17d53ae-1448-4599-acf3-4f02a9ebed9e"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "c17d53ae-1448-4599-acf3-4f02a9ebed9e",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "TIMEOUT",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "c17d53ae-1448-4599-acf3-4f02a9ebed9e",
+            "state": "unknown",
+            "error_code": "TIMEOUT"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "37af08b2-fcb2-4491-a1a0-050aef6445b2",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "c17d53ae-1448-4599-acf3-4f02a9ebed9e"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": "raw/post-write-TIMEOUT.json"
+    },
+    {
+      "id": "post-write-TRANSIENT_FAILURE",
+      "previousStatus": "passed",
+      "status": "passed",
+      "criteria": "Original post-write conservative assertions kept unchanged in frozen public test; actual prepare writes intent/review once, error remains unknown; no retry/cache-loss reexecution",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "fe09cf38-dfba-4a63-851a-5ab77175d0cc",
+          "status": "error",
+          "error": {
+            "code": "TRANSIENT_FAILURE",
+            "message": "D11 controlled TRANSIENT_FAILURE after actual persisted prepare",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "TRANSIENT_FAILURE",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa",
+            "state": "unknown",
+            "error_code": "TRANSIENT_FAILURE"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "fe09cf38-dfba-4a63-851a-5ab77175d0cc",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": "raw/post-write-TRANSIENT_FAILURE.json"
+    },
+    {
+      "id": "returned-unknown",
+      "previousStatus": "failed",
+      "status": "passed",
+      "criteria": "Original returned intent/execution unknown retained in unified result/Bridge/invocation effect/cache-loss receipt; status ok and invocation.state succeeded remain a valid complete tool receipt; no repeat submit",
+      "actual": {
+        "boundary": "Real engine/SQL/authorization/execution; configured submit fixture returns unknown. No real SMTP/socket.",
+        "response": {
+          "schema": 1,
+          "id": "dec743ed-af25-472a-b9e4-386ecd402909",
+          "status": "ok",
+          "value": {
+            "schema": "willyou-app-result-v2",
+            "contractMajor": 2,
+            "status": "ok",
+            "capabilityId": "mail.send.execute",
+            "data": {
+              "intent": {
+                "id": "2faf54f5-d1d3-4457-9981-9e2234d44020",
+                "draftId": "bc500e28-003c-426b-bf29-04c92aae321d",
+                "draftRevision": 1,
+                "state": "unknown",
+                "reviewHash": "be47f8f40aa8a71fe0a05934ea591a00d6d2fdd24ca784177c2b18e14e59e621",
+                "review": {
+                  "id": "3d939942-109b-45b9-8a6f-e7c8da968de1",
+                  "revision": "be47f8f40aa8a71fe0a05934ea591a00d6d2fdd24ca784177c2b18e14e59e621",
+                  "mediaType": "application/json",
+                  "size": 1228
+                },
+                "authorized": false,
+                "executionId": "7bb44d8b-8597-4c3d-8813-c2e0dd757b87",
+                "result": {
+                  "accepted": [],
+                  "complete": false,
+                  "errorCode": "D11_CONTROLLED_DISCONNECT",
+                  "messageId": "<wy-2faf54f5-d1d3-4457-9981-9e2234d44020@willyou.local>",
+                  "rejected": [],
+                  "smtpCode": null,
+                  "state": "unknown"
+                },
+                "errorCode": "D11_CONTROLLED_DISCONNECT",
+                "createdAt": "2026-11-01T19:09:09.244Z",
+                "updatedAt": "2026-11-01T19:09:10.272Z"
+              }
+            },
+            "source": {
+              "appId": "mail",
+              "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+              "revision": "be47f8f40aa8a71fe0a05934ea591a00d6d2fdd24ca784177c2b18e14e59e621",
+              "connections": [
+                {
+                  "slot": "smtp",
+                  "connectionId": "8f15f28a-5eb4-4845-9ebc-cd8799296075",
+                  "identityRevision": 1,
+                  "configRevision": 1,
+                  "policyRevision": 1,
+                  "bindingRevision": 2
+                }
+              ]
+            },
+            "completeness": {
+              "complete": true,
+              "missing": []
+            },
+            "pagination": null,
+            "resources": [
+              {
+                "id": "3d939942-109b-45b9-8a6f-e7c8da968de1",
+                "revision": "be47f8f40aa8a71fe0a05934ea591a00d6d2fdd24ca784177c2b18e14e59e621",
+                "mediaType": "application/json",
+                "size": 1228
+              }
+            ],
+            "operation": {
+              "id": "9f078039-cbd2-4837-9dc7-66ce9b28584f",
+              "requestId": "dec743ed-af25-472a-b9e4-386ecd402909",
+              "origin": "mcp",
+              "effectState": "unknown"
+            }
+          },
+          "operationId": "9f078039-cbd2-4837-9dc7-66ce9b28584f",
+          "effectState": "unknown"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "9f078039-cbd2-4837-9dc7-66ce9b28584f",
+            "state": "succeeded",
+            "effect_state": "unknown",
+            "error_code": null,
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "9f078039-cbd2-4837-9dc7-66ce9b28584f",
+            "state": "succeeded",
+            "error_code": null
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "dec743ed-af25-472a-b9e4-386ecd402909",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "9f078039-cbd2-4837-9dc7-66ce9b28584f"
+        },
+        "executions": [
+          {
+            "id": "7bb44d8b-8597-4c3d-8813-c2e0dd757b87",
+            "state": "unknown",
+            "result_json": "{\"accepted\":[],\"complete\":false,\"errorCode\":\"D11_CONTROLLED_DISCONNECT\",\"messageId\":\"<wy-2faf54f5-d1d3-4457-9981-9e2234d44020@willyou.local>\",\"rejected\":[],\"smtpCode\":null,\"state\":\"unknown\"}"
+          }
+        ],
+        "counts": {
+          "intents": 1,
+          "executions": 1
+        },
+        "syntheticProviderCount": 1
+      },
+      "evidence": "raw/returned-unknown.json"
+    },
+    {
+      "id": "D11 a proof copied from a different operation cannot downgrade a post-write failure",
+      "status": "passed",
+      "evidence": "vitest-public.json",
+      "actual": {
+        "title": "D11 a proof copied from a different operation cannot downgrade a post-write failure",
+        "status": "passed",
+        "duration": 2336.0917919999993
+      },
+      "rawBoundary": "Public test did not separately write raw response for this assertion. Complete passed Vitest record and exact frozen executable test bytes retained; no rerun just for extra logging."
+    },
+    {
+      "id": "does not accept a copied marker or proof belonging to another operation",
+      "status": "passed",
+      "evidence": "vitest-public.json",
+      "actual": {
+        "title": "does not accept a copied marker or proof belonging to another operation",
+        "status": "passed",
+        "duration": 0.6745419999999882
+      },
+      "rawBoundary": "Public test did not separately write raw response for this assertion. Complete passed Vitest record and exact frozen executable test bytes retained; no rerun just for extra logging."
+    },
+    {
+      "id": "never downgrades explicit producer uncertainty or exposes unexpected error text",
+      "status": "passed",
+      "evidence": "vitest-public.json",
+      "actual": {
+        "title": "never downgrades explicit producer uncertainty or exposes unexpected error text",
+        "status": "passed",
+        "duration": 0.38195799999999736
+      },
+      "rawBoundary": "Public test did not separately write raw response for this assertion. Complete passed Vitest record and exact frozen executable test bytes retained; no rerun just for extra logging."
+    }
+  ],
+  "requiredTests": {
+    "mail-effect-boundary.test.ts": 9,
+    "capability-preflight.test.ts": 2,
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "originalConservativeThreeIncludedOnce": true
+  },
+  "missing": [],
+  "oldRed": {
+    "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/d11-worker/delivery-d11/attempt-001",
+    "manifestSha256": "d593989b02da74ae7ea061d68ed11bc0a8c7070344904b15b445b165bcbf9c9c",
+    "unchanged": true,
+    "rawReferencedCopy": "references/attempt-001-result.json"
+  },
+  "baseline": {
+    "baseSourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+    "deltaManifestSha256": "23a32958cc9593dd80d7b202f6fb58a3609d1a3b6a1d40f1b259d072c061dd45",
+    "baseSourceFiles": 3218,
+    "effectiveSourceFiles": 3221,
+    "outFiles": 151,
+    "appliedDeltaFiles": 8,
+    "tests": {
+      "src/main/core/applications/__tests__/mail-effect-boundary.test.ts": "40f6fcc14d4ebfbbd3e3573cc424f7c48fbe95b342ae14654a4e36f02010edbd",
+      "src/main/core/applications/__tests__/capability-preflight.test.ts": "01af57de07860abc684553255a0ef3e4219ccea5f51ce57cb3081802e1ebc203"
+    },
+    "sourceAfter": "source-after.json"
+  },
+  "execution": {
+    "runnerSession": 82358,
+    "runnerExitCode": 0,
+    "startTimeMs": 1793560130898,
+    "testResults": [
+      {
+        "file": "capability-preflight.test.ts",
+        "startTimeMs": 1793560150675,
+        "endTimeMs": 1793560150676.3818,
+        "status": "passed"
+      },
+      {
+        "file": "mail-effect-boundary.test.ts",
+        "startTimeMs": 1793560131697,
+        "endTimeMs": 1793560150577.438,
+        "status": "passed"
+      }
+    ],
+    "commands": "commands.json",
+    "maxWorkers": 1,
+    "appRuns": 0,
+    "nativeHelperRuns": 0,
+    "builds": 0
+  },
+  "cleanup": {
+    "detail": "cleanup.json",
+    "lightIReleased": true,
+    "ownProcesses": 0,
+    "recordedFixtureRootsRemoved": 9,
+    "uiHeavyNeverHeld": true
+  },
+  "boundaries": [
+    "Current fix is independently verified I only; packaged App/MCP UI revalidation remains coordinator scope. No formal acceptance case counted by this worker.",
+    "Public frozen tests were run without edits; only optional evidence env set. Old red source/delivery not modified or rerun.",
+    "Real SQLite/session/run/ToolService/v2 executor/mail module/engine; OS identity and connection verification are explicit I prerequisites.",
+    "Unknown errors injected through existing prepared checkpoint after durable intent/review writes. TIMEOUT/TRANSIENT are controlled signals, not actual network/elapsed timeout claims.",
+    "Returned-unknown uses trusted I review/authorization and supported submit fixture; actual engine execution persists unknown. No real SMTP network, DATA, daily data or credentials.",
+    "Foreign-operation proof integration and marker-copy/unit checks include exact source and green test records; no separate raw callback output added or fabricated.",
+    "No full typecheck repeated in private incomplete snapshot; coordinator reported node types002 exit0."
+  ],
+  "sealedPreparedAt": "2026-11-01T19:10:03.931467+00:00"
+}

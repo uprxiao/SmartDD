@@ -1,0 +1,59 @@
+{
+  "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+  "response": {
+    "schema": 1,
+    "id": "fe09cf38-dfba-4a63-851a-5ab77175d0cc",
+    "status": "error",
+    "error": {
+      "code": "TRANSIENT_FAILURE",
+      "message": "D11 controlled TRANSIENT_FAILURE after actual persisted prepare",
+      "layer": "provider",
+      "retryable": false,
+      "attemptCount": 1,
+      "retryExhausted": false,
+      "effectState": "unknown",
+      "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+    },
+    "operationId": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa"
+  },
+  "ledger": {
+    "invocation": {
+      "operation_id": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa",
+      "state": "unknown",
+      "effect_state": "unknown",
+      "error_code": "TRANSIENT_FAILURE",
+      "attempt_count": 1
+    },
+    "data": {
+      "operation_id": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa",
+      "state": "unknown",
+      "error_code": "TRANSIENT_FAILURE"
+    }
+  },
+  "replay": {
+    "schema": 1,
+    "id": "fe09cf38-dfba-4a63-851a-5ab77175d0cc",
+    "status": "error",
+    "error": {
+      "code": "REPLAY_UNAVAILABLE",
+      "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+      "layer": "provider",
+      "retryable": false,
+      "attemptCount": 1,
+      "retryExhausted": false,
+      "effectState": "unknown",
+      "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+    },
+    "operationId": "8c6845e5-e0f8-432f-96ed-0e9c7714adaa"
+  },
+  "counts": {
+    "intents": 1,
+    "executions": 0
+  },
+  "postWriteEntries": 1,
+  "spies": {
+    "secret": 0,
+    "providerSend": 0,
+    "enginePrepare": 1
+  }
+}

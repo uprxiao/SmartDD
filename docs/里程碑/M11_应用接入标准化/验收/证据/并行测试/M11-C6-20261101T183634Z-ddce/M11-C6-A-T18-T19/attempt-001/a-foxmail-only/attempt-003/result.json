@@ -1,0 +1,100 @@
+{
+  "schema": "m11-t18-t19-attempt-result-v1",
+  "formalCases": [
+    "T18",
+    "T19"
+  ],
+  "layer": "A with actual packaged App/PTY/Codex/MCP and private synthetic model/source; setup and legacy DB injection labeled prerequisites",
+  "case": "foxmail-only",
+  "attempt": "003",
+  "status": "client-never-approval-and-dependent-driver-cascade",
+  "failureClassification": "client/driver",
+  "command": "command.json",
+  "originalCommandExitCode": 1,
+  "originalDriverStatus": "failed",
+  "raw": "raw-result.json",
+  "rawSha256": "49e81e466903ec8b1f11e517ab26085b54a6a35e6aa9e81618ac68a6e1c6e573",
+  "originalExpectedBusinessSteps": [
+    {
+      "key": "query",
+      "state": "passed",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": true,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_0"
+    },
+    {
+      "key": "read",
+      "state": "passed",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": true,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_1"
+    },
+    {
+      "key": "original-resource",
+      "state": "passed",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": true,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_2"
+    },
+    {
+      "key": "reply",
+      "state": "blocked-client-approval",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": false,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_3"
+    },
+    {
+      "key": "new",
+      "state": "blocked-client-approval",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": false,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_4"
+    },
+    {
+      "key": "draft-resource",
+      "state": "driver-cascade",
+      "expectedCode": null,
+      "actualCode": null,
+      "originalPassed": false,
+      "raw": "raw-result.json matrix.steps",
+      "callId": "call_matrix_5"
+    }
+  ],
+  "uniqueBusinessStepsPassed": 3,
+  "sessionDiagnostics": {
+    "availability": "not-executed",
+    "accurateExecutionOutcome": "not-executed"
+  },
+  "pendingWrite": null,
+  "writeApprovalBoundary": null,
+  "sourceCopies": [
+    {
+      "field": "driverSha256",
+      "recorded": "8d5ca14f42a11a194de0227cc813864de98704883592d7ab3969cb0cb7adc307",
+      "archived": "8d5ca14f42a11a194de0227cc813864de98704883592d7ab3969cb0cb7adc307",
+      "matches": true
+    },
+    {
+      "field": "fixtureSha256",
+      "recorded": "bf2576cb2dc3e2123b226457532bc55840b96ea2b74bd988fef769c7af5fd353",
+      "archived": "bf2576cb2dc3e2123b226457532bc55840b96ea2b74bd988fef769c7af5fd353",
+      "matches": true
+    }
+  ],
+  "formalCasePassesAdded": 0,
+  "cleanup": "cleanup.json",
+  "retainedKnownFailureStage": "native-task-response",
+  "retainedError": "Error: TypeError: Cannot read properties of null (reading 'data')",
+  "reused": null,
+  "normalUiMismatchReused": null
+}

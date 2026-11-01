@@ -1,0 +1,38 @@
+--- old-private-final
++++ frozen-public
+@@ -29,18 +29,18 @@
+ import * as smtpProvider from '../providers/smtp';
+ import {agentFixture} from './agent-fixture';
+ import {FixtureProcessReader} from './run-fixture';
++import {applicationPreflightFailure} from '../capability-preflight';
+ 
+ // Real SQLite/session/run/ToolService/v2 executor/mail modules. Only the OS
+ // process identity and connection verifier are explicit I fixtures. No App,
+ // PTY, worker/native helper, bundle build, network provider or SMTP is started.
+-const evidence=process.env.WILLYOU_TEST_EVIDENCE_DIR!;
+-if(!evidence||!resolve(evidence).includes('/d11-worker/delivery-d11/'))throw Error('Private D11 evidence path is required');
+-mkdirSync(evidence,{recursive:true});
++const evidence=process.env.WILLYOU_TEST_EVIDENCE_DIR;
++if(evidence)mkdirSync(evidence,{recursive:true});
+ let f:Awaited<ReturnType<typeof agentFixture>>,app:ApplicationService,secrets:SecretsStore;
+ let sender:IpcMainInvokeEvent,runs:CapabilityRunRegistry,run:OwnedCapabilityRun,tools:ApplicationToolService;
+ let postWriteFault:ApplicationError|null,postWriteEntries:number,activeCase:string,unknownSubmit:boolean,syntheticProviderCount:number;
+ const capturedRoots:string[]=[];
+-const record=(name:string,value:unknown)=>writeFileSync(join(evidence,name+'.json'),JSON.stringify(value,null,2)+'\n');
++const record=(name:string,value:unknown)=>{if(evidence)writeFileSync(join(evidence,name+'.json'),JSON.stringify(value,null,2)+'\n');};
+ const body:MailDraftContent={mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['recipient@example.test'],cc:[],bcc:[],subject:'D11 isolated write boundary',text:'D11 local draft only',html:null,inReplyTo:null,references:[],attachmentIds:[]};
+ const smtpConfig=()=>({kind:'smtp' as const,host:'smtp.example.test',port:587,username:'fixture@example.test',fromAddress:'fixture@example.test',authMode:'password' as const,mode:'starttls' as const});
+ const connections=()=>new ApplicationConnectionService(f.store,secrets,{verify:async config=>({providerId:config.kind,serviceId:'D11-isolated-verifier',accountId:'same-authenticated-account',contractMajor:1})});
+@@ -86,6 +86,12 @@
+   expect(response).toMatchObject({status:'error',error:{code,effectState:'unknown',retryable:false,attemptCount:1}});expect(actual.invocation).toMatchObject({state:'unknown',effect_state:'unknown',attempt_count:1});expect(actual.data).toMatchObject({state:'unknown'});expect(firstCounts).toEqual({intents:1,executions:0});expect(counts()).toEqual(firstCounts);expect(prepare).toHaveBeenCalledTimes(1);expect(postWriteEntries).toBe(1);expect(replay).toMatchObject({status:'error',error:{code:'REPLAY_UNAVAILABLE',effectState:'unknown'}});expect(secret).not.toHaveBeenCalled();expect(providerSend).not.toHaveBeenCalled();expect(syntheticProviderCount).toBe(0);
+  });
+ 
++ it('D11 a proof copied from a different operation cannot downgrade a post-write failure',async()=>{
++  const smtp=await connections().save({name:'D11 proof-scope sender',expectedRevision:0,config:smtpConfig(),secret:'D11-SYNTHETIC-SECRET'});await select(null,smtp.id);await confirm();const created=await draft();
++  postWriteFault=applicationPreflightFailure(new ApplicationError('AUTH_REQUIRED','copied old preflight proof'),randomUUID()) as ApplicationError;
++  const response=await call('send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash}),actual=ledger(response.operationId!);
++  expect(response).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED',effectState:'unknown',retryable:false}});expect(actual.invocation).toMatchObject({state:'unknown',effect_state:'unknown'});expect(actual.data).toMatchObject({state:'unknown'});expect(counts()).toEqual({intents:1,executions:0});expect(postWriteEntries).toBe(1);expect(syntheticProviderCount).toBe(0);
++ });
+  it('D11 real v2 send_execute unknown result stays unknown in bridge and invocation ledger without replay',async()=>{
+   const smtp=await connections().save({name:'D11 controlled outcome sender',expectedRevision:0,config:smtpConfig(),secret:'D11-SYNTHETIC-SECRET'});await select(null,smtp.id);await confirm();const created=await draft();
+   const prepared=await call('send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash});expect(prepared.status,JSON.stringify(prepared)).toBe('ok');if(prepared.status!=='ok')throw Error('D11 prepare failed');const intent=(prepared.value as ApplicationResultV2).data as {intent:{id:string;reviewHash:string}};

@@ -1,0 +1,62 @@
+{
+  "groupId": "M11-C6-I-D11",
+  "defect": "D11",
+  "sourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+  "worker": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/d11-worker",
+  "preparedAt": "2026-11-01T19:01:38.193502+00:00",
+  "testSha256": "5281e4ed7d561c2c77e3c57af6f9a03e5c3aeb1f40c7c4c38ddd766c794a94ce",
+  "cache": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/d11-private-vite-cache",
+  "frozenV2Bundle": {
+    "appId": "mail",
+    "hash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+    "path": "apps/mail/1.1.0/7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+    "version": "1.1.0"
+  },
+  "sourceVerified": 3218,
+  "outVerified": 151,
+  "preflight": "pnpm test src/main/core/applications/__tests__/m11-d11-effect-boundary.test.ts -t \"D11 preflight\" --maxWorkers=1",
+  "contract": "pnpm test src/main/core/applications/__tests__/m11-d11-effect-boundary.test.ts -t \"D11 (known|post-write|real v2)\" --maxWorkers=1 --reporter=json --outputFile=delivery-d11/attempt-001/vitest-contract.json",
+  "criteria": [
+    {
+      "group": "known precondition",
+      "scenarios": [
+        "missing-smtp",
+        "unconfirmed-smtp",
+        "mismatch"
+      ],
+      "expected": "not-started; invocation failed; application_data_operations failed; secret/auth/provider/intent/execution0"
+    },
+    {
+      "group": "post actual write",
+      "scenarios": [
+        "AUTH_REQUIRED",
+        "TIMEOUT",
+        "TRANSIENT_FAILURE"
+      ],
+      "expected": "real prepare persisted intent before controlled checkpoint fault; unknown both ledgers;1attempt/no retry/no replay/no SMTP submission"
+    },
+    {
+      "group": "returned unknown",
+      "scenarios": [
+        "real v2 send_execute returns unknown"
+      ],
+      "expected": "Bridge status ok with inner original unknown; invocation.effect_state unknown; invocation.state only observed (succeeded may mean completed receipt). Replay no repeat;one controlled submit and real engine unknown execution row."
+    }
+  ],
+  "fixtureBoundaries": [
+    "Real SQLite/session/run/ToolService/v2 executor/mail module/engine; FixtureProcessReader provides OS identity and static connection verifier only.",
+    "Already frozen out capability bundles reused; no builder/helper/App/PTY/listener starts.",
+    "Unknown cases inject errors at existing MailExecutionOptions prepared checkpoint after real persisted intent/review; no actual SMTP/network disconnection is claimed."
+  ],
+  "resource": "light I only, maxWorkers1",
+  "preflight001": {
+    "exitCode": 1,
+    "classification": "fixture snapshot version mismatch",
+    "detail": "Old v2 snapshot scaffold cannot host new v2 application. Updated to existing schema3+capability majors+MCP entry+real createApplicationRunPlan contract; all business assertions unchanged and not previously reached.",
+    "preserved": [
+      "preflight-001-test.ts",
+      "vitest-preflight-001.json"
+    ]
+  },
+  "updatedAt": "2026-11-01T19:02:12.088745+00:00"
+}

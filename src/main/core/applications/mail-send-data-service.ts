@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
+import {applicationPreflightFailure} from './capability-preflight';
 import type { ApplicationResourceRef } from '@shared/application-data';
 import type { MailSendIntent } from '@shared/mail-execution';
 import type { ApplicationDataBinding,ApplicationDataHost } from './application-adapter-registry';
@@ -27,7 +28,7 @@ export class MailSendDataService implements ApplicationDataHost {
   if(version!==1||binding.appId!=='mail'||!methods.has(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','发送方法不属于当前宿主契约');const semantics=method==='mail.send.get'?'read' as const:'write' as const;
   return{semantics,retry:'never',authorize:run=>{const selected=run.snapshot.packages.find(pack=>pack.appId==='mail'&&pack.packageHash===binding.packageHash);if(!selected?.allowedOperations.includes(binding.permission))throw new ApplicationError('SCOPE_DENIED','原运行未选用本次发送动作');},authorizeReceipt:(run,id)=>this.contexts.assertAgentReceipt(run,binding,id),execute:(run,args,operation)=>this.contexts.withAgent(run,binding,operation,semantics,context=>this.execute(context,method,args))};
  }
- private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');this.identityCheck?.(context);}
+ private async preflight(context:ApplicationExecutionContext){try{const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');this.identityCheck?.(context);}catch(error){throw applicationPreflightFailure(error,context.operationId);}}
  async view(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<MailSendData>{
   await this.contexts.subject(context,'mail-send',intent.id);await this.contexts.subject(context,'mail-draft',intent.draftId);
   let review:ApplicationResourceRef|null=null;if(intent.review&&intent.reviewHash)review=await this.resources.register(context,{kind:'mail-send-review-v1',objectId:intent.id,objectRevision:intent.reviewHash,part:'review'},'application/json',Buffer.from(canonicalJson(intent.review)));

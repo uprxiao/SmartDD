@@ -1,0 +1,28 @@
+// Test-only observation/fault seam for an original, inspector-captured M11 host.
+// Tokens stay in this owned main process. No files, argv, model text or returned
+// observations contain them. Faults only make real native peer evidence fail.
+import assert from 'node:assert/strict';
+
+export async function installM11GatewayProbe(app,userData){
+ assert(userData.startsWith('/private/tmp/willyou-m11-'));
+ return app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)}||globalThis.__m11GatewayProbe)throw Error('Owned gateway fixture required');const service=globalThis.__ncHistoryProbe?.service,managed=service?.options.tasks.d.managedCapabilities,cli=managed?.cli;if(!cli||typeof cli.identities?.read!=='function')throw Error('Original CLI gateway missing');const g={service,managed,cli,records:[],reads:[],mode:'normal',runId:null,issue:cli.issue,read:cli.identities.read};g.issueWrapper=function(run){const issued=g.issue.call(this,run);g.records.push({runId:run.runId,environment:issued.environment});return issued;};g.readWrapper=async function(socket){const identity=await g.read.call(this,socket);g.reads.push({at:new Date().toISOString(),mode:g.mode,originalNativeEvidence:!!identity});if(g.mode==='normal')return identity;if(g.mode==='unreadable')return null;if(!identity)throw Error('Original native peer is required before evidence fault');const value=structuredClone(identity);if(g.mode==='wrong-executable')value.peer.executable+='.m11-private-fault';else if(g.mode==='wrong-start'){const run=g.managed.runs.get(g.runId),ancestor=value.ancestors.find(p=>p.pid===run.pid);if(!ancestor)throw Error('Original managed ancestor missing');ancestor.startedAt='darwin-proc-v1:1:1';}else throw Error('Unknown gateway evidence fault');return value;};cli.issue=g.issueWrapper;cli.identities.read=g.readWrapper;globalThis.__m11GatewayProbe=g;return{installed:true,tokenStorage:'own-main-memory-only',nativeEvidenceFault:'none',entryChecksChanged:false}})()`,{label:'m11-gateway-probe-install',synchronous:true});
+}
+
+export async function m11GatewayFault(app,mode,runId){
+ assert(['normal','unreadable','wrong-executable','wrong-start'].includes(mode));
+ assert(typeof runId==='string'&&/^[a-f0-9-]{36}$/.test(runId));
+ return app.mainEvaluate(`(()=>{const g=globalThis.__m11GatewayProbe;if(!g||g.cli.issue!==g.issueWrapper||g.cli.identities.read!==g.readWrapper||!g.records.some(r=>r.runId===${JSON.stringify(runId)}))throw Error('Owned issued run required');g.managed.runs.get(${JSON.stringify(runId)});g.mode=${JSON.stringify(mode)};g.runId=${JSON.stringify(runId)};return{mode:g.mode,runId:g.runId,authenticationRulesChanged:false}})()`,{label:'m11-gateway-evidence-fault',synchronous:true});
+}
+
+export async function m11GatewaySnapshot(app){
+ return app.mainEvaluate(`(()=>{const g=globalThis.__m11GatewayProbe;if(!g)throw Error('Gateway observation missing');const sha=t=>process.getBuiltinModule('crypto').createHash('sha256').update(t).digest('hex');return{mode:g.mode,tokens:g.records.map(r=>({runId:r.runId,tokenSha256:sha(r.environment.WILLYOU_RUN_TOKEN)})),reads:g.reads,invocations:g.service.store.sqlite.prepare('SELECT count(*) n FROM application_invocations').get().n,denials:g.service.store.sqlite.prepare('SELECT error_code,observed_at FROM capability_broker_denials ORDER BY observed_at').all()}})()`,{label:'m11-gateway-observation',synchronous:true});
+}
+
+export async function replayM11OutsideManagedTree(app,runId,home){
+ assert(/^[a-f0-9-]{36}$/.test(runId)&&home.startsWith('/private/tmp/willyou-m11-'));
+ return app.mainEvaluate(`(async()=>{const g=globalThis.__m11GatewayProbe,record=g?.records.find(r=>r.runId===${JSON.stringify(runId)});if(!record||g.mode!=='normal')throw Error('Original owned run and native evidence required');const spawn=process.getBuiltinModule('child_process').spawn,path=g.cli.options.executable.path;if(!path.startsWith('/private/tmp/willyou-m11-s7/'))throw Error('Pinned private CLI required');return await new Promise((resolve,reject)=>{let text='',bytes=0,failed=false;const child=spawn(path,['zentao','object','list','--kind','bug'],{env:{PATH:'/usr/bin:/bin',HOME:${JSON.stringify(home)},...record.environment},stdio:['ignore','pipe','ignore']}),timer=setTimeout(()=>{failed=true;child.kill('SIGKILL')},5000);child.once('error',()=>{failed=true});child.stdout.on('data',chunk=>{bytes+=chunk.length;if(bytes>65536){failed=true;child.kill('SIGKILL')}else text+=chunk});child.once('close',(code,signal)=>{clearTimeout(timer);if(failed){reject(Error('Bounded owned CLI replay failed'));return}let value;try{value=JSON.parse(text)}catch{reject(Error('Controlled CLI replay response missing'));return}resolve({code,signal,error:value.error?.code??null,effectState:value.error?.effectState??null,scope:'Actual original token remains only in owned main/child environment; child is outside the managed Codex tree'})});})})()`,{label:'m11-gateway-old-token-replay',timeoutMs:10000});
+}
+
+export async function restoreM11GatewayProbe(app){
+ return app.mainEvaluate(`(()=>{const g=globalThis.__m11GatewayProbe;if(!g)return{installed:false,restored:true};if(g.cli.issue!==g.issueWrapper||g.cli.identities.read!==g.readWrapper)throw Error('Gateway fixture ownership changed');g.cli.issue=g.issue;g.cli.identities.read=g.read;g.records.length=0;delete globalThis.__m11GatewayProbe;return{restored:g.cli.issue===g.issue&&g.cli.identities.read===g.read,rawTokenRecordsCleared:true}})()`,{label:'m11-gateway-probe-restore',synchronous:true});
+}

@@ -1,0 +1,213 @@
+{
+  "schema": "m11-parallel-test-delivery-v1",
+  "runId": "M11-C6-20261101T183634Z-ddce",
+  "groupId": "M11-C6-T10",
+  "caseId": "M11-T10",
+  "attempt": "attempt-001",
+  "status": "passed-awaiting-coordinator-verification",
+  "requiredLayers": [
+    "I",
+    "A",
+    "R"
+  ],
+  "actualLayers": {
+    "I": "Valid M10 real native/Worker62/62 reused after targeted source-delta review; no native matrix rerun",
+    "A": "Single actual packaged c97 App/composer/PTY/Codex0.166/native MCP with original M10 synthetic mail source",
+    "R": "Current migrated MCP path checks preserved date/query/page/reference/resource/completeness/error/source behavior against retained M10 native/service contract"
+  },
+  "originalContract": "original-contract.json",
+  "criteria": [
+    {
+      "id": "mcp-query-page-read-resource",
+      "originalPredicate": "经MCP查询、分页、读取及有界资源获取",
+      "status": "passed",
+      "actual": "Actual composer creates own task, real Codex reads delivered Skill and uses exact native MCP tool declarations. Query/read/resource outputs retain v2 schema, mcp origin and read-only effect.17 native MCP calls,18 total actual native calls including Skill read.",
+      "evidence": [
+        "raw-a/result.json#t10Calls",
+        "raw-a/native-mcp-call-records.jsonl",
+        "raw-a/result.json#skillEvidence"
+      ],
+      "missing": []
+    },
+    {
+      "id": "default-date-range",
+      "originalPredicate": "固定默认日期范围保持",
+      "status": "passed",
+      "actual": "Saved30-day window with original M10 ages0/6/29/30/99/100 returns exactly IDs1,2,3; local endDate2026-11-02/Asia-Singapore match original fixture.",
+      "evidence": [
+        "raw-a/result.json#pages.default",
+        "raw-a/result.json#rangeFixture"
+      ],
+      "missing": []
+    },
+    {
+      "id": "single-request-range",
+      "originalPredicate": "单次日期范围保持",
+      "status": "passed",
+      "actual": "Explicit100 returns exactly IDs1..5 and excludes age100 ID6; cursor continuation omits queryDays yet stays100; settings after all calls remain30. Read99-day ID5 without override rejects SCOPE_DENIED; same reference with100 succeeds.",
+      "evidence": [
+        "raw-a/result.json#pages.override",
+        "raw-a/result.json#savedDefaultAfter",
+        "raw-a/result.json#t10Calls"
+      ],
+      "missing": []
+    },
+    {
+      "id": "pagination",
+      "originalPredicate": "分页与引用保持",
+      "status": "passed",
+      "actual": "limit2 yields2 default pages/3 override pages without omissions/duplicates; raw nextCursor equals unified pagination; changing the pinned cursor to31 days rejects REVISION_CONFLICT.",
+      "evidence": [
+        "raw-a/result.json#t10Calls",
+        "references/m10-ua/mail-read-62-assertions.json"
+      ],
+      "missing": []
+    },
+    {
+      "id": "source-identity-revision",
+      "originalPredicate": "来源修订保持",
+      "status": "passed",
+      "actual": "Every query item has selected connection/identityRevision1 and raw MAIL SHA contentRevision. Read envelope source.revision equals exact native reference hash; returned text resource is present in unified resources.",
+      "evidence": [
+        "raw-a/result.json#sourceMailHashes",
+        "raw-a/result.json#opened",
+        "raw-a/result.json#t10Calls"
+      ],
+      "missing": []
+    },
+    {
+      "id": "bounded-resource",
+      "originalPredicate": "有界资源获取保持",
+      "status": "passed",
+      "actual": "Real Foxmail-minted original text resource31 bytes reconstructed from4 native MCP chunks each<=8 bytes, exact revision3c5fc7c87a150f90cfa352791356c4cbe569ed74f5f478d09c200e08bd8a7703. Full original body/attachment/MIME matrix reused from applicable62/62 I instead of rerun.",
+      "evidence": [
+        "raw-a/result.json#resourceRead",
+        "i-evidence-reuse.json"
+      ],
+      "missing": []
+    },
+    {
+      "id": "source-change",
+      "originalPredicate": "模拟源变化",
+      "status": "passed",
+      "actual": "External own-fixture actor appends bytes to5.mail after normal reads; old exact reference rejects RESOURCE_STATE_CHANGED. Original bytes/inode restored immediately and again checked at cleanup.",
+      "evidence": [
+        "raw-a/result.json#faults",
+        "raw-a/result.json#t10Calls",
+        "cleanup.json"
+      ],
+      "missing": []
+    },
+    {
+      "id": "complete-no-match",
+      "originalPredicate": "无匹配与失败区分",
+      "status": "passed",
+      "actual": "Impossible text query returns successful complete=true,matched0,items[],problems[],cursor null. MissingDB instead returns error SOURCE_UNAVAILABLE with read-only effect; no fabricated empty success.",
+      "evidence": [
+        "raw-a/result.json#t10Calls"
+      ],
+      "missing": []
+    },
+    {
+      "id": "incomplete-source",
+      "originalPredicate": "完整性保持",
+      "status": "passed",
+      "actual": "Own2.mail temporarily renamed: refresh returns success complete=false mirrored in unified completeness,matched2 and INCOMPLETE_RESULT/objectId2; unavailable item omitted. File restored then default refresh returns complete=true,matched3.",
+      "evidence": [
+        "raw-a/result.json#t10Calls",
+        "raw-a/result.json#faults"
+      ],
+      "missing": []
+    },
+    {
+      "id": "source-preservation",
+      "originalPredicate": "不修改Foxmail源文件",
+      "status": "passed",
+      "actual": "Before any fault, entire original7-file source SHA/size/device/inode equals baseline after normal native MCP queries/read/resources. External fixture changes are explicitly segregated and restored; final and independent cleanup checks exactly match baseline with no backup files. ctime/mtime after intentional fixture rewrite are not claimed unchanged.",
+      "evidence": [
+        "raw-a/result.json#normalSourcePreserved",
+        "raw-a/recoverable-synthetic-source.json",
+        "cleanup.json"
+      ],
+      "missing": []
+    },
+    {
+      "id": "retained-regression-I-R",
+      "originalPredicate": "要求I+A+R及迁移前保持",
+      "status": "passed",
+      "actual": "M10 actual native/Worker suite62/62 retained and raw result hash/manifest checked. Query/service date/read code unchanged: only new requireSlots guard before original resource branch. Native reader delta restricted to clean PERSIST journal/DB budget, unaffected small DELETE-journal fixture. Fresh current-package A traverses v2 module/execution/native path and original resource branch.",
+      "evidence": [
+        "i-evidence-reuse.json",
+        "m10-to-c6-service-delta.patch",
+        "m10-to-c6-native-delta.patch",
+        "raw-a/result.json"
+      ],
+      "missing": []
+    }
+  ],
+  "missing": [],
+  "failures": [],
+  "expectedControlledNegativeCodes": {
+    "cursor-window-change": "REVISION_CONFLICT",
+    "outside-default-read": "SCOPE_DENIED",
+    "changed-reference": "RESOURCE_STATE_CHANGED",
+    "source-unavailable": "SOURCE_UNAVAILABLE"
+  },
+  "driverPreflightFailure": {
+    "count": 1,
+    "classification": "Author incorrectly added nonexistent ws package check; actual harness uses built-in WebSocket. Private cache planned path created before corrected preflight. No dependent App/test started after failed check.",
+    "evidence": "preflight-diagnostics.json",
+    "businessPredicatesChanged": false
+  },
+  "baseline": {
+    "sourceCommit": "dd28747759f2f6486536f6e27c3ef7d2d06c1cd7",
+    "sourceDirty": true,
+    "branch": "feature/0.1.0",
+    "sourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+    "sourceFiles": 3218,
+    "outFiles": 151,
+    "productionInputsManifestSha256": "8b39ac817f29355eaad4d2014e95515744b0cb5b32ffa151877db0438bf869d2",
+    "appAsarSha256": "c97fc05f8ef4795a8c76f76bb8f3089bd95fe27a90c85bcf70f1e499b4f11352",
+    "cli": {
+      "path": "/Users/hx/.codex/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/bin/codex",
+      "version": "codex-cli 0.166.0",
+      "entrySha256": "39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1"
+    },
+    "executedDriverSha256": "a6304a85c7d3deaf15df9c7b127fd324c1587a5b7a541041d6075bab29b253ff",
+    "afterEvidence": "source-after.json"
+  },
+  "execution": {
+    "startedAt": "2026-11-01T18:53:39.938Z",
+    "finishedAt": "2026-11-01T18:53:55.638Z",
+    "platform": "darwin-arm64",
+    "timeZone": "Asia/Singapore",
+    "runnerSession": 52442,
+    "exitCode": 0,
+    "actualChecks": 18,
+    "actualMcpCalls": 17,
+    "command": "commands.json",
+    "appRuns": 1,
+    "builds": 0,
+    "nativeMatrixReruns": 0
+  },
+  "resourceRelease": {
+    "releasedAt": "2026-11-01T18:54:08.955560+00:00",
+    "actualCheck": "cleanup.json",
+    "ui": true,
+    "heavy": true
+  },
+  "boundaries": [
+    "Source is isolated synthetic original M10 fixture; no daily Foxmail data, remote model or external business service used.",
+    "Loopback synthetic Responses provider chooses tool sequence; no claim about model reasoning.",
+    "Project/connection/profile setup is RPC fixture only. Acceptance query/read/resource and errors are actual native MCP; composer Task creation is actual UI.",
+    "Read-only --sandbox read-only --ask-for-approval never; no SMTP configured and no draft/update/send/delete calls.",
+    "Original native I coverage retained only within reviewed changed-file applicability. No Story/v1/other-case count inferred.",
+    "Fault injection explicitly alters own source as an external actor; normal product reads preserve source, final fixture restored.",
+    "Formal whole-case accounting is coordinator-only."
+  ],
+  "formalAccounting": {
+    "recordedByWorker": 0,
+    "suggestedT10": "I+A+R predicates complete; pending coordinator archive/hash verification"
+  },
+  "deliveryPreparedAt": "2026-11-01T18:55:36.647872+00:00"
+}

@@ -7,6 +7,7 @@ import {retryAfterWait} from './retry-after';
 import type { IpcMainInvokeEvent } from 'electron';
 import { z } from 'zod';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
+import {isApplicationPreflightFailure} from './capability-preflight';
 import type {ApplicationId,ConnectionConfig} from '@shared/application-connections';
 import type {HostedConfiguration,HostedConnection} from './host-application-registry';
 import type { MailSendActor } from '@shared/mail-execution';
@@ -311,7 +312,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
       }).immediate());
       this.records.set(context,record);this.active.add(record);
       try{const value=await work(context);this.record(context);await this.end(context,'succeeded',null);this.record(context);return value;}
-      catch(error){const code=error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',selectionRejected=context.scopeKind==='connection-management'&&context.action==='application.project.select'&&error instanceof SelectionPreconditionError;await this.end(context,code==='CANCELED'?'cancelled':context.semantics==='write'&&!selectionRejected?'unknown':'failed',code);throw error;}
+      catch(error){const code=error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',selectionRejected=context.scopeKind==='connection-management'&&context.action==='application.project.select'&&error instanceof SelectionPreconditionError,preflightRejected=isApplicationPreflightFailure(error,context.operationId);await this.end(context,code==='CANCELED'?'cancelled':context.semantics==='write'&&!selectionRejected&&!preflightRejected?'unknown':'failed',code);throw error;}
       finally{record.active=false;abort.abort();this.active.delete(record);}
     };
     const execution=lease?this.store.use(application.resourceId,input.callerKind==='index-job'?'index-job':'ui',input.operationId,run):run();

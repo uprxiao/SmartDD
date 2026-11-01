@@ -1,0 +1,779 @@
+{
+  "schema": "c5-t33-readonly-smtp-audit-v1",
+  "readMethod": "Closed App immutable=1 mode=ro snapshot; no WAL/SHM/live own process, mutation, listener or replay.",
+  "fourSendOutcomes": [
+    {
+      "execution": {
+        "id": "bf3acf31-b62d-4d53-abf2-786022f772e7",
+        "intent_id": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+        "project_id": "038069bd-040f-40ac-b432-06c6ce91d563",
+        "draft_id": "99f8dc48-eb15-419b-9a95-78904f8a8b11",
+        "draft_revision": 1,
+        "review_hash": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+        "state": "server-accepted",
+        "result_json": "{\"accepted\":[\"recipient@example.test\"],\"complete\":true,\"errorCode\":null,\"messageId\":\"<wy-69d74c4c-0b06-47d3-9c14-e3f3d01d66c6@willyou.local>\",\"rejected\":[],\"smtpCode\":250,\"state\":\"server-accepted\"}",
+        "secret_revision": 1,
+        "started_at": "2026-11-01T18:10:05.627Z",
+        "ended_at": "2026-11-01T18:10:05.671Z"
+      },
+      "parsedResult": {
+        "accepted": [
+          "recipient@example.test"
+        ],
+        "complete": true,
+        "errorCode": null,
+        "messageId": "<wy-69d74c4c-0b06-47d3-9c14-e3f3d01d66c6@willyou.local>",
+        "rejected": [],
+        "smtpCode": 250,
+        "state": "server-accepted"
+      },
+      "executeSendReceipt": {
+        "name": "executeSend",
+        "args": [
+          "038069bd-040f-40ac-b432-06c6ce91d563",
+          {
+            "intentId": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+            "expectedReviewHash": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e"
+          }
+        ],
+        "at": "2026-11-01T18:10:05.528Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+              "draftId": "99f8dc48-eb15-419b-9a95-78904f8a8b11",
+              "draftRevision": 1,
+              "state": "server-accepted",
+              "reviewHash": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+              "review": {
+                "id": "adff3e53-02f4-4204-b8ee-14d1a38682a6",
+                "revision": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+                "mediaType": "application/json",
+                "size": 1225
+              },
+              "authorized": false,
+              "executionId": "bf3acf31-b62d-4d53-abf2-786022f772e7",
+              "result": {
+                "accepted": [
+                  "recipient@example.test"
+                ],
+                "complete": true,
+                "errorCode": null,
+                "messageId": "<wy-69d74c4c-0b06-47d3-9c14-e3f3d01d66c6@willyou.local>",
+                "rejected": [],
+                "smtpCode": 250,
+                "state": "server-accepted"
+              },
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:04.981Z",
+              "updatedAt": "2026-11-01T18:10:05.671Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:05.732Z"
+      },
+      "authorizeSendReceipt": {
+        "name": "authorizeSend",
+        "args": [
+          "038069bd-040f-40ac-b432-06c6ce91d563",
+          {
+            "intentId": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+            "expectedReviewHash": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+            "displayReceiptId": "810c9e86-167c-4955-943f-846d66a9f89c",
+            "reviewedUnknownExecutionIds": []
+          }
+        ],
+        "at": "2026-11-01T18:10:05.395Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+              "draftId": "99f8dc48-eb15-419b-9a95-78904f8a8b11",
+              "draftRevision": 1,
+              "state": "authorized",
+              "reviewHash": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+              "review": {
+                "id": "adff3e53-02f4-4204-b8ee-14d1a38682a6",
+                "revision": "a725a65771a8e7ec167ea579ce3865d3b2cff3b2e50f79a7e19b72ac8bd0cc9e",
+                "mediaType": "application/json",
+                "size": 1225
+              },
+              "authorized": true,
+              "executionId": null,
+              "result": null,
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:04.981Z",
+              "updatedAt": "2026-11-01T18:10:05.467Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:05.527Z"
+      },
+      "grant": {
+        "id": "d1cec47d-3b1d-4002-9454-c39e05d7abd2",
+        "intent_id": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      "intent": {
+        "id": "69d74c4c-0b06-47d3-9c14-e3f3d01d66c6",
+        "execution_id": "bf3acf31-b62d-4d53-abf2-786022f772e7",
+        "project_id": "038069bd-040f-40ac-b432-06c6ce91d563",
+        "draft_id": "99f8dc48-eb15-419b-9a95-78904f8a8b11",
+        "draft_revision": 1,
+        "source_task_id": null,
+        "source_run_id": null,
+        "state": "server-accepted"
+      },
+      "sinkMessage": {
+        "sha256": "63f2e9752ad151bae55fa0a059fbdc99411ac65772dc7a8f675e5b7f67f9ba6c",
+        "bytes": 316,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 SMTP initial",
+        "at": "2026-11-01T18:10:05.651Z"
+      }
+    },
+    {
+      "execution": {
+        "id": "4c66756b-3b28-4e43-9ef0-8bf6bc2abf97",
+        "intent_id": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+        "project_id": "038069bd-040f-40ac-b432-06c6ce91d563",
+        "draft_id": "2ef3c8ef-f845-47c7-9594-71b67cf45083",
+        "draft_revision": 2,
+        "review_hash": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+        "state": "server-accepted",
+        "result_json": "{\"accepted\":[\"recipient@example.test\"],\"complete\":true,\"errorCode\":null,\"messageId\":\"<wy-d5755be3-38d0-4680-9bc3-3915b42a1574@willyou.local>\",\"rejected\":[],\"smtpCode\":250,\"state\":\"server-accepted\"}",
+        "secret_revision": 2,
+        "started_at": "2026-11-01T18:10:19.346Z",
+        "ended_at": "2026-11-01T18:10:19.384Z"
+      },
+      "parsedResult": {
+        "accepted": [
+          "recipient@example.test"
+        ],
+        "complete": true,
+        "errorCode": null,
+        "messageId": "<wy-d5755be3-38d0-4680-9bc3-3915b42a1574@willyou.local>",
+        "rejected": [],
+        "smtpCode": 250,
+        "state": "server-accepted"
+      },
+      "executeSendReceipt": {
+        "name": "executeSend",
+        "args": [
+          "038069bd-040f-40ac-b432-06c6ce91d563",
+          {
+            "intentId": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+            "expectedReviewHash": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8"
+          }
+        ],
+        "at": "2026-11-01T18:10:19.276Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+              "draftId": "2ef3c8ef-f845-47c7-9594-71b67cf45083",
+              "draftRevision": 2,
+              "state": "server-accepted",
+              "reviewHash": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+              "review": {
+                "id": "44309992-a572-4a2a-be2d-5d632c8e53a2",
+                "revision": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+                "mediaType": "application/json",
+                "size": 1251
+              },
+              "authorized": false,
+              "executionId": "4c66756b-3b28-4e43-9ef0-8bf6bc2abf97",
+              "result": {
+                "accepted": [
+                  "recipient@example.test"
+                ],
+                "complete": true,
+                "errorCode": null,
+                "messageId": "<wy-d5755be3-38d0-4680-9bc3-3915b42a1574@willyou.local>",
+                "rejected": [],
+                "smtpCode": 250,
+                "state": "server-accepted"
+              },
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:18.782Z",
+              "updatedAt": "2026-11-01T18:10:19.384Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:19.441Z"
+      },
+      "authorizeSendReceipt": {
+        "name": "authorizeSend",
+        "args": [
+          "038069bd-040f-40ac-b432-06c6ce91d563",
+          {
+            "intentId": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+            "expectedReviewHash": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+            "displayReceiptId": "2c5aedce-078d-4910-b88f-b9b82ec0f2a7",
+            "reviewedUnknownExecutionIds": []
+          }
+        ],
+        "at": "2026-11-01T18:10:19.151Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+              "draftId": "2ef3c8ef-f845-47c7-9594-71b67cf45083",
+              "draftRevision": 2,
+              "state": "authorized",
+              "reviewHash": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+              "review": {
+                "id": "44309992-a572-4a2a-be2d-5d632c8e53a2",
+                "revision": "f781efbafb6ba69141d3c5321cb8b069579f822bfe545a1d5e59c125fd3f62d8",
+                "mediaType": "application/json",
+                "size": 1251
+              },
+              "authorized": true,
+              "executionId": null,
+              "result": null,
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:18.782Z",
+              "updatedAt": "2026-11-01T18:10:19.213Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:19.275Z"
+      },
+      "grant": {
+        "id": "3d1cad85-82b8-4482-b0c3-d66219af7963",
+        "intent_id": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      "intent": {
+        "id": "d5755be3-38d0-4680-9bc3-3915b42a1574",
+        "execution_id": "4c66756b-3b28-4e43-9ef0-8bf6bc2abf97",
+        "project_id": "038069bd-040f-40ac-b432-06c6ce91d563",
+        "draft_id": "2ef3c8ef-f845-47c7-9594-71b67cf45083",
+        "draft_revision": 2,
+        "source_task_id": null,
+        "source_run_id": null,
+        "state": "server-accepted"
+      },
+      "sinkMessage": {
+        "sha256": "90ff817d3e1459eb35ef126647e43bf0b434056637f9e8077e1fe121c815b600",
+        "bytes": 342,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 SMTP reconfirmed",
+        "at": "2026-11-01T18:10:19.369Z"
+      }
+    },
+    {
+      "execution": {
+        "id": "0d55ce4f-a9b3-4ce0-94aa-a128418aea7a",
+        "intent_id": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+        "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "draft_id": "44f5c434-dad2-4fc4-812d-bf290c23e839",
+        "draft_revision": 1,
+        "review_hash": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+        "state": "server-accepted",
+        "result_json": "{\"accepted\":[\"recipient@example.test\"],\"complete\":true,\"errorCode\":null,\"messageId\":\"<wy-23c89b7f-8c14-42f3-983d-e1de521ccfb0@willyou.local>\",\"rejected\":[],\"smtpCode\":250,\"state\":\"server-accepted\"}",
+        "secret_revision": 2,
+        "started_at": "2026-11-01T18:10:24.664Z",
+        "ended_at": "2026-11-01T18:10:24.708Z"
+      },
+      "parsedResult": {
+        "accepted": [
+          "recipient@example.test"
+        ],
+        "complete": true,
+        "errorCode": null,
+        "messageId": "<wy-23c89b7f-8c14-42f3-983d-e1de521ccfb0@willyou.local>",
+        "rejected": [],
+        "smtpCode": 250,
+        "state": "server-accepted"
+      },
+      "executeSendReceipt": {
+        "name": "executeSend",
+        "args": [
+          "cdc81aca-f784-495d-ac32-87d6a117bca2",
+          {
+            "intentId": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+            "expectedReviewHash": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891"
+          }
+        ],
+        "at": "2026-11-01T18:10:24.570Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+              "draftId": "44f5c434-dad2-4fc4-812d-bf290c23e839",
+              "draftRevision": 1,
+              "state": "server-accepted",
+              "reviewHash": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+              "review": {
+                "id": "4d6b997d-0927-47ca-b14c-ef3989c3fb1a",
+                "revision": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+                "mediaType": "application/json",
+                "size": 1233
+              },
+              "authorized": false,
+              "executionId": "0d55ce4f-a9b3-4ce0-94aa-a128418aea7a",
+              "result": {
+                "accepted": [
+                  "recipient@example.test"
+                ],
+                "complete": true,
+                "errorCode": null,
+                "messageId": "<wy-23c89b7f-8c14-42f3-983d-e1de521ccfb0@willyou.local>",
+                "rejected": [],
+                "smtpCode": 250,
+                "state": "server-accepted"
+              },
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:24.020Z",
+              "updatedAt": "2026-11-01T18:10:24.708Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:24.769Z"
+      },
+      "authorizeSendReceipt": {
+        "name": "authorizeSend",
+        "args": [
+          "cdc81aca-f784-495d-ac32-87d6a117bca2",
+          {
+            "intentId": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+            "expectedReviewHash": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+            "displayReceiptId": "f05dc687-58a7-4d86-bf41-778276746f28",
+            "reviewedUnknownExecutionIds": []
+          }
+        ],
+        "at": "2026-11-01T18:10:24.428Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+              "draftId": "44f5c434-dad2-4fc4-812d-bf290c23e839",
+              "draftRevision": 1,
+              "state": "authorized",
+              "reviewHash": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+              "review": {
+                "id": "4d6b997d-0927-47ca-b14c-ef3989c3fb1a",
+                "revision": "274a4fb6b22c038ce9312bd3cc57096097f173db142aeb7772a95c2d4c15d891",
+                "mediaType": "application/json",
+                "size": 1233
+              },
+              "authorized": true,
+              "executionId": null,
+              "result": null,
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:24.020Z",
+              "updatedAt": "2026-11-01T18:10:24.507Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:24.570Z"
+      },
+      "grant": {
+        "id": "ec90f5da-6b18-41fe-88a5-39f46cfdf606",
+        "intent_id": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      "intent": {
+        "id": "23c89b7f-8c14-42f3-983d-e1de521ccfb0",
+        "execution_id": "0d55ce4f-a9b3-4ce0-94aa-a128418aea7a",
+        "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "draft_id": "44f5c434-dad2-4fc4-812d-bf290c23e839",
+        "draft_revision": 1,
+        "source_task_id": null,
+        "source_run_id": null,
+        "state": "server-accepted"
+      },
+      "sinkMessage": {
+        "sha256": "fbc0680d421bc789af2a73a4849463fbc21490b09059769568b5df493eee5d09",
+        "bytes": 324,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 matching reconfirmed",
+        "at": "2026-11-01T18:10:24.685Z"
+      }
+    },
+    {
+      "execution": {
+        "id": "497469d4-a849-4135-b3c3-79ebe650c9de",
+        "intent_id": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+        "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "draft_id": "298952bf-86c7-4721-b3ed-7c97e3abf0c6",
+        "draft_revision": 1,
+        "review_hash": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+        "state": "server-accepted",
+        "result_json": "{\"accepted\":[\"recipient@example.test\"],\"complete\":true,\"errorCode\":null,\"messageId\":\"<wy-29ec186e-60ff-4a9e-9d18-6a36c07e369e@willyou.local>\",\"rejected\":[],\"smtpCode\":250,\"state\":\"server-accepted\"}",
+        "secret_revision": 2,
+        "started_at": "2026-11-01T18:10:35.829Z",
+        "ended_at": "2026-11-01T18:10:35.866Z"
+      },
+      "parsedResult": {
+        "accepted": [
+          "recipient@example.test"
+        ],
+        "complete": true,
+        "errorCode": null,
+        "messageId": "<wy-29ec186e-60ff-4a9e-9d18-6a36c07e369e@willyou.local>",
+        "rejected": [],
+        "smtpCode": 250,
+        "state": "server-accepted"
+      },
+      "executeSendReceipt": {
+        "name": "executeSend",
+        "args": [
+          "cdc81aca-f784-495d-ac32-87d6a117bca2",
+          {
+            "intentId": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+            "expectedReviewHash": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f"
+          }
+        ],
+        "at": "2026-11-01T18:10:35.734Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+              "draftId": "298952bf-86c7-4721-b3ed-7c97e3abf0c6",
+              "draftRevision": 1,
+              "state": "server-accepted",
+              "reviewHash": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+              "review": {
+                "id": "84f719cc-edfc-4892-bc4d-c0a3ce42fe09",
+                "revision": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+                "mediaType": "application/json",
+                "size": 1232
+              },
+              "authorized": false,
+              "executionId": "497469d4-a849-4135-b3c3-79ebe650c9de",
+              "result": {
+                "accepted": [
+                  "recipient@example.test"
+                ],
+                "complete": true,
+                "errorCode": null,
+                "messageId": "<wy-29ec186e-60ff-4a9e-9d18-6a36c07e369e@willyou.local>",
+                "rejected": [],
+                "smtpCode": 250,
+                "state": "server-accepted"
+              },
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:35.170Z",
+              "updatedAt": "2026-11-01T18:10:35.866Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:35.931Z"
+      },
+      "authorizeSendReceipt": {
+        "name": "authorizeSend",
+        "args": [
+          "cdc81aca-f784-495d-ac32-87d6a117bca2",
+          {
+            "intentId": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+            "expectedReviewHash": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+            "displayReceiptId": "ad95c60f-b725-46a0-83ef-c21238c9337a",
+            "reviewedUnknownExecutionIds": []
+          }
+        ],
+        "at": "2026-11-01T18:10:35.593Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "intent": {
+              "id": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+              "draftId": "298952bf-86c7-4721-b3ed-7c97e3abf0c6",
+              "draftRevision": 1,
+              "state": "authorized",
+              "reviewHash": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+              "review": {
+                "id": "84f719cc-edfc-4892-bc4d-c0a3ce42fe09",
+                "revision": "2cf7b6f363c98ca022345a74cee5999b256dbecd717c90c888f5f7b87657985f",
+                "mediaType": "application/json",
+                "size": 1232
+              },
+              "authorized": true,
+              "executionId": null,
+              "result": null,
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:10:35.170Z",
+              "updatedAt": "2026-11-01T18:10:35.674Z"
+            }
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:35.734Z"
+      },
+      "grant": {
+        "id": "d43675e6-b6ce-44f0-b5fd-4ae70571b269",
+        "intent_id": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+        "source": "renderer-confirmation",
+        "state": "used"
+      },
+      "intent": {
+        "id": "29ec186e-60ff-4a9e-9d18-6a36c07e369e",
+        "execution_id": "497469d4-a849-4135-b3c3-79ebe650c9de",
+        "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "draft_id": "298952bf-86c7-4721-b3ed-7c97e3abf0c6",
+        "draft_revision": 1,
+        "source_task_id": null,
+        "source_run_id": null,
+        "state": "server-accepted"
+      },
+      "sinkMessage": {
+        "sha256": "c5a1dc37f3399b11412ebe4191e285f117c0daff6c4d3f899c9880a18977edce",
+        "bytes": 323,
+        "from": "fixture@example.test",
+        "to": "recipient@example.test",
+        "subject": "T33 Foxmail reconfirmed",
+        "at": "2026-11-01T18:10:35.853Z"
+      }
+    }
+  ],
+  "actualUiSendClicks": [
+    {
+      "stage": "smtp-only-confirm",
+      "selector": "dialog button",
+      "text": "发送此修订",
+      "point": {
+        "x": 947.5,
+        "y": 721.5
+      },
+      "at": "2026-11-01T18:10:05.528Z"
+    },
+    {
+      "stage": "smtp-reconfirm",
+      "selector": "dialog button",
+      "text": "发送此修订",
+      "point": {
+        "x": 947.5,
+        "y": 721.5
+      },
+      "at": "2026-11-01T18:10:19.276Z"
+    },
+    {
+      "stage": "matching-reconfirm",
+      "selector": "dialog button",
+      "text": "发送此修订",
+      "point": {
+        "x": 947.5,
+        "y": 721.5
+      },
+      "at": "2026-11-01T18:10:24.570Z"
+    },
+    {
+      "stage": "foxmail-explicit-reconfirm",
+      "selector": "dialog button",
+      "text": "发送此修订",
+      "point": {
+        "x": 947.5,
+        "y": 721.5
+      },
+      "at": "2026-11-01T18:10:35.734Z"
+    }
+  ],
+  "twoSmtpVerifications": {
+    "persistentVerifiedSavedCandidates": [
+      {
+        "operation_id": "17244602-7a23-4386-99d6-a3105135f6cc",
+        "connection_id": "ab036579-ac5d-43bd-8344-0678ee03f054",
+        "expected_revision": 0,
+        "candidate_hash": "df7c969b54b7b1c072926dd8c3bac68af5c2377f6a633155d6162e42704956c1",
+        "state": "cleaned",
+        "error_code": null,
+        "verified_identity_json": "{\"accountId\":\"fixture@example.test\",\"contractMajor\":1,\"providerId\":\"smtp\",\"serviceId\":\"smtp://127.0.0.1:61322\"}",
+        "created_at": "2026-11-01T18:09:53.113Z",
+        "updated_at": "2026-11-01T18:09:53.240Z"
+      },
+      {
+        "operation_id": "2da4fb73-7a36-4b8f-906d-7135faffa0f6",
+        "connection_id": "ab036579-ac5d-43bd-8344-0678ee03f054",
+        "expected_revision": 1,
+        "candidate_hash": "48e2124d2182f8c2fe0f53088f40dad60f9a03f8fc7d7f1079524e33db792b6d",
+        "state": "cleaned",
+        "error_code": null,
+        "verified_identity_json": "{\"accountId\":\"fixture@example.test\",\"contractMajor\":1,\"providerId\":\"smtp\",\"serviceId\":\"smtp://127.0.0.1:61322\"}",
+        "created_at": "2026-11-01T18:10:06.186Z",
+        "updated_at": "2026-11-01T18:10:06.427Z"
+      }
+    ],
+    "successfulConnectionTestOperations": [
+      {
+        "operation_id": "876d1e50-5d3b-43f7-9795-f46ce4e280f1",
+        "action": "connection.test",
+        "state": "succeeded",
+        "error_code": null,
+        "started_at": "2026-11-01T18:09:53.085Z",
+        "ended_at": "2026-11-01T18:09:53.174Z",
+        "kind": "connection",
+        "subject_id": "ab036579-ac5d-43bd-8344-0678ee03f054"
+      },
+      {
+        "operation_id": "b804895d-6bc0-4279-9ad8-c0f0a8239db9",
+        "action": "connection.test",
+        "state": "succeeded",
+        "error_code": null,
+        "started_at": "2026-11-01T18:10:06.147Z",
+        "ended_at": "2026-11-01T18:10:06.243Z",
+        "kind": "connection",
+        "subject_id": "ab036579-ac5d-43bd-8344-0678ee03f054"
+      }
+    ],
+    "directIpcReceipts": [
+      {
+        "name": "testConnection",
+        "args": [
+          {
+            "id": "ab036579-ac5d-43bd-8344-0678ee03f054",
+            "expectedRevision": 1,
+            "name": "T33 synthetic SMTP",
+            "config": {
+              "kind": "smtp",
+              "host": "127.0.0.1",
+              "port": 61322,
+              "username": "fixture@example.test",
+              "fromAddress": "fixture@example.test",
+              "authMode": "password",
+              "mode": "plain"
+            },
+            "secret": "synthetic-credential-redacted"
+          }
+        ],
+        "at": "2026-11-01T18:10:06.145Z",
+        "reply": {
+          "ok": true,
+          "value": {
+            "operationId": "2da4fb73-7a36-4b8f-906d-7135faffa0f6",
+            "connectionId": "ab036579-ac5d-43bd-8344-0678ee03f054",
+            "candidateHash": "48e2124d2182f8c2fe0f53088f40dad60f9a03f8fc7d7f1079524e33db792b6d",
+            "expectedRevision": 1,
+            "identity": {
+              "providerId": "smtp",
+              "serviceId": "smtp://127.0.0.1:61322",
+              "accountId": "fixture@example.test",
+              "contractMajor": 1
+            },
+            "compatibility": {
+              "sourceSchemaVersion": 1,
+              "conversions": [
+                {
+                  "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+                  "taskId": null,
+                  "converterHash": "4875b32af3216c4d9badca67581a3825101c33d8b4a855c309eaa8e9fc1a073c",
+                  "viewDigest": "eef2cb5992d00b7091efd41c1b0148a867533407c3b05b1cb48a8f901da10150",
+                  "schemaHash": "057fa2b66fe61114e51f4a080fca05b9796792ee886e3a249169262b57dda777"
+                }
+              ],
+              "connectionId": "ab036579-ac5d-43bd-8344-0678ee03f054",
+              "expectedRevision": 1,
+              "configHash": "eef2cb5992d00b7091efd41c1b0148a867533407c3b05b1cb48a8f901da10150",
+              "referenceHash": "bb0844d48868da970ff708cca4a999719261f8fd472cc2ec657ab20b7fec7897",
+              "impacts": [],
+              "planHash": "42cab30800ab82f5dc6eb7bfc686bc4ab41b09e05e871d46f0330e3314bb3f34"
+            },
+            "expiresAt": "2026-11-01T18:20:06.181Z"
+          }
+        },
+        "returnedAt": "2026-11-01T18:10:06.258Z"
+      }
+    ],
+    "journalState": "cleaned occurs only after committed/cleanup-pending in cleanupObsoleteSecret; verified_identity_json present and error_code null. Source connection-service.ts lines229-235 retained.",
+    "initialReplyCaptureBoundary": "Initial prerequisite testConnection ran before observer installation. Its direct IPC return was not retained. Successful unwrap/save control flow, verified saved candidate, succeeded connection.test operation and initial healthy saved connection receipt establish verification success. No direct initial IPC reply is reconstructed. UI revision test has original successful IPC receipt.",
+    "initialSavedConnection": {
+      "id": "ab036579-ac5d-43bd-8344-0678ee03f054",
+      "appId": "mail",
+      "providerId": "smtp",
+      "name": "T33 synthetic SMTP",
+      "config": {
+        "kind": "smtp",
+        "host": "127.0.0.1",
+        "port": 61322,
+        "username": "fixture@example.test",
+        "fromAddress": "fixture@example.test",
+        "authMode": "password",
+        "mode": "plain"
+      },
+      "configSchemaVersion": 1,
+      "revision": 1,
+      "configRevision": 1,
+      "identityRevision": 1,
+      "secretRevision": 1,
+      "policyRevision": 1,
+      "identity": {
+        "providerId": "smtp",
+        "serviceId": "smtp://127.0.0.1:61322",
+        "accountId": "fixture@example.test",
+        "contractMajor": 1
+      },
+      "enabled": true,
+      "authorization": "connected",
+      "health": "healthy",
+      "healthCode": "OK",
+      "healthMessage": "连接已核验",
+      "testedAt": "2026-11-01T18:09:53.231Z",
+      "hasSecret": true,
+      "cleanupPending": false,
+      "createdAt": "2026-11-01T18:09:53.231Z",
+      "updatedAt": "2026-11-01T18:09:53.231Z"
+    },
+    "revisedSavedConnection": {
+      "id": "ab036579-ac5d-43bd-8344-0678ee03f054",
+      "appId": "mail",
+      "providerId": "smtp",
+      "name": "T33 synthetic SMTP",
+      "config": {
+        "kind": "smtp",
+        "host": "127.0.0.1",
+        "port": 61322,
+        "username": "fixture@example.test",
+        "fromAddress": "fixture@example.test",
+        "authMode": "password",
+        "mode": "plain"
+      },
+      "configSchemaVersion": 1,
+      "revision": 2,
+      "configRevision": 1,
+      "identityRevision": 1,
+      "secretRevision": 2,
+      "policyRevision": 1,
+      "identity": {
+        "providerId": "smtp",
+        "serviceId": "smtp://127.0.0.1:61322",
+        "accountId": "fixture@example.test",
+        "contractMajor": 1
+      },
+      "enabled": true,
+      "authorization": "connected",
+      "health": "healthy",
+      "healthCode": "OK",
+      "healthMessage": "连接已核验",
+      "testedAt": "2026-11-01T18:10:06.423Z",
+      "hasSecret": true,
+      "cleanupPending": false,
+      "createdAt": "2026-11-01T18:09:53.231Z",
+      "updatedAt": "2026-11-01T18:10:06.423Z"
+    }
+  },
+  "auxiliaryFailure": {
+    "actual": [
+      "ECONNRESET"
+    ],
+    "driverAssertion": "assert.deepEqual(sink.state.errors,[])",
+    "originalCommandExitCode": 1,
+    "rawStatusUnchanged": "failed",
+    "classification": "Unattributed fixture socket observation; four business sends have individually confirmed250 in original executeSend return and persisted execution. No failed/unknown send found.",
+    "socketAndTime": "unknown; only code recorded. Cannot identify verify/send/QUIT phase or assert event happened after acceptance.",
+    "scope": "All 13 original T33/D07/D08 business/interface assertions emitted passed before this additional zero-socket-error assertion. Original expectations, raw result and command exit1 remain unchanged.",
+    "laterAssertionNotReached": "Separate assert.deepEqual(app.rendererErrors,[]) was after this failure and not reached; it is not claimed passed."
+  },
+  "logBoundary": "Original electron.log and summary retained; no per-socket/time trace exists. No App restart or resend."
+}

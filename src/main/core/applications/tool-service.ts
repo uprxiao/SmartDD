@@ -18,6 +18,8 @@ import type { ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilityRunRegistry, RunContext } from './run-registry';
 import {requirePlanEntry} from './run-plan';
+import {isApplicationPreflightFailure} from './capability-preflight';
+import {applicationResultV2Schema} from '@shared/application-result';
 /** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
 const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
 export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null;entry?:ApplicationEntry }
@@ -137,11 +139,12 @@ export class ApplicationToolService {
     }catch(error){return Promise.resolve(failed(error));}
   }
   private async execute(runId: string,requestId: string,call: BridgeToolCall,hash: string,control: { signal: AbortSignal;deadline: number;timeout: AbortSignal }): Promise<BridgeResponse> {
-    let operationId: string | undefined, attempts = 0, effect: BridgeFailure['effectState'] = 'not-started', exhausted = false;
+    let operationId: string | undefined, attempts = 0, effect: BridgeFailure['effectState'] = 'not-started', exhausted = false, write=false;
     try {
       if (control.signal.aborted) throw new ApplicationError(interruptionCode(control.signal,control.timeout),'本次调用已取消');
       return await this.runs.withActivity(runId,async context => {
         const selected = this.selected(context,call), handler = this.handler(selected.application.packageHash,call.operation,call.contractMajor);
+        write=handler.semantics==='write';
         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
         if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');
         handler.authorize(context,call.connectionId);
@@ -170,7 +173,8 @@ export class ApplicationToolService {
             if (!outputValidator(value).valid) throw new ApplicationError('INVALID_RESPONSE','结果不符合固定工具输出契约');
             this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
             if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'本次等待已结束，请查看已有业务执行记录');
-            effect = handler.semantics === 'read' ? 'read-only' : 'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);
+            const unified=write&&selected.application.manifest.schema==='smartdd-app-package-v2'&&call.contractMajor===2?applicationResultV2Schema.safeParse(value):null;
+            effect = handler.semantics === 'read' ? 'read-only' : unified?.success&&unified.data.operation.effectState==='unknown'?'unknown':'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);
             return { schema: 1 as const,id: requestId,status: 'ok' as const,value,operationId,effectState: effect };
           } catch (error) {
             const retryable = error instanceof ApplicationError && ['TRANSIENT_FAILURE','TIMEOUT','RESOURCE_BUSY'].includes(error.code);
@@ -188,8 +192,10 @@ export class ApplicationToolService {
       // cause. Persist the original host deadline cause,without changing effect
       // state or interpreting an unknown write as canceled or retryable.
       const cause=error instanceof ApplicationError&&error.code==='CANCELED'&&control.signal.aborted&&interruptionCode(control.signal,control.timeout)==='TIMEOUT'?new ApplicationError('TIMEOUT','调用已到达本次时限，原业务结果按执行记录核对'):error;
+      if((effect as BridgeFailure['effectState'])==='unknown'&&isApplicationPreflightFailure(error,operationId))effect='not-started';
       if (operationId && !(cause instanceof ApplicationError && cause.code === 'REPLAY_UNAVAILABLE')) await this.end(operationId,(effect as BridgeFailure['effectState']) === 'unknown' ? 'unknown' : 'failed',attempts,effect,cause instanceof ApplicationError ? cause.code : 'CAPABILITY_UNAVAILABLE');
-      return { schema: 1,id: requestId,status: 'error',error: failure(cause,attempts,effect,exhausted),...(operationId ? { operationId } : {}) };
+      const detail=failure(cause,attempts,effect,exhausted);if(write)detail.retryable=false;
+      return { schema: 1,id: requestId,status: 'error',error: detail,...(operationId ? { operationId } : {}) };
     }
   }
   private async end(id: string,state: 'succeeded' | 'failed' | 'unknown',attempts: number,effect: BridgeFailure['effectState'],code: string | null): Promise<void> {

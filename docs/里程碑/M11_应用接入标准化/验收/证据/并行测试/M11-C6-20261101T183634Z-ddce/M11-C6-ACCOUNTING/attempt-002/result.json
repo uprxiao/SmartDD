@@ -1,0 +1,285 @@
+{
+  "schema": "m11-c6-formal-accounting-v2",
+  "at": "2026-11-01T19:13:51.320864+00:00",
+  "reviewer": "/root",
+  "addedUnique": [
+    "T10",
+    "T18"
+  ],
+  "T10": {
+    "decision": "passed I+A+R",
+    "criteria": [
+      {
+        "id": "mcp-query-page-read-resource",
+        "originalPredicate": "经MCP查询、分页、读取及有界资源获取",
+        "status": "passed",
+        "actual": "Actual composer creates own task, real Codex reads delivered Skill and uses exact native MCP tool declarations. Query/read/resource outputs retain v2 schema, mcp origin and read-only effect.17 native MCP calls,18 total actual native calls including Skill read.",
+        "evidence": [
+          "raw-a/result.json#t10Calls",
+          "raw-a/native-mcp-call-records.jsonl",
+          "raw-a/result.json#skillEvidence"
+        ],
+        "missing": []
+      },
+      {
+        "id": "default-date-range",
+        "originalPredicate": "固定默认日期范围保持",
+        "status": "passed",
+        "actual": "Saved30-day window with original M10 ages0/6/29/30/99/100 returns exactly IDs1,2,3; local endDate2026-11-02/Asia-Singapore match original fixture.",
+        "evidence": [
+          "raw-a/result.json#pages.default",
+          "raw-a/result.json#rangeFixture"
+        ],
+        "missing": []
+      },
+      {
+        "id": "single-request-range",
+        "originalPredicate": "单次日期范围保持",
+        "status": "passed",
+        "actual": "Explicit100 returns exactly IDs1..5 and excludes age100 ID6; cursor continuation omits queryDays yet stays100; settings after all calls remain30. Read99-day ID5 without override rejects SCOPE_DENIED; same reference with100 succeeds.",
+        "evidence": [
+          "raw-a/result.json#pages.override",
+          "raw-a/result.json#savedDefaultAfter",
+          "raw-a/result.json#t10Calls"
+        ],
+        "missing": []
+      },
+      {
+        "id": "pagination",
+        "originalPredicate": "分页与引用保持",
+        "status": "passed",
+        "actual": "limit2 yields2 default pages/3 override pages without omissions/duplicates; raw nextCursor equals unified pagination; changing the pinned cursor to31 days rejects REVISION_CONFLICT.",
+        "evidence": [
+          "raw-a/result.json#t10Calls",
+          "references/m10-ua/mail-read-62-assertions.json"
+        ],
+        "missing": []
+      },
+      {
+        "id": "source-identity-revision",
+        "originalPredicate": "来源修订保持",
+        "status": "passed",
+        "actual": "Every query item has selected connection/identityRevision1 and raw MAIL SHA contentRevision. Read envelope source.revision equals exact native reference hash; returned text resource is present in unified resources.",
+        "evidence": [
+          "raw-a/result.json#sourceMailHashes",
+          "raw-a/result.json#opened",
+          "raw-a/result.json#t10Calls"
+        ],
+        "missing": []
+      },
+      {
+        "id": "bounded-resource",
+        "originalPredicate": "有界资源获取保持",
+        "status": "passed",
+        "actual": "Real Foxmail-minted original text resource31 bytes reconstructed from4 native MCP chunks each<=8 bytes, exact revision3c5fc7c87a150f90cfa352791356c4cbe569ed74f5f478d09c200e08bd8a7703. Full original body/attachment/MIME matrix reused from applicable62/62 I instead of rerun.",
+        "evidence": [
+          "raw-a/result.json#resourceRead",
+          "i-evidence-reuse.json"
+        ],
+        "missing": []
+      },
+      {
+        "id": "source-change",
+        "originalPredicate": "模拟源变化",
+        "status": "passed",
+        "actual": "External own-fixture actor appends bytes to5.mail after normal reads; old exact reference rejects RESOURCE_STATE_CHANGED. Original bytes/inode restored immediately and again checked at cleanup.",
+        "evidence": [
+          "raw-a/result.json#faults",
+          "raw-a/result.json#t10Calls",
+          "cleanup.json"
+        ],
+        "missing": []
+      },
+      {
+        "id": "complete-no-match",
+        "originalPredicate": "无匹配与失败区分",
+        "status": "passed",
+        "actual": "Impossible text query returns successful complete=true,matched0,items[],problems[],cursor null. MissingDB instead returns error SOURCE_UNAVAILABLE with read-only effect; no fabricated empty success.",
+        "evidence": [
+          "raw-a/result.json#t10Calls"
+        ],
+        "missing": []
+      },
+      {
+        "id": "incomplete-source",
+        "originalPredicate": "完整性保持",
+        "status": "passed",
+        "actual": "Own2.mail temporarily renamed: refresh returns success complete=false mirrored in unified completeness,matched2 and INCOMPLETE_RESULT/objectId2; unavailable item omitted. File restored then default refresh returns complete=true,matched3.",
+        "evidence": [
+          "raw-a/result.json#t10Calls",
+          "raw-a/result.json#faults"
+        ],
+        "missing": []
+      },
+      {
+        "id": "source-preservation",
+        "originalPredicate": "不修改Foxmail源文件",
+        "status": "passed",
+        "actual": "Before any fault, entire original7-file source SHA/size/device/inode equals baseline after normal native MCP queries/read/resources. External fixture changes are explicitly segregated and restored; final and independent cleanup checks exactly match baseline with no backup files. ctime/mtime after intentional fixture rewrite are not claimed unchanged.",
+        "evidence": [
+          "raw-a/result.json#normalSourcePreserved",
+          "raw-a/recoverable-synthetic-source.json",
+          "cleanup.json"
+        ],
+        "missing": []
+      },
+      {
+        "id": "retained-regression-I-R",
+        "originalPredicate": "要求I+A+R及迁移前保持",
+        "status": "passed",
+        "actual": "M10 actual native/Worker suite62/62 retained and raw result hash/manifest checked. Query/service date/read code unchanged: only new requireSlots guard before original resource branch. Native reader delta restricted to clean PERSIST journal/DB budget, unaffected small DELETE-journal fixture. Fresh current-package A traverses v2 module/execution/native path and original resource branch.",
+        "evidence": [
+          "i-evidence-reuse.json",
+          "m10-to-c6-service-delta.patch",
+          "m10-to-c6-native-delta.patch",
+          "raw-a/result.json"
+        ],
+        "missing": []
+      }
+    ],
+    "evidence": "M11-C6-A-T10/attempt-001",
+    "boundary": "Actual model is controlled fixture per confirmed R policy, real App/Codex/host/auth/native business executed; fault actor separated/restored, original M10 I62 subset applicable by delta."
+  },
+  "T18": {
+    "decision": "passed I+A original identity business contract",
+    "criteria": [
+      {
+        "id": "matching/project-selection",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Actual project UI selected directory fixture@example.test plus SMTP fixture@example.test; fresh identity automatic despite editable account alias being different.",
+        "evidence": [
+          "a-both/attempt-002/raw-result.json matrix.initialPolicy",
+          "a-both/attempt-002/project-state.png"
+        ]
+      },
+      {
+        "id": "matching/reply",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Actual native MCP reply succeeded with bound sender and original-source reference.",
+        "evidence": [
+          "a-both/attempt-002/raw-result.json matrix.steps(reply)"
+        ]
+      },
+      {
+        "id": "matching/pre-send",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Actual native MCP prepare succeeded with fixed draft revision/hash, awaiting renderer authorization; actual native cancel performed; no SMTP execution.",
+        "evidence": [
+          "a-both/attempt-002/raw-result.json matrix.steps(prepare,cancel-cleanup)"
+        ]
+      },
+      {
+        "id": "mismatch/project-selection",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Actual normal UI displayed mailbox-directory mismatch and preserved prior matching binding. First driver timeout is retained; corrected completion observation confirms same refusal.",
+        "evidence": [
+          "a-both/attempt-001/failure.png",
+          "a-both/attempt-002/normal-ui-mismatch-refused.png",
+          "a-both/attempt-002/raw-result.json matrix.normalUiMismatch"
+        ]
+      },
+      {
+        "id": "mismatch/reply",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Historical invalid pair was an isolated DB prerequisite before every Task/run. Actual newly created fixed bad-pair runtime called MCP reply: SENDER_IDENTITY_MISMATCH; zero drafts at refusal.",
+        "evidence": [
+          "a-mismatch-history/attempt-001/raw-result.json matrix.legacyFaultPrerequisite,initialPolicy,steps(reply)"
+        ]
+      },
+      {
+        "id": "mismatch/pre-send",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Same historically fixed bad-pair runtime: native MCP prepare SENDER_IDENTITY_MISMATCH, no intent or external send; identity policy mismatch/cannot-confirm retained.",
+        "evidence": [
+          "a-mismatch-history/attempt-001/raw-result.json matrix.initialPolicy,steps(prepare),database"
+        ]
+      },
+      {
+        "id": "non-email/project-selection",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Actual UI selected opaque-account directory and SMTP; policy needs-confirmation, no initial automatic receipt.",
+        "evidence": [
+          "a-opaque/attempt-001/raw-result.json matrix.initialPolicy",
+          "a-opaque/attempt-001/project-state.png"
+        ]
+      },
+      {
+        "id": "non-email/reply",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Native MCP reply/new local drafts allowed while identity remained unconfirmed, preserving R14/D07 rule SMTP identity affects sending; policy state captured before calls.",
+        "evidence": [
+          "a-opaque/attempt-001/raw-result.json matrix.steps(reply,new),initialPolicy"
+        ]
+      },
+      {
+        "id": "non-email/pre-send",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Native prepare returned SENDER_IDENTITY_REQUIRED. Only actual UI explicit identity confirmation enabled original page review; review was closed/canceled with 0 DATA, no positive opaque SMTP send claimed.",
+        "evidence": [
+          "a-opaque/attempt-001/raw-result.json matrix.steps(prepare),afterExplicitIdentityConfirmation,afterConfirmationUiReview",
+          "a-opaque/attempt-001/identity-confirmed.png",
+          "a-opaque/attempt-001/confirmed-review-no-resend.png"
+        ]
+      },
+      {
+        "id": "refusal/no-external-side-effects",
+        "requiredLayer": "I+A",
+        "coveredLayer": "A",
+        "status": "passed",
+        "actual": "Across every current project, SMTP DATA0, sendExecutions0, source DB/MIME hashes unchanged; mismatch reply checked before permitted new local draft; actual normal mismatch selection preserved binding.",
+        "evidence": [
+          "a-foxmail-only/attempt-001/cleanup.json",
+          "a-foxmail-only/attempt-002/cleanup.json",
+          "a-foxmail-only/attempt-003/cleanup.json",
+          "a-foxmail-only/attempt-004/cleanup.json",
+          "a-foxmail-only/attempt-005/cleanup.json",
+          "a-smtp-only/attempt-001/cleanup.json",
+          "a-smtp-only/attempt-002/cleanup.json",
+          "a-both/attempt-001/cleanup.json",
+          "a-both/attempt-002/cleanup.json",
+          "a-opaque/attempt-001/cleanup.json",
+          "a-mismatch-history/attempt-001/cleanup.json",
+          "a-mismatch-history/attempt-001/raw-result.json matrix.steps(reply)"
+        ]
+      }
+    ],
+    "I": "C5 original8 matrix7 green1 red + current committed public8 green; C6 actual historical mismatch reply verifiesD10 on real current host",
+    "evidence": "M11-C6-A-T18-T19/attempt-001",
+    "boundary": "All original identity selection/reply/pre-send and refusal-no-external-effects satisfied. T19 inaccurate outcome metadata is separately failedD11, not used as a green diagnostic; D11 newApp still pending."
+  },
+  "notPassed": [
+    "T19 D11 metadata",
+    "T07 remaining UI disable/disconnect",
+    "T14 native Quit UI",
+    "T21/T22 deferred",
+    "other rows remain original statuses"
+  ],
+  "accounting": {
+    "total": 38,
+    "previousPassed": 19,
+    "passed": 21,
+    "pending": 17,
+    "storyDeferred": 2,
+    "percent": 55.26
+  },
+  "noDuplicateCount": "36 matrix operations,11Apps,16approvals and original13T33 predicates are subchecks; four original SMTP250 reused, no repeat-send.",
+  "currentBuild": "c97 C6 original actual evidence. Subsequent D11 software changed, new C7 package and affected diagnostics/send verification required before wholeM11 completion."
+}

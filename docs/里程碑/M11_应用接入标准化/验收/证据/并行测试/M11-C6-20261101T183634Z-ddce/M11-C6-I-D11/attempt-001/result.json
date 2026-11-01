@@ -1,0 +1,530 @@
+{
+  "schema": "m11-parallel-test-delivery-v1",
+  "runId": "M11-C6-20261101T183634Z-ddce",
+  "groupId": "M11-C6-I-D11",
+  "defect": "D11",
+  "attempt": "attempt-001",
+  "layer": "I only",
+  "status": "failed",
+  "criteria": [
+    {
+      "id": "precondition-missing-smtp",
+      "status": "failed",
+      "classification": "product-D11",
+      "expected": {
+        "errorCode": "AUTH_REQUIRED",
+        "effectState": "not-started",
+        "invocationState": "failed",
+        "dataState": "failed",
+        "secretAuthProviderEngineIntentExecution": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "042d7408-302f-4f8a-979a-783fad5e2fb6",
+          "status": "error",
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "message": "连接槽 smtp：请先明确选用此项目的来源或发件连接",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "53402eff-4a58-4d7f-b348-ca739d8b8383"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "53402eff-4a58-4d7f-b348-ca739d8b8383",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "AUTH_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "53402eff-4a58-4d7f-b348-ca739d8b8383",
+            "state": "unknown",
+            "error_code": "AUTH_REQUIRED"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        }
+      },
+      "evidence": [
+        "raw/precondition-missing-smtp.json",
+        "vitest-contract.json"
+      ],
+      "reexecutedAfterDriverCorrection": false,
+      "note": "Normal host-selected configuration; mismatch is produced by acknowledged SMTP fromAddress edit after initially automatic matching selection, not direct DB mutation."
+    },
+    {
+      "id": "precondition-unconfirmed-smtp",
+      "status": "failed",
+      "classification": "product-D11",
+      "expected": {
+        "errorCode": "SENDER_IDENTITY_REQUIRED",
+        "effectState": "not-started",
+        "invocationState": "failed",
+        "dataState": "failed",
+        "secretAuthProviderEngineIntentExecution": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "cda58791-04e7-4456-98d3-0e3baab6d3e1",
+          "status": "error",
+          "error": {
+            "code": "SENDER_IDENTITY_REQUIRED",
+            "message": "请确认该SMTP发件地址是你的发件身份。",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "b99162a1-5830-4ce6-b3fe-0f2cd6077e88"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "b99162a1-5830-4ce6-b3fe-0f2cd6077e88",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "SENDER_IDENTITY_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "b99162a1-5830-4ce6-b3fe-0f2cd6077e88",
+            "state": "unknown",
+            "error_code": "SENDER_IDENTITY_REQUIRED"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        }
+      },
+      "evidence": [
+        "raw/precondition-unconfirmed-smtp.json",
+        "vitest-contract.json"
+      ],
+      "reexecutedAfterDriverCorrection": false,
+      "note": "Normal host-selected configuration; mismatch is produced by acknowledged SMTP fromAddress edit after initially automatic matching selection, not direct DB mutation."
+    },
+    {
+      "id": "precondition-mismatch",
+      "status": "failed",
+      "classification": "product-D11",
+      "expected": {
+        "errorCode": "SENDER_IDENTITY_MISMATCH",
+        "effectState": "not-started",
+        "invocationState": "failed",
+        "dataState": "failed",
+        "secretAuthProviderEngineIntentExecution": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "3c372161-aaae-4079-9f4a-6be6fa930aeb",
+          "status": "error",
+          "error": {
+            "code": "SENDER_IDENTITY_MISMATCH",
+            "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，请更换匹配的连接；不能用用户确认覆盖。",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "f4b3b7a2-8227-4852-9c22-d37a1694b76c"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "f4b3b7a2-8227-4852-9c22-d37a1694b76c",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "SENDER_IDENTITY_MISMATCH",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "f4b3b7a2-8227-4852-9c22-d37a1694b76c",
+            "state": "unknown",
+            "error_code": "SENDER_IDENTITY_MISMATCH"
+          }
+        },
+        "counts": {
+          "intents": 0,
+          "executions": 0
+        },
+        "spies": {
+          "secret": 0,
+          "authentication": 0,
+          "providerAuth": 0,
+          "providerSend": 0,
+          "enginePrepare": 0,
+          "syntheticProviderCount": 0
+        }
+      },
+      "evidence": [
+        "raw/precondition-mismatch.json",
+        "vitest-contract.json"
+      ],
+      "reexecutedAfterDriverCorrection": false,
+      "note": "Normal host-selected configuration; mismatch is produced by acknowledged SMTP fromAddress edit after initially automatic matching selection, not direct DB mutation."
+    },
+    {
+      "id": "post-write-AUTH_REQUIRED",
+      "status": "passed",
+      "expected": "Real prepare persists intent/review then throws controlled error; both ledgers unknown,1attempt,no retry or reexecution on cache loss",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "43a6a0c4-9a43-425f-9dc0-d0c730fdd54a",
+          "status": "error",
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "message": "D11 controlled AUTH_REQUIRED after actual persisted prepare",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "27883273-9a12-4833-933c-5590e27f5677"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "27883273-9a12-4833-933c-5590e27f5677",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "AUTH_REQUIRED",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "27883273-9a12-4833-933c-5590e27f5677",
+            "state": "unknown",
+            "error_code": "AUTH_REQUIRED"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "43a6a0c4-9a43-425f-9dc0-d0c730fdd54a",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "27883273-9a12-4833-933c-5590e27f5677"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": [
+        "raw-driver-corrected/post-write-AUTH_REQUIRED.json",
+        "vitest-corrected.json"
+      ],
+      "injectionBoundary": "Existing MailExecutionOptions prepared checkpoint after real durable writes. TIMEOUT/TRANSIENT are injected error signals; no claim of actual network disconnect or elapsed host deadline."
+    },
+    {
+      "id": "post-write-TIMEOUT",
+      "status": "passed",
+      "expected": "Real prepare persists intent/review then throws controlled error; both ledgers unknown,1attempt,no retry or reexecution on cache loss",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "93e1ae54-c71b-4166-a85b-bf2afeb425cf",
+          "status": "error",
+          "error": {
+            "code": "TIMEOUT",
+            "message": "D11 controlled TIMEOUT after actual persisted prepare",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "0c15645b-cc95-49b3-8fab-8bffffcfaf38"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "0c15645b-cc95-49b3-8fab-8bffffcfaf38",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "TIMEOUT",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "0c15645b-cc95-49b3-8fab-8bffffcfaf38",
+            "state": "unknown",
+            "error_code": "TIMEOUT"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "93e1ae54-c71b-4166-a85b-bf2afeb425cf",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "0c15645b-cc95-49b3-8fab-8bffffcfaf38"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": [
+        "raw-driver-corrected/post-write-TIMEOUT.json",
+        "vitest-corrected.json"
+      ],
+      "injectionBoundary": "Existing MailExecutionOptions prepared checkpoint after real durable writes. TIMEOUT/TRANSIENT are injected error signals; no claim of actual network disconnect or elapsed host deadline."
+    },
+    {
+      "id": "post-write-TRANSIENT_FAILURE",
+      "status": "passed",
+      "expected": "Real prepare persists intent/review then throws controlled error; both ledgers unknown,1attempt,no retry or reexecution on cache loss",
+      "actual": {
+        "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+        "response": {
+          "schema": 1,
+          "id": "31436be8-2ac1-4fd3-8b4f-4667f0facfab",
+          "status": "error",
+          "error": {
+            "code": "TRANSIENT_FAILURE",
+            "message": "D11 controlled TRANSIENT_FAILURE after actual persisted prepare",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "be41fdd5-fa8f-4dd7-b5af-a02837159a6b"
+        },
+        "ledger": {
+          "invocation": {
+            "operation_id": "be41fdd5-fa8f-4dd7-b5af-a02837159a6b",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "error_code": "TRANSIENT_FAILURE",
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "be41fdd5-fa8f-4dd7-b5af-a02837159a6b",
+            "state": "unknown",
+            "error_code": "TRANSIENT_FAILURE"
+          }
+        },
+        "replay": {
+          "schema": 1,
+          "id": "31436be8-2ac1-4fd3-8b4f-4667f0facfab",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "unknown",
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+          },
+          "operationId": "be41fdd5-fa8f-4dd7-b5af-a02837159a6b"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 0
+        },
+        "postWriteEntries": 1,
+        "spies": {
+          "secret": 0,
+          "providerSend": 0,
+          "enginePrepare": 1
+        }
+      },
+      "evidence": [
+        "raw-driver-corrected/post-write-TRANSIENT_FAILURE.json",
+        "vitest-corrected.json"
+      ],
+      "injectionBoundary": "Existing MailExecutionOptions prepared checkpoint after real durable writes. TIMEOUT/TRANSIENT are injected error signals; no claim of actual network disconnect or elapsed host deadline."
+    },
+    {
+      "id": "returned-unknown",
+      "status": "failed",
+      "classification": "product-D11-adjacent",
+      "expected": "Bridge status may stay ok and invocation.state may stay succeeded for a complete API receipt; bridge effectState and invocation.effect_state must retain unknown, and cache-loss receipt must retainunknown. No retransmission.",
+      "actual": {
+        "bridgeStatus": "ok",
+        "innerIntentState": "unknown",
+        "innerOperationEffect": "unknown",
+        "bridgeEffect": "completed",
+        "ledger": {
+          "invocation": {
+            "operation_id": "af865d02-8eeb-4591-83ba-4696e936b908",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "error_code": null,
+            "attempt_count": 1
+          },
+          "data": {
+            "operation_id": "af865d02-8eeb-4591-83ba-4696e936b908",
+            "state": "succeeded",
+            "error_code": null
+          }
+        },
+        "executions": [
+          {
+            "id": "28ed5024-5457-4368-9078-542beb66d821",
+            "state": "unknown",
+            "result_json": "{\"accepted\":[],\"complete\":false,\"errorCode\":\"D11_CONTROLLED_DISCONNECT\",\"messageId\":\"<wy-3b775622-5ec3-4acd-888e-a638eb994550@willyou.local>\",\"rejected\":[],\"smtpCode\":null,\"state\":\"unknown\"}"
+          }
+        ],
+        "replay": {
+          "schema": 1,
+          "id": "e461eabe-e737-4f31-8612-40371e6e54e5",
+          "status": "error",
+          "error": {
+            "code": "REPLAY_UNAVAILABLE",
+            "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+            "layer": "provider",
+            "retryable": false,
+            "attemptCount": 1,
+            "retryExhausted": false,
+            "effectState": "completed",
+            "nextAction": "核对本次错误后重新明确操作"
+          },
+          "operationId": "af865d02-8eeb-4591-83ba-4696e936b908"
+        },
+        "counts": {
+          "intents": 1,
+          "executions": 1
+        },
+        "syntheticProviderCount": 1
+      },
+      "evidence": [
+        "raw-driver-corrected/returned-unknown.json",
+        "vitest-corrected.json"
+      ],
+      "fixtureBoundary": "Real send engine/SQL/review authorization/execution, configured submit returns unknown. No real SMTP/socket; trusted UI calls are I fixtures, not A UI acceptance."
+    }
+  ],
+  "counts": {
+    "uniqueContractScenarios": 7,
+    "passed": 3,
+    "productFailed": 4,
+    "newFormalCases": 0,
+    "appRuns": 0,
+    "builds": 0,
+    "helperRuns": 0
+  },
+  "missing": [],
+  "baseline": {
+    "sourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+    "sourceFiles": 3218,
+    "outFiles": 151,
+    "mailV2PackageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+    "branch": "feature/0.1.0",
+    "sourceCommit": "dd28747759f2f6486536f6e27c3ef7d2d06c1cd7",
+    "sourceDirty": true
+  },
+  "rawRunSummary": {
+    "originalContract": {
+      "passed": 0,
+      "failed": 7,
+      "skipped": 1,
+      "classification": "3product reds,3driver observation failures despite valid main unknown results,1UI sender fixture missing frame fields"
+    },
+    "correctedTargeted": {
+      "passed": 3,
+      "failed": 1,
+      "skipped": 4,
+      "classification": "3valid conservative regressions green,1adjacent product red; original3product reds not rerun"
+    }
+  },
+  "diagnostics": [
+    {
+      "classification": "preflight-fixture-error",
+      "detail": "schema2 scaffold rejected for v2 application before business calls; corrected to existing schema3/capability majors/MCP entry/real run plan.",
+      "preserved": [
+        "preflight-001-test.ts",
+        "vitest-preflight-001.json"
+      ]
+    },
+    {
+      "classification": "driver-observation-and-fixture-error",
+      "detail": "Immediate cache clearing raced pending-finally; corrected by one event-loop completion turn. UI sender lacked process/routing IDs; supplied existing valid sender fixture fields. Business assertions unchanged.",
+      "evidence": [
+        "driver-correction.json",
+        "driver-correction-v002.patch",
+        "executed-test-v001.ts",
+        "vitest-contract.json"
+      ]
+    }
+  ],
+  "boundaries": [
+    "Real SQLite, installed immutable production mail v2 package, session/run registry, actual ToolService, capability executor/module/data/send engine exercised.",
+    "OS process identity reader and connection verification are explicit static I prerequisites; no real Agent/PTY/App/helper or external service.",
+    "Known precondition spies and intent/execution counts independently prove zero business/provider/authentication.",
+    "Post-write errors arise after real durable intent/review writes at supported checkpoint; arbitrary matching AUTH_REQUIRED remains unknown.",
+    "Returned-unknown case uses supported submit fixture returning unknown after real trusted I UI review authorization; no actual SMTP network or external DATA.",
+    "No forced invocation.state rewrite for successfully returned unknown receipt; only effects must be unknown.",
+    "All original product reds retained; no production/expectation weakening or green-matrix rerun."
+  ],
+  "commands": "commands.json",
+  "sourceAfter": "source-after.json",
+  "cleanup": "cleanup.json",
+  "resourcesReleased": true,
+  "sealedPreparedAt": "2026-11-01T19:05:37.999793+00:00"
+}

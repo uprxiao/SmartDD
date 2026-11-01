@@ -1,0 +1,59 @@
+{
+  "faultAt": "MailExecutionOptions.checkpoint prepared after real intent/review writes; no SMTP submission",
+  "response": {
+    "schema": 1,
+    "id": "2bce8ee4-a250-4028-bcfa-f0fd60cdf281",
+    "status": "error",
+    "error": {
+      "code": "AUTH_REQUIRED",
+      "message": "D11 controlled AUTH_REQUIRED after actual persisted prepare",
+      "layer": "auth",
+      "retryable": false,
+      "attemptCount": 1,
+      "retryExhausted": false,
+      "effectState": "unknown",
+      "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+    },
+    "operationId": "60cef9e3-9b79-4349-a1be-f538a1c96991"
+  },
+  "ledger": {
+    "invocation": {
+      "operation_id": "60cef9e3-9b79-4349-a1be-f538a1c96991",
+      "state": "unknown",
+      "effect_state": "unknown",
+      "error_code": "AUTH_REQUIRED",
+      "attempt_count": 1
+    },
+    "data": {
+      "operation_id": "60cef9e3-9b79-4349-a1be-f538a1c96991",
+      "state": "unknown",
+      "error_code": "AUTH_REQUIRED"
+    }
+  },
+  "replay": {
+    "schema": 1,
+    "id": "2bce8ee4-a250-4028-bcfa-f0fd60cdf281",
+    "status": "error",
+    "error": {
+      "code": "REPLAY_UNAVAILABLE",
+      "message": "已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行",
+      "layer": "provider",
+      "retryable": false,
+      "attemptCount": 1,
+      "retryExhausted": false,
+      "effectState": "unknown",
+      "nextAction": "查看已有业务执行记录并核实结果，不要自动重发"
+    },
+    "operationId": "60cef9e3-9b79-4349-a1be-f538a1c96991"
+  },
+  "counts": {
+    "intents": 1,
+    "executions": 0
+  },
+  "postWriteEntries": 1,
+  "spies": {
+    "secret": 0,
+    "providerSend": 0,
+    "enginePrepare": 1
+  }
+}

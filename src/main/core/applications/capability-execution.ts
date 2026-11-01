@@ -11,6 +11,7 @@ import {applicationResultV2Schema,type ApplicationResultV2} from '@shared/applic
 import {applicationResourceRefSchema} from '@shared/application-data';
 import {AjvJsonSchemaValidator} from '@modelcontextprotocol/server/validators/ajv';
 import type {JsonSchemaType} from '@modelcontextprotocol/server';
+import {applicationPreflightFailure} from './capability-preflight';
 
 interface CapabilityData {
   receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
@@ -62,6 +63,8 @@ export class ApplicationCapabilityExecution {
   async execute(caller:CallerContext,capabilityId:string,contractMajor:number,args:unknown,signal?:AbortSignal):Promise<unknown>{
     // Authentication precedes argument interpretation, slot/credential resolution and business work.
     const context=this.contexts.contextFor(caller);
+    let dispatched=false;
+    try{
     if(caller.kind==='management'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接管理身份不能读取项目业务数据');
     const capability=this.declaration(context.packageHash,capabilityId,contractMajor);
     this.contexts.require(context,capability.permission);
@@ -76,16 +79,18 @@ export class ApplicationCapabilityExecution {
     }
     if(contract&&!contract.input(args).valid)throw new ApplicationError('INVALID_INPUT','能力参数不符合固定输入契约');
     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
-    return this.contexts.withSignal(context,signal,async()=>{
+    return await this.contexts.withSignal(context,signal,async()=>{
       // A retained v1 external-write call can return an already claimed receipt without re-entering its provider.
       // Only a compiled module can attest this; v2 callers use the dependency-free result capability.
       const receiptOnly=capability.semantics==='external-write'&&this.packages.packages.get(context.packageHash).manifest.schema==='smartdd-app-package-v1'&&this.data.receiptOnly?.(context,implementation.method,args);
       if(!receiptOnly)await this.contexts.requireSlots(context,capability.slots.required);
+      dispatched=true;
       const result=await this.data.execute(context,implementation.method,args);
       this.contexts.require(context,capability.permission);
       const value=contractMajor===2?this.result(caller,context,capability,result):result;
       if(contract&&!contract.output(value).valid)throw new ApplicationError('INVALID_RESPONSE','能力结果不符合固定输出契约');
       return value;
     });
+    }catch(error){throw dispatched?error:applicationPreflightFailure(error,context.operationId);}
   }
 }

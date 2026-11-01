@@ -11,6 +11,7 @@ import type { ApplicationModuleDefinition, ApplicationProviderDefinition } from 
 import {retainedConfigViewDefinitions} from '../retained-config-views';
 import {MailSenderIdentity} from './sender-identity';
 import {z} from 'zod';
+import {applicationPreflightFailure} from '../../capability-preflight';
 
 export interface RetainedMailData { drafts: MailDraftDataService; reads: MailReadDataService; sends: MailSendDataService }
 const read = (id: string, required: string[] = [], conditional: string[] = []): LegacyCapabilityPolicy => ({ id, semantics: 'read', retry: 'safe-read', slots: { required, conditional } });
@@ -94,6 +95,7 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
       stamp:(projectId,permission)=>permission==='mail.send'?identity.requireConfirmed(projectId):null,
       action:(context,sender,input)=>{const parsed=z.object({action:z.literal('confirm-sender'),arguments:z.unknown()}).strict().safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','此项目身份操作无效');return identity.confirm(context,String(sender.sender.id),parsed.data.arguments);},
     },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: async (context, method, input) => {
+      try{
       services.contexts.assertActive(context);
       if(['mail.draft.create','mail.draft.update','mail.reply.create'].includes(method)&&input&&typeof input==='object'){
         const content=method==='mail.reply.create'?input:Reflect.get(input,'content');
@@ -105,6 +107,7 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
       // Reply preparation checks an existing mismatched pair, without requiring
       // a send confirmation or blocking unconfirmed/invalidated draft work.
       if(method==='mail.reply.create'&&context.projectId)identity.validateSelection(context.projectId);
+      }catch(error){throw applicationPreflightFailure(error,context.operationId);}
       return target(method).execute(context,method,input);
     }};
   },
