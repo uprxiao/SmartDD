@@ -6,6 +6,7 @@ import permissionLabels from '../../../src/shared/application-permission-labels.
 import {definitions} from '../../../resources/applications/definitions.mjs';
 import {applicationEnabled,projectAppSelected} from './integration-model.mjs';
 import {cleanupRecoveryPreview} from './cleanup-recovery-preview.mjs';
+import {senderIdentity,confirmSenderIdentity,runPlanForApp,adapterLevels,mailCapabilityRows,RUN_PLAN_SCENARIOS} from './m11-preview-model.mjs';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Check, ChevronRight, Database, Mail, Package, RefreshCw, SquareTerminal, X, Zap } from 'lucide-react';
 import { demoZenTaoRuns, APP_DEFINITIONS, M10_STORAGE, initialIntegrationState, projectIntegrationState, packageVersion, connectionReady, projectPackages, snapshotCurrent, toggleProjectApplication, simulatePackageUpgrade, projectAppEnabled, selectedConnections, switchProjectZenTao, sessionApplicationState, packageRetention, upgradeBlockers, selectProjectMailConnection, sessionCapabilityDiagnostic, recoverSessionCapability } from './integration-model.mjs';
@@ -87,7 +88,7 @@ export function ProjectApplications({ project, integration, nav, onUse, onNewTas
         <header><ApplicationMark app={app.id} /><div><strong>{app.name}<span className="m10-package-version">v{packageVersion(data, app.id)} · 新会话默认</span></strong><p>{app.skills.length} 个 Skill · 旧会话保留创建时的版本</p></div><span className={'m10-state ' + (selected && applicationEnabled(data,app.id) ? 'ready' : '')}>{!installed ? '尚未添加' : !applicationEnabled(data,app.id) ? '应用已全局停用' : selected ? '项目已启用' : '未启用'}</span><button className={'m10-switch ' + (selected ? 'on' : '')} role="switch" aria-label={'为' + project.name + '启用' + app.name} aria-checked={selected} disabled={!installed || project.archived || readDisabled || ambiguous} onClick={() => setData(d => toggleProjectApplication(d, project.id, app.id, !selected))}><span /></button></header>
         <div className="m10-project-application-body">
           <ProjectReadState owner={projectReads} appId={app.id}><p className="m10-muted">{app.id === 'zentao' ? '每项目仅一个生效连接；停用或认证失败不会切换到其他账号。' : '每项目最多选一个本地读取来源和一个SMTP发件账号，分别配置；不选发件账号也可保存草稿。'}</p>
-          {app.id === 'mail' ? <MailProjectConnections data={data} project={project} installed={installed} setData={setData} readDisabled={readDisabled} /> : <div className="m10-mail-connections"><fieldset><legend>禅道连接 · 最多一个</legend>{connections.filter(c => bound.includes(c.id)).length > 1 && <p className="m10-note" role="alert">旧选择包含多个禅道连接，当前不使用其中任何一个；请明确选择。</p>}<div className="m10-project-connections"><label><input type="radio" name={'connection-' + project.id + '-' + app.id} aria-label="禅道连接不选用" checked={!connections.some(c => bound.includes(c.id))} disabled={project.archived || !installed || readDisabled} onChange={() => proposeZenTao({id:null,name:'不选用'})} /><span><strong>不选用</strong><small>禅道查询暂不可用；其他能力照常使用</small></span></label>{connections.map(c => <label key={c.id}><input type="radio" name={'connection-' + project.id + '-' + app.id} aria-label={'为' + project.id + '选用' + c.name} checked={chosen.some(x => x.id === c.id)} disabled={project.archived || !installed || readDisabled} onChange={() => proposeZenTao(c)} /><span><strong title={c.name}>{c.name}</strong><small>{c.account || '本地来源'} · {c.url || c.host || c.path}<br />{mailConnectionLabel(c)}{!connectionReady(c) && '；不会自动选择其他账号'}</small></span></label>)}</div>{!connections.length && <p className="m10-muted">尚未配置连接。Agent仍可正常启动，查询时提示未配置。</p>}</fieldset></div>}
+          {app.id === 'mail' ? <><MailProjectConnections data={data} project={project} installed={installed} setData={setData} readDisabled={readDisabled} /><SenderIdentityStatus data={data} projectId={project.id} setData={setData} disabled={project.archived || !installed || readDisabled} /></> : <div className="m10-mail-connections"><fieldset><legend>禅道连接 · 最多一个</legend>{connections.filter(c => bound.includes(c.id)).length > 1 && <p className="m10-note" role="alert">旧选择包含多个禅道连接，当前不使用其中任何一个；请明确选择。</p>}<div className="m10-project-connections"><label><input type="radio" name={'connection-' + project.id + '-' + app.id} aria-label="禅道连接不选用" checked={!connections.some(c => bound.includes(c.id))} disabled={project.archived || !installed || readDisabled} onChange={() => proposeZenTao({id:null,name:'不选用'})} /><span><strong>不选用</strong><small>禅道查询暂不可用；其他能力照常使用</small></span></label>{connections.map(c => <label key={c.id}><input type="radio" name={'connection-' + project.id + '-' + app.id} aria-label={'为' + project.id + '选用' + c.name} checked={chosen.some(x => x.id === c.id)} disabled={project.archived || !installed || readDisabled} onChange={() => proposeZenTao(c)} /><span><strong title={c.name}>{c.name}</strong><small>{c.account || '本地来源'} · {c.url || c.host || c.path}<br />{mailConnectionLabel(c)}{!connectionReady(c) && '；不会自动选择其他账号'}</small></span></label>)}</div>{!connections.length && <p className="m10-muted">尚未配置连接。Agent仍可正常启动，查询时提示未配置。</p>}</fieldset></div>}
           {selected && !health && <p className="m10-muted">{app.id === 'mail' ? '读取／发送暂不可用，本地草稿可用。' : '禅道查询暂不可用，其他能力照常使用。'}</p>}
           </ProjectReadState>
           {!installed && <button className="m10-button secondary" onClick={() => nav('apps/' + app.id)}>先添加{app.name}应用</button>}
@@ -109,6 +110,44 @@ function mailConnectionLabel(connection) {
   if (connectionReady(connection)) return '连接可用 · 示例';
   return connection.validation === 'failed' ? '验证失败' : '待检查';
 }
+const SENDER_TONE = { auto: 'ok', confirmed: 'ok', 'needs-confirm': 'warn', invalidated: 'warn', mismatch: 'error', 'no-smtp': 'muted' };
+function SenderIdentityStatus({ data, projectId, setData, disabled = false, readOnly = false }) {
+  const [directory, setDirectory] = useState('mailbox');
+  const override = directory === 'non-mailbox' ? 'non-mailbox' : undefined;
+  const status = senderIdentity(data, projectId, override);
+  return <section className={'m10-sender-identity ' + (SENDER_TONE[status.status] || '')} aria-label="发件身份" data-status={status.status}>
+    <header><strong>发件身份</strong><span className="m10-state" role="status">{status.label}</span></header>
+    <p className={status.status === 'mismatch' ? 'm10-note' : 'm10-muted'} role={status.status === 'mismatch' ? 'alert' : undefined}>{status.detail}</p>
+    {!readOnly && ['needs-confirm', 'invalidated'].includes(status.status) && <div className="m10-sender-actions"><button className="m10-button secondary" disabled={disabled} onClick={() => setData(d => confirmSenderIdentity(d, projectId, override))}>{status.status === 'invalidated' ? '重新确认发件身份' : '确认这是我的发件身份'} · 模拟</button><small className="m10-muted">确认只对当前发件账号、Foxmail 来源及其修订有效；任一变化后需重新确认。</small></div>}
+    {status.status === 'mismatch' && <p className="m10-muted">此情形不能通过确认覆盖。可改选发件地址一致的 SMTP 账号，或更换 Foxmail 来源。</p>}
+    {!readOnly && <details className="m10-runtime-demo"><summary>Foxmail 账号目录名样例 · 合成演示</summary><label className="m10-field"><span>账号目录名</span><select aria-label="Foxmail账号目录名样例" value={directory} onChange={e => setDirectory(e.target.value)}><option value="mailbox">邮箱格式（自动比较）</option><option value="non-mailbox">非邮箱格式（需用户确认）</option></select></label><p className="m10-muted">产品从 Foxmail 来源所在账号目录读取目录名，不使用手填的账号字段。此开关只改变本区合成显示，不修改连接或来源。</p></details>}
+  </section>;
+}
+
+function RunPlanPreview({ data, task, apps, snapshot }) {
+  const [scenario, setScenario] = useState('declared');
+  const levels = adapterLevels(scenario);
+  const tone = { declared: '已声明', 'best-effort': '尽力交付 · 未验证', unverified: '未验证' };
+  return <section className="m10-run-plan" aria-label="本次运行计划">
+    <header><strong>本次运行计划 · 合成演示</strong><small className="m10-muted">每次启动固定一次；恢复会话按当前版本重新生成，不沿用旧授权。</small></header>
+    <label className="m10-field"><span>适配场景</span><select aria-label="运行计划场景" value={scenario} onChange={e => setScenario(e.target.value)}>{RUN_PLAN_SCENARIOS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+    <ul className="m10-level-list" aria-label="适配等级">{levels.map(item => <li key={item.level} data-state={item.state}><code>{item.level}</code><span>{item.title}</span><small>{tone[item.state]}</small></li>)}</ul>
+    <p className="m10-muted">聊天原话授权与「已确认读取 Skill」在 Codex 0.166.0 上尚未验证，保持关闭：发送使用页面授权，诊断不显示「已确认读取」。</p>
+    {apps.filter(app => snapshot?.packages?.some(p => p.id === app.id)).map(app => {
+      const plan = runPlanForApp(app.id, scenario);
+      if (!plan) return null;
+      return <div key={app.id} className="m10-plan-app" data-active={plan.active || 'none'}>
+        <strong>{app.name}</strong>
+        <span className="m10-state">{plan.available ? '生效入口 · ' + plan.activeName : '本次运行不可用'}</span>
+        {plan.degraded && <p className="m10-note" role="status">已降级为只读 MCP：{plan.reason}</p>}
+        {!plan.available && <p className="m10-note" role="alert">{plan.reason}{plan.note}</p>}
+        <small className="m10-muted">{plan.note}服务端只放行本次生效入口；调用另一入口会被拒绝，Skill 也只讲这一个入口。</small>
+        {app.id === 'mail' && <ul className="m10-capability-rows" aria-label="邮件能力可用性">{mailCapabilityRows(data, task.project).map(row => <li key={row.id} data-ok={row.ok}><span>{row.title}</span><small>{row.ok ? '可用' : row.why}</small><small className="m10-muted">依赖：{row.needs}</small></li>)}</ul>}
+      </div>;
+    })}
+  </section>;
+}
+
 function MailSessionConnections({ data, projectId }) {
   const chosen = selectedConnections(data, projectId, 'mail');
   return <>{[['local', '邮件来源'], ['smtp', '发件账号']].map(([kind, title]) => {
@@ -175,6 +214,7 @@ export function SessionApplications({ task, integration, onUse, onNewTask, onCon
   return <div className="m10-session-apps">
     {diagnosticControl}
     <p className="section-description">固定版本与当前使用条件分别展示。应用不可用时，Agent继续工作。</p>
+    {snapshot && <RunPlanPreview data={data} task={task} apps={apps} snapshot={snapshot} />}
     {!snapshot && <p className="m10-note" role="status">{diagnosticPreview === 'corrupt' ? '固定能力快照损坏，保留原记录等待核查。' : diagnosticPreview === 'unsupported-schema' ? '原能力快照格式暂不支持，请使用兼容版本。原记录已保留，不自动迁移或替换。' : diagnosticPreview === 'not-recorded' ? '本任务尚无已记录的固定能力。查看当前项目可用版本不表示本会话已选用。' : '历史能力未知：不自动补入当前应用。可继续原任务，或使用当前应用新建会话。'}</p>}
     {!apps.length && <p className="m10-note">本会话未选用应用。</p>}
     {apps.map(app => {
@@ -184,7 +224,7 @@ export function SessionApplications({ task, integration, onUse, onNewTask, onCon
         <header><ApplicationMark app={app.id} /><div><strong>{app.name}<span className="m10-package-version">{fixed ? '会话固定 v' + fixed.version : '本会话未选用'}</span></strong><small>新会话默认 v{packageVersion(data, app.id)} · {status.title}</small></div><span className="m10-state">{supported ? '准备状态 · 模拟' : '此Agent应用适配未支持'}</span></header>
         {fixed && <><p>{fixed.skills.length} 个 Skill · {fixed.tools.length} 个工具<br />文件准备：{status.usable ? '模拟已准备' : '应用能力不可用'}</p><p aria-label={app.name+'当前分层证据'}>示例当前运行：{task.id+'/demo-run-'+evidenceCycle}<br/>{evidenceText({bridge:bridgeStates,discovery:discoveryStates,read:readStates,tool:toolStates,failure:failureStates},app.id)}</p><details className="m10-runtime-demo"><summary>Skill 读取证据 · 合成演示</summary><label>工具桥状态<select aria-label={app.name+'工具桥证据'} value={bridgeStates[app.id]||'unverified'} onChange={e=>setBridgeStates(v=>({...v,[app.id]:e.target.value}))}><option value="unverified">未验证</option><option value="verified">本运行曾核验 · 合成</option></select></label><label>发现状态<select aria-label={app.name+' Skill发现状态'} value={discoveryStates[app.id]||'unverified'} onChange={e=>setDiscoveryStates(v=>({...v,[app.id]:e.target.value}))}><option value="unverified">未验证</option><option value="verified">本次清单已核验 · 合成</option></select></label><label>读取状态<select aria-label={app.name+' Skill读取状态'} value={readStates[app.id]||'unverified'} onChange={e=>setReadStates(v=>({...v,[app.id]:e.target.value}))}><option value="unverified">未验证</option><option value="verified">本次读取已核验 · 合成</option></select></label><label>调用状态<select aria-label={app.name+'工具调用证据'} value={toolStates[app.id]||'none'} onChange={e=>setToolStates(v=>({...v,[app.id]:e.target.value}))}><option value="none">未调用</option><option value="success">调用完成 · 合成</option><option value="failed">调用失败 · 合成</option><option value="unknown">结果未知 · 合成</option></select></label>{toolStates[app.id]==='failed'&&<label>失败场景<select aria-label={app.name+'最近调用失败场景'} value={failureStates[app.id]||'TRANSIENT_FAILURE'} onChange={e=>setFailureStates(v=>({...v,[app.id]:e.target.value}))}><option value="TRANSIENT_FAILURE">临时故障 · 3次尝试</option><option value="AUTH_FAILED">认证失败 · 1次尝试</option><option value="SCOPE_DENIED">授权不足 · 1次尝试</option><option value="CANCELED">已取消 · 1次尝试</option></select></label>}<p className="m10-muted">各层独立，不从文件、工具桥或调用推断发现／读取。以下按钮只演示本弹窗的运行证据边界，不停止或启动终端；关闭弹窗后合成记录重置，不读取本机日志。</p></details>
           {original !== now && <p className="m10-note">当前连接已变化：{original || '未选用'} → {now || '未选用'}。恢复时核对旧包兼容性；历史对象仍属原来源。</p>}
-          {app.id === 'mail' && <MailSessionConnections data={data} projectId={task.project} />}
+          {app.id === 'mail' && <><MailSessionConnections data={data} projectId={task.project} /><SenderIdentityStatus data={data} projectId={task.project} setData={setData} readOnly /></>}
           <details className="m10-runtime-demo"><summary>应用故障与恢复 · 合成演示</summary><label>故障场景<select aria-label={app.name + '应用故障场景'} value={faults[app.id] || 'none'} onChange={e => { setFaults(value => ({ ...value, [app.id]: e.target.value })); setOutcomes(value => ({ ...value, [app.id]: e.target.value === 'nameConflict' ? 'failed' : 'success' })); setMessages(value => ({ ...value, [app.id]: '' })); }}><option value="none">无额外故障</option><option value="missing">固定应用包缺失</option><option value="corrupt">固定应用包损坏</option><option value="incompatible">固定版本与当前配置不兼容</option><option value="nameConflict">用户能力名称冲突 · 不注入此应用</option><option value="bridge">能力桥中断 · 可原地恢复</option><option value="bridgeRestart">能力桥中断 · 需下次启动</option></select></label>{status.action && <label>恢复结果<select aria-label={app.name + '应用恢复结果'} value={status.fault === 'nameConflict' ? (outcomes[app.id] === 'user-resolved' ? 'user-resolved' : 'failed') : outcomes[app.id] === 'failed' ? 'failed' : 'success'} onChange={e => setOutcomes(value => ({ ...value, [app.id]: e.target.value }))}>{status.fault === 'nameConflict' ? <><option value="failed">用户配置仍有冲突</option><option value="user-resolved">用户已处理冲突 · 模拟重新检查通过</option></> : <><option value="success">条件已修复 · 模拟成功</option><option value="failed">条件仍不满足 · 模拟失败</option></>}</select></label>}</details>
           {(status.fault !== 'none' || !status.usable) && <div className="m10-capability-alert" role="status"><strong>{status.title}</strong><p>{status.reason}</p><small>{status.code} · 本会话 v{fixed.version} · Agent可以继续</small><div className="m10-capability-actions">{supported && status.action && <button className="m10-button secondary" onClick={() => recover(app.id)}>{status.action} · 模拟</button>}{status.fault === 'nameConflict' && <button className="m10-button secondary" onClick={() => setMessages(value => ({ ...value, [app.id]: '合成冲突示例：plugin namespace = willyou-' + app.id + '；完整 Skill 名称 = willyou-' + app.id + ':' + app.skills[0].id + '；MCP key = willyou-' + app.id + '。实际产品列出真实冲突项和来源配置位置；此处未读取或更改用户文件。' }))}>查看冲突</button>}{status.fault === 'incompatible' && <button className="m10-button secondary" onClick={() => nav('apps/' + app.id)}>检查当前连接配置</button>}<button className="m10-button secondary" onClick={onContinue}>继续使用 Agent</button></div>{['missing','corrupt'].includes(status.fault) && <p className="m10-muted">同版本号也必须校验相同内容标识；无可信副本时保持不可用。需要新版请另建会话，原会话保留。</p>}</div>}
           {messages[app.id] && <p className="m10-note" role="status">{messages[app.id]}</p>}

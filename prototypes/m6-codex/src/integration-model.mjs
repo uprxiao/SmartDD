@@ -3,6 +3,7 @@ const applicationDescriptions=Object.fromEntries(builtInDefinitions.map(app=>[ap
 import{normalizeVersionPreview}from'./version-preview-model.mjs';
 import {DRAFT_TARGET_FIXTURES,draftTargetFixture} from './mail-draft-target-fixtures.mjs';
 import {projectDemoActivity} from './activity-prototype-model.mjs';
+import {sanitizeSenderConfirmations} from './m11-sender-confirmations.mjs';
 // M10 isolated prototype. Only public synthetic configuration is persisted.
 export const M10_STORAGE = 'willyou-m10-prototype-v2';
 export const APP_DEFINITIONS = [
@@ -35,6 +36,7 @@ export function projectIntegrationState(value) {
   const projectApps = Object.fromEntries(projectIds.map(projectId => [projectId, Object.fromEntries(APP_DEFINITIONS.map(app => [app.id, typeof value?.projectApps?.[projectId]?.[app.id] === 'boolean' ? value.projectApps[projectId][app.id] : connections.some(c => c.app === app.id && (Array.isArray(value?.bindings?.[projectId]) ? value.bindings[projectId] : []).includes(c.id))]))]));
   return { version: 2, packages, versionPreview:normalizeVersionPreview(value?.versionPreview,packages), projectApps, globalApps:Object.fromEntries(APP_DEFINITIONS.map(a=>[a.id,value?.globalApps?.[a.id]!==false])), mailQueryDays: validMailDays(value?.mailQueryDays) ? Number(value.mailQueryDays) : 30, drafts: projectDrafts(value?.drafts), installedVersions: Object.fromEntries(APP_DEFINITIONS.map(a => [a.id, [...new Set(['1.0.0', packages[a.id], ...(value?.installedVersions?.[a.id] || []).filter(v => ['1.0.0','1.1.0'].includes(v))])]])), dataSchema: value?.dataSchema === 2 ? 2 : 1, installed: [...new Set((value?.installed || []).filter(id => known.has(id)))], connections,
     connectionCompatibility:Object.fromEntries(Object.entries(value?.connectionCompatibility||{}).filter(([id])=>ids.has(id)).map(([id,report])=>[id,{revision:Number.isSafeInteger(report?.revision)&&report.revision>0?report.revision:0,versions:(Array.isArray(report?.versions)?report.versions:[]).filter(row=>['1.0.0','1.1.0'].includes(row?.version)&&['compatible','incompatible','unverified'].includes(row?.status)).slice(0,200).map(({version,status})=>({version,status}))}])),
+    senderConfirmations: sanitizeSenderConfirmations(value?.senderConfirmations),
     bindings: Object.fromEntries(Object.entries(value?.bindings || {}).filter(([k]) => typeof k === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k, v]) => [k, [...new Set((Array.isArray(v) ? v : []).filter(id => ids.has(id)))]])),
     mailSlotRevisions: Object.fromEntries(Object.entries(value?.mailSlotRevisions || {}).filter(([k]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k)).map(([k,v]) => [k,Object.fromEntries(['local','smtp'].map(slot => [slot,Number.isSafeInteger(v?.[slot]) && v[slot] >= 0 ? v[slot] : Number.isSafeInteger(value?.mailBindingRevisions?.[k]) ? value.mailBindingRevisions[k] : 0]))])),
     mailBindingRevisions: Object.fromEntries(Object.entries(value?.mailBindingRevisions || {}).filter(([k, v]) => /^[a-zA-Z0-9_-]{1,100}$/.test(k) && Number.isSafeInteger(v) && v >= 0)),
