@@ -24,7 +24,8 @@ import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service
 import type { ProfileHealth } from '../ai/profile-health';
 import { redact } from '../connections/redact';
 import type { ProjectService } from '../projects/project-service';
-import { claudeSessionFile, codexRolloutFile, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { claudeSessionFile, recentCodexRollouts, stateRootFor } from './native-sessions';
+import { runnerAdapter } from './runner-adapters';
 import { ApplicationError } from '@shared/applications';
 import { SessionTail } from './session-health';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
@@ -186,7 +187,7 @@ export class TaskService {
     const ts = this.now();
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
-    const sessionId = profile.runner === 'claude' ? id : null;
+    const sessionId = runnerAdapter(profile.runner).sessionIdStrategy === 'host' ? id : null;
     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender });
 
     try {
@@ -490,7 +491,7 @@ export class TaskService {
         delete env.CLAUDE_CONFIG_DIR;
         delete base.CLAUDE_CONFIG_DIR;
       } else {
-        env[profile.runner === 'claude' ? 'CLAUDE_CONFIG_DIR' : 'CODEX_HOME'] = keepRoot.path;
+        env[runnerAdapter(profile.runner).stateEnvVar] = keepRoot.path;
       }
     }
     const hasCapabilities = Boolean(this.d.capabilities || this.d.managedCapabilities);
@@ -673,7 +674,7 @@ export class TaskService {
       : { recovery: 'not-started', reason: '还没有发过消息，Codex 未生成会话；打开时会新开一个' };
     const root = row.stateRoot ?? stateRootFor(row.runner, {}, {});
     let file: string | null = null;
-    try { file = row.runner === 'claude' ? claudeSessionFile(root, row.cwd, row.nativeSessionId) : codexRolloutFile(root, row.nativeSessionId, 0, true); } catch { /* Preserve the original identity on inaccessible history. */ }
+    try { file = runnerAdapter(row.runner).sessionFile(root, row.cwd, row.nativeSessionId, { sinceMs: 0, scan: true }); } catch { /* Preserve the original identity on inaccessible history. */ }
     if (this.observeNativeHistory(row, file)) return { recovery: 'resumable', reason: '' };
     // Claude reserves its UUID before writing a file. Only a newly created task
     // whose owned run ended without a file can legitimately reopen that UUID.
@@ -763,9 +764,7 @@ export class TaskService {
     const locate = (): string | null => {
       const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
       if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
-      const file = profile.runner === 'claude'
-        ? claudeSessionFile(root, cwd, row.sid, false)
-        : codexRolloutFile(root, row.sid, launchedAt, !scanned);
+      const file = runnerAdapter(profile.runner).sessionFile(root, cwd, row.sid, { sinceMs: launchedAt, scan: profile.runner === 'claude' ? false : !scanned });
       // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
       scanned = true;
       const current = this.require(taskId);
