@@ -1,0 +1,72 @@
+{
+  "schema": "m11-parallel-round-v1",
+  "runId": "M11-C12-20261101T225059Z-t37",
+  "startedAt": "2026-11-01T22:50:59Z",
+  "updatedAt": "2026-11-01T22:50:59Z",
+  "coordinator": "codex",
+  "scope": "M11-T37 入口隔离：真实包两个会话共用同一数据根，按类别变更选用后再建会话",
+  "baseline": {
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "compileAttempts": 1,
+    "packaged": false,
+    "reusedFrom": "M11-C7"
+  },
+  "groups": [
+    {
+      "id": "M11-C12-A-T37",
+      "case": "M11-T37",
+      "layer": "A",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-A-T37/attempt-001",
+      "status": "delivery-and-refusal-observed"
+    },
+    {
+      "id": "M11-C12-I-T37",
+      "case": "M11-T37",
+      "layer": "I",
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-I-T37/attempt-001",
+      "status": "passed-24-tests-entry-not-active-both-directions"
+    }
+  ],
+  "findings": {
+    "planEntries": {
+      "mail": "mcp",
+      "zentao": "cli"
+    },
+    "delivery": {
+      "mcp-session": {
+        "mail": 14,
+        "zentao": 0,
+        "namespaces": [
+          "mcp__codex_worktrees",
+          "mcp__smartdd_project_f1a6f6067440",
+          "mcp__wy_f1a6f60674401cbcd2d98b12"
+        ]
+      },
+      "cli-session": {
+        "mail": 0,
+        "zentao": 0,
+        "namespaces": [
+          "mcp__codex_worktrees",
+          "mcp__smartdd_project_256bea955deb"
+        ]
+      }
+    },
+    "rejectionText": {
+      "mcpSession": "unsupported call: smartdd_zentao_work_list_v2",
+      "cliSession": "unsupported call: smartdd_mail_draft_list_v2"
+    },
+    "note": "A 层观察到的是 Agent 层“unsupported call”（工具未下发即不可调用）；宿主级 ENTRY_NOT_ACTIVE 由 I 层双向单测精确断言；R 为合成模型口径（已确认）。"
+  },
+  "accounting": {
+    "case": "M11-T37",
+    "from": "未执行",
+    "to": "部分通过（I＋A 结构/拒绝；缺 Skill 渲染哈希一致性 A 证据）",
+    "formalPassesAdded": 0
+  },
+  "failuresRetained": [
+    "首跑 applications.select 用统一 connections 对象被 INVALID_INPUT 拒绝（应按来源类别分别单选）",
+    "第二跑断言写错：“CLI 会话不应收到邮件工具”实际因项目同时选用邮件，工具本应下发；改为先停用邮件再建第二会话"
+  ],
+  "next": "T34 → T09／T29 → T17 → T12／T28；T21／T22 待用户 Story 数据"
+}
