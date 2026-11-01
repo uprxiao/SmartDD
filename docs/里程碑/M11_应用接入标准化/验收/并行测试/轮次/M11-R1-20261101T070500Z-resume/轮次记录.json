@@ -2,7 +2,7 @@
  "schema": "willyou-test-round-v1",
  "runId": "M11-R1-20261101T070500Z-resume",
  "milestone": "M11",
- "updatedAt": "2026-11-01T07:49:14.377121+00:00",
+ "updatedAt": "2026-11-01T10:09:06.644745+00:00",
  "agents": {
   "coordinator": "Claude Code（串行执行，未启用子Agent）"
  },
@@ -86,6 +86,15 @@
    "failedPackage": "attempt-003 ASAR ac1300c7…5076",
    "reproduction": "Isolated direct codex exec: quoted form reproduces error, bare form loads with sandbox read-only",
    "verification": "3 files 305 tests passed"
+  },
+  {
+   "id": "M11-R1-D03",
+   "class": "test-and-prototype",
+   "status": "open",
+   "symptom": "22 renderer prototype test files failed to load: 'The URL must be of scheme file' from resources/applications/definitions.mjs under jsdom",
+   "cause": "9ee3ca61 read the module catalog with readFileSync(new URL(..., import.meta.url)); under jsdom import.meta.url is not file:",
+   "fix": "afea182d: static JSON import; 19 of 22 files now pass",
+   "remaining": "3 tests still red and were already red behind the load error: prototype-skill-layout x2 expect v1 package `tools` (packages are now v2 `capabilities`); prototype-evidence finds multiple role=status elements. Not fixed yet."
   }
  ],
  "environment": [
@@ -96,7 +105,7 @@
  "accounting": {
   "formalPassesAdded": 0
  },
- "next": "S5 修复集合剩余 8 条补验（7 条未观察＋1 条真实 PTY），按 M11-S5 host 轮次 partial 结果领取，不重复 227 绿",
+ "next": "Fix D03 prototype tests; repackage; verify S8 dialog in real App (light/dark); then S9 formal cases",
  "driverChanges": [
   {
    "file": "scripts/applications/m11-zen-cli-ui.mjs",
@@ -113,5 +122,21 @@
    "pausedQueue": "docs/.../M11-S5-HC/attempt-002/resume-queue.json kept unchanged; not replayed. Old 227 green and 37 original reds retained as history.",
    "formalCasePassesAdded": 0
   }
- }
+ },
+ "commits": [
+  {
+   "sha": "5300605a",
+   "scope": "S11 level degradation, CLI delivery gated on L0.cli",
+   "tests": "327 passed"
+  },
+  {
+   "sha": "1e3edc98",
+   "scope": "S12 consistency suite (12) and new app/agent guide"
+  },
+  {
+   "sha": "afea182d",
+   "scope": "S8 run plan in session diagnostics; definitions.mjs import fix",
+   "tests": "renderer applications 525/528, 3 known red (D03)"
+  }
+ ]
 }
