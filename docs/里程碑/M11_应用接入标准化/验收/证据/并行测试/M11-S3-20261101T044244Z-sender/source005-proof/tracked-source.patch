@@ -1,0 +1,815 @@
+diff --git a/drizzle/meta/_journal.json b/drizzle/meta/_journal.json
+index 47d909c43..5d92f808c 100644
+--- a/drizzle/meta/_journal.json
++++ b/drizzle/meta/_journal.json
+@@ -204,6 +204,13 @@
+       "when": 1792785600000,
+       "tag": "0028_capability_broker_denials",
+       "breakpoints": true
++    },
++    {
++      "idx": 29,
++      "version": "6",
++      "when": 1793507771201,
++      "tag": "0029_mail_sender_identity",
++      "breakpoints": true
+     }
+   ]
+ }
+diff --git a/src/main/core/applications/__tests__/business-data.test.ts b/src/main/core/applications/__tests__/business-data.test.ts
+index f6d1a9545..63d7b0a5a 100644
+--- a/src/main/core/applications/__tests__/business-data.test.ts
++++ b/src/main/core/applications/__tests__/business-data.test.ts
+@@ -44,7 +44,8 @@ async function enable(projectId='p1'){
+  if(!app.selections.catalogState('mail').added)await app.setAdded(sender,'mail',true,0);
+  const old=app.selections.projectSettings(projectId,'mail');await app.select(sender,{projectId,appId:'mail',enabled:true,expectedRevision:old.revision,connections:{foxmail:null,smtp:null}});
+ }
+-async function selectConnections(connections:{foxmail:string|null;smtp:string|null}){const old=app.selections.projectSettings('p1','mail');return app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:old.revision,connections});}
++async function confirmSenderIdentity(){const state=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;if(state.canConfirm)await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}});}
++async function selectConnections(connections:{foxmail:string|null;smtp:string|null}){const old=app.selections.projectSettings('p1','mail'),selected=await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:old.revision,connections});if(connections.smtp)await confirmSenderIdentity();return selected;}
+ function privateConnections(){return new ApplicationConnectionService(f.store,secrets,{verify:async config=>({providerId:config.kind,serviceId:'synthetic-source',accountId:config.kind==='foxmail'?config.account:'synthetic-mailbox',contractMajor:1})});}
+ async function fox(account='fixture-mailbox'){return privateConnections().save({name:'Fixture Foxmail',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,account),account,queryDays:30}});}
+ const smtpConfig=()=>({kind:'smtp' as const,host:'smtp.example.test',port:587,username:'fixture@example.test',fromAddress:'fixture@example.test',authMode:'password' as const,mode:'starttls' as const});
+@@ -431,3 +432,48 @@ describe('M11 unified capability execution with host-issued callers',()=>{
+   expect(execute).not.toHaveBeenCalled();
+  });
+ });
++
++describe('M11 confirmed sender identity and conditional mail slots',()=>{
++ const identity=()=>app.projectPolicy(sender,'p1','mail') as Promise<import('@shared/mail-sender-identity').MailSenderIdentityStatus>;
++ const directSelect=(foxmail:string|null,smtp:string|null)=>app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:app.selections.projectSettings('p1','mail').revision,connections:{foxmail,smtp}});
++ const saveSmtp=()=>privateConnections().save({name:'Synthetic identity sender',expectedRevision:0,config:smtpConfig(),secret:'synthetic-only'});
++ const saveSource=(directory:string,account='hand-entered-alias')=>privateConnections().save({name:'Synthetic identity source',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,'Profiles',directory,'messages.db'),account,queryDays:30}});
++ it('M11 R14 requires a UI identity receipt for SMTP-only sending without blocking local drafts',async()=>{
++  const smtp=await saveSmtp();await directSelect(null,smtp.id);expect(await identity()).toMatchObject({state:'needs-confirmation',method:null,canConfirm:true});
++  const created=await draft(codex);expect((await app.viewDraft(sender,'p1',created.id)).draft.id).toBe(created.id);
++  const authentication=vi.spyOn(app.connections,'authentication');
++  expect(await call(codex,'send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash})).toMatchObject({status:'error',error:{code:'SENDER_IDENTITY_REQUIRED'}});
++  expect(authentication).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_intents').get()).toEqual({n:0});
++  await confirmSenderIdentity();expect(await identity()).toMatchObject({state:'confirmed',method:'user',receiptId:expect.any(String)});
++  expect(await call(codex,'send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash})).toMatchObject({status:'ok',value:{intent:{state:'awaiting-authorization',authorized:false}}});
++  expect(f.sqlite.prepare('SELECT sender_identity_hash FROM mail_send_intents').get()).toEqual({sender_identity_hash:expect.stringMatching(/^[a-f0-9]{64}$/)});expect(authentication).not.toHaveBeenCalled();
++ });
++ it('M11 R14 automatically confirms a matching account directory and ignores the editable account field',async()=>{
++  const smtp=await saveSmtp(),source=await saveSource('FIXTURE@EXAMPLE.TEST','not-the-address');await directSelect(source.id,smtp.id);
++  expect(await identity()).toMatchObject({state:'automatic',method:'automatic',accountDirectory:'FIXTURE@EXAMPLE.TEST',fromAddress:'fixture@example.test',receiptId:expect.any(String)});
++ });
++ it('M11 R14 rejects a valid mismatching directory before selection and cannot override it with user confirmation',async()=>{
++  const smtp=await saveSmtp(),source=await saveSource('different@example.test','fixture@example.test'),before=app.selections.projectSettings('p1','mail');
++  await expect(directSelect(source.id,smtp.id)).rejects.toMatchObject({code:'SENDER_IDENTITY_MISMATCH'});expect(app.selections.projectSettings('p1','mail')).toEqual(before);
++  await directSelect(null,smtp.id);const state=await identity();
++  // A stale confirmation cannot authorize a changed connection choice.
++  const other=await privateConnections().save({name:'Other sender',expectedRevision:0,config:{...smtpConfig(),fromAddress:'other@example.test'},secret:'synthetic-only'});await directSelect(null,other.id);
++  await expect(app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});
++ });
++ it('M11 R14 accepts manual confirmation for a non-email directory and persists it across service restart',async()=>{
++  const smtp=await saveSmtp(),source=await saveSource('opaque-account','different@example.test');await directSelect(source.id,smtp.id);expect(await identity()).toMatchObject({state:'needs-confirmation',accountDirectory:'opaque-account'});await confirmSenderIdentity();const receipt=await identity();
++  await app.dispose();app=setupService();await app.recover();app.attachRuns(runs);tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data));expect(await identity()).toEqual(receipt);
++ });
++ it('M11 R14 invalidates confirmation when any bound connection revision changes and requires explicit refresh',async()=>{
++  const smtp=await saveSmtp(),source=await saveSource('fixture@example.test');await directSelect(source.id,smtp.id);const original=await identity();
++  await app.setConnectionEnabled(sender,source.id,false,source.revision);expect(await identity()).toMatchObject({state:'invalidated',receiptId:null});
++  const updated=app.connections.get(source.id);await app.setConnectionEnabled(sender,source.id,true,updated.revision);expect(await identity()).toMatchObject({state:'invalidated'});
++  await confirmSenderIdentity();expect(await identity()).toMatchObject({state:'automatic'});expect((await identity()).receiptId).not.toBe(original.receiptId);
++ });
++ it('M11 R14 never lets an Agent or copied context self-confirm and detects a damaged confirmation record',async()=>{
++  const smtp=await saveSmtp();await directSelect(null,smtp.id);const state=await identity(),input={action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}};
++  expect(await tools.call(codex.runId,randomUUID(),{operation:'smartdd_mail_confirm_sender_v1',contractMajor:1,connectionId:null,arguments:input})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
++  await ui(async scope=>{await expect(app.data.policy('mail')!.action!({...scope},sender,input)).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(app.data.policy('mail')!.action!(scope,sender,input)).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
++  await confirmSenderIdentity();f.sqlite.prepare("UPDATE mail_sender_confirmations SET receipt_id=? WHERE project_id='p1'").run(randomUUID());await expect(identity()).rejects.toMatchObject({code:'HASH_MISMATCH'});
++ });
++});
+diff --git a/src/main/core/applications/__tests__/mail-send-data.test.ts b/src/main/core/applications/__tests__/mail-send-data.test.ts
+index e158b43ec..713a096dc 100644
+--- a/src/main/core/applications/__tests__/mail-send-data.test.ts
++++ b/src/main/core/applications/__tests__/mail-send-data.test.ts
+@@ -80,6 +80,9 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+   f=await agentFixture({applicationVersion:'2.0.0'});messages=[];authentications=[];decrypts=0;loseReceipt=false;holdReceipt=false;heldReceipts=[];const db=drizzle(f.sqlite,{schema});secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>{decrypts++;return b.toString();}});projects=new ProjectService(db,secrets);
+   const wc=Object.assign(new EventEmitter(),{id:101,mainFrame:{processId:9,routingId:1},isDestroyed:()=>false});sender={sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:()=>null,alive:()=>false,write:()=>{},resize:()=>{},killTask:()=>{}});
+   await new RuntimeRegistry(f.store).install(bundles.runtime());const trusted=new BuiltinPackageRegistry(f.store),pack=await trusted.install(bundles,bundles.index.apps.find(p=>p.appId==='mail')!);await trusted.packages.activate(pack.packageHash,0);app=setup();await app.recover();const tested=await app.testConnection(sender,{name:'Private SMTP',expectedRevision:0,config:{kind:'smtp',host:'127.0.0.1',port:await smtp(),username:'sender@example.test',fromAddress:'sender@example.test',authMode:'password',mode:'plain'},secret:'private-fixture-secret'}),connection=await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);smtpId=connection.id;await app.setAdded(sender,'mail',true,0);await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:smtpId}});
++  // Independent sender identity is a new M11 prerequisite; this is a host UI fixture, not mail-send authorization.
++  const senderIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;
++  await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:senderIdentity.bindingHash,confirmed:true}});
+   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);messages.length=0;authentications.length=0;decrypts=0;
+  });
+  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();for(const close of closers.splice(0))await close();vi.restoreAllMocks();f.cleanup();});
+@@ -117,7 +120,7 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+  });
+  it('migrates only the provable original prepare identity and leaves frozen sends unchanged on replay',async()=>{
+   const intent=await prepare();const before=f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id);
+-  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+   expect(f.sqlite.prepare('SELECT kind,subject_id FROM application_activity_subjects').all()).toEqual([{kind:'mail-send',subject_id:intent.id}]);expect(f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);
+   f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>20');runBundledMigrations(f.sqlite);expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_activity_subjects').get()).toEqual({n:1});expect(messages).toHaveLength(0);
+  });
+@@ -246,6 +249,10 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+   }else{
+    let state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',false,state.revision);state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',true,state.revision);
+   }
++  // M11 identity confirmation is independent of authorization for this specific mail.
++  const refreshedIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;
++  expect(refreshedIdentity.state).toBe('invalidated');
++  await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:refreshedIdentity.bindingHash,confirmed:true}});
+   const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});expect(output).toMatchObject({status:'ok',value:{intent:{authorized:false,state:'awaiting-authorization'}}});const intent=(output as {value:{intent:MailSendData}}).value.intent;expect(await execute(intent)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
+   await nativeTurn(cc,sendReference(d)+'\n请原样发送此草稿。');expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});expect(messages).toHaveLength(1);
+  },20000);
+@@ -318,6 +325,10 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+   if(kind==='cancel-gap'||kind==='history-gap')app.observeInput(sender,previous!.target,kind==='cancel-gap'?'\x03':'\x1b[A\r');
+   if(kind==='policy-change'){let state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',false,state.revision);state=app.selections.catalogState('mail');await app.setEnabled(sender,'mail',true,state.revision);}
+   if(kind==='binding-change'){let state=app.selections.projectSettings('p1','mail');await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:state.revision,connections:{foxmail:null,smtp:null}});state=app.selections.projectSettings('p1','mail');await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:state.revision,connections:{foxmail:null,smtp:smtpId}});}
++  if(kind==='policy-change'||kind==='binding-change'){
++   const refreshedIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;expect(refreshedIdentity.state).toBe('invalidated');
++   await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:refreshedIdentity.bindingHash,confirmed:true}});
++  }
+   await nativeTurn(cc,'请把刚才那份草稿原样发送。');const output=await call('send_prepare',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash});expect(output,JSON.stringify(output)).toMatchObject({status:'ok',value:{intent:{authorized:false}}});const intent=(output as {value:{intent:MailSendData}}).value.intent;
+   expect(await execute(intent)).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});expect(messages).toHaveLength(0);expect(decrypts).toBe(0);expect(f.sqlite.prepare('SELECT COUNT(*) n FROM mail_user_action_sources').get()).toEqual({n:0});
+  });
+@@ -426,18 +437,26 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
+  });
+  it('upgrades v18 send records and retains metadata-only user-source provenance on migration replay',async()=>{
+   const intent=await prepare();await confirm(intent);const before=f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id),source=f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get() as Record<string,string>;
+-  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+-  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
++  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
++  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
+   expect(()=>f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(randomUUID(),randomUUID(),'renderer-confirmation','hash','metadata','now')).toThrow(/FOREIGN KEY/);expect(()=>f.sqlite.exec("UPDATE mail_user_action_sources SET source_kind='model-approved'")).toThrow(/CHECK/);expect(f.sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(messages).toHaveLength(0);
+  });
+  it('uses the current rotated secret for the same identity without changing the reviewed bytes',async()=>{
+-  const intent=await prepare();await confirm(intent);const old=app.connections.get(smtpId),tested=await app.testConnection(sender,{id:smtpId,name:old.name,expectedRevision:old.revision,config:old.config,secret:'rotated-private-secret'});await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);authentications.length=0;decrypts=0;expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted',reviewHash:intent.reviewHash}}});expect(authentications).toEqual(['rotated-private-secret']);expect(decrypts).toBe(1);
++  const intent=await prepare();await confirm(intent);const old=app.connections.get(smtpId),tested=await app.testConnection(sender,{id:smtpId,name:old.name,expectedRevision:old.revision,config:old.config,secret:'rotated-private-secret'});await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);
++  authentications.length=0;decrypts=0;
++  expect(await execute(intent)).toMatchObject({status:'error',error:{code:'SENDER_IDENTITY_REQUIRED'}});expect(authentications).toHaveLength(0);expect(decrypts).toBe(0);expect(messages).toHaveLength(0);
++  expect(await app.viewSend(sender,'p1',intent.id)).toMatchObject({intent:{state:'authorized',executionId:null}});
++  const refreshedIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;expect(refreshedIdentity.state).toBe('invalidated');
++  await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:refreshedIdentity.bindingHash,confirmed:true}});
++  authentications.length=0;decrypts=0;expect(await execute(intent)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted',reviewHash:intent.reviewHash}}});expect(authentications).toEqual(['rotated-private-secret']);expect(decrypts).toBe(1);
+  });
+  it('rotates during a real in-flight SMTP send, uses fresh authentication for the next send, and never replays the old unknown result',async()=>{
+   const original=await prepare({subject:'first explicit in-flight fixture'});await confirm(original);holdReceipt=true;
+   const pending=execute(original);void pending.catch(()=>{});await vi.waitFor(()=>{expect(messages).toHaveLength(1);expect(heldReceipts).toHaveLength(1);});
+   const old=app.connections.get(smtpId),beforeSnapshot=JSON.stringify(runs.assertActive(cc.runId).snapshot),tested=await app.testConnection(sender,{id:smtpId,name:old.name,expectedRevision:old.revision,config:old.config,secret:'rotated-private-secret'});
+   const rotated=await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);expect(rotated.identityRevision).toBe(old.identityRevision);expect(rotated.secretRevision).toBe(old.secretRevision+1);expect(messages).toHaveLength(1);
++  const refreshedIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;expect(refreshedIdentity.state).toBe('invalidated');
++  await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:refreshedIdentity.bindingHash,confirmed:true}});
+   holdReceipt=false;const next=await prepare({subject:'second independently authorized fixture'});await confirm(next);expect(await execute(next)).toMatchObject({status:'ok',value:{intent:{state:'server-accepted'}}});
+   expect(authentications).toEqual(['private-fixture-secret','rotated-private-secret','rotated-private-secret']);expect(messages).toHaveLength(2);
+   heldReceipts[0].destroy();expect(await pending).toMatchObject({status:'ok',value:{intent:{id:original.id,state:'unknown',reviewHash:original.reviewHash}}});
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 265c9817b..b7b390b5a 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -113,14 +113,14 @@ export class ApplicationService {
+     this.nativeMessages=new NativeUserMessages(this.nativeInputs,id=>{if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原生消息来源尚未初始化');return this.runs.assertActive(id);});
+     this.builtin=new BuiltinPackageRegistry(store,builtinApplicationModules);
+     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative));
+-    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId))});
++    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId)),validateSelection:(projectId,appId,slots)=>this.data?.policy(appId)?.validateSelection?.(projectId,slots),afterSelection:(projectId,appId)=>this.data?.policy(appId)?.afterSelection?.(projectId)});
+     this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty,prepareStoppedSkillRead:(runId,targets)=>this.nativeMessages.prepareStoppedSkillRead(runId,targets),skillReads:(runId,targets)=>this.nativeMessages.skillReads(runId,targets),skillDiscoveries:(runId,targets)=>this.nativeMessages.skillDiscoveries(runId,targets)});
+     this.contexts=new ApplicationExecutionContexts(store,this.selections,this.connections,{requireSender:options.requireSender,changed:options.changed,uiReadRetryDelays:options.uiReadRetryDelays,uiReadTimeoutMs:options.uiReadTimeoutMs,assertRun:id=>{
+       if(!this.runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前Agent运行通道尚未完成初始化');return this.runs.assertActive(id);
+     }});
+     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
+     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
+-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);const draftData=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments});this.data=new ApplicationBusinessDataService({registry:this.connections.registry,execution:{contexts:this.contexts,modules:builtinApplicationModules},hosts:builtinApplicationModules.createHosts({store,contexts:this.contexts,resources:this.resources,selections:this.selections,retained:new Map([['mail',{drafts:draftData,reads:this.mailReads,sends:this.mailSends}]])})});
++    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>this.nativeMailScope(projectId)?.policyHash??null);this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations,context=>{this.contexts.require(context,'mail.send');this.data.policy('mail')?.stamp?.(context.projectId!,'mail.send');});const draftData=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments});this.data=new ApplicationBusinessDataService({registry:this.connections.registry,execution:{contexts:this.contexts,modules:builtinApplicationModules},hosts:builtinApplicationModules.createHosts({store,connections:this.connections,contexts:this.contexts,resources:this.resources,selections:this.selections,retained:new Map([['mail',{drafts:draftData,reads:this.mailReads,sends:this.mailSends}]])})});
+     this.capabilities=this.data.capabilities!;
+     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.observeInput(sender,target,data),uncertain:(sender,target)=>{this.nativeInputs.uncertain(sender,target);this.notifyInvalidSources();}});}
+   }
+@@ -132,7 +132,7 @@ export class ApplicationService {
+     try{
+       const policy=this.selections.policyStamp(projectId,'mail'),slot=this.selections.connectionSlot(projectId,'mail','smtp');if(!slot.connectionId)return null;
+       const c=this.connections.get(slot.connectionId);if(c.config.kind!=='smtp'||!c.enabled||c.authorization!=='connected')return null;
+-      return{connectionHash:nativeMailConnectionHash({connectionId:c.id,identityRevision:c.identityRevision,configRevision:c.configRevision,policyRevision:c.policyRevision,bindingRevision:slot.revision,identityHash:digest(canonicalJson(c.identity)),smtpConfigHash:digest(canonicalJson(c.config))}),policyHash:digest(canonicalJson(policy))};
++      return{connectionHash:nativeMailConnectionHash({connectionId:c.id,identityRevision:c.identityRevision,configRevision:c.configRevision,policyRevision:c.policyRevision,bindingRevision:slot.revision,identityHash:digest(canonicalJson(c.identity)),smtpConfigHash:digest(canonicalJson(c.config))}),policyHash:digest(canonicalJson({policy,senderIdentity:this.data.policy('mail')?.stamp?.(projectId,'mail.send')}))};
+     }catch{return null;}
+   }
+   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);this.notifyInvalidSources();}
+@@ -168,6 +168,8 @@ export class ApplicationService {
+   setAdded(sender:ApplicationUiSender,appId:ApplicationId,added:boolean,expectedRevision:number){return this.management(sender,appId,'application.add','write',()=>this.selections.setAdded(appId,z.boolean().parse(added),z.number().int().nonnegative().parse(expectedRevision)));}
+   setEnabled(sender:ApplicationUiSender,appId:ApplicationId,enabled:boolean,expectedRevision:number){return this.management(sender,appId,'application.enable','write',()=>this.selections.setGlobalEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
+   projectSettings(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.selections.projectView(projectId,appId),projectId);}
++  projectPolicy(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.data.policy(appId)?.status(projectId)??null,projectId);}
++  projectAction(sender:ApplicationUiSender,projectId:string,appId:ApplicationId,input:unknown){return this.management(sender,appId,'application.project.action','write',context=>{const action=this.data.policy(appId)?.action;if(!action)throw new ApplicationError('SCOPE_DENIED','此应用没有项目页面专属动作');return action(context,sender,input);},projectId);}
+   select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=this.connections.registry.parseSelection(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
+   listConnections(sender:ApplicationUiSender,appId:ApplicationId){return this.management(sender,appId,'connection.list','read',async()=>this.connections.list(appId));}
+   testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=this.connections.registry.parseSave(input),appId=this.connections.registry.providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},async context=>{if(value.id){const known=this.connections.get(value.id);if(known.appId!==appId)throw new ApplicationError('SCOPE_DENIED','原连接不属于当前应用');await this.contexts.subject(context,'connection',known.id);}const tested=await this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work));await this.contexts.subject(context,'connection',tested.connectionId);return tested;});}
+@@ -229,7 +231,7 @@ export class ApplicationService {
+   private mailExecution():Promise<MailExecutionService>{
+     if(this.closed)return Promise.reject(new ApplicationError('CANCELED','发送服务已关闭'));if(this.executionPromise)return this.executionPromise;
+     const opening=(async()=>{const processes=this.options.processes??new MacProcessIdentityReader(join(dirname(this.options.foxmailNative),'willyou-process-identity')),identity=processes.read(process.pid);if(!identity)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验发送宿主进程身份');
+-      const engine=new MailExecutionService(this.store,this.drafts,this.connections,this.selections,{requireDrafts:actor=>this.contexts.requireActor(actor),requireSend:actor=>{this.contexts.sendScope(actor);},authenticate:(actor,connection)=>{const context=this.contexts.sendScope(actor),resolved=this.contexts.resolvePinned(context,connection),config=connectionConfigSchema.parse(resolved.configView.view);const authenticated=this.contexts.authenticate(context,resolved.credentialHandle);return{config,secret:authenticated.secret};},allowUiAuthorization:(actor,intent)=>this.mailAuthorizations.allowUi(actor,intent),verifyUserAction:(actor,id,intent)=>this.mailAuthorizations.verify(actor,id,intent),ownerState:owner=>processes.state({pid:owner.pid,startedAt:owner.startedAt})},{...this.options.mailSend,hostIdentity:identity,activity:(actor,id,work)=>this.contexts.retainSendActivity(actor,id,identity,work)});const recovery=await engine.recover();this.mailRecoveryIssue=recovery.pending.length?{code:'RESOURCE_RECOVERY_REQUIRED',message:'有原发送执行尚未确认退出，保留原记录等待核查'}:null;if(this.closed){await engine.dispose();throw new ApplicationError('CANCELED','发送服务已关闭');}return engine;
++      const engine=new MailExecutionService(this.store,this.drafts,this.connections,this.selections,{requireDrafts:actor=>this.contexts.requireActor(actor),requireSend:actor=>{this.contexts.sendScope(actor);},senderIdentity:actor=>{const stamp=this.data.policy('mail')?.stamp?.(actor.projectId,'mail.send');if(!stamp)throw new ApplicationError('SENDER_IDENTITY_REQUIRED','发件身份尚未确认');return stamp;},authenticate:(actor,connection)=>{const context=this.contexts.sendScope(actor),resolved=this.contexts.resolvePinned(context,connection),config=connectionConfigSchema.parse(resolved.configView.view);const authenticated=this.contexts.authenticate(context,resolved.credentialHandle);return{config,secret:authenticated.secret};},allowUiAuthorization:(actor,intent)=>this.mailAuthorizations.allowUi(actor,intent),verifyUserAction:(actor,id,intent)=>this.mailAuthorizations.verify(actor,id,intent),ownerState:owner=>processes.state({pid:owner.pid,startedAt:owner.startedAt})},{...this.options.mailSend,hostIdentity:identity,activity:(actor,id,work)=>this.contexts.retainSendActivity(actor,id,identity,work)});const recovery=await engine.recover();this.mailRecoveryIssue=recovery.pending.length?{code:'RESOURCE_RECOVERY_REQUIRED',message:'有原发送执行尚未确认退出，保留原记录等待核查'}:null;if(this.closed){await engine.dispose();throw new ApplicationError('CANCELED','发送服务已关闭');}return engine;
+     })();this.executionPromise=opening;void opening.catch(()=>{if(this.executionPromise===opening)this.executionPromise=undefined;});return opening;
+   }
+   prepareSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.prepare',operations:['mail.send'],semantics:'write'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.send.prepare',1,input) as ReturnType<MailSendDataService['execute']>);}
+diff --git a/src/main/core/applications/business-data-service.ts b/src/main/core/applications/business-data-service.ts
+index 204a536ff..e8430663f 100644
+--- a/src/main/core/applications/business-data-service.ts
++++ b/src/main/core/applications/business-data-service.ts
+@@ -7,10 +7,10 @@ import type { MailReadDataService } from './mail-read-data-service';
+ import type { ZentaoDataService } from './zentao-data-service';
+ import type {ApplicationHostCatalog} from './host-application-registry';
+ import type {ApplicationExecutionContexts} from './execution-context';
+-import type {ApplicationModuleRegistry,TrustedApplicationModule} from './modules/registry';
++import type {ApplicationModuleRegistry,TrustedApplicationModule,ApplicationProjectPolicy} from './modules/registry';
+ import {ApplicationCapabilityExecution} from './capability-execution';
+ import {BuiltinPackageRegistry} from './builtin-package-registry';
+-type RegisteredData=ApplicationDataHost&{legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
++type RegisteredData=ApplicationDataHost&{receiptOnly?:(context:ApplicationExecutionContext,method:string,input:unknown)=>boolean;projectPolicy?:ApplicationProjectPolicy;legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
+ interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[];execution?:{contexts:ApplicationExecutionContexts;modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>}}
+ export class ApplicationBusinessDataService implements ApplicationDataHost {
+   private readonly builtinMail?:MailDraftDataService;
+@@ -23,6 +23,8 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+   readonly capabilities?:ApplicationCapabilityExecution;
+   private readonly contexts?:ApplicationExecutionContexts;
+   private readonly hosts=new Map<string,RegisteredData>();
++  policy(appId:string):ApplicationProjectPolicy|undefined{return this.hosts.get(appId)?.projectPolicy;}
++  receiptOnly(context:ApplicationExecutionContext,method:string,input:unknown):boolean{return this.hosts.get(context.appId)?.receiptOnly?.(context,method,input)??false;}
+   constructor(registration:RegisteredHostData);
+   constructor(mail:MailDraftDataService,zentao:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService);
+   constructor(first:MailDraftDataService|RegisteredHostData,zentao?:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService){
+diff --git a/src/main/core/applications/capability-execution.ts b/src/main/core/applications/capability-execution.ts
+index 5e8bffd52..c31a8dee6 100644
+--- a/src/main/core/applications/capability-execution.ts
++++ b/src/main/core/applications/capability-execution.ts
+@@ -9,6 +9,7 @@ import type { BuiltinPackageRegistry } from './builtin-package-registry';
+ import { canonicalJson } from './manifest';
+ 
+ interface CapabilityData {
++  receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
+   execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<unknown>;
+ }
+ /** UI, MCP and CLI converge here after their own host-issued identity checks. */
+@@ -42,7 +43,10 @@ export class ApplicationCapabilityExecution {
+     if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');
+     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
+     return this.contexts.withSignal(context,signal,async()=>{
+-      await this.contexts.requireSlots(context,capability.slots.required);
++      // A retained v1 external-write call can return an already claimed receipt without re-entering its provider.
++      // Only a compiled module can attest this; v2 callers use the dependency-free result capability.
++      const receiptOnly=capability.semantics==='external-write'&&this.packages.packages.get(context.packageHash).manifest.schema==='smartdd-app-package-v1'&&this.data.receiptOnly?.(context,implementation.method,args);
++      if(!receiptOnly)await this.contexts.requireSlots(context,capability.slots.required);
+       const result=await this.data.execute(context,implementation.method,args);
+       this.contexts.require(context,capability.permission);
+       return result;
+diff --git a/src/main/core/applications/controller.ts b/src/main/core/applications/controller.ts
+index 0df20229c..a487911e1 100644
+--- a/src/main/core/applications/controller.ts
++++ b/src/main/core/applications/controller.ts
+@@ -42,6 +42,8 @@ export function createApplicationController(service:ApplicationService|undefined
+     setAdded:(event,appId:ApplicationId,added:boolean,revision:number)=>run(event,current=>current.setAdded(event,appId,added,revision)),
+     setEnabled:(event,appId:ApplicationId,enabled:boolean,revision:number)=>run(event,current=>current.setEnabled(event,appId,enabled,revision)),
+     projectSettings:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectSettings(event,projectId,appId)),
++    projectPolicy:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectPolicy(event,projectId,appId)),
++    projectAction:(event,projectId:string,appId:ApplicationId,input:unknown)=>run(event,current=>current.projectAction(event,projectId,appId,input)),
+     select:(event,input:ProjectApplicationSelectionInput)=>run(event,current=>current.select(event,input)),
+     connections:(event,appId:ApplicationId)=>run(event,current=>current.listConnections(event,appId)),
+     testConnection:(event,input:SaveApplicationConnection)=>run(event,current=>current.testConnection(event,input)),
+diff --git a/src/main/core/applications/execution-context.ts b/src/main/core/applications/execution-context.ts
+index ffd3f107b..db457d74d 100644
+--- a/src/main/core/applications/execution-context.ts
++++ b/src/main/core/applications/execution-context.ts
+@@ -39,7 +39,7 @@ interface ContextRecord<C extends HostedConfiguration,A extends string> {context
+ interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
+ const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
+ const targetSchema=z.object({slot:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional(),readDefaults:z.object({configHash:z.string().regex(/^[a-f0-9]{64}$/),values:z.record(z.string().min(1).max(64),z.unknown()).refine(value=>Object.keys(value).length<=8&&JSON.stringify(value).length<=4096)}).strict().optional()}).strict();
+-const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
++const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','application.project.action','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
+ 
+ /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
+ export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
+@@ -103,7 +103,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
+   }
+   async requireSlots(context:ApplicationExecutionContext<A>,slots:readonly string[]):Promise<void>{
+     this.record(context);
+-    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');await this.pinConnection(context,provider.id,null,false);}
++    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');try{await this.pinConnection(context,provider.id,null,false);}catch(error){if(error instanceof ApplicationError&&error.code==='AUTH_REQUIRED')throw new ApplicationError('AUTH_REQUIRED',`连接槽 ${slot}：${error.message}`);throw error;}}
+     this.record(context);
+   }
+   require(context:ApplicationExecutionContext<A>,permission:string):void{
+diff --git a/src/main/core/applications/mail-execution-service.ts b/src/main/core/applications/mail-execution-service.ts
+index 34bc81926..7ec97a2b0 100644
+--- a/src/main/core/applications/mail-execution-service.ts
++++ b/src/main/core/applications/mail-execution-service.ts
+@@ -17,7 +17,7 @@ import { prepareSmtpMessage, submitSmtp, type PreparedSmtpMessage } from './prov
+ type SmtpConfig = Extract<ConnectionConfig,{ kind: 'smtp' }>;
+ interface IntentRow {
+   id: string;project_id: string;source_task_id: string | null;source_run_id: string | null;operation_id: string;request_hash: string;
+-  draft_id: string;draft_revision: number;draft_content_hash: string;connection_id: string;identity_revision: number;config_revision: number;policy_revision: number;binding_revision: number;
++  draft_id: string;draft_revision: number;draft_content_hash: string;connection_id: string;identity_revision: number;config_revision: number;policy_revision: number;binding_revision: number;sender_identity_hash:string|null;
+   identity_json: string;smtp_config_json: string;raw_write_id: string;raw_object_id: string | null;raw_hash: string | null;frozen_hash: string | null;envelope_json: string | null;message_id: string;
+   review_json: string | null;review_hash: string | null;state: MailSendState;grant_id: string | null;execution_id: string | null;cancel_requested_at: string | null;
+   owner_instance_id: string;owner_pid: number;owner_started_at: string;error_code: string | null;created_at: string;updated_at: string;
+@@ -25,6 +25,7 @@ interface IntentRow {
+ interface GrantRow { id: string;intent_id: string;source: VerifiedMailUserAction['source'];evidence_id: string;evidence_hash: string;review_hash: string;evidence_json: string;state: string;expires_at: string }
+ export interface MailSendPolicy extends MailPolicy {
+   requireSend(actor: MailSendActor): void;
++  senderIdentity?(actor:MailSendActor):string;
+   authenticate(actor:MailSendActor,connection:ApplicationConnection):{config:ConnectionConfig;secret:string|null};
+   verifyUserAction(actor: MailSendActor,evidenceRef: string,intent: MailSendIntent): VerifiedMailUserAction;
+   allowUiAuthorization?(actor:MailSendActor,intent:MailSendIntent):boolean;
+@@ -68,13 +69,13 @@ export class MailExecutionService {
+   private origin(actor: MailSendActor,row: IntentRow): void {
+     if (actor.taskId !== row.source_task_id || actor.runId !== row.source_run_id) throw new ApplicationError('SCOPE_DENIED','发送意图属于其他运行，请从当前运行重新明确操作');
+   }
+-  private current(actor: MailSendActor): { connection: ApplicationConnection;config: SmtpConfig;bindingRevision: number } {
++  private current(actor: MailSendActor): { connection: ApplicationConnection;config: SmtpConfig;bindingRevision: number;senderIdentityHash:string|null } {
+     this.policy.requireSend(actor);
+     const binding = this.selections.connectionSlot(actor.projectId,'mail','smtp'), id = binding.connectionId;
+     if (!id) throw new ApplicationError('AUTH_REQUIRED','请先明确选用当前项目的发件连接');
+     const connection = this.connections.get(id);
+     if (connection.providerId !== 'smtp' || connection.config.kind !== 'smtp' || !connection.enabled || connection.authorization !== 'connected') throw new ApplicationError('AUTH_REQUIRED','当前发件连接未启用或已断开');
+-    return { connection,config: connection.config,bindingRevision: binding.revision };
++    return { connection,config: connection.config,bindingRevision: binding.revision,senderIdentityHash:this.policy.senderIdentity?.(actor)??null };
+   }
+   private assertCurrent(actor: MailSendActor,row: IntentRow,checkOrigin=true): ReturnType<MailExecutionService['current']> {
+     if(checkOrigin)this.origin(actor,row); let current: ReturnType<MailExecutionService['current']>;
+@@ -107,7 +108,7 @@ export class MailExecutionService {
+       if (this.ancestry(draft.id,actor.projectId).some(a => a.state === 'executing'||this.producers.has(a.intent_id)||Boolean(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_kind='mail-send' AND owner_id=? AND state='active'").get(a.intent_id)))) throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','来源草稿仍在发送，请先等待并核对原结果');
+       if (draft.content.senderConnectionId && draft.content.senderConnectionId !== current.connection.id) throw new ApplicationError('INTENT_STALE','草稿发件人与项目当前选用不同，请明确选择后更新草稿');
+       const id = randomUUID(), now = new Date().toISOString();
+-      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.instanceId,process.pid,this.born,now,now);
++      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,sender_identity_hash,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,current.senderIdentityHash,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.instanceId,process.pid,this.born,now,now);
+       this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=?,updated_at=? WHERE id=?').run(id,now,draft.id); row = this.row(actor,id); created = true; this.preparing.add(id);
+     }).immediate());
+     if (!created) return this.view(row);
+diff --git a/src/main/core/applications/mail-send-data-service.ts b/src/main/core/applications/mail-send-data-service.ts
+index a9c649872..9b95d75bd 100644
+--- a/src/main/core/applications/mail-send-data-service.ts
++++ b/src/main/core/applications/mail-send-data-service.ts
+@@ -18,7 +18,7 @@ export type {MailSendData} from '@shared/mail-execution';
+ import type {MailSendData} from '@shared/mail-execution';
+ export class MailSendDataService implements ApplicationDataHost {
+  private readonly views:PackageConfigViews;
+- constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){
++ constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations,private readonly identityCheck?:(context:ApplicationExecutionContext)=>void){
+   this.views=new PackageConfigViews(contexts);resources.registerProvider({kind:'mail-send-review-v1',appId:'mail',contractMajor:1,permission:'mail.draft',read:async(context,backing)=>{
+    const intent=(await this.engine()).get(this.contexts.sendActor(context,context.allowedOperations.includes('mail.send')?'mail.send':'mail.draft'),backing.objectId);if(backing.part!=='review'||!intent.review||intent.reviewHash!==backing.objectRevision)throw new ApplicationError('HASH_MISMATCH','原发送审阅修订不同');return Buffer.from(canonicalJson(intent.review));
+   }});
+@@ -27,7 +27,7 @@ export class MailSendDataService implements ApplicationDataHost {
+   if(version!==1||binding.appId!=='mail'||!methods.has(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','发送方法不属于当前宿主契约');const semantics=method==='mail.send.get'?'read' as const:'write' as const;
+   return{semantics,retry:'never',authorize:run=>{const selected=run.snapshot.packages.find(pack=>pack.appId==='mail'&&pack.packageHash===binding.packageHash);if(!selected?.allowedOperations.includes(binding.permission))throw new ApplicationError('SCOPE_DENIED','原运行未选用本次发送动作');},authorizeReceipt:(run,id)=>this.contexts.assertAgentReceipt(run,binding,id),execute:(run,args,operation)=>this.contexts.withAgent(run,binding,operation,semantics,context=>this.execute(context,method,args))};
+  }
+- private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');}
++ private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');this.identityCheck?.(context);}
+  async view(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<MailSendData>{
+   await this.contexts.subject(context,'mail-send',intent.id);await this.contexts.subject(context,'mail-draft',intent.draftId);
+   let review:ApplicationResourceRef|null=null;if(intent.review&&intent.reviewHash)review=await this.resources.register(context,{kind:'mail-send-review-v1',objectId:intent.id,objectRevision:intent.reviewHash,part:'review'},'application/json',Buffer.from(canonicalJson(intent.review)));
+diff --git a/src/main/core/applications/modules/mail/index.ts b/src/main/core/applications/modules/mail/index.ts
+index 1fef89d94..234361025 100644
+--- a/src/main/core/applications/modules/mail/index.ts
++++ b/src/main/core/applications/modules/mail/index.ts
+@@ -9,6 +9,8 @@ import { MailWorkerClient } from '../../providers/mail-worker-client';
+ import { verifySmtp } from '../../providers/smtp';
+ import type { ApplicationModuleDefinition, ApplicationProviderDefinition } from '../registry';
+ import {retainedConfigViewDefinitions} from '../retained-config-views';
++import {MailSenderIdentity} from './sender-identity';
++import {z} from 'zod';
+ 
+ export interface RetainedMailData { drafts: MailDraftDataService; reads: MailReadDataService; sends: MailSendDataService }
+ const read = (id: string, required: string[] = [], conditional: string[] = []): LegacyCapabilityPolicy => ({ id, semantics: 'read', retry: 'safe-read', slots: { required, conditional } });
+@@ -29,7 +31,7 @@ const methodAliases:Readonly<Record<string,string>>={query:'mail.query',read:'ma
+ export const mailModule: ApplicationModuleDefinition<'mail', readonly [ApplicationProviderDefinition<typeof foxmailConfigSchema, 'foxmail', 'mail'>, ApplicationProviderDefinition<typeof smtpConfigSchema, 'smtp', 'mail'>]> = {
+   appId: 'mail', contractMajors: [1], slots: ['foxmail', 'smtp'], stopBeforeSwitch: false,
+   capabilities:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,{...policy,method:methodAliases[key]??policy.id,contractMajors:[1],permission:['query','read','resource_read'].includes(key)?'mail.read':['send_prepare','send_execute'].includes(key)?'mail.send':'mail.draft'}])),
+-  presentation: { displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
++  presentation: { projectPolicy:'sender-identity',displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
+   providers: [{
+     id: 'foxmail', appId: 'mail', readDefaultKeys: ['queryDays'], configApiMajor: 1, configSchema: foxmailConfigSchema,
+     configViews: retainedConfigViewDefinitions.filter(v=>v.providerId==='foxmail'),
+@@ -79,7 +81,25 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
+   createData(services) {
+     const data = services.retained.get('mail') as RetainedMailData | undefined;
+     if (!data?.drafts || !data.reads || !data.sends) throw new ApplicationError('CAPABILITY_UNAVAILABLE', '邮件业务服务尚未准备');
++    const identity=new MailSenderIdentity(services.store,services.connections,services.selections,services.contexts);
+     const target = (method: string) => method.startsWith('mail.send.') ? data.sends : ['mail.query', 'mail.read', 'mail.resource.read'].includes(method) ? data.reads : data.drafts;
+-    return { legacyData:data.drafts, resolve: (version, method, binding) => target(method).resolve(version, method, binding), execute: (context, method, input) => target(method).execute(context, method, input) };
++    return {receiptOnly(context,method,input){
++      services.contexts.assertActive(context);if(method!=='mail.send.execute')return false;
++      const parsed=z.object({intentId:z.uuid(),expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict().safeParse(input);if(!parsed.success)return false;
++      const row=services.store.sqlite.prepare('SELECT project_id,source_task_id,source_run_id,review_hash,execution_id FROM mail_send_intents WHERE id=?').get(parsed.data.intentId) as {project_id:string;source_task_id:string|null;source_run_id:string|null;review_hash:string|null;execution_id:string|null}|undefined;
++      return !!row&&!!row.execution_id&&row.project_id===context.projectId&&row.source_task_id===context.taskId&&row.source_run_id===context.runId&&row.review_hash===parsed.data.expectedReviewHash;
++    },legacyData:data.drafts,projectPolicy:{
++      status:projectId=>identity.status(projectId),validateSelection:(projectId,slots)=>identity.validateSelection(projectId,slots),afterSelection:projectId=>identity.afterSelection(projectId),
++      stamp:(projectId,permission)=>permission==='mail.send'?identity.requireConfirmed(projectId):null,
++      action:(context,sender,input)=>{const parsed=z.object({action:z.literal('confirm-sender'),arguments:z.unknown()}).strict().safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','此项目身份操作无效');return identity.confirm(context,String(sender.sender.id),parsed.data.arguments);},
++    },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: (context, method, input) => {
++      services.contexts.assertActive(context);
++      if(['mail.draft.create','mail.draft.update','mail.reply.create'].includes(method)&&input&&typeof input==='object'){
++        const content=method==='mail.reply.create'?input:Reflect.get(input,'content');
++        const selected=content&&typeof content==='object'?Reflect.get(content,'senderConnectionId'):null;
++        if(typeof selected==='string')identity.requireConfirmed(context.projectId!,selected);
++      }
++      return target(method).execute(context,method,input);
++    }};
+   },
+ };
+diff --git a/src/main/core/applications/modules/registry.ts b/src/main/core/applications/modules/registry.ts
+index a2c6c6e8f..38185e404 100644
+--- a/src/main/core/applications/modules/registry.ts
++++ b/src/main/core/applications/modules/registry.ts
+@@ -5,7 +5,8 @@ import type { ApplicationPresentation, ApplicationProviderPresentation } from '@
+ import type { HostApplicationDefinitions, HostProvider, HostedConfiguration, HostedIdentity } from '../host-application-registry';
+ import type { ApplicationModuleCatalog } from '../manifest';
+ import type { ApplicationDataHost } from '../application-adapter-registry';
+-import type { ApplicationExecutionContext, ApplicationExecutionContexts } from '../execution-context';
++import type { ApplicationExecutionContext, ApplicationExecutionContexts, ApplicationUiSender } from '../execution-context';
++import type {ApplicationConnectionService} from '../connection-service';
+ import type { ApplicationDataResources } from '../data-resources';
+ import type { ApplicationSelectionService } from '../selection-service';
+ import type { ResourceStore } from '../resource-store';
+@@ -13,12 +14,21 @@ import type {ConfigViewConverter} from '../config-view-registry';
+ import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ 
+ export interface ApplicationModuleData extends ApplicationDataHost {
++  projectPolicy?:ApplicationProjectPolicy;
++  receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
+   /** Retained internal v1 callers may use their original service, never the new routing facade. */
+   legacyData?: ApplicationDataHost;
+   execute(context: ApplicationExecutionContext, method: string, input: unknown): Promise<unknown>;
+ }
++export interface ApplicationProjectPolicy {
++  status(projectId:string):unknown;
++  validateSelection?(projectId:string,slots:Readonly<Record<string,string|null|undefined>>):void;
++  afterSelection?(projectId:string):void;
++  action?(context:ApplicationExecutionContext,sender:ApplicationUiSender,input:unknown):Promise<unknown>;
++  stamp?(projectId:string,permission:string):string|null;
++}
+ export interface ApplicationModuleServices {
+-  store: ResourceStore; contexts: ApplicationExecutionContexts; resources: ApplicationDataResources; selections: ApplicationSelectionService;
++  store: ResourceStore; contexts: ApplicationExecutionContexts; resources: ApplicationDataResources; selections: ApplicationSelectionService;connections:ApplicationConnectionService;
+   /** Compatibility services for retained built-ins; new modules build their own services from the common host facilities. */
+   retained: ReadonlyMap<string, unknown>;
+ }
+diff --git a/src/main/core/applications/selection-service.ts b/src/main/core/applications/selection-service.ts
+index bf8ff569e..23fad29af 100644
+--- a/src/main/core/applications/selection-service.ts
++++ b/src/main/core/applications/selection-service.ts
+@@ -12,6 +12,8 @@ export interface ApplicationSelectionDeps {
+   requireProject(projectId: string): unknown;
+   stopProjectRuns(projectId: string, appId: string): Promise<boolean>;
+   runningInProject(projectId: string, appId: string): number;
++  validateSelection?(projectId:string,appId:string,slots:Readonly<Record<string,string|null|undefined>>):void;
++  afterSelection?(projectId:string,appId:string):void;
+ }
+ export interface ApplicationCatalogState<A extends string=ApplicationId> { appId: A; added: boolean; enabled: boolean; revision: number }
+ 
+@@ -86,6 +88,7 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
+       const connection = this.connections.get(id);
+       if (connection.providerId !== slot || this.registry.providerApplication(connection.providerId) !== value.appId) throw new ApplicationError('SCOPE_DENIED', '所选连接不属于此应用或来源类别');
+     }
++    if(value.enabled)this.deps.validateSelection?.(value.projectId,value.appId,value.connections);
+   }
+   async select(input: HostedSelectionInput<C,A>): Promise<HostedSelection<C,A>> {
+     const value = this.registry.parseSelection(input); this.deps.requireProject(value.projectId);
+@@ -141,6 +144,7 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
+       this.store.sqlite.prepare('INSERT INTO application_project_bindings(project_id,app_id,slot,connection_id,identity_revision) VALUES(?,?,?,?,?)').run(value.projectId, value.appId, slot, id, connection.identityRevision);
+     }
+     this.store.sqlite.prepare("UPDATE application_binding_changes SET state='committed',to_revision=?,updated_at=? WHERE operation_id=?").run(revision, now, operationId);
++    if(value.enabled)this.deps.afterSelection?.(value.projectId,value.appId);
+   }
+   /** Local draft operations depend only on application policy, not unrelated external slots. */
+   requireApplicationEnabled(projectId: string,appId: A): void {
+diff --git a/src/main/core/applications/tool-service.ts b/src/main/core/applications/tool-service.ts
+index 344ed8c99..cc80392ab 100644
+--- a/src/main/core/applications/tool-service.ts
++++ b/src/main/core/applications/tool-service.ts
+@@ -35,7 +35,7 @@ interface InvocationRow { operation_id: string;request_hash: string;state: 'runn
+ interface SelectedTool { application: InstalledApplicationPackage;declaration: ApplicationManifest['tools'][number];tool: BridgeTool }
+ const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'] = 'not-started',exhausted = false): BridgeFailure => {
+   const code = error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE';
+-  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
++  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','ENTRY_NOT_ACTIVE','SENDER_IDENTITY_REQUIRED','SENDER_IDENTITY_MISMATCH','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
+ };
+ /** Fixed package contracts + run-derived context. No model argument ever selects project or package. */
+ export class ApplicationToolService {
+diff --git a/src/main/db/managed-client.test.ts b/src/main/db/managed-client.test.ts
+index 5cc7e807a..b5b226cf0 100644
+--- a/src/main/db/managed-client.test.ts
++++ b/src/main/db/managed-client.test.ts
+@@ -40,9 +40,8 @@ it.skipIf(process.platform!=='darwin').each(['activation','migration-and-activat
+   f.sqlite.prepare("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES(?,'ui','project','p1','zentao',?,1,'ui.zentao.work','read',?,'running',?)").run(id,f.application.packageHash,'a'.repeat(64),new Date().toISOString());
+   f.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'ui',?,?,?,?, 'active',?)").run(leaseId,f.application.resourceId,id,randomUUID(),pid,birth,new Date().toISOString());
+   if(gate==='migration-and-activation'){
+-   // Exact old boundary: the latest migration only adds this empty audit table.
+-   // Dropping that empty table and its receipt restores the preceding schema.
+-   const last=bundledMigrations().at(-1)!;expect(last.tag).toBe('0028_capability_broker_denials');expect(f.sqlite.prepare('SELECT count(*) n FROM capability_broker_denials').get()).toEqual({n:0});f.sqlite.exec('DROP TABLE capability_broker_denials');f.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(last.hash);
++   // Restore the exact preceding schema: the latest migration adds a sender identity table and a nullable intent column.
++   const last=bundledMigrations().at(-1)!;expect(last.tag).toBe('0029_mail_sender_identity');expect(f.sqlite.prepare('SELECT count(*) n FROM mail_sender_confirmations').get()).toEqual({n:0});f.sqlite.exec('DROP TABLE mail_sender_confirmations; ALTER TABLE mail_send_intents DROP COLUMN sender_identity_hash');f.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(last.hash);
+   }
+   const watermark=f.sqlite.prepare('SELECT hash,created_at FROM __drizzle_migrations ORDER BY id').all();
+   if(owner!=='stopped')reader.identities.set(pid,birth);if(owner==='unknown')reader.unknown.add(pid);
+@@ -74,7 +73,7 @@ it.skipIf(process.platform!=='darwin').each(['clear','status'].flatMap(kind=>['a
+   f.sqlite.prepare("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES(?,'ui','connection-management','mail',?,1,?,?,?,'running',?)").run(id,mail.packageHash,action,semantics,scope,new Date().toISOString());
+   f.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'ui',?,?,77161,'darwin-proc-v1:500:61','active',?)").run(leaseId,mail.resourceId,id,randomUUID(),new Date().toISOString());
+   const projects=f.sqlite.prepare('SELECT * FROM projects').all();
+-  if(gate==='migration-and-activation'){const last=bundledMigrations().at(-1)!;expect(last.tag).toBe('0028_capability_broker_denials');expect(f.sqlite.prepare('SELECT count(*) n FROM capability_broker_denials').get()).toEqual({n:0});f.sqlite.exec('DROP TABLE capability_broker_denials');f.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(last.hash);}
++  if(gate==='migration-and-activation'){const last=bundledMigrations().at(-1)!;expect(last.tag).toBe('0029_mail_sender_identity');expect(f.sqlite.prepare('SELECT count(*) n FROM mail_sender_confirmations').get()).toEqual({n:0});f.sqlite.exec('DROP TABLE mail_sender_confirmations; ALTER TABLE mail_send_intents DROP COLUMN sender_identity_hash');f.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(last.hash);}
+   f.sqlite.close();renameSync(join(f.root,'state.sqlite'),join(f.root,'smartdd.db'));
+   client=await openManagedDatabase(join(f.root,'smartdd.db'),{processes:reader,activationRequired:store=>new PackageRegistry(store,'cache-upgrade').active('zentao')?.packageHash!==target.packageHash,activate:async(store,lease)=>{await activatePreparedPackages({packages:new PackageRegistry(store,'cache-upgrade'),lease,buildId:'cache-upgrade',requests:[{hash:target.packageHash,expectedGeneration:prior.generation}]});}});
+   expect(client.sqlite.prepare('SELECT state,error_code FROM application_data_operations WHERE operation_id=?').get(id)).toEqual(kind==='clear'?{state:'unknown',error_code:'RESOURCE_RECOVERY_REQUIRED'}:{state:'cancelled',error_code:'CANCELED'});expect(client.sqlite.prepare('SELECT state FROM capability_resource_leases WHERE lease_id=?').get(leaseId)).toEqual({state:'released'});expect(client.sqlite.prepare("SELECT package_hash FROM capability_active_packages WHERE app_id='zentao'").get()).toEqual({package_hash:target.packageHash});expect(client.sqlite.prepare('SELECT * FROM projects').all()).toEqual(projects);expect(client.sqlite.prepare("SELECT 1 FROM sqlite_master WHERE name='capability_broker_denials'").get()).toBeTruthy();
+diff --git a/src/main/db/migrations.test.ts b/src/main/db/migrations.test.ts
+index d81a589c1..d37be0524 100644
+--- a/src/main/db/migrations.test.ts
++++ b/src/main/db/migrations.test.ts
+@@ -10,7 +10,7 @@ function memoryDb(): Database.Database {
+ }
+ afterEach(() => open.splice(0).forEach((db) => db.close()));
+ 
+-const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials'];
++const ALL = ['0000_init', '0001_projects', '0002_tasks', '0003_ai_profile_check', '0004_capabilities', '0005_project_transfer', '0006_application_packages', '0007_application_connections', '0008_mail_drafts', '0009_mail_execution', '0010_capability_session_identity', '0011_capability_run_lifecycle', '0012_application_invocations', '0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity'];
+ 
+ const tables = (db: Database.Database) =>
+   (
+@@ -27,42 +27,42 @@ describe('bundled migrations', () => {
+   it('adds and replays the original H binding anchor without rewriting old snapshots, references or source bytes',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,25));
+     db.exec("INSERT INTO capability_session_snapshots VALUES('old-h-task',0,'original fixed history','original-hash','2026-10-21T08:00:00Z','history-unknown','hold'); INSERT INTO capability_legacy_migration_preparations(task_id,source_snapshot_json,source_record_json,source_snapshot_hash,source_identity_json,state,created_at,updated_at) VALUES('old-h-task','original source bytes','original task bytes','original-source-hash','original identity','prepared','old-created','old-updated');");
+-    const original=db.prepare('SELECT * FROM capability_legacy_migration_preparations').get();expect(runBundledMigrations(db)).toEqual(['0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(db.prepare('SELECT * FROM capability_legacy_migration_preparations').get()).toEqual({...original as object,h_binding_hash:null});expect(db.prepare('SELECT * FROM capability_legacy_h_bindings').all()).toEqual([]);
++    const original=db.prepare('SELECT * FROM capability_legacy_migration_preparations').get();expect(runBundledMigrations(db)).toEqual(['0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT * FROM capability_legacy_migration_preparations').get()).toEqual({...original as object,h_binding_hash:null});expect(db.prepare('SELECT * FROM capability_legacy_h_bindings').all()).toEqual([]);
+     db.exec("UPDATE capability_legacy_migration_preparations SET h_binding_hash='original-binding-hash'; INSERT INTO capability_legacy_h_bindings VALUES('old-h-task','original immutable alias receipt','original-binding-hash','original-binding-created'); DELETE FROM __drizzle_migrations WHERE id>=26;");
+-    expect(runBundledMigrations(db)).toEqual(['0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original fixed history'});expect(db.prepare('SELECT h_binding_hash FROM capability_legacy_migration_preparations').get()).toEqual({h_binding_hash:'original-binding-hash'});expect(db.prepare('SELECT binding_json FROM capability_legacy_h_bindings').get()).toEqual({binding_json:'original immutable alias receipt'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    expect(runBundledMigrations(db)).toEqual(['0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original fixed history'});expect(db.prepare('SELECT h_binding_hash FROM capability_legacy_migration_preparations').get()).toEqual({h_binding_hash:'original-binding-hash'});expect(db.prepare('SELECT binding_json FROM capability_legacy_h_bindings').get()).toEqual({binding_json:'original immutable alias receipt'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+   });
+   it('preserves legacy unknown native history and observed evidence when the new nullable column is replayed', () => {
+     const db=memoryDb();runMigrations(db,bundledMigrations().slice(0,24));
+     db.exec("INSERT INTO tasks(id,cwd,runner,native_session_id,title,state_root,runtime_snapshot,created_at,updated_at) VALUES('legacy','/private/tmp/project','claude','original-id','original','/private/tmp/native','original snapshot bytes',1,2)");
+     const original=db.prepare('SELECT * FROM tasks').get() as Record<string,unknown>;
+-    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT * FROM tasks').get()).toEqual({...original,native_history_observed:null});
+     db.exec("UPDATE tasks SET native_history_observed=1; DELETE FROM __drizzle_migrations WHERE id>=25");
+-    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT * FROM tasks').get()).toEqual({...original,native_history_observed:1});
+     expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+   });
+ 
+   it('adds native-only restriction receipts without rewriting retained snapshots or the original preparation, including replay',()=>{
+-    const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,23));db.exec("INSERT INTO capability_session_snapshots VALUES('retained-task',2,'original snapshot bytes','original-hash','2026-10-21T00:00:00Z','created','active'); INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash) VALUES('retained-run','retained-task','retained-project','codex','stopped','2026-10-21T00:00:00Z','original-hash'); INSERT INTO capability_run_preparations VALUES('retained-run','original preparation bytes','original-preparation-hash','2026-10-21T00:00:00Z');");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);db.exec("INSERT INTO capability_run_restrictions VALUES('retained-run','restriction bytes','restriction-hash','2026-10-21T00:00:01Z'); DELETE FROM __drizzle_migrations WHERE id>=24;");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original snapshot bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_preparations').get()).toEqual({evidence_json:'original preparation bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_restrictions').get()).toEqual({evidence_json:'restriction bytes'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,23));db.exec("INSERT INTO capability_session_snapshots VALUES('retained-task',2,'original snapshot bytes','original-hash','2026-10-21T00:00:00Z','created','active'); INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash) VALUES('retained-run','retained-task','retained-project','codex','stopped','2026-10-21T00:00:00Z','original-hash'); INSERT INTO capability_run_preparations VALUES('retained-run','original preparation bytes','original-preparation-hash','2026-10-21T00:00:00Z');");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);db.exec("INSERT INTO capability_run_restrictions VALUES('retained-run','restriction bytes','restriction-hash','2026-10-21T00:00:01Z'); DELETE FROM __drizzle_migrations WHERE id>=24;");expect(runBundledMigrations(db)).toEqual(['0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT snapshot_json FROM capability_session_snapshots').get()).toEqual({snapshot_json:'original snapshot bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_preparations').get()).toEqual({evidence_json:'original preparation bytes'});expect(db.prepare('SELECT evidence_json FROM capability_run_restrictions').get()).toEqual({evidence_json:'restriction bytes'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+   });
+   it('adds canonical H locations without changing existing C resource IDs, paths or foreign-key references', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,14));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('original','runtime','original-hash','original-store','C','runtime/original','ready',1,'valid'); INSERT INTO capability_agent_adapters VALUES('codex','1.0.0','original-hash','original','{}');");
+-    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT resource_id,relative_path,scope_identity,scope_relative_path FROM capability_resources').get()).toEqual({resource_id:'original',relative_path:'runtime/original',scope_identity:'original-store',scope_relative_path:null});
+     expect(db.prepare('SELECT resource_id FROM capability_agent_adapters').get()).toEqual({resource_id:'original'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+-    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    db.prepare('DELETE FROM __drizzle_migrations WHERE id>14').run();expect(runBundledMigrations(db)).toEqual(['0014_discovery_catalog','0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+   });
+ 
+   it('adds builtin-source provenance without approving historical packages and preserves proofs on replay', () => {
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,15));
+     db.exec("INSERT INTO capability_resources(resource_id,kind,content_hash,owner_store_id,path_scope,relative_path,state,generation,integrity) VALUES('old-package-resource','application-package','old-package','owned-store','C','apps/mail/0.9.0/old-package','ready',1,'valid'); INSERT INTO capability_packages VALUES('old-package','mail','0.9.0','app-manifest-v1','apps/mail/0.9.0/old-package','{}','old-package-resource','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT package_hash,version FROM capability_packages').get()).toEqual({package_hash:'old-package',version:'0.9.0'});
+     expect(db.prepare('SELECT * FROM capability_builtin_package_sources').all()).toEqual([]);
+     db.prepare('INSERT INTO capability_builtin_package_sources VALUES(?,?,?,?)').run('old-package','test-proof-hash','test proof retained','2026-10-20T00:00:00Z');
+-    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    db.exec('DELETE FROM __drizzle_migrations WHERE id>15');expect(runBundledMigrations(db)).toEqual(['0015_builtin_package_sources','0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT source_index_json FROM capability_builtin_package_sources').get()).toEqual({source_index_json:'test proof retained'});
+     expect(()=>db.prepare('DELETE FROM capability_packages WHERE package_hash=?').run('old-package')).toThrow(/FOREIGN KEY/);
+     expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -71,10 +71,10 @@ describe('bundled migrations', () => {
+   it('adds scoped business operations without rewriting old project selection,drafts or retained resources on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,16));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained business',1,1); INSERT INTO application_project_settings VALUES('p','mail',1,9,NULL,'2026-10-20T00:00:00Z'); INSERT INTO mail_drafts(id,project_id,source_task_id,subject,attachment_count,current_revision,state,created_at,updated_at) VALUES('d','p','old-task','retained',0,1,'draft','2026-10-20T00:00:00Z','2026-10-20T00:00:00Z'); INSERT INTO mail_draft_revisions VALUES('d',1,'original body JSON','original-content-hash','old-task','2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:0});
+     db.exec("UPDATE application_project_settings SET policy_revision=7; INSERT INTO application_data_resources VALUES('r','p','mail','mail-draft-v1','d','1','text',1,'mail.draft','hash',1,'text/plain','retained-package','original-operation','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=17");
+-    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:9,policy_revision:7});expect(db.prepare('SELECT content_json,content_hash FROM mail_draft_revisions').get()).toEqual({content_json:'original body JSON',content_hash:'original-content-hash'});
+     expect(db.prepare('SELECT resource_id,minted_package_hash FROM application_data_resources').get()).toEqual({resource_id:'r',minted_package_hash:'retained-package'});
+     db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT id,project_id FROM mail_drafts').get()).toEqual({id:'d',project_id:'p'});expect(db.prepare('SELECT resource_id FROM application_data_resources').get()).toEqual({resource_id:'r'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -91,10 +91,10 @@ describe('bundled migrations', () => {
+   it('adds source-scoped ZenTao reads and preserves fetched revisions,binary files and receipt provenance on replay',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,17));
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('p','retained Zentao',1,1); INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,policy_revision,updated_at) VALUES('p','zentao',1,5,3,'2026-10-20T00:00:00Z');");
+-    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     db.prepare('INSERT INTO application_zentao_revisions VALUES(?,?,?,?,?,?,?,?,?,?)').run('owned-object','p','source-connection',1,'story','9007199254740997','revision','detail','original JSON','2026-10-20T00:00:00Z');
+     db.prepare('INSERT INTO application_zentao_files VALUES(?,?,?,?,?,?,?)').run('owned-object','7','binary-hash',Buffer.from([0,255]),'application/octet-stream',2,'2026-10-20T00:00:00Z');
+-    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    db.exec("INSERT INTO application_read_receipt_checks VALUES('check','original','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=18");expect(runBundledMigrations(db)).toEqual(['0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT native_id,payload_json FROM application_zentao_revisions').get()).toEqual({native_id:'9007199254740997',payload_json:'original JSON'});expect(db.prepare('SELECT bytes FROM application_zentao_files').get()).toEqual({bytes:Buffer.from([0,255])});
+     expect(db.prepare('SELECT check_operation_id,original_operation_id FROM application_read_receipt_checks').get()).toEqual({check_operation_id:'check',original_operation_id:'original'});
+     expect(db.prepare('SELECT binding_revision,policy_revision FROM application_project_settings').get()).toEqual({binding_revision:5,policy_revision:3});db.exec("DELETE FROM projects WHERE id='p'");expect(db.prepare('SELECT project_id FROM application_zentao_revisions').get()).toEqual({project_id:'p'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+@@ -103,8 +103,8 @@ describe('bundled migrations', () => {
+   it('adds mail shared-index lineage and receipt proofs without rewriting original operations or their real caller roles',()=>{
+     const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,18));
+     db.exec("INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,state,started_at) VALUES('ui','ui','project','p',NULL,NULL,NULL,NULL,'mail','original',1,'mail.query','read','scope','succeeded','2026-10-20T00:00:00Z'),('index','index-job','internal-index','p',NULL,NULL,'index','ui','mail','original',1,'mail.refresh','read','scope','succeeded','2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
+-    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);db.exec("INSERT INTO application_index_waiters VALUES('index','ui','source','2026-10-20T00:00:00Z',NULL,'waiting'); INSERT INTO application_mail_operation_sources VALUES('ui','source','revision','query','original source proof','2026-10-20T00:00:00Z'); DELETE FROM __drizzle_migrations WHERE id>=19");
++    expect(runBundledMigrations(db)).toEqual(['0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT provenance_json FROM application_mail_operation_sources').get()).toEqual({provenance_json:'original source proof'});expect(db.prepare('SELECT parent_operation_id,state FROM application_index_waiters').get()).toEqual({parent_operation_id:'ui',state:'waiting'});expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+     expect(()=>db.exec("INSERT INTO application_index_waiters VALUES('index','forged','source','2026-10-20T00:00:00Z',NULL,'waiting')")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_index_waiters SET state='invented'")).toThrow(/CHECK/);
+   });
+ 
+@@ -186,7 +186,8 @@ describe('bundled migrations', () => {
+       'mail_drafts',
+       'mail_send_executions',
+       'mail_send_grants',
+-      'mail_send_intents','mail_user_action_sources',
++      'mail_send_intents',
++      'mail_sender_confirmations','mail_user_action_sources',
+       'project_capabilities',
+       'project_databases',
+       'project_dirs',
+@@ -206,7 +207,7 @@ describe('bundled migrations', () => {
+     db.exec("INSERT INTO projects(id,name,created_at,updated_at) VALUES('old-project','kept',1,1)");
+     db.exec("INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at) VALUES('old-project','mail',1,7,'2026-10-20T00:00:00Z')");
+     db.exec("INSERT INTO mail_blob_objects VALUES('old-content',3,'2026-10-20T00:00:00Z'); INSERT INTO mail_attachment_objects(id,project_id,content_hash,filename,content_type,byte_size,created_at) VALUES('old-attachment','old-project','old-content','old.txt','text/plain',3,'2026-10-20T00:00:00Z')");
+-    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);
++    expect(runBundledMigrations(db)).toEqual(['0009_mail_execution','0010_capability_session_identity','0011_capability_run_lifecycle','0012_application_invocations','0013_agent_adapters', '0014_discovery_catalog', '0015_builtin_package_sources', '0016_application_data_operations','0017_zentao_business_reads','0018_mail_index_provenance','0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation','0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+     expect(db.prepare('SELECT id,kind,filename FROM mail_attachment_objects').all()).toEqual([{ id: 'old-attachment',kind: 'attachment',filename: 'old.txt' }]);
+     expect(db.prepare('SELECT slot,revision FROM application_binding_slot_revisions ORDER BY slot').all()).toEqual([{ slot: 'foxmail',revision: 7 },{ slot: 'smtp',revision: 7 }]);
+     db.exec('DELETE FROM __drizzle_migrations WHERE id>=10'); runBundledMigrations(db); expect(db.prepare('SELECT count(*) AS n FROM mail_attachment_objects').get()).toEqual({ n: 1 });
+@@ -348,18 +349,18 @@ describe('runMigrations', () => {
+ it('upgrades and replays Skill observation metadata without changing retained runs',()=>{
+  const db=memoryDb();db.pragma('foreign_keys=ON');runMigrations(db,bundledMigrations().slice(0,27));
+  db.exec("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES('skill-history',2,'original snapshot','original hash','2026-10-23T00:00:00Z','created','tombstone'); INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at) VALUES('old-skill-run','skill-history','original-project','codex','stopped','2026-10-23T00:00:00Z');");
+- const before=db.prepare('SELECT * FROM capability_runs').all();expect(runBundledMigrations(db)).toEqual(['0027_capability_skill_observations','0028_capability_broker_denials']);
++ const before=db.prepare('SELECT * FROM capability_runs').all();expect(runBundledMigrations(db)).toEqual(['0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);
+  db.prepare('INSERT INTO capability_skill_observations VALUES(?,?,?,?,?,?,?)').run('old-skill-run','mail','assistant','read','metadata only','hash','2026-10-23T00:00:01Z');
+- db.exec('DELETE FROM __drizzle_migrations WHERE id>=28');expect(runBundledMigrations(db)).toEqual(['0027_capability_skill_observations','0028_capability_broker_denials']);expect(db.prepare('SELECT * FROM capability_runs').all()).toEqual(before);expect(db.prepare('SELECT evidence_json FROM capability_skill_observations').get()).toEqual({evidence_json:'metadata only'});
++ db.exec('DELETE FROM __drizzle_migrations WHERE id>=28');expect(runBundledMigrations(db)).toEqual(['0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT * FROM capability_runs').all()).toEqual(before);expect(db.prepare('SELECT evidence_json FROM capability_skill_observations').get()).toEqual({evidence_json:'metadata only'});
+  expect(()=>db.prepare('INSERT INTO capability_skill_observations VALUES(?,?,?,?,?,?,?)').run('foreign-run','mail','assistant','read','metadata','hash','time')).toThrow(/FOREIGN KEY/);
+  expect(()=>db.prepare('INSERT INTO capability_skill_observations VALUES(?,?,?,?,?,?,?)').run('old-skill-run','mail','assistant','invented','metadata','hash','time')).toThrow(/CHECK/);expect(db.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
+ });
+ 
+  it('upgrades and replays broker-denial metadata without changing existing audit rows',()=>{
+   const db=memoryDb();runMigrations(db,bundledMigrations().slice(0,28));
+-  expect(runBundledMigrations(db)).toEqual(['0028_capability_broker_denials']);
++  expect(runBundledMigrations(db)).toEqual(['0028_capability_broker_denials','0029_mail_sender_identity']);
+   db.prepare('INSERT INTO capability_broker_denials VALUES(?,?,?,?,?,?,?)').run('event','host',null,null,'unknown','INVALID_INPUT','2026-10-23T00:00:00Z');const before=db.prepare('SELECT * FROM capability_broker_denials').all();
+-  db.exec('DELETE FROM __drizzle_migrations WHERE id>=29');expect(runBundledMigrations(db)).toEqual(['0028_capability_broker_denials']);expect(db.prepare('SELECT * FROM capability_broker_denials').all()).toEqual(before);
++  db.exec('DELETE FROM __drizzle_migrations WHERE id>=29');expect(runBundledMigrations(db)).toEqual(['0028_capability_broker_denials','0029_mail_sender_identity']);expect(db.prepare('SELECT * FROM capability_broker_denials').all()).toEqual(before);
+   expect(()=>db.prepare('INSERT INTO capability_broker_denials VALUES(?,?,?,?,?,?,?)').run('bad','host','run',null,'unknown','INVALID_INPUT','2026-10-23T00:00:00Z')).toThrow();db.close();
+  });
+ 
+diff --git a/src/main/db/registered-host-migration.test.ts b/src/main/db/registered-host-migration.test.ts
+index ecbf89444..874933949 100644
+--- a/src/main/db/registered-host-migration.test.ts
++++ b/src/main/db/registered-host-migration.test.ts
+@@ -1,3 +1,5 @@
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
+ import Database from 'better-sqlite3';
+ import {afterEach,describe,expect,it} from 'vitest';
+ import {bundledMigrations,runBundledMigrations,runMigrations} from './migrations';
+@@ -21,14 +23,14 @@ function journal(db:Database.Database){return db.prepare('SELECT * FROM __drizzl
+ 
+ describe('registered host migration preserves the original shared application store',()=>{
+  it.each([true,false])('preserves every original row and original FK mode %s,including RESTRICT send intent references',foreignKeys=>{
+-  const db=oldDatabase(foreignKeys),before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(rows(db)).toEqual(before);expect(db.pragma('foreign_keys',{simple:true})).toBe(Number(foreignKeys));expect(db.pragma('foreign_key_check')).toEqual([]);
+-  db.pragma('foreign_keys=ON');expect(()=>db.prepare('DELETE FROM application_connections WHERE id=?').run('smtp-connection')).toThrow(/FOREIGN KEY/);expect(rows(db)).toEqual(before);expect(runBundledMigrations(db)).toEqual([]);
++  const db=oldDatabase(foreignKeys),before=rows(db),expected={...before,mail_send_intents:(before.mail_send_intents as object[]).map(row=>({...row,sender_identity_hash:null}))};expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(rows(db)).toEqual(expected);expect(db.pragma('foreign_keys',{simple:true})).toBe(Number(foreignKeys));expect(db.pragma('foreign_key_check')).toEqual([]);
++  db.pragma('foreign_keys=ON');expect(()=>db.prepare('DELETE FROM application_connections WHERE id=?').run('smtp-connection')).toThrow(/FOREIGN KEY/);expect(rows(db)).toEqual(expected);expect(runBundledMigrations(db)).toEqual([]);
+  });
+  it('replays the rebuild without deleting static host metadata,new connections or original references',()=>{
+   const db=oldDatabase();runBundledMigrations(db);db.exec("INSERT INTO application_host_applications VALUES('extalpha'); INSERT INTO application_host_providers VALUES('extalpha','extalpha',1); INSERT INTO application_connections(id,app_id,provider_id,name,config_json,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_revision,policy_revision,enabled,auth_state,health,created_at,updated_at) VALUES('ext','extalpha','extalpha','Extension','{}',1,1,1,'{}','hash',0,0,0,'disconnected','unverified','created','updated');");
+   // Replay the complete migration suffix: the runner tracks an applied count.
+   for(const migration of bundledMigrations().slice(26))db.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(migration.hash);
+-  const before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(rows(db)).toEqual(before);expect(db.prepare("SELECT * FROM application_host_providers WHERE provider_id='extalpha'").get()).toEqual({provider_id:'extalpha',app_id:'extalpha',config_api_major:1});expect(db.pragma('foreign_key_check')).toEqual([]);
++  const before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(rows(db)).toEqual(before);expect(db.prepare("SELECT * FROM application_host_providers WHERE provider_id='extalpha'").get()).toEqual({provider_id:'extalpha',app_id:'extalpha',config_api_major:1});expect(db.pragma('foreign_key_check')).toEqual([]);
+  });
+  it('rolls back the entire rebuilt schema,all original rows and migration journal on a later SQL failure',()=>{
+   const db=oldDatabase(),before=rows(db),ddl=schema(db),history=journal(db),migrations=bundledMigrations(),last=migrations[26];migrations[26]={...last,sql:last.sql+'\n--> statement-breakpoint\nINSERT INTO absent_migration_table VALUES(1);'};
+@@ -49,3 +51,13 @@ describe('registered host migration preserves the original shared application st
+   const db=oldDatabase();runBundledMigrations(db);expect(()=>db.exec("UPDATE application_connections SET app_id='zentao' WHERE id='smtp-connection'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_connections SET provider_id='unregistered' WHERE id='smtp-connection'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_project_bindings SET slot='zentao' WHERE project_id='p'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_binding_slot_revisions SET slot='unregistered' WHERE project_id='p'")).toThrow(/FOREIGN KEY/);expect(db.pragma('foreign_key_check')).toEqual([]);
+  });
+ });
++
++
++it('M11 offline sender identity rollback preserves real historical send intents and can upgrade again',()=>{
++ const db=oldDatabase(),migrations=bundledMigrations(),index=migrations.findIndex(m=>m.tag==='0029_mail_sender_identity');
++ runMigrations(db,migrations.slice(0,index));const before=rows(db),ddl=schema(db),history=journal(db);runBundledMigrations(db);
++ expect((rows(db).mail_send_intents as Record<string,unknown>[])[0]).toEqual({...((before.mail_send_intents as Record<string,unknown>[])[0]),sender_identity_hash:null});
++ db.exec(readFileSync(resolve('scripts/applications/rollback-m11-sender-identity.sql'),'utf8'));
++ expect(rows(db)).toEqual(before);expect(schema(db)).toEqual(ddl);expect(journal(db)).toEqual(history);expect(db.pragma('foreign_key_check')).toEqual([]);
++ expect(runBundledMigrations(db)).toEqual(['0029_mail_sender_identity']);expect(db.pragma('foreign_key_check')).toEqual([]);
++});
+diff --git a/src/main/db/schema.ts b/src/main/db/schema.ts
+index a2d3d7b3f..b6d10b835 100644
+--- a/src/main/db/schema.ts
++++ b/src/main/db/schema.ts
+@@ -318,7 +318,7 @@ export const mailDraftMutations = sqliteTable('mail_draft_mutations', {
+ export const mailSendIntents = sqliteTable('mail_send_intents', {
+   id: text('id').primaryKey(),projectId: text('project_id').notNull(),sourceTaskId: text('source_task_id'),sourceRunId: text('source_run_id'),operationId: text('operation_id').notNull(),requestHash: text('request_hash').notNull(),
+   draftId: text('draft_id').notNull(),draftRevision: integer('draft_revision').notNull(),draftContentHash: text('draft_content_hash').notNull(),connectionId: text('connection_id').notNull().references(() => applicationConnections.id),
+-  identityRevision: integer('identity_revision').notNull(),configRevision: integer('config_revision').notNull(),policyRevision: integer('policy_revision').notNull(),bindingRevision: integer('binding_revision').notNull(),identityJson: text('identity_json').notNull(),smtpConfigJson: text('smtp_config_json').notNull(),
++  identityRevision: integer('identity_revision').notNull(),configRevision: integer('config_revision').notNull(),policyRevision: integer('policy_revision').notNull(),bindingRevision: integer('binding_revision').notNull(),senderIdentityHash:text('sender_identity_hash'),identityJson: text('identity_json').notNull(),smtpConfigJson: text('smtp_config_json').notNull(),
+   rawWriteId: text('raw_write_id').notNull(),rawObjectId: text('raw_object_id').references(() => mailAttachmentObjects.id),rawHash: text('raw_hash'),frozenHash: text('frozen_hash'),envelopeJson: text('envelope_json'),messageId: text('message_id').notNull(),reviewJson: text('review_json'),reviewHash: text('review_hash'),state: text('state').notNull(),grantId: text('grant_id'),executionId: text('execution_id'),cancelRequestedAt: text('cancel_requested_at'),
+   ownerInstanceId: text('owner_instance_id').notNull(),ownerPid: integer('owner_pid').notNull(),ownerStartedAt: text('owner_started_at').notNull(),errorCode: text('error_code'),createdAt: text('created_at').notNull(),updatedAt: text('updated_at').notNull(),
+ },t => ({ operation: uniqueIndex('mail_send_intents_operation').on(t.projectId,t.operationId),byProject: index('mail_send_intents_project_updated').on(t.projectId,t.updatedAt,t.id),activity:index('mail_send_intents_activity_time').on(t.createdAt,t.id),revision: foreignKey({ columns: [t.draftId,t.draftRevision],foreignColumns: [mailDraftRevisions.draftId,mailDraftRevisions.revision] }) }));
+@@ -454,3 +454,5 @@ export const capabilityLegacyHBindings=sqliteTable('capability_legacy_h_bindings
+ export const capabilitySkillObservations=sqliteTable('capability_skill_observations',{
+  runId:text('run_id').notNull().references(()=>capabilityRuns.runId),appId:text('app_id').notNull(),skillId:text('skill_id').notNull(),kind:text('kind',{enum:['discovery','read']}).notNull(),evidenceJson:text('evidence_json').notNull(),evidenceHash:text('evidence_hash').notNull(),observedAt:text('observed_at').notNull(),
+ },t=>({pk:primaryKey({columns:[t.runId,t.appId,t.skillId,t.kind]})}));
++
++export const mailSenderConfirmations=sqliteTable('mail_sender_confirmations',{projectId:text('project_id').primaryKey(),bindingHash:text('binding_hash').notNull(),bindingJson:text('binding_json').notNull(),method:text('method').notNull(),receiptId:text('receipt_id').notNull().unique(),senderId:text('sender_id'),confirmedAt:text('confirmed_at').notNull(),recordHash:text('record_hash').notNull()});
+diff --git a/src/renderer/features/applications/project-applications.tsx b/src/renderer/features/applications/project-applications.tsx
+index d1f61b758..1318d2f12 100644
+--- a/src/renderer/features/applications/project-applications.tsx
++++ b/src/renderer/features/applications/project-applications.tsx
+@@ -1,3 +1,4 @@
++import {SenderIdentityStatus} from './sender-identity';
+ import {ApplicationTerminalButton} from './terminal-insertion';
+ import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
+ import {applicationConnectionSummary} from '@shared/application-provider-metadata';
+@@ -42,7 +43,7 @@ const ProjectApplication=observer(function ProjectApplication({project,app}:{pro
+  };
+  const options=(slot:ApplicationProvider,label:string)=><fieldset key={slot}><legend>{app.providers.find(p=>p.id===slot)?.project.unselectedTitle??label} · 最多一个</legend>{selection?.repair?.slots.includes(slot)&&<p className="m10-note" role="alert">已保存的{label}存在异常多选或身份变化，当前不使用旧选择；请明确重新选择。</p>}<div className="m10-project-connections"><label><input type="radio" name={project.id+'-'+slot} aria-label={label+'不选用'} checked={!selection?.repair?.slots.includes(slot)&&!selection?.connections[slot]} disabled={disabled} onChange={event=>change(slot,null,event.currentTarget)}/><span><strong>不选用</strong><small>{app.providers.find(p=>p.id===slot)?.project.unselectedNote}</small></span></label>{connections.data?.filter(c=>c.providerId===slot).map(c=><label key={c.id}><input type="radio" name={project.id+'-'+slot} aria-label={'为'+project.name+'选用'+c.name} checked={selection?.connections[slot]===c.id} disabled={disabled} onChange={event=>change(slot,c.id,event.currentTarget)}/><span><strong title={c.name}>{c.name}</strong><small>{sourceText(c)}<br/>{connectionState(c)}{c.healthCode?' · '+c.healthCode:''}</small></span></label>)}</div></fieldset>;
+  return <section className="m10-project-application"><header><AppMark app={app.appId}/><div><strong>{app.displayName}<span className="m10-package-version">v{app.version??'—'} · 新会话默认</span></strong><p>{app.skills.length} 个 Skill · 旧会话保留创建时的版本</p></div><span className={'m10-state '+(selection?.enabled&&app.enabled?'ready':'')}>{!app.added?'尚未添加':!app.enabled?'应用已全局停用':selection?.enabled?'项目已启用':'未启用'}</span><AppSwitch label={'为'+project.name+'启用'+appNames[app.appId]} checked={selection?.enabled??false} disabled={disabled||!!selection?.repair} onChange={enabled=>selection&&void commit({projectId:project.id,appId:app.appId,enabled,expectedRevision:selection.revision,connections:selection.connections})}/></header>
+-  <div className="m10-project-application-body">{loading?<p role="status">正在读取连接…</p>:readError?<AppEmpty error title="无法读取项目选用" text={readError.message} action="重新载入" onAction={()=>{void query.refetch();void connections.refetch();}}/>:<><p className="m10-muted">{app.presentation.projectNote}</p><div className="m10-mail-connections">{app.providers.map(provider=>options(provider.id as ApplicationProvider,provider.project.title))}</div></>}
++  <div className="m10-project-application-body">{loading?<p role="status">正在读取连接…</p>:readError?<AppEmpty error title="无法读取项目选用" text={readError.message} action="重新载入" onAction={()=>{void query.refetch();void connections.refetch();}}/>:<><p className="m10-muted">{app.presentation.projectNote}</p><div className="m10-mail-connections">{app.providers.map(provider=>options(provider.id as ApplicationProvider,provider.project.title))}</div>{app.presentation.projectPolicy==='sender-identity'&&<SenderIdentityStatus projectId={project.id} appId={app.appId} disabled={disabled}/>}</>}
+    {!app.added&&<button className="m10-button secondary" onClick={()=>navigation.openApplications(app.appId,project.id)}>先添加{app.displayName}应用</button>}{selection?.pendingOperationId&&<p className="m10-note" role="status">项目连接变更尚未结束；保留已登记选择，完成后重新载入。</p>}
+    {action.error&&<p className="m10-note" role="alert">{action.error}</p>}<div className="m10-project-skills"><Zap size={14}/><span>{app.skills.map(s=>skillNames[s.id]??s.id).join('、')}</span><small>随应用启用</small></div>
+    <footer><button onClick={()=>navigation.openApplications(app.appId,project.id)}>查看应用与连接<ChevronRight size={13}/></button>{canUseTerminal&&terminalSkill?<ApplicationTerminalButton projectId={project.id} source={{kind:'skill',appId:app.appId,skillId:terminalSkill.id}} compact label="在 WillYou 终端使用"/>:<button className="m10-button secondary" disabled title="请先启用本项目应用并核对可用的配套 Skill"><SquareTerminal size={14}/>在 WillYou 终端使用</button>}</footer>
+diff --git a/src/renderer/features/applications/session-applications.tsx b/src/renderer/features/applications/session-applications.tsx
+index 7258dbe29..18e80f283 100644
+--- a/src/renderer/features/applications/session-applications.tsx
++++ b/src/renderer/features/applications/session-applications.tsx
+@@ -1,3 +1,4 @@
++import {SenderIdentityStatus} from './sender-identity';
+ import {applicationCallFeedback} from '@shared/application-call-feedback';
+ import {ApplicationTerminalButton} from './terminal-insertion';
+ import {DeliveryCopies} from './delivery-copies';
+@@ -8,7 +9,7 @@ import {rpc} from '@renderer/lib/ipc';
+ import {navigation} from '@renderer/core/navigation';
+ import {unwrap,skillNames,appNames} from './api';
+ import type {ApplicationId} from '@shared/application-connections';
+-import {applicationProviderMetadata} from '@shared/application-provider-metadata';
++import {applicationMetadata,applicationProviderMetadata} from '@shared/application-provider-metadata';
+ import {AppDialog,AppEmpty,AppMark,Field,timeText} from './controls';
+ import type {SessionRunDiagnostic} from '@shared/application-session-diagnostics';
+ const healthLabel:Record<string,string>={healthy:'上次验证可用',unverified:'待检查',unavailable:'当前不可用',disabled:'已停用',disconnected:'已断开'};
+@@ -59,6 +60,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity='',projectN
+  {!!app.evidence.skillReadObservations?.length&&<details><summary>本次 Skill 读取证据</summary>{app.evidence.skillReadObservations.map(read=><p className="m10-message-id" key={read.skillId+read.callId}>{read.skillId}<br/>时间：{read.observedAt}<br/>所属运行：{read.runId}<br/>记录校验：{read.recordHash}</p>)}</details>}
+  {app.evidence.latestErrorCode&&<p className="m10-note" role="status" aria-label={app.name+'最近调用结果'}>{applicationCallFeedback(app.evidence.latestErrorCode,app.evidence.latestEffectState,app.evidence.latestAttemptCount)}</p>}
+  {app.connections.map(connection=><p key={connection.slot}>{applicationProviderMetadata(connection.slot).diagnosticTitle??applicationProviderMetadata(connection.slot).project.title}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
++ {value.projectId&&applicationMetadata(app.appId).presentation.projectPolicy==='sender-identity'&&<SenderIdentityStatus projectId={value.projectId} appId={app.appId} readOnly/>}
+  {value.projectId&&app.skills.map(skill=><ApplicationTerminalButton key={skill.id} projectId={value.projectId!} source={{kind:'skill',appId:app.appId,skillId:skill.id}} onInserted={onClose} disabled={!!app.issueCode||app.resourceState!=='verified'||value.currentRun?.preparation?.state!=='prepared'||!!value.currentRun?.restriction||!!value.currentRun?.restrictionIssue} label="插入示例到终端" variant="example"/>)}<details className="m10-session-sources"><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
+  <DeliveryCopies value={value.deliveryCopies}/>
+  {!!value.recentRuns.length&&<details><summary>最近 {value.recentRuns.length} 次{value.recentRuns.some(run=>!['stopped','failed'].includes(run.state))?'其他运行记录':'历史运行证据'}</summary>{value.recentRuns.map(run=><section className="m10-session-history" key={run.id}><RunEvidence run={run}/></section>)}</details>}
+diff --git a/src/renderer/features/applications/style.css b/src/renderer/features/applications/style.css
+index 440cd1479..244e968f5 100644
+--- a/src/renderer/features/applications/style.css
++++ b/src/renderer/features/applications/style.css
+@@ -245,3 +245,15 @@
+ .m10-dialog:has(>.m10-impact){scroll-padding-block:8px}
+ /* Keep source relation names and timestamps inside their own property cell. */
+ .m10-object-detail .m10-detail-props>span{min-width:0;overflow-wrap:anywhere}.m10-object-detail .m10-detail-props strong{white-space:normal}
++
++/* M11 approved sender identity status, shared by project and session views. */
++.m10-sender-identity { margin-block: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; }
++.m10-sender-identity p, .m10-run-plan p, .m10-plan-app p, .m10-sender-identity small, .m10-run-plan small, .m10-plan-app small { margin: 0; line-height: 20px; }
++.m10-sender-identity .m10-note, .m10-run-plan .m10-note, .m10-plan-app .m10-note { margin: 0; padding: 10px 12px; }
++.m10-sender-identity > header, .m10-run-plan > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
++.m10-sender-identity.ok { border-color: color-mix(in srgb, #2f9e6b 55%, var(--border)); }
++.m10-sender-identity.warn { border-color: color-mix(in srgb, #c98a1a 60%, var(--border)); }
++.m10-sender-identity.error { border-color: color-mix(in srgb, #d14b4b 65%, var(--border)); }
++.m10-sender-identity .m10-runtime-demo { margin-block: 4px 0; }
++.m10-sender-actions { display: grid; gap: 6px; justify-items: start; }
++.m10-sender-identity{display:grid;gap:6px}
+diff --git a/src/shared/application-module-catalog.json b/src/shared/application-module-catalog.json
+index 73b2151df..87cc33a79 100644
+--- a/src/shared/application-module-catalog.json
++++ b/src/shared/application-module-catalog.json
+@@ -132,6 +132,7 @@
+       ],
+       "stopBeforeSwitch": false,
+       "presentation": {
++        "projectPolicy": "sender-identity",
+         "displayName": "邮件",
+         "heading": "在项目 Agent 中查询、准备草稿与获准发送邮件",
+         "mark": "envelope",
+diff --git a/src/shared/application-presentation.ts b/src/shared/application-presentation.ts
+index d89c3f8de..0d782a0a7 100644
+--- a/src/shared/application-presentation.ts
++++ b/src/shared/application-presentation.ts
+@@ -21,5 +21,6 @@ export interface ApplicationProviderPresentation {
+ export interface ApplicationPresentation {
+   displayName: string; projectNote: string; emptyConnectionSuffix: string;
+   defaultProvider: string; panel: string | null; switchTitle: string;
++  projectPolicy?: 'sender-identity';
+   heading?: string; mark?: 'envelope' | 'zigzag' | 'link';
+ }
+diff --git a/src/shared/applications.ts b/src/shared/applications.ts
+index 709b40a6c..0528b7a2a 100644
+--- a/src/shared/applications.ts
++++ b/src/shared/applications.ts
+@@ -72,7 +72,7 @@ export const applicationManifestSchema = z.object({
+ });
+ export type ApplicationManifest = z.infer<typeof applicationManifestSchema>;
+ export type ApplicationManifestV1 = ApplicationManifest;
+-export type ApplicationErrorCode = 'ENTRY_NOT_ACTIVE' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
++export type ApplicationErrorCode = 'SENDER_IDENTITY_MISMATCH' | 'SENDER_IDENTITY_REQUIRED' | 'ENTRY_NOT_ACTIVE' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
+ export class ApplicationError extends Error {
+   constructor(public readonly code: ApplicationErrorCode, message: string) { super(message); this.name = 'ApplicationError'; }
+ }

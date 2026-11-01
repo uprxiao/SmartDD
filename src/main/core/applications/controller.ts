@@ -42,6 +42,8 @@ export function createApplicationController(service:ApplicationService|undefined
     setAdded:(event,appId:ApplicationId,added:boolean,revision:number)=>run(event,current=>current.setAdded(event,appId,added,revision)),
     setEnabled:(event,appId:ApplicationId,enabled:boolean,revision:number)=>run(event,current=>current.setEnabled(event,appId,enabled,revision)),
     projectSettings:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectSettings(event,projectId,appId)),
+    projectPolicy:(event,projectId:string,appId:ApplicationId)=>run(event,current=>current.projectPolicy(event,projectId,appId)),
+    projectAction:(event,projectId:string,appId:ApplicationId,input:unknown)=>run(event,current=>current.projectAction(event,projectId,appId,input)),
     select:(event,input:ProjectApplicationSelectionInput)=>run(event,current=>current.select(event,input)),
     connections:(event,appId:ApplicationId)=>run(event,current=>current.listConnections(event,appId)),
     testConnection:(event,input:SaveApplicationConnection)=>run(event,current=>current.testConnection(event,input)),

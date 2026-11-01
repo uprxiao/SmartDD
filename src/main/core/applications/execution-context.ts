@@ -39,7 +39,7 @@ interface ContextRecord<C extends HostedConfiguration,A extends string> {context
 interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
 const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
 const targetSchema=z.object({slot:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional(),readDefaults:z.object({configHash:z.string().regex(/^[a-f0-9]{64}$/),values:z.record(z.string().min(1).max(64),z.unknown()).refine(value=>Object.keys(value).length<=8&&JSON.stringify(value).length<=4096)}).strict().optional()}).strict();
-const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
+const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','application.project.action','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
 
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
@@ -103,7 +103,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   }
   async requireSlots(context:ApplicationExecutionContext<A>,slots:readonly string[]):Promise<void>{
     this.record(context);
-    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');await this.pinConnection(context,provider.id,null,false);}
+    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');try{await this.pinConnection(context,provider.id,null,false);}catch(error){if(error instanceof ApplicationError&&error.code==='AUTH_REQUIRED')throw new ApplicationError('AUTH_REQUIRED',`连接槽 ${slot}：${error.message}`);throw error;}}
     this.record(context);
   }
   require(context:ApplicationExecutionContext<A>,permission:string):void{

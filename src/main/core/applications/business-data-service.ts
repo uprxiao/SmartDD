@@ -7,10 +7,10 @@ import type { MailReadDataService } from './mail-read-data-service';
 import type { ZentaoDataService } from './zentao-data-service';
 import type {ApplicationHostCatalog} from './host-application-registry';
 import type {ApplicationExecutionContexts} from './execution-context';
-import type {ApplicationModuleRegistry,TrustedApplicationModule} from './modules/registry';
+import type {ApplicationModuleRegistry,TrustedApplicationModule,ApplicationProjectPolicy} from './modules/registry';
 import {ApplicationCapabilityExecution} from './capability-execution';
 import {BuiltinPackageRegistry} from './builtin-package-registry';
-type RegisteredData=ApplicationDataHost&{legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
+type RegisteredData=ApplicationDataHost&{receiptOnly?:(context:ApplicationExecutionContext,method:string,input:unknown)=>boolean;projectPolicy?:ApplicationProjectPolicy;legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
 interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[];execution?:{contexts:ApplicationExecutionContexts;modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>}}
 export class ApplicationBusinessDataService implements ApplicationDataHost {
   private readonly builtinMail?:MailDraftDataService;
@@ -23,6 +23,8 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
   readonly capabilities?:ApplicationCapabilityExecution;
   private readonly contexts?:ApplicationExecutionContexts;
   private readonly hosts=new Map<string,RegisteredData>();
+  policy(appId:string):ApplicationProjectPolicy|undefined{return this.hosts.get(appId)?.projectPolicy;}
+  receiptOnly(context:ApplicationExecutionContext,method:string,input:unknown):boolean{return this.hosts.get(context.appId)?.receiptOnly?.(context,method,input)??false;}
   constructor(registration:RegisteredHostData);
   constructor(mail:MailDraftDataService,zentao:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService);
   constructor(first:MailDraftDataService|RegisteredHostData,zentao?:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService){

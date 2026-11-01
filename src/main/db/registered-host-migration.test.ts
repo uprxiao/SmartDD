@@ -1,3 +1,5 @@
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 import Database from 'better-sqlite3';
 import {afterEach,describe,expect,it} from 'vitest';
 import {bundledMigrations,runBundledMigrations,runMigrations} from './migrations';
@@ -21,14 +23,14 @@ function journal(db:Database.Database){return db.prepare('SELECT * FROM __drizzl
 
 describe('registered host migration preserves the original shared application store',()=>{
  it.each([true,false])('preserves every original row and original FK mode %s,including RESTRICT send intent references',foreignKeys=>{
-  const db=oldDatabase(foreignKeys),before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(rows(db)).toEqual(before);expect(db.pragma('foreign_keys',{simple:true})).toBe(Number(foreignKeys));expect(db.pragma('foreign_key_check')).toEqual([]);
-  db.pragma('foreign_keys=ON');expect(()=>db.prepare('DELETE FROM application_connections WHERE id=?').run('smtp-connection')).toThrow(/FOREIGN KEY/);expect(rows(db)).toEqual(before);expect(runBundledMigrations(db)).toEqual([]);
+  const db=oldDatabase(foreignKeys),before=rows(db),expected={...before,mail_send_intents:(before.mail_send_intents as object[]).map(row=>({...row,sender_identity_hash:null}))};expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(rows(db)).toEqual(expected);expect(db.pragma('foreign_keys',{simple:true})).toBe(Number(foreignKeys));expect(db.pragma('foreign_key_check')).toEqual([]);
+  db.pragma('foreign_keys=ON');expect(()=>db.prepare('DELETE FROM application_connections WHERE id=?').run('smtp-connection')).toThrow(/FOREIGN KEY/);expect(rows(db)).toEqual(expected);expect(runBundledMigrations(db)).toEqual([]);
  });
  it('replays the rebuild without deleting static host metadata,new connections or original references',()=>{
   const db=oldDatabase();runBundledMigrations(db);db.exec("INSERT INTO application_host_applications VALUES('extalpha'); INSERT INTO application_host_providers VALUES('extalpha','extalpha',1); INSERT INTO application_connections(id,app_id,provider_id,name,config_json,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_revision,policy_revision,enabled,auth_state,health,created_at,updated_at) VALUES('ext','extalpha','extalpha','Extension','{}',1,1,1,'{}','hash',0,0,0,'disconnected','unverified','created','updated');");
   // Replay the complete migration suffix: the runner tracks an applied count.
   for(const migration of bundledMigrations().slice(26))db.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(migration.hash);
-  const before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials']);expect(rows(db)).toEqual(before);expect(db.prepare("SELECT * FROM application_host_providers WHERE provider_id='extalpha'").get()).toEqual({provider_id:'extalpha',app_id:'extalpha',config_api_major:1});expect(db.pragma('foreign_key_check')).toEqual([]);
+  const before=rows(db);expect(runBundledMigrations(db)).toEqual(['0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity']);expect(rows(db)).toEqual(before);expect(db.prepare("SELECT * FROM application_host_providers WHERE provider_id='extalpha'").get()).toEqual({provider_id:'extalpha',app_id:'extalpha',config_api_major:1});expect(db.pragma('foreign_key_check')).toEqual([]);
  });
  it('rolls back the entire rebuilt schema,all original rows and migration journal on a later SQL failure',()=>{
   const db=oldDatabase(),before=rows(db),ddl=schema(db),history=journal(db),migrations=bundledMigrations(),last=migrations[26];migrations[26]={...last,sql:last.sql+'\n--> statement-breakpoint\nINSERT INTO absent_migration_table VALUES(1);'};
@@ -48,4 +50,14 @@ describe('registered host migration preserves the original shared application st
  it('keeps cross-application and unregistered-provider connections and project slots rejected by SQLite',()=>{
   const db=oldDatabase();runBundledMigrations(db);expect(()=>db.exec("UPDATE application_connections SET app_id='zentao' WHERE id='smtp-connection'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_connections SET provider_id='unregistered' WHERE id='smtp-connection'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_project_bindings SET slot='zentao' WHERE project_id='p'")).toThrow(/FOREIGN KEY/);expect(()=>db.exec("UPDATE application_binding_slot_revisions SET slot='unregistered' WHERE project_id='p'")).toThrow(/FOREIGN KEY/);expect(db.pragma('foreign_key_check')).toEqual([]);
  });
+});
+
+
+it('M11 offline sender identity rollback preserves real historical send intents and can upgrade again',()=>{
+ const db=oldDatabase(),migrations=bundledMigrations(),index=migrations.findIndex(m=>m.tag==='0029_mail_sender_identity');
+ runMigrations(db,migrations.slice(0,index));const before=rows(db),ddl=schema(db),history=journal(db);runBundledMigrations(db);
+ expect((rows(db).mail_send_intents as Record<string,unknown>[])[0]).toEqual({...((before.mail_send_intents as Record<string,unknown>[])[0]),sender_identity_hash:null});
+ db.exec(readFileSync(resolve('scripts/applications/rollback-m11-sender-identity.sql'),'utf8'));
+ expect(rows(db)).toEqual(before);expect(schema(db)).toEqual(ddl);expect(journal(db)).toEqual(history);expect(db.pragma('foreign_key_check')).toEqual([]);
+ expect(runBundledMigrations(db)).toEqual(['0029_mail_sender_identity']);expect(db.pragma('foreign_key_check')).toEqual([]);
 });

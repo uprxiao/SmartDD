@@ -9,6 +9,8 @@ import { MailWorkerClient } from '../../providers/mail-worker-client';
 import { verifySmtp } from '../../providers/smtp';
 import type { ApplicationModuleDefinition, ApplicationProviderDefinition } from '../registry';
 import {retainedConfigViewDefinitions} from '../retained-config-views';
+import {MailSenderIdentity} from './sender-identity';
+import {z} from 'zod';
 
 export interface RetainedMailData { drafts: MailDraftDataService; reads: MailReadDataService; sends: MailSendDataService }
 const read = (id: string, required: string[] = [], conditional: string[] = []): LegacyCapabilityPolicy => ({ id, semantics: 'read', retry: 'safe-read', slots: { required, conditional } });
@@ -29,7 +31,7 @@ const methodAliases:Readonly<Record<string,string>>={query:'mail.query',read:'ma
 export const mailModule: ApplicationModuleDefinition<'mail', readonly [ApplicationProviderDefinition<typeof foxmailConfigSchema, 'foxmail', 'mail'>, ApplicationProviderDefinition<typeof smtpConfigSchema, 'smtp', 'mail'>]> = {
   appId: 'mail', contractMajors: [1], slots: ['foxmail', 'smtp'], stopBeforeSwitch: false,
   capabilities:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,{...policy,method:methodAliases[key]??policy.id,contractMajors:[1],permission:['query','read','resource_read'].includes(key)?'mail.read':['send_prepare','send_execute'].includes(key)?'mail.send':'mail.draft'}])),
-  presentation: { displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
+  presentation: { projectPolicy:'sender-identity',displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
   providers: [{
     id: 'foxmail', appId: 'mail', readDefaultKeys: ['queryDays'], configApiMajor: 1, configSchema: foxmailConfigSchema,
     configViews: retainedConfigViewDefinitions.filter(v=>v.providerId==='foxmail'),
@@ -79,7 +81,25 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
   createData(services) {
     const data = services.retained.get('mail') as RetainedMailData | undefined;
     if (!data?.drafts || !data.reads || !data.sends) throw new ApplicationError('CAPABILITY_UNAVAILABLE', '邮件业务服务尚未准备');
+    const identity=new MailSenderIdentity(services.store,services.connections,services.selections,services.contexts);
     const target = (method: string) => method.startsWith('mail.send.') ? data.sends : ['mail.query', 'mail.read', 'mail.resource.read'].includes(method) ? data.reads : data.drafts;
-    return { legacyData:data.drafts, resolve: (version, method, binding) => target(method).resolve(version, method, binding), execute: (context, method, input) => target(method).execute(context, method, input) };
+    return {receiptOnly(context,method,input){
+      services.contexts.assertActive(context);if(method!=='mail.send.execute')return false;
+      const parsed=z.object({intentId:z.uuid(),expectedReviewHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict().safeParse(input);if(!parsed.success)return false;
+      const row=services.store.sqlite.prepare('SELECT project_id,source_task_id,source_run_id,review_hash,execution_id FROM mail_send_intents WHERE id=?').get(parsed.data.intentId) as {project_id:string;source_task_id:string|null;source_run_id:string|null;review_hash:string|null;execution_id:string|null}|undefined;
+      return !!row&&!!row.execution_id&&row.project_id===context.projectId&&row.source_task_id===context.taskId&&row.source_run_id===context.runId&&row.review_hash===parsed.data.expectedReviewHash;
+    },legacyData:data.drafts,projectPolicy:{
+      status:projectId=>identity.status(projectId),validateSelection:(projectId,slots)=>identity.validateSelection(projectId,slots),afterSelection:projectId=>identity.afterSelection(projectId),
+      stamp:(projectId,permission)=>permission==='mail.send'?identity.requireConfirmed(projectId):null,
+      action:(context,sender,input)=>{const parsed=z.object({action:z.literal('confirm-sender'),arguments:z.unknown()}).strict().safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','此项目身份操作无效');return identity.confirm(context,String(sender.sender.id),parsed.data.arguments);},
+    },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: (context, method, input) => {
+      services.contexts.assertActive(context);
+      if(['mail.draft.create','mail.draft.update','mail.reply.create'].includes(method)&&input&&typeof input==='object'){
+        const content=method==='mail.reply.create'?input:Reflect.get(input,'content');
+        const selected=content&&typeof content==='object'?Reflect.get(content,'senderConnectionId'):null;
+        if(typeof selected==='string')identity.requireConfirmed(context.projectId!,selected);
+      }
+      return target(method).execute(context,method,input);
+    }};
   },
 };

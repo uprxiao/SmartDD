@@ -44,7 +44,8 @@ async function enable(projectId='p1'){
  if(!app.selections.catalogState('mail').added)await app.setAdded(sender,'mail',true,0);
  const old=app.selections.projectSettings(projectId,'mail');await app.select(sender,{projectId,appId:'mail',enabled:true,expectedRevision:old.revision,connections:{foxmail:null,smtp:null}});
 }
-async function selectConnections(connections:{foxmail:string|null;smtp:string|null}){const old=app.selections.projectSettings('p1','mail');return app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:old.revision,connections});}
+async function confirmSenderIdentity(){const state=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;if(state.canConfirm)await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}});}
+async function selectConnections(connections:{foxmail:string|null;smtp:string|null}){const old=app.selections.projectSettings('p1','mail'),selected=await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:old.revision,connections});if(connections.smtp)await confirmSenderIdentity();return selected;}
 function privateConnections(){return new ApplicationConnectionService(f.store,secrets,{verify:async config=>({providerId:config.kind,serviceId:'synthetic-source',accountId:config.kind==='foxmail'?config.account:'synthetic-mailbox',contractMajor:1})});}
 async function fox(account='fixture-mailbox'){return privateConnections().save({name:'Fixture Foxmail',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,account),account,queryDays:30}});}
 const smtpConfig=()=>({kind:'smtp' as const,host:'smtp.example.test',port:587,username:'fixture@example.test',fromAddress:'fixture@example.test',authMode:'password' as const,mode:'starttls' as const});
@@ -429,5 +430,50 @@ describe('M11 unified capability execution with host-issued callers',()=>{
   await ui(async scope=>{await expect(app.capabilities.execute(app.contexts.caller(scope),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
   await ui(scope=>app.contexts.withIndex(scope,'mail.read',async index=>{await expect(app.capabilities.execute(app.contexts.caller(index),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;}),['mail.read']);
   expect(execute).not.toHaveBeenCalled();
+ });
+});
+
+describe('M11 confirmed sender identity and conditional mail slots',()=>{
+ const identity=()=>app.projectPolicy(sender,'p1','mail') as Promise<import('@shared/mail-sender-identity').MailSenderIdentityStatus>;
+ const directSelect=(foxmail:string|null,smtp:string|null)=>app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:app.selections.projectSettings('p1','mail').revision,connections:{foxmail,smtp}});
+ const saveSmtp=()=>privateConnections().save({name:'Synthetic identity sender',expectedRevision:0,config:smtpConfig(),secret:'synthetic-only'});
+ const saveSource=(directory:string,account='hand-entered-alias')=>privateConnections().save({name:'Synthetic identity source',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,'Profiles',directory,'messages.db'),account,queryDays:30}});
+ it('M11 R14 requires a UI identity receipt for SMTP-only sending without blocking local drafts',async()=>{
+  const smtp=await saveSmtp();await directSelect(null,smtp.id);expect(await identity()).toMatchObject({state:'needs-confirmation',method:null,canConfirm:true});
+  const created=await draft(codex);expect((await app.viewDraft(sender,'p1',created.id)).draft.id).toBe(created.id);
+  const authentication=vi.spyOn(app.connections,'authentication');
+  expect(await call(codex,'send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash})).toMatchObject({status:'error',error:{code:'SENDER_IDENTITY_REQUIRED'}});
+  expect(authentication).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_intents').get()).toEqual({n:0});
+  await confirmSenderIdentity();expect(await identity()).toMatchObject({state:'confirmed',method:'user',receiptId:expect.any(String)});
+  expect(await call(codex,'send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash})).toMatchObject({status:'ok',value:{intent:{state:'awaiting-authorization',authorized:false}}});
+  expect(f.sqlite.prepare('SELECT sender_identity_hash FROM mail_send_intents').get()).toEqual({sender_identity_hash:expect.stringMatching(/^[a-f0-9]{64}$/)});expect(authentication).not.toHaveBeenCalled();
+ });
+ it('M11 R14 automatically confirms a matching account directory and ignores the editable account field',async()=>{
+  const smtp=await saveSmtp(),source=await saveSource('FIXTURE@EXAMPLE.TEST','not-the-address');await directSelect(source.id,smtp.id);
+  expect(await identity()).toMatchObject({state:'automatic',method:'automatic',accountDirectory:'FIXTURE@EXAMPLE.TEST',fromAddress:'fixture@example.test',receiptId:expect.any(String)});
+ });
+ it('M11 R14 rejects a valid mismatching directory before selection and cannot override it with user confirmation',async()=>{
+  const smtp=await saveSmtp(),source=await saveSource('different@example.test','fixture@example.test'),before=app.selections.projectSettings('p1','mail');
+  await expect(directSelect(source.id,smtp.id)).rejects.toMatchObject({code:'SENDER_IDENTITY_MISMATCH'});expect(app.selections.projectSettings('p1','mail')).toEqual(before);
+  await directSelect(null,smtp.id);const state=await identity();
+  // A stale confirmation cannot authorize a changed connection choice.
+  const other=await privateConnections().save({name:'Other sender',expectedRevision:0,config:{...smtpConfig(),fromAddress:'other@example.test'},secret:'synthetic-only'});await directSelect(null,other.id);
+  await expect(app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}})).rejects.toMatchObject({code:'REVISION_CONFLICT'});
+ });
+ it('M11 R14 accepts manual confirmation for a non-email directory and persists it across service restart',async()=>{
+  const smtp=await saveSmtp(),source=await saveSource('opaque-account','different@example.test');await directSelect(source.id,smtp.id);expect(await identity()).toMatchObject({state:'needs-confirmation',accountDirectory:'opaque-account'});await confirmSenderIdentity();const receipt=await identity();
+  await app.dispose();app=setupService();await app.recover();app.attachRuns(runs);tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data));expect(await identity()).toEqual(receipt);
+ });
+ it('M11 R14 invalidates confirmation when any bound connection revision changes and requires explicit refresh',async()=>{
+  const smtp=await saveSmtp(),source=await saveSource('fixture@example.test');await directSelect(source.id,smtp.id);const original=await identity();
+  await app.setConnectionEnabled(sender,source.id,false,source.revision);expect(await identity()).toMatchObject({state:'invalidated',receiptId:null});
+  const updated=app.connections.get(source.id);await app.setConnectionEnabled(sender,source.id,true,updated.revision);expect(await identity()).toMatchObject({state:'invalidated'});
+  await confirmSenderIdentity();expect(await identity()).toMatchObject({state:'automatic'});expect((await identity()).receiptId).not.toBe(original.receiptId);
+ });
+ it('M11 R14 never lets an Agent or copied context self-confirm and detects a damaged confirmation record',async()=>{
+  const smtp=await saveSmtp();await directSelect(null,smtp.id);const state=await identity(),input={action:'confirm-sender',arguments:{expectedBindingHash:state.bindingHash,confirmed:true}};
+  expect(await tools.call(codex.runId,randomUUID(),{operation:'smartdd_mail_confirm_sender_v1',contractMajor:1,connectionId:null,arguments:input})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+  await ui(async scope=>{await expect(app.data.policy('mail')!.action!({...scope},sender,input)).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(app.data.policy('mail')!.action!(scope,sender,input)).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
+  await confirmSenderIdentity();f.sqlite.prepare("UPDATE mail_sender_confirmations SET receipt_id=? WHERE project_id='p1'").run(randomUUID());await expect(identity()).rejects.toMatchObject({code:'HASH_MISMATCH'});
  });
 });

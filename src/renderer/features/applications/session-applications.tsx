@@ -1,3 +1,4 @@
+import {SenderIdentityStatus} from './sender-identity';
 import {applicationCallFeedback} from '@shared/application-call-feedback';
 import {ApplicationTerminalButton} from './terminal-insertion';
 import {DeliveryCopies} from './delivery-copies';
@@ -8,7 +9,7 @@ import {rpc} from '@renderer/lib/ipc';
 import {navigation} from '@renderer/core/navigation';
 import {unwrap,skillNames,appNames} from './api';
 import type {ApplicationId} from '@shared/application-connections';
-import {applicationProviderMetadata} from '@shared/application-provider-metadata';
+import {applicationMetadata,applicationProviderMetadata} from '@shared/application-provider-metadata';
 import {AppDialog,AppEmpty,AppMark,Field,timeText} from './controls';
 import type {SessionRunDiagnostic} from '@shared/application-session-diagnostics';
 const healthLabel:Record<string,string>={healthy:'上次验证可用',unverified:'待检查',unavailable:'当前不可用',disabled:'已停用',disconnected:'已断开'};
@@ -59,6 +60,7 @@ export function SessionApplicationsPanel({taskId,onClose,runIdentity='',projectN
  {!!app.evidence.skillReadObservations?.length&&<details><summary>本次 Skill 读取证据</summary>{app.evidence.skillReadObservations.map(read=><p className="m10-message-id" key={read.skillId+read.callId}>{read.skillId}<br/>时间：{read.observedAt}<br/>所属运行：{read.runId}<br/>记录校验：{read.recordHash}</p>)}</details>}
  {app.evidence.latestErrorCode&&<p className="m10-note" role="status" aria-label={app.name+'最近调用结果'}>{applicationCallFeedback(app.evidence.latestErrorCode,app.evidence.latestEffectState,app.evidence.latestAttemptCount)}</p>}
  {app.connections.map(connection=><p key={connection.slot}>{applicationProviderMetadata(connection.slot).diagnosticTitle??applicationProviderMetadata(connection.slot).project.title}：{connection.name??(connection.id?'原连接':'未选用')} · {healthLabel[connection.health]??'待核查'}<br/><small>创建时：{connection.originalName??(connection.originalId?'原连接身份 '+connection.originalId:'未选用')}<br/>相对创建时选用：{connection.selection==='same'?'原身份':connection.selection==='changed'?'已变化':connection.selection==='missing'?'未选用':'待核查'} · 原包配置{connection.compatibility==='compatible'?'兼容':connection.compatibility==='incompatible'?'不兼容':'兼容性待核查'}{connection.issueCode?' · '+connection.issueCode:''}</small></p>)}
+ {value.projectId&&applicationMetadata(app.appId).presentation.projectPolicy==='sender-identity'&&<SenderIdentityStatus projectId={value.projectId} appId={app.appId} readOnly/>}
  {value.projectId&&app.skills.map(skill=><ApplicationTerminalButton key={skill.id} projectId={value.projectId!} source={{kind:'skill',appId:app.appId,skillId:skill.id}} onInserted={onClose} disabled={!!app.issueCode||app.resourceState!=='verified'||value.currentRun?.preparation?.state!=='prepared'||!!value.currentRun?.restriction||!!value.currentRun?.restrictionIssue} label="插入示例到终端" variant="example"/>)}<details className="m10-session-sources"><summary>固定包与 Skill 来源</summary><p className="m10-message-id">包：{app.packageHash??'本会话未选用'}</p>{app.skills.map(skill=><p className="m10-message-id" key={skill.id}>{skillNames[skill.id]??skill.id}<br/>内容：{skill.sourceHash}<br/>原投影：{skill.projectionPath}</p>)}</details><button className="m10-button secondary" onClick={()=>configure(app.appId)}>检查{app.name}与连接</button>{value.projectId&&<button className="m10-button secondary" onClick={()=>{onClose();navigation.openApplicationActivity({appId:app.appId,projectId:value.projectId!});}}>查看项目调用记录</button>}</section>)}
  <DeliveryCopies value={value.deliveryCopies}/>
  {!!value.recentRuns.length&&<details><summary>最近 {value.recentRuns.length} 次{value.recentRuns.some(run=>!['stopped','failed'].includes(run.state))?'其他运行记录':'历史运行证据'}</summary>{value.recentRuns.map(run=><section className="m10-session-history" key={run.id}><RunEvidence run={run}/></section>)}</details>}

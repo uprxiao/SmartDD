@@ -1,0 +1,57 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/db/migrations.test.ts > bundled migrations > creates the schema on an empty database and records the hash
+AssertionError: expected [ '__drizzle_migrations', …(75) ] to deeply equal [ '__drizzle_migrations', …(74) ]
+
+- Expected
++ Received
+
+@@ -62,10 +62,11 @@
+    "mail_draft_revisions",
+    "mail_drafts",
+    "mail_send_executions",
+    "mail_send_grants",
+    "mail_send_intents",
++   "mail_sender_confirmations",
+    "mail_user_action_sources",
+    "project_capabilities",
+    "project_databases",
+    "project_dirs",
+    "project_import_receipts",
+
+ ❯ src/main/db/migrations.test.ts:124:24
+    122|     const db = memoryDb();
+    123|     expect(runBundledMigrations(db)).toEqual(ALL);
+    124|     expect(tables(db)).toEqual([
+       |                        ^
+    125|       '__drizzle_migrations',
+    126|       'ai_profiles',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode true,including RESTRICT send intent references
+ FAIL  src/main/db/registered-host-migration.test.ts > registered host migration preserves the original shared application store > preserves every original row and original FK mode false,including RESTRICT send intent references
+AssertionError: expected { …(11) } to deeply equal { …(11) }
+
+- Expected
++ Received
+
+@@ -142,10 +142,11 @@
+        "raw_object_id": null,
+        "raw_write_id": "raw-write",
+        "request_hash": "request-hash",
+        "review_hash": null,
+        "review_json": null,
++       "sender_identity_hash": null,
+        "smtp_config_json": "original SMTP",
+        "source_run_id": null,
+        "source_task_id": null,
+        "state": "unknown",
+        "updated_at": "updated",
+
+ ❯ src/main/db/registered-host-migration.test.ts:24:248
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+

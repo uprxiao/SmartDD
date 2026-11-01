@@ -17,7 +17,7 @@ import { prepareSmtpMessage, submitSmtp, type PreparedSmtpMessage } from './prov
 type SmtpConfig = Extract<ConnectionConfig,{ kind: 'smtp' }>;
 interface IntentRow {
   id: string;project_id: string;source_task_id: string | null;source_run_id: string | null;operation_id: string;request_hash: string;
-  draft_id: string;draft_revision: number;draft_content_hash: string;connection_id: string;identity_revision: number;config_revision: number;policy_revision: number;binding_revision: number;
+  draft_id: string;draft_revision: number;draft_content_hash: string;connection_id: string;identity_revision: number;config_revision: number;policy_revision: number;binding_revision: number;sender_identity_hash:string|null;
   identity_json: string;smtp_config_json: string;raw_write_id: string;raw_object_id: string | null;raw_hash: string | null;frozen_hash: string | null;envelope_json: string | null;message_id: string;
   review_json: string | null;review_hash: string | null;state: MailSendState;grant_id: string | null;execution_id: string | null;cancel_requested_at: string | null;
   owner_instance_id: string;owner_pid: number;owner_started_at: string;error_code: string | null;created_at: string;updated_at: string;
@@ -25,6 +25,7 @@ interface IntentRow {
 interface GrantRow { id: string;intent_id: string;source: VerifiedMailUserAction['source'];evidence_id: string;evidence_hash: string;review_hash: string;evidence_json: string;state: string;expires_at: string }
 export interface MailSendPolicy extends MailPolicy {
   requireSend(actor: MailSendActor): void;
+  senderIdentity?(actor:MailSendActor):string;
   authenticate(actor:MailSendActor,connection:ApplicationConnection):{config:ConnectionConfig;secret:string|null};
   verifyUserAction(actor: MailSendActor,evidenceRef: string,intent: MailSendIntent): VerifiedMailUserAction;
   allowUiAuthorization?(actor:MailSendActor,intent:MailSendIntent):boolean;
@@ -68,13 +69,13 @@ export class MailExecutionService {
   private origin(actor: MailSendActor,row: IntentRow): void {
     if (actor.taskId !== row.source_task_id || actor.runId !== row.source_run_id) throw new ApplicationError('SCOPE_DENIED','发送意图属于其他运行，请从当前运行重新明确操作');
   }
-  private current(actor: MailSendActor): { connection: ApplicationConnection;config: SmtpConfig;bindingRevision: number } {
+  private current(actor: MailSendActor): { connection: ApplicationConnection;config: SmtpConfig;bindingRevision: number;senderIdentityHash:string|null } {
     this.policy.requireSend(actor);
     const binding = this.selections.connectionSlot(actor.projectId,'mail','smtp'), id = binding.connectionId;
     if (!id) throw new ApplicationError('AUTH_REQUIRED','请先明确选用当前项目的发件连接');
     const connection = this.connections.get(id);
     if (connection.providerId !== 'smtp' || connection.config.kind !== 'smtp' || !connection.enabled || connection.authorization !== 'connected') throw new ApplicationError('AUTH_REQUIRED','当前发件连接未启用或已断开');
-    return { connection,config: connection.config,bindingRevision: binding.revision };
+    return { connection,config: connection.config,bindingRevision: binding.revision,senderIdentityHash:this.policy.senderIdentity?.(actor)??null };
   }
   private assertCurrent(actor: MailSendActor,row: IntentRow,checkOrigin=true): ReturnType<MailExecutionService['current']> {
     if(checkOrigin)this.origin(actor,row); let current: ReturnType<MailExecutionService['current']>;
@@ -107,7 +108,7 @@ export class MailExecutionService {
       if (this.ancestry(draft.id,actor.projectId).some(a => a.state === 'executing'||this.producers.has(a.intent_id)||Boolean(this.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_kind='mail-send' AND owner_id=? AND state='active'").get(a.intent_id)))) throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','来源草稿仍在发送，请先等待并核对原结果');
       if (draft.content.senderConnectionId && draft.content.senderConnectionId !== current.connection.id) throw new ApplicationError('INTENT_STALE','草稿发件人与项目当前选用不同，请明确选择后更新草稿');
       const id = randomUUID(), now = new Date().toISOString();
-      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.instanceId,process.pid,this.born,now,now);
+      this.store.sqlite.prepare(`INSERT INTO mail_send_intents(id,project_id,source_task_id,source_run_id,operation_id,request_hash,draft_id,draft_revision,draft_content_hash,connection_id,identity_revision,config_revision,policy_revision,binding_revision,sender_identity_hash,identity_json,smtp_config_json,raw_write_id,message_id,state,owner_instance_id,owner_pid,owner_started_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'preparing',?,?,?,?,?)`).run(id,actor.projectId,actor.taskId,actor.runId,value.operationId,requestHash,draft.id,draft.revision,draft.contentHash,current.connection.id,current.connection.identityRevision,current.connection.configRevision,current.connection.policyRevision,current.bindingRevision,current.senderIdentityHash,canonicalJson(current.connection.identity),canonicalJson(current.config),randomUUID(),'<wy-' + id + '@willyou.local>',this.instanceId,process.pid,this.born,now,now);
       this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=?,updated_at=? WHERE id=?').run(id,now,draft.id); row = this.row(actor,id); created = true; this.preparing.add(id);
     }).immediate());
     if (!created) return this.view(row);

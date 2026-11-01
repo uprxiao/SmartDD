@@ -9,6 +9,7 @@ import type { BuiltinPackageRegistry } from './builtin-package-registry';
 import { canonicalJson } from './manifest';
 
 interface CapabilityData {
+  receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
   execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<unknown>;
 }
 /** UI, MCP and CLI converge here after their own host-issued identity checks. */
@@ -42,7 +43,10 @@ export class ApplicationCapabilityExecution {
     if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');
     const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);
     return this.contexts.withSignal(context,signal,async()=>{
-      await this.contexts.requireSlots(context,capability.slots.required);
+      // A retained v1 external-write call can return an already claimed receipt without re-entering its provider.
+      // Only a compiled module can attest this; v2 callers use the dependency-free result capability.
+      const receiptOnly=capability.semantics==='external-write'&&this.packages.packages.get(context.packageHash).manifest.schema==='smartdd-app-package-v1'&&this.data.receiptOnly?.(context,implementation.method,args);
+      if(!receiptOnly)await this.contexts.requireSlots(context,capability.slots.required);
       const result=await this.data.execute(context,implementation.method,args);
       this.contexts.require(context,capability.permission);
       return result;

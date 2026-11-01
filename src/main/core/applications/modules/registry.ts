@@ -5,7 +5,8 @@ import type { ApplicationPresentation, ApplicationProviderPresentation } from '@
 import type { HostApplicationDefinitions, HostProvider, HostedConfiguration, HostedIdentity } from '../host-application-registry';
 import type { ApplicationModuleCatalog } from '../manifest';
 import type { ApplicationDataHost } from '../application-adapter-registry';
-import type { ApplicationExecutionContext, ApplicationExecutionContexts } from '../execution-context';
+import type { ApplicationExecutionContext, ApplicationExecutionContexts, ApplicationUiSender } from '../execution-context';
+import type {ApplicationConnectionService} from '../connection-service';
 import type { ApplicationDataResources } from '../data-resources';
 import type { ApplicationSelectionService } from '../selection-service';
 import type { ResourceStore } from '../resource-store';
@@ -13,12 +14,21 @@ import type {ConfigViewConverter} from '../config-view-registry';
 import type {CapabilitySessionSnapshot} from '@shared/application-session';
 
 export interface ApplicationModuleData extends ApplicationDataHost {
+  projectPolicy?:ApplicationProjectPolicy;
+  receiptOnly?(context:ApplicationExecutionContext,method:string,input:unknown):boolean;
   /** Retained internal v1 callers may use their original service, never the new routing facade. */
   legacyData?: ApplicationDataHost;
   execute(context: ApplicationExecutionContext, method: string, input: unknown): Promise<unknown>;
 }
+export interface ApplicationProjectPolicy {
+  status(projectId:string):unknown;
+  validateSelection?(projectId:string,slots:Readonly<Record<string,string|null|undefined>>):void;
+  afterSelection?(projectId:string):void;
+  action?(context:ApplicationExecutionContext,sender:ApplicationUiSender,input:unknown):Promise<unknown>;
+  stamp?(projectId:string,permission:string):string|null;
+}
 export interface ApplicationModuleServices {
-  store: ResourceStore; contexts: ApplicationExecutionContexts; resources: ApplicationDataResources; selections: ApplicationSelectionService;
+  store: ResourceStore; contexts: ApplicationExecutionContexts; resources: ApplicationDataResources; selections: ApplicationSelectionService;connections:ApplicationConnectionService;
   /** Compatibility services for retained built-ins; new modules build their own services from the common host facilities. */
   retained: ReadonlyMap<string, unknown>;
 }

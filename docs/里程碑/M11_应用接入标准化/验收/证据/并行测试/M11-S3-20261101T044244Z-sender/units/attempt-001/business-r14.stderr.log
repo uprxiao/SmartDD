@@ -1,0 +1,19 @@
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.27.0.tgz
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/business-data.test.ts > M11 confirmed sender identity and conditional mail slots > M11 R14 never lets an Agent or copied context self-confirm and detects a damaged confirmation record
+ApplicationError: 业务操作上下文不属于当前有效宿主
+ ❯ ApplicationExecutionContexts.record src/main/core/applications/execution-context.ts:69:43
+
+ ❯ ApplicationExecutionContexts.assertActive src/main/core/applications/execution-context.ts:77:66
+ ❯ MailSenderIdentity.confirm src/main/core/applications/modules/mail/sender-identity.ts:62:19
+ ❯ Object.action src/main/core/applications/modules/mail/index.ts:89:238
+ ❯ src/main/core/applications/__tests__/business-data.test.ts:476:64
+ ❯ run src/main/core/applications/execution-context.ts:309:29
+ ❯ ResourceStore.use src/main/core/applications/resource-store.ts:121:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SCOPE_DENIED' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -21,5 +21,6 @@ export interface ApplicationProviderPresentation {
 export interface ApplicationPresentation {
   displayName: string; projectNote: string; emptyConnectionSuffix: string;
   defaultProvider: string; panel: string | null; switchTitle: string;
+  projectPolicy?: 'sender-identity';
   heading?: string; mark?: 'envelope' | 'zigzag' | 'link';
 }

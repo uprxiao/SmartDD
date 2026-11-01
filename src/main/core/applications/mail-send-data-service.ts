@@ -18,7 +18,7 @@ export type {MailSendData} from '@shared/mail-execution';
 import type {MailSendData} from '@shared/mail-execution';
 export class MailSendDataService implements ApplicationDataHost {
  private readonly views:PackageConfigViews;
- constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations){
+ constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly engine:()=>Promise<MailExecutionService>,readonly authorizations:MailUserAuthorizations,private readonly identityCheck?:(context:ApplicationExecutionContext)=>void){
   this.views=new PackageConfigViews(contexts);resources.registerProvider({kind:'mail-send-review-v1',appId:'mail',contractMajor:1,permission:'mail.draft',read:async(context,backing)=>{
    const intent=(await this.engine()).get(this.contexts.sendActor(context,context.allowedOperations.includes('mail.send')?'mail.send':'mail.draft'),backing.objectId);if(backing.part!=='review'||!intent.review||intent.reviewHash!==backing.objectRevision)throw new ApplicationError('HASH_MISMATCH','原发送审阅修订不同');return Buffer.from(canonicalJson(intent.review));
   }});
@@ -27,7 +27,7 @@ export class MailSendDataService implements ApplicationDataHost {
   if(version!==1||binding.appId!=='mail'||!methods.has(method))throw new ApplicationError('CAPABILITY_UNAVAILABLE','发送方法不属于当前宿主契约');const semantics=method==='mail.send.get'?'read' as const:'write' as const;
   return{semantics,retry:'never',authorize:run=>{const selected=run.snapshot.packages.find(pack=>pack.appId==='mail'&&pack.packageHash===binding.packageHash);if(!selected?.allowedOperations.includes(binding.permission))throw new ApplicationError('SCOPE_DENIED','原运行未选用本次发送动作');},authorizeReceipt:(run,id)=>this.contexts.assertAgentReceipt(run,binding,id),execute:(run,args,operation)=>this.contexts.withAgent(run,binding,operation,semantics,context=>this.execute(context,method,args))};
  }
- private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');}
+ private async preflight(context:ApplicationExecutionContext){const connection=await this.contexts.sendConnection(context),view=this.views.get(context,connection);if(view.kind!=='smtp')throw new ApplicationError('CONFIG_INCOMPATIBLE','当前原包不能使用此发件配置');this.identityCheck?.(context);}
  async view(context:ApplicationExecutionContext,intent:MailSendIntent):Promise<MailSendData>{
   await this.contexts.subject(context,'mail-send',intent.id);await this.contexts.subject(context,'mail-draft',intent.draftId);
   let review:ApplicationResourceRef|null=null;if(intent.review&&intent.reviewHash)review=await this.resources.register(context,{kind:'mail-send-review-v1',objectId:intent.id,objectRevision:intent.reviewHash,part:'review'},'application/json',Buffer.from(canonicalJson(intent.review)));

@@ -1,0 +1,71 @@
+{
+  "schema": "m11-s3-original-failure-diffs-v1",
+  "sourceManifestSha256": "1230ec9206f72a796a3eee999d9082baa4f9157be95ee6de8a0d315c9e11c074",
+  "readOnlyArtifactsUsed": [
+    "mail-group-01/command.log",
+    "mail-group-01/vitest.json",
+    "frozen mail-send-data.test.ts"
+  ],
+  "items": [
+    {
+      "case": "migrates only the provable original prepare identity",
+      "line": 123,
+      "expected": "Nine migration IDs through0028",
+      "actual": "Ten IDs including0029_mail_sender_identity",
+      "errorCode": null,
+      "boundary": "Migration journal IDs, not business audit operation count."
+    },
+    {
+      "case": "uses a matched claude-code explicit fixed-revision instruction",
+      "line": 168,
+      "expected": {
+        "status": "ok",
+        "authorized": true,
+        "state": "authorized"
+      },
+      "actual": {
+        "status": "ok",
+        "authorized": false,
+        "state": "awaiting-authorization"
+      },
+      "errorCode": null,
+      "errorMessage": null
+    },
+    {
+      "case": "uses a matched codex explicit fixed-revision instruction",
+      "line": 168,
+      "expected": {
+        "status": "ok",
+        "authorized": true,
+        "state": "authorized"
+      },
+      "actual": {
+        "status": "ok",
+        "authorized": false,
+        "state": "awaiting-authorization"
+      },
+      "errorCode": null,
+      "errorMessage": null
+    },
+    {
+      "case": "authorizes an already frozen intent",
+      "line": 177,
+      "expected": {
+        "status": "ok",
+        "state": "server-accepted"
+      },
+      "actual": {
+        "status": "error"
+      },
+      "errorCode": "not captured in existing reporter artifacts",
+      "errorMessage": "not captured in existing reporter artifacts",
+      "boundary": "Matcher omitted actual error fields;meta empty;suite.message empty.No rerun/no invented code."
+    }
+  ],
+  "separateObservedError": {
+    "case": "deduplicates concurrent late native authorization and execute for one existing intent",
+    "code": "AUTHORIZATION_REQUIRED",
+    "message": "本次具体邮件尚无可核验的用户授权，请审阅原意图或核对明确用户指令来源",
+    "boundary": "Observed for this distinct case only; do not transfer its code to the fourth case."
+  }
+}

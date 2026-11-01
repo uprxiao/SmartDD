@@ -12,6 +12,8 @@ export interface ApplicationSelectionDeps {
   requireProject(projectId: string): unknown;
   stopProjectRuns(projectId: string, appId: string): Promise<boolean>;
   runningInProject(projectId: string, appId: string): number;
+  validateSelection?(projectId:string,appId:string,slots:Readonly<Record<string,string|null|undefined>>):void;
+  afterSelection?(projectId:string,appId:string):void;
 }
 export interface ApplicationCatalogState<A extends string=ApplicationId> { appId: A; added: boolean; enabled: boolean; revision: number }
 
@@ -86,6 +88,7 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
       const connection = this.connections.get(id);
       if (connection.providerId !== slot || this.registry.providerApplication(connection.providerId) !== value.appId) throw new ApplicationError('SCOPE_DENIED', '所选连接不属于此应用或来源类别');
     }
+    if(value.enabled)this.deps.validateSelection?.(value.projectId,value.appId,value.connections);
   }
   async select(input: HostedSelectionInput<C,A>): Promise<HostedSelection<C,A>> {
     const value = this.registry.parseSelection(input); this.deps.requireProject(value.projectId);
@@ -141,6 +144,7 @@ export class ApplicationSelectionService<C extends HostedConfiguration=Connectio
       this.store.sqlite.prepare('INSERT INTO application_project_bindings(project_id,app_id,slot,connection_id,identity_revision) VALUES(?,?,?,?,?)').run(value.projectId, value.appId, slot, id, connection.identityRevision);
     }
     this.store.sqlite.prepare("UPDATE application_binding_changes SET state='committed',to_revision=?,updated_at=? WHERE operation_id=?").run(revision, now, operationId);
+    if(value.enabled)this.deps.afterSelection?.(value.projectId,value.appId);
   }
   /** Local draft operations depend only on application policy, not unrelated external slots. */
   requireApplicationEnabled(projectId: string,appId: A): void {

@@ -1,0 +1,179 @@
+{
+  "schema": "willyou-test-round-v1",
+  "runId": "M11-S3-20261101T044244Z-sender",
+  "milestone": "M11",
+  "updatedAt": "2026-11-01T05:05:27.841451+00:00",
+  "sourceCommit": "f4379fc274ea96d7cadf139588489ef65b7c8040",
+  "sourceSnapshot": "/private/tmp/willyou-m11-s3/source-attempt-001",
+  "sourceManifest": "/private/tmp/willyou-m11-s3/source-manifest-attempt-001.json",
+  "sourceManifestSha256": "1230ec9206f72a796a3eee999d9082baa4f9157be95ee6de8a0d315c9e11c074",
+  "groups": [
+    {
+      "id": "M11-S3-U",
+      "agent": "/root/m11_s0b_units",
+      "scope": "发件身份/升级回滚/批准UI交互",
+      "state": "completed-released",
+      "resources": [],
+      "manifestSha256": "a6c30a0e7b15429639fef7aa094ba946c6a874b108b19b0c75bf22a3843e7220"
+    },
+    {
+      "id": "M11-S3-C",
+      "agent": "/root/m11_s0b_composition",
+      "scope": "受影响邮件发送集成回归，合成SMTP",
+      "state": "completed-released",
+      "resources": [],
+      "manifestSha256": "5b4a2ab3fe6469ea29a991baad256ac40e663d33da3872b79dd4ebee0a79de3d"
+    }
+  ],
+  "accounting": "正式新增0，0/38",
+  "next": "S4 v2邮件包/模板/结果与schema3生产接入，统一关键节点新包做S1a/S3受影响真实界面；正式0/38",
+  "sourceRevisions": [
+    {
+      "attempt": 2,
+      "source": "/private/tmp/willyou-m11-s3/source-attempt-002",
+      "manifest": "/private/tmp/willyou-m11-s3/source-manifest-attempt-002.json",
+      "sha256": "1f5a1d188581a31fa924a1903223fed4fcf179fe3365b31d61ad911530cc144c",
+      "changed": [
+        "src/main/core/applications/modules/mail/sender-identity.ts",
+        "src/main/db/migrations.test.ts",
+        "src/main/db/registered-host-migration.test.ts"
+      ],
+      "reason": "统一Promise拒绝时序；旧迁移期望增加明确的新表/nullable列，保留原字段；新增真实历史发送行离线回滚验证"
+    },
+    {
+      "attempt": 3,
+      "source": "/private/tmp/willyou-m11-s3/source-attempt-003",
+      "manifest": "/private/tmp/willyou-m11-s3/source-manifest-attempt-003.json",
+      "sha256": "7d83eda6a4177d0893fb5a232133c18d3bae2d8270255085ad72d7f6882ee3b0",
+      "changed": [
+        "src/main/core/applications/__tests__/mail-send-data.test.ts",
+        "src/main/core/applications/application-service.ts"
+      ],
+      "reason": "M11-S3-01原生授权观察与回验使用同一含发件身份的权限摘要；补旧发送迁移用例新增0029预期"
+    },
+    {
+      "attempt": 4,
+      "source": "/private/tmp/willyou-m11-s3/source-attempt-004",
+      "manifest": "/private/tmp/willyou-m11-s3/source-manifest-attempt-004.json",
+      "sha256": "8e0e1bc853244511e70999e7092bf0c6987e748d47f57aca55bbeee9bbbe7e03",
+      "changed": [
+        "src/main/core/applications/__tests__/mail-send-data.test.ts",
+        "src/main/core/applications/application-service.ts",
+        "src/main/core/applications/business-data-service.ts",
+        "src/main/core/applications/capability-execution.ts",
+        "src/main/core/applications/mail-execution-service.ts",
+        "src/main/core/applications/modules/mail/index.ts",
+        "src/main/core/applications/modules/registry.ts"
+      ],
+      "reason": "v1已claimed回执不重新依赖SMTP；身份确认与具体邮件审批独立，当前确认在真正claim前验证，prepare时摘要仅审计；旧边界用例补R14重新确认前置，保留原SMTP/授权/unknown断言"
+    },
+    {
+      "attempt": 5,
+      "source": "/private/tmp/willyou-m11-s3/source-attempt-005",
+      "manifest": "/private/tmp/willyou-m11-s3/source-manifest-attempt-005.json",
+      "sha256": "86afb52fcf5b263796ab788ab583489f522674a84ab87c02bd9fd402e33a9060",
+      "changed": [
+        "src/main/core/applications/__tests__/mail-send-data.test.ts",
+        "src/main/core/applications/application-service.ts",
+        "src/main/core/applications/mail-send-data-service.ts"
+      ],
+      "reason": "冻结和执行的显式身份前置（不阻断已claimed回执）；改密测试实际证明未重新确认时无SMTP/解密，确认后原具体审批与冻结内容不变"
+    }
+  ],
+  "status": "software-gate-passed-packaged-app-pending",
+  "deliveries": [
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/mail-collection/manifest.json",
+      "sha256": "ec72eaae8a89a90edf95468605356925f9a966cf91ad114621eaec280be78a4b"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/mail-group-01/manifest.json",
+      "sha256": "7b18e28ebe0be08a64d3386ad1597e57c3add09b9006f5cd795caacd3b4913e5"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/mail-group-02/manifest.json",
+      "sha256": "80cb1b08ff695ba37cb86ba899c614d2bef980cdb172c8a818a3f62d4c79f636"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/mail-group-03/manifest.json",
+      "sha256": "5f7b489dd1007785d512f6a925e4ef2811ce8338b5e1b413897d648d704f55e2"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/mail-group-04/manifest.json",
+      "sha256": "bb4db2aa5bbf060eca006af6843cbc5a4edd6fe16c80fc467117715a8d9d2e59"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-001/manifest.json",
+      "sha256": "169e1954b75f01f25da752316c86941c6f4efbbe4dc94f384b592248aea43435"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/mail-collection/manifest.json",
+      "sha256": "996333a1905b6d033b1b613e2952262fe0e6e445b8b357a7f08608f00d730ba8"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/mail-group-01/manifest.json",
+      "sha256": "33548eda1d2662d5b9bcba6b0f650a8dac66f28d2d1e7f3b885dd71ddb60bd84"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/mail-group-02/manifest.json",
+      "sha256": "c3663ef08d5b44e312b646b92cf0f4ba9537873b8ddacfbcafd0a7c8e6723a56"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/mail-group-03/manifest.json",
+      "sha256": "13990b56621485b1f3f0096006d82eee7c9b06fc52117dd7a9059f1f551d26a2"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/mail-group-04/manifest.json",
+      "sha256": "eb6b35e662ab2545d018e5e3823cc35802092577fbca601a5adffedefca7c2d3"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-002/manifest.json",
+      "sha256": "5b4a2ab3fe6469ea29a991baad256ac40e663d33da3872b79dd4ebee0a79de3d"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-003/manifest.json",
+      "sha256": "d9b07365bb64bc8c15cbeb286608105855d86d2fdc508d625bb99d2fc7ebf52b"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-003/repair-collection/manifest.json",
+      "sha256": "d3c0012d22e3ceecf66ec06ecd4da58dfe02bbaba4ad7fa522fd9efa270b5570"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-003/seven-rechecks/manifest.json",
+      "sha256": "fd8b6bda1e077f5309114be08ab8c8532fc498b011f1b43341d0cc1fbb231f20"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-004/enhanced-collection/manifest.json",
+      "sha256": "619a6a25562dbeb0dbf6fed4e79ebff6f4305f4ff097cfb1140ae9070f1b1c01"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-004/enhanced-secret-recheck/manifest.json",
+      "sha256": "62f8f39c3331fb5bdaa1319bda483a8324d603d0758fd019d6a8b4dab20eb1eb"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/composition/attempt-004/manifest.json",
+      "sha256": "163d7e4afd0342f79dd93aca9fcbd06f3bf03bbb305bf0ae16946baac1098573"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/units/attempt-001/manifest.json",
+      "sha256": "3706b73d61f40915576f0cffa74306a8b443c383d83355e3932260ba2f99c32f"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/units/attempt-002/manifest.json",
+      "sha256": "a6c30a0e7b15429639fef7aa094ba946c6a874b108b19b0c75bf22a3843e7220"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/units/attempt-003/manifest.json",
+      "sha256": "74374cf3c0f772502472e35a5ee85ab61c4ffaa3d48784bb04b8cb134fb079c3"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/units/attempt-004/manifest.json",
+      "sha256": "1d3e403b0bbe972c8b1edcb41a47e832ebb1da80065220f921e6d15b0ccdf637"
+    },
+    {
+      "path": "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-S3-20261101T044244Z-sender/units/attempt-005/manifest.json",
+      "sha256": "f1175f91b2f50381ebe7cc68498c0bc6493ae62aec2486030745bed8fcee5b2f"
+    }
+  ],
+  "softwareAccounting": "S3有效去重166：邮件发送111（11纯UI沿用+4指定复验+89绿+7修复）；R14独立6；迁移40；批准UI9。后续6/2/1旁证不重复计数；正式新增0。"
+}
