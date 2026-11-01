@@ -1,0 +1,11 @@
+--- initial-test7462c0
++++ B-all-MCP-names-unique
+@@ -81,7 +81,7 @@
+ 
+  it('T38 a separately active run has a genuinely valid token which is rejected from the first run tree',async()=>{
+   const snapshot:CapabilitySessionSnapshot={...structuredClone(f.snapshot),taskId:randomUUID(),createdAt:new Date().toISOString()};
+-  const bridge=snapshot.mcp.find(m=>m.kind==='applications')!;bridge.serverName=applicationMcpServerName(digest(snapshot.taskId));snapshot.adapterBinding.nativeToolNames=Object.fromEntries(Object.keys(snapshot.packages[0].toolContractMajors).map(name=>[name,'mcp__'+bridge.serverName+'__'+name]));
++  for(const entry of snapshot.mcp)entry.serverName=entry.kind==='applications'?applicationMcpServerName(digest(snapshot.taskId)):'smartdd_project_'+digest(snapshot.taskId).slice(0,12);const bridge=snapshot.mcp.find(m=>m.kind==='applications')!;snapshot.adapterBinding.nativeToolNames=Object.fromEntries(Object.keys(snapshot.packages[0].toolContractMajors).map(name=>[name,'mcp__'+bridge.serverName+'__'+name]));
+   const session=await f.sessions.create(snapshot,f.home),second=await f.runs.reserve({taskId:snapshot.taskId,snapshotHash:session.pointer.snapshotHash,bindings:[]});
+   try{
+    await second.prepare();await second.cli.arm();f.reader.identities.set(921101,'darwin-proc-v1:2026:921101');await second.cli.attach(921101);const secondIssued=gateway.issue(second);expect(secondIssued.environment.WILLYOU_RUN_TOKEN).not.toBe(issued.environment.WILLYOU_RUN_TOKEN);f.runs.assertActive(f.run.runId);f.runs.assertActive(second.runId);

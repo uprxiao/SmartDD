@@ -1,0 +1,83 @@
+{
+  "checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "main",
+        "cmd": "/opt/homebrew/bin/node --check scripts/applications/m11-t25-ui.mjs",
+        "chunk_id": "9e8c20",
+        "wall_time_seconds": 0.000004834,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "generator",
+        "cmd": "/opt/homebrew/bin/node --check preparation/make-sample-cli-only.mjs",
+        "chunk_id": "fc4c35",
+        "wall_time_seconds": 0.000006791,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "page",
+        "cmd": "/opt/homebrew/bin/node --check scripts/applications/fixtures/t25-page-send.mjs",
+        "chunk_id": "28f3ff",
+        "wall_time_seconds": 0.000005083,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "sink",
+        "cmd": "/opt/homebrew/bin/node --check scripts/applications/fixtures/t25-smtp-once.mjs",
+        "chunk_id": "fbbdee",
+        "wall_time_seconds": 0.000006708,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "shell",
+        "cmd": "/bin/zsh -n run-t25-command.sh",
+        "chunk_id": "ec17e1",
+        "wall_time_seconds": 0.0000125,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "imports",
+        "cmd": "/opt/homebrew/bin/node --input-type=module -e \"import{parse}from'smol-toml';import{observePageSend,pageAuthorizeAndSendOnce}from'./scripts/applications/fixtures/t25-page-send.mjs';import{startT25Sink}from'./scripts/applications/fixtures/t25-smtp-once.mjs';import{createNativeSingleApproval}from'./scripts/applications/fixtures/native-single-approval.mjs';import{stableUi}from'./scripts/applications/fixtures/t25-stable-ui.mjs';for(const f of[parse,observePageSend,pageAuthorizeAndSendOnce,startT25Sink,createNativeSingleApproval,stableUi])if(typeof f!=='function')throw Error('Bad static export')\"",
+        "chunk_id": "f35482",
+        "wall_time_seconds": 0.000004083,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "finalMainAfterCliPin": {
+    "command": "node --check scripts/applications/m11-t25-ui.mjs",
+    "exitCode": 0,
+    "sha256": "5f4324388788f7c1ba8af26fc2861e2fb07c2e442524a343d208c97656b36293"
+  },
+  "generatorExecuted": false,
+  "mainExecuted": false
+}

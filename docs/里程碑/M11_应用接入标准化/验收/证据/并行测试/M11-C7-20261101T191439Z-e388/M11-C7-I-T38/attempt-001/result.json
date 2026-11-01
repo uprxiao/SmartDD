@@ -1,0 +1,491 @@
+{
+  "schema": "m11-parallel-test-delivery-v1",
+  "runId": "M11-C7-20261101T191439Z-e388",
+  "groupId": "M11-C7-I-T38",
+  "caseId": "M11-T38",
+  "attempt": "attempt-001",
+  "status": "I-complete; A-not-executed",
+  "requiredLayers": [
+    "I",
+    "A"
+  ],
+  "originalContract": "original-contract.json",
+  "criteria": [
+    {
+      "id": "valid-token-tree-outsider",
+      "status": "passed-I",
+      "expected": {
+        "code": "PEER_MISMATCH",
+        "business": 0,
+        "secretReads": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "829f21cd-2bdc-4218-a94f-9aa4ed5fb7f0",
+          "status": "error",
+          "error": {
+            "code": "PEER_MISMATCH",
+            "message": "CLI对端不属于本次受管进程树",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "controlledPeerIdentity": {
+          "schema": 2,
+          "state": "running",
+          "uid": 501,
+          "peer": {
+            "pid": 921002,
+            "startedAt": "darwin-proc-v1:2026:921002",
+            "executable": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-mrJ2Ul/willyou-app"
+          },
+          "ancestors": [
+            {
+              "pid": 921002,
+              "startedAt": "darwin-proc-v1:2026:921002",
+              "ppid": 921001
+            }
+          ]
+        },
+        "peerReads": 1,
+        "businessInvocations": {
+          "n": 0
+        }
+      },
+      "softwareAssertion": "rejects tree-outsider without invoking business or reading a secret",
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json",
+        "executed-cli-gateway-before-fixture-correction.test.ts"
+      ]
+    },
+    {
+      "id": "identity-unreadable",
+      "status": "passed-I",
+      "expected": {
+        "code": "PEER_UNVERIFIABLE",
+        "business": 0,
+        "secretReads": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "c11d07c6-5e26-4dfc-86cc-451964990bf2",
+          "status": "error",
+          "error": {
+            "code": "PEER_UNVERIFIABLE",
+            "message": "无法核验CLI内核对端身份",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "controlledPeerIdentity": null,
+        "peerReads": 1,
+        "businessInvocations": {
+          "n": 0
+        }
+      },
+      "softwareAssertion": "rejects unknown-peer without invoking business or reading a secret",
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json",
+        "executed-cli-gateway-before-fixture-correction.test.ts"
+      ]
+    },
+    {
+      "id": "start-time-mismatch",
+      "status": "passed-I",
+      "expected": {
+        "code": "PEER_MISMATCH",
+        "business": 0,
+        "secretReads": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "54e40fdf-9d69-46bc-9ae0-9f332b07ca92",
+          "status": "error",
+          "error": {
+            "code": "PEER_MISMATCH",
+            "message": "CLI对端不属于本次受管进程树",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "controlledPeerIdentity": {
+          "schema": 2,
+          "state": "running",
+          "uid": 501,
+          "peer": {
+            "pid": 921002,
+            "startedAt": "darwin-proc-v1:2026:921002",
+            "executable": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-HGpHN0/willyou-app"
+          },
+          "ancestors": [
+            {
+              "pid": 921002,
+              "startedAt": "darwin-proc-v1:2026:921002",
+              "ppid": 921001
+            },
+            {
+              "pid": 921001,
+              "startedAt": "darwin-proc-v1:2099:1",
+              "ppid": 1
+            }
+          ]
+        },
+        "peerReads": 1,
+        "businessInvocations": {
+          "n": 0
+        }
+      },
+      "softwareAssertion": "rejects pid-reuse without invoking business or reading a secret",
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json",
+        "executed-cli-gateway-before-fixture-correction.test.ts"
+      ]
+    },
+    {
+      "id": "executable-mismatch",
+      "status": "passed-I",
+      "expected": {
+        "code": "EXECUTABLE_MISMATCH",
+        "business": 0,
+        "secretReads": 0
+      },
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "0c3a7b64-9e1d-4bcf-b444-75398e14c28b",
+          "status": "error",
+          "error": {
+            "code": "EXECUTABLE_MISMATCH",
+            "message": "对端不是本次受管CLI程序",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "controlledPeerIdentity": {
+          "schema": 2,
+          "state": "running",
+          "uid": 501,
+          "peer": {
+            "pid": 921002,
+            "startedAt": "darwin-proc-v1:2026:921002",
+            "executable": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-gMNDdF/willyou-app.substituted"
+          },
+          "ancestors": [
+            {
+              "pid": 921002,
+              "startedAt": "darwin-proc-v1:2026:921002",
+              "ppid": 921001
+            },
+            {
+              "pid": 921001,
+              "startedAt": "darwin-proc-v1:2026:921001",
+              "ppid": 1
+            }
+          ]
+        },
+        "peerReads": 1,
+        "businessInvocations": {
+          "n": 0
+        }
+      },
+      "softwareAssertion": "rejects wrong-executable without invoking business or reading a secret",
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json",
+        "executed-cli-gateway-before-fixture-correction.test.ts"
+      ]
+    },
+    {
+      "id": "other-active-run-token",
+      "status": "passed-I",
+      "expected": "Legally issued still-active B token succeeds in B ancestry then is refused in A ancestry; target request business/secret/invocation delta0; A positive control still works",
+      "actual": {
+        "firstRunId": "e80a81fa-b87b-4bb0-bd10-72a1bf11b987",
+        "secondRunId": "cd234564-cb9f-45b3-8e2a-191561ef789b",
+        "secondOwnTreePositive": {
+          "schema": 1,
+          "id": "5799d18c-68bf-49ae-a885-d1e32e087bba",
+          "status": "ok",
+          "value": {
+            "schema": "willyou-app-result-v2",
+            "contractMajor": 2,
+            "status": "ok",
+            "capabilityId": "mail.draft.list",
+            "data": {
+              "items": [],
+              "nextCursor": null
+            },
+            "source": {
+              "appId": "mail",
+              "packageHash": "1fa55da54d93525fae4fc820ac31c4af4147cfc64aa404b9e71f11a9b10f9843",
+              "revision": null,
+              "connections": []
+            },
+            "completeness": {
+              "complete": true,
+              "missing": []
+            },
+            "pagination": {
+              "nextCursor": null,
+              "total": null
+            },
+            "resources": [],
+            "operation": {
+              "id": "0ced64f4-3b4c-4175-986f-fb73401f8e1b",
+              "requestId": "5799d18c-68bf-49ae-a885-d1e32e087bba",
+              "origin": "cli",
+              "effectState": "read-only"
+            }
+          },
+          "operationId": "0ced64f4-3b4c-4175-986f-fb73401f8e1b",
+          "effectState": "read-only"
+        },
+        "firstTreeUsingSecondValidToken": {
+          "schema": 1,
+          "id": "0f822e50-280e-4418-b9a6-2bced5ac7e5e",
+          "status": "error",
+          "error": {
+            "code": "PEER_MISMATCH",
+            "message": "CLI对端不属于本次受管进程树",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "before": {
+          "n": 1
+        },
+        "after": {
+          "n": 1
+        },
+        "targetRequestBusinessCalls": 0,
+        "targetRequestSecretReads": 0,
+        "identityReaderLayer": "Controlled Unix peer facts; real registry/issue/socket/gateway/executor"
+      },
+      "evidence": [
+        "corrected-raw/calls.jsonl",
+        "vitest-other-run.json",
+        "executed-cli-gateway.test.ts"
+      ],
+      "layerBoundary": "Actual session+run creation, actual gateway.issue token, actual Unix socket and production executor. OS peer facts are controlled injected I evidence; no claim of a real second App/CLI process."
+    },
+    {
+      "id": "unselected-write",
+      "status": "passed-I",
+      "expected": "Unselected write capability directly submitted via host capabilities/call rejects SCOPE_DENIED with business/secret/draft/invocation0",
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "7ab58a9c-aad8-4bf3-81d4-6c001be00834",
+          "status": "error",
+          "error": {
+            "code": "SCOPE_DENIED",
+            "message": "能力不在本次运行允许表中",
+            "layer": "auth",
+            "retryable": false,
+            "attemptCount": 0,
+            "retryExhausted": false,
+            "effectState": "not-started",
+            "nextAction": "核对本次运行与应用状态；不要自动重发写操作"
+          },
+          "auditUnavailable": true
+        },
+        "businessCalls": 0,
+        "secretReads": 0,
+        "drafts": 0,
+        "invocations": {
+          "n": 0
+        },
+        "layer": "Actual Unix capabilities/call request; host fixed package/capability allowlist rejects it. No CLI discovery/command-selection shortcut."
+      },
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json"
+      ],
+      "layerBoundary": "The genuine token and peer enter the host gateway; the fixed read-only package/capability allowlist rejects draft_create. This tests the host route, not native CLI command-discovery failure and not a separately declared write capability permission matrix."
+    },
+    {
+      "id": "normal-valid-call",
+      "status": "passed-I",
+      "expected": "Valid token/binary/managed ancestry invokes actual v2 business normally with origincli",
+      "actual": {
+        "response": {
+          "schema": 1,
+          "id": "5bffb423-3134-420f-8d28-af7003a3d636",
+          "status": "ok",
+          "value": {
+            "schema": "willyou-app-result-v2",
+            "contractMajor": 2,
+            "status": "ok",
+            "capabilityId": "mail.draft.list",
+            "data": {
+              "items": [],
+              "nextCursor": null
+            },
+            "source": {
+              "appId": "mail",
+              "packageHash": "1fa55da54d93525fae4fc820ac31c4af4147cfc64aa404b9e71f11a9b10f9843",
+              "revision": null,
+              "connections": []
+            },
+            "completeness": {
+              "complete": true,
+              "missing": []
+            },
+            "pagination": {
+              "nextCursor": null,
+              "total": null
+            },
+            "resources": [],
+            "operation": {
+              "id": "1b8eb9f6-cd3c-4c56-9698-51984d6fccfc",
+              "requestId": "5bffb423-3134-420f-8d28-af7003a3d636",
+              "origin": "cli",
+              "effectState": "read-only"
+            }
+          },
+          "operationId": "1b8eb9f6-cd3c-4c56-9698-51984d6fccfc",
+          "effectState": "read-only"
+        },
+        "controlledPeerIdentity": {
+          "schema": 2,
+          "state": "running",
+          "uid": 501,
+          "peer": {
+            "pid": 921002,
+            "startedAt": "darwin-proc-v1:2026:921002",
+            "executable": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-agent-TGljBO/willyou-app"
+          },
+          "ancestors": [
+            {
+              "pid": 921002,
+              "startedAt": "darwin-proc-v1:2026:921002",
+              "ppid": 921001
+            },
+            {
+              "pid": 921001,
+              "startedAt": "darwin-proc-v1:2026:921001",
+              "ppid": 1
+            }
+          ]
+        },
+        "peerReads": 1,
+        "businessInvocations": {
+          "n": 1
+        }
+      },
+      "evidence": [
+        "raw/calls.jsonl",
+        "vitest-contract.json",
+        "corrected-raw/calls.jsonl"
+      ]
+    }
+  ],
+  "softwareResults": {
+    "uniqueTests": 18,
+    "effectivePassed": 18,
+    "publicOriginalRetained": 16,
+    "newDirectContracts": 2,
+    "mainRun": {
+      "passed": 17,
+      "failed": 1,
+      "failureClassification": "Second-session fixture MCP name collision before B run/token created; no product authentication failure"
+    },
+    "targetedAfterFixtureFix": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 17
+    },
+    "preflight": {
+      "passed": 1,
+      "failed": 0,
+      "note": "Representative prerequisite only, not additional unique test count"
+    }
+  },
+  "publicPredicatesPreserved": true,
+  "fixtureFailure": {
+    "detail": "fixture-diagnostic.json",
+    "sourceDelta": "fixture-correction.patch",
+    "actual": "Only application MCP was initially renamed; legacy-project-context kept A name. Fixed to actual task-derived unique MCP names for B. No peer/token/business0 expectation changed;17 valid greens not rerun."
+  },
+  "commands": "commands.json",
+  "sourceAfter": "source-after.json",
+  "cleanup": "cleanup.json",
+  "remainingA": [
+    {
+      "predicate": "tree/uid/start-time/executable identity",
+      "missing": "Real native peer/kernel evidence in actual packaged App/Codex; I uses controlled trusted reader facts."
+    },
+    {
+      "predicate": "another active run token",
+      "missing": "Real second Task/CLI environment with other legally issued active token; I creates actual registry/run/token but controls ancestry."
+    },
+    {
+      "predicate": "unselected write",
+      "missing": "Actual CLI discovery/command-selection behavior distinct from direct host capabilities/call I denial; both actual A and I layers must be mapped."
+    },
+    {
+      "predicate": "normal call and all seven original criteria",
+      "missing": "Coordinator actual packaged App A group; this I delivery adds zero complete formal cases."
+    }
+  ],
+  "historicalEvidenceBoundary": "Original T38 row mentions technical §12 simulated-host probes and real Codex tree-outsider misuse. These are not promoted into current packaged-App A passes. Current I re-executes public gateway/SQLite contract plus genuine B-token gap.",
+  "baseline": {
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "sourceFiles": 3222,
+    "outFiles": 151,
+    "testHashes": {
+      "checkedAt": "2026-11-01T19:33:21.125118+00:00",
+      "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+      "sourceFiles": 3222,
+      "outFiles": 151,
+      "allProductionAndOutInputsUnchanged": true,
+      "privateTestOnlyChanged": "src/main/core/applications/__tests__/cli-gateway.test.ts",
+      "originalPublicTestSha256": "332638a8eb824ec55324a9d5cb72b10a45b915344bef6398ba71139e1f838551",
+      "firstExecutedTestSha256": "7462c0f957813d57b13cdc51fcb4cbc9671149fec96ae4bb2e6dee78bd2071c0",
+      "targetedExecutedTestSha256": "c5300ce85aaee3ad687a62d6796f01ff9438f3ce172806792e72c0f671dbf1ef",
+      "cliFixtureUnchangedSha256": "c17ada56802337a0f4ac75ef01cf2359e08798bddefbc3209130ee81413740e8",
+      "baseSourceSetSha256": "aa28fa37eeb32979cc676647178c2746440585bb637f33c12855d79c302c0282",
+      "outSetSha256": "2fe33d782052c604f060e33c44ae5e2064d935e150e3d8b78bb88a0be860c4f9",
+      "lockSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2",
+      "packageJsonSha256": "435aca01fc1606b1214b345d8aa66abbb551da37ff83ffb1760ca590efb77a7d",
+      "nodeModulesRealpath": "/Users/hx/hx/hxWork/SmartDD/node_modules",
+      "depsReadOnly": true
+    },
+    "sourceAndProductionMutation": "None; only private test with observation hooks plus2 gaps, cli-fixture exact frozen bytes"
+  },
+  "resourcesReleased": true,
+  "noRealAppCodexPtyNativeHelperOrBuild": true,
+  "newFormalCases": 0,
+  "preparedAt": "2026-11-01T19:33:21.127405+00:00"
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "m11-t20-attempt-v1",
+  "attempt": "attempt-002",
+  "originalCommandExitCode": 1,
+  "originalDriverStatus": "failed",
+  "raw": "raw-result.json",
+  "rawSha256": "b52c8cf642c300829dbe7fcaa08f8b744ca7d27d7f7fa10c33b9941345c01e96",
+  "originalPassedSteps": [
+    "create-normal",
+    "update-normal",
+    "prepare-normal",
+    "page-authorize-normal",
+    "execute-normal",
+    "create-unknown",
+    "prepare-unknown",
+    "page-authorize-unknown",
+    "execute-unknown",
+    "unknown-get-1",
+    "unknown-get-2"
+  ],
+  "originalChecks": [
+    {
+      "name": "Automatic AI-profile health check is separately classified and completed against private provider",
+      "at": "2026-11-01T19:32:24.630Z",
+      "passed": true
+    },
+    {
+      "name": "Real composer input and button created exactly one new Task",
+      "at": "2026-11-01T19:32:30.020Z",
+      "passed": true,
+      "taskId": "cc454eea-a1cf-4ab5-afc8-1cdc94d26b86"
+    },
+    {
+      "name": "Real Task CLI used native profile model and preserved profile-disabled user Skill under later CLI empty array",
+      "at": "2026-11-01T19:32:39.778Z",
+      "passed": true,
+      "requestCount": 11
+    }
+  ],
+  "failureClass": "driver-premature-loading-assertion",
+  "originalFailedStage": "session-diagnostics",
+  "originalError": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(result.matrix.diagnosticUi.includes('聊天原话授权在此版本上尚未验证，保持关闭'))\n",
+  "interpretation": "All business send/unknown/get assertions completed. Extra final L3 UI assertion read the still-loading dialog container. Original exit1 unchanged; catch DOM and screenshot loaded and show L3 off. No restart/resend.",
+  "appExit": {
+    "pid": 38269,
+    "code": 0,
+    "signal": null
+  },
+  "formalCasePassesAdded": 0
+}

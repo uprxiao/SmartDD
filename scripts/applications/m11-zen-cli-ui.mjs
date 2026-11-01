@@ -16,10 +16,10 @@ import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
 import {captureBudgetService} from './fixtures/budget-main-capture.mjs';
-import {installM11GatewayProbe,m11GatewaySnapshot,replayM11OutsideManagedTree,restoreM11GatewayProbe} from './fixtures/m11-gateway-probe.mjs';
+import {installM11GatewayProbe,m11GatewaySnapshot,m11GatewayFault,useM11ForeignTokenOnNextRun,replayM11OutsideManagedTree,restoreM11GatewayProbe} from './fixtures/m11-gateway-probe.mjs';
 
-const mode=process.env.WILLYOU_M11_ZEN_MODE??'cli',unknown=mode==='unknown-mcp',cliLoss=mode==='cli-loss',scopeDenial=mode==='scope-denial',restartHost=mode==='app-restart-host',appRestart=mode==='app-restart'||restartHost,revocation=mode==='ui-stop-replay';
-assert(['cli','unknown-mcp','cli-loss','scope-denial','app-restart','app-restart-host','ui-stop-replay'].includes(mode));
+const mode=process.env.WILLYOU_M11_ZEN_MODE??'cli',unknown=mode==='unknown-mcp',cliLoss=mode==='cli-loss',scopeDenial=mode==='scope-denial',restartHost=mode==='app-restart-host',appRestart=mode==='app-restart'||restartHost,stopReplay=mode==='ui-stop-replay',permissionReplay=mode==='ui-disable-replay'||mode==='ui-disconnect-replay',gatewayEvidence=mode==='gateway-evidence',revocation=stopReplay||permissionReplay||gatewayEvidence;
+assert(['cli','unknown-mcp','cli-loss','scope-denial','app-restart','app-restart-host','ui-stop-replay','ui-disable-replay','ui-disconnect-replay','gateway-evidence'].includes(mode));
 const root=await mkdtemp('/private/tmp/willyou-m11-s7-native-');
 const home=join(root,'home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,cli=process.env.WILLYOU_CODEX_CLI;
@@ -82,7 +82,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
    try{
     if(!result.runPlan){result.runPlan=await readRunPlan();assert.equal(result.runPlan.applications.find(a=>a.appId==='zentao').effectiveEntry,unknown?'mcp':'cli','Effective entry must match the reported-version policy');}
     const path=join(home,'.agents/skills',result.runPlan.skills.find(v=>v.appId==='zentao'&&v.skillId==='bug-analysis').nativeName,'SKILL.md');
-    const step=result.issuedTools.length;if(scopeDenial&&step===1)result.scope.providerReadsBeforeDenials=result.providerReads;const command=scopeDenial&&step>=1&&step<=5?result.scope.requests[step-1].command:step===0?(unknown?'test -z "${WILLYOU_RUN_TOKEN:-}" && test -z "${WILLYOU_ENDPOINT:-}" && ':'')+'/bin/cat '+shellQuote(path):cliLoss&&step===2?'env WILLYOU_ENDPOINT='+shellQuote(join(root,'intentionally-unavailable-cli.sock'))+' willyou-app zentao object list --kind bug':'willyou-app zentao object list --kind bug',input='text(await tools.exec_command({cmd:'+JSON.stringify(command)+',max_output_tokens:12000,yield_time_ms:10000}));';
+    const step=result.issuedTools.length;if(scopeDenial&&step===1)result.scope.providerReadsBeforeDenials=result.providerReads;const command=scopeDenial&&step>=1&&step<=5?result.scope.requests[step-1].command:step===0?(unknown?'test -z "${WILLYOU_RUN_TOKEN:-}" && test -z "${WILLYOU_ENDPOINT:-}" && ':'')+'/bin/cat '+shellQuote(path):cliLoss&&step===2?'env WILLYOU_ENDPOINT='+shellQuote(join(root,'intentionally-unavailable-cli.sock'))+' willyou-app zentao object list --kind bug':result.turnCommand??'willyou-app zentao object list --kind bug',input='text(await tools.exec_command({cmd:'+JSON.stringify(command)+',max_output_tokens:12000,yield_time_ms:10000}));';
     let call;if(unknown&&step===1){const namespace=(body.tools??[]).find(t=>t.type==='namespace'&&(t.tools??[]).some(tool=>tool.name==='smartdd_zentao_work_list_v2'));assert(namespace,'Actual native request must declare the fallback MCP tool');call={type:'function_call',id:'fc_m11_'+step,call_id:modelCallId(step),name:'smartdd_zentao_work_list_v2',namespace:namespace.name,arguments:JSON.stringify({kind:'bug'}),status:'completed'};}else call=exec.type==='custom'?{type:'custom_tool_call',id:'ct_m11_'+step,call_id:modelCallId(step),name:exec.name,...(exec.namespace?{namespace:exec.namespace}:{}),input,status:'completed'}:{type:'function_call',id:'fc_m11_'+step,call_id:modelCallId(step),name:exec.name,...(exec.namespace?{namespace:exec.namespace}:{}),arguments:JSON.stringify({cmd:command,max_output_tokens:12000,yield_time_ms:10000}),status:'completed'};
     result.issuedTools.push({...call,fixture:'loopback synthetic provider chooses the exact read; actual Codex/exec/'+(unknown&&step===1?'MCP':'native CLI')+'/host/provider execute it'});
     if(step===1)result.skillOutput=(body.input??[]).filter(v=>v.call_id===modelCallId(0));if(cliLoss&&step===2)result.providerReadsBeforeLoss=result.providerReads;if(cliLoss&&step===2)result.nativeToolOutputs=(body.input??[]).filter(v=>v.call_id===modelCallId(1));
@@ -119,7 +119,12 @@ const privateEnv={PATH:process.env.PATH,HOME:home,ZDOTDIR:home,CODEX_HOME:state,
 for(const name of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL','WILLYOU_ACCEPTANCE_APP','WILLYOU_CODEX_CLI','WILLYOU_ACCEPTANCE_ASAR_SHA'].includes(name))delete process.env[name];
 Object.assign(process.env,privateEnv);
 async function poll(fn,timeout=30000){const end=Date.now()+timeout;let value;do{if(result.fixtureFailure)throw Error(result.fixtureFailure.message);value=await fn();if(value)return value;await new Promise(r=>setTimeout(r,150));}while(Date.now()<end);throw Error('Bounded state wait timed out: '+stage);}
-async function click(selector,text){result.lastAction={selector,text};const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('Control missing: '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+async function click(selector,text){
+ result.lastAction={selector,text};const find=`Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`})`;
+ await app.waitFor(`(()=>{const e=${find};if(!e||e.matches(':disabled')||document.getAnimations().some(a=>a.playState==='running'&&a.effect?.getTiming().iterations!==Infinity))return false;e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect();return e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})()`,8000);
+ const p=await app.evaluate(`(()=>{const e=${find};if(!e||e.matches(':disabled'))throw Error('Control changed after readiness');const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);
+ for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});
+}
 async function key(key,code,num,modifiers=0,commands){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:num,modifiers,...(type==='keyDown'&&commands?{commands}:{})});}
 async function requireOperationRun(value,plan){
  const row=await app.mainEvaluate(`(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json'),DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData,'smartdd.db'))},{readonly:true});try{return db.prepare('SELECT run_id,task_id,state,app_id FROM application_data_operations WHERE operation_id=?').get(${JSON.stringify(value.operation.id)})}finally{db.close()}})()`,{label:'m11-current-operation-run'});
@@ -129,6 +134,95 @@ async function restoreGatewayFixture(){
  if(!revocation||result.gatewayFixtureRestored||!app)return;
  result.gatewayFixtureRestored=await restoreM11GatewayProbe(app);
  result.captureFixtureRestored=await app.mainEvaluate(`(()=>{const g=globalThis.__mkWorkerInheritance,T=process.getBuiltinModule('worker_threads');if(!g)throw Error('Own capture fixture missing');g.active=false;T.Worker=g.original;delete globalThis.__mkWorkerInheritance;delete globalThis.__ncHistoryProbe;return{workerRestored:T.Worker===g.original,captureRemoved:!globalThis.__ncHistoryProbe}})()`,{label:'m11-gateway-capture-restore',synchronous:true});
+}
+function cliError(value,depth=0){
+ if(depth>10)return null;
+ if(value&&typeof value==='object'){if(typeof value.error?.code==='string')return value.error;for(const v of Object.values(value)){const got=cliError(v,depth+1);if(got)return got;}}
+ else if(typeof value==='string')for(const text of [value,...value.split('\n')])try{const got=cliError(JSON.parse(text),depth+1);if(got)return got;}catch{}
+ return null;
+}
+async function nativeCompletionCount(currentTask){
+ const current=await poll(async()=>{const t=await app.invoke('tasks.get',currentTask.id);return t.nativeSessionId?t:null;},15000);
+ const names=(await readdir(join(state,'sessions'),{recursive:true})).filter(n=>n.endsWith('-'+current.nativeSessionId+'.jsonl'));assert.equal(names.length,1);
+ const file=join(state,'sessions',names[0]);assert((await stat(file)).size<8*1024*1024);
+ return(await readFile(file,'utf8')).split('\n').filter(line=>{try{const v=JSON.parse(line);return v.type==='response_item'&&v.payload?.role==='assistant'&&JSON.stringify(v.payload.content).includes(marker+'_DONE');}catch{return false;}}).length;
+}
+async function actualGatewayTurn(label,command='willyou-app zentao object list --kind bug'){
+ const completed=await nativeCompletionCount(task);assert(completed>0);
+ result.fixtureTurn=(result.fixtureTurn??0)+1;result.issuedTools=[];result.nativeToolOutputs=null;result.runPlan=null;result.skillOutput=null;result.turnCommand=command;
+ await click('.xterm-screen');await app.waitFor("document.activeElement?.classList.contains('xterm-helper-textarea')",5000);
+ const message=marker+'_'+label+': Read current bug-analysis Skill, then execute exactly once: '+command+'. Return '+marker+'_DONE.';
+ await app.cdp('Input.insertText',{text:message});await app.waitFor(`document.body.innerText.includes(${JSON.stringify(marker+'_'+label)})`,5000);await new Promise(r=>setTimeout(r,400));await key('Enter','Enter',13);
+ await poll(async()=>result.nativeToolOutputs?.some(v=>v.type==='function_call_output'),45000);
+ await poll(async()=>(await nativeCompletionCount(task))>completed,15000);
+ const outputs=structuredClone(result.nativeToolOutputs);await writeFile(join(root,'turn-'+label+'-outputs.json'),JSON.stringify(outputs,null,2)+'\n');
+ const observation={label,outputs,error:cliError(outputs),value:currentCapabilityResult(outputs),plan:await readRunPlan(),gateway:await m11GatewaySnapshot(app),providerReads:result.providerReads};
+ await app.screenshot(join(root,'turn-'+label+'.png'));return observation;
+}
+async function runGatewayEvidence(){
+ stage='gateway-evidence-baseline';await progress();await poll(async()=>(await nativeCompletionCount(task))>0,15000);
+ const originalTask={...task},originalPlan=result.runPlan,before=await m11GatewaySnapshot(app),providerReads=result.providerReads;
+ const evidence=result.gatewayEvidence={before,originalPlan,originalTaskId:task.id,cases:[],boundary:'Actual packaged App, original gateway/native executable/Codex. Three evidence fault modes replace only observed native evidence after the original native probe; another-run fault changes only one owned launch environment. Authentication and authorization rules are unchanged.'};
+ const outsider=await replayM11OutsideManagedTree(app,originalPlan.runId,home);assert.equal(outsider.error,'PEER_MISMATCH');assert.equal(result.providerReads,providerReads);assert.equal((await m11GatewaySnapshot(app)).invocations,before.invocations);evidence.cases.push({label:'valid-token-tree-outsider',response:outsider,businessDelta:0});
+ for(const [mode,expected] of [['unreadable','PEER_UNVERIFIABLE'],['wrong-start','PEER_MISMATCH'],['wrong-executable','EXECUTABLE_MISMATCH']]){
+  stage='gateway-'+mode;await progress();await m11GatewayFault(app,mode,originalPlan.runId);let observed;
+  try{observed=await actualGatewayTurn(mode);}finally{await m11GatewayFault(app,'normal',originalPlan.runId);}
+  assert.equal(observed.error?.code,expected,JSON.stringify(observed.outputs));assert.equal(observed.value,null);assert.equal(observed.providerReads,providerReads);assert.equal(observed.gateway.invocations,before.invocations);evidence.cases.push({...observed,businessDelta:0});
+ }
+ stage='gateway-unauthorized-write';await progress();const write=await actualGatewayTurn('unselected-write','willyou-app zentao object update --id 79291');assert.equal(write.error?.code,'SCOPE_DENIED');assert.equal(write.value,null);assert.equal(write.providerReads,providerReads);assert.equal(write.gateway.invocations,before.invocations);evidence.cases.push({...write,businessDelta:0,boundary:'Actual native CLI discovery exposes only allowed commands, so the write is denied at command selection; separate I layer tests direct host capability-call refusal.'});
+ stage='gateway-restored-positive';await progress();const good=await actualGatewayTurn('restored-positive');assert.equal(good.value?.operation.origin,'cli');assert.equal(good.value?.data.items[0].id,'79291');assert.equal(good.providerReads,providerReads+2);assert.equal(good.gateway.invocations,before.invocations+1);await requireOperationRun(good.value,good.plan);evidence.restoredPositive=good;
+ stage='gateway-cross-run-create';await progress();evidence.foreignFault=await useM11ForeignTokenOnNextRun(app,originalPlan.runId);await click('[data-testid=nav-new-task]');await app.waitFor('!!document.querySelector("[data-testid=home-input]")',15000);
+ result.fixtureTurn=(result.fixtureTurn??0)+1;result.issuedTools=[];result.nativeToolOutputs=null;result.runPlan=null;result.skillOutput=null;delete result.turnCommand;
+ await click('[data-testid=home-input]');await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text:marker+'_CROSS_RUN: Read current bug-analysis Skill and query my Bug list once using CLI. Return '+marker+'_DONE.'});await click('[data-testid=home-launch]');
+ const second=await poll(async()=>{const list=await app.invoke('tasks.list',{includeArchived:true});if(list.length!==2)return null;const t=list.find(t=>t.id!==originalTask.id);if(t&&!(result.additionalTaskIds??=[]).includes(t.id))result.additionalTaskIds.push(t.id);return t?.ptyId?t:null;},20000);assert(second.ptyId);task=second;
+ await poll(async()=>result.nativeToolOutputs?.some(v=>v.type==='function_call_output'),45000);await poll(async()=>(await nativeCompletionCount(second))>0,15000);
+ const cross={outputs:structuredClone(result.nativeToolOutputs),gateway:await m11GatewaySnapshot(app),plan:await readRunPlan(),secondTaskId:second.id,providerReads:result.providerReads};assert.equal(cliError(cross.outputs)?.code,'PEER_MISMATCH');assert.equal(currentCapabilityResult(cross.outputs),null);assert.equal(cross.providerReads,providerReads+2);assert.equal(cross.gateway.invocations,before.invocations+1);assert.notEqual(cross.plan.runId,originalPlan.runId);assert.deepEqual(cross.gateway.foreignDelivery,{runId:cross.plan.runId,tokenOwnerRunId:originalPlan.runId});
+ evidence.cases.push({...cross,label:'another-active-run-token',businessDelta:0});await app.screenshot(join(root,'gateway-other-live-run-token.png'));task=originalTask;
+ checked('T38 actual App boundary: six negative scenarios execute no business; real native evidence faults fail closed, original legitimate CLI succeeds, and a concurrent real Codex cannot use the other active run token');
+}
+async function openZenManagement(){
+ await click('[data-testid=nav-apps]');await app.waitFor('!!document.querySelector(".m10-shell")',10000);
+ await click('.m10-nav.installed','禅道');const control='[role=switch][aria-label="全局启用禅道"]',picker='select[aria-label="当前应用项目"]';await app.waitFor(`Boolean(document.querySelector(${JSON.stringify(control)}))`,10000);
+ // Clear the business panel's project through its actual native select before
+ // toggling policy, so unrelated page refreshes cannot count as CLI side effects.
+ if(await app.evaluate(`Boolean(document.querySelector(${JSON.stringify(picker)}))`)&&!await app.evaluate(`document.querySelector(${JSON.stringify(picker)}).value===''`)){
+  // Same verified native-select path as m11-module-forms-ui: Tab focus, then
+  // typeahead. A pointer click opens an OS popup outside renderer CDP keys.
+  for(let i=0;i<80&&!await app.evaluate(`document.activeElement?.matches(${JSON.stringify(picker)})===true`);i++)await key('Tab','Tab',9);
+  assert(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(picker)})===true`));
+  const label=await app.evaluate(`[...document.querySelector(${JSON.stringify(picker)}).options].find(o=>o.value==='').textContent`);
+  for(const ch of label)await app.cdp('Input.dispatchKeyEvent',{type:'char',key:ch,text:ch});await app.waitFor(`document.querySelector(${JSON.stringify(picker)}).value===''`,5000);await key('Tab','Tab',9);
+ }
+}
+async function returnToOriginalTask(){
+ if(!await app.evaluate('[...document.querySelectorAll("[data-testid=sidebar-task]")].some(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height)')){await click('[data-testid=nav-home]');await app.waitFor('[...document.querySelectorAll("[data-testid=sidebar-task]")].some(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height)',10000);}
+ await click('[data-testid=sidebar-task]');await app.waitFor('!!document.querySelector(".xterm-screen")',10000);
+}
+async function runPermissionReplay(){
+ stage='permission-replay-baseline';await progress();await poll(async()=>(await nativeCompletionCount(task))>0,15000);
+ const plan=result.runPlan,originalTask={...task},before=await m11GatewaySnapshot(app),kind=mode==='ui-disable-replay'?'disable':'disconnect';
+ const proof=result.permissionReplay={kind,before,originalTaskId:task.id,originalPlan:plan,boundary:'Actual UI app switch or connection confirmation; subsequent actual managed CLI probes use the original unmodified environment. No policy/credentials are changed by RPC for these actions.'};
+ await openZenManagement();
+ if(kind==='disable'){
+  stage='actual-ui-global-disable';await progress();await click('[role=switch][aria-label="全局启用禅道"]');await poll(async()=>{const c=await app.invoke('applications.catalog');return c.ok&&c.value.find(a=>a.appId==='zentao')?.enabled===false;},10000);await app.waitFor(`document.querySelector(${JSON.stringify('[role=switch][aria-label="全局启用禅道"]')})?.getAttribute('aria-checked')==='false'`,5000);
+ }else{
+  stage='actual-ui-disconnect';await progress();await click('button[aria-label="管理Synthetic CLI ZenTao"]');await click('[role=menuitem]','断开连接');await app.waitFor('[...document.querySelectorAll("dialog[open] button")].some(e=>e.textContent.trim()==="断开连接"&&!e.disabled)',10000);await app.screenshot(join(root,'before-real-disconnect-confirmation.png'));await click('dialog[open] button','断开连接');await app.waitFor('!document.querySelector("dialog[open]")',10000);
+  proof.connectionAfter=await app.mainEvaluate(`(()=>{const g=globalThis.__m11GatewayProbe;return g.service.store.sqlite.prepare('SELECT auth_state,secret_ref,policy_revision FROM application_connections WHERE id=?').get(${JSON.stringify(result.connectionId)})})()`,{label:'m11-disconnected-original-connection',synchronous:true});assert.equal(proof.connectionAfter.auth_state,'disconnected');assert.equal(proof.connectionAfter.secret_ref,null);
+ }
+ await app.screenshot(join(root,'after-real-ui-'+kind+'.png'));await returnToOriginalTask();
+ const providerReads=result.providerReads,invocations=(await m11GatewaySnapshot(app)).invocations;
+ stage='original-managed-cli-after-'+kind;await progress();const denied=await actualGatewayTurn('after-'+kind);assert.equal(denied.error?.code,'SCOPE_DENIED',JSON.stringify(denied.outputs));assert.equal(denied.value,null);assert.equal(denied.providerReads,providerReads);assert.equal(denied.gateway.invocations,invocations);proof.originalManagedDenial=denied;
+ proof.revokedReplay=await replayM11OutsideManagedTree(app,plan.runId,home);assert.equal(proof.revokedReplay.error,'AUTH_REQUIRED');assert.equal(result.providerReads,providerReads);
+ if(kind==='disable'){
+  stage='actual-ui-reenable';await progress();await openZenManagement();await click('[role=switch][aria-label="全局启用禅道"]');await poll(async()=>{const c=await app.invoke('applications.catalog');return c.ok&&c.value.find(a=>a.appId==='zentao')?.enabled===true;},10000);await returnToOriginalTask();
+  proof.afterReenable=await actualGatewayTurn('old-token-after-reenable');assert.equal(proof.afterReenable.error?.code,'AUTH_REQUIRED');assert.equal(proof.afterReenable.providerReads,providerReads);assert.equal(proof.afterReenable.gateway.invocations,invocations);
+  stage='actual-ui-stop-for-fresh-enabled-run';await progress();await click('[data-testid=task-actions]');await app.waitFor('!!document.querySelector("[data-testid=task-kill]")',5000);await click('[data-testid=task-kill]');await poll(async()=>!(await app.invoke('tasks.get',originalTask.id)).ptyId,20000);
+  result.fixtureTurn=(result.fixtureTurn??0)+1;result.issuedTools=[];result.nativeToolOutputs=null;result.runPlan=null;result.skillOutput=null;delete result.turnCommand;
+  await click('[data-testid=task-actions]');await app.waitFor('!!document.querySelector("[data-testid=task-header-resume]")',5000);await click('[data-testid=task-header-resume]');task=await poll(async()=>{const t=await app.invoke('tasks.get',originalTask.id);return t.ptyId?t:null;},25000);assert.notEqual(task.ptyId,originalTask.ptyId);await poll(async()=>(await app.output(task.ptyId)).includes('OpenAI Codex'),20000);
+  proof.freshEnabledRun=await actualGatewayTurn('new-enabled-run');assert.equal(proof.freshEnabledRun.value?.operation.origin,'cli');assert.notEqual(proof.freshEnabledRun.plan.runId,plan.runId);assert.deepEqual(proof.freshEnabledRun.plan.allowed,plan.allowed);assert.equal(proof.freshEnabledRun.providerReads,providerReads+2);await requireOperationRun(proof.freshEnabledRun.value,proof.freshEnabledRun.plan);
+  proof.oldTokenAfterFreshRun=await replayM11OutsideManagedTree(app,plan.runId,home);assert.equal(proof.oldTokenAfterFreshRun.error,'AUTH_REQUIRED');
+ }
+ checked('T07 '+kind+' subcoverage: actual UI changes policy; original managed CLI is denied without business, token revoked; '+(kind==='disable'?'re-enable cannot revive it and actual UI-resumed new run executes only current allowed read':'disconnect clears local credential reference and the original environment cannot recover it'));
 }
 async function runStopReplay(){
  stage='stop-replay-native-id';await progress();task=await poll(async()=>{const t=await app.invoke('tasks.get',task.id);return t.nativeSessionId?t:null;},20000);
@@ -281,10 +375,12 @@ const done=result.requests.some(r=>r.kind==='ui-task')&&(result.nativeToolOutput
   checked('Five foreign project/connection/extra-action/self-approval claims rejected before provider; final legal A CLI read still succeeds');
  }
  if(appRestart)await runNormalRestart();
- if(revocation)await runStopReplay();
- assert.deepEqual(app.rendererErrors,[]);result.status=unknown?'passed-zentao-mcp-fallback-mainchain':cliLoss?'passed-zentao-cli-loss-fixed-plan':scopeDenial?'passed-zentao-scope-denials':revocation?'passed-ui-stop-replay-subcoverage':appRestart?(restartHost?'passed-host-lifecycle-restart-native-ui-pending':'passed-normal-app-restart'):'passed-zentao-cli-mainchain';
+ if(stopReplay)await runStopReplay();
+ if(gatewayEvidence)await runGatewayEvidence();
+ if(permissionReplay)await runPermissionReplay();
+ assert.deepEqual(app.rendererErrors,[]);result.status=unknown?'passed-zentao-mcp-fallback-mainchain':cliLoss?'passed-zentao-cli-loss-fixed-plan':scopeDenial?'passed-zentao-scope-denials':gatewayEvidence?'passed-gateway-evidence-matrix':permissionReplay?'passed-'+mode+'-subcoverage':stopReplay?'passed-ui-stop-replay-subcoverage':appRestart?(restartHost?'passed-host-lifecycle-restart-native-ui-pending':'passed-normal-app-restart'):'passed-zentao-cli-mainchain';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=isAppFocusYield(error)?2:1;if(app)try{try{await restoreGatewayFixture();}catch(e){result.gatewayRestoreError=String(e);}try{result.cipherRestored=await app.mainEvaluate('globalThis.__m11CipherRestore?.()');result.cipherRestoredBeforeExitProbe=true;}catch(e){result.cipherRestoreError=String(e);}result.exitBeforeCleanup=await app.waitForExit(1).catch(()=>({stillRunning:true}));if(task?.id)result.failureSession=await app.invoke('applications.session',task.id);result.dom=await app.evaluate('document.body.innerText');result.ptyCapture=await app.evaluate('JSON.parse(JSON.stringify(window.__m5||null))').catch(e=>({error:String(e)}));if(result.ptyCapture?.output)for(const [id,text] of Object.entries(result.ptyCapture.output))await writeFile(join(root,'pty-'+id+'.txt'),text);if(task?.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(task.ptyId));await app.screenshot(join(root,'failure.png'));}catch{}}
 finally{
- if(app){try{await restoreGatewayFixture();}catch(error){result.gatewayRestoreError=String(error);}if(!result.cipherRestoredBeforeExitProbe)try{result.cipherRestored=await app.mainEvaluate('globalThis.__m11CipherRestore?.()');}catch(error){result.cipherRestoreError=String(error);}if(task?.id)try{result.cleanupTask=await app.invoke('tasks.kill',task.id);}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
+ if(app){try{await restoreGatewayFixture();}catch(error){result.gatewayRestoreError=String(error);}if(!result.cipherRestoredBeforeExitProbe)try{result.cipherRestored=await app.mainEvaluate('globalThis.__m11CipherRestore?.()');}catch(error){result.cipherRestoreError=String(error);}for(const id of new Set([task?.id,...(result.additionalTaskIds??[])].filter(Boolean)))try{(result.cleanupTasks??=[]).push({id,receipt:await app.invoke('tasks.kill',id)});}catch(e){result.cleanupTaskError=String(e);}result.rendererErrors=app.rendererErrors;await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.ownAppCleanupComplete=true;}
  for(const s of sockets)s.destroy();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');await writeFile('/private/tmp/willyou-m11-s7-native-codex-latest-result.txt',join(root,'result.json')+'\n');console.log(JSON.stringify({status:result.status,stage,checks:result.checks.length,error:result.error,result:join(root,'result.json')}));
 }

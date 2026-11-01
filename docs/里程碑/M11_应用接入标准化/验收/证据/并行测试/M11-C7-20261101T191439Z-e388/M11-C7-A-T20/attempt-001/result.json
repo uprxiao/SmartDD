@@ -1,0 +1,177 @@
+{
+  "schema": "m11-c7-t20-final-v1",
+  "group": "M11-T20/R13,R09,R14/I+A+R",
+  "status": "all-original-business-criteria-verified-two-original-command-exit1-preserved",
+  "formalCasePassesAdded": 0,
+  "criteria": [
+    {
+      "id": "create-update-and-CAS",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "First actual native Task create/update r2; stale r1 rejected REVISION_CONFLICT, draft_get preserved current r2/hash. Second fresh Task repeated necessary current draft/update for its own fixed r2 submission; counted once.",
+      "evidence": [
+        "attempt-001/raw-result.json matrix.steps(create-normal,update-normal,CAS-conflict,CAS-read-current)",
+        "attempt-002/raw-result.json matrix.steps(create-normal,update-normal)"
+      ]
+    },
+    {
+      "id": "missing-authorization",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Actual client1.Allow without concrete-mail host grant still yielded MCP AUTHORIZATION_REQUIRED; DATA0/execute row0.",
+      "evidence": [
+        "attempt-001/raw-result.json matrix.steps(missing-authorization)",
+        "reuse-T11/attempt-002/result.json"
+      ]
+    },
+    {
+      "id": "self-approved-and-forged-hash",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Actual MCP approved:true rejected INVALID_INPUT, forged review hash rejected INTENT_STALE, no SMTP effects. Existing I and first A/R receipts reused exactly.",
+      "evidence": [
+        "attempt-001/raw-result.json matrix.steps(self-approved,forged-review-hash)"
+      ]
+    },
+    {
+      "id": "actual-page-authorization",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Real page reviewed original MCP active intent and exact revision/body/recipient, clicked confirmation and handed back to same sourceTask/run. UI onlyauthorize, no UIexecute.",
+      "evidence": [
+        "attempt-002/page-normal-review.png",
+        "attempt-002/page-normal-authorized-handback.png",
+        "attempt-002/page-unknown-review.png",
+        "attempt-002/page-unknown-authorized-handback.png",
+        "readonly-business-audit.json authorizations"
+      ]
+    },
+    {
+      "id": "original-MCP-submit-normal250",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Then original Task MCPexecute consumed actual renderer grant. Exact342B MIME, original normal complete true/SMTP250, one DATA.",
+      "evidence": [
+        "attempt-002/raw-result.json matrix.steps(execute-normal)",
+        "readonly-business-audit.json sendReceipts"
+      ]
+    },
+    {
+      "id": "unknown-and-receipt-no-replay",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Second exact343B MIME recorded once, localhost socket3 closed after full DATA before final250. Actual MCP unknown/completefalse/ECONNECTION; get twice returned same intent/execution unknown without resend. Total DATA2.",
+      "evidence": [
+        "attempt-002/raw-result.json matrix.steps(execute-unknown,unknown-get-1,unknown-get-2)",
+        "readonly-business-audit.json unknownNoReplay"
+      ]
+    },
+    {
+      "id": "outer-Bridge-and-ledger-effect",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Actual serialized Bridge statusok/effectStateunknown and inneroperationunknown; invocation statesucceeded (call returned receipt)/effect_stateunknown/attempt1, business intent/executionunknown. Get operations remain read-only.",
+      "evidence": [
+        "attempt-002/raw-result.json matrix.steps(execute-unknown).outerBridge",
+        "readonly-business-audit.json sendReceipts(execute-unknown)"
+      ]
+    },
+    {
+      "id": "full-original-evidence-chain",
+      "requiredLayers": "I+A+R",
+      "status": "passed",
+      "actual": "Both displayReceipt/frame/sourceHash/evidenceHash/reviewHash/draftRev/contentHash/sourceTask/run/usedGrant/execution/rawMimeHash/bytes independently linked. All sources renderer-confirmation; L3unverified/nativeSendEvidencefalse.",
+      "evidence": [
+        "readonly-business-audit.json authorizations",
+        "attempt-002/raw-result.json matrix.database",
+        "attempt-002/failure.png",
+        "attempt-002/raw-result.json dom,matrix.session"
+      ]
+    }
+  ],
+  "businessCriteriaCounts": {
+    "passed": 8,
+    "failed": 0,
+    "coordinatorFinalAccountingRequired": true
+  },
+  "originalCommands": [
+    {
+      "attempt": "attempt-001",
+      "exitCode": 1,
+      "failureClass": "driver-navigation",
+      "boundary": "After8 native criteria and actual page grant, application page hides Task sidebar; direct return selector failed. Original error/checks/status retained, next attempt used real nav-home then Task. DATA0.",
+      "files": [
+        "attempt-001/command.json",
+        "attempt-001/command-exit.json",
+        "attempt-001/driver.log"
+      ]
+    },
+    {
+      "attempt": "attempt-002",
+      "exitCode": 1,
+      "failureClass": "driver-premature-loading-assertion",
+      "boundary": "All business sends/unknown/get completed. Extra final L3 assertion read loading container before application content rendered; original assertion/status retained. Catch originalDOM/failure.png actually loaded and show L3 off, structured session unverified. No restart/resend.",
+      "files": [
+        "attempt-002/command.json",
+        "attempt-002/command-exit.json",
+        "attempt-002/driver.log"
+      ]
+    }
+  ],
+  "readonlySupplement": "readonly-business-audit.json",
+  "supplementBoundary": "Evaluates existing actual raw/UI/SMTP/DB/Bridge only; does not turn either original command green or edit raw expected/checks/error/bytes.",
+  "baseline": {
+    "runId": "M11-C7-20261101T191439Z-e388",
+    "root": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b",
+    "record": "docs/里程碑/M11_应用接入标准化/验收/并行测试/轮次/M11-C7-20261101T191439Z-e388/轮次记录.json",
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source",
+    "sourceManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source-manifest.json",
+    "productionManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/package-production-inputs.json",
+    "previous": "/private/tmp/willyou-m11-c6-current-round.json",
+    "packageOutput": "/private/tmp/willyou-m11-s7/package-c7-attempt-001",
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "productionManifestSha256": "32d89fc7f90f2c713a0c6a24ed7c249769b970bb260d991042ff80070ba35d51",
+    "packageApp": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42"
+  },
+  "verification": "verification.json",
+  "IReuse": "reuse-T11-verification.json",
+  "RBoundary": "Real packaged App/Codex0.166/Skill/MCP/kernel identity/host business; synthetic local Responses model. No autonomous real model reasoning or real-third-party service validation claimed.",
+  "smtp": {
+    "host": "127.0.0.1",
+    "from": "fixture@example.test",
+    "to": [
+      "recipient@example.test"
+    ],
+    "DATA": 2,
+    "normal250": 1,
+    "fullDataThenDrop250": 1,
+    "unknownGetCalls": 2,
+    "retransmissions": 0,
+    "bytes": [
+      342,
+      343
+    ],
+    "fixtureErrors": [],
+    "noExternalDelivery": true
+  },
+  "approvalInputs": "approval-index.json",
+  "observationHooks": {
+    "scope": "Own App: original UI-handler passthrough; net.Socket.prototype.write reads already serialized BridgeResponse, records only operation/status/effect, bytes/hash, no token/handshake. Original arguments/bytes/return unchanged. Process-local reversible cipher for synthetic SMTP secret.",
+    "bothAttemptsRestored": true,
+    "originalRecords": "attempt-*/raw-result.json matrix.cleanup,actualBridgeResponses,originalUiReplies"
+  },
+  "cleanup": "cleanup.json",
+  "timing": {
+    "startedAt": "2026-11-01T19:31:18.659Z",
+    "finishedAt": "2026-11-01T19:32:40.741Z",
+    "attemptElapsedSeconds": [
+      14.791,
+      19.042
+    ],
+    "sumAttemptSeconds": 33.833,
+    "boundary": "Own App/setup/cleanup in each attempt; gap includes diagnosed driver correction. No builds by executor."
+  },
+  "next": "Coordinator review the8 original criteria and preserved exit1 records; no new T20 sends or App restart."
+}

@@ -1,0 +1,68 @@
+{
+  "group": "M11-C7-I-T38",
+  "preparedAt": "2026-11-01T19:29:39.635698+00:00",
+  "originalContract": "| M11-T38／R07／I＋A | WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写 | 分别发起调用并统计业务执行次数 | 全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过） | 未执行；待执行；无 |",
+  "requiredLayers": [
+    "I",
+    "A"
+  ],
+  "thisScope": "I only. Actual Unix socket/gateway/runs/v2 executor/SQLite; Unix peer identity and CLI binary are controlled fixtures. No real App/Codex/PTy/native helper/build.",
+  "predicates": [
+    {
+      "id": "valid-token-tree-outsider",
+      "test": "rejects tree-outsider",
+      "error": "PEER_MISMATCH",
+      "business": 0
+    },
+    {
+      "id": "other-active-run-token",
+      "test": "new T38 separately active run with genuine valid token B; first prove B-token normal in B-tree then deny it in A-tree",
+      "error": "PEER_MISMATCH",
+      "business": "target request0, actual B positive control retained beforebaseline"
+    },
+    {
+      "id": "identity-unreadable",
+      "test": "rejects unknown-peer",
+      "error": "PEER_UNVERIFIABLE",
+      "business": 0
+    },
+    {
+      "id": "start-time-mismatch",
+      "test": "rejects pid-reuse",
+      "error": "PEER_MISMATCH",
+      "business": 0
+    },
+    {
+      "id": "executable-mismatch",
+      "test": "rejects wrong-executable and changed fixed binary hash",
+      "error": "EXECUTABLE_MISMATCH",
+      "business": 0
+    },
+    {
+      "id": "unselected-write",
+      "test": "public wrong-entry plus new schema-valid capabilities/call for mail.draft.create, fixed read-only package allowlist denies at host",
+      "error": "SCOPE_DENIED",
+      "business": 0,
+      "layerBoundary": "I enters actual host gateway capabilities/call directly. A CLI command-discovery rejection is separate and cannot substitute for this host check."
+    },
+    {
+      "id": "normal-valid-call",
+      "test": "authenticates fixed binary/exact ancestor real data invocation; B/A positive controls",
+      "result": "v2 cli-origin read result and actual invocation row"
+    }
+  ],
+  "preflightCommand": "pnpm test src/main/core/applications/__tests__/cli-gateway.test.ts -t \"authenticates the fixed binary\" --maxWorkers=1",
+  "contractCommand": "pnpm test src/main/core/applications/__tests__/cli-gateway.test.ts --maxWorkers=1 --reporter=json --outputFile=delivery-t38/attempt-001/vitest-contract.json",
+  "expectedUniqueSoftwareTests": 18,
+  "baseManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+  "frozenFixtureSha256": "c17ada56802337a0f4ac75ef01cf2359e08798bddefbc3209130ee81413740e8",
+  "executedTestSha256": "7462c0f957813d57b13cdc51fcb4cbc9671149fec96ae4bb2e6dee78bd2071c0",
+  "evidenceHooks": "Original assertions intact; per-call token is redacted/hash-only in raw evidence; added2 direct contract gaps.",
+  "cache": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/t38-private-vite-cache",
+  "remainingA": [
+    "Real kernel identity/process tree/start time/executable evidence in actual App/Codex",
+    "Actual anotherTask environment with otherstill-active legal token",
+    "Actual CLI write command discovery vs direct host rejection distinction and normal real call"
+  ],
+  "staticPreflightExitCode": 0
+}

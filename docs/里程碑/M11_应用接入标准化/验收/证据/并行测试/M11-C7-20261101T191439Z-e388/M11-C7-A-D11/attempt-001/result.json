@@ -1,0 +1,157 @@
+{
+  "schema": "m11-c7-d11-actual-app-v1",
+  "group": "T19-D11",
+  "status": "three-actual-gates-passed",
+  "formalCasePassesAdded": 0,
+  "cases": [
+    {
+      "case": "foxmail-only",
+      "layer": "A+R actual packaged App/Codex MCP with synthetic data",
+      "commandExitCode": 0,
+      "execSession": 96216,
+      "actualMcpCalls": 1,
+      "error": {
+        "code": "AUTH_REQUIRED",
+        "message": "连接槽 smtp：请先明确选用此项目的来源或发件连接",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 1,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      },
+      "invocations": [
+        {
+          "tool_name": "smartdd_mail_send_prepare_v2",
+          "state": "failed",
+          "error_code": "AUTH_REQUIRED",
+          "run_id": "34b4fb5f-1843-4c41-9aa6-8f17b65aa624",
+          "task_id": "98e745bc-b3e1-406b-b728-25f7c42c2047"
+        }
+      ],
+      "mailResourceState": "verified",
+      "mailIssueCode": null,
+      "sessionEffect": "not-started",
+      "diagnosticUnknownTextAbsent": true,
+      "intentRows": 0,
+      "executionRows": 0,
+      "DATA": 0,
+      "raw": "cases/foxmail-only/raw-result.json",
+      "screenshot": "cases/foxmail-only/D11-fixed-diagnostics.png",
+      "rpcDraftOnlyPrerequisite": true,
+      "sourceUnchanged": true,
+      "appExit": {
+        "pid": 37182,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "case": "opaque",
+      "layer": "A+R actual packaged App/Codex MCP with synthetic data",
+      "commandExitCode": 0,
+      "execSession": 13505,
+      "actualMcpCalls": 1,
+      "error": {
+        "code": "SENDER_IDENTITY_REQUIRED",
+        "message": "请确认该SMTP发件地址是你的发件身份。",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 1,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      },
+      "invocations": [
+        {
+          "tool_name": "smartdd_mail_send_prepare_v2",
+          "state": "failed",
+          "error_code": "SENDER_IDENTITY_REQUIRED",
+          "run_id": "479789bb-8079-4046-af6d-61eec6dda1ca",
+          "task_id": "ca1e3ff2-a2a6-40b8-8284-7fabb943d4dd"
+        }
+      ],
+      "mailResourceState": "verified",
+      "mailIssueCode": null,
+      "sessionEffect": "not-started",
+      "diagnosticUnknownTextAbsent": true,
+      "intentRows": 0,
+      "executionRows": 0,
+      "DATA": 0,
+      "raw": "cases/opaque/raw-result.json",
+      "screenshot": "cases/opaque/D11-fixed-diagnostics.png",
+      "rpcDraftOnlyPrerequisite": true,
+      "sourceUnchanged": true,
+      "appExit": {
+        "pid": 37348,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "case": "mismatch-history",
+      "layer": "A+R actual packaged App/Codex MCP with synthetic data",
+      "commandExitCode": 0,
+      "execSession": 77538,
+      "actualMcpCalls": 1,
+      "error": {
+        "code": "SENDER_IDENTITY_MISMATCH",
+        "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，请更换匹配的连接；不能用用户确认覆盖。",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 1,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      },
+      "invocations": [
+        {
+          "tool_name": "smartdd_mail_send_prepare_v2",
+          "state": "failed",
+          "error_code": "SENDER_IDENTITY_MISMATCH",
+          "run_id": "53235a47-32fe-4c7e-bc3d-fe64b128fbcd",
+          "task_id": "ebeef1c2-4677-4a0b-9684-43f5640f9bc5"
+        }
+      ],
+      "mailResourceState": "verified",
+      "mailIssueCode": null,
+      "sessionEffect": "not-started",
+      "diagnosticUnknownTextAbsent": true,
+      "intentRows": 0,
+      "executionRows": 0,
+      "DATA": 0,
+      "raw": "cases/mismatch-history/raw-result.json",
+      "screenshot": "cases/mismatch-history/D11-fixed-diagnostics.png",
+      "rpcDraftOnlyPrerequisite": true,
+      "sourceUnchanged": true,
+      "appExit": {
+        "pid": 37579,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "reuse": {
+    "C6Manifest": "C6-original-manifest.json",
+    "sha256": "93b2dee95cbb1c767a39da709a860814a119160ab3964176044690669ef2af0a",
+    "all254OriginalFilesVerified": true,
+    "boundary": "Current C7 only MCP prepare+accurate diagnostics for3 trusted errors. Original36-step C6 business matrix retained. Current unconfirmed A case is opaque; SMTP-only invalidated SENDER_IDENTITY_REQUIRED result remains C6 plus shared current I path, not claimed separately rerun in C7."
+  },
+  "baseline": {
+    "runId": "M11-C7-20261101T191439Z-e388",
+    "root": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b",
+    "record": "docs/里程碑/M11_应用接入标准化/验收/并行测试/轮次/M11-C7-20261101T191439Z-e388/轮次记录.json",
+    "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source",
+    "sourceManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/source-manifest.json",
+    "productionManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C7-20261101T191439Z-e388-afkggf6b/package-production-inputs.json",
+    "previous": "/private/tmp/willyou-m11-c6-current-round.json",
+    "packageOutput": "/private/tmp/willyou-m11-s7/package-c7-attempt-001",
+    "sourceManifestSha256": "42e08ed9d1915a8d357e37349fcc456ea5d0e9e2d7b92c9b589e137f8866a5b9",
+    "productionManifestSha256": "32d89fc7f90f2c713a0c6a24ed7c249769b970bb260d991042ff80070ba35d51",
+    "packageApp": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42"
+  },
+  "verification": "verification.json",
+  "cleanup": "cleanup.json"
+}

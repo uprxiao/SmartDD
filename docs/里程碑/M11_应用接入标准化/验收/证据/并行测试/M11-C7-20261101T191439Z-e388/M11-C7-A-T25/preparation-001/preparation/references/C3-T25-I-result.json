@@ -1,0 +1,170 @@
+{
+  "schema": "willyou-test-delivery-v1",
+  "runId": "M11-C3-20261101T162613Z-4408",
+  "groupId": "M11-C3-I-VERSION-RETEST",
+  "attempt": "attempt-002",
+  "executor": "/root/upstream_contract",
+  "sourceCommit": "699ab83b + D05 frozen delta only",
+  "baselineManifestSha256": "4f5e4fd7d35269cda90f43cc762e8cb70b503217db430c30befe6a6760b86ca6",
+  "baseManifestSha256": "fba38ddcf5bdca3e0f4c8951230e5767a2d853d30a167de7b14abee29675fd3c",
+  "productionDelta": [
+    {
+      "path": "src/main/core/applications/capability-delivery-adapters.ts",
+      "sha256": "6ce6021054c8a7530e358323db1ce27ba10a08e6be21422db5eaee186791d456"
+    },
+    {
+      "path": "src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "476d8fd6d6a733a1eba4f18004e40996cc16a742f64170c7daf2a0f29e59c4fc"
+    },
+    {
+      "path": "src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "76f301fc9f746729781697a7ecba81f25108eb09338b43de4267ef65270d3ce4"
+    }
+  ],
+  "unrelatedD04ChangesIncluded": false,
+  "startedAt": "2026-11-01T16:42:47.518000+00:00",
+  "finishedAt": "2026-11-01T16:47:16.415909+00:00",
+  "platform": {
+    "system": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "case": {
+    "id": "M11-T25",
+    "status": "I-complete; A-not-executed; not-whole-case-passed",
+    "criteria": [
+      {
+        "criterion": "未知版本有只读fallback则实际经MCP读取并按MCP交付SOP",
+        "status": "passed-I",
+        "actual": "99.0.0 real TaskService/FakePTY run now stores a fixed plan selecting mail.draft.list as MCP fallback; actual common MCP ApplicationToolService executes draft-list and returns v2/origin=mcp/empty project drafts. Actual published Skill contains smartdd_mail_draft_list_v2 and no CLI draft-list instruction.",
+        "evidence": [
+          "t25-attempt-002a-original-red-vitest.json",
+          "t25-outcomes-78008.json"
+        ]
+      },
+      {
+        "criterion": "无fallback的CLI能力不可用且明确说明，不偷偷换入口/改原包",
+        "status": "passed-I",
+        "actual": "Independent immutable mail1.1.2 fixture remains CLI-only and original1.1.1 package hash verifies unchanged. Run plan/public session diagnostic explicitly selects effectiveEntry=unavailable,fallback=false,reason=cli-entry-unavailable. Actual CLI call returns SCOPE_DENIED/能力不在本次运行允许表中; no application MCP bridge injected and ordinary FakePTY remains alive. Resource is verified and App issueCode=null, correctly distinct from per-run availability.",
+        "evidence": [
+          "t25-attempt-002c-unavailable-resume-vitest.json",
+          "t25-outcomes-78406.json"
+        ],
+        "driverRedRetained": "Initial safety check only looked for an App resource issueCode and failed. Before execution coordinator had explicitly allowed public unavailable plan as original contract; driver now checks that actual public plan plus nonempty reason, retaining denial/no-entry/hash assertions."
+      },
+      {
+        "criterion": "L0.cli不交付、无runToken/socket放宽、L2/L3关闭",
+        "status": "passed-I",
+        "actual": "Actual unknown-version FakePTY launch has no raw/value-prefixed WILLYOU_RUN_TOKEN or WILLYOU_ENDPOINT, no wy_cli_ permission profile or CLI endpoint in argv; effective levels remain best-effort L0.skill/L0.mcp, unverified, no L0.cli/L2/L3 and nativeSendEvidence=false. No native user-origin proof.",
+        "evidence": [
+          "t25-attempt-002b-safety-vitest.json",
+          "t25-outcomes-78111.json"
+        ]
+      },
+      {
+        "criterion": "已固定会话在未知版本下恢复仍走MCP fallback、不改原绑定（补充直接影响检查）",
+        "status": "passed-I",
+        "actual": "Separate normal0.166.0 TaskService task starts with CLI plan. A synthetic native-history file is observed by the actual host watcher and binds its native ID; normal task stop reaches stopped. After switching only version shell to99.0.0, tasks.open resumes same native ID with resume argv; original pointer and full fixed snapshot/package/permissions/bindings stay byte-equivalent, agentAtCreation remains0.166.0, new run cliVersion=99.0.0 selects MCP fallback and actual MCP draft-list succeeds. No token/CLI policy/L2/L3 grant. Read-only post-check of captured Skill also confirms MCP-only SOP.",
+        "evidence": [
+          "t25-attempt-002c-unavailable-resume-vitest.json",
+          "t25-outcomes-78406.json",
+          "t25-attempt-002-offline-sop-check.json"
+        ],
+        "boundary": "This is an independent fake-native-history I scenario, not real Agent/OS PTY, not T28 full acceptance."
+      },
+      {
+        "criterion": "页面授权呈现、点击及App交互",
+        "status": "not-executed-A",
+        "actual": "Native-send authority remains closed by I evidence. No page authorization button/render/click or SMTP sending tested. All T25 A requirements remain."
+      }
+    ],
+    "formalCasePassesAdded": 0
+  },
+  "defect": {
+    "canonicalId": "M11-C3-D05",
+    "originalSuggestedId": "M11-C3-T25-D01",
+    "mapping": "Coordinator-confirmed mapping; original red evidence immutable",
+    "state": "fixed-retested-I",
+    "originalRedEvidence": {
+      "groupId": "M11-C3-I-VERSION",
+      "attempt": "attempt-001",
+      "manifestSha256": "10a97106223a3872da9d30eaa46788e569b2e512c2fb968e907dd1db87025a62"
+    }
+  },
+  "checks": {
+    "newTaskFallbackPassed": 1,
+    "runtimeSafetyPassed": 1,
+    "noFallbackPassedAfterDriverLocatorCorrection": 1,
+    "additionalFixedResumePassed": 1,
+    "uniqueValidSoftwareScenarios": 4,
+    "unresolvedProductFailures": 0,
+    "driverAssertionRedRetained": 1,
+    "initialEmptySelectionNotCounted": true,
+    "fullLauncher265Ran": false,
+    "fullNodeTypecheck": "passed",
+    "formalCasePassesAdded": 0,
+    "coordinatorDirectEscalationNegatives": "Root reported direct unknown-version CLI sandbox/CLI-plan denial tests passed; not duplicated here. This executor validates actual runtime no-token/no-policy/low-level outcomes."
+  },
+  "history": [
+    {
+      "command": "initial supplied-source filter",
+      "actual": "0 selected,265 filtered; no T25 test additions were yet present. Not counted. Restored exact original archived test hash before first meaningful run.",
+      "classification": "fixture-precondition",
+      "cacheBoundary": "Initial no-case command started without private cache config; a shared Vitest results.json timestamp update was observed in its interval. All actual T25 scenarios then used independent private cache. No shared cache/dependency file cleaned or overwritten by this audit."
+    },
+    {
+      "command": "002a original fallback red",
+      "actual": "1 passed,267 filtered"
+    },
+    {
+      "command": "002b safety",
+      "actual": "token/low-level gates1 passed; App-issueCode-only driver assertion1 failed;266 filtered",
+      "classification": "driver-evidence-locator",
+      "originalBusinessRule": "Unavailable run plan/public diagnostic with reason is allowed, preconfirmed by coordinator; no action-denial/security/hash expectation changed."
+    },
+    {
+      "command": "002c unavailable + resume",
+      "actual": "2 passed,267 filtered; no green safety/fallback rerun"
+    }
+  ],
+  "sourceVerification": {
+    "unexpectedFrozenProductionChanges": [],
+    "executorProductionMutation": false,
+    "privateTestChanges": "Original archived T25 tests restored, nofallback reason locator broadened to the preconfirmed public unavailable plan, one new fixed-session resume test; patch archived.",
+    "preservedOutNativeLockHashes": {
+      "nativeIdentitySha256": "090b98da6765e0af663f1b23aefde1f5f137f8bcefe47b126bf3ac36aee9c682",
+      "nativeCliSha256": "6e7b66a08fc0fd11c518aef648b6fb0b6e62fbd51c58d16f7b7a78cfa7a5a598",
+      "bundlesIndexSha256": "fc0aa01d87d92194db18706684463c35d165e0051496bc9f6712585c638d997b",
+      "lockfileSha256": "9ddf966a90c96db57143aa215afd69f95b340c81608dc6b36f2f428bc2176aa2"
+    },
+    "dependencies": "Same shared node_modules and lockfile, no installation or dependency code changes; see explicit initial framework-cache deviation.",
+    "privateCache": "version-retest-vite-cache used for all selected T25 scenarios"
+  },
+  "isolation": {
+    "source": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C3-20261101T162613Z-4408-sgsd2h0s/version-retest",
+    "TaskService": "Real task/profiles/selection/snapshot/run/service/business code; FakePTY transport and fixture process/peer identities only",
+    "nativeHistory": "Synthetic file produced as I precondition, host real watcher identifies it; no direct store rewrite of the behavior under test",
+    "nativePtyOrApp": false,
+    "realAgentOrModel": false,
+    "OfficeBuildOrNativeCompilation": false,
+    "dailyCredentialsRead": false,
+    "externalNetworkOrSend": false,
+    "packageVariants": "Isolated tasks/roots and immutable data-only package versions; original installed package hashes preserved"
+  },
+  "commands": [
+    "pnpm test src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'T25 unknown version actually reads through' --maxWorkers=1 --reporter=json --outputFile=t25-attempt-002a-original-red-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'T25 unknown version marks|T25 unknown version delivers' --maxWorkers=1 --reporter=json --outputFile=t25-attempt-002b-safety-vitest.json",
+    "pnpm test src/main/core/applications/__tests__/task-capability-launcher.test.ts -t 'T25 unknown version marks|T25 fixed session resumes' --maxWorkers=1 --reporter=json --outputFile=t25-attempt-002c-unavailable-resume-vitest.json",
+    "pnpm exec tsc --noEmit -p tsconfig.node.json"
+  ],
+  "rawOutcomeFiles": [
+    "t25-outcomes-78406.json",
+    "t25-outcomes-78008.json",
+    "t25-outcomes-78111.json"
+  ],
+  "remaining": [
+    "T25 all A-layer presentation/interactions/page authorization",
+    "Final assembled package/source affected regression owned by coordinator"
+  ],
+  "next": "Coordinator archive/close D05 I defect; keep T25 incomplete pending A, do not count resumed sample as T28 full pass."
+}

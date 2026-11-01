@@ -1,0 +1,49 @@
+{
+  "status": "passed-readonly-cleanup-and-token-audit",
+  "at": "2026-11-01T19:37:03.363424+00:00",
+  "pidsESRCH": [
+    39295,
+    39336
+  ],
+  "portChecks": [
+    {
+      "port": 56910,
+      "connectErrno": 61
+    },
+    {
+      "port": 56911,
+      "connectErrno": 61
+    },
+    {
+      "port": 56912,
+      "connectErrno": 61
+    }
+  ],
+  "portCheckContext": "authorized same-host execution; every port ECONNREFUSED, not sandbox EPERM",
+  "nativeRows": [
+    [
+      39336,
+      "stopped",
+      "revoked"
+    ]
+  ],
+  "regularFiles": 261,
+  "bytes": 9602548,
+  "tokenIdentities": 1,
+  "rawTokenHits": [],
+  "skipped": [],
+  "scope": "Every regular file, no size cutoff; hash each64hex candidate and compare original token digests; no raw bytes printed or persisted. Original sandbox connectivity audit retained as preliminary, superseded by this actual errno check.",
+  "hooks": {
+    "gatewayFixtureRestored": {
+      "restored": true,
+      "rawTokenRecordsCleared": true
+    },
+    "captureFixtureRestored": {
+      "workerRestored": true,
+      "captureRemoved": true
+    },
+    "cipherRestored": true
+  },
+  "statusOfBusinessRun": "failed",
+  "failedStage": "permission-replay-baseline"
+}
