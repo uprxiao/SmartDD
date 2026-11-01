@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDocument } from 'yaml';
 import { ApplicationError } from '@shared/applications';
-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import { verifyPackageTree } from './package-files';
 import { PackageRegistry } from './package-registry';
@@ -31,7 +31,7 @@ export class SessionCapabilityProjector {
   private readonly packages: PackageRegistry;
   private readonly legacy: LegacyCapabilityResourceAdopter;
   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
     if(applicationScope&&((!applicationScope.length&&!independent)||(independent&&applicationScope.length!==0)||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
@@ -53,7 +53,7 @@ export class SessionCapabilityProjector {
     }
     if (new Set(result.map(s => s.nativeName)).size !== result.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','所选Skill原生名称冲突'); return result;
   }
-  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):OwnedBundle{
+  private claudeBundle(snapshot:CapabilitySessionSnapshot,selectionHash:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):OwnedBundle{
     if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
     const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),files:Record<string,Buffer>={},executables=new Set<string>();
     files['.claude-plugin/plugin.json']=Buffer.from(JSON.stringify({name:'smartdd-session',version:'1.0.0',description:'WillYou session capabilities'},null,2)+'\n');
@@ -64,7 +64,7 @@ export class SessionCapabilityProjector {
     return ownedBundle({kind:'claude-session-projection',taskId:snapshot.taskId,selectionHash,...(standardSkillScope?{formatVersion:2,standardSkillScope:[...standardSkillScope]}:{formatVersion:1}),sources:skills.map(s=>({resourceId:s.sourceResourceId,sourceHash:s.sourceHash,nativeName:s.nativeName}))},files,executables);
   }
   /** Verify a complete view against the full original S;never infer a new selection. */
-  private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):string[]{
+  private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshot,requireFull=false):string[]{
     return claudeProjectionSelection(manifest,snapshot,requireFull).appIds;
   }
   private sourceIdentity(taskId:string,hash:string,archive=false){const kind=archive?'claude-projection-archive':'claude-projection-source';return{kind,resourceId:`${kind}:${taskId}:${hash}`,relativePath:`projection-sources/claude/${taskId}/${archive?'archives':'views'}/${hash}`};}
@@ -102,7 +102,7 @@ export class SessionCapabilityProjector {
     const resource=await this.store.publish({resourceId:`session-projection:${taskId}:${bundle.hash}`,kind:'session-projection',contentHash:bundle.hash,relativePath,dependencies:[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))],materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{verifyOwnedBundle(directory,bundle.hash,this.store.storeId);}});
     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{resource,root};
   }
-  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
+  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void {
     if(resource.kind==='claude-delivery'){verifyClaudeDelivery(this.store,resource,snapshot);return;}
     if(['claude-projection-source','claude-projection-archive'].includes(resource.kind)){
       const archive=resource.kind==='claude-projection-archive',identity=this.sourceIdentity(snapshot.taskId,resource.contentHash,archive);

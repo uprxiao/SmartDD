@@ -15,7 +15,7 @@ import type {ApplicationSessionDiagnostic,SessionApplicationDiagnostic,SessionRu
 import type {ResourceRecord,ResourceStore} from './resource-store';
 import type {CapabilityRunRegistry} from './run-registry';
 import {CapabilitySessionRegistry,type StoredCapabilitySession} from './session-registry';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import type {ApplicationConnectionService} from './connection-service';
 import type {ApplicationSelectionService} from './selection-service';
 import {PackageRegistry} from './package-registry';
@@ -31,9 +31,9 @@ const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:h
 const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
 const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/),observedAt:z.iso.datetime(),source:z.literal('kernel-peer')}).strict();
 interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
-interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
+interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
 const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
-function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
+function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
  const scope=readApplicationRunScope(store,runId,snapshot);
  if(scope&&evidence.capabilities.some(item=>item.kind==='application'&&item.state==='prepared'&&!scope.applications.some(app=>app.appId===item.id)))throw new ApplicationError('SCOPE_DENIED','原运行范围排除的应用不能显示为已准备');
  return scope;
@@ -204,8 +204,8 @@ export class ApplicationSessionDiagnostics {
   const db=this.store.sqlite,task=db.prepare('SELECT id,project_id,title,runner,CASE WHEN native_session_id IS NOT NULL OR runtime_snapshot IS NOT NULL THEN 1 ELSE 0 END AS has_history FROM tasks WHERE id=?').get(taskId) as {id:string;project_id:string|null;title:string;runner:string;has_history:number}|undefined;if(!task)throw new ApplicationError('NOT_FOUND','该任务已删除，不能把其他会话当作原任务');
   const row=db.prepare('SELECT schema_version,snapshot_hash,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;legacy_status:string}|undefined;
   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];
-  if(row&&row.schema_version!==2&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
-  if(row?.schema_version===2)try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
+  if(row&&![2,3].includes(row.schema_version)&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
+  if(row&&[2,3].includes(row.schema_version))try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
   // Find the owned terminal independently of wall-clock order. A clock rollback
   // must not let future-dated history hide the live run or reuse its call counts.
   let ownedRunId:string|null=null;try{const ptyId=this.deps.activePty?.(taskId);if(ptyId)ownedRunId=this.deps.runs()?.currentNativeRun(taskId,ptyId)?.runId??null;}catch{/* unknown ownership stays unverified */}

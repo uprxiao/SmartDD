@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import type { CapabilitySessionSnapshot, CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import type { SpawnOptions } from '../../pty-manager';
 import * as schema from '../../db/schema';
 import { SecretsStore } from '../../secrets';
@@ -38,7 +38,7 @@ beforeEach(async()=>{
  capabilities=new CapabilityService({db,projects,secrets,userData:f.root});for(const skill of capabilities.list(projectId))if(skill.id!==f.standard.id)capabilities.setEnabled(projectId,skill.id,false);
  runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});f.setExtraVerifier((r,s)=>catalog.verifyReference(r,s));ptys=new ControlledPtys();gate=undefined;afterAttach=undefined;bindGate=undefined;calls=0;clock=Date.now();trace.length=0;runIds.length=0;boundIds.length=0;
  const launcher:TaskCapabilityLauncher={prepare:async input=>{
-  calls++;let session:Awaited<ReturnType<typeof f.sessions.get>>,snapshot:CapabilitySessionSnapshotV2;
+  calls++;let session:Awaited<ReturnType<typeof f.sessions.get>>,snapshot:CapabilitySessionSnapshot;
   if(input.previous?.sessionCapabilities){session=await f.sessions.get(input.taskId);snapshot=session.snapshot;await f.sessions.verifyNativeIdentity(input.taskId,{runner:'codex',stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});}
   else{snapshot=f.plan('codex');snapshot.taskId=input.taskId;snapshot.projectId=input.projectId;snapshot.native={sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd};snapshot.packages=[];snapshot.adapterBinding.nativeToolNames={};snapshot.mcp=snapshot.mcp.filter(m=>m.kind==='legacy-project-context');const selected=capabilities.selection(projectId).filter(s=>s.enabled);snapshot.standardSkills=snapshot.standardSkills.filter(s=>selected.some(v=>v.skillId===s.skillId));for(const skill of snapshot.standardSkills)skill.versionId=selected.find(s=>s.skillId===skill.skillId)!.versionId;const collection=await catalog.publish(f.projector.sourceSkills(snapshot));snapshot.catalogGeneration=collection.generation;session=await f.sessions.create(snapshot,input.home);for(const e of collection.entries)await f.sessions.addProjectionReference(input.taskId,session.pointer.snapshotHash,e.resourceId);}
   const collection=await catalog.snapshot(),hold=await catalog.reserveRun(collection.generation,'codex',ids=>runs.reserve({taskId:input.taskId,snapshotHash:session.pointer.snapshotHash,bindings:[]},ids));runIds.push(hold.run.runId);

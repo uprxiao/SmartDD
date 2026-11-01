@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
-import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
+import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
 import {selectionHash} from './session-registry';
 import type {ResourceStore} from './resource-store';
@@ -22,12 +22,12 @@ export function assertIndependentRoots(store:ResourceStore,roots:readonly {refId
 }
 /** Immutable C operation receipt, not a caller-supplied permission. Never infer
  * a full grant if this receipt is missing from a scoped owned run. */
-export function assertScopeExclusions(snapshot:CapabilitySessionSnapshotV2,scope:ApplicationRunScope):void{
+export function assertScopeExclusions(snapshot:CapabilitySessionSnapshot,scope:ApplicationRunScope):void{
  if(!scope.excludedApplications)return;
  const excluded=snapshot.packages.filter(p=>!scope.applications.some(a=>a.appId===p.appId));
  if(scope.excludedApplications.length!==excluded.length||new Set(scope.excludedApplications.map(p=>p.appId)).size!==excluded.length||scope.excludedApplications.some(p=>!excluded.some(e=>e.appId===p.appId&&e.packageHash===p.packageHash)))throw invalid();
 }
-export function readApplicationRunScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,expectedHash?:string):ApplicationRunScope|null{
+export function readApplicationRunScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,expectedHash?:string):ApplicationRunScope|null{
  const row=store.sqlite.prepare('SELECT kind,state,owner_store_id,plan_json,created_at,updated_at FROM capability_resource_operations WHERE operation_id=?').get(applicationScopeOperationId(runId)) as {kind:string;state:string;owner_store_id:string;plan_json:string;created_at:string;updated_at:string}|undefined;
  if(!row){if(expectedHash)throw invalid();return null;}
  try{

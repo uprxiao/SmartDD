@@ -1,0 +1,44 @@
+
+> smartdd@0.0.9 test /private/tmp/willyou-m11-s2/source-attempt-001
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/module-registry.test.ts src/main/core/applications/__tests__/tool-service.test.ts --maxWorkers=1 --no-file-parallelism --no-cache --reporter=verbose --reporter=json --outputFile.json=/private/tmp/willyou-m11-s2/evidence/units/attempt-001/vitest.json
+
+
+ RUN  v4.1.11 /private/tmp/willyou-m11-s2/source-attempt-001
+
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > lists actual fixed package schemas and routes using host project/task/package context 642ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > preserves permitted reads when a fixed session deliberately excludes the write permission 1023ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > rejects unselected tools, mismatched contracts, spoofed scopes and invalid schema before executing 547ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > deduplicates parallel and completed identical requests, rejecting changed arguments under the same ID 853ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > never re-executes an invocation when its in-memory receipt is absent 625ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > rechecks current binding even for cached responses and permits the same identity after recovery 616ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > allows at most two retries for an explicitly safe read, with one operation ID and unchanged scope 579ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > ends exhausted safe reads and never retries explicit auth failures 763ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > retries a busy safe read inside its original operation and deadline, then returns the recovered result 590ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > exhausts a busy safe read after three attempts with one failed operation and no result payload 623ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > rechecks current authorization before retrying a busy safe read 502ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > cancels a busy read during backoff without another source attempt 535ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > does not replay busy writes or reads whose trusted executor disallows retry 702ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > persists unknown before invoking a write and never retries it or leaks arbitrary thrown text 531ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > keeps fixed version routing after a new default is activated 621ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > reports a damaged package without fake empty success and restores only the same original bytes 577ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > does not trust corrupted saved schemas or overwrite them from a default or same-version reinstall 509ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > holds the activity until an executor ignoring cancellation settles and withholds its late result 686ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > returns a bounded timeout receipt while keeping an ignoring write executor protected until real settlement 837ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > fixed-package tools, exact request receipts, semantic retries and resource activity > rejects invalid outputs and bounds recursive structures before hashing them 566ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > asynchronous current authorization for cached business receipts > awaits the real receipt check and never returns its old payload after asynchronous denial 611ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > asynchronous current authorization for cached business receipts > keeps the owned activity until an ignoring receipt checker settles with write=false and never replays its effect 772ms
+ ✓ src/main/core/applications/__tests__/tool-service.test.ts > asynchronous current authorization for cached business receipts > keeps the owned activity until an ignoring receipt checker settles with write=true and never replays its effect 804ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > keeps the two current applications and their three providers registered through one catalog 2ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > adds a new app and provider from a registration only, including schema defaults and selection validation 3ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > returns isolated presentation data and never treats it as authority 1ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > provides an exact-schema identity view for a newly registered provider without editing the converter framework 1ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > normalizes all 17 distributed v1 tools through their original business semantics 11ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > rejects duplicate modules, provider ownership mismatches and unknown legacy tools 0ms
+ ✓ src/main/core/applications/__tests__/module-registry.test.ts > compiled application module composition > rejects a provider schema that changes the requested provider identity 0ms
+
+ Test Files  2 passed (2)
+      Tests  30 passed (30)
+   Start at  12:25:30
+   Duration  15.84s (transform 282ms, setup 0ms, import 498ms, tests 15.14s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-m11-s2/evidence/units/attempt-001/vitest.json

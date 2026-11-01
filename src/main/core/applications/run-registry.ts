@@ -6,13 +6,15 @@ import {assertScopeExclusions,assertIndependentRoots,applicationRunScopeSchema,a
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
-import type { CapabilityRunRecord, CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import type { CapabilityRunRecord, CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import {launchRestrictionSchema,readLaunchRestriction,type ManagedCapabilityRestriction} from './launch-restriction';
 import type { ResourceRecord, ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
 import type { ProcessIdentity, ProcessIdentityReader, ProcessState } from './process-identity';
+import type {ApplicationRunPlan} from '@shared/application-run-plan';
+import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan} from './run-plan';
 
 const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.enum(['zentao','foxmail','smtp']),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
 const bindingsSchema = z.array(bindingSchema).max(64).refine(items => new Set(items.map(i => i.appId + ':' + i.slot)).size === items.length);
@@ -26,14 +28,16 @@ export interface RunRow {
 export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
-interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
-export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
+interface OwnedRun { planHash?:string;delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+export interface RunContext { plan?:ApplicationRunPlan;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
 export interface RunRegistryDeps {
   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
-  assertCurrent(snapshot: CapabilitySessionSnapshotV2,bindings: readonly RunBindingRevision[]): void;
+  assertCurrent(snapshot: CapabilitySessionSnapshot,bindings: readonly RunBindingRevision[]): void;
   /** Revoke credentials and signal only owned executions/CLI/bridge handles. Exit is recorded separately. */
   revoke(runId: string,reason: string): void | Promise<void>;
   processes: ProcessIdentityReader;
+  /** Host-only composition. No caller or model argument can supply a plan. */
+  createPlan?(snapshot:CapabilitySessionSnapshot,snapshotHash:string,runId:string,appIds?:readonly string[]):ApplicationRunPlan;
   revocationTimeoutMs?: number;
 }
 export interface OwnedRunProcess {
@@ -89,13 +93,15 @@ export class CapabilityRunRegistry {
     if (!owned || row.owner_instance_id !== this.instanceId || row.owner_pid !== this.host.pid || row.owner_started_at !== this.host.startedAt) throw new ApplicationError('SCOPE_DENIED','此运行不属于当前宿主实例');
     return { row,owned };
   }
-  private mine(runId: string): { row: RunRow;owned: OwnedRun;session: StoredCapabilitySession } {
+  private mine(runId: string): { row: RunRow;owned: OwnedRun;session: StoredCapabilitySession;plan?:ApplicationRunPlan } {
     const { row,owned } = this.owner(runId);
     if(owned.guard)throw new ApplicationError('SCOPE_DENIED','原生守护不签发应用工具、业务来源或凭据');
     const session = this.sessions.inspectCoordinated(row.task_id);
     if (session.selectionHash !== owned.selectionHash || session.snapshot.projectId !== row.project_id || session.snapshot.runner !== row.runner || session.pointer.snapshotHash !== row.snapshot_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','运行与固定会话身份不同');
     const scope=readApplicationRunScope(this.store,runId,session.snapshot,owned.scope?.evidenceHash);if(Boolean(scope)!==Boolean(owned.scope))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本轮应用范围与宿主登记不同');
-    return { row,owned,session };
+    const plan=owned.planHash?readApplicationRunPlan(this.store,runId,owned.planHash):undefined;
+    if(plan&&(plan.taskId!==row.task_id||plan.projectId!==row.project_id||plan.snapshotHash!==row.snapshot_hash))throw new ApplicationError('SCOPE_DENIED','运行计划不能替换固定会话身份');
+    return { row,owned,session,...(plan?{plan}:{}) };
   }
   /** Lifecycle authority for native-only history is distinct from business authority. */
   private lifecycle(runId:string):{row:RunRow;owned:OwnedRun;session?:StoredCapabilitySession}{
@@ -169,6 +175,8 @@ export class CapabilityRunRegistry {
     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
     const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';let scope:ApplicationRunScope|undefined;let delivery:ClaudeRunDelivery|undefined;
+    const plan=this.deps.createPlan?verifyApplicationRunPlan(this.deps.createPlan((await this.sessions.get(value.taskId)).snapshot,value.snapshotHash,runId,narrowing?.appIds)):undefined;
+    if(plan&&(plan.runId!==runId||plan.taskId!==value.taskId||plan.snapshotHash!==value.snapshotHash))throw new ApplicationError('SCOPE_DENIED','宿主运行计划身份不匹配');
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId); this.gate();
@@ -181,13 +189,14 @@ export class CapabilityRunRegistry {
       if(narrowing){const roots=this.sessions.scopedReferencesCoordinated(value.taskId,narrowing.appIds,narrowing.projectionIds,narrowing.independent===true),payload={...(narrowing.independent?{schema:2 as const,mode:'independent-capabilities' as const}:{schema:1 as const}),runId,taskId:value.taskId,projectId:session.snapshot.projectId,runner:session.snapshot.runner,snapshotHash:value.snapshotHash,selectionHash,ownerInstanceId:this.instanceId,ownerPid:this.host.pid,ownerStartedAt:this.host.startedAt,applications:session.snapshot.packages.filter(p=>narrowing.appIds.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash})),roots,...(narrowing.excludedApplications?{excludedApplications:narrowing.excludedApplications}:{}),createdAt:timestamp};scope=applicationRunScopeSchema.parse({...payload,evidenceHash:digest(canonicalJson(payload))});assertScopeExclusions(session.snapshot,scope);if(scope.schema===2)assertIndependentRoots(this.store,scope.roots); }
       const resources=this.closure(value.taskId,undefined,scope);
       this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
+      if(plan){if(plan.projectId!==session.snapshot.projectId||plan.applications.some(a=>!session.snapshot.packages.some(p=>p.appId===a.appId&&p.packageHash===a.packageHash)||narrowing&&!narrowing.appIds.includes(a.appId)))throw new ApplicationError('SCOPE_DENIED','运行计划超出本次固定应用范围');storeApplicationRunPlan(this.store,plan);}
       if(scope)this.store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'application-run-scope',?,'committed',?,?,?)").run(applicationScopeOperationId(runId),this.store.storeId,canonicalJson(scope),timestamp,timestamp);
       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
       for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
       if(deliveryToken){if(!scope)throw new ApplicationError('SCOPE_DENIED','Claude交付必须使用真实本轮应用范围');delivery=bindClaudeDelivery(this.store,deliveryToken,runId,randomUUID(),scope.applications.map(p=>p.appId));}
     }).immediate());
-    const owned: OwnedRun = { ...(delivery?{delivery}:{}),...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
+    const owned: OwnedRun = { ...(plan?{planHash:plan.planHash}:{}),...(delivery?{delivery}:{}),...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
     return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
   }
@@ -376,15 +385,15 @@ export class CapabilityRunRegistry {
   }
   /** Synchronous host policy hook; tools never choose their project/task/package context. */
   assertActive(runId: string): RunContext {
-    const { row,owned,session } = this.mine(runId);
+    const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
     const bindings = this.current(row,session); this.checkProtection(row,owned);
-    return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+    return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
   }
   bridgePreparation(runId: string): RunContext {
-    const { row,owned,session } = this.mine(runId);
+    const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');
-    const bindings = this.current(row,session); this.checkProtection(row,owned); return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+    const bindings = this.current(row,session); this.checkProtection(row,owned); return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
   }
   assertBridge(runId: string,processId: string): RunContext {
     const context = this.assertActive(runId), child = this.processRow(runId,processId);

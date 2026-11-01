@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parseDocument } from 'yaml';
 import { ApplicationError } from '@shared/applications';
-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import type { CapabilitySessionSnapshot, CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { canonicalJson, digest } from '../../manifest';
 import { verifyPackageTree } from '../../package-files';
 import { PackageRegistry } from '../../package-registry';
@@ -29,7 +29,7 @@ export class SessionCapabilityProjector {
   private readonly packages: PackageRegistry;
   private readonly legacy: LegacyCapabilityResourceAdopter;
   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
     if(applicationScope&&(!applicationScope.length||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
@@ -64,7 +64,7 @@ export class SessionCapabilityProjector {
     const resource = await this.store.publish({ resourceId: `session-projection:${taskId}:${bundle.hash}`,kind: 'session-projection',contentHash: bundle.hash,relativePath,dependencies: [...new Set(skills.map(s => s.sourceResourceId))],materialize: stage => writeOwnedBundle(stage,bundle,this.store.storeId),verify: directory => { verifyOwnedBundle(directory,bundle.hash,this.store.storeId); } });
     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId); return { resource,root };
   }
-  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
+  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void {
     if (resource.kind !== 'session-projection' || resource.state !== 'ready' || resource.integrity !== 'valid' || resource.relativePath !== `sessions/${snapshot.taskId}/claude/plugin`) throw new ApplicationError('OWNERSHIP_CONFLICT','投影不属于此原会话');
     const manifest = verifyOwnedBundle(join(this.store.root,resource.relativePath),resource.contentHash,this.store.storeId), selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
     if (manifest.metadata.taskId !== snapshot.taskId || manifest.metadata.selectionHash !== selectionHash || manifest.metadata.kind !== 'claude-session-projection') throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影绑定的选择不同，不能覆盖原路径');

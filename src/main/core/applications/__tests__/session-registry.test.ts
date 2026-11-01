@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ApplicationError } from '@shared/applications';
-import { capabilitySessionSnapshotSchema, applicationNativeSkillName, applicationMcpServerName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import { capabilitySessionSnapshotSchema, applicationNativeSkillName, applicationMcpServerName, type CapabilitySessionSnapshot, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
 import { runBundledMigrations } from '../../../db/migrations';
 import { canonicalJson, digest } from '../manifest';
 import { fileNames } from '../package-files';
@@ -28,7 +28,7 @@ async function legacyTree(resourceId: string,kind: string,path: string,files: Re
   const hash = treeHash(files); trees.set(resourceId,files);
   return store.publish({ resourceId,kind,relativePath: path,contentHash: hash,dependencies: [],materialize: directory => writeOwnedTree(directory,files,join(store.root,'conflicts')),verify: dir => { if (treeHash(readOwnedTree(dir)) !== hash) throw new ApplicationError('HASH_MISMATCH','legacy tree bytes changed'); } });
 }
-function verifyExtra(resource: ResourceRecord,snapshot?: CapabilitySessionSnapshotV2) {
+function verifyExtra(resource: ResourceRecord,snapshot?: CapabilitySessionSnapshot) {
   const projection = projections.get(resource.resourceId);
   if (projection) {
     if (snapshot?.taskId !== projection.taskId) throw new ApplicationError('OWNERSHIP_CONFLICT','projection belongs to another session');

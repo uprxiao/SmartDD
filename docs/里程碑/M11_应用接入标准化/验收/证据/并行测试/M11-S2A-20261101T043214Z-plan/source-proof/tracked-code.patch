@@ -1,0 +1,1395 @@
+diff --git a/src/main/core/applications/__tests__/agent-fixture.ts b/src/main/core/applications/__tests__/agent-fixture.ts
+index 395ac9056..fe5b61c1f 100644
+--- a/src/main/core/applications/__tests__/agent-fixture.ts
++++ b/src/main/core/applications/__tests__/agent-fixture.ts
+@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
+ import Database from 'better-sqlite3';
+ import { runBundledMigrations } from '../../../db/migrations';
+ import type { AgentLoadRequest } from '@shared/agent-adapters';
+-import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshot, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import { ApplicationError } from '@shared/applications';
+ import { BUNDLED_SKILLS, runtimeFiles, treeHash } from '../../capabilities/assets';
+ import { writeOwnedTree } from '../../capabilities/files';
+@@ -33,13 +33,13 @@ export async function agentFixture(options: {applicationVersion?:string} = {}) {
+   const standard = BUNDLED_SKILLS[0], standardPath = join(store.root,'packages',standard.id,standard.hash); writeOwnedTree(standardPath,standard.files,join(store.root,'conflicts')); await legacy.adoptStandard(standard.id,standard.hash);
+   const legacyFiles = runtimeFiles(),legacyHash = treeHash(legacyFiles),legacyPath = join(store.root,'runtime',legacyHash); writeOwnedTree(legacyPath,legacyFiles,join(store.root,'conflicts')); await legacy.adoptRuntime(legacyHash);
+   let projector!: SessionCapabilityProjector;
+-  let extra: ((resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2)=>void)|undefined;
++  let extra: ((resource:ResourceRecord,snapshot:CapabilitySessionSnapshot)=>void)|undefined;
+   const sessions = new CapabilitySessionRegistry(store,{ assertInitialSelection: snapshot => { const a = adapters.get(snapshot.adapterBinding.hash); if (a.metadata.agentId !== snapshot.runner || snapshot.packages.some(p => packages.active(p.appId)?.packageHash !== p.packageHash)) throw new ApplicationError('RESOURCE_STATE_CHANGED','fixture selection changed'); },verifyExtraResource: (resource,snapshot) => { if (resource.kind === 'agent-adapter') adapters.verifyReference(resource,snapshot); else if (['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind)) projector.verify(resource,snapshot); else if(resource.kind==='agent-projection'&&extra)extra(resource,snapshot);else legacy.verify(resource); } }); projector = new SessionCapabilityProjector(store,sessions);
+   const plan = (runner: 'claude-code' | 'codex' = 'claude-code'): CapabilitySessionSnapshotV2 => {
+     const taskId = randomUUID(), adapter = installedAdapters.find(a => a.metadata.agentId === runner)!, name = applicationNativeSkillName(application.appId,source.manifest.skills[0].id,application.packageHash), standardName = standardNativeSkillName(standard.id,standard.hash), plugin = join(store.root,'sessions',taskId,'claude/plugin/skills'), skillPath = (n: string) => join(runner === 'codex' ? join(home,'.agents/skills') : plugin,n,'SKILL.md'),mcpName = applicationMcpServerName(digest(taskId));
+     return { schema: 2,taskId,projectId: 'p1',createdAt: new Date().toISOString(),runner,adapterBinding: { id: runner,version: adapter.metadata.version,hash: adapter.hash,projectionFormatVersion: 1,nativeToolNames: Object.fromEntries(source.manifest.tools.map(t => [t.name,'mcp__' + mcpName + '__' + t.name])) },native: { sessionId: null,stateRoot: join(home,runner === 'codex' ? '.codex' : '.claude'),cwd },agentAtCreation: { version: adapter.metadata.cliVersions[0],adapterRevision: 1 },catalogGeneration: 'fixture-catalog-1',packages: [{ appId: application.appId,version: application.version,packageHash: application.packageHash,hashAlgorithm: 'app-manifest-v1',hostApi: source.manifest.hostApi,dataApi: 1,runtimeHash: runtime.contentHash,toolContractMajors: Object.fromEntries(source.manifest.tools.map(t => [t.name,t.contractMajor])),skills: [{ skillId: source.manifest.skills[0].id,nativeName: name,contentHash: applicationSkillContentHash(source.manifest,source.manifest.skills[0].path),sourceRelativePath: source.manifest.skills[0].path,projectionPath: skillPath(name) }],bindings: [],allowedOperations: source.manifest.permissions }],standardSkills: [{ skillId: standard.id,versionId: standard.id + ':' + standard.hash,hash: standard.hash,hashAlgorithm: 'legacy-tree-v1',projectionPath: skillPath(standardName) }],mcp: [{ kind: 'applications',serverName: mcpName,protocolMajor: 1,runtimeHash: runtime.contentHash },{ kind: 'legacy-project-context',serverName: 'smartdd_project_' + digest(taskId).slice(0,12),protocolMajor: 1,runtimeHash: legacyHash }],provenance: 'created' };
+   };
+-  const request = async (snapshot: CapabilitySessionSnapshotV2,managedCatalog?:NonNullable<AgentLoadRequest['catalog']>): Promise<AgentLoadRequest> => {
++  const request = async (snapshot: CapabilitySessionSnapshot,managedCatalog?:NonNullable<AgentLoadRequest['catalog']>): Promise<AgentLoadRequest> => {
+     const runId = randomUUID(), runRoot = join(store.root,'runs',snapshot.projectId,snapshot.taskId,runId); let pluginRoot: string | null = null,pluginHash: string | null = null,catalog: AgentLoadRequest['catalog'] = null;
+     if (snapshot.runner === 'claude-code') { const projection = await projector.claude(snapshot.taskId); pluginRoot = projection.root; pluginHash = projection.resource.contentHash; }
+     else if(managedCatalog)catalog=managedCatalog;
+@@ -50,5 +50,5 @@ export async function agentFixture(options: {applicationVersion?:string} = {}) {
+     }
+     return { snapshot,runId,cliVersion: snapshot.agentAtCreation.version,currentExecutable: process.execPath,native: { ...snapshot.native,runner: snapshot.runner,home },pluginRoot,pluginHash,catalog,userSkillConfig: [],inventory: [],mcp: snapshot.mcp.map(m => ({ kind: m.kind,serverName: m.serverName,command: m.kind === 'applications' ? process.execPath : 'python3',args: m.kind === 'applications' ? [join(store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(root,'private-ticket.json')] : [join(legacyPath,'context_mcp.py'),join(runRoot,'context.json')],env: m.kind === 'applications' ? { ELECTRON_RUN_AS_NODE: '1' } : {} as Record<string,string> })) };
+   };
+-  return { root,home,cwd,sqlite,store,packages,adapters,legacy,sessions,projector,source,application,standard,standardPath,legacyPath,legacyHash,installedAdapters,plan,request,setExtraVerifier:(fn:(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2)=>void)=>{extra=fn;},snapshotTree: (path: string) => Object.fromEntries(fileNames(path).map(name => [name,digest(readFileSync(join(path,name)))])),cleanup: () => { sqlite.close();rmSync(root,{ recursive: true,force: true }); } };
++  return { root,home,cwd,sqlite,store,packages,adapters,legacy,sessions,projector,source,application,standard,standardPath,legacyPath,legacyHash,installedAdapters,plan,request,setExtraVerifier:(fn:(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot)=>void)=>{extra=fn;},snapshotTree: (path: string) => Object.fromEntries(fileNames(path).map(name => [name,digest(readFileSync(join(path,name)))])),cleanup: () => { sqlite.close();rmSync(root,{ recursive: true,force: true }); } };
+ }
+diff --git a/src/main/core/applications/__tests__/business-data.test.ts b/src/main/core/applications/__tests__/business-data.test.ts
+index 5ac400fc2..f6d1a9545 100644
+--- a/src/main/core/applications/__tests__/business-data.test.ts
++++ b/src/main/core/applications/__tests__/business-data.test.ts
+@@ -382,3 +382,52 @@ it('SL mail status cancellation reaches only its own context and keeps a lease u
+  try{await vi.waitFor(()=>expect(signals).toHaveLength(2));expect(signals.every(Boolean)).toBe(true);expect(signals[0]).not.toBe(signals[1]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:true});expect(signals.map(s=>s.aborted)).toEqual([true,false]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:2});}finally{releases.forEach(r=>r());}
+  const results=await Promise.all(pending);expect(results[0]!.error).toMatchObject({code:'CANCELED'});expect(results[1]!.value).toEqual(value);expect(app.cancelUiRead(sender,ids[1]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:0});
+ });
++
++describe('M11 unified capability execution with host-issued callers',()=>{
++ it('M11 lets UI create, read and update drafts with no Agent run or external connection',async()=>{
++  while(owned.length)await owned.pop()!.cli.exited();
++  const run=()=>app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test',operations:['mail.draft'],semantics:'write'},scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.create',1,{content:content('UI-only')}));
++  const created=await run() as {draft:MailDraftDataView};
++  const updated=await app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test',operations:['mail.draft'],semantics:'write'},scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.update',1,{draftId:created.draft.id,expectedRevision:1,content:content('UI revision 2')})) as {draft:MailDraftDataView};
++  expect(await app.viewDraft(sender,'p1',updated.draft.id)).toMatchObject({draft:{id:created.draft.id,revision:2},currentRevision:2});
++  expect(f.sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state='active'").get()).toEqual({n:0});
++  const operations=f.sqlite.prepare("SELECT task_id,run_id,caller_kind FROM application_data_operations WHERE action='ui.mail.test'").all();
++  expect(operations).toHaveLength(2);expect(operations).toEqual([expect.objectContaining({task_id:null,run_id:null,caller_kind:'ui'}),expect.objectContaining({task_id:null,run_id:null,caller_kind:'ui'})]);
++  expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
++ });
++ it('M11 rejects copied and expired caller handles before executing any business primitive',async()=>{
++  const execute=vi.spyOn(app.data,'execute');let expired!:import('../caller-context').CallerContext;
++  await ui(async scope=>{
++   expired=app.contexts.caller(scope);expect(expired.kind).toBe('ui');expect(Object.isFrozen(expired)).toBe(true);
++   await expect(app.capabilities.execute({...expired},'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   expect(()=>app.contexts.caller({...scope})).toThrow(ApplicationError);
++   await expect(app.capabilities.execute(expired,'mail.draft.list',2,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   await expect(app.capabilities.execute(expired,'zentao.object.list',1,{kind:'bug'})).rejects.toMatchObject({code:'SCOPE_DENIED'});
++   return null;
++  });
++  await expect(app.capabilities.execute(expired,'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(execute).not.toHaveBeenCalled();
++ });
++ it('M11 sends UI and MCP through the same executor while keeping the original v1 result and request identity',async()=>{
++  const execute=vi.spyOn(app.capabilities,'execute'),primitive=vi.spyOn(app.data,'execute');
++  expect(await call(codex,'draft_list',{})).toMatchObject({status:'ok',value:{items:[],nextCursor:null}});
++  expect(await app.viewDrafts(sender,'p1')).toEqual({items:[],nextCursor:null});
++  expect(execute).toHaveBeenCalledTimes(2);expect(primitive).toHaveBeenCalledTimes(2);
++  const caller=execute.mock.calls[0][0];expect(caller).toMatchObject({kind:'agent',entry:'mcp',runId:codex.runId,requestId:expect.any(String),plan:{kind:'snapshot-v2',hash:runs.assertActive(codex.runId).run.snapshotHash}});
++  expect(execute.mock.calls[1][0]).toMatchObject({kind:'ui',projectId:'p1'});
++  expect(primitive.mock.calls.every(([,method])=>method==='mail.draft.list')).toBe(true);
++ });
++ it('M11 propagates cancellation to the original operation without replacing its authenticated context',async()=>{
++  const abort=new AbortController();let ready!:()=>void,release!:()=>void;const entered=new Promise<void>(r=>ready=r),gate=new Promise<void>(r=>release=r);
++  vi.spyOn(app.data,'execute').mockImplementation(async context=>{ready();await gate;expect(context.signal.aborted).toBe(true);return{items:[],nextCursor:null};});
++  const pending=ui(scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.list',1,{},abort.signal));
++  await entered;abort.abort();release();await expect(pending).rejects.toMatchObject({code:'CANCELED'});
++  expect(f.sqlite.prepare("SELECT state,error_code FROM application_data_operations WHERE action='ui.mail.test'").get()).toEqual({state:'cancelled',error_code:'CANCELED'});
++ });
++ it('M11 denies project data to management callers and writes to read-only or internal callers',async()=>{
++  const execute=vi.spyOn(app.data,'execute');
++  await app.contexts.withManagement(sender,{appId:'mail',action:'connection.list',semantics:'read'},async scope=>{await expect(app.capabilities.execute(app.contexts.caller(scope),'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
++  await ui(async scope=>{await expect(app.capabilities.execute(app.contexts.caller(scope),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
++  await ui(scope=>app.contexts.withIndex(scope,'mail.read',async index=>{await expect(app.capabilities.execute(app.contexts.caller(index),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;}),['mail.read']);
++  expect(execute).not.toHaveBeenCalled();
++ });
++});
+diff --git a/src/main/core/applications/__tests__/fixtures/claude-projector-au.ts b/src/main/core/applications/__tests__/fixtures/claude-projector-au.ts
+index 4bd277e68..5bc1459ab 100644
+--- a/src/main/core/applications/__tests__/fixtures/claude-projector-au.ts
++++ b/src/main/core/applications/__tests__/fixtures/claude-projector-au.ts
+@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+ import { parseDocument } from 'yaml';
+ import { ApplicationError } from '@shared/applications';
+-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import type { CapabilitySessionSnapshot, CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import { canonicalJson, digest } from '../../manifest';
+ import { verifyPackageTree } from '../../package-files';
+ import { PackageRegistry } from '../../package-registry';
+@@ -29,7 +29,7 @@ export class SessionCapabilityProjector {
+   private readonly packages: PackageRegistry;
+   private readonly legacy: LegacyCapabilityResourceAdopter;
+   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
+-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
++  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+     if(applicationScope&&(!applicationScope.length||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
+     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
+     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
+@@ -64,7 +64,7 @@ export class SessionCapabilityProjector {
+     const resource = await this.store.publish({ resourceId: `session-projection:${taskId}:${bundle.hash}`,kind: 'session-projection',contentHash: bundle.hash,relativePath,dependencies: [...new Set(skills.map(s => s.sourceResourceId))],materialize: stage => writeOwnedBundle(stage,bundle,this.store.storeId),verify: directory => { verifyOwnedBundle(directory,bundle.hash,this.store.storeId); } });
+     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId); return { resource,root };
+   }
+-  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
++  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void {
+     if (resource.kind !== 'session-projection' || resource.state !== 'ready' || resource.integrity !== 'valid' || resource.relativePath !== `sessions/${snapshot.taskId}/claude/plugin`) throw new ApplicationError('OWNERSHIP_CONFLICT','投影不属于此原会话');
+     const manifest = verifyOwnedBundle(join(this.store.root,resource.relativePath),resource.contentHash,this.store.storeId), selectionHash = digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+     if (manifest.metadata.taskId !== snapshot.taskId || manifest.metadata.selectionHash !== selectionHash || manifest.metadata.kind !== 'claude-session-projection') throw new ApplicationError('SNAPSHOT_IMMUTABLE','投影绑定的选择不同，不能覆盖原路径');
+diff --git a/src/main/core/applications/__tests__/module-registry.test.ts b/src/main/core/applications/__tests__/module-registry.test.ts
+index 2a98a96d4..d0e6f50f9 100644
+--- a/src/main/core/applications/__tests__/module-registry.test.ts
++++ b/src/main/core/applications/__tests__/module-registry.test.ts
+@@ -19,6 +19,7 @@ const third = {
+     async verify() { return { providerId: 'third', serviceId: 'controlled-third', accountId: 'fixture', contractMajor: 1 as const }; },
+   }],
+   legacyPolicy: () => ({ id: 'third.object.read', semantics: 'read', retry: 'safe-read', slots: { required: ['third'], conditional: [] } }),
++  capabilities:{'third.object.read':{id:'third.object.read',method:'third.object.read',permission:'third.read',contractMajors:[1],semantics:'read',retry:'safe-read',slots:{required:['third'],conditional:[]}}},
+   createData: () => ({ resolve() { throw new ApplicationError('SCOPE_DENIED', 'No fixture execution'); }, async execute() { return { fixture: true }; } }),
+ } as const satisfies TrustedApplicationModule;
+ 
+diff --git a/src/main/core/applications/__tests__/session-registry.test.ts b/src/main/core/applications/__tests__/session-registry.test.ts
+index 0c0c22348..aea1a6ba4 100644
+--- a/src/main/core/applications/__tests__/session-registry.test.ts
++++ b/src/main/core/applications/__tests__/session-registry.test.ts
+@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
+ import Database from 'better-sqlite3';
+ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+ import { ApplicationError } from '@shared/applications';
+-import { capabilitySessionSnapshotSchema, applicationNativeSkillName, applicationMcpServerName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import { capabilitySessionSnapshotSchema, applicationNativeSkillName, applicationMcpServerName, type CapabilitySessionSnapshot, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import { runBundledMigrations } from '../../../db/migrations';
+ import { canonicalJson, digest } from '../manifest';
+ import { fileNames } from '../package-files';
+@@ -28,7 +28,7 @@ async function legacyTree(resourceId: string,kind: string,path: string,files: Re
+   const hash = treeHash(files); trees.set(resourceId,files);
+   return store.publish({ resourceId,kind,relativePath: path,contentHash: hash,dependencies: [],materialize: directory => writeOwnedTree(directory,files,join(store.root,'conflicts')),verify: dir => { if (treeHash(readOwnedTree(dir)) !== hash) throw new ApplicationError('HASH_MISMATCH','legacy tree bytes changed'); } });
+ }
+-function verifyExtra(resource: ResourceRecord,snapshot?: CapabilitySessionSnapshotV2) {
++function verifyExtra(resource: ResourceRecord,snapshot?: CapabilitySessionSnapshot) {
+   const projection = projections.get(resource.resourceId);
+   if (projection) {
+     if (snapshot?.taskId !== projection.taskId) throw new ApplicationError('OWNERSHIP_CONFLICT','projection belongs to another session');
+diff --git a/src/main/core/applications/agent-adapter-registry.ts b/src/main/core/applications/agent-adapter-registry.ts
+index 7bff974d2..c6f2f9a35 100644
+--- a/src/main/core/applications/agent-adapter-registry.ts
++++ b/src/main/core/applications/agent-adapter-registry.ts
+@@ -6,7 +6,7 @@ import { basename, dirname, join, relative } from 'node:path';
+ import { ApplicationError } from '@shared/applications';
+ import {BRIDGE_LIMITS} from '@shared/application-bridge';
+ import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan } from '@shared/agent-adapters';
+-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import type { CapabilitySessionSnapshot } from '@shared/application-session';
+ import { canonicalJson, digest } from './manifest';
+ import {legacyPlannerInput} from './legacy-agent-load';
+ import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
+@@ -145,5 +145,5 @@ export class AgentAdapterRegistry {
+     try{const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(value:unknown):unknown};if(module.api!==2||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw Error('legacy adapter');const plan=agentLoadPlanSchema.parse(module.prepare(prepared));if(plan.agentId!==meta.agentId||plan.bridgeRecovery!==meta.bridgeRecovery)throw Error('legacy agent');return plan;}
+     catch(error){if((error as {code?:string}).code==='AGENT_CAPABILITY_NAME_CONFLICT')throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停配置与原M4选择冲突，保留原配置');throw new ApplicationError('HOST_INCOMPATIBLE','原M4适配器无法生成本次加载计划');}
+   }
+-  verifyReference(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void { const installed = this.verify(snapshot.adapterBinding.hash); if (resource.resourceId !== installed.resource.resourceId) throw new ApplicationError('SNAPSHOT_CORRUPT','适配资源不属于原会话'); }
++  verifyReference(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void { const installed = this.verify(snapshot.adapterBinding.hash); if (resource.resourceId !== installed.resource.resourceId) throw new ApplicationError('SNAPSHOT_CORRUPT','适配资源不属于原会话'); }
+ }
+diff --git a/src/main/core/applications/application-resource-availability.ts b/src/main/core/applications/application-resource-availability.ts
+index 2ce3f2a5d..d063a4ce2 100644
+--- a/src/main/core/applications/application-resource-availability.ts
++++ b/src/main/core/applications/application-resource-availability.ts
+@@ -1,9 +1,9 @@
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import {BuiltinPackageRegistry} from './builtin-package-registry';
+ import {RuntimeRegistry} from './runtime-registry';
+ import type {ResourceStore} from './resource-store';
+-type FixedApplication=Pick<CapabilitySessionSnapshotV2['packages'][number],'appId'|'version'|'packageHash'|'runtimeHash'>;
++type FixedApplication=Pick<CapabilitySessionSnapshot['packages'][number],'appId'|'version'|'packageHash'|'runtimeHash'>;
+ export interface ApplicationResourceAvailability {appId:string;packageHash:string;runtimeHash:string;state:'ready'|'unavailable';code:ApplicationError['code']|null}
+ /** Inspect only the fixed selection. A ready result is not runtime authority:
+  * preparation and each call must still verify resources, leases and policy.
+diff --git a/src/main/core/applications/application-run-policy.ts b/src/main/core/applications/application-run-policy.ts
+index 565793aed..9f4da7ec7 100644
+--- a/src/main/core/applications/application-run-policy.ts
++++ b/src/main/core/applications/application-run-policy.ts
+@@ -1,6 +1,7 @@
++import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
+ import {readApplicationRunScope} from './application-run-scope';
+ import { ApplicationError } from '@shared/applications';
+-import { capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import { type CapabilitySessionSnapshot } from '@shared/application-session';
+ import { canonicalJson,digest } from './manifest';
+ import { selectionHash } from './session-registry';
+ import { readLaunchRestriction } from './launch-restriction';
+@@ -23,7 +24,7 @@ export function taskUsesApplication(store:ResourceStore,projectId:string,taskId:
+   }catch{throw unresolved();}
+  }
+  try{
+-  if(row.schema_version!==2)throw unresolved();const snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)),selected=selectionHash(snapshot);
++  if(![2,3].includes(row.schema_version))throw unresolved();const snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)),selected=selectionHash(snapshot);
+   if(snapshot.taskId!==taskId||snapshot.projectId!==projectId||digest(canonicalJson(snapshot))!==row.snapshot_hash||row.selection_hash!==selected||row.runner!==snapshot.runner||row.session_id!==snapshot.native.sessionId||row.cwd!==snapshot.native.cwd)throw unresolved();
+   if(!snapshot.packages.some(p=>p.appId===appId))return false;
+   const runs=store.sqlite.prepare("SELECT run_id,project_id,runner,snapshot_hash FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").all(taskId) as {run_id:string;project_id:string;runner:string;snapshot_hash:string}[];
+@@ -55,7 +56,7 @@ export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{p
+ 
+ /** Current source context for the Agent, appended by the host to its original
+  * tool description. Does not alter the frozen name, schemas, version or rights. */
+-export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
++export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshot,appId:string):string|null{
+  if(!builtinApplicationModules.appIds().some(id=>id===appId))return null;
+  return builtinApplicationModules.module(appId).connectionNotice?.(store,snapshot,appId)??null;
+ }
+diff --git a/src/main/core/applications/application-run-scope.ts b/src/main/core/applications/application-run-scope.ts
+index 4cdf4bd92..ca27b65ec 100644
+--- a/src/main/core/applications/application-run-scope.ts
++++ b/src/main/core/applications/application-run-scope.ts
+@@ -1,6 +1,6 @@
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
++import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
+ import {canonicalJson,digest} from './manifest';
+ import {selectionHash} from './session-registry';
+ import type {ResourceStore} from './resource-store';
+@@ -22,12 +22,12 @@ export function assertIndependentRoots(store:ResourceStore,roots:readonly {refId
+ }
+ /** Immutable C operation receipt, not a caller-supplied permission. Never infer
+  * a full grant if this receipt is missing from a scoped owned run. */
+-export function assertScopeExclusions(snapshot:CapabilitySessionSnapshotV2,scope:ApplicationRunScope):void{
++export function assertScopeExclusions(snapshot:CapabilitySessionSnapshot,scope:ApplicationRunScope):void{
+  if(!scope.excludedApplications)return;
+  const excluded=snapshot.packages.filter(p=>!scope.applications.some(a=>a.appId===p.appId));
+  if(scope.excludedApplications.length!==excluded.length||new Set(scope.excludedApplications.map(p=>p.appId)).size!==excluded.length||scope.excludedApplications.some(p=>!excluded.some(e=>e.appId===p.appId&&e.packageHash===p.packageHash)))throw invalid();
+ }
+-export function readApplicationRunScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,expectedHash?:string):ApplicationRunScope|null{
++export function readApplicationRunScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,expectedHash?:string):ApplicationRunScope|null{
+  const row=store.sqlite.prepare('SELECT kind,state,owner_store_id,plan_json,created_at,updated_at FROM capability_resource_operations WHERE operation_id=?').get(applicationScopeOperationId(runId)) as {kind:string;state:string;owner_store_id:string;plan_json:string;created_at:string;updated_at:string}|undefined;
+  if(!row){if(expectedHash)throw invalid();return null;}
+  try{
+diff --git a/src/main/core/applications/application-service.ts b/src/main/core/applications/application-service.ts
+index 6862d8ad1..265c9817b 100644
+--- a/src/main/core/applications/application-service.ts
++++ b/src/main/core/applications/application-service.ts
+@@ -1,3 +1,4 @@
++import type {ApplicationCapabilityExecution} from './capability-execution';
+ import {readDraftSendHistory} from './mail-draft-send-history';
+ import {applicationCleanupProgressEvent} from '@shared/events';
+ import {ApplicationUiReads} from './ui-read-requests';
+@@ -84,6 +85,7 @@ export class ApplicationService {
+   private attachmentOpeners?:SavedAttachmentOpeners;
+   readonly drafts:MailDraftService;
+   readonly data:ApplicationBusinessDataService;
++  readonly capabilities:ApplicationCapabilityExecution;
+   readonly mailReads:MailReadDataService;
+   readonly fileAttachments:WorkspaceAttachmentReferences;
+   readonly mailSends:MailSendDataService;
+@@ -118,7 +120,8 @@ export class ApplicationService {
+     }});
+     const policy={requireDrafts:(actor:Parameters<MailDraftService['get']>[0])=>this.contexts.requireActor(actor)};
+     this.blobs=new MailBlobStore(store,join(dirname(store.root),'app-data/mail'),policy);this.drafts=new MailDraftService(store,this.blobs,policy);
+-    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);const draftData=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments});this.data=new ApplicationBusinessDataService({registry:this.connections.registry,hosts:builtinApplicationModules.createHosts({store,contexts:this.contexts,resources:this.resources,selections:this.selections,retained:new Map([['mail',{drafts:draftData,reads:this.mailReads,sends:this.mailSends}]])})});
++    this.resources=new ApplicationDataResources(store,this.contexts);this.mailReads=new MailReadDataService(this.contexts,this.resources,this.selections,()=>this.mailCache(),{worker:options.mailWorker,native:options.foxmailNative,...options.mailRead});this.attachmentViews=new MailAttachmentViews(this.contexts,this.resources,this.drafts,this.blobs,this.mailReads);this.fileAttachments=new WorkspaceAttachmentReferences(this.contexts,options.workspaceFiles);this.mailAuthorizations=new MailUserAuthorizations(this.contexts);this.mailAuthorizations.attachNative(this.nativeMessages,projectId=>{try{return digest(canonicalJson(this.selections.policyStamp(projectId,'mail')));}catch{return null;}});this.mailSends=new MailSendDataService(this.contexts,this.resources,()=>this.mailExecution(),this.mailAuthorizations);const draftData=new MailDraftDataService(this.contexts,this.resources,this.drafts,this.blobs,this.selections,{readSource:(context,reference,queryDays)=>this.mailReads.source(context,reference,queryDays),readResource:(context,resource,queryDays)=>this.mailReads.resourceBytes(context,resource,undefined,queryDays),workspace:this.fileAttachments});this.data=new ApplicationBusinessDataService({registry:this.connections.registry,execution:{contexts:this.contexts,modules:builtinApplicationModules},hosts:builtinApplicationModules.createHosts({store,contexts:this.contexts,resources:this.resources,selections:this.selections,retained:new Map([['mail',{drafts:draftData,reads:this.mailReads,sends:this.mailSends}]])})});
++    this.capabilities=this.data.capabilities!;
+     if(options.terminal){const transport=options.terminal;this.terminal=new ApplicationTerminalInsertion({requireSender:options.requireSender,authorize:(sender,target)=>{transport.access.authorize(sender,target);},resolve:(sender,input)=>resolveApplicationTerminalSource(this,this.runs,sender,input),bracketedPaste:id=>transport.bracketedPaste(id),write:(id,data)=>transport.write(id,data),observed:(sender,target,data)=>this.observeInput(sender,target,data),uncertain:(sender,target)=>{this.nativeInputs.uncertain(sender,target);this.notifyInvalidSources();}});}
+   }
+   private terminalService(){if(!this.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端投递服务不可用');return this.terminal;}
+@@ -185,9 +188,9 @@ export class ApplicationService {
+   }
+   setConnectionEnabled(sender:ApplicationUiSender,id:string,enabled:boolean,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.enable','write',async context=>{await this.contexts.subject(context,'connection',id);return this.connections.setEnabled(id,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision));});}
+   disconnect(sender:ApplicationUiSender,id:string,expectedRevision:number){const connection=this.connections.get(uuid.parse(id));return this.management(sender,connection.appId,'connection.disconnect','write',async context=>{await this.contexts.subject(context,'connection',id);return this.connections.disconnect(id,z.number().int().nonnegative().parse(expectedRevision));});}
+-  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},async context=>await this.data.execute(context,'mail.draft.list',input) as MailDraftListData);}
+-  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},async context=>{const value=await this.data.execute(context,'mail.draft.get',{draftId,...(revision===undefined?{}:{revision})}) as {draft:MailDraftDataView};const current=this.store.sqlite.prepare('SELECT current_revision AS revision FROM mail_drafts WHERE id=? AND project_id=?').get(draftId,projectId) as {revision:number}|undefined;if(!current||!Number.isInteger(current.revision)||current.revision<value.draft.revision)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','草稿当前修订记录缺失或损坏');return{...value,currentRevision:current.revision,sendRecord:readDraftSendHistory(this.store,this.activity,projectId,value.draft)};});}
+-  mailAttachmentList(sender:ApplicationUiSender,projectId:string,input:unknown){const source=mailAttachmentSourceSchema.parse(input);return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.list',operations:['mail.read'],semantics:'read'},context=>this.mailReads.read(context,source));}
++  viewDrafts(sender:ApplicationUiSender,projectId:string,input:{limit?:number;cursor?:string|null}={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.list',operations:['mail.draft'],semantics:'read'},async context=>await this.capabilities.execute(this.contexts.caller(context),'mail.draft.list',1,input) as MailDraftListData);}
++  viewDraft(sender:ApplicationUiSender,projectId:string,draftId:string,revision?:number){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.draft.get',operations:['mail.draft'],semantics:'read'},async context=>{const value=await this.capabilities.execute(this.contexts.caller(context),'mail.draft.get',1,{draftId,...(revision===undefined?{}:{revision})}) as {draft:MailDraftDataView};const current=this.store.sqlite.prepare('SELECT current_revision AS revision FROM mail_drafts WHERE id=? AND project_id=?').get(draftId,projectId) as {revision:number}|undefined;if(!current||!Number.isInteger(current.revision)||current.revision<value.draft.revision)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','草稿当前修订记录缺失或损坏');return{...value,currentRevision:current.revision,sendRecord:readDraftSendHistory(this.store,this.activity,projectId,value.draft)};});}
++  mailAttachmentList(sender:ApplicationUiSender,projectId:string,input:unknown){const source=mailAttachmentSourceSchema.parse(input);return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.list',operations:['mail.read'],semantics:'read'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.message.read',1,source) as ReturnType<MailReadDataService['read']>);}
+   viewAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){const target=mailAttachmentTargetSchema.parse(input);return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.view',operations:[target.kind==='draft'?'mail.draft':'mail.read'],semantics:'read'},context=>this.attachmentViews.view(context,target));}
+   async readAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){
+     const {target,offset,length}=mailAttachmentReadSchema.parse(input),view=await this.viewAttachment(sender,projectId,target);
+@@ -229,22 +232,22 @@ export class ApplicationService {
+       const engine=new MailExecutionService(this.store,this.drafts,this.connections,this.selections,{requireDrafts:actor=>this.contexts.requireActor(actor),requireSend:actor=>{this.contexts.sendScope(actor);},authenticate:(actor,connection)=>{const context=this.contexts.sendScope(actor),resolved=this.contexts.resolvePinned(context,connection),config=connectionConfigSchema.parse(resolved.configView.view);const authenticated=this.contexts.authenticate(context,resolved.credentialHandle);return{config,secret:authenticated.secret};},allowUiAuthorization:(actor,intent)=>this.mailAuthorizations.allowUi(actor,intent),verifyUserAction:(actor,id,intent)=>this.mailAuthorizations.verify(actor,id,intent),ownerState:owner=>processes.state({pid:owner.pid,startedAt:owner.startedAt})},{...this.options.mailSend,hostIdentity:identity,activity:(actor,id,work)=>this.contexts.retainSendActivity(actor,id,identity,work)});const recovery=await engine.recover();this.mailRecoveryIssue=recovery.pending.length?{code:'RESOURCE_RECOVERY_REQUIRED',message:'有原发送执行尚未确认退出，保留原记录等待核查'}:null;if(this.closed){await engine.dispose();throw new ApplicationError('CANCELED','发送服务已关闭');}return engine;
+     })();this.executionPromise=opening;void opening.catch(()=>{if(this.executionPromise===opening)this.executionPromise=undefined;});return opening;
+   }
+-  prepareSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.prepare',operations:['mail.send'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.prepare',input));}
+-  executeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.execute',operations:['mail.send'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.execute',input));}
+-  viewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.get',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.execute(context,'mail.send.get',{intentId}));}
++  prepareSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.prepare',operations:['mail.send'],semantics:'write'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.send.prepare',1,input) as ReturnType<MailSendDataService['execute']>);}
++  executeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.execute',operations:['mail.send'],semantics:'write'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.send.execute',1,input) as ReturnType<MailSendDataService['execute']>);}
++  viewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.get',operations:['mail.draft'],semantics:'read'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.send.get',1,{intentId}) as ReturnType<MailSendDataService['execute']>);}
+   reviewSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.review',operations:['mail.draft'],semantics:'read'},context=>this.mailSends.review(context,sender,intentId));}
+   authorizeSend(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.authorize',operations:['mail.send'],semantics:'write'},context=>this.mailSends.confirm(context,sender,input));}
+-  cancelSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.cancel',operations:['mail.draft'],semantics:'write'},context=>this.mailSends.execute(context,'mail.send.cancel',{intentId}));}
++  cancelSend(sender:ApplicationUiSender,projectId:string,intentId:string){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.send.cancel',operations:['mail.draft'],semantics:'write'},context=>this.capabilities.execute(this.contexts.caller(context),'mail.send.cancel',1,{intentId}) as ReturnType<MailSendDataService['execute']>);}
+   captureAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.capture',operations:['mail.draft'],semantics:'read'},scope=>this.fileAttachments.capture(scope,sender,input));}
+-  replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.execute(scope,'mail.reply.create',input));}
+-  importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.data.execute(scope,'mail.attachment.import',input));}
+-  mailQuery(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.query',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.query(scope,input));}
++  replyDraft(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reply.create',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.capabilities.execute(this.contexts.caller(scope),'mail.reply.create',1,input));}
++  importAttachment(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.attachment.import',operations:['mail.read','mail.draft'],semantics:'write'},scope=>this.capabilities.execute(this.contexts.caller(scope),'mail.attachment.import',1,input));}
++  mailQuery(sender:ApplicationUiSender,projectId:string,input:unknown={}){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.query',operations:['mail.read'],semantics:'read'},scope=>this.capabilities.execute(this.contexts.caller(scope),'mail.message.query',1,input) as ReturnType<MailReadDataService['query']>);}
+   mailStatus(sender:ApplicationUiSender,projectId:string,input:unknown={},requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.status',operations:['mail.read'],semantics:'read',signal},scope=>this.mailReads.queryStatus(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+-  mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.read(scope,{reference}));}
+-  mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.mailReads.resource(scope,input));}
++  mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.capabilities.execute(this.contexts.caller(scope),'mail.message.read',1,{reference}) as ReturnType<MailReadDataService['read']>);}
++  mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.capabilities.execute(this.contexts.caller(scope),'mail.resource.read',1,input) as ReturnType<MailReadDataService['resource']>);}
+   cancelUiRead(sender:ApplicationUiSender,requestId:string){this.options.requireSender(sender);return this.uiReads.cancel(sender,requestId);}
+-  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.execute(scope,'zentao.work.list',input) as Promise<ZentaoWorkData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+-  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.data.execute(scope,'zentao.object.get',input) as Promise<ZentaoDetailData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
++  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.execute(this.contexts.caller(scope),'zentao.object.list',1,input) as Promise<ZentaoWorkData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
++  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.execute(this.contexts.caller(scope),'zentao.object.get',1,input) as Promise<ZentaoDetailData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+   zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.resources.read(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+   /** Shared only inside this host; every business read must still check its own execution context. */
+   mailCache():Promise<MailCache>{
+diff --git a/src/main/core/applications/business-data-service.ts b/src/main/core/applications/business-data-service.ts
+index b79732db3..204a536ff 100644
+--- a/src/main/core/applications/business-data-service.ts
++++ b/src/main/core/applications/business-data-service.ts
+@@ -6,8 +6,12 @@ import type { MailSendDataService } from './mail-send-data-service';
+ import type { MailReadDataService } from './mail-read-data-service';
+ import type { ZentaoDataService } from './zentao-data-service';
+ import type {ApplicationHostCatalog} from './host-application-registry';
++import type {ApplicationExecutionContexts} from './execution-context';
++import type {ApplicationModuleRegistry,TrustedApplicationModule} from './modules/registry';
++import {ApplicationCapabilityExecution} from './capability-execution';
++import {BuiltinPackageRegistry} from './builtin-package-registry';
+ type RegisteredData=ApplicationDataHost&{legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
+-interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[]}
++interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[];execution?:{contexts:ApplicationExecutionContexts;modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>}}
+ export class ApplicationBusinessDataService implements ApplicationDataHost {
+   private readonly builtinMail?:MailDraftDataService;
+   private readonly builtinZentao?:ZentaoDataService;
+@@ -16,6 +20,8 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+   get zentao():ZentaoDataService{const service=this.builtinZentao??this.hosts.get('zentao');if(!service||typeof Reflect.get(service,'assertStoredReference')!=='function')throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置禅道Data API');return service as ZentaoDataService;}
+   readonly mailRead?:MailReadDataService;
+   readonly mailSend?:MailSendDataService;
++  readonly capabilities?:ApplicationCapabilityExecution;
++  private readonly contexts?:ApplicationExecutionContexts;
+   private readonly hosts=new Map<string,RegisteredData>();
+   constructor(registration:RegisteredHostData);
+   constructor(mail:MailDraftDataService,zentao:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService);
+@@ -24,6 +30,7 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+       const ids=new Set(first.registry.appIds());
+       if(!Array.isArray(first.hosts)||!first.hosts.length||first.hosts.length>128)throw new ApplicationError('INVALID_INPUT','受信宿主Data API登记无效');
+       for(const host of first.hosts){if(!host||!ids.has(host.appId)||this.hosts.has(host.appId)||!host.data||typeof host.data.resolve!=='function')throw new ApplicationError('INVALID_INPUT','受信宿主Data API未登记或重复');this.hosts.set(host.appId,host.data);}
++      if(first.execution){this.contexts=first.execution.contexts;this.capabilities=new ApplicationCapabilityExecution(this.contexts,first.execution.modules,new BuiltinPackageRegistry(this.contexts.store,first.registry),this);}
+     }else{
+       if(!zentao)throw new ApplicationError('INVALID_INPUT','内置应用Data API未准备');
+       this.builtinMail=first;this.builtinZentao=zentao;this.mailRead=mailRead;this.mailSend=mailSend;
+@@ -33,7 +40,14 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
+     }
+   }
+   resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){
+-    const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.resolve(version,method,binding);
++    const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');
++    const handler=host.resolve(version,method,binding),execution=this.capabilities,contexts=this.contexts;
++    if(!execution||!contexts)return handler;
++    return{...handler,execute:(run,args,operation)=>{
++      handler.authorize(run,operation.connectionId);
++      const capability=execution.forMethod(binding,method,operation.contractMajor);
++      return contexts.withAgent(run,binding,operation,handler.semantics,context=>execution.execute(contexts.caller(context),capability.id,operation.contractMajor,args,operation.signal));
++    }} satisfies ReturnType<ApplicationDataHost['resolve']>;
+   }
+   execute(context:ApplicationExecutionContext,method:string,input:unknown){
+     const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);
+diff --git a/src/main/core/applications/claude-delivery-state.ts b/src/main/core/applications/claude-delivery-state.ts
+index b43620ddb..23ff583d0 100644
+--- a/src/main/core/applications/claude-delivery-state.ts
++++ b/src/main/core/applications/claude-delivery-state.ts
+@@ -6,7 +6,7 @@ import type {ClaudeRunDelivery} from '@shared/claude-delivery';
+ import {join} from 'node:path';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
++import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {ResourceStore,ResourceRecord} from './resource-store';
+ import {canonicalJson,digest} from './manifest';
+ import {verifyOwnedBundle} from './owned-bundle';
+@@ -26,7 +26,7 @@ export type ClaudeDeliveryToken=z.infer<typeof claudeDeliveryTokenSchema>;
+ export const claudeSlotId=(taskId:string)=>'claude-delivery-slot:'+taskId;
+ export const claudeRoot=(taskId:string)=>`sessions/${taskId}/claude/plugin`;
+ export const claudeAnchor=(taskId:string)=>'claude-delivery-root:'+taskId;
+-export const normalizedSelection=(s:CapabilitySessionSnapshotV2)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
++export const normalizedSelection=(s:CapabilitySessionSnapshot)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
+ const fail=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude目录交付或占用依据待核验，保留现场');
+ export function readClaudeSlot(store:ResourceStore,taskId:string):ClaudeSlot|null{
+  const row=store.sqlite.prepare('SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(claudeSlotId(taskId)) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;if(!row){const footprint=store.sqlite.prepare("SELECT 1 FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND (resource_id=? OR kind='claude-delivery' AND scope_relative_path=?) LIMIT 1").get(store.storeId,claudeAnchor(taskId),claudeRoot(taskId));const intent=store.sqlite.prepare("SELECT 1 FROM capability_resource_operations WHERE owner_store_id=? AND kind='claude-delivery-install' AND CASE WHEN json_valid(plan_json) THEN json_extract(plan_json,'$.slotId') ELSE NULL END=? LIMIT 1").get(store.storeId,claudeSlotId(taskId));if(footprint||intent)throw fail();return null;}
+@@ -60,7 +60,7 @@ function lease(store:ResourceStore,leaseId:string,owner:DeliveryOwner,ownerId:st
+ }
+ export function assertClaudeInstallLease(store:ResourceStore,slot:ClaudeSlot):void{if(!slot.pending)throw fail();for(const p of slot.pending.participants)lease(store,p.leaseId,p.owner,slot.pending.id,'claude-delivery-install',slot.anchorId,['active','recovery-required']);}
+ export function assertClaudePreparation(store:ResourceStore,slot:ClaudeSlot):void{const p=slot.preparation;if(!p||slot.pending||p.revision!==slot.revision||!slot.current)throw fail();lease(store,p.leaseId,p.owner,p.id,'claude-delivery-preparation',slot.anchorId,['active']);}
+-export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):ClaudeSlot{
++export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):ClaudeSlot{
+  const slot=readClaudeSlot(store,snapshot.taskId),v=slot?.current;
+  if(!slot||!v||slot.pending||slot.selectionHash!==normalizedSelection(snapshot)||snapshot.runner!=='claude-code'||snapshot.legacyBinding||resource.kind!=='claude-delivery'||resource.pathScope!=='C'||resource.resourceId!==v.resourceId||resource.contentHash!==v.hash||resource.generation!==v.generation||resource.relativePath!==slot.root||resource.state!=='ready'||resource.integrity!=='valid')throw fail();
+  const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
+@@ -103,8 +103,8 @@ export function protectClaudeNativeGuard(store:ResourceStore,taskId:string,runId
+   if(!row||row.task_id!==taskId||!['preparing','prepared'].includes(row.state))throw fail();
+   if(row.runner!=='claude-code')return;
+   const saved=store.sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;snapshot_json:string}|undefined;
+-  if(!saved||saved.schema_version!==2)return;
+-  let snapshot:CapabilitySessionSnapshotV2;try{snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(saved.snapshot_json));}catch{throw fail();}
++  if(!saved||![2,3].includes(saved.schema_version))return;
++  let snapshot:CapabilitySessionSnapshot;try{snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(saved.snapshot_json));}catch{throw fail();}
+   if(snapshot.taskId!==taskId||snapshot.projectId!==row.project_id||snapshot.runner!==row.runner||saved.snapshot_hash!==row.snapshot_hash||digest(canonicalJson(snapshot))!==row.snapshot_hash)throw fail();
+   if(snapshot.legacyBinding)return;
+   const root=claudeRoot(taskId),refs=store.sqlite.prepare("SELECT ref_id,ref_hash FROM capability_session_refs WHERE task_id=? AND ref_kind='session-projection'").all(taskId) as {ref_id:string;ref_hash:string}[],original=refs.filter(ref=>{const r=store.get(ref.ref_id);return r.kind==='session-projection'&&r.pathScope==='C'&&r.relativePath===root&&r.resourceId===`session-projection:${taskId}:${r.contentHash}`&&r.contentHash===ref.ref_hash;});
+diff --git a/src/main/core/applications/claude-projection-selection.ts b/src/main/core/applications/claude-projection-selection.ts
+index 665da686e..1c7abca60 100644
+--- a/src/main/core/applications/claude-projection-selection.ts
++++ b/src/main/core/applications/claude-projection-selection.ts
+@@ -1,7 +1,7 @@
+ import {z} from 'zod';
+ import {basename,dirname} from 'node:path';
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {OwnedBundleManifest} from './owned-bundle';
+ import {canonicalJson,digest} from './manifest';
+ const source=z.object({resourceId:z.string().min(1).max(512),sourceHash:z.string().regex(/^[a-f0-9]{64}$/),nativeName:z.string().min(1).max(64)}).strict();
+@@ -11,19 +11,19 @@ const metadata=z.discriminatedUnion('formatVersion',[
+  z.object({...common,formatVersion:z.literal(2),standardSkillScope:z.array(z.string().min(1).max(4096)).max(4096)}).strict(),
+ ]);
+ /** Loading scope only: never rewrites S, grants tools, or accepts foreign paths. */
+-export function selectedStandardSkills(snapshot:CapabilitySessionSnapshotV2,scope?:readonly string[]){
++export function selectedStandardSkills(snapshot:CapabilitySessionSnapshot,scope?:readonly string[]){
+  const selected=snapshot.standardSkills.filter(s=>scope===undefined||scope.includes(s.projectionPath));
+  if(scope&&(snapshot.legacyBinding||new Set(scope).size!==scope.length||selected.length!==scope.length||canonicalJson(selected.map(s=>s.projectionPath))!==canonicalJson(scope)))throw new ApplicationError('INVALID_INPUT','标准Skill加载范围必须是原固定选择的有序子集');
+  return selected;
+ }
+ /** Verify complete App Skill groups and explicit standard subset against full S.
+  * Also reject hidden/extraneous files because Claude discovers the physical tree. */
+-export function claudeProjectionSelection(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):{appIds:string[];standardSkillScope:string[]}{
++export function claudeProjectionSelection(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshot,requireFull=false):{appIds:string[];standardSkillScope:string[]}{
+  const fail=()=>new ApplicationError('SNAPSHOT_IMMUTABLE','Claude投影必须对应原选择及明确的完整加载范围');
+  if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw fail();
+  const parsed=metadata.safeParse(manifest.metadata),selectionHash=digest(canonicalJson({...snapshot,native:{...snapshot.native,sessionId:null}}));
+  if(!parsed.success||parsed.data.taskId!==snapshot.taskId||parsed.data.selectionHash!==selectionHash)throw fail();
+- const value=parsed.data,standards=selectedStandardSkills(snapshot,value.formatVersion===2?value.standardSkillScope:undefined),appSources=(p:CapabilitySessionSnapshotV2['packages'][number])=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}));
++ const value=parsed.data,standards=selectedStandardSkills(snapshot,value.formatVersion===2?value.standardSkillScope:undefined),appSources=(p:CapabilitySessionSnapshot['packages'][number])=>p.skills.map(s=>({resourceId:'app:'+p.packageHash,sourceHash:s.contentHash,nativeName:s.nativeName}));
+  const appIds=snapshot.packages.filter(p=>appSources(p).some(source=>value.sources.some(s=>canonicalJson(s)===canonicalJson(source)))).map(p=>p.appId);
+  const expected=[...snapshot.packages.filter(p=>appIds.includes(p.appId)).flatMap(appSources),...standards.map(s=>({resourceId:`standard-skill:${s.skillId}:${s.hash}`,sourceHash:s.hash,nativeName:basename(dirname(s.projectionPath))}))];
+  if(canonicalJson(value.sources)!==canonicalJson(expected)||requireFull&&(appIds.length!==snapshot.packages.length||standards.length!==snapshot.standardSkills.length))throw fail();
+diff --git a/src/main/core/applications/discovery-catalog.ts b/src/main/core/applications/discovery-catalog.ts
+index c25a03434..8ad22bddb 100644
+--- a/src/main/core/applications/discovery-catalog.ts
++++ b/src/main/core/applications/discovery-catalog.ts
+@@ -4,7 +4,7 @@ import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFi
+ import { dirname, join } from 'node:path';
+ import { z } from 'zod';
+ import { ApplicationError } from '@shared/applications';
+-import { applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import { applicationNativeSkillName, type CapabilitySessionSnapshot } from '@shared/application-session';
+ import type { AgentLoadRequest } from '@shared/agent-adapters';
+ import { canonicalJson, compareCodePoints, digest } from './manifest';
+ import { ensureStoreDirectory, verifyPackageTree } from './package-files';
+@@ -221,7 +221,7 @@ export class DiscoveryCatalog {
+         });
+     },signal,timeoutMs);}
+     /** Read-only attribution,not a publication or file-readiness receipt. */
+-    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
++    async inspectPhysical(snapshot:CapabilitySessionSnapshot):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
+         const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),unavailable=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>(),failures=new Map<string,'OWNERSHIP_CONFLICT'|'HASH_MISMATCH'>();
+         for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&(error.code==='OWNERSHIP_CONFLICT'||error.code==='HASH_MISMATCH')){excludedPaths.push(entry.path);failures.set(entry.path,error.code);}else throw error;}}
+         const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash,sourceId:'app:'+p.packageHash,sourceHash:p.packageHash,sourceKind:'application-package'}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash,sourceId:'standard-skill:'+s.skillId+':'+s.hash,sourceHash:s.hash,sourceKind:'standard-skill'}))];
+@@ -761,7 +761,7 @@ export class DiscoveryCatalog {
+             return results;
+         });
+     }
+-    verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshotV2): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
++    verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshot): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
+         throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影资源未就绪或实际HOME不同'); const manifest = verifyOwnedBundle(this.store.directory(resource), resource.contentHash, this.store.storeId); if (manifest.metadata.homeId !== this.homeId)
+         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影属于其他发现根'); const selections = [...snapshot.packages.flatMap(p => p.skills.map(s => ({ path: s.projectionPath, hash: s.contentHash }))), ...snapshot.standardSkills.map(s => ({ path: s.projectionPath, hash: s.hash }))]; if (snapshot.runner !== 'codex' || !selections.some(s => s.path === join(this.store.directory(resource), 'SKILL.md') && s.hash === manifest.metadata.sourceHash))
+         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影未被原会话按相同来源选择'); }
+diff --git a/src/main/core/applications/execution-context.ts b/src/main/core/applications/execution-context.ts
+index db2d51560..ffd3f107b 100644
+--- a/src/main/core/applications/execution-context.ts
++++ b/src/main/core/applications/execution-context.ts
+@@ -21,6 +21,8 @@ import { canonicalJson, digest } from './manifest';
+ import type { RunContext } from './run-registry';
+ import type { ApplicationDataBinding } from './application-adapter-registry';
+ import type { ApplicationOperationContext } from './tool-service';
++import type { CallerContext } from './caller-context';
++import {requirePlanEntry} from './run-plan';
+ 
+ export type ApplicationUiSender = Pick<IpcMainInvokeEvent,'sender'|'senderFrame'>;
+ export interface ApplicationExecutionContext<A extends string=ApplicationId> {
+@@ -42,6 +44,8 @@ const managementActions=new Set(['application.configure','application.cache.stat
+ /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
+ export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
+   private readonly records=new WeakMap<object,ContextRecord<C,A>>();
++  private readonly callers=new WeakMap<object,ApplicationExecutionContext<A>>();
++  private readonly agentCalls=new WeakMap<object,Extract<CallerContext,{kind:'agent'}>>();
+   private readonly credentials=new CredentialHandles<ReturnType<ApplicationConnectionService<C,A>['authentication']>>();
+   private readonly sharedIndexes=new WeakSet<object>();
+   private readonly active=new Set<ContextRecord<C,A>>();
+@@ -71,6 +75,37 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
+     await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT OR IGNORE INTO application_activity_subjects VALUES(?,?,?)').run(context.operationId,kind,subjectId);});
+   }
+   assertActive(context:ApplicationExecutionContext<A>):void{this.record(context);}
++  caller(context:ApplicationExecutionContext<A>):CallerContext{
++    this.record(context);
++    const base={operationId:context.operationId,appId:context.appId,packageHash:context.packageHash,action:context.action};
++    let caller:CallerContext;
++    if(context.callerKind==='agent-run'){
++      const issued=this.agentCalls.get(context);if(!issued)throw new ApplicationError('SCOPE_DENIED','Agent调用缺少网关签发依据');caller=issued;
++    }else if(context.scopeKind==='connection-management')caller=Object.freeze({...base,kind:'management',projectId:context.projectId});
++    else if(context.callerKind==='index-job'){
++      if(!context.projectId||!context.jobId||!context.parentOperationId)throw new ApplicationError('SCOPE_DENIED','内部调用缺少父操作');
++      caller=Object.freeze({...base,kind:'internal',projectId:context.projectId,job:context.jobId,parentOperationId:context.parentOperationId});
++    }else{
++      if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','页面业务调用缺少项目');
++      caller=Object.freeze({...base,kind:'ui',projectId:context.projectId,operations:context.allowedOperations});
++    }
++    this.callers.set(caller,context);return caller;
++  }
++  contextFor(caller:CallerContext):ApplicationExecutionContext<A>{
++    const context=caller&&typeof caller==='object'?this.callers.get(caller):undefined;
++    if(!context)throw new ApplicationError('SCOPE_DENIED','调用身份不是当前宿主签发');this.record(context);return context;
++  }
++  async withSignal<T>(context:ApplicationExecutionContext<A>,signal:AbortSignal|undefined,work:()=>Promise<T>):Promise<T>{
++    const record=this.record(context),cancel=()=>record.abort.abort(signal?.reason);
++    if(signal){signal.addEventListener('abort',cancel,{once:true});if(signal.aborted)cancel();}
++    try{this.record(context);const value=await work();this.record(context);return value;}
++    finally{signal?.removeEventListener('abort',cancel);}
++  }
++  async requireSlots(context:ApplicationExecutionContext<A>,slots:readonly string[]):Promise<void>{
++    this.record(context);
++    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');await this.pinConnection(context,provider.id,null,false);}
++    this.record(context);
++  }
+   require(context:ApplicationExecutionContext<A>,permission:string):void{
+     const record=this.record(context);
+     if(!record.allowed.has(permission))throw new ApplicationError('SCOPE_DENIED','本次业务操作未获该动作授权');
+@@ -229,10 +264,14 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
+   }
+   withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+     const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
++    if(known.plan){const allowed=known.plan.allowed.find(c=>c.mcpTool===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定工具不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,'mcp');}
+     if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selected.toolContractMajors[binding.toolName]!==operation.contractMajor||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
+     const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);
+     const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
+-    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,work,false);
++    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
++      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry:'mcp',requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
++      return work(context);
++    },false);
+   }
+   withIndex<T>(parent:ApplicationExecutionContext<A>,permission:'mail.read'|'zentao.read',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+     this.require(parent,permission);if(parent.scopeKind!=='project'||!parent.projectId)throw new ApplicationError('SCOPE_DENIED','来源刷新需要有效项目触发');const application=this.builtin.assertTrusted(parent.packageHash),id=randomUUID();
+diff --git a/src/main/core/applications/legacy-original-codex.ts b/src/main/core/applications/legacy-original-codex.ts
+index 9a0bab7a0..bb1c24d5d 100644
+--- a/src/main/core/applications/legacy-original-codex.ts
++++ b/src/main/core/applications/legacy-original-codex.ts
+@@ -1,5 +1,5 @@
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import {canonicalJson,digest} from './manifest';
+ import {DiscoveryCatalog,type DiscoveryProjectionSource} from './discovery-catalog';
+ import {LegacyCapabilityResourceAdopter} from './legacy-resource-adopter';
+@@ -30,7 +30,7 @@ export class LegacyOriginalCodex{
+    const snapshot=this.store.sqlite.prepare('SELECT schema_version,snapshot_json,snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_json:string;snapshot_hash:string}|undefined;
+    let pointer;try{pointer=JSON.parse(initial.runtime_snapshot)?.sessionCapabilities;}catch{}
+    if(!snapshot||snapshot.schema_version!==2||digest(snapshot.snapshot_json)!==snapshot.snapshot_hash||canonicalJson(pointer)!==canonicalJson({schema:2,taskId,snapshotHash:snapshot.snapshot_hash}))throw new ApplicationError('SNAPSHOT_CORRUPT','已迁移原任务的固定指针不同');
+-   assertLegacySessionSource(this.store,JSON.parse(snapshot.snapshot_json) as CapabilitySessionSnapshotV2);
++   assertLegacySessionSource(this.store,JSON.parse(snapshot.snapshot_json) as CapabilitySessionSnapshot);
+   }
+   const metadata=()=>{
+    const source=this.source(taskId),state=this.store.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
+@@ -57,7 +57,7 @@ export class LegacyOriginalCodex{
+   const ready=this.source(taskId);for(const r of ready.originalCodexProjections??[])if(r.state!=='ready'||r.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享Skill投影尚未就绪');
+   return published;
+  }
+- verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):void{
++ verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
+   const original=assertLegacySessionSource(this.store,snapshot),expected=original.originalCodexProjections?.find(r=>r.resourceId===resource.resourceId),skill=original.evidence.skills.find(s=>s.enabled&&s.hash===resource.contentHash&&legacyDiscoveryEntry(this.store.storeId,original.identity.home,s.skillId,s.hash).resourceId===resource.resourceId);
+   if(!expected||!skill||canonicalJson(expected)!==canonicalJson(resource)||resource.state!=='ready'||resource.integrity!=='valid'||original.identity.home!==this.catalog.home)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享Skill投影未被本任务完整引用');
+   const entry=legacyDiscoveryEntry(this.store.storeId,original.identity.home,skill.skillId,skill.hash),tree=verifyLegacyDiscoveryEntry(entry,original.identity.home).files,source=this.store.get(`standard-skill:${skill.skillId}:${skill.hash}`),files=new LegacyCapabilityResourceAdopter(this.store).verify(source),deps=this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId);
+diff --git a/src/main/core/applications/legacy-original-plugin.ts b/src/main/core/applications/legacy-original-plugin.ts
+index 77f8498bf..2e11e2a40 100644
+--- a/src/main/core/applications/legacy-original-plugin.ts
++++ b/src/main/core/applications/legacy-original-plugin.ts
+@@ -1,7 +1,7 @@
+ import {lstatSync,mkdirSync,realpathSync,readFileSync,writeFileSync} from 'node:fs';
+ import {dirname,join,relative} from 'node:path';
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import {canonicalJson} from './manifest';
+ import type {ResourceRecord,ResourceStore} from './resource-store';
+ import {retainedLegacySource,assertLegacySessionSource} from './legacy-session-source';
+@@ -62,7 +62,7 @@ export class LegacyOriginalPlugin {
+   if(known){const r=this.store.get(resourceId);if(r.state!=='ready'){if(!r.operationId||!['staged','verified','recovery-required'].includes(r.state))throw new ApplicationError('RESOURCE_BUSY','原静态投影发布仍未结束');return this.store.recover(spec,r.operationId,signal);}}
+   return this.store.publish(spec,signal);
+  }
+- verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):void{
++ verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
+   const source=assertLegacySessionSource(this.store,snapshot),expected=source.originalProjection;
+   if(!expected||canonicalJson(expected)!==canonicalJson(resource)||resource.state!=='ready'||resource.integrity!=='valid'||!source.pluginSource)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原静态投影尚未就绪或未被会话引用');
+   const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(canonicalJson(deps)!==canonicalJson([source.pluginSource.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原静态投影依赖缺失或不同');
+diff --git a/src/main/core/applications/legacy-session-migration.ts b/src/main/core/applications/legacy-session-migration.ts
+index c8234f9e7..016911de7 100644
+--- a/src/main/core/applications/legacy-session-migration.ts
++++ b/src/main/core/applications/legacy-session-migration.ts
+@@ -1,7 +1,7 @@
+ import {lstatSync} from 'node:fs';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
++import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
+ import {canonicalJson,digest} from './manifest';
+ import {withResourceLock} from './resource-lock';
+ import type {ResourceStore} from './resource-store';
+@@ -51,7 +51,7 @@ export class LegacySessionMigration {
+   if(original.pluginSource)new LegacyPluginSources(this.store).verify(original.pluginSource,legacyPluginOrigin(original.evidence));
+   const resources=[adapter.resource,...original.snapshot.skills.map(s=>this.store.get('standard-skill:'+s.skillId+':'+s.hash)),this.store.get('legacy-runtime:'+original.evidence.runtimeHash),...(original.pluginSource?[original.pluginSource]:[]),...(original.originalProjection?[original.originalProjection]:[]),...(original.originalCodexProjections??[])];
+   for(const resource of resources)if((resource.pathScope!=='C'&&!(resource.kind==='legacy-agent-projection'&&resource.pathScope==='H'&&resource.scopeIdentity===digest(identity.home)))||resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原M4迁移来源尚未就绪');
+-  const snapshot=capabilitySessionSnapshotSchema.parse({schema:2,taskId:identity.taskId,projectId:identity.projectId,createdAt:new Date().toISOString(),runner:identity.runner,adapterBinding:{id:identity.runner,version:adapter.metadata.version,hash:adapter.hash,projectionFormatVersion:2,nativeToolNames:{}},native:{sessionId:identity.sessionId,stateRoot:identity.stateRoot,cwd:identity.cwd},agentAtCreation:{version:input.cliVersion,adapterRevision:2},catalogGeneration,packages:[],standardSkills:original.standardSkills,mcp:original.mcp,legacyBinding:{...original.binding,...(original.pluginSource?{pluginSourceHash:original.pluginSource.contentHash}:{})},provenance:'migrated-known-legacy'} satisfies CapabilitySessionSnapshotV2);
++  const snapshot=capabilitySessionSnapshotSchema.parse({schema:2,taskId:identity.taskId,projectId:identity.projectId,createdAt:new Date().toISOString(),runner:identity.runner,adapterBinding:{id:identity.runner,version:adapter.metadata.version,hash:adapter.hash,projectionFormatVersion:2,nativeToolNames:{}},native:{sessionId:identity.sessionId,stateRoot:identity.stateRoot,cwd:identity.cwd},agentAtCreation:{version:input.cliVersion,adapterRevision:2},catalogGeneration,packages:[],standardSkills:original.standardSkills,mcp:original.mcp,legacyBinding:{...original.binding,...(original.pluginSource?{pluginSourceHash:original.pluginSource.contentHash}:{})},provenance:'migrated-known-legacy'} satisfies CapabilitySessionSnapshot);
+   const bytes=canonicalJson(snapshot),snapshotHash=digest(bytes),selectedHash=selectionHash(snapshot),pointer={schema:2 as const,taskId:identity.taskId,snapshotHash},nextTask=JSON.stringify({...JSON.parse(original.row.source_record_json),sessionCapabilities:pointer});
+   await this.checkpoint?.('files-verified');canceled(signal);await this.checkpoint?.('before-commit');canceled(signal);
+   const session=await withResourceLock(this.store.root,()=>{
+diff --git a/src/main/core/applications/legacy-session-source.ts b/src/main/core/applications/legacy-session-source.ts
+index f3fd8ed49..cca011e0c 100644
+--- a/src/main/core/applications/legacy-session-source.ts
++++ b/src/main/core/applications/legacy-session-source.ts
+@@ -1,7 +1,7 @@
+ import {join,relative} from 'node:path';
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import {canonicalJson,digest} from './manifest';
+ import {legacyRuntimeMetadata,legacyManifestSchema,type LegacyTaskEvidence} from './legacy-task-evidence';
+ import type {ResourceStore,ResourceRecord} from './resource-store';
+@@ -27,8 +27,8 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
+   const manifest=legacyManifestSchema.parse(JSON.parse(row.manifest_json)),runtimePrefix=store.root+'/runtime/',runtimeRoots=new Set(Object.keys(manifest.files).filter(p=>p.startsWith(runtimePrefix)).map(p=>join(store.root,'runtime',p.slice(runtimePrefix.length).split('/')[0])));
+   if(manifest.projectId!==snapshot.projectId||manifest.runId!==snapshot.runId||manifest.configVersion!==snapshot.configVersion||manifest.configHash!==snapshot.configHash||runtimeRoots.size!==1||!runtimeRoots.has(evidence.runtimePath))return fail();
+   const binding={sourceSnapshotHash:row.source_snapshot_hash,sourceRecordHash:digest(row.source_record_json),identityHash:digest(row.source_identity_json),manifestHash:evidence.manifestHash,logicalEvidenceHash:digest(canonicalJson(legacyLogicalEvidence(evidence)))};
+-  const standardSkills:CapabilitySessionSnapshotV2['standardSkills']=snapshot.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:s.path}));
+-  const mcp:CapabilitySessionSnapshotV2['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
++  const standardSkills:CapabilitySessionSnapshot['standardSkills']=snapshot.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:s.path}));
++  const mcp:CapabilitySessionSnapshot['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
+   let pluginSource:ResourceRecord|undefined;
+   if(evidence.pluginRoot){const resourceId=legacyPluginResourceId(taskId,evidence.manifestHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-plugin-source' AND ref_id=?").get(taskId,resourceId) as {ref_hash:string;relative_path:string}|undefined;if(ref){const resource=store.get(resourceId);if(resource.kind!=='legacy-plugin-source'||resource.pathScope!=='C'||resource.ownerStoreId!==store.storeId||resource.relativePath!=='legacy/plugins/'+resource.contentHash||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)return fail();pluginSource=resource;}}
+   let originalProjection:ResourceRecord|undefined;
+@@ -41,7 +41,7 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
+   return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource,...(originalProjection?{originalProjection}:{}),...(originalCodexProjections?{originalCodexProjections}:{})};
+  }catch(error){if(error instanceof ApplicationError)throw error;return fail();}
+ }
+-export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2){
++export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshot){
+  const source=retainedLegacySource(store,snapshot.taskId,'migrated'),{identity,row}=source;
+  const{pluginSourceHash,...binding}=snapshot.legacyBinding??{};if(pluginSourceHash&&source.pluginSource?.contentHash!==pluginSourceHash)return fail();
+  if(snapshot.provenance!=='migrated-known-legacy'||snapshot.adapterBinding.projectionFormatVersion!==2||snapshot.projectId!==identity.projectId||snapshot.runner!==identity.runner||snapshot.native.stateRoot!==identity.stateRoot||snapshot.native.cwd!==identity.cwd||snapshot.native.sessionId!==row.bound_native_session_id||snapshot.packages.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||canonicalJson(binding)!==canonicalJson(source.binding)||canonicalJson(snapshot.standardSkills)!==canonicalJson(source.standardSkills)||canonicalJson(snapshot.mcp)!==canonicalJson(source.mcp))return fail();
+diff --git a/src/main/core/applications/modules/mail/index.ts b/src/main/core/applications/modules/mail/index.ts
+index 25a231850..1fef89d94 100644
+--- a/src/main/core/applications/modules/mail/index.ts
++++ b/src/main/core/applications/modules/mail/index.ts
+@@ -25,8 +25,10 @@ const policies: Readonly<Record<string, LegacyCapabilityPolicy>> = {
+   send_execute: { ...write('mail.send.execute', 'business-intent', 'mail_send_intent', 'intentId', ['smtp']), semantics: 'external-write', approval: 'host-observed-user-authorization' },
+   send_get: read('mail.send.get'), send_cancel: write('mail.send.cancel', 'business-intent', 'mail_send_intent', 'intentId'),
+ };
++const methodAliases:Readonly<Record<string,string>>={query:'mail.query',read:'mail.read',resource_read:'mail.resource.read'};
+ export const mailModule: ApplicationModuleDefinition<'mail', readonly [ApplicationProviderDefinition<typeof foxmailConfigSchema, 'foxmail', 'mail'>, ApplicationProviderDefinition<typeof smtpConfigSchema, 'smtp', 'mail'>]> = {
+   appId: 'mail', contractMajors: [1], slots: ['foxmail', 'smtp'], stopBeforeSwitch: false,
++  capabilities:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,{...policy,method:methodAliases[key]??policy.id,contractMajors:[1],permission:['query','read','resource_read'].includes(key)?'mail.read':['send_prepare','send_execute'].includes(key)?'mail.send':'mail.draft'}])),
+   presentation: { displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
+   providers: [{
+     id: 'foxmail', appId: 'mail', readDefaultKeys: ['queryDays'], configApiMajor: 1, configSchema: foxmailConfigSchema,
+diff --git a/src/main/core/applications/modules/registry.ts b/src/main/core/applications/modules/registry.ts
+index 0bd35092f..a2c6c6e8f 100644
+--- a/src/main/core/applications/modules/registry.ts
++++ b/src/main/core/applications/modules/registry.ts
+@@ -1,6 +1,6 @@
+ import { z } from 'zod';
+ import { ApplicationError, type ApplicationManifestV1 } from '@shared/applications';
+-import { applicationCapabilityViews, type LegacyCapabilityResolver } from '@shared/application-capabilities';
++import { applicationCapabilityViews, type LegacyCapabilityResolver, type LegacyCapabilityPolicy } from '@shared/application-capabilities';
+ import type { ApplicationPresentation, ApplicationProviderPresentation } from '@shared/application-presentation';
+ import type { HostApplicationDefinitions, HostProvider, HostedConfiguration, HostedIdentity } from '../host-application-registry';
+ import type { ApplicationModuleCatalog } from '../manifest';
+@@ -10,7 +10,7 @@ import type { ApplicationDataResources } from '../data-resources';
+ import type { ApplicationSelectionService } from '../selection-service';
+ import type { ResourceStore } from '../resource-store';
+ import type {ConfigViewConverter} from '../config-view-registry';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ 
+ export interface ApplicationModuleData extends ApplicationDataHost {
+   /** Retained internal v1 callers may use their original service, never the new routing facade. */
+@@ -23,6 +23,9 @@ export interface ApplicationModuleServices {
+   retained: ReadonlyMap<string, unknown>;
+ }
+ export interface ApplicationProviderRuntime { mailWorker: string; foxmailNative: string }
++export interface ApplicationModuleCapability extends LegacyCapabilityPolicy {
++  method: string; permission: string; contractMajors: readonly number[];
++}
+ export interface TrustedApplicationProvider extends HostProvider<HostedConfiguration, string> {
+   configViews?: readonly ConfigViewConverter<HostedConfiguration>[];
+   presentation: ApplicationProviderPresentation;
+@@ -33,7 +36,8 @@ export interface TrustedApplicationModule {
+   presentation: ApplicationPresentation;
+   providers: readonly TrustedApplicationProvider[];
+   legacyPolicy: LegacyCapabilityResolver;
+-  connectionNotice?(store: ResourceStore, snapshot: CapabilitySessionSnapshotV2, appId: string): string | null;
++  capabilities: Readonly<Record<string, ApplicationModuleCapability>>;
++  connectionNotice?(store: ResourceStore, snapshot: CapabilitySessionSnapshot, appId: string): string | null;
+   createData(services: ApplicationModuleServices): ApplicationModuleData;
+ }
+ export type ApplicationProviderDefinition<S extends z.ZodType<HostedConfiguration>, P extends string, A extends string> = Omit<TrustedApplicationProvider, 'id' | 'appId' | 'configSchema'> & { id: P; appId: A; configSchema: S };
+@@ -54,6 +58,9 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
+       if (!/^[a-z][a-z0-9-]{0,19}$/.test(module.appId) || this.modules.has(module.appId) || !module.contractMajors.length || new Set(module.contractMajors).size !== module.contractMajors.length || module.contractMajors.some(n => !Number.isSafeInteger(n) || n < 1) || typeof module.createData !== 'function' || typeof module.legacyPolicy !== 'function' || !module.providers.length || new Set(module.slots).size !== module.slots.length) throw invalid();
+       if (!module.slots.includes(module.presentation.defaultProvider)) throw invalid();
+       this.modules.set(module.appId, module);
++      for(const [id,capability] of Object.entries(module.capabilities)){
++        if(id!==capability.id||!id.startsWith(module.appId+'.')||!capability.method.startsWith(module.appId+'.')||!capability.permission.startsWith(module.appId+'.')||!capability.contractMajors.length||capability.contractMajors.some(major=>!module.contractMajors.includes(major))||capability.semantics!=='read'&&(!capability.protection||capability.retry!=='never')||capability.semantics==='external-write'&&!capability.approval)throw invalid();
++      }
+       for (const provider of module.providers) {
+         if (provider.appId !== module.appId || this.providers.has(provider.id) || !module.slots.includes(provider.id) || provider.presentation.id !== provider.id || provider.presentation.appId !== module.appId || provider.presentation.initial.kind !== provider.id || typeof provider.verify !== 'function') throw invalid();
+         this.providers.set(provider.id, provider);
+@@ -87,6 +94,11 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
+   }
+   supportsModule(id: string, appId: string, major: number): boolean { return id === appId && !!this.modules.get(id)?.contractMajors.includes(major); }
+   legacyCapabilities(manifest: ApplicationManifestV1) { return applicationCapabilityViews(manifest, this.module(manifest.appId).legacyPolicy); }
++  capability(appId:string,id:string,contractMajor:number):ApplicationModuleCapability{
++    const value=this.module(appId).capabilities[id];
++    if(!value||!value.contractMajors.includes(contractMajor))throw new ApplicationError('CAPABILITY_UNAVAILABLE','受信模块没有此能力契约');
++    return value;
++  }
+   createHosts(services: ApplicationModuleServices) { return this.registered.map(module => ({ appId: module.appId, data: module.createData(services) })); }
+   configViews(): readonly ConfigViewConverter<HostedConfiguration>[] {
+     return [...this.providers.values()].flatMap(provider => {
+diff --git a/src/main/core/applications/modules/zentao/index.ts b/src/main/core/applications/modules/zentao/index.ts
+index 2317e4c80..40bb81687 100644
+--- a/src/main/core/applications/modules/zentao/index.ts
++++ b/src/main/core/applications/modules/zentao/index.ts
+@@ -12,8 +12,10 @@ const legacy: Readonly<Record<string, string>> = {
+   smartdd_zentao_object_get_v1: 'zentao.object.get',
+   smartdd_zentao_resource_v1: 'zentao.resource.read',
+ };
++const capabilityMethods:Readonly<Record<string,string>>={'zentao.object.list':'zentao.work.list','zentao.object.get':'zentao.object.get','zentao.resource.read':'zentao.resource.read'};
+ export const zentaoModule: ApplicationModuleDefinition<'zentao', readonly [ApplicationProviderDefinition<typeof zentaoConfigSchema, 'zentao', 'zentao'>]> = {
+   appId: 'zentao', contractMajors: [1], slots: ['zentao'], stopBeforeSwitch: true,
++  capabilities:Object.fromEntries(Object.entries(capabilityMethods).map(([id,method])=>[id,{id,method,contractMajors:[1],permission:'zentao.read',semantics:'read',retry:'safe-read',slots:{required:['zentao'],conditional:[]}}])),
+   presentation: { displayName: '禅道', heading: '查看指派给我的 Bug 和研发需求', mark: 'zigzag', projectNote: '每项目仅一个生效连接；停用或认证失败不会自动切换账号。', emptyConnectionSuffix: '', defaultProvider: 'zentao', panel: 'zentao-work', switchTitle: '切换项目禅道连接' },
+   providers: [{
+     id: 'zentao', appId: 'zentao', configApiMajor: 1, configSchema: zentaoConfigSchema,
+diff --git a/src/main/core/applications/modules/zentao/run-policy.ts b/src/main/core/applications/modules/zentao/run-policy.ts
+index 205c680cf..98b4f5984 100644
+--- a/src/main/core/applications/modules/zentao/run-policy.ts
++++ b/src/main/core/applications/modules/zentao/run-policy.ts
+@@ -1,7 +1,7 @@
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {ResourceStore} from '../../resource-store';
+ /** Retained ZenTao source notices; package contracts and returned wording stay unchanged. */
+-export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
++export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshot,appId:string):string|null{
+  const selected=snapshot.packages.find(p=>p.appId===appId);if(!selected)return null;
+  const row=store.sqlite.prepare(`SELECT s.pending_operation_id,b.connection_id,b.identity_revision,c.name,c.app_id,c.provider_id,c.identity_revision AS actual_identity_revision
+   FROM application_project_settings s LEFT JOIN application_project_bindings b ON b.project_id=s.project_id AND b.app_id=s.app_id AND b.slot='zentao'
+diff --git a/src/main/core/applications/native-application-conflicts.ts b/src/main/core/applications/native-application-conflicts.ts
+index 870514392..4e1045cf1 100644
+--- a/src/main/core/applications/native-application-conflicts.ts
++++ b/src/main/core/applications/native-application-conflicts.ts
+@@ -1,5 +1,5 @@
+ import {dirname,resolve,isAbsolute} from 'node:path';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {NativePreparationSource} from '@shared/application-session-diagnostics';
+ import type {NativeLaunchContext} from './native-launch-context';
+ import {canonicalFuturePath} from './session-registry';
+@@ -10,7 +10,7 @@ export interface NativeCapabilityConflicts {
+ const safePath=(path:string|null|undefined)=>path&&isAbsolute(path)&&path.length<=4096&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(path)?path:null;
+ /** Read-only attribution. Source locations are display evidence,never repair,
+  * native loading or tool authority. Existing conflict sets remain the gates. */
+-export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>}):NativeCapabilityConflicts{
++export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>}):NativeCapabilityConflicts{
+  const conflicts=new Set<string>(),standards=new Set<string>(),unavailableApplications=new Set<string>(),unavailableStandardSkills=new Set<string>(),sources=new Map<string,NativePreparationSource[]>();let projectMcp=false;
+  const add=(key:string,source:NativePreparationSource)=>{const current=sources.get(key)??[];if(!current.some(s=>JSON.stringify(s)===JSON.stringify(source)))sources.set(key,[...current,source]);};
+  const itemSource=(item:NativeLaunchContext['inventory'][number]):NativePreparationSource=>({kind:item.kind,name:item.name,path:safePath(item.path),configurationPath:null,location:item.path==='profile arguments'?'profile-arguments':safePath(item.path)?'file':'unrecorded'});
+@@ -39,4 +39,4 @@ export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,n
+  if(physical?.unavailable)for(const path of physical.unavailable){for(const p of snapshot.packages)if(p.skills.some(s=>s.projectionPath===path)){unavailableApplications.add(p.appId);add('application:'+p.appId,projection(p.appId,path));}for(const s of snapshot.standardSkills)if(s.projectionPath===path){unavailableStandardSkills.add(path);add('standard-skill:'+s.skillId,projection(s.skillId,path));}}
+  return{applications:conflicts,standardSkills:standards,unavailableApplications,unavailableStandardSkills,projectMcp,sources};
+ }
+-export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}
++export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}
+diff --git a/src/main/core/applications/native-discovery-exclusions.ts b/src/main/core/applications/native-discovery-exclusions.ts
+index 86464c4f9..7aa396feb 100644
+--- a/src/main/core/applications/native-discovery-exclusions.ts
++++ b/src/main/core/applications/native-discovery-exclusions.ts
+@@ -82,7 +82,7 @@ function guardRecord(store:ResourceStore,proof:NativeGuardDiscoveryProof):GuardR
+  if(!lease||lease.host_instance_id!==run.owner_instance_id||lease.pid!==run.owner_pid||lease.process_started_at!==run.owner_started_at||!['preparing','active'].includes(lease.state))throw recovery();
+  const source=store.sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(context.taskId) as {schema_version:number;snapshot_hash:string;snapshot_json:string;retention_state:string;legacy_status:string}|undefined;
+  if(!source||source.snapshot_hash!==context.snapshotHash||digest(source.snapshot_json)!==context.snapshotHash)throw recovery();
+- if(context.kind==='fixed'){if(source.schema_version!==2||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
++ if(context.kind==='fixed'){if(![2,3].includes(source.schema_version)||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
+  else if(source.schema_version!==0||source.retention_state!=='hold'||source.legacy_status!=='history-unknown')throw recovery();
+  if(selection.schema==='native-guard-retention-omissions-v1'&&!selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format==='legacy-tree-v1'))throw recovery();
+  unverifiedPaths(selection.catalog,selection.home,selection.paths,[],selection.schema==='native-guard-retention-omissions-v1');record.assertOwnedGuard();return record;
+diff --git a/src/main/core/applications/native-preparation-diagnostics.ts b/src/main/core/applications/native-preparation-diagnostics.ts
+index c52c2d79e..c64aae727 100644
+--- a/src/main/core/applications/native-preparation-diagnostics.ts
++++ b/src/main/core/applications/native-preparation-diagnostics.ts
+@@ -1,18 +1,18 @@
+ import {z} from 'zod';
+ import {ApplicationError} from '@shared/applications';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {NativePreparationCapability,NativePreparationSource} from '@shared/application-session-diagnostics';
+ import type {NativeCapabilityConflicts} from './native-application-conflicts';
+ import {canonicalJson} from './manifest';
+ const hash=z.string().regex(/^[a-f0-9]{64}$/),name=z.string().min(1).max(128).refine(v=>!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v)),path=z.string().min(1).max(4096).refine(v=>v.startsWith('/')&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(v));
+ export const nativeCapabilityPreparationSchema=z.array(z.object({kind:z.enum(['application','standard-skill','project-mcp']),id:name,name,selectedHash:hash,paths:z.array(path).max(4096),state:z.enum(['prepared','unavailable','disabled','unverified']),issueCode:z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/).nullable(),sources:z.array(z.object({kind:z.enum(['skill','mcp','plugin','native-tool','skill-config','projection','resource','policy']),name,path:path.nullable(),configurationPath:path.nullable(),location:z.enum(['file','profile-arguments','unrecorded'])}).strict()).max(128)}).strict().refine(v=>(v.state==='prepared')===(v.issueCode===null))).max(4096);
+-function selection(snapshot:CapabilitySessionSnapshotV2){return[...snapshot.packages.map(p=>({kind:'application' as const,id:p.appId,name:p.appId,selectedHash:p.packageHash,paths:p.skills.map(s=>s.projectionPath)})),...snapshot.standardSkills.map(s=>({kind:'standard-skill' as const,id:s.skillId,name:s.skillId,selectedHash:s.hash,paths:[s.projectionPath]})),...snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>({kind:'project-mcp' as const,id:m.serverName,name:m.serverName,selectedHash:m.runtimeHash,paths:[]}))];}
+-export function assertNativeCapabilityPreparation(snapshot:CapabilitySessionSnapshotV2,items:readonly NativePreparationCapability[]):void{
++function selection(snapshot:CapabilitySessionSnapshot){return[...snapshot.packages.map(p=>({kind:'application' as const,id:p.appId,name:p.appId,selectedHash:p.packageHash,paths:p.skills.map(s=>s.projectionPath)})),...snapshot.standardSkills.map(s=>({kind:'standard-skill' as const,id:s.skillId,name:s.skillId,selectedHash:s.hash,paths:[s.projectionPath]})),...snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>({kind:'project-mcp' as const,id:m.serverName,name:m.serverName,selectedHash:m.runtimeHash,paths:[]}))];}
++export function assertNativeCapabilityPreparation(snapshot:CapabilitySessionSnapshot,items:readonly NativePreparationCapability[]):void{
+  const expected=selection(snapshot);if(items.length!==expected.length||new Set(items.map(i=>i.kind+':'+i.id)).size!==items.length||items.some(i=>{const fixed=expected.find(s=>s.kind===i.kind&&s.id===i.id);return !fixed||fixed.name!==i.name||fixed.selectedHash!==i.selectedHash||canonicalJson(fixed.paths)!==canonicalJson(i.paths);})||Buffer.byteLength(canonicalJson(items))>1024*1024)throw new ApplicationError('SCOPE_DENIED','逐项准备记录不属于原固定能力选择');
+ }
+ /** The actual emitted subset is supplied by the launcher; this receipt grants
+  * nothing and deliberately includes unavailable original selections. */
+-export function nativeCapabilityPreparation(snapshot:CapabilitySessionSnapshotV2,input:{applications:readonly string[];standardPaths:readonly string[];mcpNames:readonly string[];facets?:NativeCapabilityConflicts;issue?:string;applicationIssue?:string;projectMcpEnabled?:boolean}):NativePreparationCapability[]{
++export function nativeCapabilityPreparation(snapshot:CapabilitySessionSnapshot,input:{applications:readonly string[];standardPaths:readonly string[];mcpNames:readonly string[];facets?:NativeCapabilityConflicts;issue?:string;applicationIssue?:string;projectMcpEnabled?:boolean}):NativePreparationCapability[]{
+  const result:NativePreparationCapability[]=selection(snapshot).map(item=>{
+   const key=item.kind+':'+item.id,sources=input.facets?.sources.get(key)??[],conflict=item.kind==='application'?input.facets?.applications.has(item.id):item.kind==='standard-skill'?input.facets?.standardSkills.has(item.paths[0]):input.facets?.projectMcp,damaged=item.kind==='application'?input.facets?.unavailableApplications.has(item.id):item.kind==='standard-skill'?input.facets?.unavailableStandardSkills.has(item.paths[0]):false,delivered=item.kind==='application'?input.applications.includes(item.id):item.kind==='standard-skill'?input.standardPaths.includes(item.paths[0]):input.mcpNames.includes(item.id);
+   let state:NativePreparationCapability['state']='prepared',issueCode:string|null=null;
+diff --git a/src/main/core/applications/run-registry.ts b/src/main/core/applications/run-registry.ts
+index fbb99cafc..c0176a8d2 100644
+--- a/src/main/core/applications/run-registry.ts
++++ b/src/main/core/applications/run-registry.ts
+@@ -6,13 +6,15 @@ import {assertScopeExclusions,assertIndependentRoots,applicationRunScopeSchema,a
+ import { randomUUID } from 'node:crypto';
+ import { z } from 'zod';
+ import { ApplicationError } from '@shared/applications';
+-import type { CapabilityRunRecord, CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import type { CapabilityRunRecord, CapabilitySessionSnapshot } from '@shared/application-session';
+ import { canonicalJson, digest } from './manifest';
+ import {launchRestrictionSchema,readLaunchRestriction,type ManagedCapabilityRestriction} from './launch-restriction';
+ import type { ResourceRecord, ResourceStore } from './resource-store';
+ import { withResourceLock } from './resource-lock';
+ import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
+ import type { ProcessIdentity, ProcessIdentityReader, ProcessState } from './process-identity';
++import type {ApplicationRunPlan} from '@shared/application-run-plan';
++import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan} from './run-plan';
+ 
+ const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.enum(['zentao','foxmail','smtp']),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
+ const bindingsSchema = z.array(bindingSchema).max(64).refine(items => new Set(items.map(i => i.appId + ':' + i.slot)).size === items.length);
+@@ -26,14 +28,16 @@ export interface RunRow {
+ export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
+ interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
+ interface NativeGuardRequest {taskId:string;projectId:string;runner:'claude-code'|'codex';snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
+-interface OwnedRun { delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+-export interface RunContext { run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshotV2;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
++interface OwnedRun { planHash?:string;delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
++export interface RunContext { plan?:ApplicationRunPlan;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
+ export interface RunRegistryDeps {
+   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
+-  assertCurrent(snapshot: CapabilitySessionSnapshotV2,bindings: readonly RunBindingRevision[]): void;
++  assertCurrent(snapshot: CapabilitySessionSnapshot,bindings: readonly RunBindingRevision[]): void;
+   /** Revoke credentials and signal only owned executions/CLI/bridge handles. Exit is recorded separately. */
+   revoke(runId: string,reason: string): void | Promise<void>;
+   processes: ProcessIdentityReader;
++  /** Host-only composition. No caller or model argument can supply a plan. */
++  createPlan?(snapshot:CapabilitySessionSnapshot,snapshotHash:string,runId:string,appIds?:readonly string[]):ApplicationRunPlan;
+   revocationTimeoutMs?: number;
+ }
+ export interface OwnedRunProcess {
+@@ -89,13 +93,15 @@ export class CapabilityRunRegistry {
+     if (!owned || row.owner_instance_id !== this.instanceId || row.owner_pid !== this.host.pid || row.owner_started_at !== this.host.startedAt) throw new ApplicationError('SCOPE_DENIED','此运行不属于当前宿主实例');
+     return { row,owned };
+   }
+-  private mine(runId: string): { row: RunRow;owned: OwnedRun;session: StoredCapabilitySession } {
++  private mine(runId: string): { row: RunRow;owned: OwnedRun;session: StoredCapabilitySession;plan?:ApplicationRunPlan } {
+     const { row,owned } = this.owner(runId);
+     if(owned.guard)throw new ApplicationError('SCOPE_DENIED','原生守护不签发应用工具、业务来源或凭据');
+     const session = this.sessions.inspectCoordinated(row.task_id);
+     if (session.selectionHash !== owned.selectionHash || session.snapshot.projectId !== row.project_id || session.snapshot.runner !== row.runner || session.pointer.snapshotHash !== row.snapshot_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','运行与固定会话身份不同');
+     const scope=readApplicationRunScope(this.store,runId,session.snapshot,owned.scope?.evidenceHash);if(Boolean(scope)!==Boolean(owned.scope))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本轮应用范围与宿主登记不同');
+-    return { row,owned,session };
++    const plan=owned.planHash?readApplicationRunPlan(this.store,runId,owned.planHash):undefined;
++    if(plan&&(plan.taskId!==row.task_id||plan.projectId!==row.project_id||plan.snapshotHash!==row.snapshot_hash))throw new ApplicationError('SCOPE_DENIED','运行计划不能替换固定会话身份');
++    return { row,owned,session,...(plan?{plan}:{}) };
+   }
+   /** Lifecycle authority for native-only history is distinct from business authority. */
+   private lifecycle(runId:string):{row:RunRow;owned:OwnedRun;session?:StoredCapabilitySession}{
+@@ -169,6 +175,8 @@ export class CapabilityRunRegistry {
+     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
+     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
+     const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';let scope:ApplicationRunScope|undefined;let delivery:ClaudeRunDelivery|undefined;
++    const plan=this.deps.createPlan?verifyApplicationRunPlan(this.deps.createPlan((await this.sessions.get(value.taskId)).snapshot,value.snapshotHash,runId,narrowing?.appIds)):undefined;
++    if(plan&&(plan.runId!==runId||plan.taskId!==value.taskId||plan.snapshotHash!==value.snapshotHash))throw new ApplicationError('SCOPE_DENIED','宿主运行计划身份不匹配');
+     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
+       this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId); this.gate();
+@@ -181,13 +189,14 @@ export class CapabilityRunRegistry {
+       if(narrowing){const roots=this.sessions.scopedReferencesCoordinated(value.taskId,narrowing.appIds,narrowing.projectionIds,narrowing.independent===true),payload={...(narrowing.independent?{schema:2 as const,mode:'independent-capabilities' as const}:{schema:1 as const}),runId,taskId:value.taskId,projectId:session.snapshot.projectId,runner:session.snapshot.runner,snapshotHash:value.snapshotHash,selectionHash,ownerInstanceId:this.instanceId,ownerPid:this.host.pid,ownerStartedAt:this.host.startedAt,applications:session.snapshot.packages.filter(p=>narrowing.appIds.includes(p.appId)).map(p=>({appId:p.appId,packageHash:p.packageHash})),roots,...(narrowing.excludedApplications?{excludedApplications:narrowing.excludedApplications}:{}),createdAt:timestamp};scope=applicationRunScopeSchema.parse({...payload,evidenceHash:digest(canonicalJson(payload))});assertScopeExclusions(session.snapshot,scope);if(scope.schema===2)assertIndependentRoots(this.store,scope.roots); }
+       const resources=this.closure(value.taskId,undefined,scope);
+       this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
++      if(plan){if(plan.projectId!==session.snapshot.projectId||plan.applications.some(a=>!session.snapshot.packages.some(p=>p.appId===a.appId&&p.packageHash===a.packageHash)||narrowing&&!narrowing.appIds.includes(a.appId)))throw new ApplicationError('SCOPE_DENIED','运行计划超出本次固定应用范围');storeApplicationRunPlan(this.store,plan);}
+       if(scope)this.store.sqlite.prepare("INSERT INTO capability_resource_operations(operation_id,kind,owner_store_id,state,plan_json,created_at,updated_at) VALUES(?,'application-run-scope',?,'committed',?,?,?)").run(applicationScopeOperationId(runId),this.store.storeId,canonicalJson(scope),timestamp,timestamp);
+       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
+       for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
+       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
+       if(deliveryToken){if(!scope)throw new ApplicationError('SCOPE_DENIED','Claude交付必须使用真实本轮应用范围');delivery=bindClaudeDelivery(this.store,deliveryToken,runId,randomUUID(),scope.applications.map(p=>p.appId));}
+     }).immediate());
+-    const owned: OwnedRun = { ...(delivery?{delivery}:{}),...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
++    const owned: OwnedRun = { ...(plan?{planHash:plan.planHash}:{}),...(delivery?{delivery}:{}),...(scope?{scope,scopeProjectionIds:Object.freeze([...narrowing!.projectionIds])}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
+     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
+     return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+   }
+@@ -376,15 +385,15 @@ export class CapabilityRunRegistry {
+   }
+   /** Synchronous host policy hook; tools never choose their project/task/package context. */
+   assertActive(runId: string): RunContext {
+-    const { row,owned,session } = this.mine(runId);
++    const { row,owned,session,plan } = this.mine(runId);
+     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
+     const bindings = this.current(row,session); this.checkProtection(row,owned);
+-    return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
++    return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+   }
+   bridgePreparation(runId: string): RunContext {
+-    const { row,owned,session } = this.mine(runId);
++    const { row,owned,session,plan } = this.mine(runId);
+     if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');
+-    const bindings = this.current(row,session); this.checkProtection(row,owned); return { run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
++    const bindings = this.current(row,session); this.checkProtection(row,owned); return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+   }
+   assertBridge(runId: string,processId: string): RunContext {
+     const context = this.assertActive(runId), child = this.processRow(runId,processId);
+diff --git a/src/main/core/applications/session-diagnostics.ts b/src/main/core/applications/session-diagnostics.ts
+index 08a9fce8f..8bb445c59 100644
+--- a/src/main/core/applications/session-diagnostics.ts
++++ b/src/main/core/applications/session-diagnostics.ts
+@@ -15,7 +15,7 @@ import type {ApplicationSessionDiagnostic,SessionApplicationDiagnostic,SessionRu
+ import type {ResourceRecord,ResourceStore} from './resource-store';
+ import type {CapabilityRunRegistry} from './run-registry';
+ import {CapabilitySessionRegistry,type StoredCapabilitySession} from './session-registry';
+-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
++import type {CapabilitySessionSnapshot} from '@shared/application-session';
+ import type {ApplicationConnectionService} from './connection-service';
+ import type {ApplicationSelectionService} from './selection-service';
+ import {PackageRegistry} from './package-registry';
+@@ -31,9 +31,9 @@ const preparationV1=z.object({schema:z.literal(1),runId:z.uuid(),selectionHash:h
+ const preparationSchema=z.discriminatedUnion('schema',[preparationV1,preparationV1.extend({schema:z.literal(2),capabilities:nativeCapabilityPreparationSchema})]).refine(v=>(v.state==='prepared')===(v.issueCode===null));
+ const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(),pid:z.number().int().positive(),startedAt:z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/),observedAt:z.iso.datetime(),source:z.literal('kernel-peer')}).strict();
+ interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
+-interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
++interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;}
+ const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
+-function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshotV2,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
++function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
+  const scope=readApplicationRunScope(store,runId,snapshot);
+  if(scope&&evidence.capabilities.some(item=>item.kind==='application'&&item.state==='prepared'&&!scope.applications.some(app=>app.appId===item.id)))throw new ApplicationError('SCOPE_DENIED','原运行范围排除的应用不能显示为已准备');
+  return scope;
+@@ -204,8 +204,8 @@ export class ApplicationSessionDiagnostics {
+   const db=this.store.sqlite,task=db.prepare('SELECT id,project_id,title,runner,CASE WHEN native_session_id IS NOT NULL OR runtime_snapshot IS NOT NULL THEN 1 ELSE 0 END AS has_history FROM tasks WHERE id=?').get(taskId) as {id:string;project_id:string|null;title:string;runner:string;has_history:number}|undefined;if(!task)throw new ApplicationError('NOT_FOUND','该任务已删除，不能把其他会话当作原任务');
+   const row=db.prepare('SELECT schema_version,snapshot_hash,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;legacy_status:string}|undefined;
+   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];
+-  if(row&&row.schema_version!==2&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
+-  if(row?.schema_version===2)try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
++  if(row&&![2,3].includes(row.schema_version)&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}
++  if(row&&[2,3].includes(row.schema_version))try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(task.runner==='claude'?'claude-code':'codex'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}
+   // Find the owned terminal independently of wall-clock order. A clock rollback
+   // must not let future-dated history hide the live run or reuse its call counts.
+   let ownedRunId:string|null=null;try{const ptyId=this.deps.activePty?.(taskId);if(ptyId)ownedRunId=this.deps.runs()?.currentNativeRun(taskId,ptyId)?.runId??null;}catch{/* unknown ownership stays unverified */}
+diff --git a/src/main/core/applications/session-projector.ts b/src/main/core/applications/session-projector.ts
+index 2599b10ce..f7038f66d 100644
+--- a/src/main/core/applications/session-projector.ts
++++ b/src/main/core/applications/session-projector.ts
+@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
+ import { join } from 'node:path';
+ import { parseDocument } from 'yaml';
+ import { ApplicationError } from '@shared/applications';
+-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import type { CapabilitySessionSnapshot } from '@shared/application-session';
+ import { canonicalJson, digest } from './manifest';
+ import { verifyPackageTree } from './package-files';
+ import { PackageRegistry } from './package-registry';
+@@ -31,7 +31,7 @@ export class SessionCapabilityProjector {
+   private readonly packages: PackageRegistry;
+   private readonly legacy: LegacyCapabilityResourceAdopter;
+   constructor(readonly store: ResourceStore,private readonly sessions: CapabilitySessionRegistry) { this.packages = new PackageRegistry(store,'projection-reader'); this.legacy = new LegacyCapabilityResourceAdopter(store); }
+-  sourceSkills(snapshot: CapabilitySessionSnapshotV2,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
++  sourceSkills(snapshot: CapabilitySessionSnapshot,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]): { nativeName: string;path: string;sourceHash: string;sourceResourceId: string;files: Record<string,Buffer>;executables: Set<string> }[] {
+     if(applicationScope&&((!applicationScope.length&&!independent)||(independent&&applicationScope.length!==0)||new Set(applicationScope).size!==applicationScope.length||applicationScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','Skill加载范围须来自原固定应用');
+     const result: ReturnType<SessionCapabilityProjector['sourceSkills']> = [];
+     for (const application of snapshot.packages.filter(p=>applicationScope===undefined||applicationScope.includes(p.appId))) {
+@@ -53,7 +53,7 @@ export class SessionCapabilityProjector {
+     }
+     if (new Set(result.map(s => s.nativeName)).size !== result.length) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','所选Skill原生名称冲突'); return result;
+   }
+-  private claudeBundle(snapshot:CapabilitySessionSnapshotV2,selectionHash:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):OwnedBundle{
++  private claudeBundle(snapshot:CapabilitySessionSnapshot,selectionHash:string,applicationScope?:readonly string[],independent=false,standardSkillScope?:readonly string[]):OwnedBundle{
+     if(snapshot.runner!=='claude-code'||snapshot.provenance!=='created'||snapshot.legacyBinding)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此投影入口只处理有新会话依据的Claude能力；旧历史不猜测重建');
+     const root=join(this.store.root,'sessions',snapshot.taskId,'claude/plugin'),skills=this.sourceSkills(snapshot,applicationScope,independent,standardSkillScope),files:Record<string,Buffer>={},executables=new Set<string>();
+     files['.claude-plugin/plugin.json']=Buffer.from(JSON.stringify({name:'smartdd-session',version:'1.0.0',description:'WillYou session capabilities'},null,2)+'\n');
+@@ -64,7 +64,7 @@ export class SessionCapabilityProjector {
+     return ownedBundle({kind:'claude-session-projection',taskId:snapshot.taskId,selectionHash,...(standardSkillScope?{formatVersion:2,standardSkillScope:[...standardSkillScope]}:{formatVersion:1}),sources:skills.map(s=>({resourceId:s.sourceResourceId,sourceHash:s.sourceHash,nativeName:s.nativeName}))},files,executables);
+   }
+   /** Verify a complete view against the full original S;never infer a new selection. */
+-  private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshotV2,requireFull=false):string[]{
++  private claudeScope(manifest:OwnedBundleManifest,snapshot:CapabilitySessionSnapshot,requireFull=false):string[]{
+     return claudeProjectionSelection(manifest,snapshot,requireFull).appIds;
+   }
+   private sourceIdentity(taskId:string,hash:string,archive=false){const kind=archive?'claude-projection-archive':'claude-projection-source';return{kind,resourceId:`${kind}:${taskId}:${hash}`,relativePath:`projection-sources/claude/${taskId}/${archive?'archives':'views'}/${hash}`};}
+@@ -102,7 +102,7 @@ export class SessionCapabilityProjector {
+     const resource=await this.store.publish({resourceId:`session-projection:${taskId}:${bundle.hash}`,kind:'session-projection',contentHash:bundle.hash,relativePath,dependencies:[...new Set((bundle.manifest.metadata.sources as {resourceId:string}[]).map(s=>s.resourceId))],materialize:stage=>writeOwnedBundle(stage,bundle,this.store.storeId),verify:directory=>{verifyOwnedBundle(directory,bundle.hash,this.store.storeId);}});
+     await this.sessions.addProjectionReference(taskId,current.pointer.snapshotHash,resource.resourceId);return{resource,root};
+   }
+-  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void {
++  verify(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void {
+     if(resource.kind==='claude-delivery'){verifyClaudeDelivery(this.store,resource,snapshot);return;}
+     if(['claude-projection-source','claude-projection-archive'].includes(resource.kind)){
+       const archive=resource.kind==='claude-projection-archive',identity=this.sourceIdentity(snapshot.taskId,resource.contentHash,archive);
+diff --git a/src/main/core/applications/session-registry.ts b/src/main/core/applications/session-registry.ts
+index f8ec102e5..58f8fa257 100644
+--- a/src/main/core/applications/session-registry.ts
++++ b/src/main/core/applications/session-registry.ts
+@@ -1,9 +1,10 @@
++import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
+ import { randomUUID } from 'node:crypto';
+ import { closeSync, constants, existsSync, fsyncSync, linkSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+ import { dirname, isAbsolute, join, resolve } from 'node:path';
+ import { z } from 'zod';
+ import { ApplicationError, isPackagePath } from '@shared/applications';
+-import { capabilitySessionSnapshotSchema, type CapabilitySessionPointer, type CapabilitySessionSnapshotV2, type SessionResourceReference } from '@shared/application-session';
++import { type CapabilitySessionPointer, type CapabilitySessionSnapshot, type SessionResourceReference } from '@shared/application-session';
+ import { canonicalJson, compareCodePoints, digest } from './manifest';
+ import { ensureStoreDirectory, verifyPackageTree } from './package-files';
+ import type { ResourceRecord, ResourceStore } from './resource-store';
+@@ -17,13 +18,16 @@ interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: st
+ interface IdentityRow { task_id: string;runner: string;identity_root: string;session_id: string | null;cwd: string;discovery_home: string;selection_hash: string }
+ export interface SessionRegistryDeps {
+   /** Trusted host selection policy; executed again under C lock before first commit. */
+-  assertInitialSelection(snapshot: CapabilitySessionSnapshotV2): void;
++  assertInitialSelection(snapshot: CapabilitySessionSnapshot): void;
+   /** Agent-adapter / standard / legacy-runtime verifiers must check complete owned bytes. */
+-  verifyExtraResource(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void;
++  verifyExtraResource(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void;
+ }
+-export interface StoredCapabilitySession { snapshot: CapabilitySessionSnapshotV2;pointer: CapabilitySessionPointer;selectionHash: string;discoveryHome: string;retention: SnapshotRow['retention_state'];legacyStatus: string }
++export interface StoredCapabilitySession { snapshot: CapabilitySessionSnapshot;pointer: CapabilitySessionPointer;selectionHash: string;discoveryHome: string;retention: SnapshotRow['retention_state'];legacyStatus: string }
+ const SELECT = 'SELECT * FROM capability_session_snapshots WHERE task_id=?';
+-export const selectionHash = (snapshot: CapabilitySessionSnapshotV2): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
++export function selectSessionApplications(snapshot:CapabilitySessionSnapshot,appIds:readonly string[]):CapabilitySessionSnapshot {
++  return snapshot.schema===2?{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}:{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))};
++}
++export const selectionHash = (snapshot: CapabilitySessionSnapshot): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+ export function canonicalFuturePath(path: string): string {
+   if (!isAbsolute(path)) throw new ApplicationError('INVALID_INPUT','原生身份目录必须为绝对路径');
+   const remainder: string[] = []; let parent = resolve(path);
+@@ -40,7 +44,7 @@ export class CapabilitySessionRegistry {
+   private readonly packages: PackageRegistry;
+   private readonly runtimes: RuntimeRegistry;
+   constructor(readonly store: ResourceStore,private readonly deps: SessionRegistryDeps) { this.packages = new PackageRegistry(store,'snapshot-reader'); this.runtimes = new RuntimeRegistry(store); }
+-  private expectedSources(snapshot: CapabilitySessionSnapshotV2): Map<string,{ kind: string;hash: string }> {
++  private expectedSources(snapshot: CapabilitySessionSnapshot): Map<string,{ kind: string;hash: string }> {
+     const requested = new Map<string,{ kind: string;hash: string }>();
+     const add = (id: string,kind: string,hash: string) => { const previous = requested.get(id); if (previous && (previous.kind !== kind || previous.hash !== hash)) throw new ApplicationError('SNAPSHOT_CORRUPT','快照资源身份冲突'); requested.set(id,{ kind,hash }); };
+     add(`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,'agent-adapter',snapshot.adapterBinding.hash);
+@@ -50,8 +54,8 @@ export class CapabilitySessionRegistry {
+     for (const m of snapshot.mcp) add((m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash,m.kind === 'applications' ? 'runtime' : 'legacy-runtime',m.runtimeHash);
+     return requested;
+   }
+-  private executionSelection(snapshot:CapabilitySessionSnapshotV2,appIds:readonly string[]):CapabilitySessionSnapshotV2 {return{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId)),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
+-  private sourceReferences(snapshot: CapabilitySessionSnapshotV2,initialScope?:readonly string[]): SessionResourceReference[] {
++  private executionSelection(snapshot:CapabilitySessionSnapshot,appIds:readonly string[]):CapabilitySessionSnapshot {return{...selectSessionApplications(snapshot,appIds),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
++  private sourceReferences(snapshot: CapabilitySessionSnapshot,initialScope?:readonly string[]): SessionResourceReference[] {
+     if(initialScope&&(snapshot.legacyBinding||new Set(initialScope).size!==initialScope.length||initialScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','初始资源范围不属于原选择');
+     const required=this.expectedSources(initialScope?this.executionSelection(snapshot,initialScope):snapshot);
+     return [...this.expectedSources(snapshot)].map(([id,expected]) => {
+@@ -60,10 +64,11 @@ export class CapabilitySessionRegistry {
+       return { refKind: expected.kind,refId: id,refHash: expected.hash,relativePath: resource.relativePath };
+     }).sort((a,b) => compareCodePoints(a.refId,b.refId));
+   }
+-  private validatePackages(snapshot: CapabilitySessionSnapshotV2): void {
++  private validatePackages(snapshot: CapabilitySessionSnapshot): void {
+     for (const p of snapshot.packages) {
+       const installed = this.packages.get(p.packageHash), manifest = installed.manifest;
+       const contracts = Object.fromEntries(manifest.tools.map(t => [t.name,t.contractMajor]));
++      if(snapshot.schema===3&&snapshot.packages.find(selected=>selected.packageHash===p.packageHash)?.entry!=='mcp')throw new ApplicationError('HOST_INCOMPATIBLE','旧应用包只能保持原MCP入口');
+       if (p.appId !== manifest.appId || p.version !== manifest.version || p.runtimeHash !== manifest.runtime.hash || p.dataApi !== manifest.dataApi || canonicalJson(p.hostApi) !== canonicalJson(manifest.hostApi) || canonicalJson(p.toolContractMajors) !== canonicalJson(contracts) || p.allowedOperations.some(op => !manifest.permissions.includes(op)) || p.skills.length !== manifest.skills.length) throw new ApplicationError('SNAPSHOT_CORRUPT','快照的应用版本、工具或动作与原包不同');
+       for (const skill of p.skills) {
+         const source = manifest.skills.find(s => s.id === skill.skillId);
+@@ -76,10 +81,11 @@ export class CapabilitySessionRegistry {
+     const row = this.store.sqlite.prepare(SELECT).get(taskId) as SnapshotRow | undefined;
+     if (!row) throw new ApplicationError('NOT_FOUND','此任务尚无能力快照');
+     if(row.schema_version===0){if(row.legacy_status==='history-unknown')throw new ApplicationError('SESSION_ON_HOLD','历史能力未知，不能自动补入当前应用');throw new ApplicationError('SNAPSHOT_CORRUPT','已记录的能力快照损坏，保留原记录，不重建选择');}
+-    if(row.schema_version!==2)throw new ApplicationError('HOST_INCOMPATIBLE','原能力快照格式暂不支持，请使用兼容的 WillYou 版本；原记录已保留');
++    if(![2,3].includes(row.schema_version))throw new ApplicationError('HOST_INCOMPATIBLE','原能力快照格式暂不支持，请使用兼容的 WillYou 版本；原记录已保留');
+     try {
+       let decoded:unknown;try{decoded=JSON.parse(row.snapshot_json);}catch{throw new SnapshotReadFailure('json');}
+       const parsed=capabilitySessionSnapshotSchema.safeParse(decoded);if(!parsed.success)throw new SnapshotReadFailure('shape');
++      if(parsed.data.schema!==row.schema_version)throw new SnapshotReadFailure('shape');
+       const snapshot=parsed.data,identity=this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow|undefined;
+       if(digest(canonicalJson(snapshot))!==row.snapshot_hash)throw new SnapshotReadFailure('hash');
+       if(snapshot.taskId!==taskId||!identity||identity.runner!==snapshot.runner||identity.session_id!==snapshot.native.sessionId||identity.cwd!==snapshot.native.cwd||identity.selection_hash!==selectionHash(snapshot))throw new SnapshotReadFailure('identity');
+@@ -93,7 +99,7 @@ export class CapabilitySessionRegistry {
+       }
+       const names = this.store.sqlite.prepare('SELECT server_name AS serverName,kind FROM capability_session_mcp_names WHERE task_id=? ORDER BY kind').all(taskId) as { serverName: string;kind: string }[];
+       if (canonicalJson(names) !== canonicalJson(snapshot.mcp.map(m => ({ serverName: m.serverName,kind: m.kind })).sort((a,b) => compareCodePoints(a.kind,b.kind)))) throw new Error('MCP identity integrity');
+-      return { snapshot,pointer: { schema: 2,taskId,snapshotHash: row.snapshot_hash },selectionHash: identity.selection_hash,discoveryHome: identity.discovery_home,retention: row.retention_state,legacyStatus: row.legacy_status };
++      return { snapshot,pointer: { schema: snapshot.schema,taskId,snapshotHash: row.snapshot_hash },selectionHash: identity.selection_hash,discoveryHome: identity.discovery_home,retention: row.retention_state,legacyStatus: row.legacy_status };
+     } catch (error) {
+       if(error instanceof SnapshotReadFailure)throw new ApplicationError('SNAPSHOT_CORRUPT',snapshotFailureMessages[error.kind]);
+       if (error instanceof ApplicationError && ['RESOURCE_STATE_CHANGED','OWNERSHIP_CONFLICT'].includes(error.code)) throw error;
+@@ -108,7 +114,7 @@ export class CapabilitySessionRegistry {
+       catch (error) { if (error instanceof ApplicationError && error.code === 'SNAPSHOT_CORRUPT') this.quarantine(taskId,'corrupt'); throw error; }
+     });
+   }
+-  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
++  async create(input: CapabilitySessionSnapshot,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
+     const parsed = capabilitySessionSnapshotSchema.safeParse(input);
+     if (!parsed.success || !isAbsolute(discoveryHome)) throw new ApplicationError('INVALID_INPUT','会话能力或原生发现目录无效');
+     const snapshot = parsed.data, bytes = canonicalJson(snapshot), hash = digest(bytes); if (Buffer.byteLength(bytes) > 4 * 1024 * 1024) throw new ApplicationError('INVALID_INPUT','会话快照超过元数据预算');
+@@ -119,7 +125,7 @@ export class CapabilitySessionRegistry {
+       this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot,initialApplicationScope);
+       if (snapshot.native.sessionId && this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=?').get(snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
+       for (const mcp of snapshot.mcp) if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖');
+-      this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,2,?,?,?,?,'active')").run(snapshot.taskId,bytes,hash,snapshot.createdAt,snapshot.provenance);
++      this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,?,?,?,?,?,'active')").run(snapshot.taskId,snapshot.schema,bytes,hash,snapshot.createdAt,snapshot.provenance);
+       this.store.sqlite.prepare('INSERT INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,snapshot.taskId,bytes,selectionHash(snapshot),snapshot.createdAt);
+       this.store.sqlite.prepare('INSERT INTO capability_session_identities(task_id,runner,identity_root,session_id,cwd,discovery_home,selection_hash,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').run(snapshot.taskId,snapshot.runner,nativeRoot,snapshot.native.sessionId,snapshot.native.cwd,home,selectionHash(snapshot),snapshot.createdAt,snapshot.createdAt);
+       const put = this.store.sqlite.prepare('INSERT INTO capability_session_refs(task_id,ref_kind,ref_id,ref_hash,relative_path) VALUES(?,?,?,?,?)');
+@@ -129,7 +135,7 @@ export class CapabilitySessionRegistry {
+     }).immediate());
+     await this.ensureMirror(snapshot.taskId); return saved;
+   }
+-  async bindNativeSession(taskId: string,expectedHash: string,native: { runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string }): Promise<StoredCapabilitySession> {
++  async bindNativeSession(taskId: string,expectedHash: string,native: { runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string }): Promise<StoredCapabilitySession> {
+     const saved = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+       const current = this.read(taskId), snapshot = current.snapshot, identity = this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow;
+       if (current.retention !== 'active' || native.runner !== snapshot.runner || native.stateRoot !== snapshot.native.stateRoot || native.cwd !== snapshot.native.cwd || canonicalFuturePath(native.stateRoot) !== identity.identity_root) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生身份、目录或保留状态不同，不能补写到此快照');
+@@ -147,7 +153,7 @@ export class CapabilitySessionRegistry {
+       return this.read(taskId);
+     }).immediate()); await this.ensureMirror(taskId); return saved;
+   }
+-  async verifyNativeIdentity(taskId: string,actual: { runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string | null;home: string }): Promise<void> {
++  async verifyNativeIdentity(taskId: string,actual: { runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;home: string }): Promise<void> {
+     const current = await this.get(taskId), native = current.snapshot.native;
+     if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能授予运行能力');
+     const identity = this.store.sqlite.prepare('SELECT identity_root FROM capability_session_identities WHERE task_id=?').get(taskId) as { identity_root: string };
+@@ -179,7 +185,7 @@ export class CapabilitySessionRegistry {
+   scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[],independent=false):SessionResourceReference[]{
+     const current=this.inspectCoordinated(taskId),snapshot=current.snapshot;
+     if(snapshot.legacyBinding||snapshot.provenance!=='created'||(!appIds.length&&!independent)||(independent&&appIds.length!==0)||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
+-    this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
++    this.validatePackages(selectSessionApplications(snapshot,appIds));
+     const expected=this.expectedSources(this.executionSelection(snapshot,appIds)),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
+     for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
+     // The ordinary launcher always reads its original M4 runtime, including
+@@ -225,7 +231,7 @@ export class CapabilitySessionRegistry {
+       if (!result.changes) throw new ApplicationError('NOT_FOUND','此任务尚无能力保留记录');
+     }).immediate());
+   }
+-  async holdUnknown(input: { taskId: string;projectId: string | null;runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string | null;reason: 'history-unknown' | 'snapshot-corrupt' }): Promise<void> {
++  async holdUnknown(input: { taskId: string;projectId: string | null;runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;reason: 'history-unknown' | 'snapshot-corrupt' }): Promise<void> {
+     const parsed = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId: z.string().min(1).max(128).nullable(),runner: z.enum(['claude-code','codex']),stateRoot: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),cwd: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),sessionId: z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),reason: z.enum(['history-unknown','snapshot-corrupt']) }).strict().safeParse(input);
+     if (!parsed.success) throw new ApplicationError('INVALID_INPUT','历史保留身份无效或包含未允许字段');
+     input = parsed.data;
+@@ -252,15 +258,15 @@ export class CapabilitySessionRegistry {
+       const row = this.store.sqlite.prepare(SELECT).get(taskId) as SnapshotRow | undefined;
+       const history = this.store.sqlite.prepare('SELECT snapshot_json,selection_hash FROM capability_snapshot_versions WHERE snapshot_hash=? AND task_id=?').get(expectedHash,taskId) as { snapshot_json: string;selection_hash: string } | undefined;
+       const hold = this.store.sqlite.prepare('SELECT previous_retention,reason FROM capability_session_holds WHERE task_id=?').get(taskId) as { previous_retention: string;reason: string } | undefined;
+-      if (!row || row.schema_version !== 2 || row.snapshot_hash !== expectedHash || !history || (hold && !['corrupt','snapshot-corrupt'].includes(hold.reason))) throw new ApplicationError('SESSION_ON_HOLD','没有与原登记hash匹配的已知版本，不能猜测或按当前默认重建');
+-      let original: CapabilitySessionSnapshotV2;
++      if (!row || ![2,3].includes(row.schema_version) || row.snapshot_hash !== expectedHash || !history || (hold && !['corrupt','snapshot-corrupt'].includes(hold.reason))) throw new ApplicationError('SESSION_ON_HOLD','没有与原登记hash匹配的已知版本，不能猜测或按当前默认重建');
++      let original: CapabilitySessionSnapshot;
+       try { original = capabilitySessionSnapshotSchema.parse(JSON.parse(history.snapshot_json)); } catch { throw new ApplicationError('SNAPSHOT_CORRUPT','原登记备份也不可核验'); }
+       if (digest(canonicalJson(original)) !== expectedHash || selectionHash(original) !== history.selection_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','原登记版本摘要不匹配');
+       this.store.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,retention_state=?,legacy_status=? WHERE task_id=? AND snapshot_hash=?').run(history.snapshot_json,hold?.previous_retention ?? row.retention_state,original.provenance,taskId,expectedHash);
+       const verified = this.read(taskId); this.store.sqlite.prepare('DELETE FROM capability_session_holds WHERE task_id=?').run(taskId); return verified;
+     }).immediate()); await this.ensureMirror(taskId); return saved;
+   }
+-  hasUnresolvedHistory(): boolean { return !!this.store.sqlite.prepare("SELECT 1 FROM capability_session_snapshots WHERE schema_version<>2 OR retention_state='hold' OR legacy_status IN ('corrupt','history-unknown','snapshot-corrupt') LIMIT 1").get(); }
++  hasUnresolvedHistory(): boolean { return !!this.store.sqlite.prepare("SELECT 1 FROM capability_session_snapshots WHERE schema_version NOT IN (2,3) OR retention_state='hold' OR legacy_status IN ('corrupt','history-unknown','snapshot-corrupt') LIMIT 1").get(); }
+   async ensureMirror(taskId: string): Promise<{ repaired: boolean;backup: string | null }> {
+     return withResourceLock(this.store.root,() => {
+       const current = this.read(taskId), path = ensureStoreDirectory(this.store.root,'sessions/' + taskId), marker = join(path,'.smartdd-owned.json');
+diff --git a/src/main/core/applications/task-capability-launcher.ts b/src/main/core/applications/task-capability-launcher.ts
+index a6c598082..ff7c5f533 100644
+--- a/src/main/core/applications/task-capability-launcher.ts
++++ b/src/main/core/applications/task-capability-launcher.ts
+@@ -11,14 +11,14 @@ import { mkdirSync, writeFileSync,lstatSync } from 'node:fs';
+ import { dirname, join, resolve } from 'node:path';
+ import { ApplicationError } from '@shared/applications';
+ import type { AgentLoadRequest,LegacyAgentLoadRequest,AgentLoadPlan } from '@shared/agent-adapters';
+-import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import { applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshot } from '@shared/application-session';
+ import type { RuntimeSkill, RuntimeSnapshot } from '@shared/capabilities';
+ import { CapabilityService, MCP_CAPABILITY, type PreparedRuntime } from '../capabilities/capability-service';
+ import { projectCapabilityEnabled, type ProjectCapabilitySetting } from '../projects/project-capability-setting';
+ import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
+ import type { AgentSupportService } from './agent-support-service';
+ import type { ApplicationService } from './application-service';
+-import { CapabilitySessionRegistry, selectionHash, applicationSkillContentHash, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
++import { CapabilitySessionRegistry, selectSessionApplications, selectionHash, applicationSkillContentHash, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
+ import { SessionCapabilityProjector, standardNativeSkillName } from './session-projector';
+ import { CapabilityRunRegistry, type RunBindingRevision, type OwnedCapabilityRun } from './run-registry';
+ import { DiscoveryCatalog, type DiscoveryReservation } from './discovery-catalog';
+@@ -41,6 +41,8 @@ import {assertLegacySessionSource,retainedLegacySource} from './legacy-session-s
+ import {BuiltinPackageRegistry} from './builtin-package-registry';
+ import {RuntimeRegistry} from './runtime-registry';
+ import {EmbeddedNodeRuntime} from './embedded-node-runtime';
++import {createApplicationRunPlan,skillFilesHash} from './run-plan';
++import {builtinApplicationModules} from './modules';
+ interface ActiveLaunch {run:OwnedCapabilityRun;hold?:DiscoveryReservation;runtime?:PreparedRuntime;releasing?:Promise<void>}
+ export interface TaskCapabilityLauncherOptions {
+   helper: string;
+@@ -53,6 +55,7 @@ export interface TaskCapabilityLauncherOptions {
+ }
+ /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
+ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
++  private readonly planningAgents=new Map<string,NativeLaunchContext>();
+   readonly sessions:CapabilitySessionRegistry;
+   readonly projector:SessionCapabilityProjector;
+   readonly legacyMigration:LegacySessionMigration;
+@@ -88,7 +91,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     }});
+     this.legacyMigration=new LegacySessionMigration(store,this.sessions,undefined,home=>this.catalog(home));
+     this.projector=new SessionCapabilityProjector(store,this.sessions);
+-    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,assertCurrent:snapshot=>{
++    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,createPlan:(snapshot,snapshotHash,runId,appIds)=>{
++      const selected={...selectSessionApplications(snapshot,appIds??snapshot.packages.map(p=>p.appId)),standardSkills:[]};
++      const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.legacyCapabilities(application.manifest)};});
++      const projected=selected.packages.length?this.projector.sourceSkills(selected):[];
++      const skills=selected.packages.flatMap(p=>p.skills.map(s=>{const rendered=projected.find(r=>r.nativeName===s.nativeName);if(!rendered)throw new ApplicationError('HASH_MISMATCH','本次运行的Skill渲染结果缺失');return{appId:p.appId,skillId:s.skillId,nativeName:s.nativeName,templateHash:s.contentHash,parametersHash:digest(canonicalJson({nativeName:s.nativeName})),renderedHash:skillFilesHash(rendered.files)};}));
++      return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills,available:{mcp:true,cli:false,reason:'managed-cli-not-integrated'},cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});
++    },assertCurrent:snapshot=>{
+       // Application enablement and current slots belong to each business call, not Agent liveness.
+       const project=store.sqlite.prepare('SELECT archived_at FROM projects WHERE id=?').get(snapshot.projectId) as {archived_at:number|null}|undefined;
+       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
+@@ -122,7 +131,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     });});
+   }
+   /** SQL-only recheck under C. Selection is checked once; later calls use current business policy. */
+-  private assertInitialSelection(snapshot:CapabilitySessionSnapshotV2):void{
++  private assertInitialSelection(snapshot:CapabilitySessionSnapshot):void{
+     const planned=this.initialApplicationScopes.get(snapshot.taskId);if(planned&&planned.selectionHash!==selectionHash(snapshot))throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮应用范围与原固定选择不同');
+     assertNoPendingApplicationSwitch(this.support.store,planned?{projectId:snapshot.projectId,packages:snapshot.packages.filter(p=>planned.appIds.includes(p.appId))}:snapshot);
+     const store=this.support.store,apps=this.selectedApps(snapshot.projectId);
+@@ -150,24 +159,25 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+     // choosing an adapter here never grants support for an unverified CLI.
+     return candidates.find(a=>cliVersion!==undefined&&a.cliVersions.includes(cliVersion))??candidates.at(-1);
+   }
+-  private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshotV2{
++  private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshot{
+     const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);
+     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
+     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
+     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
+     const packages=this.selectedApps(input.projectId).map(({packageHash})=>{const p=this.applications.builtin.retainedMetadata(packageHash),m=p.manifest;return{appId:p.appId,version:p.version,packageHash,hashAlgorithm:'app-manifest-v1' as const,hostApi:m.hostApi,dataApi:m.dataApi,runtimeHash:m.runtime.hash,toolContractMajors:Object.fromEntries(m.tools.map(t=>[t.name,t.contractMajor])),skills:m.skills.map(s=>{const name=applicationNativeSkillName(p.appId,s.id,packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(m,s.path),sourceRelativePath:s.path,projectionPath:skillPath(name)};}),bindings:bindings.filter(b=>b.appId===p.appId&&b.connectionId).map(b=>({bindingId:`${input.projectId}:${p.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!})),allowedOperations:[...m.permissions]};});
+     const runtimeHashes=[...new Set(packages.map(p=>p.runtimeHash))];if(runtimeHashes.length>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
+-    const mcp:CapabilitySessionSnapshotV2['mcp']=packages.length?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash:runtimeHashes[0]}]:[];
++    const mcp:CapabilitySessionSnapshot['mcp']=packages.length?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash:runtimeHashes[0]}]:[];
+     if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
+     return{schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native?.version??'unverified',adapterRevision:1},catalogGeneration:generation,packages,standardSkills:this.capabilities.selection(input.projectId).filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:skillPath(standardNativeSkillName(s.skillId,s.hash))})),mcp,provenance:'created'};
+   }
+-  prepare(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{const work=this.prepareOnce(input);this.pending.add(work);void work.finally(()=>this.pending.delete(work)).catch(()=>{});return work;}
++  prepare(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{const work=this.prepareOnce(input);this.pending.add(work);void work.finally(()=>{this.pending.delete(work);this.planningAgents.delete(input.taskId);}).catch(()=>{});return work;}
+   private async prepareOnce(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{
+     if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
+     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
+     try{native=await(this.options.inspectNative??inspectNativeLaunch)(input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
++    if(native)this.planningAgents.set(input.taskId,native);
+     let runtimeCheck:Promise<boolean>|undefined,applicationRuntimeIssue:'HOST_INCOMPATIBLE'|undefined;
+-    const applicationRuntimeReady=async(snapshot:CapabilitySessionSnapshotV2)=>{
++    const applicationRuntimeReady=async(snapshot:CapabilitySessionSnapshot)=>{
+       if(!native||snapshot.legacyBinding||!snapshot.packages.length)return true;
+       runtimeCheck??=(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
+       const ready=await runtimeCheck;if(!ready)applicationRuntimeIssue='HOST_INCOMPATIBLE';return ready;
+@@ -332,7 +342,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+       if(snapshot.runner==='codex'&&collection.entries.length&&native&&knownVersion){
+         // Only compute false discovery flags; retain the actual fixed S everywhere
+         // else. This transient request is neither stored nor granted a bridge.
+-        const {legacyBinding:_original,...fixed}=snapshot,hidden:CapabilitySessionSnapshotV2={...fixed,provenance:'created',adapterBinding:{id:snapshot.runner,version:isolation.metadata.version,hash:isolation.hash,projectionFormatVersion:1,nativeToolNames:{}},packages:[],standardSkills:[],mcp:[]};
++        const {legacyBinding:_original,...fixed}=snapshot,hidden:CapabilitySessionSnapshot={...fixed,provenance:'created',adapterBinding:{id:snapshot.runner,version:isolation.metadata.version,hash:isolation.hash,projectionFormatVersion:1,nativeToolNames:{}},packages:[],standardSkills:[],mcp:[]};
+         const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+         const request:AgentLoadRequest={snapshot:hidden,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(isolation.hash,request,discoveryProof):this.support.adapters.plan(isolation.hash,request)).args;
+       }
+@@ -365,7 +375,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+       if(runner==='codex'&&collection.entries.length&&native&&!nativeUnverified){
+         // A transient empty selection is used solely to prepare false discovery
+         // flags. It is never persisted, inspected as history or granted a bridge.
+-        const snapshot:CapabilitySessionSnapshotV2={schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:{}},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:collection.generation,packages:[],standardSkills:[],mcp:[],provenance:'migrated-known-legacy'};
++        const snapshot:CapabilitySessionSnapshot={schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:{}},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:collection.generation,packages:[],standardSkills:[],mcp:[],provenance:'migrated-known-legacy'};
+         const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+         const request:AgentLoadRequest={snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(adapter.hash,request,discoveryProof):this.support.adapters.plan(adapter.hash,request)).args;
+       }
+diff --git a/src/main/core/applications/tool-service.ts b/src/main/core/applications/tool-service.ts
+index 670ac67a6..344ed8c99 100644
+--- a/src/main/core/applications/tool-service.ts
++++ b/src/main/core/applications/tool-service.ts
+@@ -15,6 +15,7 @@ import { PackageRegistry } from './package-registry';
+ import type { ResourceStore } from './resource-store';
+ import { withResourceLock } from './resource-lock';
+ import type { CapabilityRunRegistry, RunContext } from './run-registry';
++import {requirePlanEntry} from './run-plan';
+ /** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
+ const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
+ export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null }
+@@ -56,6 +57,7 @@ export class ApplicationToolService {
+     const selected = context.snapshot.packages.find(p => Object.hasOwn(p.toolContractMajors,call.operation));
+     if (!selected || selected.toolContractMajors[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该工具契约');
+     assertRunApplication(context,selected.appId);
++    if(context.plan){const allowed=context.plan.allowed.find(c=>c.mcpTool===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','工具不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,'mcp');}
+     const application = this.packages.get(selected.packageHash), declaration = application.manifest.tools.find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
+     if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
+     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
+@@ -74,7 +76,7 @@ export class ApplicationToolService {
+         try {
+           assertRunApplication(context,application.appId);
+           const manifest = this.packages.get(application.packageHash).manifest;
+-          const permitted = Object.entries(application.toolContractMajors).filter(([name]) => application.allowedOperations.includes(manifest.tools.find(t => t.name === name)!.permission));
++          const permitted = Object.entries(application.toolContractMajors).filter(([name,major]) => application.allowedOperations.includes(manifest.tools.find(t => t.name === name)!.permission)&&(!context.plan||context.plan.allowed.some(c=>c.mcpTool===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry==='mcp')));
+           for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);
+           tools.push(...group);
+           if (permitted.length) { const [operation,contractMajor] = permitted[0]; this.selected(context,{ operation,contractMajor }); }
+diff --git a/src/main/core/tasks/task-capabilities.test.ts b/src/main/core/tasks/task-capabilities.test.ts
+index d7cfcf045..7ac3756d6 100644
+--- a/src/main/core/tasks/task-capabilities.test.ts
++++ b/src/main/core/tasks/task-capabilities.test.ts
+@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+ import { dirname, join } from 'node:path';
+ import { drizzle } from 'drizzle-orm/better-sqlite3';
+ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
++import type { CapabilitySessionSnapshot, CapabilitySessionSnapshotV2 } from '@shared/application-session';
+ import type { SpawnOptions } from '../../pty-manager';
+ import * as schema from '../../db/schema';
+ import { SecretsStore } from '../../secrets';
+@@ -38,7 +38,7 @@ beforeEach(async()=>{
+  capabilities=new CapabilityService({db,projects,secrets,userData:f.root});for(const skill of capabilities.list(projectId))if(skill.id!==f.standard.id)capabilities.setEnabled(projectId,skill.id,false);
+  runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});f.setExtraVerifier((r,s)=>catalog.verifyReference(r,s));ptys=new ControlledPtys();gate=undefined;afterAttach=undefined;bindGate=undefined;calls=0;clock=Date.now();trace.length=0;runIds.length=0;boundIds.length=0;
+  const launcher:TaskCapabilityLauncher={prepare:async input=>{
+-  calls++;let session:Awaited<ReturnType<typeof f.sessions.get>>,snapshot:CapabilitySessionSnapshotV2;
++  calls++;let session:Awaited<ReturnType<typeof f.sessions.get>>,snapshot:CapabilitySessionSnapshot;
+   if(input.previous?.sessionCapabilities){session=await f.sessions.get(input.taskId);snapshot=session.snapshot;await f.sessions.verifyNativeIdentity(input.taskId,{runner:'codex',stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});}
+   else{snapshot=f.plan('codex');snapshot.taskId=input.taskId;snapshot.projectId=input.projectId;snapshot.native={sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd};snapshot.packages=[];snapshot.adapterBinding.nativeToolNames={};snapshot.mcp=snapshot.mcp.filter(m=>m.kind==='legacy-project-context');const selected=capabilities.selection(projectId).filter(s=>s.enabled);snapshot.standardSkills=snapshot.standardSkills.filter(s=>selected.some(v=>v.skillId===s.skillId));for(const skill of snapshot.standardSkills)skill.versionId=selected.find(s=>s.skillId===skill.skillId)!.versionId;const collection=await catalog.publish(f.projector.sourceSkills(snapshot));snapshot.catalogGeneration=collection.generation;session=await f.sessions.create(snapshot,input.home);for(const e of collection.entries)await f.sessions.addProjectionReference(input.taskId,session.pointer.snapshotHash,e.resourceId);}
+   const collection=await catalog.snapshot(),hold=await catalog.reserveRun(collection.generation,'codex',ids=>runs.reserve({taskId:input.taskId,snapshotHash:session.pointer.snapshotHash,bindings:[]},ids));runIds.push(hold.run.runId);
+diff --git a/src/shared/agent-adapters.ts b/src/shared/agent-adapters.ts
+index d2dd18100..3433d9cee 100644
+--- a/src/shared/agent-adapters.ts
++++ b/src/shared/agent-adapters.ts
+@@ -1,6 +1,6 @@
+ import {claudeRunDeliverySchema} from './claude-delivery';
+ import { z } from 'zod';
+-import { capabilitySessionSnapshotSchema } from './application-session';
++import { storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema } from './application-session-v3';
+ import { boundedJson } from './application-bridge';
+ export const bridgeRecoveryCapabilitySchema=z.enum(['supported','unsupported','unverified']);
+ const absolute = z.string().min(1).max(4096).refine(s => s.startsWith('/') && !/[\x00\r\n]/.test(s));
+diff --git a/src/shared/application-session.ts b/src/shared/application-session.ts
+index 41bff8784..a369f0c47 100644
+--- a/src/shared/application-session.ts
++++ b/src/shared/application-session.ts
+@@ -46,7 +46,8 @@ export const capabilitySessionSnapshotSchema = z.object({
+   }
+ });
+ export type CapabilitySessionSnapshotV2 = z.infer<typeof capabilitySessionSnapshotSchema>;
+-export interface CapabilitySessionPointer { schema: 2;taskId: string;snapshotHash: string }
++export type CapabilitySessionSnapshot = CapabilitySessionSnapshotV2 | import('./application-session-v3').CapabilitySessionSnapshotV3;
++export interface CapabilitySessionPointer { schema: 2 | 3;taskId: string;snapshotHash: string }
+ export const applicationNativeSkillName = (appId: string,skillId: string,packageHash: string): string => `smartdd-a-${appId}-${skillId}-${packageHash.slice(0,12)}`;
+ export const applicationMcpServerName = (taskDigest: string): string => 'wy_' + taskDigest.slice(0,24);
+ export interface SessionResourceReference { refKind: string;refId: string;refHash: string;relativePath: string }
+diff --git a/src/shared/applications.ts b/src/shared/applications.ts
+index 08b2468c9..709b40a6c 100644
+--- a/src/shared/applications.ts
++++ b/src/shared/applications.ts
+@@ -72,7 +72,7 @@ export const applicationManifestSchema = z.object({
+ });
+ export type ApplicationManifest = z.infer<typeof applicationManifestSchema>;
+ export type ApplicationManifestV1 = ApplicationManifest;
+-export type ApplicationErrorCode = 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
++export type ApplicationErrorCode = 'ENTRY_NOT_ACTIVE' | 'INVALID_PACKAGE' | 'HASH_MISMATCH' | 'VERSION_CONFLICT' | 'OWNERSHIP_CONFLICT' | 'HOST_INCOMPATIBLE' | 'RESOURCE_BUSY' | 'RESOURCE_RECOVERY_REQUIRED' | 'RESOURCE_STATE_CHANGED' | 'CANCELED' | 'NOT_FOUND' | 'INVALID_INPUT' | 'AUTH_REQUIRED' | 'AUTH_FAILED' | 'IDENTITY_CHANGE_REQUIRES_SELECTION' | 'CONFIG_PLAN_STALE' | 'CONFIG_INCOMPATIBLE' | 'CONFIG_COMPATIBILITY_UNVERIFIED' | 'REVISION_CONFLICT' | 'CONNECTION_UNAVAILABLE' | 'RUN_STOP_FAILED' | 'SCOPE_DENIED' | 'TIMEOUT' | 'TRANSIENT_FAILURE' | 'INVALID_RESPONSE' | 'INCOMPLETE_RESULT' | 'SNAPSHOT_CORRUPT' | 'SNAPSHOT_IMMUTABLE' | 'NATIVE_IDENTITY_CONFLICT' | 'SESSION_ON_HOLD' | 'AGENT_CAPABILITY_NAME_CONFLICT' | 'INTENT_STALE' | 'AUTHORIZATION_REQUIRED' | 'EXECUTION_ALREADY_ATTEMPTED' | 'DRAFT_LOCKED' | 'SOURCE_UNAVAILABLE' | 'UNSUPPORTED_FORMAT' | 'REQUEST_CONFLICT' | 'REPLAY_UNAVAILABLE' | 'TOO_LARGE' | 'CAPABILITY_UNAVAILABLE' | 'AGENT_ADAPTER_UNSUPPORTED';
+ export class ApplicationError extends Error {
+   constructor(public readonly code: ApplicationErrorCode, message: string) { super(message); this.name = 'ApplicationError'; }
+ }

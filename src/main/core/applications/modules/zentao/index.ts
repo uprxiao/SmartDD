@@ -12,8 +12,10 @@ const legacy: Readonly<Record<string, string>> = {
   smartdd_zentao_object_get_v1: 'zentao.object.get',
   smartdd_zentao_resource_v1: 'zentao.resource.read',
 };
+const capabilityMethods:Readonly<Record<string,string>>={'zentao.object.list':'zentao.work.list','zentao.object.get':'zentao.object.get','zentao.resource.read':'zentao.resource.read'};
 export const zentaoModule: ApplicationModuleDefinition<'zentao', readonly [ApplicationProviderDefinition<typeof zentaoConfigSchema, 'zentao', 'zentao'>]> = {
   appId: 'zentao', contractMajors: [1], slots: ['zentao'], stopBeforeSwitch: true,
+  capabilities:Object.fromEntries(Object.entries(capabilityMethods).map(([id,method])=>[id,{id,method,contractMajors:[1],permission:'zentao.read',semantics:'read',retry:'safe-read',slots:{required:['zentao'],conditional:[]}}])),
   presentation: { displayName: '禅道', heading: '查看指派给我的 Bug 和研发需求', mark: 'zigzag', projectNote: '每项目仅一个生效连接；停用或认证失败不会自动切换账号。', emptyConnectionSuffix: '', defaultProvider: 'zentao', panel: 'zentao-work', switchTitle: '切换项目禅道连接' },
   providers: [{
     id: 'zentao', appId: 'zentao', configApiMajor: 1, configSchema: zentaoConfigSchema,

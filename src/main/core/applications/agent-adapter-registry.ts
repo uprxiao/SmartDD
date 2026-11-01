@@ -6,7 +6,7 @@ import { basename, dirname, join, relative } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import {BRIDGE_LIMITS} from '@shared/application-bridge';
 import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan } from '@shared/agent-adapters';
-import type { CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import {legacyPlannerInput} from './legacy-agent-load';
 import {verifyLegacyDiscoveryEntry} from './legacy-discovery';
@@ -145,5 +145,5 @@ export class AgentAdapterRegistry {
     try{const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(value:unknown):unknown};if(module.api!==2||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw Error('legacy adapter');const plan=agentLoadPlanSchema.parse(module.prepare(prepared));if(plan.agentId!==meta.agentId||plan.bridgeRecovery!==meta.bridgeRecovery)throw Error('legacy agent');return plan;}
     catch(error){if((error as {code?:string}).code==='AGENT_CAPABILITY_NAME_CONFLICT')throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户启停配置与原M4选择冲突，保留原配置');throw new ApplicationError('HOST_INCOMPATIBLE','原M4适配器无法生成本次加载计划');}
   }
-  verifyReference(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void { const installed = this.verify(snapshot.adapterBinding.hash); if (resource.resourceId !== installed.resource.resourceId) throw new ApplicationError('SNAPSHOT_CORRUPT','适配资源不属于原会话'); }
+  verifyReference(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void { const installed = this.verify(snapshot.adapterBinding.hash); if (resource.resourceId !== installed.resource.resourceId) throw new ApplicationError('SNAPSHOT_CORRUPT','适配资源不属于原会话'); }
 }

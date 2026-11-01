@@ -1,9 +1,10 @@
+import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, existsSync, fsyncSync, linkSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { z } from 'zod';
 import { ApplicationError, isPackagePath } from '@shared/applications';
-import { capabilitySessionSnapshotSchema, type CapabilitySessionPointer, type CapabilitySessionSnapshotV2, type SessionResourceReference } from '@shared/application-session';
+import { type CapabilitySessionPointer, type CapabilitySessionSnapshot, type SessionResourceReference } from '@shared/application-session';
 import { canonicalJson, compareCodePoints, digest } from './manifest';
 import { ensureStoreDirectory, verifyPackageTree } from './package-files';
 import type { ResourceRecord, ResourceStore } from './resource-store';
@@ -17,13 +18,16 @@ interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: st
 interface IdentityRow { task_id: string;runner: string;identity_root: string;session_id: string | null;cwd: string;discovery_home: string;selection_hash: string }
 export interface SessionRegistryDeps {
   /** Trusted host selection policy; executed again under C lock before first commit. */
-  assertInitialSelection(snapshot: CapabilitySessionSnapshotV2): void;
+  assertInitialSelection(snapshot: CapabilitySessionSnapshot): void;
   /** Agent-adapter / standard / legacy-runtime verifiers must check complete owned bytes. */
-  verifyExtraResource(resource: ResourceRecord,snapshot: CapabilitySessionSnapshotV2): void;
+  verifyExtraResource(resource: ResourceRecord,snapshot: CapabilitySessionSnapshot): void;
 }
-export interface StoredCapabilitySession { snapshot: CapabilitySessionSnapshotV2;pointer: CapabilitySessionPointer;selectionHash: string;discoveryHome: string;retention: SnapshotRow['retention_state'];legacyStatus: string }
+export interface StoredCapabilitySession { snapshot: CapabilitySessionSnapshot;pointer: CapabilitySessionPointer;selectionHash: string;discoveryHome: string;retention: SnapshotRow['retention_state'];legacyStatus: string }
 const SELECT = 'SELECT * FROM capability_session_snapshots WHERE task_id=?';
-export const selectionHash = (snapshot: CapabilitySessionSnapshotV2): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
+export function selectSessionApplications(snapshot:CapabilitySessionSnapshot,appIds:readonly string[]):CapabilitySessionSnapshot {
+  return snapshot.schema===2?{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))}:{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))};
+}
+export const selectionHash = (snapshot: CapabilitySessionSnapshot): string => digest(canonicalJson({ ...snapshot,native: { ...snapshot.native,sessionId: null } }));
 export function canonicalFuturePath(path: string): string {
   if (!isAbsolute(path)) throw new ApplicationError('INVALID_INPUT','原生身份目录必须为绝对路径');
   const remainder: string[] = []; let parent = resolve(path);
@@ -40,7 +44,7 @@ export class CapabilitySessionRegistry {
   private readonly packages: PackageRegistry;
   private readonly runtimes: RuntimeRegistry;
   constructor(readonly store: ResourceStore,private readonly deps: SessionRegistryDeps) { this.packages = new PackageRegistry(store,'snapshot-reader'); this.runtimes = new RuntimeRegistry(store); }
-  private expectedSources(snapshot: CapabilitySessionSnapshotV2): Map<string,{ kind: string;hash: string }> {
+  private expectedSources(snapshot: CapabilitySessionSnapshot): Map<string,{ kind: string;hash: string }> {
     const requested = new Map<string,{ kind: string;hash: string }>();
     const add = (id: string,kind: string,hash: string) => { const previous = requested.get(id); if (previous && (previous.kind !== kind || previous.hash !== hash)) throw new ApplicationError('SNAPSHOT_CORRUPT','快照资源身份冲突'); requested.set(id,{ kind,hash }); };
     add(`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,'agent-adapter',snapshot.adapterBinding.hash);
@@ -50,8 +54,8 @@ export class CapabilitySessionRegistry {
     for (const m of snapshot.mcp) add((m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash,m.kind === 'applications' ? 'runtime' : 'legacy-runtime',m.runtimeHash);
     return requested;
   }
-  private executionSelection(snapshot:CapabilitySessionSnapshotV2,appIds:readonly string[]):CapabilitySessionSnapshotV2 {return{...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId)),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
-  private sourceReferences(snapshot: CapabilitySessionSnapshotV2,initialScope?:readonly string[]): SessionResourceReference[] {
+  private executionSelection(snapshot:CapabilitySessionSnapshot,appIds:readonly string[]):CapabilitySessionSnapshot {return{...selectSessionApplications(snapshot,appIds),mcp:snapshot.mcp.filter(m=>m.kind!=='applications'||appIds.length>0)};}
+  private sourceReferences(snapshot: CapabilitySessionSnapshot,initialScope?:readonly string[]): SessionResourceReference[] {
     if(initialScope&&(snapshot.legacyBinding||new Set(initialScope).size!==initialScope.length||initialScope.some(id=>!snapshot.packages.some(p=>p.appId===id))))throw new ApplicationError('INVALID_INPUT','初始资源范围不属于原选择');
     const required=this.expectedSources(initialScope?this.executionSelection(snapshot,initialScope):snapshot);
     return [...this.expectedSources(snapshot)].map(([id,expected]) => {
@@ -60,10 +64,11 @@ export class CapabilitySessionRegistry {
       return { refKind: expected.kind,refId: id,refHash: expected.hash,relativePath: resource.relativePath };
     }).sort((a,b) => compareCodePoints(a.refId,b.refId));
   }
-  private validatePackages(snapshot: CapabilitySessionSnapshotV2): void {
+  private validatePackages(snapshot: CapabilitySessionSnapshot): void {
     for (const p of snapshot.packages) {
       const installed = this.packages.get(p.packageHash), manifest = installed.manifest;
       const contracts = Object.fromEntries(manifest.tools.map(t => [t.name,t.contractMajor]));
+      if(snapshot.schema===3&&snapshot.packages.find(selected=>selected.packageHash===p.packageHash)?.entry!=='mcp')throw new ApplicationError('HOST_INCOMPATIBLE','旧应用包只能保持原MCP入口');
       if (p.appId !== manifest.appId || p.version !== manifest.version || p.runtimeHash !== manifest.runtime.hash || p.dataApi !== manifest.dataApi || canonicalJson(p.hostApi) !== canonicalJson(manifest.hostApi) || canonicalJson(p.toolContractMajors) !== canonicalJson(contracts) || p.allowedOperations.some(op => !manifest.permissions.includes(op)) || p.skills.length !== manifest.skills.length) throw new ApplicationError('SNAPSHOT_CORRUPT','快照的应用版本、工具或动作与原包不同');
       for (const skill of p.skills) {
         const source = manifest.skills.find(s => s.id === skill.skillId);
@@ -76,10 +81,11 @@ export class CapabilitySessionRegistry {
     const row = this.store.sqlite.prepare(SELECT).get(taskId) as SnapshotRow | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND','此任务尚无能力快照');
     if(row.schema_version===0){if(row.legacy_status==='history-unknown')throw new ApplicationError('SESSION_ON_HOLD','历史能力未知，不能自动补入当前应用');throw new ApplicationError('SNAPSHOT_CORRUPT','已记录的能力快照损坏，保留原记录，不重建选择');}
-    if(row.schema_version!==2)throw new ApplicationError('HOST_INCOMPATIBLE','原能力快照格式暂不支持，请使用兼容的 WillYou 版本；原记录已保留');
+    if(![2,3].includes(row.schema_version))throw new ApplicationError('HOST_INCOMPATIBLE','原能力快照格式暂不支持，请使用兼容的 WillYou 版本；原记录已保留');
     try {
       let decoded:unknown;try{decoded=JSON.parse(row.snapshot_json);}catch{throw new SnapshotReadFailure('json');}
       const parsed=capabilitySessionSnapshotSchema.safeParse(decoded);if(!parsed.success)throw new SnapshotReadFailure('shape');
+      if(parsed.data.schema!==row.schema_version)throw new SnapshotReadFailure('shape');
       const snapshot=parsed.data,identity=this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow|undefined;
       if(digest(canonicalJson(snapshot))!==row.snapshot_hash)throw new SnapshotReadFailure('hash');
       if(snapshot.taskId!==taskId||!identity||identity.runner!==snapshot.runner||identity.session_id!==snapshot.native.sessionId||identity.cwd!==snapshot.native.cwd||identity.selection_hash!==selectionHash(snapshot))throw new SnapshotReadFailure('identity');
@@ -93,7 +99,7 @@ export class CapabilitySessionRegistry {
       }
       const names = this.store.sqlite.prepare('SELECT server_name AS serverName,kind FROM capability_session_mcp_names WHERE task_id=? ORDER BY kind').all(taskId) as { serverName: string;kind: string }[];
       if (canonicalJson(names) !== canonicalJson(snapshot.mcp.map(m => ({ serverName: m.serverName,kind: m.kind })).sort((a,b) => compareCodePoints(a.kind,b.kind)))) throw new Error('MCP identity integrity');
-      return { snapshot,pointer: { schema: 2,taskId,snapshotHash: row.snapshot_hash },selectionHash: identity.selection_hash,discoveryHome: identity.discovery_home,retention: row.retention_state,legacyStatus: row.legacy_status };
+      return { snapshot,pointer: { schema: snapshot.schema,taskId,snapshotHash: row.snapshot_hash },selectionHash: identity.selection_hash,discoveryHome: identity.discovery_home,retention: row.retention_state,legacyStatus: row.legacy_status };
     } catch (error) {
       if(error instanceof SnapshotReadFailure)throw new ApplicationError('SNAPSHOT_CORRUPT',snapshotFailureMessages[error.kind]);
       if (error instanceof ApplicationError && ['RESOURCE_STATE_CHANGED','OWNERSHIP_CONFLICT'].includes(error.code)) throw error;
@@ -108,7 +114,7 @@ export class CapabilitySessionRegistry {
       catch (error) { if (error instanceof ApplicationError && error.code === 'SNAPSHOT_CORRUPT') this.quarantine(taskId,'corrupt'); throw error; }
     });
   }
-  async create(input: CapabilitySessionSnapshotV2,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
+  async create(input: CapabilitySessionSnapshot,discoveryHome: string,initialApplicationScope?:readonly string[]): Promise<StoredCapabilitySession> {
     const parsed = capabilitySessionSnapshotSchema.safeParse(input);
     if (!parsed.success || !isAbsolute(discoveryHome)) throw new ApplicationError('INVALID_INPUT','会话能力或原生发现目录无效');
     const snapshot = parsed.data, bytes = canonicalJson(snapshot), hash = digest(bytes); if (Buffer.byteLength(bytes) > 4 * 1024 * 1024) throw new ApplicationError('INVALID_INPUT','会话快照超过元数据预算');
@@ -119,7 +125,7 @@ export class CapabilitySessionRegistry {
       this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot,initialApplicationScope);
       if (snapshot.native.sessionId && this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=?').get(snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
       for (const mcp of snapshot.mcp) if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖');
-      this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,2,?,?,?,?,'active')").run(snapshot.taskId,bytes,hash,snapshot.createdAt,snapshot.provenance);
+      this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,?,?,?,?,?,'active')").run(snapshot.taskId,snapshot.schema,bytes,hash,snapshot.createdAt,snapshot.provenance);
       this.store.sqlite.prepare('INSERT INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,snapshot.taskId,bytes,selectionHash(snapshot),snapshot.createdAt);
       this.store.sqlite.prepare('INSERT INTO capability_session_identities(task_id,runner,identity_root,session_id,cwd,discovery_home,selection_hash,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').run(snapshot.taskId,snapshot.runner,nativeRoot,snapshot.native.sessionId,snapshot.native.cwd,home,selectionHash(snapshot),snapshot.createdAt,snapshot.createdAt);
       const put = this.store.sqlite.prepare('INSERT INTO capability_session_refs(task_id,ref_kind,ref_id,ref_hash,relative_path) VALUES(?,?,?,?,?)');
@@ -129,7 +135,7 @@ export class CapabilitySessionRegistry {
     }).immediate());
     await this.ensureMirror(snapshot.taskId); return saved;
   }
-  async bindNativeSession(taskId: string,expectedHash: string,native: { runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string }): Promise<StoredCapabilitySession> {
+  async bindNativeSession(taskId: string,expectedHash: string,native: { runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string }): Promise<StoredCapabilitySession> {
     const saved = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const current = this.read(taskId), snapshot = current.snapshot, identity = this.store.sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId) as IdentityRow;
       if (current.retention !== 'active' || native.runner !== snapshot.runner || native.stateRoot !== snapshot.native.stateRoot || native.cwd !== snapshot.native.cwd || canonicalFuturePath(native.stateRoot) !== identity.identity_root) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生身份、目录或保留状态不同，不能补写到此快照');
@@ -147,7 +153,7 @@ export class CapabilitySessionRegistry {
       return this.read(taskId);
     }).immediate()); await this.ensureMirror(taskId); return saved;
   }
-  async verifyNativeIdentity(taskId: string,actual: { runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string | null;home: string }): Promise<void> {
+  async verifyNativeIdentity(taskId: string,actual: { runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;home: string }): Promise<void> {
     const current = await this.get(taskId), native = current.snapshot.native;
     if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能授予运行能力');
     const identity = this.store.sqlite.prepare('SELECT identity_root FROM capability_session_identities WHERE task_id=?').get(taskId) as { identity_root: string };
@@ -179,7 +185,7 @@ export class CapabilitySessionRegistry {
   scopedReferencesCoordinated(taskId:string,appIds:readonly string[],projectionIds:readonly string[]=[],independent=false):SessionResourceReference[]{
     const current=this.inspectCoordinated(taskId),snapshot=current.snapshot;
     if(snapshot.legacyBinding||snapshot.provenance!=='created'||(!appIds.length&&!independent)||(independent&&appIds.length!==0)||appIds.length>32||new Set(appIds).size!==appIds.length||appIds.some(id=>!snapshot.packages.some(p=>p.appId===id))||new Set(projectionIds).size!==projectionIds.length||projectionIds.length>4096)throw new ApplicationError('INVALID_INPUT','本轮应用范围必须来自原固定选择');
-    this.validatePackages({...snapshot,packages:snapshot.packages.filter(p=>appIds.includes(p.appId))});
+    this.validatePackages(selectSessionApplications(snapshot,appIds));
     const expected=this.expectedSources(this.executionSelection(snapshot,appIds)),all=this.store.sqlite.prepare('SELECT ref_kind AS refKind,ref_id AS refId,ref_hash AS refHash,relative_path AS relativePath FROM capability_session_refs WHERE task_id=?').all(taskId) as SessionResourceReference[],roots:SessionResourceReference[]=[];
     for(const [id,source]of expected){const ref=all.find(r=>r.refId===id);if(!ref||ref.refKind!==source.kind||ref.refHash!==source.hash)throw new ApplicationError('SNAPSHOT_CORRUPT','本轮所需原资源引用缺失或身份不同');roots.push(ref);}
     // The ordinary launcher always reads its original M4 runtime, including
@@ -225,7 +231,7 @@ export class CapabilitySessionRegistry {
       if (!result.changes) throw new ApplicationError('NOT_FOUND','此任务尚无能力保留记录');
     }).immediate());
   }
-  async holdUnknown(input: { taskId: string;projectId: string | null;runner: CapabilitySessionSnapshotV2['runner'];stateRoot: string;cwd: string;sessionId: string | null;reason: 'history-unknown' | 'snapshot-corrupt' }): Promise<void> {
+  async holdUnknown(input: { taskId: string;projectId: string | null;runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;reason: 'history-unknown' | 'snapshot-corrupt' }): Promise<void> {
     const parsed = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),projectId: z.string().min(1).max(128).nullable(),runner: z.enum(['claude-code','codex']),stateRoot: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),cwd: z.string().refine(s => isAbsolute(s) && !/[\x00\r\n]/.test(s)),sessionId: z.string().min(1).max(256).regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/).nullable(),reason: z.enum(['history-unknown','snapshot-corrupt']) }).strict().safeParse(input);
     if (!parsed.success) throw new ApplicationError('INVALID_INPUT','历史保留身份无效或包含未允许字段');
     input = parsed.data;
@@ -252,15 +258,15 @@ export class CapabilitySessionRegistry {
       const row = this.store.sqlite.prepare(SELECT).get(taskId) as SnapshotRow | undefined;
       const history = this.store.sqlite.prepare('SELECT snapshot_json,selection_hash FROM capability_snapshot_versions WHERE snapshot_hash=? AND task_id=?').get(expectedHash,taskId) as { snapshot_json: string;selection_hash: string } | undefined;
       const hold = this.store.sqlite.prepare('SELECT previous_retention,reason FROM capability_session_holds WHERE task_id=?').get(taskId) as { previous_retention: string;reason: string } | undefined;
-      if (!row || row.schema_version !== 2 || row.snapshot_hash !== expectedHash || !history || (hold && !['corrupt','snapshot-corrupt'].includes(hold.reason))) throw new ApplicationError('SESSION_ON_HOLD','没有与原登记hash匹配的已知版本，不能猜测或按当前默认重建');
-      let original: CapabilitySessionSnapshotV2;
+      if (!row || ![2,3].includes(row.schema_version) || row.snapshot_hash !== expectedHash || !history || (hold && !['corrupt','snapshot-corrupt'].includes(hold.reason))) throw new ApplicationError('SESSION_ON_HOLD','没有与原登记hash匹配的已知版本，不能猜测或按当前默认重建');
+      let original: CapabilitySessionSnapshot;
       try { original = capabilitySessionSnapshotSchema.parse(JSON.parse(history.snapshot_json)); } catch { throw new ApplicationError('SNAPSHOT_CORRUPT','原登记备份也不可核验'); }
       if (digest(canonicalJson(original)) !== expectedHash || selectionHash(original) !== history.selection_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','原登记版本摘要不匹配');
       this.store.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,retention_state=?,legacy_status=? WHERE task_id=? AND snapshot_hash=?').run(history.snapshot_json,hold?.previous_retention ?? row.retention_state,original.provenance,taskId,expectedHash);
       const verified = this.read(taskId); this.store.sqlite.prepare('DELETE FROM capability_session_holds WHERE task_id=?').run(taskId); return verified;
     }).immediate()); await this.ensureMirror(taskId); return saved;
   }
-  hasUnresolvedHistory(): boolean { return !!this.store.sqlite.prepare("SELECT 1 FROM capability_session_snapshots WHERE schema_version<>2 OR retention_state='hold' OR legacy_status IN ('corrupt','history-unknown','snapshot-corrupt') LIMIT 1").get(); }
+  hasUnresolvedHistory(): boolean { return !!this.store.sqlite.prepare("SELECT 1 FROM capability_session_snapshots WHERE schema_version NOT IN (2,3) OR retention_state='hold' OR legacy_status IN ('corrupt','history-unknown','snapshot-corrupt') LIMIT 1").get(); }
   async ensureMirror(taskId: string): Promise<{ repaired: boolean;backup: string | null }> {
     return withResourceLock(this.store.root,() => {
       const current = this.read(taskId), path = ensureStoreDirectory(this.store.root,'sessions/' + taskId), marker = join(path,'.smartdd-owned.json');

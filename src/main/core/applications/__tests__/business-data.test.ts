@@ -382,3 +382,52 @@ it('SL mail status cancellation reaches only its own context and keeps a lease u
  try{await vi.waitFor(()=>expect(signals).toHaveLength(2));expect(signals.every(Boolean)).toBe(true);expect(signals[0]).not.toBe(signals[1]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:true});expect(signals.map(s=>s.aborted)).toEqual([true,false]);expect(app.cancelUiRead(sender,ids[0]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:2});}finally{releases.forEach(r=>r());}
  const results=await Promise.all(pending);expect(results[0]!.error).toMatchObject({code:'CANCELED'});expect(results[1]!.value).toEqual(value);expect(app.cancelUiRead(sender,ids[1]!)).toEqual({canceled:false});expect(f.sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE owner_kind='ui' AND state='active'").get()).toEqual({n:0});
 });
+
+describe('M11 unified capability execution with host-issued callers',()=>{
+ it('M11 lets UI create, read and update drafts with no Agent run or external connection',async()=>{
+  while(owned.length)await owned.pop()!.cli.exited();
+  const run=()=>app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test',operations:['mail.draft'],semantics:'write'},scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.create',1,{content:content('UI-only')}));
+  const created=await run() as {draft:MailDraftDataView};
+  const updated=await app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test',operations:['mail.draft'],semantics:'write'},scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.update',1,{draftId:created.draft.id,expectedRevision:1,content:content('UI revision 2')})) as {draft:MailDraftDataView};
+  expect(await app.viewDraft(sender,'p1',updated.draft.id)).toMatchObject({draft:{id:created.draft.id,revision:2},currentRevision:2});
+  expect(f.sqlite.prepare("SELECT count(*) n FROM capability_runs WHERE state='active'").get()).toEqual({n:0});
+  const operations=f.sqlite.prepare("SELECT task_id,run_id,caller_kind FROM application_data_operations WHERE action='ui.mail.test'").all();
+  expect(operations).toHaveLength(2);expect(operations).toEqual([expect.objectContaining({task_id:null,run_id:null,caller_kind:'ui'}),expect.objectContaining({task_id:null,run_id:null,caller_kind:'ui'})]);
+  expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
+ });
+ it('M11 rejects copied and expired caller handles before executing any business primitive',async()=>{
+  const execute=vi.spyOn(app.data,'execute');let expired!:import('../caller-context').CallerContext;
+  await ui(async scope=>{
+   expired=app.contexts.caller(scope);expect(expired.kind).toBe('ui');expect(Object.isFrozen(expired)).toBe(true);
+   await expect(app.capabilities.execute({...expired},'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+   expect(()=>app.contexts.caller({...scope})).toThrow(ApplicationError);
+   await expect(app.capabilities.execute(expired,'mail.draft.list',2,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+   await expect(app.capabilities.execute(expired,'zentao.object.list',1,{kind:'bug'})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+   return null;
+  });
+  await expect(app.capabilities.execute(expired,'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(execute).not.toHaveBeenCalled();
+ });
+ it('M11 sends UI and MCP through the same executor while keeping the original v1 result and request identity',async()=>{
+  const execute=vi.spyOn(app.capabilities,'execute'),primitive=vi.spyOn(app.data,'execute');
+  expect(await call(codex,'draft_list',{})).toMatchObject({status:'ok',value:{items:[],nextCursor:null}});
+  expect(await app.viewDrafts(sender,'p1')).toEqual({items:[],nextCursor:null});
+  expect(execute).toHaveBeenCalledTimes(2);expect(primitive).toHaveBeenCalledTimes(2);
+  const caller=execute.mock.calls[0][0];expect(caller).toMatchObject({kind:'agent',entry:'mcp',runId:codex.runId,requestId:expect.any(String),plan:{kind:'snapshot-v2',hash:runs.assertActive(codex.runId).run.snapshotHash}});
+  expect(execute.mock.calls[1][0]).toMatchObject({kind:'ui',projectId:'p1'});
+  expect(primitive.mock.calls.every(([,method])=>method==='mail.draft.list')).toBe(true);
+ });
+ it('M11 propagates cancellation to the original operation without replacing its authenticated context',async()=>{
+  const abort=new AbortController();let ready!:()=>void,release!:()=>void;const entered=new Promise<void>(r=>ready=r),gate=new Promise<void>(r=>release=r);
+  vi.spyOn(app.data,'execute').mockImplementation(async context=>{ready();await gate;expect(context.signal.aborted).toBe(true);return{items:[],nextCursor:null};});
+  const pending=ui(scope=>app.capabilities.execute(app.contexts.caller(scope),'mail.draft.list',1,{},abort.signal));
+  await entered;abort.abort();release();await expect(pending).rejects.toMatchObject({code:'CANCELED'});
+  expect(f.sqlite.prepare("SELECT state,error_code FROM application_data_operations WHERE action='ui.mail.test'").get()).toEqual({state:'cancelled',error_code:'CANCELED'});
+ });
+ it('M11 denies project data to management callers and writes to read-only or internal callers',async()=>{
+  const execute=vi.spyOn(app.data,'execute');
+  await app.contexts.withManagement(sender,{appId:'mail',action:'connection.list',semantics:'read'},async scope=>{await expect(app.capabilities.execute(app.contexts.caller(scope),'mail.draft.list',1,{})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
+  await ui(async scope=>{await expect(app.capabilities.execute(app.contexts.caller(scope),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;});
+  await ui(scope=>app.contexts.withIndex(scope,'mail.read',async index=>{await expect(app.capabilities.execute(app.contexts.caller(index),'mail.draft.create',1,{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});return null;}),['mail.read']);
+  expect(execute).not.toHaveBeenCalled();
+ });
+});

@@ -15,6 +15,7 @@ import { PackageRegistry } from './package-registry';
 import type { ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilityRunRegistry, RunContext } from './run-registry';
+import {requirePlanEntry} from './run-plan';
 /** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
 const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
 export interface ApplicationOperationContext { operationId: string;requestId: string;attempt: number;deadline: number;signal: AbortSignal;packageHash: string;appId: string;toolName: string;contractMajor: number;connectionId: string | null }
@@ -56,6 +57,7 @@ export class ApplicationToolService {
     const selected = context.snapshot.packages.find(p => Object.hasOwn(p.toolContractMajors,call.operation));
     if (!selected || selected.toolContractMajors[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该工具契约');
     assertRunApplication(context,selected.appId);
+    if(context.plan){const allowed=context.plan.allowed.find(c=>c.mcpTool===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','工具不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,'mcp');}
     const application = this.packages.get(selected.packageHash), declaration = application.manifest.tools.find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
     if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
@@ -74,7 +76,7 @@ export class ApplicationToolService {
         try {
           assertRunApplication(context,application.appId);
           const manifest = this.packages.get(application.packageHash).manifest;
-          const permitted = Object.entries(application.toolContractMajors).filter(([name]) => application.allowedOperations.includes(manifest.tools.find(t => t.name === name)!.permission));
+          const permitted = Object.entries(application.toolContractMajors).filter(([name,major]) => application.allowedOperations.includes(manifest.tools.find(t => t.name === name)!.permission)&&(!context.plan||context.plan.allowed.some(c=>c.mcpTool===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry==='mcp')));
           for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);
           tools.push(...group);
           if (permitted.length) { const [operation,contractMajor] = permitted[0]; this.selected(context,{ operation,contractMajor }); }

@@ -82,7 +82,7 @@ function guardRecord(store:ResourceStore,proof:NativeGuardDiscoveryProof):GuardR
  if(!lease||lease.host_instance_id!==run.owner_instance_id||lease.pid!==run.owner_pid||lease.process_started_at!==run.owner_started_at||!['preparing','active'].includes(lease.state))throw recovery();
  const source=store.sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json,retention_state,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(context.taskId) as {schema_version:number;snapshot_hash:string;snapshot_json:string;retention_state:string;legacy_status:string}|undefined;
  if(!source||source.snapshot_hash!==context.snapshotHash||digest(source.snapshot_json)!==context.snapshotHash)throw recovery();
- if(context.kind==='fixed'){if(source.schema_version!==2||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
+ if(context.kind==='fixed'){if(![2,3].includes(source.schema_version)||source.retention_state!=='active'||!store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(context.runId))throw recovery();}
  else if(source.schema_version!==0||source.retention_state!=='hold'||source.legacy_status!=='history-unknown')throw recovery();
  if(selection.schema==='native-guard-retention-omissions-v1'&&!selection.paths.some(path=>selection.catalog.entries.find(e=>e.path===path)?.format==='legacy-tree-v1'))throw recovery();
  unverifiedPaths(selection.catalog,selection.home,selection.paths,[],selection.schema==='native-guard-retention-omissions-v1');record.assertOwnedGuard();return record;

@@ -1,6 +1,7 @@
+import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
 import {readApplicationRunScope} from './application-run-scope';
 import { ApplicationError } from '@shared/applications';
-import { capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import { type CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson,digest } from './manifest';
 import { selectionHash } from './session-registry';
 import { readLaunchRestriction } from './launch-restriction';
@@ -23,7 +24,7 @@ export function taskUsesApplication(store:ResourceStore,projectId:string,taskId:
   }catch{throw unresolved();}
  }
  try{
-  if(row.schema_version!==2)throw unresolved();const snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)),selected=selectionHash(snapshot);
+  if(![2,3].includes(row.schema_version))throw unresolved();const snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(row.snapshot_json)),selected=selectionHash(snapshot);
   if(snapshot.taskId!==taskId||snapshot.projectId!==projectId||digest(canonicalJson(snapshot))!==row.snapshot_hash||row.selection_hash!==selected||row.runner!==snapshot.runner||row.session_id!==snapshot.native.sessionId||row.cwd!==snapshot.native.cwd)throw unresolved();
   if(!snapshot.packages.some(p=>p.appId===appId))return false;
   const runs=store.sqlite.prepare("SELECT run_id,project_id,runner,snapshot_hash FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").all(taskId) as {run_id:string;project_id:string;runner:string;snapshot_hash:string}[];
@@ -55,7 +56,7 @@ export function assertNoPendingApplicationSwitch(store:ResourceStore,snapshot:{p
 
 /** Current source context for the Agent, appended by the host to its original
  * tool description. Does not alter the frozen name, schemas, version or rights. */
-export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
+export function applicationConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshot,appId:string):string|null{
  if(!builtinApplicationModules.appIds().some(id=>id===appId))return null;
  return builtinApplicationModules.module(appId).connectionNotice?.(store,snapshot,appId)??null;
 }

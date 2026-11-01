@@ -1,0 +1,15 @@
+
+> smartdd@0.0.9 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/__tests__/agent-fixture.ts(36,49): error TS2552: Cannot find name 'CapabilitySessionSnapshot'. Did you mean 'CapabilitySessionSnapshotV2'?
+src/main/core/applications/__tests__/agent-fixture.ts(53,232): error TS2552: Cannot find name 'CapabilitySessionSnapshot'. Did you mean 'CapabilitySessionSnapshotV2'?
+src/main/core/applications/__tests__/session-registry.test.ts(31,58): error TS2552: Cannot find name 'CapabilitySessionSnapshot'. Did you mean 'CapabilitySessionSnapshotV2'?
+src/main/core/applications/__tests__/session-registry.test.ts(36,158): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/main/core/applications/__tests__/session-registry.test.ts(36,176): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/main/core/applications/__tests__/session-registry.test.ts(36,231): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/main/core/tasks/task-capabilities.test.ts(48,33): error TS2345: Argument of type 'CapabilitySessionSnapshot' is not assignable to parameter of type '{ schema: 2; taskId: string; projectId: string; createdAt: string; runner: "claude-code" | "codex"; adapterBinding: { id: string; version: string; hash: string; projectionFormatVersion: number; nativeToolNames: Record<...>; }; ... 7 more ...; legacyBinding?: { ...; } | undefined; }'.
+  Type '{ schema: 3; packages: { appId: string; version: string; packageHash: string; hashAlgorithm: "app-manifest-v1"; hostApi: { min: number; max: number; }; dataApi: number; runtimeHash: string; toolContractMajors: Record<...>; ... 4 more ...; capabilityContractMajors: Record<...>; }[]; ... 11 more ...; legacyBinding?: {...' is not assignable to type '{ schema: 2; taskId: string; projectId: string; createdAt: string; runner: "claude-code" | "codex"; adapterBinding: { id: string; version: string; hash: string; projectionFormatVersion: number; nativeToolNames: Record<...>; }; ... 7 more ...; legacyBinding?: { ...; } | undefined; }'.
+    Types of property 'schema' are incompatible.
+      Type '3' is not assignable to type '2'.
+ ELIFECYCLE  Command failed with exit code 2.

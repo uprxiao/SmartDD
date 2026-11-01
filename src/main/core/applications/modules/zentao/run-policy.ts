@@ -1,7 +1,7 @@
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import type {ResourceStore} from '../../resource-store';
 /** Retained ZenTao source notices; package contracts and returned wording stay unchanged. */
-export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2,appId:string):string|null{
+export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySessionSnapshot,appId:string):string|null{
  const selected=snapshot.packages.find(p=>p.appId===appId);if(!selected)return null;
  const row=store.sqlite.prepare(`SELECT s.pending_operation_id,b.connection_id,b.identity_revision,c.name,c.app_id,c.provider_id,c.identity_revision AS actual_identity_revision
   FROM application_project_settings s LEFT JOIN application_project_bindings b ON b.project_id=s.project_id AND b.app_id=s.app_id AND b.slot='zentao'

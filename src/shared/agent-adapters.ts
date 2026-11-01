@@ -1,6 +1,6 @@
 import {claudeRunDeliverySchema} from './claude-delivery';
 import { z } from 'zod';
-import { capabilitySessionSnapshotSchema } from './application-session';
+import { storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema } from './application-session-v3';
 import { boundedJson } from './application-bridge';
 export const bridgeRecoveryCapabilitySchema=z.enum(['supported','unsupported','unverified']);
 const absolute = z.string().min(1).max(4096).refine(s => s.startsWith('/') && !/[\x00\r\n]/.test(s));

@@ -1,5 +1,5 @@
 import {ApplicationError} from '@shared/applications';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
 import {DiscoveryCatalog,type DiscoveryProjectionSource} from './discovery-catalog';
 import {LegacyCapabilityResourceAdopter} from './legacy-resource-adopter';
@@ -30,7 +30,7 @@ export class LegacyOriginalCodex{
    const snapshot=this.store.sqlite.prepare('SELECT schema_version,snapshot_json,snapshot_hash FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_json:string;snapshot_hash:string}|undefined;
    let pointer;try{pointer=JSON.parse(initial.runtime_snapshot)?.sessionCapabilities;}catch{}
    if(!snapshot||snapshot.schema_version!==2||digest(snapshot.snapshot_json)!==snapshot.snapshot_hash||canonicalJson(pointer)!==canonicalJson({schema:2,taskId,snapshotHash:snapshot.snapshot_hash}))throw new ApplicationError('SNAPSHOT_CORRUPT','已迁移原任务的固定指针不同');
-   assertLegacySessionSource(this.store,JSON.parse(snapshot.snapshot_json) as CapabilitySessionSnapshotV2);
+   assertLegacySessionSource(this.store,JSON.parse(snapshot.snapshot_json) as CapabilitySessionSnapshot);
   }
   const metadata=()=>{
    const source=this.source(taskId),state=this.store.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
@@ -57,7 +57,7 @@ export class LegacyOriginalCodex{
   const ready=this.source(taskId);for(const r of ready.originalCodexProjections??[])if(r.state!=='ready'||r.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享Skill投影尚未就绪');
   return published;
  }
- verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):void{
+ verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
   const original=assertLegacySessionSource(this.store,snapshot),expected=original.originalCodexProjections?.find(r=>r.resourceId===resource.resourceId),skill=original.evidence.skills.find(s=>s.enabled&&s.hash===resource.contentHash&&legacyDiscoveryEntry(this.store.storeId,original.identity.home,s.skillId,s.hash).resourceId===resource.resourceId);
   if(!expected||!skill||canonicalJson(expected)!==canonicalJson(resource)||resource.state!=='ready'||resource.integrity!=='valid'||original.identity.home!==this.catalog.home)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原共享Skill投影未被本任务完整引用');
   const entry=legacyDiscoveryEntry(this.store.storeId,original.identity.home,skill.skillId,skill.hash),tree=verifyLegacyDiscoveryEntry(entry,original.identity.home).files,source=this.store.get(`standard-skill:${skill.skillId}:${skill.hash}`),files=new LegacyCapabilityResourceAdopter(this.store).verify(source),deps=this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId);

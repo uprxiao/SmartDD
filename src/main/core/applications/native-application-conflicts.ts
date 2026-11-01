@@ -1,5 +1,5 @@
 import {dirname,resolve,isAbsolute} from 'node:path';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import type {NativePreparationSource} from '@shared/application-session-diagnostics';
 import type {NativeLaunchContext} from './native-launch-context';
 import {canonicalFuturePath} from './session-registry';
@@ -10,7 +10,7 @@ export interface NativeCapabilityConflicts {
 const safePath=(path:string|null|undefined)=>path&&isAbsolute(path)&&path.length<=4096&&!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/.test(path)?path:null;
 /** Read-only attribution. Source locations are display evidence,never repair,
  * native loading or tool authority. Existing conflict sets remain the gates. */
-export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>}):NativeCapabilityConflicts{
+export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext,physical?:{owned:ReadonlySet<string>;occupied:ReadonlySet<string>;unavailable?:ReadonlySet<string>}):NativeCapabilityConflicts{
  const conflicts=new Set<string>(),standards=new Set<string>(),unavailableApplications=new Set<string>(),unavailableStandardSkills=new Set<string>(),sources=new Map<string,NativePreparationSource[]>();let projectMcp=false;
  const add=(key:string,source:NativePreparationSource)=>{const current=sources.get(key)??[];if(!current.some(s=>JSON.stringify(s)===JSON.stringify(source)))sources.set(key,[...current,source]);};
  const itemSource=(item:NativeLaunchContext['inventory'][number]):NativePreparationSource=>({kind:item.kind,name:item.name,path:safePath(item.path),configurationPath:null,location:item.path==='profile arguments'?'profile-arguments':safePath(item.path)?'file':'unrecorded'});
@@ -39,4 +39,4 @@ export function nativeCapabilityConflicts(snapshot:CapabilitySessionSnapshotV2,n
  if(physical?.unavailable)for(const path of physical.unavailable){for(const p of snapshot.packages)if(p.skills.some(s=>s.projectionPath===path)){unavailableApplications.add(p.appId);add('application:'+p.appId,projection(p.appId,path));}for(const s of snapshot.standardSkills)if(s.projectionPath===path){unavailableStandardSkills.add(path);add('standard-skill:'+s.skillId,projection(s.skillId,path));}}
  return{applications:conflicts,standardSkills:standards,unavailableApplications,unavailableStandardSkills,projectMcp,sources};
 }
-export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshotV2,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}
+export function nativeApplicationConflicts(snapshot:CapabilitySessionSnapshot,native:NativeLaunchContext):Set<string>{return nativeCapabilityConflicts(snapshot,native).applications;}

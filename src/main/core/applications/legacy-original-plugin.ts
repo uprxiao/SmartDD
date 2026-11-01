@@ -1,7 +1,7 @@
 import {lstatSync,mkdirSync,realpathSync,readFileSync,writeFileSync} from 'node:fs';
 import {dirname,join,relative} from 'node:path';
 import {ApplicationError} from '@shared/applications';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import {canonicalJson} from './manifest';
 import type {ResourceRecord,ResourceStore} from './resource-store';
 import {retainedLegacySource,assertLegacySessionSource} from './legacy-session-source';
@@ -62,7 +62,7 @@ export class LegacyOriginalPlugin {
   if(known){const r=this.store.get(resourceId);if(r.state!=='ready'){if(!r.operationId||!['staged','verified','recovery-required'].includes(r.state))throw new ApplicationError('RESOURCE_BUSY','原静态投影发布仍未结束');return this.store.recover(spec,r.operationId,signal);}}
   return this.store.publish(spec,signal);
  }
- verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):void{
+ verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):void{
   const source=assertLegacySessionSource(this.store,snapshot),expected=source.originalProjection;
   if(!expected||canonicalJson(expected)!==canonicalJson(resource)||resource.state!=='ready'||resource.integrity!=='valid'||!source.pluginSource)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原静态投影尚未就绪或未被会话引用');
   const deps=(this.store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(d=>d.dependency_id);if(canonicalJson(deps)!==canonicalJson([source.pluginSource.resourceId]))throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原静态投影依赖缺失或不同');

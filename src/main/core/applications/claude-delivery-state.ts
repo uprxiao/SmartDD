@@ -6,7 +6,7 @@ import type {ClaudeRunDelivery} from '@shared/claude-delivery';
 import {join} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
-import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshotV2} from '@shared/application-session';
+import {capabilitySessionSnapshotSchema,type CapabilitySessionSnapshot} from '@shared/application-session';
 import type {ResourceStore,ResourceRecord} from './resource-store';
 import {canonicalJson,digest} from './manifest';
 import {verifyOwnedBundle} from './owned-bundle';
@@ -26,7 +26,7 @@ export type ClaudeDeliveryToken=z.infer<typeof claudeDeliveryTokenSchema>;
 export const claudeSlotId=(taskId:string)=>'claude-delivery-slot:'+taskId;
 export const claudeRoot=(taskId:string)=>`sessions/${taskId}/claude/plugin`;
 export const claudeAnchor=(taskId:string)=>'claude-delivery-root:'+taskId;
-export const normalizedSelection=(s:CapabilitySessionSnapshotV2)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
+export const normalizedSelection=(s:CapabilitySessionSnapshot)=>digest(canonicalJson({...s,native:{...s.native,sessionId:null}}));
 const fail=()=>new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Claude目录交付或占用依据待核验，保留现场');
 export function readClaudeSlot(store:ResourceStore,taskId:string):ClaudeSlot|null{
  const row=store.sqlite.prepare('SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?').get(claudeSlotId(taskId)) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;if(!row){const footprint=store.sqlite.prepare("SELECT 1 FROM capability_resources WHERE owner_store_id=? AND path_scope='C' AND (resource_id=? OR kind='claude-delivery' AND scope_relative_path=?) LIMIT 1").get(store.storeId,claudeAnchor(taskId),claudeRoot(taskId));const intent=store.sqlite.prepare("SELECT 1 FROM capability_resource_operations WHERE owner_store_id=? AND kind='claude-delivery-install' AND CASE WHEN json_valid(plan_json) THEN json_extract(plan_json,'$.slotId') ELSE NULL END=? LIMIT 1").get(store.storeId,claudeSlotId(taskId));if(footprint||intent)throw fail();return null;}
@@ -60,7 +60,7 @@ function lease(store:ResourceStore,leaseId:string,owner:DeliveryOwner,ownerId:st
 }
 export function assertClaudeInstallLease(store:ResourceStore,slot:ClaudeSlot):void{if(!slot.pending)throw fail();for(const p of slot.pending.participants)lease(store,p.leaseId,p.owner,slot.pending.id,'claude-delivery-install',slot.anchorId,['active','recovery-required']);}
 export function assertClaudePreparation(store:ResourceStore,slot:ClaudeSlot):void{const p=slot.preparation;if(!p||slot.pending||p.revision!==slot.revision||!slot.current)throw fail();lease(store,p.leaseId,p.owner,p.id,'claude-delivery-preparation',slot.anchorId,['active']);}
-export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshotV2):ClaudeSlot{
+export function verifyClaudeDelivery(store:ResourceStore,resource:ResourceRecord,snapshot:CapabilitySessionSnapshot):ClaudeSlot{
  const slot=readClaudeSlot(store,snapshot.taskId),v=slot?.current;
  if(!slot||!v||slot.pending||slot.selectionHash!==normalizedSelection(snapshot)||snapshot.runner!=='claude-code'||snapshot.legacyBinding||resource.kind!=='claude-delivery'||resource.pathScope!=='C'||resource.resourceId!==v.resourceId||resource.contentHash!==v.hash||resource.generation!==v.generation||resource.relativePath!==slot.root||resource.state!=='ready'||resource.integrity!=='valid')throw fail();
  const source=store.get(v.sourceId),deps=(store.sqlite.prepare('SELECT dependency_id FROM capability_resource_dependencies WHERE resource_id=? ORDER BY dependency_id').all(resource.resourceId) as {dependency_id:string}[]).map(r=>r.dependency_id);
@@ -103,8 +103,8 @@ export function protectClaudeNativeGuard(store:ResourceStore,taskId:string,runId
   if(!row||row.task_id!==taskId||!['preparing','prepared'].includes(row.state))throw fail();
   if(row.runner!=='claude-code')return;
   const saved=store.sqlite.prepare('SELECT schema_version,snapshot_hash,snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(taskId) as {schema_version:number;snapshot_hash:string;snapshot_json:string}|undefined;
-  if(!saved||saved.schema_version!==2)return;
-  let snapshot:CapabilitySessionSnapshotV2;try{snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(saved.snapshot_json));}catch{throw fail();}
+  if(!saved||![2,3].includes(saved.schema_version))return;
+  let snapshot:CapabilitySessionSnapshot;try{snapshot=capabilitySessionSnapshotSchema.parse(JSON.parse(saved.snapshot_json));}catch{throw fail();}
   if(snapshot.taskId!==taskId||snapshot.projectId!==row.project_id||snapshot.runner!==row.runner||saved.snapshot_hash!==row.snapshot_hash||digest(canonicalJson(snapshot))!==row.snapshot_hash)throw fail();
   if(snapshot.legacyBinding)return;
   const root=claudeRoot(taskId),refs=store.sqlite.prepare("SELECT ref_id,ref_hash FROM capability_session_refs WHERE task_id=? AND ref_kind='session-projection'").all(taskId) as {ref_id:string;ref_hash:string}[],original=refs.filter(ref=>{const r=store.get(ref.ref_id);return r.kind==='session-projection'&&r.pathScope==='C'&&r.relativePath===root&&r.resourceId===`session-projection:${taskId}:${r.contentHash}`&&r.contentHash===ref.ref_hash;});

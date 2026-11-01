@@ -21,6 +21,8 @@ import { canonicalJson, digest } from './manifest';
 import type { RunContext } from './run-registry';
 import type { ApplicationDataBinding } from './application-adapter-registry';
 import type { ApplicationOperationContext } from './tool-service';
+import type { CallerContext } from './caller-context';
+import {requirePlanEntry} from './run-plan';
 
 export type ApplicationUiSender = Pick<IpcMainInvokeEvent,'sender'|'senderFrame'>;
 export interface ApplicationExecutionContext<A extends string=ApplicationId> {
@@ -42,6 +44,8 @@ const managementActions=new Set(['application.configure','application.cache.stat
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
   private readonly records=new WeakMap<object,ContextRecord<C,A>>();
+  private readonly callers=new WeakMap<object,ApplicationExecutionContext<A>>();
+  private readonly agentCalls=new WeakMap<object,Extract<CallerContext,{kind:'agent'}>>();
   private readonly credentials=new CredentialHandles<ReturnType<ApplicationConnectionService<C,A>['authentication']>>();
   private readonly sharedIndexes=new WeakSet<object>();
   private readonly active=new Set<ContextRecord<C,A>>();
@@ -71,6 +75,37 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT OR IGNORE INTO application_activity_subjects VALUES(?,?,?)').run(context.operationId,kind,subjectId);});
   }
   assertActive(context:ApplicationExecutionContext<A>):void{this.record(context);}
+  caller(context:ApplicationExecutionContext<A>):CallerContext{
+    this.record(context);
+    const base={operationId:context.operationId,appId:context.appId,packageHash:context.packageHash,action:context.action};
+    let caller:CallerContext;
+    if(context.callerKind==='agent-run'){
+      const issued=this.agentCalls.get(context);if(!issued)throw new ApplicationError('SCOPE_DENIED','Agent调用缺少网关签发依据');caller=issued;
+    }else if(context.scopeKind==='connection-management')caller=Object.freeze({...base,kind:'management',projectId:context.projectId});
+    else if(context.callerKind==='index-job'){
+      if(!context.projectId||!context.jobId||!context.parentOperationId)throw new ApplicationError('SCOPE_DENIED','内部调用缺少父操作');
+      caller=Object.freeze({...base,kind:'internal',projectId:context.projectId,job:context.jobId,parentOperationId:context.parentOperationId});
+    }else{
+      if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','页面业务调用缺少项目');
+      caller=Object.freeze({...base,kind:'ui',projectId:context.projectId,operations:context.allowedOperations});
+    }
+    this.callers.set(caller,context);return caller;
+  }
+  contextFor(caller:CallerContext):ApplicationExecutionContext<A>{
+    const context=caller&&typeof caller==='object'?this.callers.get(caller):undefined;
+    if(!context)throw new ApplicationError('SCOPE_DENIED','调用身份不是当前宿主签发');this.record(context);return context;
+  }
+  async withSignal<T>(context:ApplicationExecutionContext<A>,signal:AbortSignal|undefined,work:()=>Promise<T>):Promise<T>{
+    const record=this.record(context),cancel=()=>record.abort.abort(signal?.reason);
+    if(signal){signal.addEventListener('abort',cancel,{once:true});if(signal.aborted)cancel();}
+    try{this.record(context);const value=await work();this.record(context);return value;}
+    finally{signal?.removeEventListener('abort',cancel);}
+  }
+  async requireSlots(context:ApplicationExecutionContext<A>,slots:readonly string[]):Promise<void>{
+    this.record(context);
+    for(const slot of slots){const provider=this.registry.provider(slot);if(provider.appId!==context.appId)throw new ApplicationError('SCOPE_DENIED','能力依赖的连接槽不属于本应用');await this.pinConnection(context,provider.id,null,false);}
+    this.record(context);
+  }
   require(context:ApplicationExecutionContext<A>,permission:string):void{
     const record=this.record(context);
     if(!record.allowed.has(permission))throw new ApplicationError('SCOPE_DENIED','本次业务操作未获该动作授权');
@@ -229,10 +264,14 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   }
   withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
+    if(known.plan){const allowed=known.plan.allowed.find(c=>c.mcpTool===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定工具不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,'mcp');}
     if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selected.toolContractMajors[binding.toolName]!==operation.contractMajor||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');
     const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);
     const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
-    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,work,false);
+    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
+      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry:'mcp',requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
+      return work(context);
+    },false);
   }
   withIndex<T>(parent:ApplicationExecutionContext<A>,permission:'mail.read'|'zentao.read',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     this.require(parent,permission);if(parent.scopeKind!=='project'||!parent.projectId)throw new ApplicationError('SCOPE_DENIED','来源刷新需要有效项目触发');const application=this.builtin.assertTrusted(parent.packageHash),id=randomUUID();

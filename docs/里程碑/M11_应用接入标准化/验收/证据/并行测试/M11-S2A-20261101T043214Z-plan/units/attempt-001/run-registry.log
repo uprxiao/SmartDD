@@ -1,0 +1,54 @@
+
+> smartdd@0.0.9 test /private/tmp/willyou-m11-s2a/source-attempt-001
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/run-registry.test.ts --config /private/tmp/willyou-m11-s2a/evidence/units/attempt-001/vitest.private.config.mjs --maxWorkers=1 --no-file-parallelism --no-cache --reporter=verbose --reporter=json --outputFile.json=/private/tmp/willyou-m11-s2a/evidence/units/attempt-001/run-registry.vitest.json
+
+
+ RUN  v4.1.11 /private/tmp/willyou-m11-s2a/source-attempt-001
+
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > rolls back a failed restriction receipt without guessing the CLI was restricted or armed 902ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > refuses handoff after a narrowed-run receipt is corrupted but still permits owned cancellation and cleanup 635ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > returns only a verified owned native view for diagnostics and never lets another registry or a reused PID adopt it 621ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > narrows only a prepared, fully canceled-bridge run and retains protection until the owned native exit 1636ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > refuses narrowing an armed CLI without changing its authority or occupied resources 749ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > accepts the first proved native ID on a narrowed run without restoring business authority 916ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > joins input only to one actual active task/PTY owned by this registry 810ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > never adopts a reused PID when attachment requires the proved original birth identity 887ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > protects the complete transitive dependency closure before any source bytes are consumed 634ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > revokes immediately but keeps an armed launch window until its actual owned exit 842ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > keeps a running bridge protected after CLI exit and releases only after both exits 860ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > waits for actual in-flight executor completion even when all native handles have exited 670ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > rechecks policy after preparation and on every call without changing the fixed snapshot 707ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > preserves the original selection when first native ID completion updates the run pointer 937ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > refuses a second live run and another registry cannot impersonate an owned run 900ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > does not accept project or approval fields supplied with a reserve request 485ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > records an exit arriving before PID attachment without reopening the run later 879ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > retains an unknown PID attachment and rejects replacement of an already fixed process 668ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > retains leases when revoke fails and allows a later successful revoke after actual exit 733ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > allows the revoker to await an exit callback without an exit/revoke wait cycle 789ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > bounds stop waiting while preserving the pending revoke until it really completes 898ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > protects a ready projection added during preparation and rejects a generation race after byte verification 1192ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > refuses deleting resources, cyclic dependencies and maintenance without partial new runs 687ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > recovers proven-dead unarmed preparation but never assumes an armed PID-null fork did not occur 690ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > does not release a recovered run while a known child is still alive or identity cannot be read 748ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > treats a reused PID as proof the old child stopped without signalling its new occupant 1363ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > keeps missing child records and unprovable host identities held even with old timestamps 606ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > preserves stopped run and source references after project deletion, while rejecting restart 442ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > records real owned exit even if fixed snapshot bytes become corrupt 432ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > fixed-session native guards when application resources are unavailable > protects native dependencies until actual exit and never grants a bridge or business provenance 474ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > fixed-session native guards when application resources are unavailable > rejects altered snapshot/project/runner/adapter requests and retains protection when its restriction receipt is corrupt 420ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > native-only unknown-history lifecycle without business authority > registers source closure before launch, cannot mint a bridge or input provenance, and waits for owned exit 464ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > native-only unknown-history lifecycle without business authority > refuses cross-project, v2 or empty-source promotion and detects changed original metadata 376ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > native-only unknown-history lifecycle without business authority > recovers only when the previous guard owner and actual CLI identity are both stopped 417ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > cancels both armed windows and releases after a verified no-fork receipt 453ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > refuses to cancel an actually attached process as never forked 446ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > settles an already stopped reserved-only launch without a synthetic exit 779ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > accepts the current launch closure no-fork receipt after stop is revoked 818ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > accepts the current launch closure no-fork receipt after stop is revoking 884ms
+ ✓ src/main/core/applications/__tests__/run-registry.test.ts > owned host receipt before an OS fork is attempted > refuses an uncertain fork and leaves the existing hold intact 660ms
+
+ Test Files  1 passed (1)
+      Tests  40 passed (40)
+   Start at  12:33:22
+   Duration  30.05s (transform 350ms, setup 0ms, import 443ms, tests 29.51s, environment 0ms)
+
+JSON report written to /private/tmp/willyou-m11-s2a/evidence/units/attempt-001/run-registry.vitest.json

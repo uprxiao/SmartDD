@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApplicationError, type ApplicationManifestV1 } from '@shared/applications';
-import { applicationCapabilityViews, type LegacyCapabilityResolver } from '@shared/application-capabilities';
+import { applicationCapabilityViews, type LegacyCapabilityResolver, type LegacyCapabilityPolicy } from '@shared/application-capabilities';
 import type { ApplicationPresentation, ApplicationProviderPresentation } from '@shared/application-presentation';
 import type { HostApplicationDefinitions, HostProvider, HostedConfiguration, HostedIdentity } from '../host-application-registry';
 import type { ApplicationModuleCatalog } from '../manifest';
@@ -10,7 +10,7 @@ import type { ApplicationDataResources } from '../data-resources';
 import type { ApplicationSelectionService } from '../selection-service';
 import type { ResourceStore } from '../resource-store';
 import type {ConfigViewConverter} from '../config-view-registry';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 
 export interface ApplicationModuleData extends ApplicationDataHost {
   /** Retained internal v1 callers may use their original service, never the new routing facade. */
@@ -23,6 +23,9 @@ export interface ApplicationModuleServices {
   retained: ReadonlyMap<string, unknown>;
 }
 export interface ApplicationProviderRuntime { mailWorker: string; foxmailNative: string }
+export interface ApplicationModuleCapability extends LegacyCapabilityPolicy {
+  method: string; permission: string; contractMajors: readonly number[];
+}
 export interface TrustedApplicationProvider extends HostProvider<HostedConfiguration, string> {
   configViews?: readonly ConfigViewConverter<HostedConfiguration>[];
   presentation: ApplicationProviderPresentation;
@@ -33,7 +36,8 @@ export interface TrustedApplicationModule {
   presentation: ApplicationPresentation;
   providers: readonly TrustedApplicationProvider[];
   legacyPolicy: LegacyCapabilityResolver;
-  connectionNotice?(store: ResourceStore, snapshot: CapabilitySessionSnapshotV2, appId: string): string | null;
+  capabilities: Readonly<Record<string, ApplicationModuleCapability>>;
+  connectionNotice?(store: ResourceStore, snapshot: CapabilitySessionSnapshot, appId: string): string | null;
   createData(services: ApplicationModuleServices): ApplicationModuleData;
 }
 export type ApplicationProviderDefinition<S extends z.ZodType<HostedConfiguration>, P extends string, A extends string> = Omit<TrustedApplicationProvider, 'id' | 'appId' | 'configSchema'> & { id: P; appId: A; configSchema: S };
@@ -54,6 +58,9 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
       if (!/^[a-z][a-z0-9-]{0,19}$/.test(module.appId) || this.modules.has(module.appId) || !module.contractMajors.length || new Set(module.contractMajors).size !== module.contractMajors.length || module.contractMajors.some(n => !Number.isSafeInteger(n) || n < 1) || typeof module.createData !== 'function' || typeof module.legacyPolicy !== 'function' || !module.providers.length || new Set(module.slots).size !== module.slots.length) throw invalid();
       if (!module.slots.includes(module.presentation.defaultProvider)) throw invalid();
       this.modules.set(module.appId, module);
+      for(const [id,capability] of Object.entries(module.capabilities)){
+        if(id!==capability.id||!id.startsWith(module.appId+'.')||!capability.method.startsWith(module.appId+'.')||!capability.permission.startsWith(module.appId+'.')||!capability.contractMajors.length||capability.contractMajors.some(major=>!module.contractMajors.includes(major))||capability.semantics!=='read'&&(!capability.protection||capability.retry!=='never')||capability.semantics==='external-write'&&!capability.approval)throw invalid();
+      }
       for (const provider of module.providers) {
         if (provider.appId !== module.appId || this.providers.has(provider.id) || !module.slots.includes(provider.id) || provider.presentation.id !== provider.id || provider.presentation.appId !== module.appId || provider.presentation.initial.kind !== provider.id || typeof provider.verify !== 'function') throw invalid();
         this.providers.set(provider.id, provider);
@@ -87,6 +94,11 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
   }
   supportsModule(id: string, appId: string, major: number): boolean { return id === appId && !!this.modules.get(id)?.contractMajors.includes(major); }
   legacyCapabilities(manifest: ApplicationManifestV1) { return applicationCapabilityViews(manifest, this.module(manifest.appId).legacyPolicy); }
+  capability(appId:string,id:string,contractMajor:number):ApplicationModuleCapability{
+    const value=this.module(appId).capabilities[id];
+    if(!value||!value.contractMajors.includes(contractMajor))throw new ApplicationError('CAPABILITY_UNAVAILABLE','受信模块没有此能力契约');
+    return value;
+  }
   createHosts(services: ApplicationModuleServices) { return this.registered.map(module => ({ appId: module.appId, data: module.createData(services) })); }
   configViews(): readonly ConfigViewConverter<HostedConfiguration>[] {
     return [...this.providers.values()].flatMap(provider => {

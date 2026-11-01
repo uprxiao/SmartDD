@@ -19,6 +19,7 @@ const third = {
     async verify() { return { providerId: 'third', serviceId: 'controlled-third', accountId: 'fixture', contractMajor: 1 as const }; },
   }],
   legacyPolicy: () => ({ id: 'third.object.read', semantics: 'read', retry: 'safe-read', slots: { required: ['third'], conditional: [] } }),
+  capabilities:{'third.object.read':{id:'third.object.read',method:'third.object.read',permission:'third.read',contractMajors:[1],semantics:'read',retry:'safe-read',slots:{required:['third'],conditional:[]}}},
   createData: () => ({ resolve() { throw new ApplicationError('SCOPE_DENIED', 'No fixture execution'); }, async execute() { return { fixture: true }; } }),
 } as const satisfies TrustedApplicationModule;
 

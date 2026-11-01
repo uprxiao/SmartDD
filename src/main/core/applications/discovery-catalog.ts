@@ -4,7 +4,7 @@ import { closeSync, constants, fsyncSync, lstatSync, mkdirSync, openSync, readFi
 import { dirname, join } from 'node:path';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
-import { applicationNativeSkillName, type CapabilitySessionSnapshotV2 } from '@shared/application-session';
+import { applicationNativeSkillName, type CapabilitySessionSnapshot } from '@shared/application-session';
 import type { AgentLoadRequest } from '@shared/agent-adapters';
 import { canonicalJson, compareCodePoints, digest } from './manifest';
 import { ensureStoreDirectory, verifyPackageTree } from './package-files';
@@ -221,7 +221,7 @@ export class DiscoveryCatalog {
         });
     },signal,timeoutMs);}
     /** Read-only attribution,not a publication or file-readiness receipt. */
-    async inspectPhysical(snapshot:CapabilitySessionSnapshotV2):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
+    async inspectPhysical(snapshot:CapabilitySessionSnapshot):Promise<{owned:Set<string>;occupied:Set<string>;unavailable:Set<string>;generation:string;excludedPaths:string[]}>{return this.lock(()=>{
         const raw=this.catalog(),owned=new Set<string>(),occupied=new Set<string>(),unavailable=new Set<string>(),excludedPaths:string[]=[],valid=new Set<string>(),failures=new Map<string,'OWNERSHIP_CONFLICT'|'HASH_MISMATCH'>();
         for(const entry of raw.entries){if(entry.format)continue;try{verifyModernDiscoveryProjection(entry,this.home);valid.add(entry.path);}catch(error){if(error instanceof ApplicationError&&(error.code==='OWNERSHIP_CONFLICT'||error.code==='HASH_MISMATCH')){excludedPaths.push(entry.path);failures.set(entry.path,error.code);}else throw error;}}
         const selected=[...snapshot.packages.flatMap(p=>p.skills.map(s=>({path:s.projectionPath,hash:s.contentHash,sourceId:'app:'+p.packageHash,sourceHash:p.packageHash,sourceKind:'application-package'}))),...snapshot.standardSkills.map(s=>({path:s.projectionPath,hash:s.hash,sourceId:'standard-skill:'+s.skillId+':'+s.hash,sourceHash:s.hash,sourceKind:'standard-skill'}))];
@@ -761,7 +761,7 @@ export class DiscoveryCatalog {
             return results;
         });
     }
-    verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshotV2): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
+    verifyReference(resource: ResourceRecord, snapshot: CapabilitySessionSnapshot): void { if (resource.kind !== 'agent-projection' || resource.pathScope !== 'H' || resource.scopeIdentity !== this.homeId || resource.state !== 'ready' || resource.integrity !== 'valid')
         throw new ApplicationError('RESOURCE_STATE_CHANGED', '共享投影资源未就绪或实际HOME不同'); const manifest = verifyOwnedBundle(this.store.directory(resource), resource.contentHash, this.store.storeId); if (manifest.metadata.homeId !== this.homeId)
         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影属于其他发现根'); const selections = [...snapshot.packages.flatMap(p => p.skills.map(s => ({ path: s.projectionPath, hash: s.contentHash }))), ...snapshot.standardSkills.map(s => ({ path: s.projectionPath, hash: s.hash }))]; if (snapshot.runner !== 'codex' || !selections.some(s => s.path === join(this.store.directory(resource), 'SKILL.md') && s.hash === manifest.metadata.sourceHash))
         throw new ApplicationError('OWNERSHIP_CONFLICT', '共享投影未被原会话按相同来源选择'); }

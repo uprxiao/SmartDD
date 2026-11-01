@@ -1,9 +1,9 @@
 import {ApplicationError} from '@shared/applications';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import {BuiltinPackageRegistry} from './builtin-package-registry';
 import {RuntimeRegistry} from './runtime-registry';
 import type {ResourceStore} from './resource-store';
-type FixedApplication=Pick<CapabilitySessionSnapshotV2['packages'][number],'appId'|'version'|'packageHash'|'runtimeHash'>;
+type FixedApplication=Pick<CapabilitySessionSnapshot['packages'][number],'appId'|'version'|'packageHash'|'runtimeHash'>;
 export interface ApplicationResourceAvailability {appId:string;packageHash:string;runtimeHash:string;state:'ready'|'unavailable';code:ApplicationError['code']|null}
 /** Inspect only the fixed selection. A ready result is not runtime authority:
  * preparation and each call must still verify resources, leases and policy.

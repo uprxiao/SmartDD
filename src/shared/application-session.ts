@@ -46,7 +46,8 @@ export const capabilitySessionSnapshotSchema = z.object({
   }
 });
 export type CapabilitySessionSnapshotV2 = z.infer<typeof capabilitySessionSnapshotSchema>;
-export interface CapabilitySessionPointer { schema: 2;taskId: string;snapshotHash: string }
+export type CapabilitySessionSnapshot = CapabilitySessionSnapshotV2 | import('./application-session-v3').CapabilitySessionSnapshotV3;
+export interface CapabilitySessionPointer { schema: 2 | 3;taskId: string;snapshotHash: string }
 export const applicationNativeSkillName = (appId: string,skillId: string,packageHash: string): string => `smartdd-a-${appId}-${skillId}-${packageHash.slice(0,12)}`;
 export const applicationMcpServerName = (taskDigest: string): string => 'wy_' + taskDigest.slice(0,24);
 export interface SessionResourceReference { refKind: string;refId: string;refHash: string;relativePath: string }

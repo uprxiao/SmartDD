@@ -1,7 +1,7 @@
 import {join,relative} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
-import type {CapabilitySessionSnapshotV2} from '@shared/application-session';
+import type {CapabilitySessionSnapshot} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
 import {legacyRuntimeMetadata,legacyManifestSchema,type LegacyTaskEvidence} from './legacy-task-evidence';
 import type {ResourceStore,ResourceRecord} from './resource-store';
@@ -27,8 +27,8 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
   const manifest=legacyManifestSchema.parse(JSON.parse(row.manifest_json)),runtimePrefix=store.root+'/runtime/',runtimeRoots=new Set(Object.keys(manifest.files).filter(p=>p.startsWith(runtimePrefix)).map(p=>join(store.root,'runtime',p.slice(runtimePrefix.length).split('/')[0])));
   if(manifest.projectId!==snapshot.projectId||manifest.runId!==snapshot.runId||manifest.configVersion!==snapshot.configVersion||manifest.configHash!==snapshot.configHash||runtimeRoots.size!==1||!runtimeRoots.has(evidence.runtimePath))return fail();
   const binding={sourceSnapshotHash:row.source_snapshot_hash,sourceRecordHash:digest(row.source_record_json),identityHash:digest(row.source_identity_json),manifestHash:evidence.manifestHash,logicalEvidenceHash:digest(canonicalJson(legacyLogicalEvidence(evidence)))};
-  const standardSkills:CapabilitySessionSnapshotV2['standardSkills']=snapshot.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:s.path}));
-  const mcp:CapabilitySessionSnapshotV2['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
+  const standardSkills:CapabilitySessionSnapshot['standardSkills']=snapshot.skills.filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:s.path}));
+  const mcp:CapabilitySessionSnapshot['mcp']=evidence.mcp.map(m=>({kind:'legacy-project-context',serverName:m.name,protocolMajor:m.protocolMajor,runtimeHash:m.runtimeHash}));
   let pluginSource:ResourceRecord|undefined;
   if(evidence.pluginRoot){const resourceId=legacyPluginResourceId(taskId,evidence.manifestHash),ref=store.sqlite.prepare("SELECT ref_hash,relative_path FROM capability_session_refs WHERE task_id=? AND ref_kind='legacy-plugin-source' AND ref_id=?").get(taskId,resourceId) as {ref_hash:string;relative_path:string}|undefined;if(ref){const resource=store.get(resourceId);if(resource.kind!=='legacy-plugin-source'||resource.pathScope!=='C'||resource.ownerStoreId!==store.storeId||resource.relativePath!=='legacy/plugins/'+resource.contentHash||ref.ref_hash!==resource.contentHash||ref.relative_path!==resource.relativePath)return fail();pluginSource=resource;}}
   let originalProjection:ResourceRecord|undefined;
@@ -41,7 +41,7 @@ export function retainedLegacySource(store:ResourceStore,taskId:string,state:'he
   return{row,snapshot,identity,evidence,binding,standardSkills,mcp,pluginSource,...(originalProjection?{originalProjection}:{}),...(originalCodexProjections?{originalCodexProjections}:{})};
  }catch(error){if(error instanceof ApplicationError)throw error;return fail();}
 }
-export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshotV2){
+export function assertLegacySessionSource(store:ResourceStore,snapshot:CapabilitySessionSnapshot){
  const source=retainedLegacySource(store,snapshot.taskId,'migrated'),{identity,row}=source;
  const{pluginSourceHash,...binding}=snapshot.legacyBinding??{};if(pluginSourceHash&&source.pluginSource?.contentHash!==pluginSourceHash)return fail();
  if(snapshot.provenance!=='migrated-known-legacy'||snapshot.adapterBinding.projectionFormatVersion!==2||snapshot.projectId!==identity.projectId||snapshot.runner!==identity.runner||snapshot.native.stateRoot!==identity.stateRoot||snapshot.native.cwd!==identity.cwd||snapshot.native.sessionId!==row.bound_native_session_id||snapshot.packages.length||Object.keys(snapshot.adapterBinding.nativeToolNames).length||canonicalJson(binding)!==canonicalJson(source.binding)||canonicalJson(snapshot.standardSkills)!==canonicalJson(source.standardSkills)||canonicalJson(snapshot.mcp)!==canonicalJson(source.mcp))return fail();
