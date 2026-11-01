@@ -102,6 +102,9 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
         // send authorization. SMTP health/confirmation only gates sending.
         if(typeof selected==='string')await services.contexts.draftSender(context,selected);
       }
+      // Reply preparation checks an existing mismatched pair, without requiring
+      // a send confirmation or blocking unconfirmed/invalidated draft work.
+      if(method==='mail.reply.create'&&context.projectId)identity.validateSelection(context.projectId);
       return target(method).execute(context,method,input);
     }};
   },

@@ -1,0 +1,111 @@
+{
+  "schema": "m11-c6-formal-accounting-v1",
+  "at": "2026-11-01T18:45:10.227762+00:00",
+  "reviewer": "/root",
+  "addedUnique": [
+    "T32"
+  ],
+  "layers": [
+    "I",
+    "A"
+  ],
+  "criteria": [
+    {
+      "criterion": "SMTP-only project; no Foxmail slot during acceptance",
+      "status": "passed",
+      "actual": {
+        "foxmail": null,
+        "smtp": "aea73603-96f2-4ac7-a5ca-8978ca16eed3"
+      },
+      "boundary": "Global isolated source record only supplies a genuine original-mail counterexample before unselecting its project slot. No daily source used."
+    },
+    {
+      "criterion": "Existing draft list",
+      "status": "passed-I-retained-plus-current-A",
+      "actual": "Actual native MCP draft-list/get find exact pre-existing persistent draft.9 success calls across list/get/send-get and6 chunks, then1 controlled rejection."
+    },
+    {
+      "criterion": "Large persistent draft body",
+      "status": "passed-I-retained-plus-current-A",
+      "actual": {
+        "label": "body",
+        "bytes": 70039,
+        "chunks": 2,
+        "sha256": "46ed72d149f94367bef7a512456461f2817b6d04a836bd4d138bff29a0e9feac"
+      }
+    },
+    {
+      "criterion": "Persistent attachment",
+      "status": "passed-I-retained-plus-current-A",
+      "actual": {
+        "label": "attachment",
+        "bytes": 70039,
+        "chunks": 2,
+        "sha256": "46ed72d149f94367bef7a512456461f2817b6d04a836bd4d138bff29a0e9feac"
+      },
+      "boundary": "Created by legitimate resource import from persistent draft body as setup. Actual acceptance read is MCP, not RPC."
+    },
+    {
+      "criterion": "Send-review resource",
+      "status": "passed-I-retained-plus-current-A",
+      "actual": {
+        "label": "review",
+        "bytes": 71560,
+        "chunks": 2,
+        "sha256": "38bbfe396354e3f945e2af48905692da13335b28a3ba7a3e897daf4d4a0a2cf5"
+      },
+      "boundary": "Only prepare review; no send grant/submit. Reconstructed JSON identifies exact draft and source body hash."
+    },
+    {
+      "criterion": "Original-mail resource explicitly identifies missing foxmail",
+      "status": "passed-current-real-A-host-retest",
+      "actual": {
+        "code": "AUTH_REQUIRED",
+        "message": "连接槽 foxmail：请先明确选用此项目的来源或发件连接",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 1,
+        "retryExhausted": false,
+        "effectState": "read-only",
+        "nextAction": "核对本次错误后重新明确操作"
+      },
+      "boundary": "Actual reference minted by real Worker/native reader from isolated source. Original AUTH_REQUIRED+/foxmail/ assertion retained; I old red and A old product error carrier retained in references."
+    }
+  ],
+  "evidence": {
+    "currentA": "M11-C6-A-T32/attempt-001",
+    "manifestSha256": "72831ac96c8c0b2fa1c28811cbc547dff17bf552b03118a9a7203688647b44b7",
+    "currentI": "C5-COORDINATOR/attempt-003 public T32 1 passed: UI+retained MCP durable positive, original resource missing-slot error in common MailReadDataService. It is v1 against retained package, not claimed v2 I retest.",
+    "retainedI": "C5-T32/attempt-001 large-body/attachment/review positive branches unchanged; old missing-slot red not reused as green",
+    "sourceFix": "Current App v2 directly exercises common missing-original-source branch after persisted-resource early return. Original AUTH_REQUIRED + foxmail criterion now passes.",
+    "sourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+    "productionManifestSha256": "8b39ac817f29355eaad4d2014e95515744b0cb5b32ffa151877db0438bf869d2",
+    "asarSha256": "c97fc05f8ef4795a8c76f76bb8f3089bd95fe27a90c85bcf70f1e499b4f11352"
+  },
+  "actual": {
+    "McpCalls": 10,
+    "success": 9,
+    "explicitFoxmailControlledDeny": 1,
+    "resources": 3,
+    "boundedChunks": 6,
+    "bytes": [
+      70039,
+      70039,
+      71560
+    ],
+    "allHashesMatch": true,
+    "smtpData": 0,
+    "readPhaseAuthIncrement": 0,
+    "rendererErrors": []
+  },
+  "oldRedPreserved": "Original I/A missing-slot error and input_text carrier parsing driver failure remain frozen in C5; original expected not changed. New driver normalizes real native success string/error input_text[] but does not change assertions.",
+  "accounting": {
+    "total": 38,
+    "previousPassed": 18,
+    "passed": 19,
+    "pending": 19,
+    "percent": 50.0,
+    "storyDeferred": 2
+  },
+  "notComplete": "T18/T19 current A still running; T14 native UI, T31 scope and Story remain."
+}

@@ -1,0 +1,931 @@
+[
+  {
+    "id": "T18-selection-matching",
+    "layer": "I",
+    "at": "2026-11-01T18:34:05.057Z",
+    "actual": {
+      "selected": {
+        "status": "ok",
+        "value": {
+          "projectId": "p1",
+          "appId": "mail",
+          "enabled": true,
+          "revision": 1,
+          "pendingOperationId": null,
+          "connections": {
+            "foxmail": "2c12b046-0372-4e4a-b9db-d1cfa6633505",
+            "smtp": "956de2b1-c5fc-46ac-a226-e8ed2a6b9cc2"
+          },
+          "slotRevisions": {
+            "foxmail": 1,
+            "smtp": 1
+          }
+        }
+      },
+      "before": {
+        "projectId": "p1",
+        "appId": "mail",
+        "enabled": false,
+        "revision": 0,
+        "pendingOperationId": null,
+        "connections": {
+          "foxmail": null,
+          "smtp": null
+        },
+        "slotRevisions": {
+          "foxmail": 0,
+          "smtp": 0
+        }
+      },
+      "drafts": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T18-selection-opaque",
+    "layer": "I",
+    "at": "2026-11-01T18:34:06.480Z",
+    "actual": {
+      "selected": {
+        "status": "ok",
+        "value": {
+          "projectId": "p1",
+          "appId": "mail",
+          "enabled": true,
+          "revision": 1,
+          "pendingOperationId": null,
+          "connections": {
+            "foxmail": "a76bcd5f-0cc3-4a8c-9303-a2af4bb90205",
+            "smtp": "8d775e6e-3aed-4594-b403-356488964c76"
+          },
+          "slotRevisions": {
+            "foxmail": 1,
+            "smtp": 1
+          }
+        }
+      },
+      "before": {
+        "projectId": "p1",
+        "appId": "mail",
+        "enabled": false,
+        "revision": 0,
+        "pendingOperationId": null,
+        "connections": {
+          "foxmail": null,
+          "smtp": null
+        },
+        "slotRevisions": {
+          "foxmail": 0,
+          "smtp": 0
+        }
+      },
+      "drafts": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T18-selection-mismatch",
+    "layer": "I",
+    "at": "2026-11-01T18:34:07.780Z",
+    "actual": {
+      "selected": {
+        "status": "error",
+        "code": "SENDER_IDENTITY_MISMATCH",
+        "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，不能保存这组发件身份"
+      },
+      "before": {
+        "projectId": "p1",
+        "appId": "mail",
+        "enabled": false,
+        "revision": 0,
+        "pendingOperationId": null,
+        "connections": {
+          "foxmail": null,
+          "smtp": null
+        },
+        "slotRevisions": {
+          "foxmail": 0,
+          "smtp": 0
+        }
+      },
+      "drafts": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T18-mismatch-reply",
+    "layer": "I",
+    "at": "2026-11-01T18:34:09.124Z",
+    "actual": {
+      "boundary": "persisted bad-pair I injection only",
+      "reply": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.reply.create",
+          "data": {
+            "draft": {
+              "id": "489319a3-bceb-44c7-9789-a74cb994765e",
+              "revision": 1,
+              "state": "draft",
+              "contentHash": "8994bd266cd2c234f724765eb34d53bc178ec9a8791d3e699421e3431fb215ed",
+              "content": {
+                "mode": "reply",
+                "sourceMessageRef": {
+                  "connectionId": "9cfcac96-eaeb-48bd-9479-9b4f8b9cc718",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "senderConnectionId": "d20af4a1-8317-4181-93aa-8c4a4050aa81",
+                "to": [
+                  "sender@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "Re: Synthetic matrix source",
+                "text": {
+                  "id": "fa32d576-08fc-42a4-aea0-ffa57b021bae",
+                  "revision": "e09c20b3a18d507b577b63f699f2542967075920247183ff0aea56d996a5cd3e",
+                  "mediaType": "text/plain;charset=utf-8",
+                  "size": 31
+                },
+                "html": null,
+                "inReplyTo": "<matrix-source@example.test>",
+                "references": [
+                  "<matrix-source@example.test>"
+                ],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "activeIntentId": null,
+              "lastExecutionId": null,
+              "sourceTaskId": null,
+              "copiedFromDraftId": null,
+              "createdAt": "2026-11-01T18:34:09.060Z",
+              "updatedAt": "2026-11-01T18:34:09.060Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "1",
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "9cfcac96-eaeb-48bd-9479-9b4f8b9cc718",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 2
+              },
+              {
+                "slot": "smtp",
+                "connectionId": "d20af4a1-8317-4181-93aa-8c4a4050aa81",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "fa32d576-08fc-42a4-aea0-ffa57b021bae",
+              "revision": "e09c20b3a18d507b577b63f699f2542967075920247183ff0aea56d996a5cd3e",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 31
+            }
+          ],
+          "operation": {
+            "id": "f378f9dd-fa10-42a5-a795-dcc9c691c18c",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "sourceReads": 1,
+      "drafts": {
+        "n": 1
+      }
+    }
+  },
+  {
+    "id": "T18-mismatch-send",
+    "layer": "I",
+    "at": "2026-11-01T18:34:10.424Z",
+    "actual": {
+      "send": {
+        "status": "error",
+        "code": "SENDER_IDENTITY_MISMATCH",
+        "message": "Foxmail账号目录邮箱与SMTP发件地址不一致，请更换匹配的连接；不能用用户确认覆盖。"
+      },
+      "sendIntents": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T19-foxmail-only",
+    "layer": "I",
+    "at": "2026-11-01T18:34:11.901Z",
+    "actual": {
+      "query": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.message.query",
+          "data": {
+            "items": [
+              {
+                "subject": "Synthetic matrix source",
+                "from": "sender@example.test",
+                "to": "fixture@example.test",
+                "date": "2026-11-01T12:00:00.000Z",
+                "messageId": "<matrix-source@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "b1178364-000f-477a-ac9f-d7d4984d5725",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 1,
+            "range": {
+              "days": 30,
+              "timeZone": "UTC",
+              "startDate": "2026-10-03",
+              "endDate": "2026-11-01",
+              "start": "2026-10-03T00:00:00.000Z",
+              "endExclusive": "2026-11-02T00:00:00.000Z"
+            },
+            "checkedAt": "2026-11-01T12:00:00.000Z",
+            "problems": []
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": null,
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "b1178364-000f-477a-ac9f-d7d4984d5725",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": {
+            "nextCursor": null,
+            "total": null
+          },
+          "resources": [],
+          "operation": {
+            "id": "6c96a41c-019a-44fb-9106-1ba45f81b4ad",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "read-only"
+          }
+        }
+      },
+      "reply": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.reply.create",
+          "data": {
+            "draft": {
+              "id": "86479cce-63fb-40cd-95c7-c550b31bde44",
+              "revision": 1,
+              "state": "draft",
+              "contentHash": "81423b764a3db848cf57e02d11f56845cd5505b5328294f7d139703a3578af41",
+              "content": {
+                "mode": "reply",
+                "sourceMessageRef": {
+                  "connectionId": "b1178364-000f-477a-ac9f-d7d4984d5725",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "senderConnectionId": null,
+                "to": [
+                  "sender@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "Re: Synthetic matrix source",
+                "text": {
+                  "id": "c8225f72-349c-4880-94ff-13eb8329ea72",
+                  "revision": "5090fc0bfd674732ebb2b17db87fc31b24684051bc21dd8d08c4628fcc820d95",
+                  "mediaType": "text/plain;charset=utf-8",
+                  "size": 33
+                },
+                "html": null,
+                "inReplyTo": "<matrix-source@example.test>",
+                "references": [
+                  "<matrix-source@example.test>"
+                ],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "activeIntentId": null,
+              "lastExecutionId": null,
+              "sourceTaskId": null,
+              "copiedFromDraftId": null,
+              "createdAt": "2026-11-01T18:34:11.634Z",
+              "updatedAt": "2026-11-01T18:34:11.634Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "1",
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "b1178364-000f-477a-ac9f-d7d4984d5725",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "c8225f72-349c-4880-94ff-13eb8329ea72",
+              "revision": "5090fc0bfd674732ebb2b17db87fc31b24684051bc21dd8d08c4628fcc820d95",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 33
+            }
+          ],
+          "operation": {
+            "id": "7e580226-4d3b-4864-a41b-4ee241085217",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "newDraft": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.draft.create",
+        "data": {
+          "draft": {
+            "id": "f81c3233-ff8b-4fd8-9644-f17116b19d99",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "a1c0e99aadf525547892dceaf4bce75aea52a7c28ceea2a2de7f4e70e198efea",
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": null,
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Synthetic matrix draft",
+              "text": {
+                "id": "00d1bcbf-d4fd-44b5-8647-1aa5e1a7594f",
+                "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 21
+              },
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T18:34:11.741Z",
+            "updatedAt": "2026-11-01T18:34:11.741Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": []
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "00d1bcbf-d4fd-44b5-8647-1aa5e1a7594f",
+            "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 21
+          }
+        ],
+        "operation": {
+          "id": "a647c9fa-def8-4c43-8c23-ba0ba5b2183c",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "send": {
+        "status": "error",
+        "code": "AUTH_REQUIRED",
+        "message": "连接槽 smtp：请先明确选用此项目的来源或发件连接"
+      },
+      "queryProviderCalls": 1,
+      "sourceProviderCalls": 1,
+      "identity": {
+        "state": "unconfigured",
+        "bindingHash": null,
+        "fromAddress": null,
+        "accountDirectory": null,
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": false,
+        "message": "尚未选用SMTP发件账号。"
+      },
+      "sendExecutions": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T19-smtp-only",
+    "layer": "I",
+    "at": "2026-11-01T18:34:13.320Z",
+    "actual": {
+      "query": {
+        "status": "error",
+        "code": "AUTH_REQUIRED",
+        "message": "连接槽 foxmail：请先明确选用此项目的来源或发件连接"
+      },
+      "reply": {
+        "status": "error",
+        "code": "AUTH_REQUIRED",
+        "message": "连接槽 foxmail：请先明确选用此项目的来源或发件连接"
+      },
+      "newDraft": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.draft.create",
+        "data": {
+          "draft": {
+            "id": "070c2417-e598-40fa-9465-b08e2640c004",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "de9866f59f21e3f81932ca33a99df44b7298aa3286f226504ec2b1feaad9f085",
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": "3ad850d1-9f54-4931-a782-040f8834bf2c",
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Synthetic matrix draft",
+              "text": {
+                "id": "983e1216-d168-4b8d-a81b-f66239634986",
+                "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 21
+              },
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T18:34:13.115Z",
+            "updatedAt": "2026-11-01T18:34:13.115Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": [
+            {
+              "slot": "smtp",
+              "connectionId": "3ad850d1-9f54-4931-a782-040f8834bf2c",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "983e1216-d168-4b8d-a81b-f66239634986",
+            "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 21
+          }
+        ],
+        "operation": {
+          "id": "3fc67f06-4d9c-4bb9-8cf3-c820b7e19323",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "send": {
+        "status": "error",
+        "code": "SENDER_IDENTITY_REQUIRED",
+        "message": "请确认该SMTP发件地址是你的发件身份。"
+      },
+      "queryProviderCalls": 0,
+      "sourceProviderCalls": 0,
+      "identity": {
+        "bindingHash": "d25ab72be26649e0022d7e2830580b29cef182b61492079920d549d3c0f09ce6",
+        "fromAddress": "fixture@example.test",
+        "accountDirectory": null,
+        "state": "needs-confirmation",
+        "method": null,
+        "confirmedAt": null,
+        "receiptId": null,
+        "canConfirm": true,
+        "message": "请确认该SMTP发件地址是你的发件身份。"
+      },
+      "sendExecutions": {
+        "n": 0
+      }
+    }
+  },
+  {
+    "id": "T19-both",
+    "layer": "I",
+    "at": "2026-11-01T18:34:15.059Z",
+    "actual": {
+      "query": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.message.query",
+          "data": {
+            "items": [
+              {
+                "subject": "Synthetic matrix source",
+                "from": "sender@example.test",
+                "to": "fixture@example.test",
+                "date": "2026-11-01T12:00:00.000Z",
+                "messageId": "<matrix-source@example.test>",
+                "hasAttachments": false,
+                "reference": {
+                  "connectionId": "96c4de72-61d5-43ef-97ff-da23d835463f",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+              }
+            ],
+            "nextCursor": null,
+            "complete": true,
+            "matched": 1,
+            "range": {
+              "days": 30,
+              "timeZone": "UTC",
+              "startDate": "2026-10-03",
+              "endDate": "2026-11-01",
+              "start": "2026-10-03T00:00:00.000Z",
+              "endExclusive": "2026-11-02T00:00:00.000Z"
+            },
+            "checkedAt": "2026-11-01T12:00:00.000Z",
+            "problems": []
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": null,
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "96c4de72-61d5-43ef-97ff-da23d835463f",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": {
+            "nextCursor": null,
+            "total": null
+          },
+          "resources": [],
+          "operation": {
+            "id": "81b70ddd-c18f-48d4-a877-25bd40c8870c",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "read-only"
+          }
+        }
+      },
+      "reply": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.reply.create",
+          "data": {
+            "draft": {
+              "id": "3c1af824-6fe4-40d9-9465-23d2ef7f8e54",
+              "revision": 1,
+              "state": "draft",
+              "contentHash": "32a01eb94e99ee5844ecd8290a4b7288ee908aabc3c15f504529fae75ce936a4",
+              "content": {
+                "mode": "reply",
+                "sourceMessageRef": {
+                  "connectionId": "96c4de72-61d5-43ef-97ff-da23d835463f",
+                  "identityRevision": 1,
+                  "nativeId": "1",
+                  "contentRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "senderConnectionId": "43524153-66b2-4f04-bdfe-1e316f2fa3f4",
+                "to": [
+                  "sender@example.test"
+                ],
+                "cc": [],
+                "bcc": [],
+                "subject": "Re: Synthetic matrix source",
+                "text": {
+                  "id": "75edbcaf-0d47-423f-8f77-b3aff58cf855",
+                  "revision": "5090fc0bfd674732ebb2b17db87fc31b24684051bc21dd8d08c4628fcc820d95",
+                  "mediaType": "text/plain;charset=utf-8",
+                  "size": 33
+                },
+                "html": null,
+                "inReplyTo": "<matrix-source@example.test>",
+                "references": [
+                  "<matrix-source@example.test>"
+                ],
+                "attachmentIds": []
+              },
+              "attachments": [],
+              "activeIntentId": null,
+              "lastExecutionId": null,
+              "sourceTaskId": null,
+              "copiedFromDraftId": null,
+              "createdAt": "2026-11-01T18:34:14.561Z",
+              "updatedAt": "2026-11-01T18:34:14.561Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "1",
+            "connections": [
+              {
+                "slot": "foxmail",
+                "connectionId": "96c4de72-61d5-43ef-97ff-da23d835463f",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              },
+              {
+                "slot": "smtp",
+                "connectionId": "43524153-66b2-4f04-bdfe-1e316f2fa3f4",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "75edbcaf-0d47-423f-8f77-b3aff58cf855",
+              "revision": "5090fc0bfd674732ebb2b17db87fc31b24684051bc21dd8d08c4628fcc820d95",
+              "mediaType": "text/plain;charset=utf-8",
+              "size": 33
+            }
+          ],
+          "operation": {
+            "id": "643d3f1c-cfdf-42e0-8851-64846d8ddfb6",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "newDraft": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "mail.draft.create",
+        "data": {
+          "draft": {
+            "id": "fbea62f5-26d1-4972-a0ac-1d68da368c5f",
+            "revision": 1,
+            "state": "draft",
+            "contentHash": "40f0917923bc896a63164219e95dc4be78b6122f5162208e1c64918115fc4257",
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": "43524153-66b2-4f04-bdfe-1e316f2fa3f4",
+              "to": [
+                "sender@example.test"
+              ],
+              "cc": [],
+              "bcc": [],
+              "subject": "Synthetic matrix draft",
+              "text": {
+                "id": "d5e716e7-1d19-4d35-82b9-69a738feadb8",
+                "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 21
+              },
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            },
+            "attachments": [],
+            "activeIntentId": null,
+            "lastExecutionId": null,
+            "sourceTaskId": null,
+            "copiedFromDraftId": null,
+            "createdAt": "2026-11-01T18:34:14.682Z",
+            "updatedAt": "2026-11-01T18:34:14.682Z"
+          }
+        },
+        "source": {
+          "appId": "mail",
+          "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+          "revision": "1",
+          "connections": [
+            {
+              "slot": "smtp",
+              "connectionId": "43524153-66b2-4f04-bdfe-1e316f2fa3f4",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": null,
+        "resources": [
+          {
+            "id": "d5e716e7-1d19-4d35-82b9-69a738feadb8",
+            "revision": "b68ee738f7421a0122d0f59b1b6ddc42c598fa7a936edce0bb3b887a7e860b02",
+            "mediaType": "text/plain;charset=utf-8",
+            "size": 21
+          }
+        ],
+        "operation": {
+          "id": "31b5bc08-55bc-46ce-81bf-300581adc475",
+          "requestId": null,
+          "origin": "ui",
+          "effectState": "completed"
+        }
+      },
+      "send": {
+        "status": "ok",
+        "value": {
+          "schema": "willyou-app-result-v2",
+          "contractMajor": 2,
+          "status": "ok",
+          "capabilityId": "mail.send.prepare",
+          "data": {
+            "intent": {
+              "id": "8d1b47fb-fdd3-43cf-ae61-80b7d3546b0b",
+              "draftId": "fbea62f5-26d1-4972-a0ac-1d68da368c5f",
+              "draftRevision": 1,
+              "state": "awaiting-authorization",
+              "reviewHash": "bb03e39708220449a759cbb484df68147088f4b7a0140695c7afe001630e2978",
+              "review": {
+                "id": "6f97e9f7-a244-460c-89a5-cd7232ec612e",
+                "revision": "bb03e39708220449a759cbb484df68147088f4b7a0140695c7afe001630e2978",
+                "mediaType": "application/json",
+                "size": 1187
+              },
+              "authorized": false,
+              "executionId": null,
+              "result": null,
+              "errorCode": null,
+              "createdAt": "2026-11-01T18:34:14.855Z",
+              "updatedAt": "2026-11-01T18:34:14.926Z"
+            }
+          },
+          "source": {
+            "appId": "mail",
+            "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "revision": "bb03e39708220449a759cbb484df68147088f4b7a0140695c7afe001630e2978",
+            "connections": [
+              {
+                "slot": "smtp",
+                "connectionId": "43524153-66b2-4f04-bdfe-1e316f2fa3f4",
+                "identityRevision": 1,
+                "configRevision": 1,
+                "policyRevision": 1,
+                "bindingRevision": 1
+              }
+            ]
+          },
+          "completeness": {
+            "complete": true,
+            "missing": []
+          },
+          "pagination": null,
+          "resources": [
+            {
+              "id": "6f97e9f7-a244-460c-89a5-cd7232ec612e",
+              "revision": "bb03e39708220449a759cbb484df68147088f4b7a0140695c7afe001630e2978",
+              "mediaType": "application/json",
+              "size": 1187
+            }
+          ],
+          "operation": {
+            "id": "8abb0d1e-fdbd-424b-ba6d-a19b7157de49",
+            "requestId": null,
+            "origin": "ui",
+            "effectState": "completed"
+          }
+        }
+      },
+      "queryProviderCalls": 1,
+      "sourceProviderCalls": 1,
+      "identity": {
+        "bindingHash": "ea98de4703320117108be0c5e7eacae3a212b04d3af16e91063cea41b355c07f",
+        "fromAddress": "fixture@example.test",
+        "accountDirectory": "fixture@example.test",
+        "state": "automatic",
+        "method": "automatic",
+        "confirmedAt": "2026-11-01T18:34:14.316Z",
+        "receiptId": "89e9ecc3-adfa-4da7-9f96-fac06ef64691",
+        "canConfirm": false,
+        "message": "来源账号目录与发件地址一致，已自动确认。"
+      },
+      "sendExecutions": {
+        "n": 0
+      }
+    }
+  }
+]

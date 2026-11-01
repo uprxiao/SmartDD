@@ -1,0 +1,33 @@
+{
+  "schema": "m11-c5-d09d10-software-v1",
+  "at": "2026-11-01T18:38:55.776826+00:00",
+  "formalCasePassesAdded": 0,
+  "defects": {
+    "D09": "original mail resource rejects without naming missing foxmail slot; durable resources already read correctly",
+    "D10": "persisted mismatched pair permits reply draft; selector/send already refused"
+  },
+  "originalProductRed": [
+    "M11-C5-T32/attempt-001 I/A original missing-slot error, 9 actual MCP positives and final carrier parse red separate",
+    "M11-C5-I-T18-T19/attempt-001 7 green1 reply mismatch red"
+  ],
+  "productionFixes": [
+    "resourceBytes persisted branch returns first; nonpersistent original-source branch reuses requireSlots(foxmail)",
+    "reply preparation reuses binding comparison with current selection; no confirmation/health requirement for drafts"
+  ],
+  "publicChecks": {
+    "T32Final": 1,
+    "D10FullMatrix": 8,
+    "otherDurableResources": 5,
+    "nodeTypes": "exit0"
+  },
+  "publicFixtureFailures": {
+    "firstT32Red": "wrong negative UI API readBusinessResource only handles persistent project resources, expected rejection SOURCE_UNAVAILABLE; not a product red",
+    "secondT32With5Positives": "same wrong negative API; 5 independent positive tests passed",
+    "thirdT32Correct": "v2 contract incorrectly attempted against retained v1 package, correctly HOST_INCOMPATIBLE; not product red",
+    "finalT32": "retained v1 MCP negative plus UI/MCP durable positive match own fixture contract; passed",
+    "filter": "D10 filter T19 matched ancestor title, so original all8 actually ran and passed; do not claim only4"
+  },
+  "testPromotion": "original matrix unchanged except optional evidence destination/observations; source snapshots preserved",
+  "newPackageRequired": "C6 unified build; old517 cannot prove software fixes",
+  "cleanup": "all root runners exit, no App/PTY/listener started by these software checks"
+}

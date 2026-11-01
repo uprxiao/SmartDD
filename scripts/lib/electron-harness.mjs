@@ -22,7 +22,7 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
     assert(nodeModeArguments.length === 3 && nodeModeArguments[0].startsWith('/private/tmp/willyou-m10-') && nodeModeArguments[1] === '--bootstrap' && nodeModeArguments[2].startsWith('/private/tmp/willyou-m10-'), 'Negative uses only the explicit private CJS/bootstrap invocation');
   } else assert(nodeModeArguments.length === 0, 'Node-mode arguments require the explicit negative path');
   for (const name of Object.keys(env)) if (/^(ELECTRON_RUN_AS_NODE|ANTHROPIC_|OPENAI_|CLAUDECODE|CLAUDE_CODE_)/.test(name) && !(nodeModeNegative && name === 'ELECTRON_RUN_AS_NODE')) delete env[name];
-  assert(!startupMainHook || inspectMain && executable?.startsWith('/private/tmp/willyou-m10-'), 'Pre-entry hook requires this explicit private inspected App');
+  assert(!startupMainHook || inspectMain && (executable?.startsWith('/private/tmp/willyou-m10-') || executable?.startsWith('/private/tmp/willyou-m11-s7/')), 'Pre-entry hook requires this explicit private inspected App');
   const child = spawn(executable ? resolve(executable) : require('electron'), [
     '--remote-debugging-address=127.0.0.1', `--remote-debugging-port=${port}`, ...(inspectMain ? [startupMainHook ? '--inspect-brk=127.0.0.1:0' : '--inspect=127.0.0.1:0'] : []), ...(executable ? [] : ['.']), ...nodeModeArguments,
   ], { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });

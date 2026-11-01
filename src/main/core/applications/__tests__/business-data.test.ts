@@ -81,6 +81,15 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
   const second=await call(codex,'draft_get',{draftId:created.id});expect(second).toMatchObject({status:'ok',value:{draft:{id:created.id,revision:1,sourceTaskId:runs.assertActive(cc.runId).run.taskId}}});
   expect(await app.viewDraft(sender,'p1',created.id)).toEqual({draft:created,currentRevision:1,sendRecord:null});expect(created).not.toHaveProperty('projectId');expect(typeof created.content.text.id).toBe('string');expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
  });
+ it('M11 T32 keeps durable SMTP-only resources readable and identifies the missing conditional foxmail slot',async()=>{
+  const smtp=await privateConnections().save({name:'SMTP-only resource fixture',expectedRevision:0,config:smtpConfig(),secret:'SYNTHETIC_T32'});await selectConnections({foxmail:null,smtp:smtp.id});
+  const created=await draft(),secret=vi.spyOn(secrets,'get');
+  expect(await app.readBusinessResource(sender,'p1',{resource:created.content.text,offset:0,length:100})).toMatchObject({data:'隔离草稿第一版',eof:true});
+  expect(await call(codex,'resource_read',{resource:created.content.text,offset:0,length:100})).toMatchObject({status:'ok',value:{data:'隔离草稿第一版',eof:true}});
+  const original={id:randomUUID(),revision:'a'.repeat(64),mediaType:'text/plain',size:1},input={resource:original,offset:0,length:1};
+  expect(await call(codex,'resource_read',input)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED',message:expect.stringContaining('foxmail')}});
+  expect(secret).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_executions').get()).toEqual({n:0});
+ });
  it('continues across Agents with CAS and preserves revision-bound original body resources',async()=>{
   const original=await draft();const update=await call(codex,'draft_update',{draftId:original.id,expectedRevision:1,content:content('Codex第二版')});expect(update).toMatchObject({status:'ok',value:{draft:{id:original.id,revision:2}}});
   expect(await call(cc,'draft_update',{draftId:original.id,expectedRevision:1,content:content('不能覆盖')})).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT'}});

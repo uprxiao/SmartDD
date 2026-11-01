@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {once} from 'node:events';
 import {writeFile} from 'node:fs/promises';
 export async function captureBudgetService({processId,logs,isRunning,mainFile,checkpoint,target='budget'}){
- assert(mainFile.startsWith('/private/tmp/willyou-m10-')&&mainFile.endsWith('/Contents/Resources/app.asar/out/main/index.js'));
+ assert((mainFile.startsWith('/private/tmp/willyou-m10-')||mainFile.startsWith('/private/tmp/willyou-m11-s7/'))&&mainFile.endsWith('/Contents/Resources/app.asar/out/main/index.js'));
  assert(['budget','history'].includes(target));const className=target==='history'?'ApplicationService':'ApplicationToolService';
  const record={target,pid:processId,startedAt:new Date().toISOString(),scope:target==='history'?'Own original ApplicationService/CapabilityBundleSource captured only for private package prerequisite and read-only history inspection':'Own bundled ApplicationToolService constructor frame; export only original service object and requestJson into temporary private test global',mainFile};let ws;
  const end=Date.now()+10000,until=async(fn,label)=>{while(Date.now()<end){if(fn())return;if(!isRunning())throw Error('Own App exited during capture '+logs());await new Promise(r=>setTimeout(r,20));}throw Error('Bounded main capture: '+label+' '+logs());};

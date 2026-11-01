@@ -47,7 +47,7 @@ export class MailSenderIdentity {
     if(record?.binding_hash===hash){return{...base,state:record.method==='automatic'?'automatic':'confirmed',method:record.method,confirmedAt:record.confirmed_at,receiptId:record.receipt_id,canConfirm:false,message:record.method==='automatic'?'来源账号目录与发件地址一致，已自动确认。':'已在项目页面确认此SMTP地址为本人发件身份。'};}
     return{...base,state:record?'invalidated':'needs-confirmation',method:null,confirmedAt:null,receiptId:null,canConfirm:true,message:record?'绑定连接或修订已变化，需要重新确认发件身份。':binding.eligibility==='automatic'?'来源账号目录与发件地址一致，保存项目选用后自动确认。':'请确认该SMTP发件地址是你的发件身份。'};
   }
-  validateSelection(projectId:string,slots:Readonly<Record<string,string|null|undefined>>):void{
+  validateSelection(projectId:string,slots?:Readonly<Record<string,string|null|undefined>>):void{
     if(this.binding(projectId,slots)?.eligibility==='mismatch')throw new ApplicationError('SENDER_IDENTITY_MISMATCH','Foxmail账号目录邮箱与SMTP发件地址不一致，不能保存这组发件身份');
   }
   afterSelection(projectId:string):void{

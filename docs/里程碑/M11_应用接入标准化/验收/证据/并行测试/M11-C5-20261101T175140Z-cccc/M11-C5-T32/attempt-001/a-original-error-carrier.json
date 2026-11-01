@@ -1,0 +1,47 @@
+{
+  "classification": "product failure independently corroborated from actual native error carrier; original parser driver failure retained separately",
+  "rollout": "/private/tmp/willyou-m11-s4-native-UT0hRY/codex/sessions/2026/11/02/rollout-2026-11-02T02-35-09-01a19864-de29-7c61-8118-643478c364f5.jsonl",
+  "callId": "call_t32_9",
+  "work": {
+    "label": "original-mail-missing-foxmail",
+    "tool": "smartdd_mail_resource_read_v2",
+    "args": {
+      "resource": {
+        "id": "e6792a7d-b2d9-5d1a-835b-4e067db129db",
+        "revision": "6f59b6d367a710d63884bbae8b567a0a1e87aa3c74e5f4d1fbecfc69e61e223a",
+        "mediaType": "text/plain;charset=utf-8",
+        "size": 36
+      },
+      "offset": 0,
+      "length": 128
+    }
+  },
+  "rawCarrier": [
+    {
+      "type": "input_text",
+      "text": "Wall time: 0.1266 seconds\nOutput:"
+    },
+    {
+      "type": "input_text",
+      "text": "{\"error\":{\"code\":\"AUTH_REQUIRED\",\"message\":\"请先明确选用此项目的来源或发件连接\",\"layer\":\"auth\",\"retryable\":false,\"attemptCount\":1,\"retryExhausted\":false,\"effectState\":\"read-only\",\"nextAction\":\"核对本次错误后重新明确操作\"},\"operationId\":\"9954af0c-3e6b-466b-b668-6705b7b1636a\"}"
+    }
+  ],
+  "normalization": "Only join actual input_text.text blocks from original tool output; no business result changed",
+  "parsedError": {
+    "error": {
+      "code": "AUTH_REQUIRED",
+      "message": "请先明确选用此项目的来源或发件连接",
+      "layer": "auth",
+      "retryable": false,
+      "attemptCount": 1,
+      "retryExhausted": false,
+      "effectState": "read-only",
+      "nextAction": "核对本次错误后重新明确操作"
+    },
+    "operationId": "9954af0c-3e6b-466b-b668-6705b7b1636a"
+  },
+  "originalT32RequiresFoxmail": true,
+  "actualMessageMentionsFoxmail": false,
+  "productExpectationUnchanged": true,
+  "aRerun": false
+}

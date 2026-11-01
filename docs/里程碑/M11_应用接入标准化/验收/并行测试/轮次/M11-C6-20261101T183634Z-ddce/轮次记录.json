@@ -1,0 +1,94 @@
+{
+  "runId": "M11-C6-20261101T183634Z-ddce",
+  "milestone": "M11",
+  "updatedAt": "2026-11-01T18:45:10.236407+00:00",
+  "status": "T18-T19-representative-App-running",
+  "root": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f",
+  "sourceCommit": "dd28747759f2f6486536f6e27c3ef7d2d06c1cd7",
+  "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/source",
+  "sourceManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/source-manifest.json",
+  "productionManifest": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/package-production-inputs.json",
+  "resources": {
+    "UI": "zen_consistency C6-T18-T19",
+    "heavy": "zen_consistency C6-T18-T19",
+    "lightweight-I": []
+  },
+  "agents": {
+    "coordinator": "/root",
+    "executors": [
+      "/root/upstream_contract",
+      "/root/zen_consistency"
+    ]
+  },
+  "cases": [
+    "T32 D09",
+    "T18/T19 D10"
+  ],
+  "groups": [
+    {
+      "id": "M11-C6-A-T32",
+      "owner": "/root/upstream_contract",
+      "privatePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/t32-worker",
+      "cases": [
+        "T32 I+A"
+      ],
+      "criteria": "original SMTP-only persistent list/body/attachment/review readable; original-mail missing foxmail explicit; no auth or send side effects",
+      "status": "passed-archived-cleaned",
+      "driverSha256": "d8293d10246adc3feada4889283c3edde6fcf73ebe23d21a703f93cc2c2c2ce7",
+      "asarSha256": "c97fc05f8ef4795a8c76f76bb8f3089bd95fe27a90c85bcf70f1e499b4f11352",
+      "manifestSha256": "72831ac96c8c0b2fa1c28811cbc547dff17bf552b03118a9a7203688647b44b7",
+      "archive": "M11-C6-A-T32/attempt-001",
+      "cleanup": "App20439/Codex gone,4 own ports closed,SMTP DATA0"
+    },
+    {
+      "id": "M11-C6-A-T18-T19",
+      "owner": "/root/zen_consistency",
+      "cases": [
+        "T18 I+A",
+        "T19 I+A"
+      ],
+      "status": "foxmail-only-representative-preflight-running",
+      "privatePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/t18-19-worker",
+      "lease": "UI+heavy full group after original gateway preflight closed"
+    },
+    {
+      "id": "M11-C6-T10",
+      "owner": "/root/upstream_contract",
+      "cases": [
+        "T10 I+A+R"
+      ],
+      "status": "preparing-no-ui-lease",
+      "privatePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C6-20261101T183634Z-ddce-l8wic91f/t10-worker"
+    }
+  ],
+  "accounting": {
+    "source": "验收/测试用例.md",
+    "total": 38,
+    "passed": 19,
+    "pending": 19,
+    "percent": 50.0,
+    "addedUnique": [
+      "T32"
+    ]
+  },
+  "previousRunId": "M11-C5-20261101T175140Z-cccc",
+  "next": "successful compile/out freeze -> one explicit-config package -> native smoke -> affected actual App groups; no release",
+  "sourceManifestSha256": "5b0af631d5818166a7d960337100e47cc117b4eb1bfad023ec4a179acf52cfd4",
+  "productionManifestSha256": "8b39ac817f29355eaad4d2014e95515744b0cb5b32ffa151877db0438bf869d2",
+  "sourceFiles": 3218,
+  "outFiles": 151,
+  "build": {
+    "compileAttempts": 1,
+    "compileExit": 0,
+    "log": "/private/tmp/willyou-m11-c6-build-001.log",
+    "packageAttempts": 1,
+    "publish": false,
+    "packageExit": 0,
+    "productionInputsUnchanged": 1332,
+    "nativeSmoke": 6,
+    "nativeSmokeExit": 0,
+    "packageManifestSha256": "a44c18ed7d38914d25ed323420ec62ecc5540e102b9adb18c0727100b7dfcd32"
+  },
+  "asarSha256": "c97fc05f8ef4795a8c76f76bb8f3089bd95fe27a90c85bcf70f1e499b4f11352",
+  "packageApp": "/private/tmp/willyou-m11-s7/package-c6-attempt-001/mac-arm64/WillYou.app"
+}
