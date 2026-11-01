@@ -1,0 +1,31 @@
+{
+  "codex": "0.166.0",
+  "results": [
+    {
+      "id": "P0",
+      "codexExit": 0,
+      "cli": {
+        "attempted": true,
+        "connected": false,
+        "code": "EPERM"
+      },
+      "denyRead": "ERR:EPERM",
+      "writeTest": "OK",
+      "allowedUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "otherUrl": "exit56 curl: (56) CONNECT tunnel failed, response 403 ",
+      "externalTcp443": "ERR:EPERM",
+      "tokenLeaked": false,
+      "stderrTail": [
+        "2026-11-01T01:15:43.295777Z ERROR codex_core::session::session: failed to load skill /Users/liubu/.codex/skills/libtv-cli/SKILL.md: missing YAML frontmatter delimited by ---",
+        "2026-11-01T01:15:48.305249Z ERROR codex_core::tools::router: error=exec_command failed: ProcessFailed { message: \"Network access to \\\"example.com\\\" was blocked: local/private network addresses are blocked by the sandbox policy.\" }"
+      ]
+    }
+  ],
+  "verdict": {
+    "valid": false,
+    "reason": "至少一轮没有得到探针结果，结论无效"
+  },
+  "businessCalls": 0,
+  "peerLog": [],
+  "userConfigUnchanged": true
+}
