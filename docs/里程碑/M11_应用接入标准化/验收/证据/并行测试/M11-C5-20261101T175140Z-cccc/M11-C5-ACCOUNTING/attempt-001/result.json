@@ -1,0 +1,173 @@
+{
+  "schema": "m11-formal-case-accounting-review-v1",
+  "at": "2026-11-01T18:29:36.277834+00:00",
+  "reviewer": "/root",
+  "formalCase": "M11-T33",
+  "decision": "passed I+A original formal contract",
+  "reason": "Original T33 requires initial confirmed synthetic send, invalidation/refusal on SMTP revision and Foxmail connection change, explicit reconfirm recovery, unaffected read/draft and connection/revision traceability. All have original emitted assertions and immutable receipts. Draft/read checks are I; actual selection, confirm, rotation, prepare rejection and send authorization are A. No UI draft creation claim.",
+  "criteria": [
+    {
+      "id": "T33-fresh-matching-automatic",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Fresh matching Foxmail directory auto-confirms without a prior receipt, while SMTP-only initially requires user confirmation",
+      "stage": "project-selection",
+      "at": "2026-11-01T18:10:00.384Z"
+    },
+    {
+      "id": "D07-unconfirmed-bound-create",
+      "layer": "I",
+      "status": "passed",
+      "actual": "Original unconfirmed bound SMTP draft.create now succeeds before identity confirmation; RPC interface/prerequisite only, not UI creation",
+      "stage": "D07-unconfirmed-bound-create",
+      "at": "2026-11-01T18:10:00.945Z"
+    },
+    {
+      "id": "T33-smtp-only-user-confirm",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Only-SMTP project identity confirmed by actual page click; binding/revisions captured",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T18:10:03.069Z"
+    },
+    {
+      "id": "T33-smtp-only-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "After actual identity confirmation, actual page review/send submits one synthetic SMTP250 message",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T18:10:06.004Z"
+    },
+    {
+      "id": "D07-unconfirmed-bound-update",
+      "layer": "I",
+      "status": "passed",
+      "actual": "Bound draft update succeeds after real SMTP secret revision while prior confirmation is invalid; later UI send preparation still must be refused",
+      "stage": "D07-unconfirmed-bound-update",
+      "at": "2026-11-01T18:10:07.200Z"
+    },
+    {
+      "id": "T33-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI secret rotation increments SMTP revision and invalidates prior user confirmation; UI review refuses SENDER_IDENTITY_REQUIRED and requests reconfirmation",
+      "stage": "smtp-revision-reject",
+      "at": "2026-11-01T18:10:10.120Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-smtp-change",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      "connectionId": "46e840a3-8430-455d-a910-eec50e7a73bc",
+      "sourceReference": {
+        "connectionId": "46e840a3-8430-455d-a910-eec50e7a73bc",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "0a3755889294d3f6147c834bc9dcafe45ff9aa6271f8aeaee35651d510962c75"
+      },
+      "draftHash": "392ddab56bd4236b91b7a518f528ec20042fb8bccd2d4684bfb2be2053ca55d3",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE A\n"
+    },
+    {
+      "id": "T33-matching-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "SMTP revision change also invalidates prior automatic identity in matching-directory project and UI send preparation is refused",
+      "stage": "matching-revision-reject",
+      "at": "2026-11-01T18:10:15.014Z"
+    },
+    {
+      "id": "T33-smtp-reconfirm-restores",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI reconfirmation binds revised SMTP and restores one synthetic SMTP send of the updated fixed draft revision",
+      "stage": "smtp-reconfirm",
+      "at": "2026-11-01T18:10:19.720Z"
+    },
+    {
+      "id": "T33-matching-reconfirm-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual page reconfirmation on matching directory restores synthetic send; policy records automatic method for matching eligibility and binding revisions are traceable",
+      "stage": "matching-reconfirm",
+      "at": "2026-11-01T18:10:25.021Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-foxmail-switch",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      "connectionId": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+      "sourceReference": {
+        "connectionId": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "fcdb1761f72857087aaad4b3c7400947ca9e82f22ac664ded8be8ca5c28c9228"
+      },
+      "draftHash": "cdfcd95075ce62258776908fa608453a705ed614be39c4fa988fcd1d14948330",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE B\n"
+    },
+    {
+      "id": "T33-foxmail-switch-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI switch keeps old receipt invalidated and blocks send preparation until explicit user reconfirmation",
+      "stage": "foxmail-ui-switch",
+      "at": "2026-11-01T18:10:30.876Z"
+    },
+    {
+      "id": "T33-foxmail-reconfirm-restores",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Only after switched source was refused and actual identity reconfirmation click, actual page authorization submits fourth synthetic SMTP250 message",
+      "stage": "foxmail-explicit-reconfirm",
+      "at": "2026-11-01T18:10:36.195Z"
+    }
+  ],
+  "senderManifestSha256": "640621c4db3def8f44da0983696e3afc38275a32d7684430ad9018e5cf4efadf",
+  "smtpCrossChecks": {
+    "confirmed250": 4,
+    "originalReceiptsMatchPersisted": true,
+    "rendererGrantsUsed": 4,
+    "unknownSendExecutions": 0,
+    "sourceTaskAndRunNull": true
+  },
+  "retainedFailure": {
+    "actual": [
+      "ECONNRESET"
+    ],
+    "driverAssertion": "assert.deepEqual(sink.state.errors,[])",
+    "originalCommandExitCode": 1,
+    "rawStatusUnchanged": "failed",
+    "classification": "Unattributed fixture socket observation; four business sends have individually confirmed250 in original executeSend return and persisted execution. No failed/unknown send found.",
+    "socketAndTime": "unknown; only code recorded. Cannot identify verify/send/QUIT phase or assert event happened after acceptance.",
+    "scope": "All 13 original T33/D07/D08 business/interface assertions emitted passed before this additional zero-socket-error assertion. Original expectations, raw result and command exit1 remain unchanged.",
+    "laterAssertionNotReached": "Separate assert.deepEqual(app.rendererErrors,[]) was after this failure and not reached; it is not claimed passed."
+  },
+  "commandStatus": "exit1 failed retained, not relabeled green",
+  "unresolvedObservation": "ECONNRESET socket/time/phase unknown. Additional fixture-wide zero-socket-error assertion is not a T33 business criterion. No socket phase inferred or old expected changed. Future fixture must capture phase. No additional message/restart executed for adjudication.",
+  "rendererErrorBoundary": "Original trailing zero-renderer-error assertion not reached; raw has no rendererErrors field; not claimed independently passed.",
+  "validity": {
+    "productionInputsUnchanged": 1332,
+    "productionManifestSha256": "7e7b5247b7289642995aa68673b847de8600d6f86acec34fe00fbfdd52968d26",
+    "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+    "packageSourceCommit": "1908654d9acc7efcde6ad73ac767ba66e1cb1fe9",
+    "IReply3PublicAndBusiness59": "existing C5 coordinator attempts001/002",
+    "mcpRegression": "M11-C5-A-MCP/attempt-001 5 original checks passed"
+  },
+  "accounting": {
+    "total": 38,
+    "previousPassed": 17,
+    "addedUnique": [
+      "T33"
+    ],
+    "passed": 18,
+    "pending": 20,
+    "storyDeferred": 2,
+    "percent": 47.37
+  },
+  "nativeQuitAndStoryAndScopeConflict": "T14 native quit UI still pending, T21/T22 deferred, T31 scope decision unchanged"
+}

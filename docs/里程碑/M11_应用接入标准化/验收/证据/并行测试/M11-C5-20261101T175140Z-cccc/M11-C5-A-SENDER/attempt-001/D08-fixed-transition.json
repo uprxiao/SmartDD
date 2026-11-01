@@ -1,0 +1,129 @@
+{
+  "beforeSwitch": {
+    "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+    "binding_hash": "fda3dbc8b11bf89260f1e14fb29b829a8261b2ad5f556426774908452658d108",
+    "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"46e840a3-8430-455d-a910-eec50e7a73bc\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"cdc81aca-f784-495d-ac32-87d6a117bca2\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"ab036579-ac5d-43bd-8344-0678ee03f054\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":2,\"secretRevision\":2}}",
+    "method": "automatic",
+    "receipt_id": "35dab0e0-df81-44be-be47-cc76be06685a",
+    "sender_id": null,
+    "confirmed_at": "2026-11-01T18:10:20.743Z",
+    "record_hash": "a28c6b3934e22a4b07a1df44b1e4002b33a66bda876e8d4f1cb823961432110d"
+  },
+  "selectIpc": {
+    "name": "select",
+    "args": [
+      {
+        "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "appId": "mail",
+        "expectedRevision": 3,
+        "enabled": true,
+        "connections": {
+          "foxmail": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+          "smtp": "ab036579-ac5d-43bd-8344-0678ee03f054"
+        }
+      }
+    ],
+    "at": "2026-11-01T18:10:26.048Z",
+    "reply": {
+      "ok": true,
+      "value": {
+        "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+        "appId": "mail",
+        "enabled": true,
+        "revision": 4,
+        "pendingOperationId": null,
+        "connections": {
+          "foxmail": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+          "smtp": "ab036579-ac5d-43bd-8344-0678ee03f054"
+        },
+        "slotRevisions": {
+          "foxmail": 3,
+          "smtp": 2
+        }
+      }
+    },
+    "returnedAt": "2026-11-01T18:10:26.116Z"
+  },
+  "afterSwitchStatus": {
+    "bindingHash": "a07616cd50bc39cd4907ebc31fb53c875c5629bd709d57fbb0a528723db82204",
+    "fromAddress": "fixture@example.test",
+    "accountDirectory": "fixture@example.test",
+    "state": "invalidated",
+    "method": null,
+    "confirmedAt": null,
+    "receiptId": null,
+    "canConfirm": true,
+    "message": "绑定连接或修订已变化，需要重新确认发件身份。"
+  },
+  "afterSwitchRetainedRecord": {
+    "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+    "binding_hash": "fda3dbc8b11bf89260f1e14fb29b829a8261b2ad5f556426774908452658d108",
+    "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"46e840a3-8430-455d-a910-eec50e7a73bc\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"cdc81aca-f784-495d-ac32-87d6a117bca2\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"ab036579-ac5d-43bd-8344-0678ee03f054\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":2,\"secretRevision\":2}}",
+    "method": "automatic",
+    "receipt_id": "35dab0e0-df81-44be-be47-cc76be06685a",
+    "sender_id": null,
+    "confirmed_at": "2026-11-01T18:10:20.743Z",
+    "record_hash": "a28c6b3934e22a4b07a1df44b1e4002b33a66bda876e8d4f1cb823961432110d"
+  },
+  "rejectedPagePreparation": {
+    "name": "prepareSend",
+    "args": [
+      "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      {
+        "draftId": "298952bf-86c7-4721-b3ed-7c97e3abf0c6",
+        "expectedRevision": 1,
+        "expectedContentHash": "cdfcd95075ce62258776908fa608453a705ed614be39c4fa988fcd1d14948330"
+      }
+    ],
+    "at": "2026-11-01T18:10:30.718Z",
+    "reply": {
+      "ok": false,
+      "code": "SENDER_IDENTITY_REQUIRED",
+      "message": "绑定连接或修订已变化，需要重新确认发件身份。"
+    },
+    "returnedAt": "2026-11-01T18:10:30.822Z"
+  },
+  "explicitReconfirmationIpc": {
+    "name": "projectAction",
+    "args": [
+      "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      "mail",
+      {
+        "action": "confirm-sender",
+        "arguments": {
+          "expectedBindingHash": "a07616cd50bc39cd4907ebc31fb53c875c5629bd709d57fbb0a528723db82204",
+          "confirmed": true
+        }
+      }
+    ],
+    "at": "2026-11-01T18:10:31.877Z",
+    "reply": {
+      "ok": true,
+      "value": {
+        "bindingHash": "a07616cd50bc39cd4907ebc31fb53c875c5629bd709d57fbb0a528723db82204",
+        "fromAddress": "fixture@example.test",
+        "accountDirectory": "fixture@example.test",
+        "state": "automatic",
+        "method": "automatic",
+        "confirmedAt": "2026-11-01T18:10:31.913Z",
+        "receiptId": "f8dfcb3e-e377-4d31-86eb-98f4e8d655ce",
+        "canConfirm": false,
+        "message": "来源账号目录与发件地址一致，已自动确认。"
+      }
+    },
+    "returnedAt": "2026-11-01T18:10:31.949Z"
+  },
+  "newReceiptCreatedOnlyDuringExplicitConfirmation": {
+    "project_id": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+    "binding_hash": "a07616cd50bc39cd4907ebc31fb53c875c5629bd709d57fbb0a528723db82204",
+    "binding_json": "{\"accountDirectory\":\"fixture@example.test\",\"eligibility\":\"automatic\",\"foxmail\":{\"accountDirectory\":\"fixture@example.test\",\"authorization\":\"connected\",\"bindingRevision\":3,\"configRevision\":1,\"enabled\":true,\"id\":\"68b4e4af-576e-48d0-a2b0-37ac312af0e8\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":1,\"secretRevision\":0},\"fromAddress\":\"fixture@example.test\",\"projectId\":\"cdc81aca-f784-495d-ac32-87d6a117bca2\",\"smtp\":{\"authorization\":\"connected\",\"bindingRevision\":2,\"configRevision\":1,\"enabled\":true,\"id\":\"ab036579-ac5d-43bd-8344-0678ee03f054\",\"identityRevision\":1,\"policyRevision\":1,\"revision\":2,\"secretRevision\":2}}",
+    "method": "automatic",
+    "receipt_id": "f8dfcb3e-e377-4d31-86eb-98f4e8d655ce",
+    "sender_id": null,
+    "confirmed_at": "2026-11-01T18:10:31.913Z",
+    "record_hash": "d3f2bfd8610fdd0f3d4f047a69578d03b9353263f4717bf1b73b4d51eecf4fcb"
+  },
+  "fourthSend": "smtp-readonly-audit.json fourSendOutcomes[3]",
+  "freshMatchingFirstAutomatic": "raw-result.json policySnapshots initial-matching",
+  "originalExpectedPreserved": true
+}

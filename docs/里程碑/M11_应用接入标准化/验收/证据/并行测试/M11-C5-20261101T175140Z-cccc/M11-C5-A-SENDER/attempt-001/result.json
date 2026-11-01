@@ -1,0 +1,220 @@
+{
+  "schema": "m11-c5-sender-final-v1",
+  "group": "M11-C5-A-SENDER",
+  "formalCase": "T33",
+  "layers": [
+    "I",
+    "A"
+  ],
+  "originalCriteria": "只SMTP及目录邮箱一致的Foxmail项目；初次匹配automatic；绑定连接/修订变化invalidated并拒发；真实明确重确认后可发；读取/草稿不受影响；确认可追溯连接及修订。",
+  "status": "business-criteria-complete-original-command-exit1-preserved",
+  "formalCasePassesAdded": 0,
+  "acceptanceBoundary": "Coordinator reviews independent13 business/interface results and retained auxiliary command failure. Executor does not automatically promote whole formal case.",
+  "originalCommand": "command.json",
+  "originalCommandExitCode": 1,
+  "originalRawStatus": "failed",
+  "originalRawResult": "raw-result.json",
+  "criteria": [
+    {
+      "id": "T33-fresh-matching-automatic",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Fresh matching Foxmail directory auto-confirms without a prior receipt, while SMTP-only initially requires user confirmation",
+      "stage": "project-selection",
+      "at": "2026-11-01T18:10:00.384Z"
+    },
+    {
+      "id": "D07-unconfirmed-bound-create",
+      "layer": "I",
+      "status": "passed",
+      "actual": "Original unconfirmed bound SMTP draft.create now succeeds before identity confirmation; RPC interface/prerequisite only, not UI creation",
+      "stage": "D07-unconfirmed-bound-create",
+      "at": "2026-11-01T18:10:00.945Z"
+    },
+    {
+      "id": "T33-smtp-only-user-confirm",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Only-SMTP project identity confirmed by actual page click; binding/revisions captured",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T18:10:03.069Z"
+    },
+    {
+      "id": "T33-smtp-only-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "After actual identity confirmation, actual page review/send submits one synthetic SMTP250 message",
+      "stage": "smtp-only-confirm",
+      "at": "2026-11-01T18:10:06.004Z"
+    },
+    {
+      "id": "D07-unconfirmed-bound-update",
+      "layer": "I",
+      "status": "passed",
+      "actual": "Bound draft update succeeds after real SMTP secret revision while prior confirmation is invalid; later UI send preparation still must be refused",
+      "stage": "D07-unconfirmed-bound-update",
+      "at": "2026-11-01T18:10:07.200Z"
+    },
+    {
+      "id": "T33-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI secret rotation increments SMTP revision and invalidates prior user confirmation; UI review refuses SENDER_IDENTITY_REQUIRED and requests reconfirmation",
+      "stage": "smtp-revision-reject",
+      "at": "2026-11-01T18:10:10.120Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-smtp-change",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      "connectionId": "46e840a3-8430-455d-a910-eec50e7a73bc",
+      "sourceReference": {
+        "connectionId": "46e840a3-8430-455d-a910-eec50e7a73bc",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "0a3755889294d3f6147c834bc9dcafe45ff9aa6271f8aeaee35651d510962c75"
+      },
+      "draftHash": "392ddab56bd4236b91b7a518f528ec20042fb8bccd2d4684bfb2be2053ca55d3",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE A\n"
+    },
+    {
+      "id": "T33-matching-smtp-revision-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "SMTP revision change also invalidates prior automatic identity in matching-directory project and UI send preparation is refused",
+      "stage": "matching-revision-reject",
+      "at": "2026-11-01T18:10:15.014Z"
+    },
+    {
+      "id": "T33-smtp-reconfirm-restores",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI reconfirmation binds revised SMTP and restores one synthetic SMTP send of the updated fixed draft revision",
+      "stage": "smtp-reconfirm",
+      "at": "2026-11-01T18:10:19.720Z"
+    },
+    {
+      "id": "T33-matching-reconfirm-send",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual page reconfirmation on matching directory restores synthetic send; policy records automatic method for matching eligibility and binding revisions are traceable",
+      "stage": "matching-reconfirm",
+      "at": "2026-11-01T18:10:25.021Z"
+    },
+    {
+      "id": "T33-read-and-draft-after-foxmail-switch",
+      "status": "passed",
+      "layer": "I",
+      "actual": "Original read-only page-service draft/query/read/resource remains available under invalid sender identity; no terminal, no send",
+      "projectId": "cdc81aca-f784-495d-ac32-87d6a117bca2",
+      "connectionId": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+      "sourceReference": {
+        "connectionId": "68b4e4af-576e-48d0-a2b0-37ac312af0e8",
+        "identityRevision": 1,
+        "nativeId": "1",
+        "contentRevision": "fcdb1761f72857087aaad4b3c7400947ca9e82f22ac664ded8be8ca5c28c9228"
+      },
+      "draftHash": "cdfcd95075ce62258776908fa608453a705ed614be39c4fa988fcd1d14948330",
+      "body": "T33_SYNTHETIC_READ_REMAINS_AVAILABLE B\n"
+    },
+    {
+      "id": "T33-foxmail-switch-invalidates",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Actual UI switch keeps old receipt invalidated and blocks send preparation until explicit user reconfirmation",
+      "stage": "foxmail-ui-switch",
+      "at": "2026-11-01T18:10:30.876Z"
+    },
+    {
+      "id": "T33-foxmail-reconfirm-restores",
+      "layer": "I+A",
+      "status": "passed",
+      "actual": "Only after switched source was refused and actual identity reconfirmation click, actual page authorization submits fourth synthetic SMTP250 message",
+      "stage": "foxmail-explicit-reconfirm",
+      "at": "2026-11-01T18:10:36.195Z"
+    }
+  ],
+  "businessCriterionCounts": {
+    "passed": 13,
+    "failed": 0,
+    "notFormalCaseCount": true
+  },
+  "defectRevalidation": {
+    "D07": {
+      "unconfirmedBoundCreate": "Passed before any SMTP-only identity confirmation; policy remained needs-confirmation. Original failing v2 interface is now available. RPC prerequisite/I check, not UI create claim.",
+      "postSecretRevisionBoundUpdate": "Passed same draft r1→r2 while policy remained invalidated; actual page send preparation of r2 still returned SENDER_IDENTITY_REQUIRED.",
+      "evidence": [
+        "raw-result.json unconfirmedCreatePolicy/draftPrerequisites/boundUpdate/smtpRevisionDeny",
+        "02-smtp-user-confirmed.png",
+        "06-smtp-review-rejected.png"
+      ]
+    },
+    "D08": {
+      "freshMatchingAutomatic": "Passed on fresh matching directory selection without prior confirmation.",
+      "existingBindingChange": "Actual source A→B switch retained original receipt unchanged; new bindingHash is invalidated; page preparation refused.",
+      "explicitReconfirmRecovery": "Only actual user click created new receipt for current binding, followed by actual page authorize/send fourth message.",
+      "evidence": "D08-fixed-transition.json"
+    }
+  },
+  "smtpAudit": "smtp-readonly-audit.json",
+  "smtpOutcome": {
+    "DataAttempts": 4,
+    "confirmed250Executions": 4,
+    "unknownExecutions": 0,
+    "usedRendererGrants": 4,
+    "eachOriginalExecuteReceiptMatchesDbResult": true,
+    "noExternalRelay": true
+  },
+  "testConnectionAudit": {
+    "smtpVerificationsSucceeded": 2,
+    "successfulPersistentTestOperations": 2,
+    "verifiedSavedCandidates": 2,
+    "directUiRevisionTestIpcReceipts": 1,
+    "initialSetupCaptureBoundary": "Initial prerequisite return not observer-captured; original successful unwrap/save flow, verified saved candidate and succeeded operation establish success. No raw IPC reply reconstructed."
+  },
+  "retainedAuxiliaryFailure": {
+    "actual": [
+      "ECONNRESET"
+    ],
+    "driverAssertion": "assert.deepEqual(sink.state.errors,[])",
+    "originalCommandExitCode": 1,
+    "rawStatusUnchanged": "failed",
+    "classification": "Unattributed fixture socket observation; four business sends have individually confirmed250 in original executeSend return and persisted execution. No failed/unknown send found.",
+    "socketAndTime": "unknown; only code recorded. Cannot identify verify/send/QUIT phase or assert event happened after acceptance.",
+    "scope": "All 13 original T33/D07/D08 business/interface assertions emitted passed before this additional zero-socket-error assertion. Original expectations, raw result and command exit1 remain unchanged.",
+    "laterAssertionNotReached": "Separate assert.deepEqual(app.rendererErrors,[]) was after this failure and not reached; it is not claimed passed."
+  },
+  "readOnlyReviewBoundary": "No App restart/listener/send was executed after exit. SQL used completed private DB snapshot mode=ro&immutable=1 with no live own process/WAL. Exact socket/time/phase of ECONNRESET remains unknown.",
+  "layerAndFixtureBoundary": "All confirmations, SMTP credential edit/test/save, source switch, reviews and four authorizations/sends use actual packaged UI. Projects/connections and draft create/update are explicit setup/interface I checks. Reading/draft hash checks use original read-only services; no full mail-reader/draft-editor UI claim. Process-local reversible safeStorage fixture restored; no Keychain/encryption acceptance claim.",
+  "noAgent": {
+    "tasks": 0,
+    "runs": 0,
+    "allOperationTaskAndRunIdsNull": true
+  },
+  "mailSourcesUnchanged": true,
+  "sourceVerification": "verification.json",
+  "sourceManifest": "source-manifest.json",
+  "asarBeforeAndAfter": {
+    "expected": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+    "after": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006"
+  },
+  "previousRedEvidence": {
+    "C4FinalManifest": "1332f751ccbc46144ec19f2e6298d9e9b1f65a970f12e6b9b816c81b851a19f3",
+    "notRewritten": true
+  },
+  "effectiveOldEvidence": [],
+  "timing": {
+    "startedAt": "2026-11-01T18:09:50.221Z",
+    "finishedAt": "2026-11-01T18:10:36.474Z",
+    "seconds": 46.253,
+    "AppLaunches": 1,
+    "resendsOrReruns": 0,
+    "buildsByExecutor": 0,
+    "resourceConflictObserved": false
+  },
+  "cleanup": "cleanup.json",
+  "resourcesReleased": true,
+  "futureFixtureObservation": "For later runs record connection ID, phase and timestamps to locate socket resets. Current raw fixture and zero-error assertion are unchanged; no post hoc filtering or invented attribution."
+}

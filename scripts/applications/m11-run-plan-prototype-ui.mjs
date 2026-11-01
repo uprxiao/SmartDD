@@ -2,17 +2,19 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
-import {resolve,join,extname,sep} from 'node:path';
+import {resolve,join,extname,sep,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
+import {focusNewInstalledWindow} from './fixtures/dmg-install-ui.mjs';
+import {initialIntegrationState,projectIntegrationState} from '../../prototypes/m6-codex/src/integration-model.mjs';
 
-const executable=process.env.WILLYOU_ACCEPTANCE_APP;
+const executable=process.env.WILLYOU_ACCEPTANCE_APP,senderMode=process.env.WILLYOU_PROTOTYPE_MODE==='sender';
 assert(executable,'Provide a private packaged App as the prototype carrier');
 const root=await mkdtemp('/private/tmp/willyou-m11-plan-prototype-');
 const staticRoot=resolve('prototypes/m6-codex/dist/client');
 const sha=value=>createHash('sha256').update(value).digest('hex');
-const result={startedAt:new Date().toISOString(),root,layer:'P only: synthetic prototype in isolated Electron carrier; no App business/Agent/model acceptance',prototypeIndexSha256:sha(await readFile(join(staticRoot,'index.html'))),checks:[],requests:[],status:'running'};
+const result={mode:senderMode?'sender-identity':'run-plan',startedAt:new Date().toISOString(),root,layer:'P only: synthetic prototype in isolated Electron carrier; no App business/Agent/model acceptance',prototypeIndexSha256:sha(await readFile(join(staticRoot,'index.html'))),checks:[],requests:[],status:'running'};
 const sockets=new Set();
 const server=createServer(async(req,res)=>{
  try{
@@ -31,11 +33,11 @@ let app,stage='setup';
 const checked=name=>result.checks.push({name,passed:true,at:new Date().toISOString()});
 async function key(key,code,number){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code,windowsVirtualKeyCode:number,nativeVirtualKeyCode:({Tab:48,Escape:53,Enter:36,ArrowDown:125,ArrowUp:126})[key]??0});}
 async function click(selector,text){
- const point=await app.evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':'e.textContent.trim()==='+JSON.stringify(text)});if(!e)throw Error('Missing control');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.disabled||!e.contains(document.elementFromPoint(x,y)))throw Error('Blocked control');return{x,y};})()`);
+ result.lastAction={selector,text};
+ const point=await app.evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height&&${text===undefined?'true':'e.textContent.trim()==='+JSON.stringify(text)});if(!e)throw Error('Missing control');e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.disabled||!e.contains(document.elementFromPoint(x,y)))throw Error('Blocked control');return{x,y};})()`);
  for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...point,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});
 }
-async function scenario(value){
- const selector='select[aria-label="运行计划场景"]';
+async function selectNative(selector,value){
  for(let i=0;i<100;i++){if(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(selector)})`))break;await key('Tab','Tab',9);}
  assert(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(selector)})`),'Scenario selector must have keyboard focus');
  // Use the native select type-ahead route already exercised by prototype-evidence-ui.mjs.
@@ -46,15 +48,33 @@ async function scenario(value){
  await app.waitFor(`document.querySelector(${JSON.stringify(selector)}).value===${JSON.stringify(value)}`);
  await key('Tab','Tab',9);
 }
+const scenario=value=>selectNative('select[aria-label="运行计划场景"]',value);
 const planState=()=>app.evaluate(`(()=>{const e=document.querySelector('[aria-label="本次运行计划"]');if(!e)return null;return{text:e.innerText,levels:[...e.querySelectorAll('.m10-level-list li')].map(x=>({level:x.querySelector('code').textContent,state:x.getAttribute('data-state')})),theme:document.documentElement.dataset.theme}})()`);
 try{
  const home=join(root,'home');await mkdir(home);
- app=await openElectron({executable,userData:join(root,'userdata'),env:{HOME:home,ZDOTDIR:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude')}});
- result.pid=app.processId;installAppFocusGuard(app,result);
+ app=await openElectron({executable,userData:join(root,'userdata'),inspectMain:true,env:{HOME:home,ZDOTDIR:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude')}});
+ result.pid=app.processId;await focusNewInstalledWindow(app,join(root,'userdata'),result);installAppFocusGuard(app,result);
  await app.cdp('Network.enable');app.onCDP('Network.requestWillBeSent',e=>result.requests.push(e.request.url));
  await app.cdp('Page.navigate',{url:origin+'/?preview=m10#home'});
  await app.waitFor('!!document.querySelector("[aria-label=任务描述]")',20000,{navigation:true});
  await app.evaluate("document.title='P · M11 · S10 L2 增量（合成原型）';true");
+ if(senderMode){
+  stage='sender-fixture';
+  assert(process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);result.carrierAsarSha256=sha(await readFile(resolve(dirname(executable),'../Resources/app.asar')));assert.equal(result.carrierAsarSha256,process.env.WILLYOU_ACCEPTANCE_ASAR_SHA);
+  const initial=initialIntegrationState(),fox=initial.connections.find(c=>c.id==='fox-demo');
+  const data=projectIntegrationState({...initial,bindings:{...initial.bindings,smartdd:['zt-demo','fox-demo']},connections:[...initial.connections,{...fox,id:'fox-c5-b',name:'C5 来源B（合成）'},{id:'smtp-c5',app:'mail',kind:'smtp',name:'C5 发件（合成）',host:'smtp.example.invalid',port:465,account:'login',fromAddress:'work@example.invalid',credentialPresent:true,enabled:true,validation:'ready',revision:1}]});
+  await app.evaluate(`localStorage.setItem('willyou-m10-prototype-v2',${JSON.stringify(JSON.stringify(data))});true`);await app.cdp('Page.reload');await app.waitFor('!!document.querySelector("[aria-label=任务描述]")',20000,{navigation:true});
+  const state=expected=>app.waitFor(`document.querySelector('[aria-label=发件身份]')?.dataset.status===${JSON.stringify(expected)}`,15000);
+  for(const [theme,project] of [['light','ais'],['dark','smartdd']]){
+   if(theme==='dark'){stage='dark-appearance';await app.cdp('Page.navigate',{url:origin+'/?preview=m10#settings/appearance'});await app.waitFor('!!document.querySelector("select[aria-label=外观主题]")',20000,{navigation:true});await selectNative('select[aria-label=外观主题]','dark');await app.waitFor("document.documentElement.dataset.theme==='dark'");}
+   await app.cdp('Page.navigate',{url:origin+'/?preview=m10#project/'+project+'/apps'});await app.waitFor('!!document.querySelector("[aria-label=发件身份]")',20000,{navigation:true});await app.evaluate(`document.title='P · M11 D08 · '+${JSON.stringify(theme)};true`);
+   const radio=name=>'input[type=radio][aria-label='+JSON.stringify('为'+project+'选用'+name)+']';
+   stage=theme+'-initial-auto';await click(radio('C5 发件（合成）'));await state('auto');assert.equal(await app.evaluate('document.documentElement.dataset.theme'),theme);await app.screenshot(join(root,'identity-auto-'+theme+'.png'));
+   stage=theme+'-switch-invalidates';await click(radio('C5 来源B（合成）'));await state('invalidated');assert.match(await app.evaluate("document.querySelector('[aria-label=发件身份]').innerText"),/需重新确认|需要重新确认/);await app.screenshot(join(root,'identity-invalidated-'+theme+'.png'));
+   await click('.m10-sender-identity button','重新确认发件身份 · 模拟');await state('auto');await app.screenshot(join(root,'identity-reconfirmed-'+theme+'.png'));
+   await click(radio(fox.name));await state('invalidated');checked(theme+': actual source selection invalidates previous matching receipt, explicit reconfirm restores, switching back stays invalidated');
+  }
+ }else{
  stage='synthetic-task';await click('[aria-label=选择项目]');await click('.reference-home-menu [role=menuitem]','AIS');
  await click('[aria-label=任务描述]');await app.cdp('Input.insertText',{text:'M11 L2 独立原型状态'});await click('[aria-label=启动任务]');
  await app.waitFor('!!document.querySelector("[aria-label=会话应用]")');
@@ -72,6 +92,7 @@ try{
   await scenario('declared');const original=await planState();assert.equal(original.levels.find(x=>x.level==='L2').state,'unverified');assert.match(original.text,/诊断不显示「已确认读取」/);
   checked(theme+': original approved scenario remains accessible and unchanged');
   await key('Escape','Escape',27);await app.waitFor('!document.querySelector("dialog")');
+ }
  }
  assert.deepEqual(app.rendererErrors,[]);assert(result.requests.every(url=>!/^https?:/.test(url)||new URL(url).origin===origin));
  result.status='passed-prototype';

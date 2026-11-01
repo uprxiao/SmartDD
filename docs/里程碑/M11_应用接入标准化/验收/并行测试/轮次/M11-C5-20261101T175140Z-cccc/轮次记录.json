@@ -1,17 +1,23 @@
 {
   "runId": "M11-C5-20261101T175140Z-cccc",
   "milestone": "M11",
-  "updatedAt": "2026-11-01T18:02:57.682607+00:00",
+  "updatedAt": "2026-11-01T18:31:31.428668+00:00",
   "sourceCommit": "60c4312f",
-  "status": "D07-D08-fix",
+  "status": "remaining-closed-loop-groups",
   "resources": {
     "UI": null,
-    "heavy": "coordinator prototype build then production package",
-    "lightweight-I": []
+    "heavy": null,
+    "lightweight-I": [
+      "upstream_contract T32 preparation",
+      "zen_consistency T18/T19 preparation"
+    ]
   },
   "agents": {
     "coordinator": "/root",
-    "executors": []
+    "executors": [
+      "/root/upstream_contract",
+      "/root/zen_consistency"
+    ]
   },
   "cases": [
     "T33 D08 full acceptance red",
@@ -33,7 +39,7 @@
         "first matching automatic remains",
         "matching source switch and switch-back invalidates; receipt retained until explicit reconfirm"
       ],
-      "status": "red-2-production-checks"
+      "status": "red2-green2-full59-passed"
     },
     {
       "id": "M11-C5-I-REPLY",
@@ -43,7 +49,7 @@
         "foreign sender still denied",
         "no authentication or send side effects"
       ],
-      "status": "3-passed-cleanup-released-pending-archive",
+      "status": "3-passed-archived-released",
       "source": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/source",
       "privateRed": "two invalid preflight attempts retained; third actual3 green"
     },
@@ -56,7 +62,10 @@
         "reconfirm via existing action",
         "light/dark existing states"
       ],
-      "status": "prototype-building"
+      "status": "passed-light-dark-transition",
+      "driverSha256": "33a7b21d4726ff1cd0e9d4f3625929f31ac5278014a30f88c5b1cdbf996c2fc3",
+      "carrierAsarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+      "cleanup": "P ownApp gone/server closed; initial0-input focus yield retained"
     },
     {
       "id": "M11-C5-I-PUBLIC-REPLY",
@@ -68,16 +77,109 @@
       ],
       "status": "3-passed",
       "cleanup": "runner85199 exit0; nativebuild files deleted, scoped ps no remaining"
+    },
+    {
+      "id": "M11-C5-A-SENDER",
+      "owner": "/root/zen_consistency",
+      "criteria": [
+        "D07 original unconfirmed bound creation and invalidated update succeed",
+        "T33 all original UI/record/send/slot/source changes criteria",
+        "D08 invalidates and refuses until explicit reconfirm; four controlled synthetic accepts max"
+      ],
+      "status": "original-T33-contract-passed-command-extra-reset-failure-retained",
+      "sourceManifestSha256": "02bce58188fd3735bfed4a0b7c2294b950011f49633eed8e1a867d91a402aac7",
+      "productionManifestSha256": "7e7b5247b7289642995aa68673b847de8600d6f86acec34fe00fbfdd52968d26",
+      "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+      "app": "/private/tmp/willyou-m11-s7/package-c5-attempt-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "cleanup": "App7525 gone; port61322 closed; cipher/observer restored; no subprocess/socket",
+      "archive": "M11-C5-A-SENDER/attempt-001",
+      "accountingReview": "M11-C5-ACCOUNTING/attempt-001"
+    },
+    {
+      "id": "M11-C5-A-MCP",
+      "owner": "/root/upstream_contract",
+      "criteria": [
+        "T15 affected actual realCodex MCP read after async wrapper change",
+        "real composer/Skill/L2/host source and permissions",
+        "profile business config unchanged and no renderer errors"
+      ],
+      "status": "5-passed-archived-released",
+      "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+      "driverSha256": "3b531a460fb0e072b5c41cf3fd18e2d64aa932483a04a8878c003206c81d829f",
+      "cleanup": "App8175/ownCodex gone;3 ports closed",
+      "archive": "M11-C5-A-MCP/attempt-001"
+    },
+    {
+      "id": "M11-C5-A-RESTART",
+      "owner": "coordinator",
+      "cases": [
+        "T14 I+A+R"
+      ],
+      "criteria": [
+        "real UI native App quit and normal process exit",
+        "same persistent Task/profile/project/nativeId and immutable snapshot",
+        "actual UI resume with realCodex and new fixed-permission CLI read",
+        "external nativeCLI without authorized context refuses"
+      ],
+      "status": "native-ui-tool-blocker-cleaned",
+      "driverSha256": "032dbde6b399c18132e7ea008eef4327e1270941a11ea4b232cab5022578e9b5",
+      "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+      "nativeQuit": "coordinator CUA after own marker/instance check; never cleanup SIGTERM as normal exit"
+    },
+    {
+      "id": "M11-C5-I-RESTART-HOST",
+      "owner": "coordinator",
+      "cases": [
+        "T14 remaining I/lifecycle/actual UI resume only"
+      ],
+      "criteria": [
+        "programmatic App.quit real shutdown with restored one-dialog response fixture",
+        "persist same Task/profile/project/snapshot/nativeId",
+        "actual UI resume and real CLI new read",
+        "unauthorized CLI rejects"
+      ],
+      "status": "8-passed-native-ui-pending-cleaned",
+      "nativeUiNotClaimed": true,
+      "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+      "attempts": 3,
+      "archive": "M11-C5-I-RESTART-HOST/attempt-003",
+      "normalQuitLayer": "I response fixture, no native UI pass",
+      "cleanup": "originalApp10975/resumed11104/CLI gone, cipher restored, listener closed"
+    },
+    {
+      "id": "M11-C5-T32",
+      "owner": "/root/upstream_contract",
+      "cases": [
+        "T32 I+A"
+      ],
+      "status": "preparing-no-ui-lease",
+      "remaining": "SMTP-only persistent draft list/largebody/attachment/review via real MCP, original resource foxmail missing",
+      "privatePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/t32-worker"
+    },
+    {
+      "id": "M11-C5-T18-T19",
+      "owner": "/root/zen_consistency",
+      "cases": [
+        "T18 I+A",
+        "T19 I+A"
+      ],
+      "status": "preparing-no-ui-lease",
+      "remaining": "full original directory and slot matrices; valid T33 reuse, no repeat sends",
+      "privatePath": "/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-M11-C5-20261101T175140Z-cccc-8rcnfi2g/t18-19-worker"
     }
   ],
   "accounting": {
     "source": "验收/测试用例.md",
     "total": 38,
-    "passed": 17,
-    "pending": 21,
-    "percent": 44.74
+    "passed": 18,
+    "pending": 20,
+    "percent": 47.37,
+    "addedUnique": [
+      "T33"
+    ],
+    "review": "M11-C5-ACCOUNTING/attempt-001"
   },
-  "next": "fix prototype transition and production boundaries, targeted/full affected regressions, checkpoint, one new package, D07/D08 actual A retest",
+  "next": "T14 host lifecycle/actual UI resume then T32 and T18/T19 ready groups; native Quit UI/Story/scope decision last",
   "sourceManifestSha256": "02bce58188fd3735bfed4a0b7c2294b950011f49633eed8e1a867d91a402aac7",
   "checks": {
     "businessOriginalRed": 2,
@@ -91,5 +193,27 @@
     "typecheckNodeWeb": "exit0",
     "nodeFinalAfterPublicTest": "exit0",
     "prototypeBuild": "exit0 7.87sec"
+  },
+  "build": {
+    "sourceCommit": "1908654d9acc7efcde6ad73ac767ba66e1cb1fe9",
+    "productionInputs": 1332,
+    "productionManifestSha256": "7e7b5247b7289642995aa68673b847de8600d6f86acec34fe00fbfdd52968d26",
+    "output": "/private/tmp/willyou-m11-s7/package-c5-attempt-001",
+    "prototypeBuild": "exit0; no production source changes afterward",
+    "publish": false,
+    "status": "package001-six-native-smoke-passed",
+    "attempt001": {
+      "status": "failed-environment-signature-validation",
+      "mainEmission": "completed; renderer/preload not completed",
+      "cause": "default sandbox codesign reported invalid signature; identical cache and old accepted App both verify official requirement exit0 in authorized execution context",
+      "diagnosticLog": "/private/tmp/willyou-m11-c5-libreoffice-diagnostic.log",
+      "nativeModified": false,
+      "next": "same source full build in original authorized native-build context"
+    },
+    "compileAttempts": 2,
+    "asarSha256": "517c7070b83b03009bc08ebfc1b194a35a81edc4066dc994b0839a314ae59006",
+    "app": "/private/tmp/willyou-m11-s7/package-c5-attempt-001/mac-arm64/WillYou.app",
+    "packageAttempts": 1,
+    "productionInputsUnchanged": true
   }
 }
