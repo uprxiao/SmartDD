@@ -2,7 +2,7 @@
  "schema": "willyou-test-round-v1",
  "runId": "M11-R1-20261101T070500Z-resume",
  "milestone": "M11",
- "updatedAt": "2026-11-01T11:40:55.280347+00:00",
+ "updatedAt": "2026-11-01T12:28:09.135497+00:00",
  "agents": {
   "coordinator": "Claude Code（串行执行，未启用子Agent）"
  },
@@ -120,7 +120,15 @@
    "symptom": "attempt-006 real App: Codex read the ZenTao bug-analysis Skill and called the CLI, but session diagnostics showed Skill discovery/read unverified and capability_skill_observations stayed empty",
    "cause": "Templated Skills are delivered under per-run names fixed in the run plan (…-99ab44649810), while diagnostics and native evidence matched the session snapshot projection name (…-4f98bcc31608)",
    "fix": "runPlanSkillView in application-skill-view.ts; session-diagnostics.ts and native-user-messages.ts match the run plan's delivered name/path; runs without a plan keep the old behavior",
-   "verification": "5 files 363 tests passed; new D04 regression test fails without the fix and passes with it"
+   "verification": "5 files 363 tests passed; new D04 regression test fails without the fix and passes with it",
+   "retest1": {
+    "package": "attempt-007 ASAR efaa1a03…",
+    "result": "failed: diagnostics still unverified",
+    "cause2": "resourceIssue checked Skill projection ownership with the snapshot source path; the per-run path is owned by a different h-projection, so the app was marked RESOURCE_RECOVERY_REQUIRED and evidence collection was skipped",
+    "fix2": "session-diagnostics resourceIssue applies the latest codex run plan Skill view; legacy runs unchanged",
+    "driverCorrection": "driver had required app-level skillRead=verified; product rule requires every app Skill read, and this run reads only bug-analysis. Assertion now requires both discoveries plus the bug-analysis read observation and app-level read unverified. Driver expectation error, not a product relaxation.",
+    "verification": "5 files 400 tests passed"
+   }
   }
  ],
  "environment": [
@@ -131,7 +139,7 @@
  "accounting": {
   "formalPassesAdded": 0
  },
- "next": "Repackage, verify diagnostics show verified native Skill read in real App, then S9 per-case closure",
+ "next": "Package attempt-008, rerun real-App main chain",
  "driverChanges": [
   {
    "file": "scripts/applications/m11-zen-cli-ui.mjs",

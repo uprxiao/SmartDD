@@ -25,6 +25,7 @@ import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
 import {verifyApplicationRunPlan} from './run-plan';
+import {runPlanSkillView} from './application-skill-view';
 import type {ApplicationRunPlan} from '@shared/application-run-plan';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import type {SessionRunPlanDiagnostic} from '@shared/application-session-diagnostics';
@@ -121,7 +122,10 @@ export class ApplicationSessionDiagnostics {
   try{
   const delivery=session.snapshot.runner==='claude-code'&&!session.snapshot.legacyBinding?readClaudeSlot(this.store,session.snapshot.taskId):null;
   const scoped=!!delivery?.current||appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding;
-  const skills=[...session.snapshot.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
+  // Templated Skills of a codex run live under the per-run names fixed in that run's plan (M11-R1-D04).
+  const latest=session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?this.store.sqlite.prepare('SELECT run_id FROM capability_runs WHERE task_id=? ORDER BY started_at DESC,run_id DESC LIMIT 1').get(session.snapshot.taskId) as {run_id:string}|undefined:undefined;
+  const viewed=latest?runPlanSkillView(session.snapshot,storedRunPlan(this.store,latest.run_id)):session.snapshot;
+  const skills=[...viewed.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&session.snapshot.runner==='codex'&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
    if(scoped){
     const projectionIds=delivery?.current?[delivery.current.resourceId]:refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
     refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,appId?[appId]:session.snapshot.packages.map(p=>p.appId),projectionIds).map(r=>({ref_id:r.refId}));

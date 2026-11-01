@@ -142,7 +142,12 @@ const done=result.requests.some(r=>r.kind==='ui-task')&&(result.nativeToolOutput
  await app.screenshot(join(root,'task-native-response.png'));
  assert.equal(result.issuedTools.length,2);const value=capabilityResult(result.nativeToolOutputs);assert(value,'Actual native CLI did not return a v2 result');assert.equal(value.capabilityId,'zentao.object.list');assert.equal(value.contractMajor,2);assert.equal(value.operation.origin,'cli');assert.equal(value.operation.effectState,'read-only');assert.equal(value.data.items[0].id,'79291');assert.equal(value.source.connections[0].connectionId,result.connectionId);result.actualCapabilityResult=value;
  const usage=await poll(async()=>{const d=await app.invoke('applications.session',task.id);return d.ok&&d.value.applications.some(a=>a.appId==='zentao'&&a.evidence.successfulToolRequests>=1)?d.value:null;});result.sessionAfterTool=usage;
- assert.equal(usage.currentRun.preparation.cliVersion,'0.166.0');checked('Actual Codex read the delivered CLI Skill and executed the packaged native CLI through kernel peer verification and real ZenTao provider; synthetic HTTP data only');
+ assert.equal(usage.currentRun.preparation.cliVersion,'0.166.0');
+ // M11-R1-D04: with L2 declared for 0.166.0, diagnostics must recognise the per-run Skill the Agent actually read.
+ const evidence=await poll(async()=>{const d=await app.invoke('applications.session',task.id);const z=d.ok&&d.value.applications.find(a=>a.appId==='zentao');return z&&z.evidence.skillDiscovery==='verified'&&z.evidence.skillReadObservations?.some(o=>o.skillId==='bug-analysis')?z.evidence:null;},30000);
+ result.skillEvidence=evidence;assert.equal(evidence.skillReadObservations?.[0]?.skillId,'bug-analysis');
+ assert.notEqual(evidence.skillRead,'verified','story-review was not read, so the app-level read must stay unverified');
+ checked('Session diagnostics verified native catalog discovery of both Skills and the bug-analysis read of this run (L2, per-run Skill names); app-level read stays unverified because story-review was not read');checked('Actual Codex read the delivered CLI Skill and executed the packaged native CLI through kernel peer verification and real ZenTao provider; synthetic HTTP data only');
  assert.equal(result.runPlan.sandbox.source,'inherited-named-permissions');checked('CLI was selected from a named user permission profile with a fixed run plan; user policy was inherited');
  const baseAfter=await readFile(join(state,'config.toml'),'utf8'),profileAfter=await readFile(join(state,'m11-native.config.toml'),'utf8');
  const business=bytes=>{const value=parseToml(bytes);delete value.tui;delete value.notice;return value;};
