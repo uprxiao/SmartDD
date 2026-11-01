@@ -1,3 +1,4 @@
+import {parseManifest} from '../manifest';
 import { execFileSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { mkdtempSync,rmSync } from 'node:fs';
@@ -74,14 +75,14 @@ async function saveConnection(url=base,secret='zt-secret-canary'){
 beforeAll(()=>{
  build=mkdtempSync(join(tmpdir(),'willyou-m10-zt-data-build-'));
  execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
- execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});source=new CapabilityBundleSource(join(build,'bundles'));
+ execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});source=new CapabilityBundleSource(join(build,'bundles'));
 });
 afterAll(()=>rmSync(build,{recursive:true,force:true}));
 beforeEach(async()=>{
  holdAuthResponse=false;heldAuthResponse=null;authEntered=null;profileIds=new Map();
  changeEvents=[];paths=[];tokens=[];acceptedTokens=new Set(['zt-secret-canary']);outside=0;changes=0;workCalls=0;workFailures=0;workRetryAfter=undefined;workFailureStatus=503;workTimes=[];holdDetail=false;held=null;entered=null;duplicatePage=false;totalChanged=false;intruder=false;files=new Map();fileFailures=new Map();objects=new Map([['bug:'+id,initial()]]);sockets=new Set();
  server=createServer(handle);server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));const address=server.address();if(!address||typeof address==='string')throw new Error('fixture address');base='http://127.0.0.1:'+address.port+'/biz/';
- const pack=source.application(source.index.apps.find(a=>a.appId==='zentao')!);f=await runFixture(new FixtureProcessReader(),{application:true,applicationBundle:{manifest:pack.manifest,files:{...pack.files}},runtime:Buffer.from(source.runtime().files['mcp-bridge.cjs'])});
+ const pack=source.application(source.index.apps.find(a=>a.appId==='zentao')!);f=await runFixture(new FixtureProcessReader(),{application:true,applicationBundle:{manifest:parseManifest(pack.manifest),files:{...pack.files}},runtime:Buffer.from(source.runtime().files['mcp-bridge.cjs'])});
  await new BuiltinPackageRegistry(f.store).install(source,source.index.apps.find(a=>a.appId==='zentao')!);
  const db=drizzle(f.sqlite,{schema});secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:v=>Buffer.from([...v].reverse().join('')),decrypt:v=>[...v.toString()].reverse().join('')});projects=new ProjectService(db,secrets);
  const wc=Object.assign(new EventEmitter(),{id:91,mainFrame:{},isDestroyed:()=>false});sender={sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;

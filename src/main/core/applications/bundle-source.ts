@@ -3,7 +3,8 @@ import { join } from 'node:path';
 import { ApplicationError, isPackagePath } from '@shared/applications';
 import { capabilityBundleIndexSchema, type CapabilityBundleIndex } from '@shared/capability-bundles';
 import { agentAdapterMetadataSchema } from '@shared/agent-adapters';
-import { canonicalJson, digest, validateBundle, type ValidatedBundle } from './manifest';
+import { canonicalJson, digest, validatePackageBundle, type ValidatedPackageBundle } from './manifest';
+import {builtinApplicationModules} from './modules';
 import { fileNames } from './package-files';
 import { ownedBundle } from './owned-bundle';
 import { validateRuntime, type RuntimeBundle } from './runtime-registry';
@@ -35,12 +36,12 @@ export class CapabilityBundleSource {
     }catch{throw new ApplicationError('HASH_MISMATCH','随程序分发的能力完整文件树无效');}
   }
   adapters() { return this.index.adapters.map(entry=>{const source=this.tree(entry.path,'bundle.json'),metadata=agentAdapterMetadataSchema.parse(source.manifest.metadata),bundle=ownedBundle(metadata,source.files);if(bundle.hash!==entry.hash||metadata.agentId!==entry.agentId||metadata.version!==entry.version||canonicalJson(bundle.manifest)!==canonicalJson(source.manifest))throw new ApplicationError('HASH_MISMATCH','适配器与构建索引不同');return{metadata,files:source.files,hash:entry.hash};}); }
-  application(entry: CapabilityBundleIndex['apps'][number]): ValidatedBundle {
+  application(entry: CapabilityBundleIndex['apps'][number]): ValidatedPackageBundle {
     if (!this.index.apps.some(a => canonicalJson(a) === canonicalJson(entry))) throw new ApplicationError('INVALID_PACKAGE','应用不属于当前可信分发索引');
-    const source = this.tree(entry.path,'manifest.json'), bundle = validateBundle(source);
+    const source = this.tree(entry.path,'manifest.json'), bundle = validatePackageBundle(source,builtinApplicationModules);
     if (bundle.packageHash !== entry.hash || bundle.manifest.appId !== entry.appId || bundle.manifest.version !== entry.version || !this.index.runtimes.some(r => r.id === bundle.manifest.runtime.id && r.hash === bundle.manifest.runtime.hash && r.protocolMajor === bundle.manifest.runtime.protocolMajor)) throw new ApplicationError('HASH_MISMATCH','应用包或完整运行依赖与构建索引不同');
     return bundle;
   }
-  applications(): ValidatedBundle[] { return this.index.apps.map(entry => this.application(entry)); }
+  applications(): ValidatedPackageBundle[] { return this.index.apps.map(entry => this.application(entry)); }
   runtime(entry = this.index.runtimes.find(r=>r.id==='applications')): RuntimeBundle { if(!entry)throw new ApplicationError('NOT_FOUND','业务桥未随程序准备');const source=this.tree(entry.path,'runtime.json'),bundle={id:entry.id,protocolMajor:entry.protocolMajor,bridgeEntry:entry.bridgeEntry,files:source.files},validated=validateRuntime(bundle);if(validated.hash!==entry.hash||canonicalJson(validated.manifest)!==canonicalJson(source.manifest))throw new ApplicationError('HASH_MISMATCH','业务桥与构建索引不同');return bundle; }
 }

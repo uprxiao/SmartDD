@@ -30,7 +30,8 @@ const policies: Readonly<Record<string, LegacyCapabilityPolicy>> = {
 const methodAliases:Readonly<Record<string,string>>={query:'mail.query',read:'mail.read',resource_read:'mail.resource.read'};
 export const mailModule: ApplicationModuleDefinition<'mail', readonly [ApplicationProviderDefinition<typeof foxmailConfigSchema, 'foxmail', 'mail'>, ApplicationProviderDefinition<typeof smtpConfigSchema, 'smtp', 'mail'>]> = {
   appId: 'mail', contractMajors: [1], slots: ['foxmail', 'smtp'], stopBeforeSwitch: false,
-  capabilities:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,{...policy,method:methodAliases[key]??policy.id,contractMajors:[1],permission:['query','read','resource_read'].includes(key)?'mail.read':['send_prepare','send_execute'].includes(key)?'mail.send':'mail.draft'}])),
+  capabilities:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,{...policy,method:methodAliases[key]??policy.id,contractMajors:[1,2],permission:['query','read','resource_read'].includes(key)?'mail.read':['send_prepare','send_execute'].includes(key)?'mail.send':'mail.draft'}])),
+  legacyToolNames:Object.fromEntries(Object.entries(policies).map(([key,policy])=>[policy.id,`smartdd_mail_${key}_v1`])),
   presentation: { projectPolicy:'sender-identity',displayName: '邮件', heading: '在项目 Agent 中查询、准备草稿与获准发送邮件', mark: 'envelope', projectNote: '每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。', emptyConnectionSuffix: '或本地邮件来源', defaultProvider: 'foxmail', panel: 'mail-work', switchTitle: '切换项目邮件连接' },
   providers: [{
     id: 'foxmail', appId: 'mail', readDefaultKeys: ['queryDays'], configApiMajor: 1, configSchema: foxmailConfigSchema,

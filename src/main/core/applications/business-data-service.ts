@@ -51,6 +51,10 @@ export class ApplicationBusinessDataService implements ApplicationDataHost {
       return contexts.withAgent(run,binding,operation,handler.semantics,context=>execution.execute(contexts.caller(context),capability.id,operation.contractMajor,args,operation.signal));
     }} satisfies ReturnType<ApplicationDataHost['resolve']>;
   }
+  resolveCapability(packageHash:string,toolName:string,contractMajor:number){
+    if(!this.capabilities)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
+    const route=this.capabilities.tool(packageHash,toolName,contractMajor);return this.resolve(1,route.method,route.binding);
+  }
   execute(context:ApplicationExecutionContext,method:string,input:unknown){
     const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);
   }

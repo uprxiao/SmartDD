@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { ApplicationError, PACKAGE_OWNER_FILE, isPackagePath } from '@shared/applications';
-import { canonicalJson, digest, parseManifest, type ValidatedBundle } from './manifest';
+import { canonicalJson, digest, parsePackageDocument, type ValidatedPackageBundle } from './manifest';
 
 /** Only creates directories under this private store; never follows a projected symlink. */
 export function ensureStoreDirectory(root: string, path: string): string {
@@ -25,7 +25,7 @@ export function fileNames(root: string, dir = root): string[] {
     return stat.isDirectory() ? fileNames(root, path) : [relative(root, path).split('\\').join('/')];
   });
 }
-export function writePackageTree(root: string, bundle: ValidatedBundle, storeId: string): void {
+export function writePackageTree(root: string, bundle: ValidatedPackageBundle, storeId: string): void {
   if (existsSync(root)) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用包暂存目标已存在');
   mkdirSync(root, { mode: 0o700 });
   for (const file of bundle.manifest.files) {
@@ -35,13 +35,13 @@ export function writePackageTree(root: string, bundle: ValidatedBundle, storeId:
   writeFileSync(join(root, 'manifest.json'), canonicalJson(bundle.manifest) + '\n', { flag: 'wx', mode: 0o600 });
   writeFileSync(join(root, PACKAGE_OWNER_FILE), canonicalJson({ schema: 1, storeId, packageHash: bundle.packageHash }) + '\n', { flag: 'wx', mode: 0o600 });
 }
-export function verifyPackageTree(root: string, bundle: Pick<ValidatedBundle, 'manifest' | 'packageHash'>, storeId: string): void {
+export function verifyPackageTree(root: string, bundle: Pick<ValidatedPackageBundle, 'manifest' | 'packageHash'>, storeId: string): void {
   try {
     const names = fileNames(root), expected = new Set([...bundle.manifest.files.map(f => f.path), 'manifest.json', PACKAGE_OWNER_FILE]);
     if (names.length !== expected.size || names.some(p => !expected.has(p))) throw new ApplicationError('HASH_MISMATCH', '应用包完整文件集合已改变');
     const owner = JSON.parse(readFileSync(join(root, PACKAGE_OWNER_FILE), 'utf8'));
     if (owner.schema !== 1 || owner.storeId !== storeId || owner.packageHash !== bundle.packageHash) throw new ApplicationError('OWNERSHIP_CONFLICT', '应用包目录归属不一致');
-    const manifest = parseManifest(JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8')));
+    const manifest = parsePackageDocument(JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8')));
     if (digest(canonicalJson(manifest)) !== bundle.packageHash || canonicalJson(manifest) !== canonicalJson(bundle.manifest)) throw new ApplicationError('HASH_MISMATCH', '应用包声明摘要已改变');
     for (const file of manifest.files) {
       const path = join(root, file.path), stat = lstatSync(path);

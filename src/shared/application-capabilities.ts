@@ -115,6 +115,16 @@ export type ApplicationManifestV2 = z.infer<typeof applicationManifestV2Schema>;
 export type ApplicationPackageManifest = ApplicationManifestV1 | ApplicationManifestV2;
 export const applicationPackageManifestSchema = z.discriminatedUnion('schema', [applicationManifestSchema, applicationManifestV2Schema]);
 
+/** Transport views never become the package's persisted manifest or content identity. */
+export function applicationToolDeclarations(manifest:ApplicationPackageManifest):ApplicationManifestV1['tools']{
+  if(manifest.schema==='smartdd-app-package-v1')return manifest.tools;
+  return manifest.capabilities.flatMap(capability=>{
+    const binding=capability.binding.mcp??(capability.binding.fallback&&'mcp'in capability.binding.fallback?capability.binding.fallback.mcp:undefined);
+    if(!binding)return[];
+    return[{name:binding.tool,contractMajor:capability.contractMajor,permission:capability.permission,inputSchemaPath:capability.inputSchemaPath,outputSchemaPath:capability.outputSchemaPath,annotations:{readOnlyHint:capability.semantics==='read',destructiveHint:capability.semantics==='external-write',idempotentHint:capability.semantics==='read',openWorldHint:true}}];
+  });
+}
+
 export interface LegacyCapabilityPolicy {
   id: string; semantics: ApplicationCapability['semantics']; retry: ApplicationCapability['retry'];
   slots: ApplicationCapability['slots']; protection?: ApplicationCapability['protection']; approval?: ApplicationCapability['approval'];

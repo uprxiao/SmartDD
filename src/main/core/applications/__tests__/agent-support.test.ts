@@ -18,7 +18,7 @@ import { RuntimeRegistry } from '../runtime-registry';
 import {FixtureProcessReader} from './run-fixture';
 import { agentFixture } from './agent-fixture';
 let build: string, output: string, runtimeEntry: string, f: Awaited<ReturnType<typeof agentFixture>>, capabilities: CapabilityService;
-beforeAll(() => { build=mkdtempSync(join(tmpdir(),'willyou-m10-index-build-'));output=join(build,'bundles');const runtime=join(build,'runtime');runtimeEntry=join(runtime,'mcp-bridge.cjs');execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',runtime],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',output,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'}); });
+beforeAll(() => { build=mkdtempSync(join(tmpdir(),'willyou-m10-index-build-'));output=join(build,'bundles');const runtime=join(build,'runtime');runtimeEntry=join(runtime,'mcp-bridge.cjs');execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',runtime],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',output,runtimeEntry,'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'}); });
 afterAll(()=>rmSync(build,{recursive:true,force:true}));
 beforeEach(async()=>{f=await agentFixture({applicationVersion:'2.0.0'});const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:f.root});});
 afterEach(()=>{capabilities.dispose();f.cleanup();});
@@ -42,7 +42,7 @@ describe('indexed production resource bootstrap and nonfatal readiness',()=>{
     const copy=join(f.root,'linked-distribution');cpSync(output,copy,{recursive:true});const source=new CapabilityBundleSource(copy),entry=source.index.adapters[0], original=join(copy,entry.path),foreign=join(f.root,'foreign-source');renameSync(original,foreign);symlinkSync(foreign,original);expect(()=>source.adapters()).toThrow('文件树无效');expect(existsSync(join(foreign,'planner.cjs'))).toBe(true);
   });
   it('refuses an unknown build output tree rather than deleting user files',()=>{
-    const foreign=join(f.root,'user-output');mkdirSync(foreign);writeFileSync(join(foreign,'user.txt'),'keep');expect(()=>execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',foreign,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:5000,stdio:'pipe'})).toThrow();expect(readFileSync(join(foreign,'user.txt'),'utf8')).toBe('keep');
+    const foreign=join(f.root,'user-output');mkdirSync(foreign);writeFileSync(join(foreign,'user.txt'),'keep');expect(()=>execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',foreign,runtimeEntry,'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:5000,stdio:'pipe'})).toThrow();expect(readFileSync(join(foreign,'user.txt'),'utf8')).toBe('keep');
   });
 });
 

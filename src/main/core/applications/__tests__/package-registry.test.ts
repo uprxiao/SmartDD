@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -134,7 +135,7 @@ describe('application publication with a real SQLite resource ledger', () => {
 });
 
 it('rolls back the whole two-app activation set when the second migration fails, then commits both on retry',async()=>{
- const a=await bundle('2.0.0'),b=await bundle('2.0.0');b.manifest.appId='mail';b.manifest.tools[0].name='smartdd_mail_query_v1';b.manifest.tools[0].permission='mail.read';b.manifest.permissions=['mail.read'];b.manifest.connectionContracts[0].providerId='mail';
+ const a=await bundle('2.0.0'),b=await bundle('2.0.0');b.manifest.appId='mail';applicationToolDeclarations(b.manifest)[0].name='smartdd_mail_query_v1';applicationToolDeclarations(b.manifest)[0].permission='mail.read';b.manifest.permissions=['mail.read'];b.manifest.connectionContracts[0].providerId='mail';
  const checksum=digest('group migration');
  for(const source of [a,b]){const bytes=Buffer.from('group migration');source.files['migrations/group.sql']=bytes;source.manifest.files.push({path:'migrations/group.sql',size:bytes.length,sha256:checksum,executable:false});source.manifest.migrations=[{id:'group',from:0,to:1,file:'migrations/group.sql',checksum}];}
  const first=await registry.install(a),second=await registry.install(b);let fail=true;

@@ -78,6 +78,6 @@ export class ApplicationError extends Error {
 }
 export interface InstalledApplicationPackage {
   packageHash: string; appId: string; version: string; resourceId: string;
-  relativePath: string; manifest: ApplicationManifest; installedAt: string;
+  relativePath: string; manifest: import('./application-capabilities').ApplicationPackageManifest; installedAt: string;
   state: 'staged' | 'verified' | 'ready' | 'deleting' | 'removed' | 'recovery-required';
 }

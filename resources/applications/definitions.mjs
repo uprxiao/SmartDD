@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 // Trusted built-in package sources. Package versions are independent from the App version.
 // A change to the pinned runtime or any released file requires a new application version.
 const runtime = { id: 'applications', hash: 'adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625', protocolMajor: 1 };
@@ -106,3 +107,29 @@ for (const declaration of mailV104Definition.tools) {
   declaration.description += ' 可选 queryDays 为用户明确要求的本次 1–100 天范围；省略沿用连接默认，读取原来源的后续调用须传同一范围，不修改默认值或自动扩大。';
 }
 definitions[definitions.indexOf(mailV103Definition)] = mailV104Definition;
+
+// Historical v1 declarations remain available only to isolated compatibility tests.
+export const retainedV1Definitions = structuredClone(definitions);
+const compiledModules = JSON.parse(readFileSync(new URL('../../src/shared/application-module-catalog.json', import.meta.url), 'utf8')).applications;
+const mailModulePolicies = compiledModules.find(module => module.appId === 'mail');
+const mailResultV2 = (capability, data) => object({
+  schema: { const: 'willyou-app-result-v2' }, contractMajor: { const: 2 }, status: { const: 'ok' }, capabilityId: { const: capability.id }, data,
+  source: object({ appId: { const: 'mail' }, packageHash: hash, revision: nullable(str(128)), connections: array(object({slot:str(64),connectionId:uuid,identityRevision:integer(1),configRevision:integer(1),policyRevision:integer(),bindingRevision:integer()}),32) }),
+  completeness: object({ complete: boolean, missing: array(str(512),256) }),
+  pagination: nullable(object({ nextCursor: nullable(str(8192)), total: nullable(integer()) })), resources: array(resourceRef,1024),
+  operation: object({ id: uuid, requestId: nullable(uuid), origin: enumeration('ui','mcp','cli','internal'), effectState: enumeration('read-only','completed','unknown') }),
+});
+const { tools: oldMailTools, adapter: _oldMailAdapter, ...mailData } = structuredClone(mailV104Definition);
+const mailV110Definition = {
+  ...mailData, schema: 'smartdd-app-package-v2', version: '1.1.0', module: { id: 'mail', contractMajor: 1 }, entry: 'mcp',
+  connectionSlots: [{ slot: 'foxmail', required: false }, { slot: 'smtp', required: false }],
+  skills: mailData.skills.map(skill => ({ ...skill, template: true })),
+  capabilities: oldMailTools.map(tool => {
+    const compiled = mailModulePolicies.capabilities.find(capability => capability.legacyTool === tool.name);
+    if (!compiled || !compiled.contractMajors.includes(2)) throw Error('Missing trusted mail capability policy: ' + tool.name);
+    const { contractMajors: _versions, legacyTool: _legacy, ...policy } = compiled;
+    return { ...policy, contractMajor: 2, title: tool.name, legacyTool: { name: tool.name, contractMajor: 1 },
+      binding: { mcp: { tool: tool.name.replace(/_v1$/, '_v2') } }, input: tool.input, output: mailResultV2(policy,tool.output), description: tool.description };
+  }),
+};
+definitions[definitions.findIndex(definition => definition.appId === 'mail')] = mailV110Definition;

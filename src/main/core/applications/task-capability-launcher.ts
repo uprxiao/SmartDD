@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {SkillObservationMonitor} from './skill-observation-monitor';
 import {BridgeSupervisor} from './bridge-supervisor';
 import {nativeCapabilityPreparation} from './native-preparation-diagnostics';
@@ -93,9 +94,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.projector=new SessionCapabilityProjector(store,this.sessions);
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,createPlan:(snapshot,snapshotHash,runId,appIds)=>{
       const selected={...selectSessionApplications(snapshot,appIds??snapshot.packages.map(p=>p.appId)),standardSkills:[]};
-      const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.legacyCapabilities(application.manifest)};});
+      const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
       const projected=selected.packages.length?this.projector.sourceSkills(selected):[];
-      const skills=selected.packages.flatMap(p=>p.skills.map(s=>{const rendered=projected.find(r=>r.nativeName===s.nativeName);if(!rendered)throw new ApplicationError('HASH_MISMATCH','本次运行的Skill渲染结果缺失');return{appId:p.appId,skillId:s.skillId,nativeName:s.nativeName,templateHash:s.contentHash,parametersHash:digest(canonicalJson({nativeName:s.nativeName})),renderedHash:skillFilesHash(rendered.files)};}));
+      const skills=selected.packages.flatMap(p=>p.skills.map(s=>{const rendered=projected.find(r=>r.nativeName===s.nativeName);if(!rendered)throw new ApplicationError('HASH_MISMATCH','本次运行的Skill渲染结果缺失');return{appId:p.appId,skillId:s.skillId,nativeName:s.nativeName,templateHash:rendered.templateHash??s.contentHash,parametersHash:rendered.parametersHash??digest(canonicalJson({nativeName:s.nativeName})),renderedHash:rendered.renderedHash??skillFilesHash(rendered.files)};}));
       return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills,available:{mcp:true,cli:false,reason:'managed-cli-not-integrated'},cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});
     },assertCurrent:snapshot=>{
       // Application enablement and current slots belong to each business call, not Agent liveness.
@@ -160,15 +161,19 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     return candidates.find(a=>cliVersion!==undefined&&a.cliVersions.includes(cliVersion))??candidates.at(-1);
   }
   private createSnapshot(input:TaskLaunchInput,native:NativeLaunchContext|undefined,generation:string):CapabilitySessionSnapshot{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);
+    const runner:'claude-code'|'codex'=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);
     if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
     const skillPath=(name:string)=>join(runner==='codex'?join(canonicalFuturePath(input.home),'.agents/skills'):join(this.support.store.root,'sessions',input.taskId,'claude/plugin/skills'),name,'SKILL.md');
     const appMcp=applicationMcpServerName(digest(input.taskId)),bindings=this.bindings(input.projectId,this.selectedApps(input.projectId).map(a=>a.appId));
-    const packages=this.selectedApps(input.projectId).map(({packageHash})=>{const p=this.applications.builtin.retainedMetadata(packageHash),m=p.manifest;return{appId:p.appId,version:p.version,packageHash,hashAlgorithm:'app-manifest-v1' as const,hostApi:m.hostApi,dataApi:m.dataApi,runtimeHash:m.runtime.hash,toolContractMajors:Object.fromEntries(m.tools.map(t=>[t.name,t.contractMajor])),skills:m.skills.map(s=>{const name=applicationNativeSkillName(p.appId,s.id,packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(m,s.path),sourceRelativePath:s.path,projectionPath:skillPath(name)};}),bindings:bindings.filter(b=>b.appId===p.appId&&b.connectionId).map(b=>({bindingId:`${input.projectId}:${p.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!})),allowedOperations:[...m.permissions]};});
+    const selectedSources=this.selectedApps(input.projectId).map(({packageHash})=>{const p=this.applications.builtin.retainedMetadata(packageHash),m=p.manifest;return{manifest:m,selection:{appId:p.appId,version:p.version,packageHash,hashAlgorithm:'app-manifest-v1' as const,hostApi:m.hostApi,dataApi:m.dataApi,runtimeHash:m.runtime.hash,toolContractMajors:Object.fromEntries(applicationToolDeclarations(m).map(t=>[t.name,t.contractMajor])),skills:m.skills.map(s=>{const name=applicationNativeSkillName(p.appId,s.id,packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(m,s.path),sourceRelativePath:s.path,projectionPath:skillPath(name)};}),bindings:bindings.filter(b=>b.appId===p.appId&&b.connectionId).map(b=>({bindingId:`${input.projectId}:${p.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!})),allowedOperations:[...m.permissions]}};});
+    const packages=selectedSources.map(p=>p.selection),newFormat=selectedSources.some(p=>p.manifest.schema==='smartdd-app-package-v2');
+
     const runtimeHashes=[...new Set(packages.map(p=>p.runtimeHash))];if(runtimeHashes.length>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
-    const mcp:CapabilitySessionSnapshot['mcp']=packages.length?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash:runtimeHashes[0]}]:[];
+    const mcp:CapabilitySessionSnapshot['mcp']=packages.some(p=>Object.keys(p.toolContractMajors).length)?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash:runtimeHashes[0]}]:[];
     if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
-    return{schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native?.version??'unverified',adapterRevision:1},catalogGeneration:generation,packages,standardSkills:this.capabilities.selection(input.projectId).filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1',projectionPath:skillPath(standardNativeSkillName(s.skillId,s.hash))})),mcp,provenance:'created'};
+    const common={taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native?.version??'unverified',adapterRevision:1},catalogGeneration:generation,packages,standardSkills:this.capabilities.selection(input.projectId).filter(s=>s.enabled).map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash,hashAlgorithm:'legacy-tree-v1' as const,projectionPath:skillPath(standardNativeSkillName(s.skillId,s.hash))})),mcp,provenance:'created' as const};
+    if(!newFormat)return{...common,schema:2};
+    return{...common,schema:3,packages:selectedSources.map(({manifest,selection})=>({...selection,entry:manifest.schema==='smartdd-app-package-v2'?manifest.entry:'mcp',capabilityContractMajors:Object.fromEntries(builtinApplicationModules.capabilityViews(manifest).map(c=>[c.id,c.contractMajor]))}))};
   }
   prepare(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{const work=this.prepareOnce(input);this.pending.add(work);void work.finally(()=>{this.pending.delete(work);this.planningAgents.delete(input.taskId);}).catch(()=>{});return work;}
   private async prepareOnce(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{
@@ -358,7 +363,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }catch(error){await run.stop('unavailable-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
   private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
-    const runner=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
+    const runner:'claude-code'|'codex'=input.profile.runner==='claude'?'claude-code':'codex',adapter=this.currentAdapter(runner,native?.version);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
     const collection=await catalog.snapshot(),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
     // A native-only guard grants no application bridge. When filtering is unverified,
     // preserve native argv/config and freeze H for the consumer rather than blocking

@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {ApplicationBridgeClient,consumeBridgeBootstrap} from '../bridge-client';
 import {LegacyCapabilityResourceAdopter,readLegacyOwnedTree} from '../legacy-resource-adopter';
 import {treeHash} from '../../capabilities/assets';
@@ -74,7 +75,7 @@ beforeEach(async()=>{
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
- capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
+ capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,peers:{read:async()=>null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
 afterEach(async()=>{
@@ -87,6 +88,84 @@ afterEach(async()=>{
  if(failures.length)throw new AggregateError(failures,'Synthetic bridge exits and fixture disposal must complete before store cleanup');
 });
 const create=(id=codexId)=>tasks.create({projectId,dirId:null,aiProfileId:id,firstMessage:''});
+
+describe('M11 S4 data-only Mail v2 through the production task composition',()=>{
+ beforeEach(()=>{
+  // TestPtys does not fork a bridge child; settle only its synthetic handles.
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});
+ });
+ const selectMail=async()=>{await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});};
+ const installV2=async()=>{
+  const source=new CapabilityBundleSource(resolve('out/capability-bundles')),before=applications.builtin.packages.active('mail')!;
+  const installed=await applications.builtin.install(source,source.index.apps.find(app=>app.appId==='mail')!);
+  await applications.builtin.packages.activate(installed.packageHash,before.generation);return applications.builtin.assertTrusted(installed.packageHash);
+ };
+ const tools=()=>new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data));
+ const call=(service:ApplicationToolService,runId:string,operation:string,args:Record<string,unknown>,major=2)=>service.call(runId,randomUUID(),{operation:`smartdd_mail_${operation}_v${major}`,contractMajor:major,connectionId:null,arguments:args});
+ const body={mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['fixture@example.test'],cc:[],bcc:[],subject:'M11 local v2',text:'synthetic body',html:null,inReplyTo:null,references:[],attachmentIds:[]};
+
+ it('maps all fourteen legacy tools without package executables and preserves the bridge runtime identity',async()=>{
+  const old=applications.builtin.packages.get(applications.builtin.packages.active('mail')!.packageHash),v2=await installV2();
+  expect(v2.version).toBe('1.1.0');expect(v2.manifest.schema).toBe('smartdd-app-package-v2');
+  if(v2.manifest.schema!=='smartdd-app-package-v2')throw Error('v2 required');
+  expect(v2.manifest.capabilities).toHaveLength(14);expect(v2.manifest.capabilities.map(c=>c.legacyTool!.name).sort()).toEqual(applicationToolDeclarations(old.manifest).map(t=>t.name).sort());
+  expect(v2.manifest.runtime).toEqual(old.manifest.runtime);expect(v2.manifest.files.some(f=>f.executable||/\.(?:c?js|mjs|sh|py)$/.test(f.path))).toBe(false);
+  expect(v2.manifest.capabilities.every(c=>c.contractMajor===2&&c.binding.mcp?.tool.endsWith('_v2'))).toBe(true);
+  expect(applications.builtin.packages.get(old.packageHash).manifest).toEqual(old.manifest);
+ });
+ it('creates a schema-3 task with a fixed plan and renders the exact delivered Skill bytes',async()=>{
+  const application=await installV2();await selectMail();const running=await create(),saved=await managed.sessions.get(running.task.id),scope=managed.runs.assertActive(running.task.runtimeSnapshot!.runId);
+  expect(saved.snapshot.schema).toBe(3);expect(saved.snapshot.adapterBinding.version).toBe('1.2.0');expect(scope.plan?.allowed).toHaveLength(14);expect(scope.plan?.allowed.every(c=>c.entry==='mcp'&&c.contractMajor===2)).toBe(true);
+  const skill=saved.snapshot.packages[0].skills[0],bytes=readFileSync(skill.projectionPath),render=scope.plan!.skills.find(s=>s.nativeName===skill.nativeName)!;
+  expect(bytes.toString()).toContain('smartdd_mail_draft_create_v2');expect(bytes.toString()).not.toContain('{{WILLYOU_');expect(bytes.toString()).not.toContain('willyou-app');
+  const folder=dirname(skill.projectionPath),files=Object.fromEntries(['SKILL.md','references/sending.md'].map(path=>[path,readFileSync(join(folder,path))]));expect(render.renderedHash).toBe(digest(canonicalJson(Object.entries(files).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([path,data])=>({path,size:data.length,sha256:digest(data)})))));expect(render.templateHash).not.toBe(render.renderedHash);expect(scope.plan!.applications[0].packageHash).toBe(application.packageHash);
+  expect(readFileSync(resolve(support.store.directory(support.store.get('app:'+application.packageHash)),skill.sourceRelativePath,'SKILL.md'),'utf8')).toContain('{{WILLYOU_ENTRYPOINTS}}');
+ });
+ it('returns unified v2 data and resources while the page reads the same draft and CAS rejects stale updates',async()=>{
+  const application=await installV2();await selectMail();const running=await create(),runId=running.task.runtimeSnapshot!.runId,service=tools();
+  const first=await call(service,runId,'draft_create',{content:body});expect(first).toMatchObject({status:'ok',value:{schema:'willyou-app-result-v2',contractMajor:2,capabilityId:'mail.draft.create',source:{packageHash:application.packageHash,connections:[]},operation:{origin:'mcp',effectState:'completed'}}});
+  if(first.status!=='ok')throw Error(JSON.stringify(first));const value=first.value as import('@shared/application-result').ApplicationResultV2,draft=(value.data as {draft:import('@shared/application-data').MailDraftDataView}).draft;
+  expect(value.resources).toContainEqual(draft.content.text);const sender={sender:{id:991,isDestroyed:()=>false}} as unknown as import('electron').IpcMainInvokeEvent;
+  expect(await applications.viewDraft(sender,projectId,draft.id)).toMatchObject({draft:{id:draft.id,revision:1,content:draft.content}});
+  expect(await call(service,runId,'draft_update',{draftId:draft.id,expectedRevision:1,content:{...body,text:'second'}})).toMatchObject({status:'ok',value:{data:{draft:{revision:2}}}});
+  expect(await call(service,runId,'draft_update',{draftId:draft.id,expectedRevision:1,content:body})).toMatchObject({status:'error',error:{code:'REVISION_CONFLICT',retryable:false}});
+  expect(await call(service,runId,'resource_read',{resource:draft.content.text,offset:0,length:100})).toMatchObject({status:'ok',value:{data:{data:'synthetic body',eof:true},operation:{effectState:'read-only'}}});
+ });
+ it('limits missing slots to their dependent capabilities and keeps the result/cancel capabilities slot-free',async()=>{
+  await installV2();await selectMail();const running=await create(),runId=running.task.runtimeSnapshot!.runId,service=tools();
+  expect(await call(service,runId,'query',{})).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+  for(const operation of ['send_get','send_cancel'])expect(await call(service,runId,operation,{intentId:randomUUID()})).toMatchObject({status:'error',error:{code:'NOT_FOUND'}});
+  expect(await call(service,runId,'draft_list',{})).toMatchObject({status:'ok',value:{data:{items:[],nextCursor:null},operation:{effectState:'read-only'}}});
+  expect(await call(service,runId,'draft_create',{content:body,projectId:'forged'})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
+ });
+ it('M11-T11 rejects self approval, a forged review hash and missing observed approval before any send execution',async()=>{
+  await installV2();await selectMail();const sender={sender:{id:992,isDestroyed:()=>false}} as unknown as import('electron').IpcMainInvokeEvent;
+  // Reversible cipher/provider identity are explicit software fixtures; no SMTP or Keychain.
+  const localSecrets=new SecretsStore(drizzle(sqlite,{schema}),{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()}),connections=new ApplicationConnectionService(support.store,localSecrets,{verify:async config=>({providerId:config.kind,serviceId:'synthetic',accountId:'fixture@example.test',contractMajor:1})});
+  const connection=await connections.save({name:'Synthetic SMTP T11',expectedRevision:0,config:{kind:'smtp',host:'127.0.0.1',port:9,username:'fixture@example.test',fromAddress:'fixture@example.test',authMode:'password',mode:'plain'},secret:'SYNTHETIC_ONLY'}),selected=applications.selections.projectSettings(projectId,'mail');
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:selected.revision,connections:{foxmail:null,smtp:connection.id}});
+  const status=await applications.projectPolicy(sender,projectId,'mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;await applications.projectAction(sender,projectId,'mail',{action:'confirm-sender',arguments:{expectedBindingHash:status.bindingHash,confirmed:true}});
+  const running=await create(),runId=running.task.runtimeSnapshot!.runId,service=tools(),created=await call(service,runId,'draft_create',{content:{...body,senderConnectionId:connection.id}});expect(created.status).toBe('ok');if(created.status!=='ok')throw Error(JSON.stringify(created));
+  const draft=((created.value as import('@shared/application-result').ApplicationResultV2).data as {draft:import('@shared/application-data').MailDraftDataView}).draft,prepared=await call(service,runId,'send_prepare',{draftId:draft.id,expectedRevision:draft.revision,expectedContentHash:draft.contentHash});expect(prepared.status).toBe('ok');if(prepared.status!=='ok')throw Error(JSON.stringify(prepared));
+  const intent=((prepared.value as import('@shared/application-result').ApplicationResultV2).data as {intent:{id:string;reviewHash:string;authorized:boolean}}).intent;expect(intent.authorized).toBe(false);
+  const decrypt=vi.spyOn(SecretsStore.prototype,'get');
+  expect(await call(service,runId,'send_execute',{intentId:intent.id,expectedReviewHash:intent.reviewHash,approved:true})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
+  expect(await call(service,runId,'send_execute',{intentId:intent.id,expectedReviewHash:'f'.repeat(64)})).toMatchObject({status:'error',error:{code:'INTENT_STALE'}});
+  expect(await call(service,runId,'send_execute',{intentId:intent.id,expectedReviewHash:intent.reviewHash})).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});
+  expect(decrypt).not.toHaveBeenCalled();expect(sqlite.prepare('SELECT count(*) n FROM mail_send_executions').get()).toEqual({n:0});
+ });
+ it('keeps an already running v1 session on its original tools and unwrapped results after v2 activation',async()=>{
+  await selectMail();const running=await create(),runId=running.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(running.task.id),service=tools();
+  expect(fixed.snapshot.schema).toBe(2);const raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(running.task.id);
+  await installV2();expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(running.task.id)).toEqual(raw);
+  const response=await call(service,runId,'draft_list',{},1);expect(response).toMatchObject({status:'ok',value:{items:[],nextCursor:null}});if(response.status==='ok')expect(response.value).not.toHaveProperty('schema');
+  expect((await service.list(runId)).tools.every(tool=>tool.name.endsWith('_v1'))).toBe(true);
+  expect(await call(service,runId,'draft_list',{})).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});
+ });
+});
 const consumers=()=>readdirSync(join(home,'.agents/smartdd-runtime/catalog-consumers'));
 // Capture the real TaskService plan before publication. The original publisher
 // uses a distinct software kernel-birth epoch; actual SIGKILL/App evidence is
@@ -298,7 +377,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   expect(sqlite.prepare('SELECT kind,state FROM capability_run_processes WHERE run_id=?').all(runId)).toEqual([{kind:'cli',state:'active'}]);expect(await managed.sessions.get(taskId)).toEqual(original);for(const ref of refs)expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(taskId)).toContainEqual(ref);expect(sqlite.prepare('SELECT * FROM capability_session_identities WHERE task_id=?').get(taskId)).toEqual(identity);
   const diagnostic=await applications.sessionDiagnostics.inspect(taskId);expect(diagnostic).toMatchObject({selection:'fixed',agentState:'running',currentRun:{restriction:null,bridge:{connected:false}}});expect(diagnostic.applications.find(a=>a.packageHash===hash)?.resourceState).toBe('unavailable');
   tasks.kill(taskId);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
-  const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===hash)!);const repaired=await tasks.open({taskId});expect(managed.runs.assertActive(repaired.task.runtimeSnapshot!.runId).snapshot).toEqual(original.snapshot);expect(repaired.task.runtimeSnapshot!.sessionCapabilities).toEqual(original.pointer);expect(repaired.task.nativeSessionId).toBe(nativeId);expect(ptys.launches).toHaveLength(3);
+  const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await builtin.install(source,source.index.apps.find(a=>a.hash===hash)!);const repaired=await tasks.open({taskId});expect(managed.runs.assertActive(repaired.task.runtimeSnapshot!.runId).snapshot).toEqual(original.snapshot);expect(repaired.task.runtimeSnapshot!.sessionCapabilities).toEqual(original.pointer);expect(repaired.task.nativeSessionId).toBe(nativeId);expect(ptys.launches).toHaveLength(3);
   expect(sqlite.prepare('SELECT count(*) AS n FROM application_invocations').get()).toEqual({n:0});expect(sqlite.prepare('SELECT count(*) AS n FROM mail_send_grants').get()).toEqual({n:0});
   tasks.kill(taskId);for(const bridge of bridgeHandles)await bridge.exited();await vi.waitFor(()=>expect(managed.runs.get(repaired.task.runtimeSnapshot!.runId).state).toBe('stopped'));
  },15000);
@@ -1033,7 +1112,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   try{started=await create(runner==='codex'?codexId:claudeId);const fixed=await managed.sessions.get(started.task.id),runtime=started.task.runtimeSnapshot!;expect(runtime.skills.map(s=>s.path)).toEqual(fixed.snapshot.standardSkills.map(s=>s.projectionPath));expect(runtime.skills.length).toBeGreaterThan(0);expect(runtime.mcp.map(m=>m.name)).toEqual(fixed.snapshot.mcp.filter(m=>m.kind==='legacy-project-context').map(m=>m.serverName));expect(managed.runs.assertActive(runtime.runId).applicationScope).toEqual([]);expect(sqlite.prepare('SELECT 1 FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_id=? AND r.resource_id=?').get(runtime.runId,id)).toBeUndefined();expect((await appTools().list(runtime.runId)).tools).toEqual([]);}finally{if(started){tasks.kill(started.task.id);await vi.waitFor(()=>expect(managed.runs.get(started!.task.runtimeSnapshot!.runId).state).toBe('stopped'));}}
  });
  it.each(['claude-code','codex'] as const)('does not widen an independent live run after same-hash app repair and restores all original capabilities only on stopped resume: %s',async runner=>{
-  const builtin=await selectBoth(),initial=await create(runner==='codex'?codexId:claudeId);await stopForSwitchFixture(initial,runner);const original=await managed.sessions.get(initial.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(initial.task.id),source=new CapabilityBundleSource(resolve('out/capability-bundles'));for(const p of original.snapshot.packages)rmSync(join(support.store.root,builtin.retainedMetadata(p.packageHash).relativePath),{recursive:true});
+  const builtin=await selectBoth(),initial=await create(runner==='codex'?codexId:claudeId);await stopForSwitchFixture(initial,runner);const original=await managed.sessions.get(initial.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(initial.task.id),source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));for(const p of original.snapshot.packages)rmSync(join(support.store.root,builtin.retainedMetadata(p.packageHash).relativePath),{recursive:true});
   const partial=await tasks.open({taskId:initial.task.id});try{expect(managed.runs.assertActive(partial.task.runtimeSnapshot!.runId).applicationScope).toEqual([]);for(const p of original.snapshot.packages)await builtin.install(source,source.index.apps.find(a=>a.hash===p.packageHash)!);expect(managed.runs.assertActive(partial.task.runtimeSnapshot!.runId).applicationScope).toEqual([]);expect((await appTools().list(partial.task.runtimeSnapshot!.runId)).tools).toEqual([]);}finally{tasks.kill(initial.task.id);await vi.waitFor(()=>expect(managed.runs.get(partial.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
   const full=await tasks.open({taskId:initial.task.id});try{const context=managed.runs.assertActive(full.task.runtimeSnapshot!.runId);expect(context.applicationScope??context.snapshot.packages.map(p=>p.appId)).toEqual(original.snapshot.packages.map(p=>p.appId));expect((await appTools().list(full.task.runtimeSnapshot!.runId)).tools).toHaveLength(17);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(initial.task.id)).toEqual(raw);}finally{tasks.kill(initial.task.id);await vi.waitFor(()=>expect(managed.runs.get(full.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
  },30000);
@@ -1060,7 +1139,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   const builtin=await selectBoth(),first=await create(claudeId);await stopForSwitchFixture(first,'claude-code');const fixed=await managed.sessions.get(first.task.id),raw=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id),beforeRefs=await managed.sessions.references(first.task.id),zen=builtin.assertTrusted(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.packageHash),original=beforeRefs.find(r=>r.refKind==='session-projection')!;rmSync(join(support.store.root,zen.relativePath),{recursive:true});
   const resumed=await tasks.open({taskId:first.task.id}),runId=resumed.task.runtimeSnapshot!.runId;
   try{expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);const args=ptys.launches.at(-1)!.args;expect(args[args.indexOf('--plugin-dir')+1]).toBe(join(support.store.root,original.relativePath));for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(existsSync(s.projectionPath)).toBe(p.appId==='mail');for(const ref of beforeRefs)expect(await managed.sessions.references(first.task.id)).toContainEqual(ref);
-   expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);for(const s of fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills)expect(existsSync(s.projectionPath)).toBe(false);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(raw);
+   expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);for(const s of fixed.snapshot.packages.find(p=>p.appId==='zentao')!.skills)expect(existsSync(s.projectionPath)).toBe(false);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(raw);
   }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
   const full=await tasks.open({taskId:first.task.id});try{expect(managed.runs.assertActive(full.task.runtimeSnapshot!.runId).applicationScope).toEqual(fixed.snapshot.packages.map(p=>p.appId));expect(support.store.get(original.refId)).toMatchObject({state:'ready',contentHash:original.refHash});const diagnostics=await applications.sessionDiagnostics.inspect(first.task.id);for(const app of diagnostics.applications)expect(app.resourceState).toBe('verified');expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(full.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
  },30000);
@@ -1097,7 +1176,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
    expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);const flags=launchFlags();for(const p of fixed.snapshot.packages)for(const s of p.skills)expect(flags).toContainEqual({path:s.projectionPath,enabled:p.appId==='mail'});
    const protectedIds=sqlite.prepare('SELECT r.resource_id FROM capability_lease_resources r JOIN capability_resource_leases l ON l.lease_id=r.lease_id WHERE l.owner_id=?').all(runId) as {resource_id:string}[];expect(protectedIds.map(r=>r.resource_id)).not.toContain(zen.resourceId);for(const ref of refs as {ref_id:string;ref_kind:string}[])if(ref.ref_kind==='legacy-runtime')expect(protectedIds.map(r=>r.resource_id)).toContain(ref.ref_id);expect(protectedIds.map(r=>r.resource_id)).toContain('app:'+fixed.snapshot.packages.find(p=>p.appId==='mail')!.packageHash);
    expect(await appTools().call(runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});
-   const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);
+   const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);
    expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);expect(await appTools().call(runId,randomUUID(),{operation:Object.keys(fixed.snapshot.packages.find(p=>p.appId==='zentao')!.toolContractMajors)[0],contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'error',error:{code:'CAPABILITY_UNAVAILABLE'}});
    expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(first.task.id)).toEqual(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(first.task.id)).toEqual(refs);
   }finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));}
@@ -1122,7 +1201,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   try{expect(await query()).toMatchObject({status:'ok'});
    // Editing ZenTao configuration requires its own verified package. Restore
    // those exact original bytes first; this must not widen the live Mail scope.
-   const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);
+   const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await builtin.install(source,source.index.apps.find(a=>a.hash===zen.packageHash)!);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);
    await x.next();expect(ptys.live.has(created.ptyId)).toBe(true);expect(managed.runs.assertActive(runId).applicationScope).toEqual(['mail']);await applications.selections.setGlobalEnabled('mail',false,1);expect(await query()).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(ptys.live.has(created.ptyId)).toBe(true);await applications.selections.setGlobalEnabled('mail',true,2);expect(await query()).toMatchObject({status:'ok'});expect((await managed.sessions.get(created.task.id)).snapshot).toEqual(fixed.snapshot);}finally{tasks.kill(created.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));}
  },20000);
  it('keeps the native Agent without any application grant when the original shared application runtime is missing',async()=>{
@@ -1150,7 +1229,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
  });
  it.each(['claude-code','codex'] as const)('host API foundation refuses forged direct Mail scopes after a same-hash repair in a scoped %s run',async runner=>{
   const x=await startCoreScope(runner,'mail');
-  try{const source=new CapabilityBundleSource(resolve('out/capability-bundles')),entry=source.index.apps.find(a=>a.hash===x.bad.packageHash)!;expect(entry).toBeTruthy();await x.builtin.install(source,entry);expect(x.builtin.assertTrusted(x.bad.packageHash).packageHash).toBe(x.bad.packageHash);
+  try{const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1')),entry=source.index.apps.find(a=>a.hash===x.bad.packageHash)!;expect(entry).toBeTruthy();await x.builtin.install(source,entry);expect(x.builtin.assertTrusted(x.bad.packageHash).packageHash).toBe(x.bad.packageHash);
    const known=managed.runs.assertActive(x.scope.runId),claim={...known,applicationScope:['mail']},binding={packageHash:x.bad.packageHash,appId:'mail',toolName:'smartdd_mail_draft_list_v1',permission:'mail.draft'},operation={operationId:randomUUID(),requestId:randomUUID(),attempt:1,deadline:Date.now()+1000,signal:new AbortController().signal,packageHash:binding.packageHash,appId:'mail',toolName:binding.toolName,contractMajor:1,connectionId:null},before=sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get();let executed=0;
    expect(()=>applications.contexts.withAgent(claim,binding,operation,'read',async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertAgentReceipt(claim,binding,randomUUID())).toThrow('本轮此应用能力');expect(()=>applications.contexts.withReadReceipt(claim,binding,randomUUID(),async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertSendOrigin(projectId,x.task.task.id,x.scope.runId)).toThrow('本轮此应用能力');expect(executed).toBe(0);expect(sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get()).toEqual(before);expect(managed.runs.assertActive(x.scope.runId).applicationScope).toEqual(['zentao']);
   }finally{await x.close();}
@@ -1166,7 +1245,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
  it.each(['claude-code','codex'] as const)('allows original Mail draft contracts in a healthy two-app %s run',async runner=>{
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
-  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=mail.manifest.tools.find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=applicationToolDeclarations(mail.manifest).find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
   expect(operation).toBeTruthy();expect(existsSync(join(support.store.root,zen.relativePath))).toBe(true);
   const created=await create(runner==='codex'?codexId:claudeId),runId=created.task.runtimeSnapshot!.runId,saved=await managed.sessions.get(created.task.id),before=JSON.stringify(saved.snapshot),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id);
   try{
@@ -1178,7 +1257,7 @@ describe('per-application availability does not withdraw healthy fixed tools',()
  it.each(['claude-code','codex'] as const)('keeps healthy Mail draft calls available in a new %s run when only selected ZenTao bytes are missing',async runner=>{
   await applications.selections.setAdded('zentao',true,0);await applications.selections.select({projectId,appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
-  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=mail.manifest.tools.find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
+  const builtin=new BuiltinPackageRegistry(support.store),zen=builtin.assertTrusted(builtin.packages.active('zentao')!.packageHash),mail=builtin.assertTrusted(builtin.packages.active('mail')!.packageHash),operation=applicationToolDeclarations(mail.manifest).find(t=>t.name.includes('draft')&&t.name.includes('list'))!;
   expect(operation).toBeTruthy();rmSync(join(support.store.root,zen.relativePath),{recursive:true});
   const created=await create(runner==='codex'?codexId:claudeId),runId=created.task.runtimeSnapshot!.runId,saved=await managed.sessions.get(created.task.id),before=JSON.stringify(saved.snapshot),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(created.task.id);
   try{

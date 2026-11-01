@@ -1,0 +1,13 @@
+
+> smartdd@0.0.9 typecheck /Users/liubu/Documents/ChatGPT/SmartDD-m10
+> tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json
+
+src/main/core/applications/task-capability-launcher.ts(175,19): error TS2322: Type '{ schema: 2; taskId: string; projectId: string; createdAt: string; runner: string; adapterBinding: { id: string; version: string; hash: string; projectionFormatVersion: number; nativeToolNames: { ...; }; }; ... 6 more ...; provenance: "created"; }' is not assignable to type 'CapabilitySessionSnapshot'.
+  Type '{ schema: 2; taskId: string; projectId: string; createdAt: string; runner: string; adapterBinding: { id: string; version: string; hash: string; projectionFormatVersion: number; nativeToolNames: { ...; }; }; ... 6 more ...; provenance: "created"; }' is not assignable to type '{ schema: 2; taskId: string; projectId: string; createdAt: string; runner: "claude-code" | "codex"; adapterBinding: { id: string; version: string; hash: string; projectionFormatVersion: number; nativeToolNames: Record<...>; }; ... 7 more ...; legacyBinding?: { ...; } | undefined; }'.
+    Types of property 'runner' are incompatible.
+      Type 'string' is not assignable to type '"claude-code" | "codex"'.
+src/main/core/applications/task-capability-launcher.ts(176,5): error TS2322: Type '{ schema: 3; packages: { entry: "mcp" | "cli"; capabilityContractMajors: { [k: string]: number; }; appId: string; version: string; packageHash: string; hashAlgorithm: "app-manifest-v1"; hostApi: { ...; }; ... 5 more ...; allowedOperations: string[]; }[]; ... 10 more ...; provenance: "created"; }' is not assignable to type 'CapabilitySessionSnapshot'.
+  Type '{ schema: 3; packages: { entry: "mcp" | "cli"; capabilityContractMajors: { [k: string]: number; }; appId: string; version: string; packageHash: string; hashAlgorithm: "app-manifest-v1"; hostApi: { ...; }; ... 5 more ...; allowedOperations: string[]; }[]; ... 10 more ...; provenance: "created"; }' is not assignable to type '{ schema: 3; packages: { appId: string; version: string; packageHash: string; hashAlgorithm: "app-manifest-v1"; hostApi: { min: number; max: number; }; dataApi: number; runtimeHash: string; toolContractMajors: Record<...>; ... 4 more ...; capabilityContractMajors: Record<...>; }[]; ... 11 more ...; legacyBinding?: {...'.
+    Types of property 'runner' are incompatible.
+      Type 'string' is not assignable to type '"claude-code" | "codex"'.
+ ELIFECYCLE  Command failed with exit code 2.

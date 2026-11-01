@@ -7,6 +7,59 @@
         "zentao"
       ],
       "stopBeforeSwitch": true,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "zentao.object.list",
+          "contractMajors": [
+            1
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_work_list_v1"
+        },
+        {
+          "id": "zentao.object.get",
+          "contractMajors": [
+            1
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_object_get_v1"
+        },
+        {
+          "id": "zentao.resource.read",
+          "contractMajors": [
+            1
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_resource_v1"
+        }
+      ],
       "presentation": {
         "displayName": "禅道",
         "heading": "查看指派给我的 Bug 和研发需求",
@@ -131,6 +184,283 @@
         "smtp"
       ],
       "stopBeforeSwitch": false,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "mail.message.query",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_query_v1"
+        },
+        {
+          "id": "mail.message.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_read_v1"
+        },
+        {
+          "id": "mail.resource.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": [
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_resource_read_v1"
+        },
+        {
+          "id": "mail.draft.list",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_list_v1"
+        },
+        {
+          "id": "mail.draft.get",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_get_v1"
+        },
+        {
+          "id": "mail.draft.create",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "smtp"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_create_v1"
+        },
+        {
+          "id": "mail.draft.update",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "smtp",
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_update_v1"
+        },
+        {
+          "id": "mail.draft.copy",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_copy_v1"
+        },
+        {
+          "id": "mail.reply.create",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": [
+              "smtp"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_reply_create_v1"
+        },
+        {
+          "id": "mail.attachment.import",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_attach_import_v1"
+        },
+        {
+          "id": "mail.send.prepare",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [
+              "smtp"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.send",
+          "legacyTool": "smartdd_mail_send_prepare_v1"
+        },
+        {
+          "id": "mail.send.execute",
+          "semantics": "external-write",
+          "retry": "never",
+          "protection": {
+            "kind": "business-intent",
+            "object": "mail_send_intent",
+            "key": "intentId"
+          },
+          "slots": {
+            "required": [
+              "smtp"
+            ],
+            "conditional": []
+          },
+          "approval": "host-observed-user-authorization",
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.send",
+          "legacyTool": "smartdd_mail_send_execute_v1"
+        },
+        {
+          "id": "mail.send.get",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_send_get_v1"
+        },
+        {
+          "id": "mail.send.cancel",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "business-intent",
+            "object": "mail_send_intent",
+            "key": "intentId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_send_cancel_v1"
+        }
+      ],
       "presentation": {
         "projectPolicy": "sender-identity",
         "displayName": "邮件",

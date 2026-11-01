@@ -6,7 +6,7 @@ module.exports = {
   productName: 'WillYou',
   directories: { output: 'release' },
   artifactName: 'WillYou-${version}-${os}-${arch}.${ext}',
-  files: ['out/**', '!out/native/**', '!out/capability-bundles/**', 'NOTICE', 'licenses/**'],
+  files: ['out/**', '!out/native/**', '!out/capability-bundles/**', '!out/capability-bundles-compatibility-v1/**', 'NOTICE', 'licenses/**'],
   asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
   // Rebuild these two modules explicitly, using the target Electron ABI.
   npmRebuild: false,

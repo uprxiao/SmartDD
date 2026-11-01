@@ -32,12 +32,16 @@ export function parseManifest(value: unknown): ApplicationManifest {
 export function manifestHash(value: unknown): string { return digest(canonicalJson(parseManifest(value))); }
 /** Only compiled module registrations may satisfy this lookup; package data is never authority. */
 export interface ApplicationModuleCatalog { supportsModule(id: string, appId: string, contractMajor: number): boolean }
-export function parsePackageManifest(value: unknown, modules: ApplicationModuleCatalog): ApplicationPackageManifest {
+export function parsePackageDocument(value:unknown):ApplicationPackageManifest{
   const parsed = applicationPackageManifestSchema.safeParse(value);
   if (!parsed.success) throw new ApplicationError('INVALID_PACKAGE', '应用包声明无效：' + parsed.error.issues.map(i => i.message).join('；'));
   const manifest = parsed.data;
-  if (manifest.schema === 'smartdd-app-package-v2' && !modules.supportsModule(manifest.module.id, manifest.appId, manifest.module.contractMajor)) throw new ApplicationError('HOST_INCOMPATIBLE', '应用包没有兼容的受信模块');
   manifest.files.sort((a, b) => compareCodePoints(a.path, b.path));
+  return manifest;
+}
+export function parsePackageManifest(value: unknown, modules: ApplicationModuleCatalog): ApplicationPackageManifest {
+  const manifest=parsePackageDocument(value);
+  if(manifest.schema==='smartdd-app-package-v2'&&!modules.supportsModule(manifest.module.id,manifest.appId,manifest.module.contractMajor))throw new ApplicationError('HOST_INCOMPATIBLE','应用包没有兼容的受信模块');
   return manifest;
 }
 export interface ApplicationBundle { manifest: unknown; files: Readonly<Record<string, Uint8Array>> }
@@ -73,6 +77,6 @@ export function validateBundle(bundle: ApplicationBundle): ValidatedBundle {
 export function validatePackageBundle(bundle: ApplicationBundle, modules: ApplicationModuleCatalog): ValidatedPackageBundle {
   return validateFiles(bundle, parsePackageManifest(bundle.manifest, modules));
 }
-export function assertHostCompatible(manifest: ApplicationManifest): void {
+export function assertHostCompatible(manifest: ApplicationPackageManifest): void {
   if (manifest.hostApi.min > APP_HOST_API || manifest.hostApi.max < APP_HOST_API || manifest.dataApi !== APP_DATA_API) throw new ApplicationError('HOST_INCOMPATIBLE', '当前程序不支持此应用包契约');
 }

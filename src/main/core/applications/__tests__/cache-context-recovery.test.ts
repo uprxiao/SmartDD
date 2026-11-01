@@ -11,7 +11,7 @@ import {recoverApplicationCacheClears,recoverApplicationCacheStatus} from '../ca
 import {recoverApplicationReads} from '../read-context-recovery';
 let f:Awaited<ReturnType<typeof agentFixture>>,reader:FixtureProcessReader,hash:string;
 const owner={pid:77161,startedAt:'darwin-proc-v1:500:61'};
-beforeEach(async()=>{f=await agentFixture();reader=new FixtureProcessReader();const source=new CapabilityBundleSource(resolve('out/capability-bundles'));await new RuntimeRegistry(f.store).install(source.runtime());hash=(await new BuiltinPackageRegistry(f.store).install(source,source.index.apps.find(a=>a.appId==='mail')!)).packageHash;});
+beforeEach(async()=>{f=await agentFixture();reader=new FixtureProcessReader();const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await new RuntimeRegistry(f.store).install(source.runtime());hash=(await new BuiltinPackageRegistry(f.store).install(source,source.index.apps.find(a=>a.appId==='mail')!)).packageHash;});
 afterEach(()=>f.cleanup());
 function recordedContext(kind:'clear'|'status'){
  const action='application.cache.'+kind,semantics=kind==='clear'?'write':'read';

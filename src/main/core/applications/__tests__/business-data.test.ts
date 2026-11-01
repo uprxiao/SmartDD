@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {builtinConfigViews} from '../config-view-registry';
 import {ApplicationError} from '@shared/applications';
 import { execFileSync } from 'node:child_process';
@@ -52,14 +53,14 @@ const smtpConfig=()=>({kind:'smtp' as const,host:'smtp.example.test',port:587,us
 async function start(runner:'claude-code'|'codex',pid:number,projectId='p1'){
  const snapshot=f.plan(runner),application=app.builtin.packages.active('mail')!,pack=app.builtin.packages.get(application.packageHash),manifest=pack.manifest;
  snapshot.projectId=projectId;
- snapshot.packages=[{appId:'mail',version:pack.version,packageHash:pack.packageHash,hashAlgorithm:'app-manifest-v1',hostApi:manifest.hostApi,dataApi:manifest.dataApi,runtimeHash:manifest.runtime.hash,toolContractMajors:Object.fromEntries(manifest.tools.map(t=>[t.name,t.contractMajor])),skills:manifest.skills.map(s=>{const name=applicationNativeSkillName('mail',s.id,pack.packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(manifest,s.path),sourceRelativePath:s.path,projectionPath:join(runner==='codex'?join(f.home,'.agents/skills'):join(f.store.root,'sessions',snapshot.taskId,'claude/plugin/skills'),name,'SKILL.md')};}),bindings:[],allowedOperations:manifest.permissions}];
- const mcp=snapshot.mcp.find(m=>m.kind==='applications')!;mcp.runtimeHash=manifest.runtime.hash;snapshot.adapterBinding.nativeToolNames=Object.fromEntries(manifest.tools.map(t=>[t.name,'mcp__'+mcp.serverName+'__'+t.name]));
+ snapshot.packages=[{appId:'mail',version:pack.version,packageHash:pack.packageHash,hashAlgorithm:'app-manifest-v1',hostApi:manifest.hostApi,dataApi:manifest.dataApi,runtimeHash:manifest.runtime.hash,toolContractMajors:Object.fromEntries(applicationToolDeclarations(manifest).map(t=>[t.name,t.contractMajor])),skills:manifest.skills.map(s=>{const name=applicationNativeSkillName('mail',s.id,pack.packageHash);return{skillId:s.id,nativeName:name,contentHash:applicationSkillContentHash(manifest,s.path),sourceRelativePath:s.path,projectionPath:join(runner==='codex'?join(f.home,'.agents/skills'):join(f.store.root,'sessions',snapshot.taskId,'claude/plugin/skills'),name,'SKILL.md')};}),bindings:[],allowedOperations:manifest.permissions}];
+ const mcp=snapshot.mcp.find(m=>m.kind==='applications')!;mcp.runtimeHash=manifest.runtime.hash;snapshot.adapterBinding.nativeToolNames=Object.fromEntries(applicationToolDeclarations(manifest).map(t=>[t.name,'mcp__'+mcp.serverName+'__'+t.name]));
  const session=await f.sessions.create(snapshot,f.home),run=await runs.reserve({taskId:snapshot.taskId,snapshotHash:session.pointer.snapshotHash,bindings:[]});owned.push(run);await run.prepare();await run.cli.arm();reader.identities.set(pid,'darwin-proc-v1:2026:'+pid);await run.cli.attach(pid);return run;
 }
 beforeAll(()=>{
  build=mkdtempSync(join(tmpdir(),'willyou-m10-business-build-'));const runtime=join(build,'runtime');
  execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',runtime],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
- execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(runtime,'mcp-bridge.cjs')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});source=new CapabilityBundleSource(join(build,'bundles'));
+ execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(runtime,'mcp-bridge.cjs'),'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});source=new CapabilityBundleSource(join(build,'bundles'));
 });
 afterAll(()=>rmSync(build,{recursive:true,force:true}));
 beforeEach(async()=>{

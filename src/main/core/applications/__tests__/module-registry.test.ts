@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { resolve } from 'node:path';
@@ -60,12 +61,12 @@ describe('compiled application module composition', () => {
     expect(() => views.resolve({...key,targetApiMajor:2}, source, ['local-readonly'])).toThrow(ApplicationError);
   });
   it('normalizes all 17 distributed v1 tools through their original business semantics', () => {
-    const source = new CapabilityBundleSource(resolve('out/capability-bundles'));
+    const source = new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));
     let count = 0;
     for (const entry of source.index.apps) {
       const manifest = parseManifest(source.application(entry).manifest);
       const capabilities = builtinApplicationModules.legacyCapabilities(manifest);
-      expect(capabilities.map(c => c.binding.mcp!.tool)).toEqual(manifest.tools.map(t => t.name));
+      expect(capabilities.map(c => c.binding.mcp!.tool)).toEqual(applicationToolDeclarations(manifest).map(t => t.name));
       expect(capabilities.every(c => c.contractMajor === 1)).toBe(true);
       count += capabilities.length;
       if (entry.appId === 'mail') {

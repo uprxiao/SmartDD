@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createRequire } from 'node:module';
@@ -23,18 +24,18 @@ import { CapabilityBundleSource } from '../bundle-source';
 import { BuiltinPackageRegistry } from '../builtin-package-registry';
 import { ApplicationAdapterRegistry, type ApplicationDataHost } from '../application-adapter-registry';
 import { ApplicationToolService, type HostToolOperation } from '../tool-service';
-import { canonicalJson, digest, manifestHash } from '../manifest';
+import { canonicalJson, digest, manifestHash,parseManifest } from '../manifest';
 import { ResourceStore } from '../resource-store';
 import { RuntimeRegistry } from '../runtime-registry';
 import { FixtureProcessReader, runFixture } from './run-fixture';
 
 let build:string,output:string,runtimeEntry:string,source:CapabilityBundleSource,root:string,sqlite:Database.Database,store:ResourceStore,builtin:BuiltinPackageRegistry;
 const cleanups:Array<()=>void|Promise<void>>=[];
-const verifyBundles=createRequire(import.meta.url)('../../../../../scripts/applications/verify-bundles.cjs').verifyCapabilityBundles as (root:string,version:string)=>{apps:{appId:string;skills:number;tools:number}[]};
+const verifyBundles=createRequire(import.meta.url)('../../../../../scripts/applications/verify-bundles.cjs').verifyCapabilityBundles as (root:string,version:string,options?:{allowTestFixture:boolean})=>{apps:{appId:string;skills:number;tools:number}[]};
 beforeAll(()=>{
   build=mkdtempSync(join(tmpdir(),'willyou-m10-builtin-build-'));output=join(build,'bundles');runtimeEntry=join(build,'runtime/mcp-bridge.cjs');
   execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
-  execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',output,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
+  execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',output,runtimeEntry,'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
   source=new CapabilityBundleSource(output);
 });
 afterAll(()=>rmSync(build,{recursive:true,force:true}));
@@ -73,7 +74,7 @@ function previousMailDistribution():CapabilityBundleSource{
   });
 }
 async function realRun(appId='zentao',distribution=source){
-  const selected=distribution.application(distribution.index.apps.find(a=>a.appId===appId)!),reader=new FixtureProcessReader(),f=await runFixture(reader,{application:true,runtime:readFileSync(runtimeEntry),applicationBundle:{manifest:selected.manifest,files:{...selected.files}}});
+  const selected=distribution.application(distribution.index.apps.find(a=>a.appId===appId)!),reader=new FixtureProcessReader(),f=await runFixture(reader,{application:true,runtime:readFileSync(runtimeEntry),applicationBundle:{manifest:parseManifest(selected.manifest),files:{...selected.files}}});
   cleanups.push(()=>f.cleanup());const owned=await f.create();cleanups.push(()=>owned.cli.exited());await owned.prepare();await owned.cli.arm();reader.identities.set(202601,'darwin-proc-v1:2026:1');await owned.cli.attach(202601);
   const trusted=new BuiltinPackageRegistry(f.store);await trusted.install(distribution,distribution.index.apps.find(a=>a.appId===appId)!);return{f,owned,trusted,selected};
 }
@@ -93,7 +94,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
    expect(await call({queryDays:100})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});expect(count).toBe(1);
    await new BuiltinPackageRegistry(f.store).install(source,entry('mail'));
    expect(await call({})).toMatchObject({status:'ok',value:result});expect(f.runs.assertActive(owned.runId).snapshot.packages.find(pack=>pack.appId==='mail')?.version).toBe('1.0.3');
-   const current=bundle('mail'),tool=current.manifest.tools.find(tool=>tool.name==='smartdd_mail_query_v1')!,validator=new AjvJsonSchemaValidator().getValidator(JSON.parse(current.files[tool.inputSchemaPath].toString('utf8')) as JsonSchemaType);
+   const current=bundle('mail'),tool=applicationToolDeclarations(current.manifest).find(tool=>tool.name==='smartdd_mail_query_v1')!,validator=new AjvJsonSchemaValidator().getValidator(JSON.parse(current.files[tool.inputSchemaPath].toString('utf8')) as JsonSchemaType);
    expect(validator({queryDays:100}).valid).toBe(true);for(const queryDays of [0,101,1.5,'100'])expect(validator({queryDays}).valid).toBe(false);
  },15000);
  it('retains approved package identity while unready without turning metadata into executable trust',async()=>{
@@ -101,33 +102,33 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
  });
 
  it('builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime',()=>{
-   expect(verifyBundles(output,source.index.build.appVersion).apps.map(a=>({id:a.appId,skills:a.skills,tools:a.tools}))).toEqual([{id:'zentao',skills:2,tools:3},{id:'mail',skills:1,tools:14}]);
-   const apps=source.applications();expect(apps.map(a=>a.manifest.appId).sort()).toEqual(['mail','zentao']);expect(apps.reduce((n,a)=>n+a.manifest.skills.length,0)).toBe(3);expect(apps.reduce((n,a)=>n+a.manifest.tools.length,0)).toBe(17);
+   expect(verifyBundles(output,source.index.build.appVersion,{allowTestFixture:true}).apps.map(a=>({id:a.appId,skills:a.skills,tools:a.tools}))).toEqual([{id:'zentao',skills:2,tools:3},{id:'mail',skills:1,tools:14}]);
+   const apps=source.applications();expect(apps.map(a=>a.manifest.appId).sort()).toEqual(['mail','zentao']);expect(apps.reduce((n,a)=>n+a.manifest.skills.length,0)).toBe(3);expect(apps.reduce((n,a)=>n+applicationToolDeclarations(a.manifest).length,0)).toBe(17);
    for(const app of apps){expect(app.manifest.runtime.hash).toBe(source.index.runtimes[0].hash);expect(app.manifest.files.some(f=>f.path.endsWith('/references/'+(app.manifest.appId==='mail'?'sending.md':'scope.md')))).toBe(true);expect(app.files['adapter/operations.json']).toBeInstanceOf(Buffer);for(const skill of app.manifest.skills)expect(app.files[skill.entry].toString('utf8')).toContain('smartdd_');}
-   const again=join(build,'second-bundles');execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',again,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});expect(new CapabilityBundleSource(again).index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);
+   const again=join(build,'second-bundles');execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',again,runtimeEntry,'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});expect(new CapabilityBundleSource(again).index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);
  });
 
  it('finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls',async()=>{
    const bin=join(root,'private-metadata-bin'),observation=join(root,'metadata-lock-mode.txt');mkdirSync(bin);
    const script=['#!/bin/sh','printf "%s" "$GIT_OPTIONAL_LOCKS" > "$WY_METADATA_LOCK_OBSERVATION"','exec /bin/sleep 20',''].join('\n');
    writeFileSync(join(bin,'git'),script,{mode:0o700});const target=join(root,'bounded-metadata-bundles');
-   await promisify(execFile)(process.execPath,['scripts/applications/build-bundles.mjs',target,runtimeEntry],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',PATH:bin+delimiter+process.env.PATH,WY_METADATA_LOCK_OBSERVATION:observation},timeout:10000});
-   expect(readFileSync(observation,'utf8')).toBe('0');const prepared=new CapabilityBundleSource(target);expect(prepared.index.build.commit).toBeNull();expect(prepared.index.build.dirty).toBe(true);expect(prepared.index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);expect(verifyBundles(target,source.index.build.appVersion).apps).toHaveLength(2);
+   await promisify(execFile)(process.execPath,['scripts/applications/build-bundles.mjs',target,runtimeEntry,'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1',PATH:bin+delimiter+process.env.PATH,WY_METADATA_LOCK_OBSERVATION:observation},timeout:10000});
+   expect(readFileSync(observation,'utf8')).toBe('0');const prepared=new CapabilityBundleSource(target);expect(prepared.index.build.commit).toBeNull();expect(prepared.index.build.dirty).toBe(true);expect(prepared.index.build.resourceSetHash).toBe(source.index.build.resourceSetHash);expect(verifyBundles(target,source.index.build.appVersion,{allowTestFixture:true}).apps).toHaveLength(2);
  });
 
  it('keeps model-visible built-in tool identities within the64-byte portable budget without changing the fixed server name',()=>{
    const server=applicationMcpServerName('a'.repeat(64));expect(server).toBe('wy_'+'a'.repeat(24));
-   for(const app of source.applications())for(const tool of app.manifest.tools){
+   for(const app of source.applications())for(const tool of applicationToolDeclarations(app.manifest)){
      const native=`mcp__${server}__${tool.name}`;expect(Buffer.byteLength(native),native).toBeLessThanOrEqual(64);
    }
  });
 
  it('compiles all original input/output contracts and rejects injected scope,authorization and out-of-budget resource inputs',()=>{
    const validator=new AjvJsonSchemaValidator();
-   for(const app of source.applications())for(const tool of app.manifest.tools)for(const path of [tool.inputSchemaPath,tool.outputSchemaPath])expect(validator.getValidator(JSON.parse(app.files[path].toString('utf8')) as JsonSchemaType)).toBeTypeOf('function');
-   const mail=bundle('mail'),send=mail.manifest.tools.find(t=>t.name==='smartdd_mail_send_execute_v1')!,check=validator.getValidator(JSON.parse(mail.files[send.inputSchemaPath].toString('utf8')) as JsonSchemaType),input={intentId:randomUUID(),expectedReviewHash:'a'.repeat(64)};
+   for(const app of source.applications())for(const tool of applicationToolDeclarations(app.manifest))for(const path of [tool.inputSchemaPath,tool.outputSchemaPath])expect(validator.getValidator(JSON.parse(app.files[path].toString('utf8')) as JsonSchemaType)).toBeTypeOf('function');
+   const mail=bundle('mail'),send=applicationToolDeclarations(mail.manifest).find(t=>t.name==='smartdd_mail_send_execute_v1')!,check=validator.getValidator(JSON.parse(mail.files[send.inputSchemaPath].toString('utf8')) as JsonSchemaType),input={intentId:randomUUID(),expectedReviewHash:'a'.repeat(64)};
    expect(check(input).valid).toBe(true);for(const key of ['projectId','taskId','packageHash','approved','authorizationRef'])expect(check({...input,[key]:key==='approved'?true:'spoofed'}).valid).toBe(false);
-   const resource=mail.manifest.tools.find(t=>t.name==='smartdd_mail_resource_read_v1')!,read=validator.getValidator(JSON.parse(mail.files[resource.inputSchemaPath].toString('utf8')) as JsonSchemaType);
+   const resource=applicationToolDeclarations(mail.manifest).find(t=>t.name==='smartdd_mail_resource_read_v1')!,read=validator.getValidator(JSON.parse(mail.files[resource.inputSchemaPath].toString('utf8')) as JsonSchemaType);
    expect(read({resource:{id:randomUUID(),revision:'a'.repeat(64),mediaType:'text/plain',size:1},offset:0,length:262145}).valid).toBe(false);
  });
  it('prepares first defaults without adding applications,creating accounts or enabling projects; restarting is idempotent',async()=>{
@@ -170,7 +171,7 @@ describe('complete trusted built-in mail and ZenTao packages',()=>{
  });
 
  it('rejects a packaged tree with missing contracts or extra files instead of accepting directory existence',()=>{
-   const copy=join(root,'packaged-copy');cpSync(output,copy,{recursive:true});const file=join(copy,entry('mail').path,'adapter/operations.json'),bytes=readFileSync(file);rmSync(file);expect(()=>verifyBundles(copy,source.index.build.appVersion)).toThrow('inventory');writeFileSync(file,bytes);writeFileSync(join(copy,entry('mail').path,'unlisted.txt'),'extra');expect(()=>verifyBundles(copy,source.index.build.appVersion)).toThrow('inventory');
+   const copy=join(root,'packaged-copy');cpSync(output,copy,{recursive:true});const file=join(copy,entry('mail').path,'adapter/operations.json'),bytes=readFileSync(file);rmSync(file);expect(()=>verifyBundles(copy,source.index.build.appVersion,{allowTestFixture:true})).toThrow('inventory');writeFileSync(file,bytes);writeFileSync(join(copy,entry('mail').path,'unlisted.txt'),'extra');expect(()=>verifyBundles(copy,source.index.build.appVersion,{allowTestFixture:true})).toThrow('inventory');
  });
 
  it('keeps exact historical approval after the original distribution is gone,without inferring a latest package',async()=>{

@@ -21,6 +21,7 @@ import {verifyLegacyDiscoveryEntry,assertDiscoveryPath,legacyDiscoveryEntry} fro
 import { PackageRegistry } from './package-registry';
 import { applicationSkillContentHash } from './session-registry';
 import { projectSkillName, standardNativeSkillName } from './session-projector';
+import {renderApplicationSkill,type ApplicationSkillDelivery} from './application-skill-template';
 import {resourceGcPlan,type ResourceGcPlan} from './resource-gc-plan';
 const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.uuid(), name = z.string().max(128).regex(/^smartdd-[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const ownerSchema = z.object({ storeId: uuid, uFingerprint: hash, instanceId: uuid, pid: z.number().int().positive(), startedAt: z.string().min(1).max(128) }).strict();
@@ -42,6 +43,7 @@ export interface DiscoveryGcContext {
  replaceCatalog(operationId:string,original:Catalog,entries:Entry[]):void;
 }
 export interface DiscoveryProjectionSource {
+    delivery?:ApplicationSkillDelivery;
     format?: 'legacy-tree-v1';
     nativeName: string;
     sourceHash: string;
@@ -290,7 +292,7 @@ export class DiscoveryCatalog {
                 const relativePath='.agents/skills/'+expected,entry:Entry=legacyDiscoveryEntry(this.store.storeId,this.home,skillId,source.sourceHash);return{entry,relativePath,source,hash:source.sourceHash,files:source.files,bundle:null};
             }
             if(!/^smartdd-[as]-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.nativeName)||source.nativeName.length>64)throw new ApplicationError('INVALID_INPUT','新格式投影名称无效');
-            const bundle = ownedBundle({ kind: 'codex-agent-projection-v1', homeId: this.homeId, nativeName: source.nativeName, sourceHash: source.sourceHash, sourceResourceId: source.sourceResourceId }, source.files, source.executables), relativePath = '.agents/skills/' + source.nativeName;
+            const bundle = ownedBundle({ kind: 'codex-agent-projection-v1', homeId: this.homeId, nativeName: source.nativeName, sourceHash: source.sourceHash, sourceResourceId: source.sourceResourceId,...(source.delivery?{delivery:source.delivery}:{}) }, source.files, source.executables), relativePath = '.agents/skills/' + source.nativeName;
             const entry: Entry = { resourceId: 'h-projection:' + digest(canonicalJson({ homeId: this.homeId, storeId: this.store.storeId, nativeName: source.nativeName, hash: bundle.hash })), storeId: this.store.storeId, path: join(this.home, relativePath, 'SKILL.md'), nativeName: source.nativeName, sourceHash: source.sourceHash, projectionHash: bundle.hash };
             return { entry, relativePath, source, hash:bundle.hash,files:bundle.files,bundle };
         }).sort((a, b) => compareCodePoints(a.entry.nativeName, b.entry.nativeName));
@@ -323,6 +325,7 @@ export class DiscoveryCatalog {
                 if (f.executable)
                     executables.add(n);
             }
+            if(files['SKILL.md'])files['SKILL.md']=renderApplicationSkill(files['SKILL.md'],pkg.manifest,skill.id,plan.source.delivery);
         }
         else
             throw new ApplicationError('INVALID_PACKAGE', '不支持的共享投影来源');

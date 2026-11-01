@@ -18,7 +18,7 @@ describe.skipIf(process.platform!=='darwin')('actual activation publisher termin
  beforeAll(async()=>{
   build=mkdtempSync(join(tmpdir(),'willyou-activation-child-'));source=join(build,'bundles');helper=resolve('out/native/willyou-process-identity');
   execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});
-  execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',source,join(build,'runtime/mcp-bridge.cjs')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});
+  execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',source,join(build,'runtime/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});
   await viteBuild({configFile:false,publicDir:false,logLevel:'error',resolve:{alias:{'@shared':resolve('src/shared'),'@root':resolve('.')}},ssr:{noExternal:true},build:{ssr:resolve('src/main/core/applications/__tests__/fixtures/activation-publisher-process.ts'),target:'node22',outDir:build,emptyOutDir:false,minify:false,rollupOptions:{external:id=>id==='better-sqlite3'||id.startsWith('node:')||builtinModules.includes(id),output:{format:'cjs',entryFileNames:'child.cjs',inlineDynamicImports:true}}}});
  },30000);
  afterAll(()=>rmSync(build,{recursive:true,force:true}));

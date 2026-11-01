@@ -2,7 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
-import { assertHostCompatible, canonicalJson, digest, parseManifest, validateBundle, type ApplicationBundle, type ValidatedBundle } from './manifest';
+import { assertHostCompatible, canonicalJson, digest, parsePackageManifest, validatePackageBundle, type ApplicationBundle, type ValidatedPackageBundle,type ApplicationModuleCatalog } from './manifest';
+import {applicationToolDeclarations} from '@shared/application-capabilities';
+import {builtinApplicationModules} from './modules';
 import { verifyPackageTree, writePackageTree } from './package-files';
 import { withResourceLock } from './resource-lock';
 import type { PublishResource, ResourceStore } from './resource-store';
@@ -14,7 +16,7 @@ export interface ApplicationDataMigration { appId: string; id: string; checksum:
 /** Application selection and installation share one resource coordinator and SQLite transaction. */
 export class PackageRegistry {
   private readonly runtimes: RuntimeRegistry;
-  constructor(readonly store: ResourceStore, private readonly hostBuild: string, private readonly migrations: ApplicationDataMigration[] = []) { this.runtimes = new RuntimeRegistry(store); }
+  constructor(readonly store: ResourceStore, private readonly hostBuild: string, private readonly migrations: ApplicationDataMigration[] = [],private readonly modules:ApplicationModuleCatalog=builtinApplicationModules) { this.runtimes = new RuntimeRegistry(store); }
   list(): InstalledApplicationPackage[] {
     const rows = this.store.sqlite.prepare('SELECT package_hash AS hash FROM capability_packages ORDER BY app_id,installed_at,version').all() as { hash: string }[];
     return rows.map(row => this.get(row.hash));
@@ -23,7 +25,7 @@ export class PackageRegistry {
     const row = this.store.sqlite.prepare(`SELECT package_hash AS packageHash,app_id AS appId,version,resource_id AS resourceId,relative_path AS relativePath,manifest_json AS manifestJson,installed_at AS installedAt FROM capability_packages WHERE package_hash=?`).get(hash) as (Omit<InstalledApplicationPackage, 'manifest' | 'state'> & { manifestJson: string }) | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND', '应用版本记录不存在');
     const resource = this.store.get(row.resourceId);
-    const manifest = parseManifest(JSON.parse(row.manifestJson));
+    const manifest = parsePackageManifest(JSON.parse(row.manifestJson),this.modules);
     if (digest(canonicalJson(manifest)) !== hash || manifest.appId !== row.appId || manifest.version !== row.version || resource.contentHash !== hash || resource.kind !== 'application-package' || resource.relativePath !== row.relativePath) throw new ApplicationError('HASH_MISMATCH', '应用版本记录与内容身份不一致');
     const { manifestJson: _, ...record } = row;
     return { ...record, manifest, state: resource.state };
@@ -31,8 +33,8 @@ export class PackageRegistry {
   active(appId: string): { packageHash: string; generation: number } | null {
     return (this.store.sqlite.prepare('SELECT package_hash AS packageHash,activation_generation AS generation FROM capability_active_packages WHERE app_id=?').get(appId) as { packageHash: string; generation: number } | undefined) ?? null;
   }
-  private storeContracts(bundle: ValidatedBundle): void {
-    for (const tool of bundle.manifest.tools) {
+  private storeContracts(bundle: ValidatedPackageBundle): void {
+    for (const tool of applicationToolDeclarations(bundle.manifest)) {
       const input = bundle.files[tool.inputSchemaPath].toString('utf8'), output = bundle.files[tool.outputSchemaPath].toString('utf8');
       const old = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(bundle.packageHash,tool.name) as { input_source: string;output_source: string } | undefined;
       if (old && (old.input_source !== input || old.output_source !== output)) throw new ApplicationError('HASH_MISMATCH','固定工具契约记录已改变，不能静默覆盖');
@@ -41,13 +43,13 @@ export class PackageRegistry {
   }
   /** Retained exact source text is independently bound to the original manifest file hashes. */
   toolContractSources(hash: string,toolName: string): { input: string;output: string } {
-    const application = this.get(hash), tool = application.manifest.tools.find(t => t.name === toolName);
+    const application = this.get(hash), tool = applicationToolDeclarations(application.manifest).find(t => t.name === toolName);
     const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
     if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
     for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');
     return { input: row.input_source,output: row.output_source };
   }
-  private specification(bundle: ValidatedBundle): PublishResource {
+  private specification(bundle: ValidatedPackageBundle): PublishResource {
     assertHostCompatible(bundle.manifest);
     this.runtimes.verify(bundle.manifest.runtime.hash, bundle.manifest.runtime);
     const { appId, version } = bundle.manifest, relativePath = `apps/${appId}/${version}/${bundle.packageHash}`;
@@ -64,7 +66,7 @@ export class PackageRegistry {
       } };
   }
   async install(source: ApplicationBundle): Promise<InstalledApplicationPackage> {
-    const bundle = validateBundle(source);
+    const bundle = validatePackageBundle(source,this.modules);
     const old = this.store.sqlite.prepare('SELECT package_hash AS hash FROM capability_packages WHERE app_id=? AND version=?').get(bundle.manifest.appId, bundle.manifest.version) as { hash: string } | undefined;
     if (old && old.hash !== bundle.packageHash) throw new ApplicationError('VERSION_CONFLICT', '同一应用版本已有其他内容，需使用新版本');
     await this.store.publish(this.specification(bundle));
@@ -73,7 +75,7 @@ export class PackageRegistry {
     return this.get(bundle.packageHash);
   }
   async recoverInstall(source: ApplicationBundle, operationId: string): Promise<InstalledApplicationPackage> {
-    const bundle = validateBundle(source), recorded = this.get(bundle.packageHash);
+    const bundle = validatePackageBundle(source,this.modules), recorded = this.get(bundle.packageHash);
     if (recorded.resourceId !== 'app:' + bundle.packageHash) throw new ApplicationError('OWNERSHIP_CONFLICT', '恢复目标与原版本不一致');
     await this.store.recover(this.specification(bundle), operationId);
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => this.storeContracts(bundle)).immediate());

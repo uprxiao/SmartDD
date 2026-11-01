@@ -1,3 +1,5 @@
+import type {ApplicationPackageManifest} from '@shared/application-capabilities';
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {storedCapabilitySessionSnapshotSchema as capabilitySessionSnapshotSchema} from '@shared/application-session-v3';
 import { randomUUID } from 'node:crypto';
 import { closeSync, constants, existsSync, fsyncSync, linkSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -12,6 +14,7 @@ import { withResourceLock } from './resource-lock';
 import { PackageRegistry } from './package-registry';
 import { RuntimeRegistry } from './runtime-registry';
 import {assertLegacySessionSource} from './legacy-session-source';
+import {builtinApplicationModules} from './modules';
 const snapshotFailureMessages={json:'固定能力快照无法解析，保留原记录，不重建选择',shape:'固定能力快照结构无效，保留原记录，不重建选择',hash:'固定能力快照摘要不符，保留原记录，不重建选择',identity:'固定能力快照身份不符，保留原记录，不重建选择'} as const;
 class SnapshotReadFailure extends Error {constructor(readonly kind:keyof typeof snapshotFailureMessages){super(kind);}}
 interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: string;snapshot_hash: string;created_at: string;legacy_status: string;retention_state: 'active' | 'tombstone' | 'hold' }
@@ -67,14 +70,19 @@ export class CapabilitySessionRegistry {
   private validatePackages(snapshot: CapabilitySessionSnapshot): void {
     for (const p of snapshot.packages) {
       const installed = this.packages.get(p.packageHash), manifest = installed.manifest;
-      const contracts = Object.fromEntries(manifest.tools.map(t => [t.name,t.contractMajor]));
-      if(snapshot.schema===3&&snapshot.packages.find(selected=>selected.packageHash===p.packageHash)?.entry!=='mcp')throw new ApplicationError('HOST_INCOMPATIBLE','旧应用包只能保持原MCP入口');
+      const contracts = Object.fromEntries(applicationToolDeclarations(manifest).map(t => [t.name,t.contractMajor]));
+      if(manifest.schema==='smartdd-app-package-v2'&&snapshot.schema!==3)throw new ApplicationError('HOST_INCOMPATIBLE','新应用需要传输无关的快照格式');
+      if(snapshot.schema===3){
+        const selected=snapshot.packages.find(selected=>selected.packageHash===p.packageHash)!;
+        const capabilities=Object.fromEntries(builtinApplicationModules.capabilityViews(manifest).map(c=>[c.id,c.contractMajor]));
+        if(selected.entry!==(manifest.schema==='smartdd-app-package-v2'?manifest.entry:'mcp')||canonicalJson(selected.capabilityContractMajors)!==canonicalJson(capabilities))throw new ApplicationError('SNAPSHOT_CORRUPT','原应用的能力契约或入口与固定声明不同');
+      }
       if (p.appId !== manifest.appId || p.version !== manifest.version || p.runtimeHash !== manifest.runtime.hash || p.dataApi !== manifest.dataApi || canonicalJson(p.hostApi) !== canonicalJson(manifest.hostApi) || canonicalJson(p.toolContractMajors) !== canonicalJson(contracts) || p.allowedOperations.some(op => !manifest.permissions.includes(op)) || p.skills.length !== manifest.skills.length) throw new ApplicationError('SNAPSHOT_CORRUPT','快照的应用版本、工具或动作与原包不同');
       for (const skill of p.skills) {
         const source = manifest.skills.find(s => s.id === skill.skillId);
         if (!source || source.path !== skill.sourceRelativePath || applicationSkillContentHash(manifest,source.path) !== skill.contentHash) throw new ApplicationError('SNAPSHOT_CORRUPT','固定Skill完整目录摘要与原包不一致');
       }
-      const bridge = snapshot.mcp.find(m => m.kind === 'applications'); if (bridge?.protocolMajor !== manifest.runtime.protocolMajor) throw new ApplicationError('HOST_INCOMPATIBLE','固定业务桥协议与包契约不同');
+      const bridge = snapshot.mcp.find(m => m.kind === 'applications'); if (applicationToolDeclarations(manifest).length&&bridge?.protocolMajor !== manifest.runtime.protocolMajor) throw new ApplicationError('HOST_INCOMPATIBLE','固定业务桥协议与包契约不同');
     }
   }
   private read(taskId: string): StoredCapabilitySession {

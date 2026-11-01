@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApplicationError, type ApplicationManifestV1 } from '@shared/applications';
-import { applicationCapabilityViews, type LegacyCapabilityResolver, type LegacyCapabilityPolicy } from '@shared/application-capabilities';
+import { applicationCapabilityViews, type LegacyCapabilityResolver, type LegacyCapabilityPolicy,type ApplicationPackageManifest } from '@shared/application-capabilities';
 import type { ApplicationPresentation, ApplicationProviderPresentation } from '@shared/application-presentation';
 import type { HostApplicationDefinitions, HostProvider, HostedConfiguration, HostedIdentity } from '../host-application-registry';
 import type { ApplicationModuleCatalog } from '../manifest';
@@ -47,6 +47,7 @@ export interface TrustedApplicationModule {
   providers: readonly TrustedApplicationProvider[];
   legacyPolicy: LegacyCapabilityResolver;
   capabilities: Readonly<Record<string, ApplicationModuleCapability>>;
+  legacyToolNames?:Readonly<Record<string,string>>;
   connectionNotice?(store: ResourceStore, snapshot: CapabilitySessionSnapshot, appId: string): string | null;
   createData(services: ApplicationModuleServices): ApplicationModuleData;
 }
@@ -69,7 +70,7 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
       if (!module.slots.includes(module.presentation.defaultProvider)) throw invalid();
       this.modules.set(module.appId, module);
       for(const [id,capability] of Object.entries(module.capabilities)){
-        if(id!==capability.id||!id.startsWith(module.appId+'.')||!capability.method.startsWith(module.appId+'.')||!capability.permission.startsWith(module.appId+'.')||!capability.contractMajors.length||capability.contractMajors.some(major=>!module.contractMajors.includes(major))||capability.semantics!=='read'&&(!capability.protection||capability.retry!=='never')||capability.semantics==='external-write'&&!capability.approval)throw invalid();
+        if(id!==capability.id||!id.startsWith(module.appId+'.')||!capability.method.startsWith(module.appId+'.')||!capability.permission.startsWith(module.appId+'.')||!capability.contractMajors.length||capability.contractMajors.some(major=>!Number.isSafeInteger(major)||major<1)||capability.semantics!=='read'&&(!capability.protection||capability.retry!=='never')||capability.semantics==='external-write'&&!capability.approval)throw invalid();
       }
       for (const provider of module.providers) {
         if (provider.appId !== module.appId || this.providers.has(provider.id) || !module.slots.includes(provider.id) || provider.presentation.id !== provider.id || provider.presentation.appId !== module.appId || provider.presentation.initial.kind !== provider.id || typeof provider.verify !== 'function') throw invalid();
@@ -104,6 +105,7 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
   }
   supportsModule(id: string, appId: string, major: number): boolean { return id === appId && !!this.modules.get(id)?.contractMajors.includes(major); }
   legacyCapabilities(manifest: ApplicationManifestV1) { return applicationCapabilityViews(manifest, this.module(manifest.appId).legacyPolicy); }
+  capabilityViews(manifest:ApplicationPackageManifest){return applicationCapabilityViews(manifest,this.module(manifest.appId).legacyPolicy);}
   capability(appId:string,id:string,contractMajor:number):ApplicationModuleCapability{
     const value=this.module(appId).capabilities[id];
     if(!value||!value.contractMajors.includes(contractMajor))throw new ApplicationError('CAPABILITY_UNAVAILABLE','受信模块没有此能力契约');

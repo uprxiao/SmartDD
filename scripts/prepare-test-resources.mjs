@@ -25,4 +25,5 @@ if(identityHelper){
 }
 await buildApplicationRuntime(join(output,'applications'));
 execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(output,'capability-bundles'),join(output,'applications/mcp-bridge.cjs')],{stdio:'inherit'});
+execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(output,'capability-bundles-compatibility-v1'),join(output,'applications/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{stdio:'inherit'});
 console.log(JSON.stringify({prepared:'software-test resources',output,platform:process.platform,arch:process.arch,nativeProbe,packagedApp:false}));

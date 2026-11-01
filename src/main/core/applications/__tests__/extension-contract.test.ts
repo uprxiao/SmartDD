@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -19,7 +20,7 @@ function fakeBundle(appId = 'extfixture') {
   const value = fixtureBundle();
   Object.assign(value.manifest, { appId, displayName: 'Isolated extension', permissions: [appId + '.read'] });
   value.manifest.connectionContracts[0].providerId = appId;
-  Object.assign(value.manifest.tools[0], { name: 'smartdd_' + appId + '_query_v1', permission: appId + '.read' });
+  Object.assign(applicationToolDeclarations(value.manifest)[0], { name: 'smartdd_' + appId + '_query_v1', permission: appId + '.read' });
   value.manifest.runtime.hash = runtimeHash;
   return value;
 }
@@ -36,7 +37,7 @@ describe('R09 current extension boundaries without a third-party-code loader', (
     for (const id of ['extfixture', 'otherfixture']) {
       const source = fakeBundle(id), valid = validateBundle(source), installed = await packages.install(source);
       expect(installed.packageHash).toBe(valid.packageHash);
-      expect(installed.manifest.tools.map(t => ({ name: t.name, permission: t.permission }))).toEqual([{ name: 'smartdd_' + id + '_query_v1', permission: id + '.read' }]);
+      expect(applicationToolDeclarations(installed.manifest).map(t => ({ name: t.name, permission: t.permission }))).toEqual([{ name: 'smartdd_' + id + '_query_v1', permission: id + '.read' }]);
       expect(packages.active(id)).toBeNull();
       expect(applicationIdSchema.safeParse(id).success).toBe(false);
     }
@@ -53,7 +54,7 @@ describe('R09 current extension boundaries without a third-party-code loader', (
   });
 
   it('rejects duplicate tool IDs and missing complete-file entries before installation', async () => {
-    const duplicate = fakeBundle(); duplicate.manifest.tools.push(structuredClone(duplicate.manifest.tools[0]));
+    const duplicate = fakeBundle(); applicationToolDeclarations(duplicate.manifest).push(structuredClone(applicationToolDeclarations(duplicate.manifest)[0]));
     await expect(packages.install(duplicate)).rejects.toMatchObject({ code: 'INVALID_PACKAGE' });
     const missing = fakeBundle(); delete missing.files['skills/query/SKILL.md'];
     await expect(packages.install(missing)).rejects.toMatchObject({ code: 'INVALID_PACKAGE' });
@@ -79,7 +80,7 @@ describe('R09 current extension boundaries without a third-party-code loader', (
 
   it('rejects the historical effect field instead of treating a research declaration as an executable contract', async () => {
     const source = fakeBundle();
-    const manifest = { ...source.manifest, tools: source.manifest.tools.map(tool => ({ ...tool, effect: 'external-write' })) };
+    const manifest = { ...source.manifest, tools: applicationToolDeclarations(source.manifest).map(tool => ({ ...tool, effect: 'external-write' })) };
     await expect(packages.install({ ...source, manifest })).rejects.toMatchObject({ code: 'INVALID_PACKAGE' });
     expect(packages.list()).toHaveLength(0);
   });

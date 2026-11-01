@@ -1,0 +1,592 @@
+{
+  "schema": "m11-module-form-regression-v1",
+  "branch": "feature/0.1.0",
+  "sourceCommit": "539f5e875ddfaf42a7f089eca87c58280b6f2938",
+  "sourceDirty": true,
+  "sourceManifestSha256": "e178cfbb8b74bd336bef61dc41373d73cdc068f4cd43c448c9c79dfd9679f46c",
+  "driverSha256": "62effa3a71bea9d869b4a1aa857da16909597a43de496dab53a334d1d9cb7a63",
+  "formalCasePassesAdded": 0,
+  "root": "/private/tmp/willyou-m11-module-form-validation-bP3Oq6",
+  "userData": "/private/tmp/willyou-m11-module-form-validation-bP3Oq6/userdata",
+  "startedAt": "2026-11-01T05:21:13.123Z",
+  "asar": "2530dac7f8c2544135ad4b818dd2800cab9f8f4198b04e6e203417e60778a989",
+  "status": "passed-local-boundaries",
+  "theme": "ydark",
+  "checks": [
+    {
+      "name": "SMTP empty fields stay local",
+      "at": "2026-11-01T05:21:16.130Z"
+    },
+    {
+      "name": "SMTP valid nonsecret fields but missing required credential stay local",
+      "at": "2026-11-01T05:21:16.177Z"
+    },
+    {
+      "name": "SMTP invalid host smtp.invalid.test?account=fixture",
+      "at": "2026-11-01T05:21:16.310Z"
+    },
+    {
+      "name": "SMTP invalid host smtp.invalid.test#fragment",
+      "at": "2026-11-01T05:21:16.327Z"
+    },
+    {
+      "name": "SMTP invalid host smtp invalid.test",
+      "at": "2026-11-01T05:21:16.344Z"
+    },
+    {
+      "name": "SMTP invalid host smtp.invalid.test/path",
+      "at": "2026-11-01T05:21:16.360Z"
+    },
+    {
+      "name": "SMTP invalid host rc@smtp.invalid.test",
+      "at": "2026-11-01T05:21:16.377Z"
+    },
+    {
+      "name": "SMTP invalid host smtp\\invalid.test",
+      "at": "2026-11-01T05:21:16.394Z"
+    },
+    {
+      "name": "SMTP invalid port -1",
+      "at": "2026-11-01T05:21:16.418Z"
+    },
+    {
+      "name": "SMTP invalid port 0",
+      "at": "2026-11-01T05:21:16.435Z"
+    },
+    {
+      "name": "SMTP invalid port 1.5",
+      "at": "2026-11-01T05:21:16.544Z"
+    },
+    {
+      "name": "SMTP invalid port 65536",
+      "at": "2026-11-01T05:21:16.560Z"
+    },
+    {
+      "name": "SMTP invalid from",
+      "at": "2026-11-01T05:21:16.585Z"
+    },
+    {
+      "name": "SMTP required 连接名称",
+      "at": "2026-11-01T05:21:16.610Z"
+    },
+    {
+      "name": "SMTP required SMTP 服务主机",
+      "at": "2026-11-01T05:21:16.641Z"
+    },
+    {
+      "name": "SMTP required SMTP 登录账号",
+      "at": "2026-11-01T05:21:16.668Z"
+    },
+    {
+      "name": "SMTP required SMTP 发件地址",
+      "at": "2026-11-01T05:21:16.692Z"
+    },
+    {
+      "name": "SMTP 连接方式=starttls",
+      "at": "2026-11-01T05:21:16.721Z"
+    },
+    {
+      "name": "SMTP 连接方式=plain",
+      "at": "2026-11-01T05:21:16.743Z"
+    },
+    {
+      "name": "SMTP 连接方式=implicit-tls",
+      "at": "2026-11-01T05:21:16.760Z"
+    },
+    {
+      "name": "ZenTao token empty stays local",
+      "at": "2026-11-01T05:21:17.093Z"
+    },
+    {
+      "name": "禅道认证方式=password",
+      "at": "2026-11-01T05:21:17.107Z"
+    },
+    {
+      "name": "ZenTao password empty stays local",
+      "at": "2026-11-01T05:21:17.118Z"
+    },
+    {
+      "name": "ZenTao invalid service URL file:///private/tmp/rc",
+      "at": "2026-11-01T05:21:17.143Z"
+    },
+    {
+      "name": "ZenTao invalid service URL https://user:pass@zentao.invalid.test/",
+      "at": "2026-11-01T05:21:17.160Z"
+    },
+    {
+      "name": "ZenTao invalid service URL https://zentao.invalid.test/?q=1",
+      "at": "2026-11-01T05:21:17.176Z"
+    },
+    {
+      "name": "ZenTao invalid service URL https://zentao.invalid.test/#fragment",
+      "at": "2026-11-01T05:21:17.193Z"
+    },
+    {
+      "name": "Local Foxmail source has no credential input",
+      "at": "2026-11-01T05:21:17.420Z"
+    },
+    {
+      "name": "Foxmail invalid query days 0",
+      "at": "2026-11-01T05:21:17.459Z"
+    },
+    {
+      "name": "Foxmail invalid query days 101",
+      "at": "2026-11-01T05:21:17.476Z"
+    },
+    {
+      "name": "Foxmail invalid query days 1.5",
+      "at": "2026-11-01T05:21:17.493Z"
+    },
+    {
+      "name": "I original IPC rejects unsupported smtp enum before crypto",
+      "at": "2026-11-01T05:21:17.595Z"
+    },
+    {
+      "name": "I original IPC rejects unsupported zentao enum before crypto",
+      "at": "2026-11-01T05:21:17.596Z"
+    }
+  ],
+  "inputs": [
+    {
+      "stage": "missing-all",
+      "selector": "[data-testid=nav-apps]"
+    },
+    {
+      "stage": "missing-all",
+      "selector": "[aria-label=添加邮件]"
+    },
+    {
+      "stage": "missing-all",
+      "selector": ".m10-sidebar .installed",
+      "text": "邮件"
+    },
+    {
+      "stage": "missing-all",
+      "selector": "button",
+      "text": "添加连接"
+    },
+    {
+      "stage": "missing-all",
+      "selector": "[role=menuitem]",
+      "text": "SMTP 发件账号"
+    },
+    {
+      "stage": "missing-all",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog [aria-label=\"连接名称\"]"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog [aria-label=\"SMTP 登录账号\"]"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog [aria-label=\"SMTP 发件地址\"]"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "missing-credential",
+      "selector": "dialog [aria-label=\"认证凭据\"]"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test?account=fixture",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test?account=fixture",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test#fragment",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test#fragment",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-smtp invalid.test",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-smtp invalid.test",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test/path",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-smtp.invalid.test/path",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-rc@smtp.invalid.test",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-rc@smtp.invalid.test",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-smtp\\invalid.test",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-host-smtp\\invalid.test",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-host-smtp\\invalid.test",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-port--1",
+      "selector": "dialog [aria-label=\"SMTP 端口\"]"
+    },
+    {
+      "stage": "smtp-port--1",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-port-0",
+      "selector": "dialog [aria-label=\"SMTP 端口\"]"
+    },
+    {
+      "stage": "smtp-port-0",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-port-1.5",
+      "selector": "dialog [aria-label=\"SMTP 端口\"]"
+    },
+    {
+      "stage": "smtp-port-1.5",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-port-65536",
+      "selector": "dialog [aria-label=\"SMTP 端口\"]"
+    },
+    {
+      "stage": "smtp-port-65536",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-port-65536",
+      "selector": "dialog [aria-label=\"SMTP 端口\"]"
+    },
+    {
+      "stage": "smtp-from",
+      "selector": "dialog [aria-label=\"SMTP 发件地址\"]"
+    },
+    {
+      "stage": "smtp-from",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-from",
+      "selector": "dialog [aria-label=\"SMTP 发件地址\"]"
+    },
+    {
+      "stage": "smtp-empty-连接名称",
+      "selector": "dialog [aria-label=\"连接名称\"]"
+    },
+    {
+      "stage": "smtp-empty-连接名称",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-empty-连接名称",
+      "selector": "dialog [aria-label=\"连接名称\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 服务主机",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 服务主机",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-empty-SMTP 服务主机",
+      "selector": "dialog [aria-label=\"SMTP 服务主机\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 登录账号",
+      "selector": "dialog [aria-label=\"SMTP 登录账号\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 登录账号",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-empty-SMTP 登录账号",
+      "selector": "dialog [aria-label=\"SMTP 登录账号\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 发件地址",
+      "selector": "dialog [aria-label=\"SMTP 发件地址\"]"
+    },
+    {
+      "stage": "smtp-empty-SMTP 发件地址",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "smtp-empty-SMTP 发件地址",
+      "selector": "dialog [aria-label=\"SMTP 发件地址\"]"
+    },
+    {
+      "stage": "smtp-mode-implicit-tls",
+      "selector": "dialog button",
+      "text": "取消"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": ".m10-nav",
+      "text": "应用"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "[aria-label=添加禅道]"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": ".m10-sidebar .installed",
+      "text": "禅道"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "button",
+      "text": "添加连接"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "dialog [aria-label=\"连接名称\"]"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "dialog [aria-label=\"禅道服务地址\"]"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "dialog [aria-label=\"禅道账号\"]"
+    },
+    {
+      "stage": "zentao-token-empty",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-password-empty",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-password-empty",
+      "selector": "dialog [aria-label=\"认证凭据\"]"
+    },
+    {
+      "stage": "zentao-url-file:///private/tmp/rc",
+      "selector": "dialog [aria-label=\"禅道服务地址\"]"
+    },
+    {
+      "stage": "zentao-url-file:///private/tmp/rc",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-url-https://user:pass@zentao.invalid.test/",
+      "selector": "dialog [aria-label=\"禅道服务地址\"]"
+    },
+    {
+      "stage": "zentao-url-https://user:pass@zentao.invalid.test/",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-url-https://zentao.invalid.test/?q=1",
+      "selector": "dialog [aria-label=\"禅道服务地址\"]"
+    },
+    {
+      "stage": "zentao-url-https://zentao.invalid.test/?q=1",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-url-https://zentao.invalid.test/#fragment",
+      "selector": "dialog [aria-label=\"禅道服务地址\"]"
+    },
+    {
+      "stage": "zentao-url-https://zentao.invalid.test/#fragment",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "zentao-url-https://zentao.invalid.test/#fragment",
+      "selector": "dialog button",
+      "text": "取消"
+    },
+    {
+      "stage": "foxmail",
+      "selector": ".m10-nav",
+      "text": "应用"
+    },
+    {
+      "stage": "foxmail",
+      "selector": ".m10-sidebar .installed",
+      "text": "邮件"
+    },
+    {
+      "stage": "foxmail",
+      "selector": "button",
+      "text": "添加连接"
+    },
+    {
+      "stage": "foxmail",
+      "selector": "[role=menuitem]",
+      "text": "本地读取来源"
+    },
+    {
+      "stage": "foxmail",
+      "selector": "dialog [aria-label=\"连接名称\"]"
+    },
+    {
+      "stage": "foxmail",
+      "selector": "dialog [aria-label=\"Foxmail 本地来源\"]"
+    },
+    {
+      "stage": "foxmail",
+      "selector": "dialog [aria-label=\"Foxmail 邮箱账号\"]"
+    },
+    {
+      "stage": "foxmail-days-0",
+      "selector": "dialog [aria-label=\"邮件查询天数\"]"
+    },
+    {
+      "stage": "foxmail-days-0",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "foxmail-days-101",
+      "selector": "dialog [aria-label=\"邮件查询天数\"]"
+    },
+    {
+      "stage": "foxmail-days-101",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "foxmail-days-1.5",
+      "selector": "dialog [aria-label=\"邮件查询天数\"]"
+    },
+    {
+      "stage": "foxmail-days-1.5",
+      "selector": "dialog button",
+      "text": "测试连接"
+    },
+    {
+      "stage": "foxmail-days-1.5",
+      "selector": "dialog button",
+      "text": "取消"
+    }
+  ],
+  "layer": "A actual packaged generated-module forms local field validation;original IPC pass-through and native crypto tripwire;no actual authentication/save/send/CLI",
+  "appPid": 62193,
+  "installationInitialFocus": [
+    {
+      "pid": 62193,
+      "before": {
+        "focused": false,
+        "visibility": "visible"
+      },
+      "requested": true,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 62193,
+    "checkedInputs": 472
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 62193,
+      "checkedInputs": 472
+    }
+  ],
+  "lastAction": {
+    "stage": "foxmail-days-1.5",
+    "selector": "dialog button",
+    "text": "取消"
+  },
+  "lastValidation": {
+    "name": "Foxmail invalid query days 1.5",
+    "before": {
+      "calls": [],
+      "crypto": [],
+      "forbidden": []
+    },
+    "after": {
+      "calls": [],
+      "crypto": [],
+      "forbidden": []
+    },
+    "alert": "请输入1–100之间的整数天数。"
+  },
+  "final": {
+    "restored": true,
+    "crypto": [],
+    "forbidden": [],
+    "calls": [
+      {
+        "kind": "smtp",
+        "hasSecret": false,
+        "code": "INVALID_INPUT",
+        "ok": false,
+        "finished": true
+      },
+      {
+        "kind": "zentao",
+        "hasSecret": false,
+        "code": "INVALID_INPUT",
+        "ok": false,
+        "finished": true
+      }
+    ]
+  },
+  "appClosed": true,
+  "finishedAt": "2026-11-01T05:21:17.748Z"
+}

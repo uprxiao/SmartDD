@@ -1,0 +1,1063 @@
+{
+  "schema": "willyou-test-result-v1",
+  "batch": "M11-S4-U",
+  "attempt": 1,
+  "status": "failed-needs-classification",
+  "baseCommit": "539f5e875ddfaf42a7f089eca87c58280b6f2938",
+  "source": "/private/tmp/willyou-m11-s4/source-attempt-001",
+  "sourceManifestSha256": "f832e7f7ff2de75e2a5728c1de13cc10f87a6393814d5999b50f1189f5fe4194",
+  "sourceFileCount": 4800,
+  "runId": "M11-S4-20261101T051550Z-v2mail",
+  "sharedOutFileCount": 18423,
+  "sharedOutChanges": [],
+  "sharedOutBeforeReceipt": "shared-out-before.json",
+  "startedAt": "2026-11-01T05:15:17.608920+00:00",
+  "finishedAt": "2026-11-01T05:16:01.655943+00:00",
+  "summedTestCommandElapsedSeconds": 42.293,
+  "executions": [
+    {
+      "id": "typecheck",
+      "files": [],
+      "pattern": null,
+      "argv": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+        "/private/tmp/willyou-m11-s4/evidence/units/attempt-001/typecheck.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s4/source-attempt-001",
+      "pid": 44084,
+      "processGroup": 44084,
+      "startedAt": "2026-11-01T05:15:17.611709+00:00",
+      "outerSeconds": 180,
+      "individualThresholds": "unchanged",
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 10.662,
+      "finishedAt": "2026-11-01T05:15:28.270993+00:00",
+      "counts": {
+        "files": 0,
+        "reportedTotal": 0,
+        "selected": 0,
+        "passed": 0,
+        "failed": 0,
+        "selectedNotExecuted": 0,
+        "filtered": 0,
+        "outsideExecuted": 0
+      },
+      "selectionVerified": true,
+      "ownProcessGroupStillExists": false,
+      "failures": []
+    },
+    {
+      "id": "contracts",
+      "files": [
+        "src/main/core/applications/__tests__/manifest.test.ts",
+        "src/main/core/applications/__tests__/package-registry.test.ts",
+        "src/main/core/applications/__tests__/builtin-packages.test.ts",
+        "src/main/core/applications/__tests__/module-registry.test.ts",
+        "src/main/core/applications/__tests__/extension-contract.test.ts"
+      ],
+      "pattern": null,
+      "argv": [
+        "/Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+        "/private/tmp/willyou-m11-s4/source-attempt-001/node_modules/vitest/vitest.mjs",
+        "run",
+        "src/main/core/applications/__tests__/manifest.test.ts",
+        "src/main/core/applications/__tests__/package-registry.test.ts",
+        "src/main/core/applications/__tests__/builtin-packages.test.ts",
+        "src/main/core/applications/__tests__/module-registry.test.ts",
+        "src/main/core/applications/__tests__/extension-contract.test.ts",
+        "--config",
+        "/private/tmp/willyou-m11-s4/evidence/units/attempt-001/vitest.private.config.mjs",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--no-cache",
+        "--reporter=verbose",
+        "--reporter=json",
+        "--outputFile.json=/private/tmp/willyou-m11-s4/evidence/units/attempt-001/contracts.vitest.json"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s4/source-attempt-001",
+      "pid": 44163,
+      "processGroup": 44163,
+      "startedAt": "2026-11-01T05:15:28.274883+00:00",
+      "outerSeconds": 180,
+      "individualThresholds": "unchanged",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 30.585,
+      "finishedAt": "2026-11-01T05:15:58.856102+00:00",
+      "counts": {
+        "files": 5,
+        "reportedTotal": 91,
+        "selected": 91,
+        "passed": 90,
+        "failed": 1,
+        "selectedNotExecuted": 0,
+        "filtered": 0,
+        "outsideExecuted": 0
+      },
+      "selectionVerified": true,
+      "ownProcessGroupStillExists": false,
+      "failures": [
+        {
+          "group": "contracts",
+          "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+          "name": "complete trusted built-in mail and ZenTao packages > finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls",
+          "selected": true,
+          "status": "failed",
+          "durationMs": 2142.436791,
+          "failureMessages": [
+            "AssertionError [ERR_ASSERTION]: Test-only compatibility distribution cannot be released\n    at verifyCapabilityBundles (/private/tmp/willyou-m11-s4/source-attempt-001/scripts/applications/verify-bundles.cjs:20:337)\n    at /private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts:116:291\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "build-script",
+      "files": [
+        "scripts/applications/build.test.mjs"
+      ],
+      "pattern": null,
+      "argv": [
+        "node",
+        "--test",
+        "scripts/applications/build.test.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-s4/source-attempt-001",
+      "pid": 44523,
+      "processGroup": 44523,
+      "startedAt": "2026-11-01T05:15:58.863877+00:00",
+      "outerSeconds": 180,
+      "individualThresholds": "unchanged",
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 1.046,
+      "finishedAt": "2026-11-01T05:15:59.906902+00:00",
+      "counts": {
+        "files": 1,
+        "reportedTotal": 1,
+        "selected": 1,
+        "passed": 1,
+        "failed": 0,
+        "selectedNotExecuted": 0,
+        "filtered": 0,
+        "outsideExecuted": 0
+      },
+      "selectionVerified": true,
+      "ownProcessGroupStillExists": false,
+      "failures": []
+    }
+  ],
+  "counts": {
+    "groups": 3,
+    "selected": 92,
+    "passed": 91,
+    "failed": 1,
+    "filtered": 0,
+    "selectedNotExecuted": 0
+  },
+  "tests": [
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > keeps the frozen mail 1.0.3 window contract executable beside the new default",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1043.152583,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > retains approved package identity while unready without turning metadata into executable trust",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 157.9424590000001,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > builds both immutable packages with three full Skills,17 bounded contracts and the original pinned runtime",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 132.38924999999972,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > finishes complete resource preparation with unknown dirty provenance when optional Git metadata stalls",
+      "selected": true,
+      "status": "failed",
+      "durationMs": 2142.436791,
+      "failureMessages": [
+        "AssertionError [ERR_ASSERTION]: Test-only compatibility distribution cannot be released\n    at verifyCapabilityBundles (/private/tmp/willyou-m11-s4/source-attempt-001/scripts/applications/verify-bundles.cjs:20:337)\n    at /private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts:116:291\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///Users/liubu/Documents/ChatGPT/SmartDD-m10/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > keeps model-visible built-in tool identities within the64-byte portable budget without changing the fixed server name",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 59.51812500000051,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > compiles all original input/output contracts and rejects injected scope,authorization and out-of-budget resource inputs",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 92.41762500000004,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > prepares first defaults without adding applications,creating accounts or enabling projects; restarting is idempotent",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1289.855584,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > T64 repairs an absent original package through trusted startup without replacing an explicitly newer default",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1699.4412500000008,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > T64 rejects an altered trusted-distribution copy before repairing a missing original package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 281.72212500000023,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > retains verified package files but defers the fresh default set until the damaged package is repaired",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1234.1727910000009,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > does not follow an indexed package symlink or remove its external source",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 73.33562499999971,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects a packaged tree with missing contracts or extra files instead of accepting directory existence",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 68.37662500000079,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > keeps exact historical approval after the original distribution is gone,without inferring a latest package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 155.71249999999964,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects a valid but unapproved package before loading code or resolving a Data API",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 120.00170799999978,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > preserves the approved old package and default when same-version bytes change",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 208.9185410000009,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > withholds execution when the retained original distribution proof is corrupt",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 148.25020799999947,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > executes the original pure CJS adapter through fixed Data API with real session/run protection and invocation ledger",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 772.0874999999996,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > routes the fixed mail write once and preserves an uncertain receipt without transport retries or duplicate execution",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 793.9776669999992,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > keeps old snapshot routing after a new default and refuses replacing the context with the new package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 866.8357500000002,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > checks original bytes again for a cached module and restores only the exact approved bytes",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 147.1937080000007,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > refuses a package route that claims another application or reverses readonly semantics",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 168.06766700000117,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > refuses a host executor with incompatible write semantics for an original read",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 150.79087499999878,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > prevents a fixed adapter from executing its business method twice in one tool invocation",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 740.1737499999999,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects an adapter request for undeclared host method host.sql.execute before dispatch",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 749.6284589999996,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects an adapter request for undeclared host method host.connections.config before dispatch",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 793.2099579999995,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects an adapter request for undeclared host method host.secrets.read before dispatch",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1108.3551669999997,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rejects a fixed adapter importing a direct SQLite driver before resolving any host method",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 299.45729199999914,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > does not let a verified adapter receive a different package or contract in its host operation context",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 911.6939170000005,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/builtin-packages.test.ts",
+      "name": "complete trusted built-in mail and ZenTao packages > rechecks current policy before delivering cached invocation results and never asks the adapter to mint authorization",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1127.950249999998,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > accepts two distinct fake package identities in the real registry without adding product entries or connection support",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 240.646333,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > keeps repeated same content idempotent and rejects a duplicate app/version with different bytes",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 207.789125,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > rejects duplicate tool IDs and missing complete-file entries before installation",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 78.76879199999996,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > refuses future host and data API versions before creating package rows",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 72.23404199999993,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > distinguishes auth compatibility metadata from the actual host config and rejects unsupported auth",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 70.41412500000001,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > rejects the historical effect field instead of treating a research declaration as an executable contract",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 52.962999999999965,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/extension-contract.test.ts",
+      "name": "R09 current extension boundaries without a third-party-code loader > never loads the installed fake adapter or resolves Data API without trusted distribution provenance",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 246.844917,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > canonicalizes nested object keys by Unicode code point with preserved array order",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.617709000000005,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > gives the same identity for equivalent file-list and object-key orders",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 2.8835420000000056,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > changes identity when either Skill, adapter, tool contract or permission changes",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.8917079999999942,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"../escape\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.05933400000000688,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"/absolute\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.040041000000002214,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a//b\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.03612499999999841,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/./b\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.03562499999999602,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a\\\\b\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.03262500000001012,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"C:/x\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.04295799999999872,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/CON.txt\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.04754200000000708,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/NUL\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.032416999999995255,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/trailing.\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.025707999999994513,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/trailing \"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.024375000000006253,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"a/‮x\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.06654199999999832,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects ambiguous package path \"é/file\"",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.026749999999992724,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects unknown manifest fields and duplicate or case-folded file paths",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.7404590000000013,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects a missing or empty connection-contract declaration before assigning executable package identity",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.5343330000000037,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects file-directory conflicts and a missing declared executable entry",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.20733300000000554,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects altered bytes, size, missing files and unlisted files before publication",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.33549999999999613,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > rejects malformed JSON Schema resources and mismatched migration checksums",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.3733749999999958,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > bounds native application and Skill names before creating any shared projections",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.26174999999999216,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/manifest.test.ts",
+      "name": "application manifest identity and complete-file contract > enforces application/tool identity, declared permissions, send annotations and host compatibility",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.21654100000000653,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > keeps the two current applications and their three providers registered through one catalog",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1.102958000000001,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > adds a new app and provider from a registration only, including schema defaults and selection validation",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1.874750000000006,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > returns isolated presentation data and never treats it as authority",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.9941249999999968,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > provides an exact-schema identity view for a newly registered provider without editing the converter framework",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.7447499999999962,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > normalizes all 17 distributed v1 tools through their original business semantics",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 9.808583999999996,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > rejects duplicate modules, provider ownership mismatches and unknown legacy tools",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.14875000000000682,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/module-registry.test.ts",
+      "name": "compiled application module composition > rejects a provider schema that changes the requested provider identity",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 0.21212500000000034,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > installs full runtime and package once, and activates only after explicit selection",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 403.965083,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 restores a missing original package only from its exact content without selecting the latest default or rewriting history",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 532.4136250000001,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at registered under its new durable operation identity",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 435.3565839999999,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at materialized under its new durable operation identity",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 413.1111659999999,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 resumes missing-package restoration interrupted at renamed under its new durable operation identity",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 500.27270899999985,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 defers a missing package while a direct resource consumer still holds a real lease",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 428.2450829999998,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 defers a missing package while a dependent resource consumer still holds a real lease",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 463.58737500000007,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: empty-directory",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 239.6976249999998,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: user-directory",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 253.43283299999985,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 keeps an occupied original package path unchanged: linked-directory",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 243.94170900000017,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > T64 retains a user directory that appears after restoration is registered and leaves recovery pending",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 245.71862500000043,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > rejects same-version changed content before publication, preserving the old default and files",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 313.2824580000006,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > does not select a new package when install succeeds or a stale activation plan is submitted",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 539.366583,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > recovers an interruption at registered without switching defaults or replacing the old package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 1027.008667,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > recovers an interruption at materialized without switching defaults or replacing the old package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 514.8149169999997,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > recovers an interruption at renamed without switching defaults or replacing the old package",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 547.4567909999996,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > verifies actual runtime bytes and rejects a missing runtime before package registration",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 144.67941699999938,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > keeps historical resource references after deleting the task, with FK protection against accidental resource deletion",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 192.65870799999993,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > holds a resource lease across asynchronous work and releases it even when the operation fails",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 234.0502919999999,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "application publication with a real SQLite resource ledger > rolls back trusted data migration changes and keeps the old default on migration failure",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 498.74204199999986,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "rolls back the whole two-app activation set when the second migration fails, then commits both on retry",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 523.4971669999995,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "rejects duplicate apps in a group before changing a default",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 331.9527910000015,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "does not bypass migration integrity for an already active package: checksum",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 327.4379169999993,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "does not bypass migration integrity for an already active package: watermark",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 292.32308399999965,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "does not bypass migration integrity for an already active package: missing",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 291.4537500000006,
+      "failureMessages": []
+    },
+    {
+      "group": "contracts",
+      "file": "/private/tmp/willyou-m11-s4/source-attempt-001/src/main/core/applications/__tests__/package-registry.test.ts",
+      "name": "does not activate defaults while another maintenance operation is pending",
+      "selected": true,
+      "status": "passed",
+      "durationMs": 194.58599999999933,
+      "failureMessages": []
+    },
+    {
+      "group": "build-script",
+      "file": "scripts/applications/build.test.mjs",
+      "name": "CLI builds pinned application bundles from an escaped native path with complete nested inventories",
+      "selected": true,
+      "status": "passed",
+      "durationMs": null,
+      "failureMessages": []
+    }
+  ],
+  "sourceChanges": [],
+  "dependencyHashesBefore": {
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/bin/darwin-arm64-146/node-pty.node": "93cb0e7fc138bb755f57d4a9ff78fbbfba035845cbda3e3037c3cf2a264c7a59",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/build/Release/pty.node": "93cb0e7fc138bb755f57d4a9ff78fbbfba035845cbda3e3037c3cf2a264c7a59",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/pty.node": "eae1266e3c34f4c7b67a756a6ff342b699847deaf29c944b7a6bed190ec61982",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/conpty.node": "25a06916c5cb1a3aac7acc401424d8e6a6a9e8eea441a3604cd657a0619555cd",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/conpty_console_list.node": "fda76b16afb3bf9a4de085c943b5fb4138ecbeb08e8254c09d5555ea5426bd4e",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/darwin-x64/pty.node": "edab585d5c5c7bf35143a7a53b7d72652e90723b5f9635dfd55b2333f7069198",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/pty.node": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/conpty.node": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/conpty_console_list.node": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/darwin-arm64/pty.node": "e6457d66f45af3facd02920a5b212164e80fe0bb758afe6e6eab1eceeba3fc9a",
+    "node_modules/.pnpm/fsevents@2.3.3/node_modules/fsevents/fsevents.node": "40f2f51199e4f5fc46fa6b985fb3461bb63e6cd86c62bfa9bcee45ed4438d5fb",
+    "node_modules/.pnpm/@tailwindcss+oxide-darwin-arm64@4.3.3/node_modules/@tailwindcss/oxide-darwin-arm64/tailwindcss-oxide.darwin-arm64.node": "dbb1ced076c313dde5f967c1299ea725c866daec610ee510c9fac85dbb147470",
+    "node_modules/.pnpm/@parcel+watcher-darwin-arm64@2.5.6/node_modules/@parcel/watcher-darwin-arm64/watcher.node": "ab8bc3d89413ab68ddca894b9b0a217c9209dace11a2056f299d144fba38f230",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/bin/darwin-arm64-146/better-sqlite3.node": "803376bb5b623b0c3ccf806817c39a6e78da8a7e06f62174dfef57b3967c4270",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/test_extension.node": "b086e5dd1c35504a32af138ebe2c442f783be977a18ab6e3989f6e2cab07306a",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node": "803376bb5b623b0c3ccf806817c39a6e78da8a7e06f62174dfef57b3967c4270",
+    "node_modules/.pnpm/@rollup+rollup-darwin-arm64@4.64.6/node_modules/@rollup/rollup-darwin-arm64/rollup.darwin-arm64.node": "3dd2a59fd79b3027b7b8aa2e5a37f64fdbcb03e16ff85d522effdae01f30ab22",
+    "node_modules/.pnpm/lightningcss-darwin-arm64@1.32.0/node_modules/lightningcss-darwin-arm64/lightningcss.darwin-arm64.node": "6ac4ba1cce8aca75dbcafafa1951955dd30d99ca9953fa81020d0c5246cbd317",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.darwin-universal.node": "7944e8514331634d38bb1e88c41524deea21781f0fabcb4be1199dde5bb7e5ce",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm64-musl.node": "32a6b674f23fc083e986af9296a2c0a2a167d038e6bed8ea396b230a122e209a",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-x64-musl.node": "8aa7c7a4596afa294b638302a109f38089141e4cd190c739fc476e378d950543",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.win32-arm64-msvc.node": "c9e82ec3cf53a6d547195b998c71cc33187b0158e813962506d16bd5227126e7",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm-gnueabihf.node": "9c7c5a1cad5523d2c13b5ab2374a4193d6b934e6f5b549359f703e3eb30e4c09",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.win32-x64-msvc.node": "17746910bcd13f7f268822f6fc837706f8b5be0704bbf49570112117982e7b07",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm64-gnu.node": "aba0b1b1209ce35ebef75d4dcfb5bf1b546be9bdb5ea420148bf222c30fcbb5d",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-ia32-gnu.node": "5dd18bcbf67dda4f5264b72bf874df1c35960f6e666a56a6fdf7cf588a137763",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-x64-gnu.node": "c2137ff4b726767e33ea7a7a1d3073cd08635a6b3b4b5056fc67d528b84c83ae",
+    "node_modules/.pnpm/@napi-rs+canvas-darwin-arm64@0.1.100/node_modules/@napi-rs/canvas-darwin-arm64/skia.darwin-arm64.node": "a9c429727b4a133e34e60c5ffa7f701541ffe941afa9574abe6273a1648c342d"
+  },
+  "dependencyHashesAfter": {
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/bin/darwin-arm64-146/node-pty.node": "93cb0e7fc138bb755f57d4a9ff78fbbfba035845cbda3e3037c3cf2a264c7a59",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/build/Release/pty.node": "93cb0e7fc138bb755f57d4a9ff78fbbfba035845cbda3e3037c3cf2a264c7a59",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/pty.node": "eae1266e3c34f4c7b67a756a6ff342b699847deaf29c944b7a6bed190ec61982",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/conpty.node": "25a06916c5cb1a3aac7acc401424d8e6a6a9e8eea441a3604cd657a0619555cd",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-arm64/conpty_console_list.node": "fda76b16afb3bf9a4de085c943b5fb4138ecbeb08e8254c09d5555ea5426bd4e",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/darwin-x64/pty.node": "edab585d5c5c7bf35143a7a53b7d72652e90723b5f9635dfd55b2333f7069198",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/pty.node": "ae323edd0835ee7b9e18cc96a7b2bb4b8173ff768317d178af2788406feb71ff",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/conpty.node": "ee8f4e6f4dad71939eecfda11de249400e34bfefe4c8b48af13f3b5476f4035b",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/win32-x64/conpty_console_list.node": "879dd94cfc79f1e263a00077597ae9448a5394b7d193381aaa50d992a1f91090",
+    "node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/prebuilds/darwin-arm64/pty.node": "e6457d66f45af3facd02920a5b212164e80fe0bb758afe6e6eab1eceeba3fc9a",
+    "node_modules/.pnpm/fsevents@2.3.3/node_modules/fsevents/fsevents.node": "40f2f51199e4f5fc46fa6b985fb3461bb63e6cd86c62bfa9bcee45ed4438d5fb",
+    "node_modules/.pnpm/@tailwindcss+oxide-darwin-arm64@4.3.3/node_modules/@tailwindcss/oxide-darwin-arm64/tailwindcss-oxide.darwin-arm64.node": "dbb1ced076c313dde5f967c1299ea725c866daec610ee510c9fac85dbb147470",
+    "node_modules/.pnpm/@parcel+watcher-darwin-arm64@2.5.6/node_modules/@parcel/watcher-darwin-arm64/watcher.node": "ab8bc3d89413ab68ddca894b9b0a217c9209dace11a2056f299d144fba38f230",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/bin/darwin-arm64-146/better-sqlite3.node": "803376bb5b623b0c3ccf806817c39a6e78da8a7e06f62174dfef57b3967c4270",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/test_extension.node": "b086e5dd1c35504a32af138ebe2c442f783be977a18ab6e3989f6e2cab07306a",
+    "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release/better_sqlite3.node": "803376bb5b623b0c3ccf806817c39a6e78da8a7e06f62174dfef57b3967c4270",
+    "node_modules/.pnpm/@rollup+rollup-darwin-arm64@4.64.6/node_modules/@rollup/rollup-darwin-arm64/rollup.darwin-arm64.node": "3dd2a59fd79b3027b7b8aa2e5a37f64fdbcb03e16ff85d522effdae01f30ab22",
+    "node_modules/.pnpm/lightningcss-darwin-arm64@1.32.0/node_modules/lightningcss-darwin-arm64/lightningcss.darwin-arm64.node": "6ac4ba1cce8aca75dbcafafa1951955dd30d99ca9953fa81020d0c5246cbd317",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.darwin-universal.node": "7944e8514331634d38bb1e88c41524deea21781f0fabcb4be1199dde5bb7e5ce",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm64-musl.node": "32a6b674f23fc083e986af9296a2c0a2a167d038e6bed8ea396b230a122e209a",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-x64-musl.node": "8aa7c7a4596afa294b638302a109f38089141e4cd190c739fc476e378d950543",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.win32-arm64-msvc.node": "c9e82ec3cf53a6d547195b998c71cc33187b0158e813962506d16bd5227126e7",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm-gnueabihf.node": "9c7c5a1cad5523d2c13b5ab2374a4193d6b934e6f5b549359f703e3eb30e4c09",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.win32-x64-msvc.node": "17746910bcd13f7f268822f6fc837706f8b5be0704bbf49570112117982e7b07",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-arm64-gnu.node": "aba0b1b1209ce35ebef75d4dcfb5bf1b546be9bdb5ea420148bf222c30fcbb5d",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-ia32-gnu.node": "5dd18bcbf67dda4f5264b72bf874df1c35960f6e666a56a6fdf7cf588a137763",
+    "node_modules/.pnpm/@electron-internal+extract-zip@1.0.5/node_modules/@electron-internal/extract-zip/index.linux-x64-gnu.node": "c2137ff4b726767e33ea7a7a1d3073cd08635a6b3b4b5056fc67d528b84c83ae",
+    "node_modules/.pnpm/@napi-rs+canvas-darwin-arm64@0.1.100/node_modules/@napi-rs/canvas-darwin-arm64/skia.darwin-arm64.node": "a9c429727b4a133e34e60c5ffa7f701541ffe941afa9574abe6273a1648c342d"
+  },
+  "dependencyChanges": [],
+  "sharedCacheHashBefore": "19a38ed72ba2d4d5994b8df8426ddb21662ca0520e219a082cef5b400340a7a0",
+  "sharedCacheHashAfter": "19a38ed72ba2d4d5994b8df8426ddb21662ca0520e219a082cef5b400340a7a0",
+  "privateConfigSha256": "daf25383dad217d1f6da6f9937cf7e736582f8bc81d4f840cf37351b27986f03",
+  "privateConfigBoundary": "Only cacheDir differs from imported original config; original individual thresholds retained",
+  "integrityPassed": true,
+  "allOwnProcessesStopped": true,
+  "resourceLeaseReleased": true,
+  "formalM11CasePassesAdded": 0,
+  "scope": "Targeted repair verification only; attempt001 reds retained; filtered cases not counted as passed",
+  "invocationBoundary": "Existing Electron binary executes Vitest exactly as scripts/run-tests.mjs; COREPACK_ENABLE_NETWORK=0; no pnpm/Corepack bootstrap",
+  "cleanup": "cleanup.json"
+}

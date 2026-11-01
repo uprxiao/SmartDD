@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {randomUUID} from 'node:crypto';
 import {afterEach,beforeEach,describe,expect,it} from 'vitest';
 import type {ApplicationCapability} from '@shared/application-capabilities';
@@ -10,7 +11,7 @@ import {ApplicationToolService} from '../tool-service';
 import {FixtureProcessReader,runFixture} from './run-fixture';
 
 let f:Awaited<ReturnType<typeof runFixture>>,reader:FixtureProcessReader,run:OwnedCapabilityRun|undefined;
-const capabilities=():ApplicationCapability[]=>f.application!.manifest.tools.map(t=>({id:t.annotations.readOnlyHint?'zentao.object.get':'zentao.object.update',title:t.name,contractMajor:1,semantics:t.annotations.readOnlyHint?'read':'write',permission:t.permission,slots:{required:[],conditional:[]},inputSchemaPath:t.inputSchemaPath,outputSchemaPath:t.outputSchemaPath,retry:t.annotations.readOnlyHint?'safe-read':'never',...(t.annotations.readOnlyHint?{}:{protection:{kind:'revision' as const,object:'fixture',key:'expectedRevision'}}),binding:{mcp:{tool:t.name}}}));
+const capabilities=():ApplicationCapability[]=>applicationToolDeclarations(f.application!.manifest).map(t=>({id:t.annotations.readOnlyHint?'zentao.object.get':'zentao.object.update',title:t.name,contractMajor:1,semantics:t.annotations.readOnlyHint?'read':'write',permission:t.permission,slots:{required:[],conditional:[]},inputSchemaPath:t.inputSchemaPath,outputSchemaPath:t.outputSchemaPath,retry:t.annotations.readOnlyHint?'safe-read':'never',...(t.annotations.readOnlyHint?{}:{protection:{kind:'revision' as const,object:'fixture',key:'expectedRevision'}}),binding:{mcp:{tool:t.name}}}));
 const build=(runId:string=randomUUID(),caps=capabilities(),available={mcp:true,cli:false})=>createApplicationRunPlan({runId,snapshot:f.snapshot,snapshotHash:f.session.pointer.snapshotHash,applications:[{manifest:f.application!.manifest,packageHash:f.application!.packageHash,capabilities:caps}],available,skills:[],now:'2026-11-01T00:00:00.000Z'});
 beforeEach(async()=>{reader=new FixtureProcessReader();f=await runFixture(reader,{application:true});});
 afterEach(async()=>{if(run)await run.cli.exited();run=undefined;f.cleanup();});

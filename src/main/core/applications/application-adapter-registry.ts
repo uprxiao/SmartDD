@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Script } from 'node:vm';
 import { z } from 'zod';
-import { ApplicationError, type InstalledApplicationPackage } from '@shared/applications';
+import { ApplicationError, type InstalledApplicationPackage,type ApplicationManifestV1 } from '@shared/applications';
 import { boundedJson } from '@shared/application-bridge';
 import { BuiltinPackageRegistry } from './builtin-package-registry';
 import { assertHostCompatible, canonicalJson, digest } from './manifest';
@@ -18,6 +18,7 @@ const descriptor = z.object({
   timeoutMs: z.number().int().min(1).max(120000),
 }).strict();
 type Descriptor = z.infer<typeof descriptor>;
+type RetainedAdapterPackage=Omit<InstalledApplicationPackage,'manifest'>&{manifest:ApplicationManifestV1};
 interface FixedApplicationAdapter {
   api: 1; dataApi: 1; appId: string; version: string;
   operations: Record<string,Descriptor>;
@@ -27,6 +28,7 @@ export interface ApplicationDataBinding { packageHash: string;appId: string;tool
 /** Implemented by host services; a package never receives SQLite, a secret or an arbitrary RPC method. */
 export interface ApplicationDataHost {
   resolve(version: 1,method: string,binding: Readonly<ApplicationDataBinding>): HostToolOperation;
+  resolveCapability?(packageHash:string,toolName:string,contractMajor:number):HostToolOperation;
 }
 
 /** Executes only indexed built-ins, by the session's original hash. This is not a third-party-code sandbox. */
@@ -39,8 +41,10 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
     this.runtimes = new RuntimeRegistry(store);
   }
 
-  private load(hash: string): {application: InstalledApplicationPackage;adapter: FixedApplicationAdapter} {
-    const application = this.builtin.assertTrusted(hash);
+  private load(hash: string): {application: RetainedAdapterPackage;adapter: FixedApplicationAdapter} {
+    const original=this.builtin.assertTrusted(hash);
+    if(original.manifest.schema!=='smartdd-app-package-v1')throw new ApplicationError('HOST_INCOMPATIBLE','data-only应用不运行旧包适配代码');
+    const application:RetainedAdapterPackage={...original,manifest:original.manifest};
     // Retained bytes and a cached adapter do not establish compatibility with
     // the current host after an upgrade. Reject before resolving credentials.
     assertHostCompatible(application.manifest);
@@ -85,6 +89,12 @@ export class ApplicationAdapterRegistry implements ApplicationToolHost {
   }
 
   resolve(packageHash: string,toolName: string,contractMajor: number): HostToolOperation {
+    const installed=this.builtin.assertTrusted(packageHash);
+    if(installed.manifest.schema==='smartdd-app-package-v2'){
+      assertHostCompatible(installed.manifest);this.runtimes.verify(installed.manifest.runtime.hash,installed.manifest.runtime);
+      if(!this.data.resolveCapability)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
+      return this.data.resolveCapability(packageHash,toolName,contractMajor);
+    }
     const {application,adapter} = this.load(packageHash);
     const tool = application.manifest.tools.find(t => t.name === toolName && t.contractMajor === contractMajor);
     const route = adapter.operations[toolName];

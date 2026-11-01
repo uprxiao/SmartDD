@@ -66,7 +66,7 @@ it.skipIf(process.platform!=='darwin')('does not treat a completed file mirror a
 it.skipIf(process.platform!=='darwin').each(['clear','status'].flatMap(kind=>['activation','migration-and-activation'].map(gate=>({kind,gate}))))('recovers proved dead cache $kind before $gate without inventing success',async({kind,gate})=>{
  const f=await agentFixture(),reader=new FixtureProcessReader();let client:Awaited<ReturnType<typeof openManagedDatabase>>|undefined;
  try{
-  const bundles=new CapabilityBundleSource(resolve('out/capability-bundles'));await new RuntimeRegistry(f.store).install(bundles.runtime());const mail=await new BuiltinPackageRegistry(f.store).install(bundles,bundles.index.apps.find(a=>a.appId==='mail')!);
+  const bundles=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1'));await new RuntimeRegistry(f.store).install(bundles.runtime());const mail=await new BuiltinPackageRegistry(f.store).install(bundles,bundles.index.apps.find(a=>a.appId==='mail')!);
   const source=fixtureBundle('2.0.0');source.manifest.runtime.hash=f.source.manifest.runtime.hash;const target=await f.packages.install(source),prior=f.packages.active('zentao')!,id=randomUUID(),leaseId=randomUUID();
   const action='application.cache.'+kind,semantics=kind==='clear'?'write':'read';
   const scope=digest(canonicalJson({callerKind:'ui',scopeKind:'connection-management',projectId:null,taskId:null,runId:null,jobId:null,parentOperationId:null,appId:'mail',packageHash:mail.packageHash,action,semantics,policy:null}));

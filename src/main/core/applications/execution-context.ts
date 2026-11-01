@@ -75,6 +75,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     await withResourceLock(this.store.root,()=>{this.assertActive(context);this.store.sqlite.prepare('INSERT OR IGNORE INTO application_activity_subjects VALUES(?,?,?)').run(context.operationId,kind,subjectId);});
   }
   assertActive(context:ApplicationExecutionContext<A>):void{this.record(context);}
+  sourceRevisions(context:ApplicationExecutionContext<A>){return[...this.record(context).targets.values()].map(target=>({slot:target.slot,connectionId:target.id,identityRevision:target.identityRevision,configRevision:target.configRevision,policyRevision:target.policyRevision,bindingRevision:target.bindingRevision}));}
   caller(context:ApplicationExecutionContext<A>):CallerContext{
     this.record(context);
     const base={operationId:context.operationId,appId:context.appId,packageHash:context.packageHash,action:context.action};

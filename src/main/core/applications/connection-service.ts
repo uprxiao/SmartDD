@@ -6,7 +6,7 @@ import {BuiltinPackageRegistry} from './builtin-package-registry';
 import type { SecretsStore } from '../../secrets';
 import { ApplicationError } from '@shared/applications';
 import type {ApplicationConnection,ConnectionChangePlan,ConnectionCompatibilityImpact,ConnectionConfig,ApplicationId} from '@shared/application-connections';
-import {canonicalJson,digest,parseManifest} from './manifest';
+import {canonicalJson,digest} from './manifest';
 import {HostApplicationRegistry,builtinHostApplications,type HostedConfiguration,type HostApplicationDefinitions,type HostedConnection,type HostedIdentity,type HostedCandidate,type HostedSave} from './host-application-registry';
 import { withResourceLock } from './resource-lock';
 import type { ResourceStore } from './resource-store';
@@ -125,10 +125,10 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
     for (const record of records) {
       let status: 'incompatible' | 'unverified' | null = null, reason = '';
       try {
-        const manifest = parseManifest(JSON.parse(record.manifest)), contract = manifest.connectionContracts.find(c => c.providerId === config.kind);
+        const installed=new PackageRegistry(this.store,'config-preflight').get(record.hash),contract=installed.manifest.connectionContracts.find(c=>c.providerId===config.kind);
         if(!contract)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','缺少连接配置契约');
         const view=this.configViews.resolve({providerId:config.kind,sourceSchemaVersion:this.registry.provider(config.kind).configSchemaVersion??1,targetApiMajor:contract.configApiMajor,identityContractMajor:contract.identityContractMajor},config,contract.authModes);
-        const schemaHash=validateConfigViewSchema(this.store,new PackageRegistry(this.store,'config-preflight').get(record.hash),config.kind,view.view);
+        const schemaHash=validateConfigViewSchema(this.store,installed,config.kind,view.view);
         conversions.push({packageHash:record.hash,taskId:record.taskId,converterHash:view.converterHash,viewDigest:view.viewDigest,schemaHash});
       } catch(error) { status=error instanceof ApplicationError&&error.code==='CONFIG_INCOMPATIBLE'?'incompatible':'unverified';reason=status==='incompatible'?'此版本不能等价使用候选配置':'历史包契约或配置转换器无法核验'; }
 

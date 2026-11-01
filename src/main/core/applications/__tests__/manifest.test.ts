@@ -1,3 +1,4 @@
+import {applicationToolDeclarations} from '@shared/application-capabilities';
 import { describe, expect, it } from 'vitest';
 import { ApplicationError, isPackagePath } from '@shared/applications';
 import { assertHostCompatible, canonicalJson, digest, manifestHash, parseManifest, validateBundle } from '../manifest';
@@ -19,7 +20,7 @@ describe('application manifest identity and complete-file contract', () => {
     const original = fixtureBundle(), base = manifestHash(original.manifest);
     const skill = fixtureBundle(); skill.manifest.files[0].sha256 = 'a'.repeat(64);
     const adapter = fixtureBundle(); adapter.manifest.files[1].sha256 = 'a'.repeat(64);
-    const tool = fixtureBundle(); tool.manifest.tools[0].name = 'smartdd_zentao_query_v2'; tool.manifest.tools[0].contractMajor = 2;
+    const tool = fixtureBundle(); applicationToolDeclarations(tool.manifest)[0].name = 'smartdd_zentao_query_v2'; applicationToolDeclarations(tool.manifest)[0].contractMajor = 2;
     const permission = fixtureBundle(); permission.manifest.permissions.push('zentao.extra');
     for (const item of [skill, adapter, tool, permission]) expect(manifestHash(item.manifest)).not.toBe(base);
   });
@@ -64,8 +65,8 @@ describe('application manifest identity and complete-file contract', () => {
     const c = fixtureBundle(); c.manifest.skills[0].id = 'bad--name'; expect(() => parseManifest(c.manifest)).toThrow(ApplicationError);
   });
   it('enforces application/tool identity, declared permissions, send annotations and host compatibility', () => {
-    const a = fixtureBundle(); a.manifest.tools[0].name = 'smartdd_mail_query_v1'; expect(() => parseManifest(a.manifest)).toThrow(/名称/);
-    const b = fixtureBundle(); b.manifest.tools[0].permission = 'zentao.send'; expect(() => parseManifest(b.manifest)).toThrow(/权限|发送/);
+    const a = fixtureBundle(); applicationToolDeclarations(a.manifest)[0].name = 'smartdd_mail_query_v1'; expect(() => parseManifest(a.manifest)).toThrow(/名称/);
+    const b = fixtureBundle(); applicationToolDeclarations(b.manifest)[0].permission = 'zentao.send'; expect(() => parseManifest(b.manifest)).toThrow(/权限|发送/);
     const c = fixtureBundle(); c.manifest.hostApi = { min: 2, max: 3 }; expect(() => assertHostCompatible(parseManifest(c.manifest))).toThrow(/不支持/);
   });
 });
