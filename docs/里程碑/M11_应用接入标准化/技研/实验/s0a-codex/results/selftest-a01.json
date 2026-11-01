@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-11-01T01:00:12.046Z",
+  "helper": "out/native/willyou-process-identity",
+  "cases": [
+    {
+      "id": "P1",
+      "label": "正例：受管树内、只读令牌、读操作",
+      "code": "OK",
+      "businessDelta": 1,
+      "expectCode": "OK",
+      "expectBusiness": 1,
+      "pass": true
+    },
+    {
+      "id": "N1",
+      "label": "有效令牌但调用者在树外（A 的根改为 sleeper）",
+      "code": "PEER_MISMATCH",
+      "businessDelta": 0,
+      "expectCode": "PEER_MISMATCH",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N2",
+      "label": "另一运行的令牌（B，其根为 sleeper）从 A 的树内使用",
+      "code": "PEER_MISMATCH",
+      "businessDelta": 0,
+      "expectCode": "PEER_MISMATCH",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N3",
+      "label": "身份不可读（无内核 fd 的假 socket，评审复现路径）",
+      "code": "PEER_UNVERIFIABLE",
+      "businessDelta": 0,
+      "expectCode": "PEER_UNVERIFIABLE",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N4",
+      "label": "启动时间不匹配（同 PID，伪造的启动时间）",
+      "code": "PEER_MISMATCH",
+      "businessDelta": 0,
+      "expectCode": "PEER_MISMATCH",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N5",
+      "label": "可执行文件不符（期望固定 CLI 路径不是 node）",
+      "code": "EXECUTABLE_MISMATCH",
+      "businessDelta": 0,
+      "expectCode": "EXECUTABLE_MISMATCH",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N6",
+      "label": "树内但只读令牌执行写操作",
+      "code": "PERMISSION_DENIED",
+      "businessDelta": 0,
+      "expectCode": "PERMISSION_DENIED",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N7",
+      "label": "伪造令牌",
+      "code": "UNAUTHENTICATED",
+      "businessDelta": 0,
+      "expectCode": "UNAUTHENTICATED",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "N8",
+      "label": "已撤销令牌",
+      "code": "REVOKED",
+      "businessDelta": 0,
+      "expectCode": "REVOKED",
+      "expectBusiness": 0,
+      "pass": true
+    },
+    {
+      "id": "P2",
+      "label": "正例：树内、读写令牌、写操作",
+      "code": "OK",
+      "businessDelta": 1,
+      "expectCode": "OK",
+      "expectBusiness": 1,
+      "pass": true
+    }
+  ],
+  "allPass": true,
+  "helperMs": {
+    "min": 0,
+    "max": 3
+  }
+}

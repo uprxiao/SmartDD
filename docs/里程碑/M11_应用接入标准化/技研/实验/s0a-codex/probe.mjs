@@ -16,8 +16,13 @@ let viaCurl = ''; try { viaCurl = 'exit0 HTTP ' + execFileSync('curl', ['-sS', '
 // 交互式验证附加项：工作区写入是否保持；模拟 MCP 桥端点是否仍不可达（只放行 CLI 端点时）。
 let writeTest = 'skipped'; try { (await import('node:fs')).writeFileSync('wy-write-test.txt', 'ok'); writeTest = 'OK'; } catch (e) { writeTest = 'ERR:' + e.code; }
 const mcpEp = process.env.WILLYOU_TEST_MCP; const mcpTest = mcpEp ? await new Promise(r => { const c = connect(mcpEp); c.on('connect', () => { c.destroy(); r('CONNECTED'); }); c.on('error', e => r('ERR:' + e.code)); }) : 'skipped';
+// A02 对照项（仅在设置对应环境变量时执行）：拒读路径、允许域名、未允许域名。只报告状态码或错误码。
+let denyRead = 'skipped'; if (process.env.WILLYOU_TEST_DENY) { try { (await import('node:fs')).readFileSync(process.env.WILLYOU_TEST_DENY); denyRead = 'READ_OK'; } catch (e) { denyRead = 'ERR:' + e.code; } }
+const curlCode = url => { try { return 'HTTP ' + execFileSync('curl', ['-sS', '-m', '8', '-o', '/dev/null', '-w', '%{http_code}', url], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); } catch (e) { return 'exit' + e.status + ' ' + String(e.stderr || '').replace(/\s+/g, ' ').slice(0, 90); } };
+const allowedUrl = process.env.WILLYOU_TEST_ALLOWED_URL ? curlCode(process.env.WILLYOU_TEST_ALLOWED_URL) : 'skipped';
+const otherUrl = process.env.WILLYOU_TEST_OTHER_URL ? curlCode(process.env.WILLYOU_TEST_OTHER_URL) : 'skipped';
 const localCmds = {}; for (const [n, a] of [['git', ['--version']], ['node', ['-v']]]) { try { localCmds[n] = execFileSync(n, a, { encoding: 'utf8' }).trim(); } catch (e) { localCmds[n] = 'ERR:' + (e.code || e.status); } }
-const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, viaProxyFetch: viaFetch, viaProxyCurl: viaCurl, localCmds, writeTest, mcpEndpoint: mcpTest, proxyEnvNames: proxyEnv }) + '\n');
+const done = channel => process.stdout.write(JSON.stringify({ probe: 's0a', env, codexHints: hints, chain, channel, selfPid: process.pid, externalTcp443: netResult, viaProxyFetch: viaFetch, viaProxyCurl: viaCurl, localCmds, writeTest, mcpEndpoint: mcpTest, denyRead, allowedUrl, otherUrl, proxyEnvNames: proxyEnv }) + '\n');
 if (!endpoint || !token) { done({ attempted: false, reason: 'missing env' }); process.exit(0); }
 const s = connect(endpoint); let out = '';
 s.on('connect', () => s.write(JSON.stringify({ op: 'bug.list', token, clientPid: process.pid }) + '\n'));
