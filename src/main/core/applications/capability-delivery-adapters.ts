@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import { agentIdSchema } from '@shared/agent-id';
 import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } from './native-launch-context';
+import { inspectCodexCliSandbox, type CodexCliSandboxPlan } from './codex-effective-sandbox';
 
 export interface SkillProjectionContext { home: string; storeRoot: string; taskId: string }
 /** Trusted startup composition. Immutable CJS resources implement plan() and
@@ -15,6 +16,7 @@ export interface CapabilityDeliveryAdapter {
   readonly bestEffortMcp?: boolean;
   skillProjection(context: SkillProjectionContext): string;
   inspectNative(input: TaskLaunchInput): Promise<NativeLaunchContext>;
+  effectiveSandbox?(input: TaskLaunchInput, native: NativeLaunchContext): Promise<CodexCliSandboxPlan>;
   entryDelivery(entry: 'mcp' | 'cli'): boolean;
 }
 export class CapabilityDeliveryAdapterRegistry {
@@ -24,6 +26,8 @@ export class CapabilityDeliveryAdapterRegistry {
     const adapters = new Map<string, CapabilityDeliveryAdapter>(), runners = new Map<string, CapabilityDeliveryAdapter>();
     for (const entry of entries) {
       if (!agentIdSchema.safeParse(entry.id).success || !agentIdSchema.safeParse(entry.runnerId).success || adapters.has(entry.id) || runners.has(entry.runnerId) || !['shared-home','session-plugin'].includes(entry.discovery) || ['skillProjection','inspectNative','entryDelivery'].some(key => typeof (entry as any)[key] !== 'function')) throw new Error('能力交付适配器声明无效或重复');
+      const mcp=entry.entryDelivery('mcp'),cli=entry.entryDelivery('cli');
+      if(typeof mcp!=='boolean'||typeof cli!=='boolean'||!mcp&&!cli||cli&&typeof entry.effectiveSandbox!=='function'||entry.bestEffortMcp&&!mcp)throw new Error('能力交付须有已实现的入口；CLI入口必须提供有效沙箱核验');
       adapters.set(entry.id, Object.freeze(entry));runners.set(entry.runnerId, entry);
     }
     this.adapters = adapters;this.runners = runners;
@@ -35,5 +39,5 @@ export class CapabilityDeliveryAdapterRegistry {
 }
 export const builtinCapabilityDeliveryAdapters = new CapabilityDeliveryAdapterRegistry([
   { id: 'claude-code', runnerId: 'claude', discovery: 'session-plugin', skillProjection: context => join(context.storeRoot,'sessions',context.taskId,'claude/plugin/skills'), inspectNative: inspectNativeLaunch, entryDelivery: entry => entry === 'mcp' },
-  { id: 'codex', runnerId: 'codex', discovery: 'shared-home', bestEffortMcp: true, skillProjection: context => join(context.home,'.agents/skills'), inspectNative: inspectNativeLaunch, entryDelivery: () => true },
+  { id: 'codex', runnerId: 'codex', discovery: 'shared-home', bestEffortMcp: true, skillProjection: context => join(context.home,'.agents/skills'), inspectNative: inspectNativeLaunch, effectiveSandbox: inspectCodexCliSandbox, entryDelivery: () => true },
 ]);

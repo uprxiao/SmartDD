@@ -2,7 +2,7 @@
 
 ## 2026-11-02 C3实现接续
 
-基线：R0.9、C2提交699ab83b之后的C3冻结源。公共Runner身份结构化校验，实际可执行性必须通过启动时RunnerAdapterRegistry；AiProfileService保存前应用其profileSchema，任务通过同一生命周期方法运行。CapabilityDeliveryAdapterRegistry按独立Agent id/runner id登记受信机制，AgentAdapterRegistry仍核验固定CJS资源、计划与完整投影；原两内置机制复用，未增加真实Agent。原生格式独立注册，IO/预算/文件身份/输入回执仍在宿主。测试脚本第三Agent采用共享HOME投放机制、自身id/argv/会话格式，真实自有PTY新建/恢复、读取Skill并通过实际MCP调用成功；这不是pi/zcode等真实支持结论。
+基线：R0.9、C2提交699ab83b之后的C3冻结源。公共Runner身份结构化校验，实际可执行性必须通过启动时RunnerAdapterRegistry；AiProfileService保存前应用其profileSchema，任务通过同一生命周期方法运行。CapabilityDeliveryAdapterRegistry按独立Agent id/runner id登记受信机制，CLI机制必须提供自身effectiveSandbox核验，不落回Codex默认规则；类方法保留实例接收者，AgentAdapterRegistry仍核验固定CJS资源、计划与完整投影；原两内置机制复用，未增加真实Agent。原生格式独立注册，IO/预算/文件身份/输入回执仍在宿主。测试脚本第三Agent采用共享HOME投放机制、自身id/argv/会话格式，真实自有PTY新建/恢复、读取Skill并通过实际MCP调用成功；这不是pi/zcode等真实支持结论。
 
 版本日志自检为主进程方法AgentAdapterRegistry.selfCheck，未暴露RPC/MCP。结果只含判据布尔值、hash与时间，绑定适配hash、CLI版本和平台，记录在既有宿主operation journal；日志格式检查只能补L2，不能证明CLI身份/沙箱或L3。每次失败覆盖此前本机绿，原尝试保留。运行时与自检共用skill-observation-contract，避免兼容判断弱于宿主。NativeUserMessages和诊断继续只从注册表读取等级；已发布L3事实不由自检创造。
 

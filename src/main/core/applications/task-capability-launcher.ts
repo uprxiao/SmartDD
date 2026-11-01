@@ -27,7 +27,7 @@ import { ApplicationAdapterRegistry } from './application-adapter-registry';
 import { ApplicationToolService } from './tool-service';
 import { PrivateApplicationBroker } from './private-broker';
 import {ApplicationCliGateway} from './cli-gateway';
-import {inspectCodexCliSandbox,type CodexCliSandboxPlan} from './codex-effective-sandbox';
+import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {applicationSkillDelivery,applicationSkillProjectionName} from './application-skill-template';
 import {applicationSkillSnapshotView} from './application-skill-view';
 import {selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
@@ -152,7 +152,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const adapter=snapshot?this.support.adapters.get(snapshot.adapterBinding.hash):this.currentAdapter(this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,native.version);if(!adapter)return;const metadata='metadata'in adapter?adapter.metadata:this.support.adapters.get(adapter.hash).metadata;if(metadata.cliEntry!=='supported')return;
     // §15.4: CLI is delivered only for a version whose declared levels include L0.cli; undeclared versions fail closed.
     if(!this.support.adapters.effective(adapter.hash,native.version).levels.includes('L0.cli'))return;
-    this.planningCliPolicies.set(input.taskId,await(this.options.inspectSandbox??inspectCodexCliSandbox)(input,native));
+    const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner),inspect=this.options.inspectSandbox??delivery.effectiveSandbox;
+    if(!inspect)return;
+    this.planningCliPolicies.set(input.taskId,await inspect.call(delivery,input,native));
   }
   private cliAuthorizationStamp(context:import('./run-registry').RunContext):string{
     const apps=[...new Set(context.plan?.allowed.filter(c=>c.entry==='cli').map(c=>c.appId)??[])];return digest(canonicalJson(apps.map(name=>{const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)throw new ApplicationError('SCOPE_DENIED','CLI应用不在当前注册表');const policy=this.applications.selections.policyStamp(context.run.projectId,appId),bindings=builtinApplicationModules.module(appId).providers.map(provider=>{const slot=this.applications.connections.registry.provider(provider.id).id,binding=this.applications.selections.connectionSlot(context.run.projectId,appId,slot),connection=binding.connectionId?this.applications.connections.get(binding.connectionId):null;return{slot,...binding,connection:connection?{id:connection.id,identityRevision:connection.identityRevision,policyRevision:connection.policyRevision,enabled:connection.enabled,authorization:connection.authorization}:null};});return{appId,policy,bindings};})));
@@ -212,7 +214,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private async prepareOnce(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{
     if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
-    try{native=await(this.options.inspectNative??this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).inspectNative)(input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
+    try{const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner);native=await(this.options.inspectNative??delivery.inspectNative).call(delivery,input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     if(native)this.planningAgents.set(input.taskId,native);
     let runtimeCheck:Promise<boolean>|undefined,applicationRuntimeIssue:'HOST_INCOMPATIBLE'|undefined;
     const applicationRuntimeReady=async(snapshot:CapabilitySessionSnapshot)=>{

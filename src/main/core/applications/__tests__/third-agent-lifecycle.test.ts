@@ -18,10 +18,11 @@ import { CapabilityService, MCP_CAPABILITY } from '../../capabilities/capability
 import { ResourceStore } from '../resource-store';
 import { AgentSupportService } from '../agent-support-service';
 import { AgentAdapterRegistry } from '../agent-adapter-registry';
-import { builtinCapabilityDeliveryAdapters, CapabilityDeliveryAdapterRegistry } from '../capability-delivery-adapters';
+import { builtinCapabilityDeliveryAdapters, CapabilityDeliveryAdapterRegistry, type CapabilityDeliveryAdapter, type SkillProjectionContext } from '../capability-delivery-adapters';
 import { ApplicationService } from '../application-service';
 import { ManagedTaskCapabilities } from '../task-capability-launcher';
 import { MacProcessIdentityReader } from '../process-identity';
+import type { TaskLaunchInput } from '../native-launch-context';
 
 it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 registered third Agent creates/resumes a real native session and reads its Skill before calling the actual MCP child', async () => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-third-agent-'))), home = join(root,'home'), cwd = join(root,'project'), nativeRoot = join(home,'.scripted');
@@ -42,10 +43,14 @@ it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 regist
     sessionIdStrategy:'host',observeSessions:async()=>[],sessionFile:(root,_cwd,id)=>existsSync(join(root,id+'.jsonl'))?join(root,id+'.jsonl'):null,canConfirmNoHistory:root=>existsSync(root),
   };
   const runners = new RunnerAdapterRegistry([...builtinRunnerAdapters.list(),runner]);
-  const delivery = new CapabilityDeliveryAdapterRegistry([...builtinCapabilityDeliveryAdapters.list(),{
-    id:'scripted-test',runnerId:'scripted-test',discovery:'shared-home',skillProjection:context=>join(context.home,'.agents/skills'),entryDelivery:entry=>entry==='mcp',
-    inspectNative:async input=>({command:input.profile.command,version:(await runner.detectVersion(input.profile.command,{env:input.environment}))!,inventory:[],userSkillConfig:[]}),
-  }]);
+  class ScriptedDelivery implements CapabilityDeliveryAdapter {
+    readonly id='scripted-test';readonly runnerId='scripted-test';readonly discovery='shared-home' as const;
+    constructor(private readonly lifecycle:RunnerAdapter){}
+    skillProjection(context:SkillProjectionContext){return join(context.home,'.agents/skills');}
+    entryDelivery(entry:'mcp'|'cli'){return entry==='mcp';}
+    async inspectNative(input:TaskLaunchInput){return{command:input.profile.command,version:(await this.lifecycle.detectVersion(input.profile.command,{env:input.environment}))!,inventory:[],userSkillConfig:[]};}
+  }
+  const delivery = new CapabilityDeliveryAdapterRegistry([...builtinCapabilityDeliveryAdapters.list(),new ScriptedDelivery(runner)]);
   const profiles = new AiProfileService(db,secrets,Date.now,runners), report=join(root,'report.json'), stop=join(root,'stop');
   const profile = profiles.create({name:'Scripted Test',runner:'scripted-test',executable:command,env:[{name:'ELECTRON_RUN_AS_NODE',secret:false,value:'1'},{name:'WY_SCRIPTED_REPORT',secret:false,value:report},{name:'WY_SCRIPTED_STOP',secret:false,value:stop}],args:[],color:null,isDefault:true});
   const capabilities = new CapabilityService({db,projects,secrets,userData:root}), store = new ResourceStore(sqlite,root);
