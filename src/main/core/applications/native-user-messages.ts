@@ -14,8 +14,9 @@ import { NativeUserInputs, type HostUserInputReceipt } from './native-user-input
 const LIMIT = { tail: 4 * 1024 * 1024, line: 1024 * 1024, head: 65536, entries: 4096, records: 8192, proofs: 64 };
 /** Fallback used only when no registry is wired (isolated unit fixtures); production queries the adapter registry. */
 const retainedSupported: Record<string, readonly string[]> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
-export type NativeMessageLevels = (adapterHash: string, runner: string, cliVersion: string) => boolean;
-const retainedLevels: NativeMessageLevels = (_hash, runner, version) => Boolean(retainedSupported[runner]?.includes(version));
+/** Declared levels for the run's fixed adapter and CLI version (design §15.4). L2 opens Skill evidence, L3 opens chat authorization. */
+export type NativeMessageLevels = (adapterHash: string, runner: string, cliVersion: string) => readonly string[];
+const retainedLevels: NativeMessageLevels = (_hash, runner, version) => retainedSupported[runner]?.includes(version) ? ['L0.skill', 'L0.mcp', 'L1', 'L2', 'L3'] : [];
 const utf8 = (bytes: Uint8Array) => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 const json = (bytes: Uint8Array): any => { try { return JSON.parse(utf8(bytes)); } catch { return null; } };
 export interface NativeUserMessage {
@@ -47,10 +48,10 @@ export class NativeUserMessages {
     this.registrations.set(runId, { version, signal, detach: () => signal.removeEventListener('abort', remove) });
     signal.addEventListener('abort', remove, { once: true });
   }
-  private context(runId: string): { context: RunContext; registration: Registration } {
+  private context(runId: string, need: 'L2' | 'L3' = 'L3'): { context: RunContext; registration: Registration } {
     const registration = this.registrations.get(runId), context = this.current(runId);
     if (this.closed || !registration || registration.signal.aborted || context.signal.aborted || context.run.state !== 'active' || context.run.runId !== runId || context.signal !== registration.signal || !context.snapshot.native.sessionId || !/^[A-Za-z0-9_-]{1,128}$/.test(context.snapshot.native.sessionId)) throw new ApplicationError('SOURCE_UNAVAILABLE', '没有本次运行的可核验原生用户消息来源');
-    if (!this.supportsMessages(context.snapshot.adapterBinding.hash, context.snapshot.runner, registration.version)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前原生消息格式尚未验证');
+    if (!this.supportsMessages(context.snapshot.adapterBinding.hash, context.snapshot.runner, registration.version).includes(need)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前原生消息格式尚未验证');
     return { context, registration };
   }
   private prune(): void { for (const [message, proof] of this.proofs) if (proof.expiresAt <= this.now() || !this.registrations.has(message.runId)) this.proofs.delete(message); }
@@ -108,6 +109,9 @@ export class NativeUserMessages {
       content = value.message.content; kind = 'text';
     } else {
       if (value.type !== 'response_item' || value.payload?.type !== 'message' || value.payload.role !== 'user') return null;
+      // Codex 0.166.0 also writes harness-injected context as role "user"; when provenance is recorded, every item must be the user's own.
+      const meta = value.payload.internal_chat_message_metadata_passthrough;
+      if (meta !== undefined && (!Array.isArray(meta?.content_item_metadata) || !meta.content_item_metadata.length || meta.content_item_metadata.some((item: any) => item?.provenance?.type !== 'user'))) return null;
       content = value.payload.content; kind = 'input_text';
     }
     if (typeof content === 'string' && kind === 'text') return { text: content, timestamp };
@@ -165,8 +169,8 @@ export class NativeUserMessages {
   prepareStoppedSkillRead(runId:string,targets:readonly SkillReadTarget[]):()=>Promise<{reads:SkillReadObservation[];discoveries:SkillReadObservation[]}>{
     const empty=()=>({reads:[],discoveries:[]});
     try{
-      const {context,registration}=this.context(runId);
-      if(context.snapshot.runner!=='codex'||registration.version!=='0.162.1')return async()=>empty();
+      const {context,registration}=this.context(runId,'L2');
+      if(context.snapshot.runner!=='codex')return async()=>empty();
       const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return async()=>empty();
       const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[],applicationScope:context.applicationScope?.slice()},fixed=structuredClone(targets),through=this.now();
@@ -183,11 +187,11 @@ export class NativeUserMessages {
   }
   private async skillObservations(runId:string,targets:readonly SkillReadTarget[],kind:'read'|'discovery'):Promise<SkillReadObservation[]>{
     try{
-      const {context,registration}=this.context(runId);
-      if(context.snapshot.runner!=='codex'||registration.version!=='0.162.1')return [];
+      const {context}=this.context(runId,'L2');
+      if(context.snapshot.runner!=='codex')return [];
       const allowed=context.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
-      return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId).context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
+      return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
     }catch{return [];}
   }
   private async readSkillObservations(context:RunContext,targets:readonly SkillReadTarget[],kind:'read'|'discovery',through:number,validate:()=>boolean):Promise<SkillReadObservation[]>{

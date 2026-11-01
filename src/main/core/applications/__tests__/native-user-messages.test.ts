@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, appendFileSync, renameSync, symlinkSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, appendFileSync, renameSync, symlinkSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -14,12 +14,12 @@ import { encodeClaudeDir } from '../../tasks/native-sessions';
 const sender = { sender: { id: 101 }, senderFrame: { processId: 9, routingId: 1 } } as unknown as ApplicationUiSender;
 let root: string, cwd: string, nativeRoot: string, file: string, current: RunContext, abort: AbortController, inputs: NativeUserInputs, messages: NativeUserMessages, now: number, failRun: boolean, currentChecks: number;
 const text = '请发送唯一确定的草稿\n正文是中文😀';
-function setup(runner: 'claude-code' | 'codex', version = runner === 'codex' ? '0.162.1' : '2.1.303') {
+function setup(runner: 'claude-code' | 'codex', version = runner === 'codex' ? '0.162.1' : '2.1.303', levels?: (hash: string, runner: string, version: string) => readonly string[]) {
   abort = new AbortController(); const hash = 'a'.repeat(64), id = randomUUID();
   const snapshot = capabilitySessionSnapshotSchema.parse({ schema: 2, taskId: 'owned-task', projectId: 'p1', runner, createdAt: new Date(now).toISOString(), adapterBinding: { id: runner, version: '1.0.0', hash, projectionFormatVersion: 1, nativeToolNames: {} }, native: { sessionId: id, stateRoot: nativeRoot, cwd }, agentAtCreation: { version, adapterRevision: 1 }, catalogGeneration: 'test', packages: [{ appId: 'mail', version: '1.0.0', packageHash: hash, hashAlgorithm: 'app-manifest-v1', hostApi: { min: 1, max: 1 }, dataApi: 1, runtimeHash: hash, toolContractMajors: {}, skills: [{ skillId: 'assistant', nativeName: applicationNativeSkillName('mail', 'assistant', hash), contentHash: hash, sourceRelativePath: 'skills/assistant', projectionPath: join(root, 'skill/SKILL.md') }], bindings: [], allowedOperations: ['mail.send'] }], standardSkills: [], mcp: [{ kind: 'applications', serverName: 'wy_one', protocolMajor: 1, runtimeHash: hash }], provenance: 'created' });
   current = { run: { runId: randomUUID(), taskId: snapshot.taskId, projectId: 'p1', runner, state: 'active', snapshotHash: hash, pid: 80001, processStartedAt: 'fixture-process', startedAt: new Date(now).toISOString(), endedAt: null }, snapshot, bindings: [], signal: abort.signal };
   inputs = new NativeUserInputs({ requireSender: value => { if (value !== sender) throw new Error('wrong sender'); }, current: target => target.taskId === 'owned-task' && target.ptyId === 'owned-pty' ? current : null, now: () => now });
-  messages = new NativeUserMessages(inputs, id => { currentChecks++; if (failRun || id !== current.run.runId) throw new Error('not an owned active run'); return current; }, () => now);
+  messages = new NativeUserMessages(inputs, id => { currentChecks++; if (failRun || id !== current.run.runId) throw new Error('not an owned active run'); return current; }, () => now, levels);
   messages.register(current.run.runId, version, abort.signal);
   const dir = runner === 'codex' ? join(nativeRoot, 'sessions/2026/10/01') : join(nativeRoot, 'projects', encodeClaudeDir(cwd)); mkdirSync(dir, { recursive: true });
   file = join(dir, runner === 'codex' ? 'rollout-old-date-' + id + '.jsonl' : id + '.jsonl'); writeFileSync(file, runner === 'codex' ? JSON.stringify({ type: 'session_meta', payload: { id, cwd, timestamp: new Date(now - 86400000).toISOString() } }) + '\n' : '');
@@ -175,4 +175,37 @@ it('keeps owned native catalog discovery separate from reading and rejects revok
  write({timestamp:new Date(now).toISOString(),type:'response_item',payload:{type:'message',role:'developer',content:[{type:'input_text',text:catalog}]}});
  expect(await messages.skillDiscoveries(current.run.runId,[target])).toHaveLength(1);expect(await messages.skillReads(current.run.runId,[target])).toEqual([]);
  current.applicationScope=[];expect(await messages.skillDiscoveries(current.run.runId,[target])).toEqual([]);
+});
+
+// M11 S10: real Codex 0.166.0 rollout (sanitized; see fixtures/codex-0.166.0/provenance.json).
+const fixtureDir=join(__dirname,'fixtures/codex-0.166.0');
+const realLines=()=>readFileSync(join(fixtureDir,'rollout.jsonl'),'utf8').split('\n').filter(Boolean);
+describe('M11 S10 Codex 0.166.0 real-log fixture',()=>{
+ it('L2: the real read and catalog records yield exactly one read and one discovery',()=>{
+  const lines=realLines(),meta=JSON.parse(readFileSync(join(fixtureDir,'provenance.json'),'utf8'));
+  const target={id:'bug-analysis',path:meta.skillPath,content:readFileSync(join(fixtureDir,'SKILL.md'),'utf8'),nativeName:meta.skillNativeName};
+  const start=Date.parse(JSON.parse(lines[0]).timestamp)-1000,end=start+3600000;
+  expect(codexSkillReadEvidence(lines,[target],start,end)).toMatchObject([{skillId:'bug-analysis',callId:'call_m11_cli_0'}]);
+  expect(codexSkillDiscoveryEvidence(lines,[target],start,end)).toHaveLength(1);
+  expect(codexSkillReadEvidence(lines,[{...target,content:target.content+'x'}],start,end)).toEqual([]);
+  expect(codexSkillReadEvidence(lines.filter(l=>!l.includes('"function_call_output"')),[target],start,end)).toEqual([]);
+ });
+ it('L3: only the user-provenance record matches; harness-injected "user" context never does, even with a receipt',async()=>{
+  const lines=realLines().map(l=>JSON.parse(l)),records=lines.filter(r=>r.payload?.role==='user');
+  expect(records.map(r=>r.payload.internal_chat_message_metadata_passthrough.content_item_metadata[0].provenance.type)).toEqual(['harness','user']);
+  setup('codex','0.166.0',()=>['L0.skill','L0.mcp','L0.cli','L1','L2','L3']);
+  const [harness,owned]=records.map(r=>({...r,timestamp:new Date(now).toISOString()}));
+  input(harness.payload.content[0].text);write(harness);
+  expect(await messages.read(current.run.runId)).toMatchObject({status:'no-match',messages:[]});
+  input(owned.payload.content[0].text);write(owned);
+  const result=await messages.read(current.run.runId);
+  expect(result.status).toBe('matched');expect(result.messages.map(m=>m.text)).toEqual([owned.payload.content[0].text]);
+ });
+ it('L3 stays closed when the declared levels lack L3, and L2 evidence stays closed without L2',async()=>{
+  setup('codex','0.166.0',()=>['L0.skill','L0.mcp','L0.cli','L1','L2']);input();write(user());
+  expect(await messages.read(current.run.runId)).toMatchObject({status:'unsupported',issueCode:'AGENT_ADAPTER_UNSUPPORTED'});
+  messages.dispose();setup('codex','0.166.0',()=>['L0.skill','L0.mcp','L0.cli','L1']);
+  const skill=current.snapshot.packages[0].skills[0];
+  expect(await messages.skillReads(current.run.runId,[{id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:'x'}])).toEqual([]);
+ });
 });
