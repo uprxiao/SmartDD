@@ -1,0 +1,106 @@
+{
+  "schema": "willyou-release-software-partial-v1",
+  "group": "V010-SOFTWARE",
+  "phase": "lightweight",
+  "status": "partial-lightweight-complete",
+  "source": "/private/tmp/willyou-m11-c23-2637/source",
+  "baseCommit": "73946425efe7735bf7e7bedd62142f9a885179c4",
+  "sourceManifestSha256": "b5b62e1758ae526a4eea48c18070c7d8fe1ef1e615fa34a73f24c06245e0fcb0",
+  "sourceFileCount": 3233,
+  "sourceDrift": [],
+  "manifestUnchanged": true,
+  "startedAt": "2026-11-02T03:12:08.368382+00:00",
+  "finishedAt": "2026-11-02T03:12:28.436814+00:00",
+  "executions": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/private/tmp/willyou-m11-c23-2637/source",
+      "pid": 46288,
+      "processGroup": 46288,
+      "startedAt": "2026-11-02T03:12:08.371878+00:00",
+      "outerBudgetSeconds": 180,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 19.672,
+      "finishedAt": "2026-11-02T03:12:28.040647+00:00",
+      "ownProcessGroupStillExists": false,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "onboarding",
+      "argv": [
+        "node",
+        "scripts/applications/check-module-onboarding.mjs",
+        "--app",
+        "sample-kv"
+      ],
+      "cwd": "/private/tmp/willyou-m11-c23-2637/source",
+      "pid": 46660,
+      "processGroup": 46660,
+      "startedAt": "2026-11-02T03:12:28.042757+00:00",
+      "outerBudgetSeconds": 180,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 0.073,
+      "finishedAt": "2026-11-02T03:12:28.113614+00:00",
+      "ownProcessGroupStillExists": false,
+      "log": "onboarding.log"
+    },
+    {
+      "name": "checkout-paths",
+      "argv": [
+        "node",
+        "scripts/release/check-checkout-paths.mjs"
+      ],
+      "cwd": "/private/tmp/willyou-m11-c23-2637/source",
+      "pid": 46667,
+      "processGroup": 46667,
+      "startedAt": "2026-11-02T03:12:28.115356+00:00",
+      "outerBudgetSeconds": 180,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 0.04,
+      "finishedAt": "2026-11-02T03:12:28.154392+00:00",
+      "ownProcessGroupStillExists": false,
+      "log": "checkout-paths.log"
+    },
+    {
+      "name": "release-check",
+      "argv": [
+        "pnpm",
+        "release:check",
+        "--tag",
+        "v0.1.0"
+      ],
+      "cwd": "/private/tmp/willyou-m11-c23-2637/source",
+      "pid": 46673,
+      "processGroup": 46673,
+      "startedAt": "2026-11-02T03:12:28.157165+00:00",
+      "outerBudgetSeconds": 180,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 0.184,
+      "finishedAt": "2026-11-02T03:12:28.338834+00:00",
+      "ownProcessGroupStillExists": false,
+      "log": "release-check.log"
+    }
+  ],
+  "checksPassed": 2,
+  "checksFailed": 2,
+  "formalUniqueCasesAdded": 0,
+  "cacheEnvironment": {
+    "WILLYOU_TEST_CACHE_DIR": "/private/tmp/willyou-m11-c23-2637/software-cache",
+    "COREPACK_ENABLE_NETWORK": "0"
+  },
+  "dependencyBoundary": "Coordinator is packaging concurrently. No native/output stability claim is made; only frozen source inputs checked. Native/full/release tests have NOT run.",
+  "pending": [
+    "Coordinator supplies frozen out and heavyNative lease",
+    "Full pnpm test --maxWorkers=2 final JSON",
+    "pnpm test:release"
+  ],
+  "cleanup": "cleanup.json"
+}

@@ -15,6 +15,7 @@ describe.skipIf(process.platform === 'win32')('M8 process-kill recovery (backend
     await build({ entryPoints: ['scripts/m8/crash-worker.ts'], bundle: true, platform: 'node', format: 'cjs', tsconfig: 'tsconfig.node.json', outfile: worker,
       plugins: [{ name: 'native-module-location', setup(builder: { onResolve: (filter: { filter: RegExp }, callback: () => { path: string; external: boolean }) => void }) {
         builder.onResolve({ filter: /^better-sqlite3$/ }, () => ({ path: require.resolve('better-sqlite3'), external: true }));
+        builder.onResolve({ filter: /^node-pty$/ }, () => ({ path: require.resolve('node-pty'), external: true }));
       } }],
     });
   });

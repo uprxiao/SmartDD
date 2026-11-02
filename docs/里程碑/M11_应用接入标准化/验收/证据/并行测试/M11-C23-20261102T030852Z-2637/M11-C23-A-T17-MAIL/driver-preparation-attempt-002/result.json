@@ -1,0 +1,107 @@
+{
+  "schema": "m11-c23-t17-mail-driver-preparation-v1",
+  "status": "ready-not-executed",
+  "case": "T17",
+  "formalCasePassesAdded": 0,
+  "driver": "/private/tmp/willyou-m11-c23-2637/source/scripts/applications/m11-t17-foxmail-v2-ui.mjs",
+  "driverSha256": "52defdcd54ce24d2a7d98edbd8ca0a4bf2f0050f9d2372e9345d5102cd590537",
+  "sourceManifestSha256": "b5b62e1758ae526a4eea48c18070c7d8fe1ef1e615fa34a73f24c06245e0fcb0",
+  "baseline": {
+    "branch": "feature/0.1.0",
+    "baseCommit": "73946425efe7735bf7e7bedd62142f9a885179c4",
+    "preparedVersion": "0.1.0"
+  },
+  "checks": [
+    {
+      "command": "node --check scripts/applications/m11-t17-foxmail-v2-ui.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/lib/check-cdp-expressions.mjs scripts/applications/m11-t17-foxmail-v2-ui.mjs /private/tmp/willyou-m11-c23-2637/evidence/mail-driver-preparation/attempt-002/dynamic-cdp-compilation.mjs",
+      "exitCode": 0,
+      "result": {
+        "paths": 2,
+        "literalExpressions": 14,
+        "failures": 0,
+        "executed": false,
+        "dynamicTemplates": "not covered"
+      }
+    }
+  ],
+  "executed": {
+    "app": false,
+    "codex": false,
+    "native": false,
+    "reference": false,
+    "realConfigRead": false
+  },
+  "readyScope": [
+    "actual Codex native Skill read and exactly14 Mailv2 MCP surface",
+    "default omitted30 and explicit100-day query; all pages; no duplicates; independent MIME date IDs",
+    "source revisions/complete/incomplete/resources; bounded body and attachment read with full independent hashes",
+    "actual MCP origin/fullv2 envelope/operation-source audits",
+    "reply_create representative then draft_get/list/copy/resource attach_import; preserve never-approval refusal"
+  ],
+  "gaps": [
+    {
+      "criterion": "runtime ready checks and actual A+R assertions",
+      "status": "not-executed",
+      "reason": "waiting for explicit UI/native lease"
+    },
+    {
+      "criterion": "six remaining pure draft/send actions",
+      "status": "reuse pending coordinator review",
+      "evidence": "/private/tmp/willyou-m11-c23-2637/prior-evidence-applicability.json",
+      "scope": "C7 mapping and existing T18-T20 unchanged implementation; actual SMTP not in this driver"
+    },
+    {
+      "criterion": "real local writes under on-request/read-only",
+      "status": "runtime-preflight-pending",
+      "rule": "actual foreground single approval only for three exact local calls; refuse unknown or unverifiable prompt"
+    }
+  ],
+  "command": {
+    "cwd": "/private/tmp/willyou-m11-c23-2637/source",
+    "argv": [
+      "node",
+      "scripts/applications/m11-t17-foxmail-v2-ui.mjs"
+    ],
+    "env": {
+      "WILLYOU_T17_MAIL_LEASE": "granted",
+      "WILLYOU_ACCEPTANCE_APP": "/private/tmp/willyou-m11-c23-2637/isolated Applications/WillYou.app",
+      "WILLYOU_ACCEPTANCE_ASAR_SHA": "0fcf6850d1778aad6a9a9c6add19ab85f978745eb4e3933cf6e1a62ca5f6c08f",
+      "WILLYOU_CODEX_CLI": "absolute command -v codex result, resolve only after lease",
+      "WILLYOU_T17_MAIL_EVIDENCE": "/private/tmp/willyou-m11-c23-2637/evidence/mail-real/attempt-001"
+    }
+  },
+  "finishedAt": "2026-11-02T03:21:09.356Z",
+  "supersedesPreparationOnly": {
+    "attempt": "attempt-001",
+    "originalManifestSha256": "f6d2ff0eb2f359fae56667830496e8c5f24ad21681de22d41048c7a034fd9fce",
+    "reason": "Coordinator-authorized on-request native single-Allow UI for local draft representative; no runtime had started"
+  },
+  "approval": {
+    "profile": "on-request",
+    "sandbox": "read-only",
+    "unchangedAnnotations": true,
+    "unchangedHostGrants": true,
+    "allowedTools": [
+      "smartdd_mail_reply_create_v2",
+      "smartdd_mail_draft_copy_v2",
+      "smartdd_mail_attach_import_v2"
+    ],
+    "preflight": "reply first; dependent operations only after actual successful MCP output and recorded per-call UI approval",
+    "proof": [
+      "pre-issued exact call/argument SHA",
+      "native prompt exact namespace and toolName",
+      "Field1/1, selected1.Allow, session/permanent/cancel options and submit text",
+      "own Task/PTY, foreground, actual xterm click and verified focus",
+      "re-read identical prompt, one Enter only"
+    ],
+    "promptDeadlineMs": 15000,
+    "origin": "/Users/liubu/Documents/ChatGPT/SmartDD-m10/docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T20/attempt-001/attempt-001/executed-fixtures-t20-single-approval.mjs",
+    "originSha256": "aa2e332496da4ea7c91271c656d400e321a6455b3659a106fabf6f5f0ec51e74",
+    "rawPromptOrScreenshotExported": false,
+    "unrecognizedBehavior": "record gap; do not approve or replay, do not replace MCP by RPC"
+  }
+}

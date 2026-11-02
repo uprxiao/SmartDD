@@ -1,0 +1,192 @@
+{
+  "schema": "m11-test-round-v1",
+  "runId": "M11-C23-20261102T030852Z-2637",
+  "createdAt": "2026-11-02T03:08:52.661017+00:00",
+  "updatedAt": "2026-11-02T03:44:44.837350+00:00",
+  "status": "T17 mail supplemental passed; final full software release checks",
+  "authorization": {
+    "T17Mail": "real local Foxmail supplemental A+R test",
+    "deferred": [
+      "T12",
+      "T21",
+      "T22",
+      "T28"
+    ],
+    "release": "authorized after T17 and required final release checks pass",
+    "realAgent": "Codex 0.166.0 only",
+    "model": "loopback synthetic permitted",
+    "smtp": "synthetic loopback only"
+  },
+  "privateRoot": "/private/tmp/willyou-m11-c23-2637",
+  "baseline": {
+    "branch": "feature/0.1.0",
+    "baseCommit": "73946425efe7735bf7e7bedd62142f9a885179c4",
+    "version": "0.1.0",
+    "sourceSnapshot": "/private/tmp/willyou-m11-c23-2637/source",
+    "sourceManifest": "/private/tmp/willyou-m11-c23-2637/source-manifest.json",
+    "sourceManifestSha256": "b5b62e1758ae526a4eea48c18070c7d8fe1ef1e615fa34a73f24c06245e0fcb0",
+    "sourceFiles": 3233,
+    "packageApp": "/private/tmp/willyou-m11-c23-2637/package-attempt-001/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m11-c23-2637/package-attempt-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "0fcf6850d1778aad6a9a9c6add19ab85f978745eb4e3933cf6e1a62ca5f6c08f",
+    "dmg": "/private/tmp/willyou-m11-c23-2637/package-attempt-001/WillYou-0.1.0-mac-arm64.dmg",
+    "dmgSha256": "f1a0df3247128b5d5e984d9ac34d76c882d2fb66c0200c0a6fa7e8df78da784b",
+    "nativeSha256": {
+      "willyou-files": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736",
+      "smartdd-voice": "3cfc03e8efc2993803d1332e34b28d460ed2ece7e1b40287d9605f86c9aca880",
+      "willyou-foxmail": "f4983a40160631cd91a96d39d3fc4bd5b18b43436338ff8386e7ebe1a89fc5ea",
+      "willyou-app": "4fb7e02cbc8b5b1ff6f0f47219f065c7448c4d95d772fb506110e527ed993b7e",
+      "willyou-process-identity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
+    },
+    "installedApp": "/private/tmp/willyou-m11-c23-2637/isolated Applications/WillYou.app"
+  },
+  "agents": {
+    "root": {
+      "role": "coordinator, implementation, build, ledger"
+    },
+    "mailExecutor": {
+      "agent": "/root/m11_s0b_composition",
+      "group": "M11-C23-T17-MAIL",
+      "state": "all 3 native attempts closed; final read/import chain passed; cleanup verified; evidence aggregation only",
+      "privateSource": "/private/tmp/willyou-m11-c23-2637/source"
+    },
+    "softwareExecutor": {
+      "agent": "/root/m11_s0b_units",
+      "group": "V010-SOFTWARE",
+      "state": "final full suite heavy lease granted",
+      "cache": "/private/tmp/willyou-m11-c23-2637/software-cache",
+      "evidence": "/private/tmp/willyou-m11-c23-2637/software-evidence/attempt-001"
+    }
+  },
+  "resources": {
+    "uiFocus": null,
+    "heavyNativeBuild": "/root/m11_s0b_units: final corrected-baseline full suite",
+    "realCodex": null
+  },
+  "next": "freeze source, build once, real Foxmail A+R and release software checks",
+  "githubAuth": "Normal stored gh login works after excluding invalid ambient GH_TOKEN/GITHUB_TOKEN; no credential values recorded",
+  "rootChecks": [
+    {
+      "command": "node scripts/applications/check-module-onboarding.mjs --app sample-kv",
+      "cwd": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+      "exitCode": 0,
+      "log": "/private/tmp/willyou-m11-c23-2637/onboarding-main-check.log",
+      "boundary": "read-only main repository with actual Git tracked index; production manifest matches frozen source"
+    },
+    {
+      "command": "node scripts/release/check-checkout-paths.mjs",
+      "cwd": "/Users/liubu/Documents/ChatGPT/SmartDD-m10",
+      "exitCode": 0,
+      "log": "/private/tmp/willyou-m11-c23-2637/checkout-paths-main-check.log",
+      "boundary": "read-only all actual Git tracked paths including docs; no synthetic Git index"
+    }
+  ],
+  "originalSoftwareRun": {
+    "status": "coordinator-superseded-test-only-baseline",
+    "finalJson": false,
+    "releaseTestsStarted": false,
+    "reason": "known obsolete test baseline corrected; prioritize ready T17 and later execute final software baseline in full",
+    "cleanupEvidence": "/private/tmp/willyou-m11-c23-2637/software-evidence/attempt-002/coordinator-superseded.json"
+  },
+  "softwareTargeted": {
+    "selected": 28,
+    "passed": 28,
+    "failed": 0,
+    "unexecutedSelected": 0,
+    "filtered": 309,
+    "path": "/private/tmp/willyou-m11-c23-2637/software-evidence/attempt-004"
+  },
+  "checks": {
+    "typecheckOriginal": "passed",
+    "typecheckTestCorrections": "passed",
+    "releaseMetadata": "passed v0.1.0",
+    "onboardingMainTrackedIndex": "passed",
+    "checkoutPathsMainTrackedIndex": "passed",
+    "targetedAffectedRegressions": "28/28 passed, 309 filtered not counted",
+    "build": "pnpm build exit0",
+    "releaseTests": {
+      "command": "pnpm test:release",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "elapsedMs": 1002.500166
+    }
+  },
+  "mailContinuation": {
+    "previousAttempt": "/private/tmp/willyou-m11-c23-2637/evidence/mail-real/attempt-001/result.json",
+    "sameOwnPrivateUserData": true,
+    "dailyInstanceOrCredentialsReused": false,
+    "transportChange": "loopback synthetic Responses port only",
+    "referenceCorrection": "independent Python charset labels gb2312 mapped to GBK per WHATWG; raw source not modified",
+    "completedQueryCallsNotReplayed": 22,
+    "mustVerifyNewRunAuditAndIds": true
+  },
+  "mailVerifiedSubcoverage": {
+    "default30": {
+      "independent": 143,
+      "returned": 140,
+      "explicitProblems": 3,
+      "unexplainedMissing": 0,
+      "extra": 0
+    },
+    "explicit100": {
+      "independent": 496,
+      "returned": 482,
+      "explicitProblems": 14,
+      "unexplainedMissing": 0,
+      "extra": 0
+    },
+    "duplicates": 0,
+    "bodyResources": "two real messages bounded bytes and independent normalized hashes passed after explicit reference-decoder correction",
+    "realAttachmentBytes": 18604,
+    "realAttachmentHash": "passed",
+    "replyCreate": "actual native once-Allow then MCP succeeded",
+    "draftGetList": "passed",
+    "draftCopy": "readonly original native output and exact host audit recovered: exactly one succeeded",
+    "remaining": "actual attachment import plus final cross-attempt audit and cleanup; no query/read/copy replay"
+  },
+  "mailAttempt002": {
+    "status": "driver-race-after-successful-copy",
+    "allOwnedProcessesExited": true,
+    "remainingLeases": 0,
+    "cipherRestored": true,
+    "loopbackClosed": true,
+    "manifestSha256": "e7897be66c8f5e7aaf6aa7c7d7392144c30597085b802c83472ac66eabe5bc58"
+  },
+  "mailImportBeforeRetry": {
+    "originalRun": "90a29a21 (full ID in private receipt)",
+    "originalCopyOperationId": "21c51282-4339-4ac9-8722-86e23ecb088c",
+    "importInvocations": 0,
+    "durableAttachments": 0,
+    "sendIntents": 0
+  },
+  "T17MailDecision": {
+    "status": "passed-supplemental",
+    "uniqueCasesAdded": 0,
+    "sourceScope": "same approved real Foxmail profile, readonly, source9187 entries unchanged",
+    "attempts": [
+      "attempt-001 source oracle mismatch retained",
+      "attempt-002 input acknowledgement race retained; actual successful copy receipt recovered readonly",
+      "attempt-003 final missing import passed"
+    ],
+    "existingEvidenceReuse": "C7 14-v1/v2 mappings I + T18-T20 draft/send A/R evidence only for unchanged production inputs; no claim six persistent/send tools rerun on real source this round",
+    "formalTotal": 38,
+    "formalPassed": 34,
+    "deferred": [
+      "T12",
+      "T21",
+      "T22",
+      "T28"
+    ]
+  },
+  "fullSoftware": {
+    "pid": 96106,
+    "processGroup": 96106,
+    "startedAt": "2026-11-02T03:45:37Z",
+    "source": "/private/tmp/willyou-m11-c23-2637/software-source-attempt-002",
+    "output": "/private/tmp/willyou-m11-c23-2637/software-evidence/attempt-005-final-full/vitest.json",
+    "status": "running-no-final-json",
+    "reporter": "verbose + json; fragments not counted"
+  }
+}

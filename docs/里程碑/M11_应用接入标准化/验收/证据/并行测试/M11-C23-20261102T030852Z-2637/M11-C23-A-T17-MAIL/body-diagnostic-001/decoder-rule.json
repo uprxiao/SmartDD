@@ -1,0 +1,39 @@
+{
+  "sources": [
+    {
+      "path": "src/main/core/applications/providers/foxmail-source.ts",
+      "sha256": "6d66da45f2e50f597a2280df0fc480082330fbad753ba63eebbe2f133cca93cf"
+    },
+    {
+      "path": "node_modules/.pnpm/postal-mime@4.0.11/node_modules/postal-mime/dist/esm/mime-node.js",
+      "sha256": "58f226581c65e4d3a1af8e10c1edaf6f33e729f2143c398e5cb0408a87fe7be2"
+    },
+    {
+      "path": "node_modules/.pnpm/postal-mime@4.0.11/node_modules/postal-mime/dist/esm/decode-strings.js",
+      "sha256": "b70f2a1ee57fba0fab1cbe91456ccf32a292bc21db035165f2a71a784288cddc"
+    }
+  ],
+  "decoderLabels": [
+    {
+      "label": "gb2312",
+      "resolved": "gbk",
+      "syntheticA1AA": "U+2014"
+    },
+    {
+      "label": "gb_2312-80",
+      "resolved": "gbk",
+      "syntheticA1AA": "U+2014"
+    },
+    {
+      "label": "gbk",
+      "resolved": "gbk",
+      "syntheticA1AA": "U+2014"
+    },
+    {
+      "label": "gb18030",
+      "resolved": "gb18030",
+      "syntheticA1AA": "U+2014"
+    }
+  ],
+  "rule": "PostalMime decodeText → decodeCharset → getDecoder/findDecoder tries the declared label with native WHATWG TextDecoder first. This runtime resolves gb2312 as gbk. Independent Python strict gb2312 differs at A1AA; explicit gbk per the resolved label matches both punctuation positions without text replacement or hash selection."
+}

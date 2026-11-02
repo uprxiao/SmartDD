@@ -124,7 +124,9 @@ describe.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('fixe
     finally{Object.defineProperty(process,'platform',actualPlatform);Object.defineProperty(process,'arch',actualArch);}
     expect(input).toEqual(before);expect(f.snapshotTree(f.home)).toEqual(home);if(input.pluginRoot)expect(f.snapshotTree(input.pluginRoot)).toEqual(plugin);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(stored.snapshot);expect(f.adapters.plan(snapshot.adapterBinding.hash,input)).toEqual(good);
   });
-  it.each([['claude-code',''],['claude-code','99.0.0'],['codex',''],['codex','99.0.0']] as const)('PW rejects an absent or future %s CLI version %j without selecting a fallback version',async(runner,cliVersion)=>{
+  // R15 allows an undeclared semantic Codex version to use best-effort MCP (T25
+  // above). These negative cases require an absent/unparseable version instead.
+  it.each([['claude-code',''],['claude-code','99.0.0'],['codex',''],['codex','unverified']] as const)('PW rejects an unsupported %s CLI version %j without inventing a verified version',async(runner,cliVersion)=>{
     const snapshot=f.plan(runner);await f.sessions.create(snapshot,f.home);const input=await f.request(snapshot),before=structuredClone(input),original=await f.sessions.get(snapshot.taskId),home=f.snapshotTree(f.home);
     expect(()=>f.adapters.plan(snapshot.adapterBinding.hash,{...input,cliVersion})).toThrow('尚未验证');expect(f.adapters.recovery(snapshot.adapterBinding.hash,cliVersion)).toEqual({capability:'unverified'});expect(input).toEqual(before);expect(f.snapshotTree(f.home)).toEqual(home);expect((await f.sessions.get(snapshot.taskId)).snapshot).toEqual(original.snapshot);expect(f.adapters.plan(snapshot.adapterBinding.hash,input).agentId).toBe(runner);
   });

@@ -1,0 +1,34 @@
+{
+  "schema": "m11-c23-test-only-corrections-v1",
+  "originalSource": "/private/tmp/willyou-m11-c23-2637/source",
+  "correctedSource": "/private/tmp/willyou-m11-c23-2637/software-source-attempt-002",
+  "applicationProductionChanged": false,
+  "changes": [
+    {
+      "path": "src/main/core/projects/transfer-crash.test.ts",
+      "beforeSha256": "d5e23f65c2d9c781686161b312fade12ccb15b3345393c868a41a1eb9b133f16",
+      "afterSha256": "e8e30dff7c8ca00145b9c3456c9bed6d5a2edfdafc14e2a16a7ac0f7ce38a73b"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/agent-adapters.test.ts",
+      "beforeSha256": "59ae2b8d6392f171b9af57ba533dd95545dfd1f1637b13bcc1c16779ecb1674f",
+      "afterSha256": "12679d7ecf1ddc5e7ff7d09613eaf68a04b831de005b026d34c6468d2d49e2b2"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/application-controller.test.ts",
+      "beforeSha256": "6be3eb25bfa3149c48322491ef142e55442b86bbd1981659a8ee902a122f87f3",
+      "afterSha256": "09e91809aa57c2367b2184619b485aa84b757f22163a902729f51adddc18d429"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "beforeSha256": "bd3e3d2d8f2a846ceefe646988c6f28225a119d8831ef6c769f9e672c042ae3f",
+      "afterSha256": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764"
+    }
+  ],
+  "rationale": {
+    "transfer-crash": "Externalize node-pty native module in esbuild fixture like better-sqlite3; preserve process-kill recovery assertions",
+    "agent-adapters": "R15 semver-unknown Codex supports best-effort MCP; retain unsupported-version fail-closed assertions with unparseable version; T25 positive best-effort test unchanged",
+    "task-capability-launcher": "Unsupported native-guard negative paths require unparseable version; preserve all no-authority/immutable snapshot/lease and recovery assertions; known semver fallback tested separately",
+    "application-controller": "Whitelist three approved M11 endpoints and add foreign-frame gate/actual-sender forwarding checks"
+  }
+}
