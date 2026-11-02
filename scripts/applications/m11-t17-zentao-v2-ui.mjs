@@ -350,7 +350,8 @@ const server = createServer((incoming, res) => {
   const raw = JSON.stringify(body);
   const taskRequest = raw.includes(marker);
   // The profile health probe runs a real Codex exec asking for an exact connectivity code.
-  const probeCode = /Reply with exactly ([A-Za-z0-9_-]+)/.exec(raw)?.[1] ?? null;
+  const probeCode =
+   /Reply with exactly ([A-Za-z0-9_-]+)/.exec(raw)?.[1] ?? null;
   const tools = (body.tools ?? []).flatMap((t) =>
    t.type === "namespace"
     ? (t.tools ?? []).map((v) => ({ ...v, namespace: t.name }))
@@ -782,6 +783,8 @@ try {
   15000,
  );
  await app.evaluate(`document.title='A · M11 T17 · 禅道 v2 真实读取';true`);
+ // The page collectors do not survive a reload; re-arm before driving the terminal.
+ await app.arm();
  await app.waitFor(
   `document.querySelector('[data-testid=home-project]')?.textContent.includes(${JSON.stringify(projectName)})&&document.querySelector('[data-testid=home-profile]')?.textContent.includes('M11 T17 私有 Codex')`,
   15000,

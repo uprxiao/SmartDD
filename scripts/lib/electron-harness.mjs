@@ -109,9 +109,11 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
       throw new Error('Electron test condition timed out');
     };
     await waitFor('Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))', 10_000, { navigation: true });
-    await evaluate(`window.__m5 = { output: {}, exits: {} };
+    // Collectors live on the page, so a driver that reloads must call arm() again.
+    const arm = () => evaluate(`window.__m5 = { output: {}, exits: {} };
       window.electronAPI.eventOn('pty:data', e => { window.__m5.output[e.ptyId] = (window.__m5.output[e.ptyId] || '') + e.data; });
       window.electronAPI.eventOn('pty:exit', e => { window.__m5.exits[e.ptyId] = e.code; }); true`);
+    await arm();
     const invoke = (channel, ...args) => evaluate(`window.electronAPI.invoke(${JSON.stringify(channel)}, ...${JSON.stringify(args)})`, 70_000);
     // Test-only main-process evaluation. Enabled solely by the local launch flag above.
     // Used to compare decrypted credentials with artifacts without returning the credentials.
@@ -192,7 +194,8 @@ export async function openElectron({ userData, env: extraEnv = {}, executable, c
         assert(child.kill('SIGKILL'), 'Could not stop this isolated test App');
         return await Promise.race([exited, pause(3000).then(() => { throw new Error('Test App crash did not finish'); })]);
       },
-      output: (ptyId) => evaluate(`window.__m5.output[${JSON.stringify(ptyId)}] || ''`),
+      arm,
+      output: (ptyId) => evaluate(`window.__m5?.output[${JSON.stringify(ptyId)}] ?? ''`),
       input: (ptyId, data) => evaluate(`window.electronAPI.eventSend('pty:input', ${JSON.stringify({ ptyId, data })})`),
       screenshot: async (path) => { const { data } = await cdp('Page.captureScreenshot', { format: 'png' }); await writeFile(path, Buffer.from(data, 'base64'), { mode: 0o600 }); },
       logs: () => logs,
