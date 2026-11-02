@@ -292,7 +292,9 @@ const nextStep = () => {
    note: "capability-list",
   };
  }
- const session = /Process running with session ID (\d+)/.exec(last.text ?? "")?.[1];
+ const session = /Process running with session ID (\d+)/.exec(
+  last.text ?? "",
+ )?.[1];
  if (phase === "baseline") {
   phase = "held";
   faultMode = "ok";
@@ -316,9 +318,21 @@ const nextStep = () => {
   phase = "dropped";
  }
  if (phase === "dropped") {
-  phase = "cancel";
+  phase = "dropped-poll";
   faultMode = "drop";
   return { ...read(), note: "dropped-read" };
+ }
+ if (phase === "dropped-poll") {
+  // Keep the connection broken until the client's own retry budget ends the call.
+  if (session) {
+   lastIssueAt = Date.now();
+   return {
+    note: "dropped-poll",
+    capability: CAPABILITY.work_list,
+    stdin: { session_id: Number(session) },
+   };
+  }
+  phase = "cancel";
  }
  if (phase === "cancel") {
   phase = "cancel-poll";
@@ -518,7 +532,9 @@ const server = createServer((incoming, res) => {
   };
   issued.push({
    callId,
-   command: step.stdin ? toolName + " " + JSON.stringify(toolArguments) : step.command,
+   command: step.stdin
+    ? toolName + " " + JSON.stringify(toolArguments)
+    : step.command,
    capability: step.capability,
    note: step.note,
    resource: step.resource,
@@ -1001,8 +1017,10 @@ try {
    // A cancelled in-flight call may never produce an output, so accept a task that already ended.
    (issued.every((c) => envelopes.has(c.callId)) ||
     state !== "running" ||
-    // A cancelled call may never surface an output; give it a bounded settle window.
-    (issued.length >= 5 && lastIssueAt && Date.now() - lastIssueAt > 15000))
+    // A cancelled call may never surface an output; only that phase may settle without one.
+    (issued.some((c) => c.note === "cancelled-read") &&
+     lastIssueAt &&
+     Date.now() - lastIssueAt > 15000))
   );
  }, 120000);
  result.finalTask = await app.invoke("tasks.get", task.id);
@@ -1016,8 +1034,11 @@ try {
  // A polled read settles in the last chunk of its group, so take the last one.
  const groupOf = (name) => {
   const prefix = name.replace(/-read$/, "");
-  return issued.filter((c) =>
-   c.note === name || c.note === prefix + "-poll" || c.note === "cancel-poll" && prefix === "cancelled",
+  return issued.filter(
+   (c) =>
+    c.note === name ||
+    c.note === prefix + "-poll" ||
+    (c.note === "cancel-poll" && prefix === "cancelled"),
   );
  };
  const byNote = (name) => groupOf(name).at(-1);
