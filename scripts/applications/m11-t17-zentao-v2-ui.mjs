@@ -223,7 +223,9 @@ const invokeSettled = async (channel, ...args) => {
   reply = await app.invoke(channel, ...args);
   if (reply?.ok) return reply;
   if (
-   !["CAPABILITY_UNAVAILABLE", "RESOURCE_RECOVERY_REQUIRED"].includes(reply?.code)
+   !["CAPABILITY_UNAVAILABLE", "RESOURCE_RECOVERY_REQUIRED"].includes(
+    reply?.code,
+   )
   )
    return reply;
   if (Date.now() > end)
@@ -561,13 +563,16 @@ await writeFile(join(state, "config.toml"), config);
 
 const privateEnv = {
  PATH: process.env.PATH,
- HOME: home,
+ // safeStorage resolves the login keychain through the real home; app data, Codex state
+ // and the project stay isolated through userData/CODEX_HOME and the private cwd.
+ HOME: homedir(),
  ZDOTDIR: home,
  CODEX_HOME: state,
- HTTP_PROXY: "http://127.0.0.1:1",
- HTTPS_PROXY: "http://127.0.0.1:1",
- ALL_PROXY: "http://127.0.0.1:1",
- // The approved site must stay on the direct route; only the loopback fixture is proxied.
+ CLAUDE_CONFIG_DIR: join(home, ".claude"),
+ HTTP_PROXY: "",
+ HTTPS_PROXY: "",
+ ALL_PROXY: "",
+ // Every backend this run needs stays on the direct route.
  NO_PROXY: ["127.0.0.1", "localhost", siteHost].join(","),
  SHELL: "/bin/zsh",
 };
@@ -658,12 +663,7 @@ try {
  const zentao = catalog.find((x) => x.appId === "zentao");
  assert(zentao, "Catalog does not list the ZenTao application");
  unwrap(
-  await invokeSettled(
-   "applications.setAdded",
-   "zentao",
-   true,
-   zentao.revision,
-  ),
+  await invokeSettled("applications.setAdded", "zentao", true, zentao.revision),
  );
  const candidate = unwrap(
   await invokeSettled("applications.testConnection", {
@@ -826,9 +826,11 @@ try {
   task = current;
   const text = current.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
-  return issued.length >= 4 &&
+  return (
+   issued.length >= 4 &&
    result.fixtureComplete === true &&
-   issued.every((c) => envelopes.has(c.callId));
+   issued.every((c) => envelopes.has(c.callId))
+  );
  }, 180000);
  result.finalTask = await app.invoke("tasks.get", task.id);
  result.nativeToolDefinitions = JSON.parse(
