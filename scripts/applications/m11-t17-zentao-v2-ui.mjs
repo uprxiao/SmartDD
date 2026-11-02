@@ -282,8 +282,8 @@ const nextStep = () => {
     'echo "TOKEN=${WILLYOU_RUN_TOKEN:+present}"',
     'ls -la "$(dirname "$WILLYOU_ENDPOINT")" 2>&1 | head -8',
     'echo "--- list ---"',
-    'willyou-app --list 2>&1 | head -20',
-   ].join('; '),
+    "willyou-app --list 2>&1 | head -20",
+   ].join("; "),
    capability: "capabilities/list",
    note: "capability-list",
   };
@@ -413,6 +413,7 @@ const server = createServer((incoming, res) => {
    const value = envelopeOf(text);
    envelopes.set(item.call_id, value);
    known.text = text.slice(0, 4000);
+   known.fullText = text;
    known.outputSha256 = sha(text);
    known.outputLength = text.length;
    known.envelope = isError(value) ? value : undefined;
@@ -941,7 +942,7 @@ try {
   !defs.some((n) => LEGACY_TOOLS.includes(n)),
   "The native session still advertises a v1 tool",
  );
- const capabilitySurface = issued[0]?.text ?? "";
+ const capabilitySurface = issued[0]?.fullText ?? "";
  for (const id of Object.values(CAPABILITY))
   assert(
    capabilitySurface.includes(id),
