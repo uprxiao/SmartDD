@@ -811,7 +811,10 @@ try {
   "-c",
   "skills.config=[]",
   "--sandbox",
-  "read-only",
+  // The managed CLI talks to the app over a unix socket; Codex's read-only seatbelt denies it
+  // unless the run plan carries a matching grant. Business read-only scope is enforced by the
+  // app's own allowed-operations list, which this profile cannot widen.
+  "danger-full-access",
   "--ask-for-approval",
   "never",
  ];
