@@ -277,7 +277,13 @@ const nextStep = () => {
  const last = issued.at(-1);
  if (!last)
   return {
-   command: "willyou-app --list",
+   command: [
+    'echo "EP=$WILLYOU_ENDPOINT"',
+    'echo "TOKEN=${WILLYOU_RUN_TOKEN:+present}"',
+    'ls -la "$(dirname "$WILLYOU_ENDPOINT")" 2>&1 | head -8',
+    'echo "--- list ---"',
+    'willyou-app --list 2>&1 | head -20',
+   ].join('; '),
    capability: "capabilities/list",
    note: "capability-list",
   };
@@ -904,6 +910,9 @@ try {
    }),
  );
 
+ result.cliBridge = await app.mainEvaluate(
+  `(()=>{const fs=process.getBuiltinModule('fs');let dirs=[];try{dirs=fs.readdirSync('/tmp').filter(n=>n.startsWith('wy-cli-'))}catch{}return dirs.map(d=>{const q=fs.realpathSync('/tmp/'+d);let files=[];try{files=fs.readdirSync(q)}catch{}return {dir:q,files}})})()`,
+ );
  stage = "native-task-response";
  await progress();
  await poll(async () => {
