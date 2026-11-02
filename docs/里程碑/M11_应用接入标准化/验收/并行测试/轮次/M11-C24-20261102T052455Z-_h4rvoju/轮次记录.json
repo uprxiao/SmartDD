@@ -2,16 +2,16 @@
   "schema": "m11-test-round-v1",
   "runId": "M11-C24-20261102T052455Z-_h4rvoju",
   "createdAt": "2026-11-02T05:30:23.335395+00:00",
-  "status": "v0.1.1 Windows metadata repair locally checked; candidate CI and packaging next",
+  "status": "candidate9bce Windowsmetadatafailed; isolated GitCRLFproof passed; LF-checkout candidatepending",
   "authorization": "user permitted next tag after T17; existing occupied-tag rule requires next0.1.1 after0.1.0 Windows build failure",
   "version": "0.1.1",
   "baseline": {
     "runId": "M11-C24-20261102T052455Z-_h4rvoju",
     "root": "/private/tmp/willyou-m11-c24-v011-_h4rvoju",
-    "source": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/source",
-    "baseCommit": "9c9e8b5e7610a9888eaa46fb552ea4b141a9abc2",
+    "source": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/source-eol-fixed",
+    "baseCommit": "9bcecccfd56536644eb692a900563cd283ea5937",
     "version": "0.1.1",
-    "sourceManifestSha256": "54ff6dab2574f2b9d64f161727fbe8642c5add78ef233fe826d6c0ec6355d7c7",
+    "sourceManifestSha256": "15a3224035d7a5d35d957e2f1f1e9ea045df0519cc7d561a73be3ac94e3dde9a",
     "files": 3238,
     "fixtures": 103,
     "priorRound": "M11-C23-20261102T030852Z-2637",
@@ -22,7 +22,16 @@
       "heavyNativeBuild": "/root coordinator",
       "uiFocus": null,
       "realCodex": null
-    }
+    },
+    "candidate": null,
+    "candidateMatchesAllFrozenFiles": 3238,
+    "attempt": 2,
+    "sourceManifestFile": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/source-manifest-eol-fixed.json",
+    "priorCandidate": "9bcecccfd56536644eb692a900563cd283ea5937",
+    "sourceDelta": [
+      ".gitattributes",
+      ".github/workflows/ci.yml"
+    ]
   },
   "resources": {
     "heavyNativeBuild": "/root coordinator",
@@ -38,7 +47,9 @@
     "typecheck": "passed",
     "releaseTests": "24passed0failed0skipped",
     "metadataBuildMac": "success3apps4providers,outputunchanged",
-    "actualWindowsMetadata": "pendingCI"
+    "actualWindowsMetadata": "pendingCI",
+    "gitCheckoutCrlfProof": "oldcore.autocrlf=true producesCRLFandstale;targeteol=lf producesLFandexactcomparisonpass;privateGitreproonly",
+    "updatedMacMetadata": "passedsame3apps4providers,nooutputchange"
   },
   "formalLedger": {
     "total": 38,
@@ -50,5 +61,16 @@
       "T28"
     ]
   },
-  "next": "commit source repair, wait exact candidateCI including Windows metadata; build0.1.1/native/installation; merge main, annotated nexttag, verify7assets and publishedpreview"
+  "next": "commit exact LFcheckout/CI delta; waitnewWindowsandcompleteCI; rebuildfinalpackagefromnewGitcommit; releasev0.1.1 onlyafter gates",
+  "updatedAt": "2026-11-02T05:45:41.004553+00:00",
+  "candidateHistory": [
+    {
+      "commit": "9bcecccfd56536644eb692a900563cd283ea5937",
+      "ciRun": 41394938471,
+      "ciStatus": "requiredWindowsmetadatafailed; remaining Mac checks not used to override",
+      "localBuild": "passed27.461s",
+      "localPackage": "passed103.479s native6;notfinalpackage",
+      "rejection": "Windowscatalogbytecomparison and expected LFcheckout"
+    }
+  ]
 }

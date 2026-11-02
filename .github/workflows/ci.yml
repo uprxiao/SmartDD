@@ -39,7 +39,9 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-build
       - name: Verify generated application module metadata on Windows
-        run: node scripts/applications/generate-module-metadata.mjs
+        run: |
+          git ls-files --eol -- src/shared/application-module-catalog.json
+          node scripts/applications/generate-module-metadata.mjs
       - name: Verify application CLI build and immutable bundles on Windows
         run: pnpm test:release
   checks:
