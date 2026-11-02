@@ -623,6 +623,16 @@ for (const name of Object.keys(process.env))
   delete process.env[name];
 Object.assign(process.env, privateEnv);
 
+// The agent keeps its own discovery root, state and projections; the app process keeps the
+// system home so safeStorage can reach the login keychain.
+const agentEnv = {
+ ...privateEnv,
+ HOME: home,
+ ZDOTDIR: home,
+ CODEX_HOME: state,
+ CLAUDE_CONFIG_DIR: join(home, ".claude"),
+};
+
 async function poll(fn, timeout = 30000) {
  const end = Date.now() + timeout;
  let value;
@@ -829,7 +839,7 @@ try {
   name: "M11 T17 私有 Codex 0.166.0",
   runner: "codex",
   executable: cli,
-  env: Object.entries(privateEnv).map(([name, value]) => ({
+  env: Object.entries(agentEnv).map(([name, value]) => ({
    name,
    value,
    secret: false,
