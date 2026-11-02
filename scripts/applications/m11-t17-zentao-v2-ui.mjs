@@ -26,12 +26,21 @@ import {
 } from "../lib/app-focus-guard.mjs";
 import { focusNewInstalledWindow } from "./fixtures/dmg-install-ui.mjs";
 
-const executable = process.env.WILLYOU_ACCEPTANCE_APP,
+const requestedApp = process.env.WILLYOU_ACCEPTANCE_APP,
  cli = process.env.WILLYOU_CODEX_CLI;
 assert(
- executable && cli,
+ requestedApp && cli,
  "Set WILLYOU_ACCEPTANCE_APP and WILLYOU_CODEX_CLI to this private package and isolated Codex executable",
 );
+// Accept either the .app bundle or the Mach-O executable inside it.
+const executable = requestedApp.endsWith(".app")
+ ? join(
+    requestedApp,
+    "Contents/MacOS",
+    requestedApp.split("/").at(-1).replace(/\.app$/, ""),
+   )
+ : requestedApp;
+assert(existsSync(executable), "Acceptance executable is missing: " + executable);
 const appRoot = resolve(dirname(executable), "../..");
 assert(
  /^\/private\/tmp\//.test(appRoot),
