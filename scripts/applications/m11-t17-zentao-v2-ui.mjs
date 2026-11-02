@@ -282,8 +282,8 @@ const nextStep = () => {
     'echo "TOKEN=${WILLYOU_RUN_TOKEN:+present}"',
     'ls -ld "$(dirname "$WILLYOU_ENDPOINT")" 2>&1',
     // The shell tool truncates long single-line output, so print only what is asserted.
-    'willyou-app --list > capability-surface.json 2>&1',
-    'wc -c < capability-surface.json',
+    "willyou-app --list > capability-surface.json 2>&1",
+    "wc -c < capability-surface.json",
     "tr -d '\\n' < capability-surface.json | grep -o '\"id\":[ ]*\"[a-zA-Z.]*\"' | sort -u",
     "grep -c '_v1\"' capability-surface.json || true",
    ].join("; "),
