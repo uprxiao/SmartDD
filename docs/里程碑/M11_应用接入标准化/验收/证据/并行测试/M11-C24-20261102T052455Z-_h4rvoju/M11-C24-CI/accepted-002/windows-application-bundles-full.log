@@ -1,0 +1,553 @@
+﻿2026-11-02T05:48:11.4863626Z Current runner version: '2.338.2'
+2026-11-02T05:48:11.4887256Z ##[group]Runner Image Provisioner
+2026-11-02T05:48:11.4888030Z Hosted Compute Agent
+2026-11-02T05:48:11.4888554Z Version: 20261021.618
+2026-11-02T05:48:11.4889137Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-02T05:48:11.4889791Z Build Date: 2026-10-21T00:45:21Z
+2026-11-02T05:48:11.4890419Z Worker ID: {8c8b6f41-8542-4b27-bd97-0c3ac7012ed6}
+2026-11-02T05:48:11.4891078Z Region: westus
+2026-11-02T05:48:11.4891541Z Cloud: Azure
+2026-11-02T05:48:11.4892003Z ##[endgroup]
+2026-11-02T05:48:11.4893245Z ##[group]Operating System
+2026-11-02T05:48:11.4893837Z Microsoft Windows Server 2022
+2026-11-02T05:48:11.4894406Z 10.0.20348
+2026-11-02T05:48:11.4894882Z Datacenter
+2026-11-02T05:48:11.4895330Z ##[endgroup]
+2026-11-02T05:48:11.4895808Z ##[group]Runner Image
+2026-11-02T05:48:11.4896338Z Image: windows-2022
+2026-11-02T05:48:11.4896839Z Version: 20261025.346.1
+2026-11-02T05:48:11.4898118Z Included Software: https://github.com/actions/runner-images/blob/win22/20261025.346/images/windows/Windows2022-Readme.md
+2026-11-02T05:48:11.4899528Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261025.346
+2026-11-02T05:48:11.4900420Z ##[endgroup]
+2026-11-02T05:48:11.4901474Z ##[group]GITHUB_TOKEN Permissions
+2026-11-02T05:48:11.4903230Z Contents: read
+2026-11-02T05:48:11.4903808Z Metadata: read
+2026-11-02T05:48:11.4904319Z ##[endgroup]
+2026-11-02T05:48:11.4906404Z Secret source: Actions
+2026-11-02T05:48:11.4907289Z Cache mode: write
+2026-11-02T05:48:11.4907964Z Prepare workflow directory
+2026-11-02T05:48:11.5231927Z Prepare all required actions
+2026-11-02T05:48:11.5281690Z Getting action download info
+2026-11-02T05:48:11.9215068Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-02T05:48:12.1576802Z Complete job name: application-bundles
+2026-11-02T05:48:12.3194390Z ##[group]Run actions/checkout@v4
+2026-11-02T05:48:12.3195563Z with:
+2026-11-02T05:48:12.3196095Z   persist-credentials: false
+2026-11-02T05:48:12.3196716Z   repository: uprxiao/SmartDD
+2026-11-02T05:48:12.3201153Z   token: ***
+2026-11-02T05:48:12.3201644Z   ssh-strict: true
+2026-11-02T05:48:12.3202135Z   ssh-user: git
+2026-11-02T05:48:12.3202605Z   clean: true
+2026-11-02T05:48:12.3203113Z   sparse-checkout-cone-mode: true
+2026-11-02T05:48:12.3203711Z   fetch-depth: 1
+2026-11-02T05:48:12.3204193Z   fetch-tags: false
+2026-11-02T05:48:12.3204699Z   show-progress: true
+2026-11-02T05:48:12.3205125Z   lfs: false
+2026-11-02T05:48:12.3205498Z   submodules: false
+2026-11-02T05:48:12.3205904Z   set-safe-directory: true
+2026-11-02T05:48:12.3206365Z   allow-unsafe-pr-checkout: false
+2026-11-02T05:48:12.3207056Z ##[endgroup]
+2026-11-02T05:48:12.4680155Z Syncing repository: uprxiao/SmartDD
+2026-11-02T05:48:12.4681844Z ##[group]Getting Git version info
+2026-11-02T05:48:12.4682491Z Working directory is 'D:\a\SmartDD\SmartDD'
+2026-11-02T05:48:12.5775153Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-02T05:48:12.8625471Z git version 2.56.0.windows.3
+2026-11-02T05:48:12.8671179Z ##[endgroup]
+2026-11-02T05:48:12.8689760Z Temporarily overriding HOME='D:\a\_temp\4d40fb25-476f-4cfc-aed3-038a381bb92c' before making global git config changes
+2026-11-02T05:48:12.8691302Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T05:48:12.8700534Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\SmartDD\SmartDD
+2026-11-02T05:48:12.9242034Z Deleting the contents of 'D:\a\SmartDD\SmartDD'
+2026-11-02T05:48:12.9247218Z ##[group]Initializing the repository
+2026-11-02T05:48:12.9256049Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\SmartDD\SmartDD
+2026-11-02T05:48:13.0291856Z Initialized empty Git repository in D:/a/SmartDD/SmartDD/.git/
+2026-11-02T05:48:13.0332446Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/uprxiao/SmartDD
+2026-11-02T05:48:13.0846736Z ##[endgroup]
+2026-11-02T05:48:13.0850179Z ##[group]Disabling automatic garbage collection
+2026-11-02T05:48:13.0856329Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-02T05:48:13.1134261Z ##[endgroup]
+2026-11-02T05:48:13.1134964Z ##[group]Setting up auth
+2026-11-02T05:48:13.1146433Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T05:48:13.1486173Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-02T05:48:14.3623971Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T05:48:14.3929068Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-02T05:48:14.8703363Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T05:48:14.9017220Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-02T05:48:15.3751186Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-02T05:48:15.4054805Z ##[endgroup]
+2026-11-02T05:48:15.4055784Z ##[group]Fetching the repository
+2026-11-02T05:48:15.4069588Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +44b46ca42cc8fff192c4fd8ae051431f369a2b8b:refs/remotes/origin/feature/0.1.0
+2026-11-02T05:48:39.1551594Z From https://github.com/uprxiao/SmartDD
+2026-11-02T05:48:39.1552369Z  * [new ref]           44b46ca42cc8fff192c4fd8ae051431f369a2b8b -> origin/feature/0.1.0
+2026-11-02T05:48:39.1584646Z ##[endgroup]
+2026-11-02T05:48:39.1587231Z ##[group]Determining the checkout info
+2026-11-02T05:48:39.1588712Z ##[endgroup]
+2026-11-02T05:48:39.1603935Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-02T05:48:39.2028018Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-02T05:48:39.2318137Z ##[group]Checking out the ref
+2026-11-02T05:48:39.2326945Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B feature/0.1.0 refs/remotes/origin/feature/0.1.0
+2026-11-02T05:48:40.4183481Z Updating files:   4% (1521/37034)
+2026-11-02T05:48:40.5810637Z Updating files:   5% (1852/37034)
+2026-11-02T05:48:40.7603492Z Updating files:   6% (2223/37034)
+2026-11-02T05:48:40.8821508Z Updating files:   7% (2593/37034)
+2026-11-02T05:48:40.9953859Z Updating files:   8% (2963/37034)
+2026-11-02T05:48:41.1297757Z Updating files:   9% (3334/37034)
+2026-11-02T05:48:41.2591958Z Updating files:  10% (3704/37034)
+2026-11-02T05:48:41.3196089Z Updating files:  11% (4074/37034)
+2026-11-02T05:48:41.3742504Z Updating files:  11% (4270/37034)
+2026-11-02T05:48:41.5125512Z Updating files:  12% (4445/37034)
+2026-11-02T05:48:41.6551535Z Updating files:  13% (4815/37034)
+2026-11-02T05:48:41.7459259Z Updating files:  14% (5185/37034)
+2026-11-02T05:48:41.8371753Z Updating files:  15% (5556/37034)
+2026-11-02T05:48:42.0176552Z Updating files:  16% (5926/37034)
+2026-11-02T05:48:42.1234759Z Updating files:  17% (6296/37034)
+2026-11-02T05:48:42.2209495Z Updating files:  18% (6667/37034)
+2026-11-02T05:48:42.3219831Z Updating files:  19% (7037/37034)
+2026-11-02T05:48:42.3377336Z Updating files:  19% (7378/37034)
+2026-11-02T05:48:42.4688535Z Updating files:  20% (7407/37034)
+2026-11-02T05:48:42.6125806Z Updating files:  21% (7778/37034)
+2026-11-02T05:48:42.7301812Z Updating files:  22% (8148/37034)
+2026-11-02T05:48:42.8292227Z Updating files:  23% (8518/37034)
+2026-11-02T05:48:42.9559137Z Updating files:  24% (8889/37034)
+2026-11-02T05:48:43.1507036Z Updating files:  25% (9259/37034)
+2026-11-02T05:48:43.3211773Z Updating files:  26% (9629/37034)
+2026-11-02T05:48:43.3349252Z Updating files:  26% (9963/37034)
+2026-11-02T05:48:43.4576858Z Updating files:  27% (10000/37034)
+2026-11-02T05:48:43.5963969Z Updating files:  28% (10370/37034)
+2026-11-02T05:48:43.7125678Z Updating files:  29% (10740/37034)
+2026-11-02T05:48:43.8298129Z Updating files:  30% (11111/37034)
+2026-11-02T05:48:43.9505601Z Updating files:  31% (11481/37034)
+2026-11-02T05:48:44.1032413Z Updating files:  32% (11851/37034)
+2026-11-02T05:48:44.3108129Z Updating files:  33% (12222/37034)
+2026-11-02T05:48:44.3232049Z Updating files:  34% (12592/37034)
+2026-11-02T05:48:44.5269197Z Updating files:  34% (12620/37034)
+2026-11-02T05:48:44.5999779Z Updating files:  35% (12962/37034)
+2026-11-02T05:48:44.6868692Z Updating files:  36% (13333/37034)
+2026-11-02T05:48:44.8816771Z Updating files:  37% (13703/37034)
+2026-11-02T05:48:45.1517361Z Updating files:  38% (14073/37034)
+2026-11-02T05:48:45.2455980Z Updating files:  39% (14444/37034)
+2026-11-02T05:48:45.3228250Z Updating files:  40% (14814/37034)
+2026-11-02T05:48:45.4296328Z Updating files:  40% (14933/37034)
+2026-11-02T05:48:45.5681807Z Updating files:  41% (15184/37034)
+2026-11-02T05:48:45.8318621Z Updating files:  42% (15555/37034)
+2026-11-02T05:48:46.0270670Z Updating files:  43% (15925/37034)
+2026-11-02T05:48:46.1315619Z Updating files:  44% (16295/37034)
+2026-11-02T05:48:46.1915137Z Updating files:  45% (16666/37034)
+2026-11-02T05:48:46.2399416Z Updating files:  46% (17036/37034)
+2026-11-02T05:48:46.3252277Z Updating files:  47% (17406/37034)
+2026-11-02T05:48:46.4347854Z Updating files:  47% (17671/37034)
+2026-11-02T05:48:46.5904119Z Updating files:  48% (17777/37034)
+2026-11-02T05:48:46.8272827Z Updating files:  49% (18147/37034)
+2026-11-02T05:48:46.9747721Z Updating files:  50% (18517/37034)
+2026-11-02T05:48:47.2682001Z Updating files:  51% (18888/37034)
+2026-11-02T05:48:47.3252695Z Updating files:  52% (19258/37034)
+2026-11-02T05:48:47.4223347Z Updating files:  52% (19435/37034)
+2026-11-02T05:48:47.6068813Z Updating files:  53% (19629/37034)
+2026-11-02T05:48:47.7508471Z Updating files:  54% (19999/37034)
+2026-11-02T05:48:47.9898794Z Updating files:  55% (20369/37034)
+2026-11-02T05:48:48.2432217Z Updating files:  56% (20740/37034)
+2026-11-02T05:48:48.3266912Z Updating files:  57% (21110/37034)
+2026-11-02T05:48:48.6621874Z Updating files:  57% (21182/37034)
+2026-11-02T05:48:48.8692365Z Updating files:  58% (21480/37034)
+2026-11-02T05:48:49.0553516Z Updating files:  59% (21851/37034)
+2026-11-02T05:48:49.3102459Z Updating files:  60% (22221/37034)
+2026-11-02T05:48:49.3284611Z Updating files:  61% (22591/37034)
+2026-11-02T05:48:49.3829358Z Updating files:  61% (22637/37034)
+2026-11-02T05:48:49.5057772Z Updating files:  62% (22962/37034)
+2026-11-02T05:48:49.5891293Z Updating files:  63% (23332/37034)
+2026-11-02T05:48:49.7946340Z Updating files:  64% (23702/37034)
+2026-11-02T05:48:50.0499032Z Updating files:  65% (24073/37034)
+2026-11-02T05:48:50.1542901Z Updating files:  66% (24443/37034)
+2026-11-02T05:48:50.2775392Z Updating files:  67% (24813/37034)
+2026-11-02T05:48:50.3282926Z Updating files:  68% (25184/37034)
+2026-11-02T05:48:50.4366108Z Updating files:  68% (25338/37034)
+2026-11-02T05:48:50.5826851Z Updating files:  69% (25554/37034)
+2026-11-02T05:48:50.8896035Z Updating files:  70% (25924/37034)
+2026-11-02T05:48:51.1564907Z Updating files:  71% (26295/37034)
+2026-11-02T05:48:51.3304624Z Updating files:  72% (26665/37034)
+2026-11-02T05:48:51.4202139Z Updating files:  72% (26847/37034)
+2026-11-02T05:48:51.5816145Z Updating files:  73% (27035/37034)
+2026-11-02T05:48:51.6656930Z Updating files:  74% (27406/37034)
+2026-11-02T05:48:51.7197263Z Updating files:  75% (27776/37034)
+2026-11-02T05:48:51.7954474Z Updating files:  76% (28146/37034)
+2026-11-02T05:48:51.8496978Z Updating files:  77% (28517/37034)
+2026-11-02T05:48:51.9576050Z Updating files:  78% (28887/37034)
+2026-11-02T05:48:52.0838177Z Updating files:  79% (29257/37034)
+2026-11-02T05:48:52.2477221Z Updating files:  80% (29628/37034)
+2026-11-02T05:48:52.3462174Z Updating files:  81% (29998/37034)
+2026-11-02T05:48:52.4533884Z Updating files:  81% (30275/37034)
+2026-11-02T05:48:52.7546174Z Updating files:  82% (30368/37034)
+2026-11-02T05:48:52.8728488Z Updating files:  83% (30739/37034)
+2026-11-02T05:48:53.0260410Z Updating files:  84% (31109/37034)
+2026-11-02T05:48:53.2836796Z Updating files:  85% (31479/37034)
+2026-11-02T05:48:53.3461840Z Updating files:  86% (31850/37034)
+2026-11-02T05:48:53.4294701Z Updating files:  86% (32018/37034)
+2026-11-02T05:48:53.5820570Z Updating files:  87% (32220/37034)
+2026-11-02T05:48:53.7427960Z Updating files:  88% (32590/37034)
+2026-11-02T05:48:53.8410543Z Updating files:  89% (32961/37034)
+2026-11-02T05:48:54.1331727Z Updating files:  90% (33331/37034)
+2026-11-02T05:48:54.2312087Z Updating files:  91% (33701/37034)
+2026-11-02T05:48:54.3161009Z Updating files:  92% (34072/37034)
+2026-11-02T05:48:54.3459804Z Updating files:  93% (34442/37034)
+2026-11-02T05:48:54.3912915Z Updating files:  93% (34546/37034)
+2026-11-02T05:48:54.4739551Z Updating files:  94% (34812/37034)
+2026-11-02T05:48:54.5434954Z Updating files:  95% (35183/37034)
+2026-11-02T05:48:54.6313340Z Updating files:  96% (35553/37034)
+2026-11-02T05:48:54.7073111Z Updating files:  97% (35923/37034)
+2026-11-02T05:48:54.7794323Z Updating files:  98% (36294/37034)
+2026-11-02T05:48:54.8444990Z Updating files:  99% (36664/37034)
+2026-11-02T05:48:54.8445674Z Updating files: 100% (37034/37034)
+2026-11-02T05:48:54.8446141Z Updating files: 100% (37034/37034), done.
+2026-11-02T05:48:54.9175958Z Switched to a new branch 'feature/0.1.0'
+2026-11-02T05:48:54.9189494Z branch 'feature/0.1.0' set up to track 'origin/feature/0.1.0'.
+2026-11-02T05:48:54.9796899Z ##[endgroup]
+2026-11-02T05:48:55.0123587Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-02T05:48:55.0384582Z 44b46ca42cc8fff192c4fd8ae051431f369a2b8b
+2026-11-02T05:48:55.0415774Z ##[group]Removing auth
+2026-11-02T05:48:55.0424045Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T05:48:55.0715130Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-02T05:48:55.5662874Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T05:48:55.5920042Z http.https://github.com/.extraheader
+2026-11-02T05:48:55.5956431Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-02T05:48:55.6250559Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-02T05:48:56.0989454Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T05:48:56.1273548Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-02T05:48:56.5991000Z ##[endgroup]
+2026-11-02T05:48:56.6401334Z Prepare all required actions
+2026-11-02T05:48:56.6402102Z Getting action download info
+2026-11-02T05:48:56.7918305Z Download action repository 'pnpm/action-setup@v4' (SHA:b906affcce14559ad1aafd4ab0e942779e9f58b1)
+2026-11-02T05:48:57.1578077Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-11-02T05:48:57.3089649Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-02T05:48:57.4466375Z ##[group]Run ./.github/actions/setup-build
+2026-11-02T05:48:57.4466827Z ##[endgroup]
+2026-11-02T05:48:57.4524481Z ##[start-action display=Run pnpm/action-setup@v4;id=__self.__pnpm_action-setup]
+2026-11-02T05:48:57.4664603Z ##[group]Run pnpm/action-setup@v4
+2026-11-02T05:48:57.4664846Z with:
+2026-11-02T05:48:57.4665010Z   dest: ~/setup-pnpm
+2026-11-02T05:48:57.4665193Z   run_install: null
+2026-11-02T05:48:57.4665363Z   cache: false
+2026-11-02T05:48:57.4665602Z   cache_dependency_path: pnpm-lock.yaml
+2026-11-02T05:48:57.4665863Z   package_json_file: package.json
+2026-11-02T05:48:57.4666082Z   standalone: false
+2026-11-02T05:48:57.4666259Z ##[endgroup]
+2026-11-02T05:48:57.6619410Z ##[group]Running self-installer...
+2026-11-02T05:48:58.2116112Z (node:4216) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-02T05:48:58.2119738Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T05:48:58.3951589Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-11-02T05:48:58.4090449Z Packages: +1
+2026-11-02T05:48:58.4090995Z +
+2026-11-02T05:49:00.3433871Z Progress: resolved 1, reused 0, downloaded 1, added 0
+2026-11-02T05:49:00.9109157Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2026-11-02T05:49:00.9890422Z 
+2026-11-02T05:49:00.9890889Z dependencies:
+2026-11-02T05:49:00.9891220Z + pnpm 10.27.0 (12.16.1 is available)
+2026-11-02T05:49:00.9891436Z 
+2026-11-02T05:49:00.9981859Z Done in 3.1s
+2026-11-02T05:49:01.0172433Z ##[endgroup]
+2026-11-02T05:49:01.0172821Z Installation Completed!
+2026-11-02T05:49:01.0315776Z ##[end-action id=__self.__pnpm_action-setup;outcome=success;conclusion=success;duration_ms=3578]
+2026-11-02T05:49:01.0319251Z ##[start-action display=Run actions/setup-node@v4;id=__self.__actions_setup-node]
+2026-11-02T05:49:01.0490182Z ##[group]Run actions/setup-node@v4
+2026-11-02T05:49:01.0490429Z with:
+2026-11-02T05:49:01.0490611Z   node-version: 24
+2026-11-02T05:49:01.0490787Z   cache: pnpm
+2026-11-02T05:49:01.0490956Z   always-auth: false
+2026-11-02T05:49:01.0491141Z   check-latest: false
+2026-11-02T05:49:01.0493454Z   token: ***
+2026-11-02T05:49:01.0493627Z env:
+2026-11-02T05:49:01.0493885Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:49:01.0494215Z ##[endgroup]
+2026-11-02T05:49:01.2190706Z Found in cache @ C:\hostedtoolcache\windows\node\24.22.1\x64
+2026-11-02T05:49:01.2197163Z (node:2544) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T05:49:01.2197999Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T05:49:01.2200757Z ##[group]Environment details
+2026-11-02T05:49:05.8037691Z node: v24.22.1
+2026-11-02T05:49:05.8037988Z npm: 11.19.1
+2026-11-02T05:49:05.8038167Z yarn: 1.22.22
+2026-11-02T05:49:05.8038681Z ##[endgroup]
+2026-11-02T05:49:05.9072219Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\Users\runneradmin\setup-pnpm\node_modules\.bin\pnpm.CMD store path --silent"
+2026-11-02T05:49:06.6591242Z D:\.pnpm-store\v10
+2026-11-02T05:49:07.0590307Z Cache hit for: node-cache-Windows-x64-pnpm-4c9bb76b2ca30386c7f28d72e318c06d1687bb0e5ce63ce65a31b3ec143c903f
+2026-11-02T05:49:07.0711513Z (node:2544) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-02T05:49:08.3465455Z Received 41943040 of 171767338 (24.4%), 40.0 MBs/sec
+2026-11-02T05:49:09.3600376Z Received 159383552 of 171767338 (92.8%), 75.7 MBs/sec
+2026-11-02T05:49:09.6838735Z Received 171767338 of 171767338 (100.0%), 70.1 MBs/sec
+2026-11-02T05:49:09.6842298Z Cache Size: ~164 MB (171767338 B)
+2026-11-02T05:49:09.6878265Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/50f51e3e-60e4-4ccd-a823-db98757ff13a/cache.tzst -P -C D:/a/SmartDD/SmartDD --force-local --use-compress-program "zstd -d"
+2026-11-02T05:49:19.1026976Z Cache restored successfully
+2026-11-02T05:49:19.1123787Z Cache restored from key: node-cache-Windows-x64-pnpm-4c9bb76b2ca30386c7f28d72e318c06d1687bb0e5ce63ce65a31b3ec143c903f
+2026-11-02T05:49:19.1256029Z ##[end-action id=__self.__actions_setup-node;outcome=success;conclusion=success;duration_ms=18093]
+2026-11-02T05:49:19.1259086Z ##[start-action display=Run actions/setup-python@v5;id=__self.__actions_setup-python]
+2026-11-02T05:49:19.1412534Z ##[group]Run actions/setup-python@v5
+2026-11-02T05:49:19.1412779Z with:
+2026-11-02T05:49:19.1412951Z   python-version: 3.11
+2026-11-02T05:49:19.1413158Z   check-latest: false
+2026-11-02T05:49:19.1415458Z   token: ***
+2026-11-02T05:49:19.1415650Z   update-environment: true
+2026-11-02T05:49:19.1415885Z   allow-prereleases: false
+2026-11-02T05:49:19.1416096Z   freethreaded: false
+2026-11-02T05:49:19.1416286Z env:
+2026-11-02T05:49:19.1416525Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:49:19.1416861Z ##[endgroup]
+2026-11-02T05:49:19.2942107Z ##[group]Installed versions
+2026-11-02T05:49:19.3059124Z (node:7664) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T05:49:19.3059956Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T05:49:19.3060484Z Successfully set up CPython (3.11.9)
+2026-11-02T05:49:19.3060929Z ##[endgroup]
+2026-11-02T05:49:19.3158049Z ##[end-action id=__self.__actions_setup-python;outcome=success;conclusion=success;duration_ms=189]
+2026-11-02T05:49:19.3160386Z ##[start-action display=Install Python build tools;id=__self.__run]
+2026-11-02T05:49:19.3275558Z ##[group]Run python -m pip install --upgrade pip setuptools wheel
+2026-11-02T05:49:19.3276066Z [36;1mpython -m pip install --upgrade pip setuptools wheel[0m
+2026-11-02T05:49:19.3335393Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-02T05:49:19.3335835Z env:
+2026-11-02T05:49:19.3336091Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:49:19.3336514Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:19.3336979Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-11-02T05:49:19.3337427Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:19.3337853Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:19.3338253Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:19.3338561Z ##[endgroup]
+2026-11-02T05:49:23.2412579Z Requirement already satisfied: pip in C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\site-packages (26.2.2)
+2026-11-02T05:49:23.7263521Z Requirement already satisfied: setuptools in C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\site-packages (65.5.0)
+2026-11-02T05:49:23.9617808Z Collecting setuptools
+2026-11-02T05:49:24.1479473Z   Downloading setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+2026-11-02T05:49:24.2481303Z Collecting wheel
+2026-11-02T05:49:24.2631009Z   Downloading wheel-0.48.0-py3-none-any.whl.metadata (2.3 kB)
+2026-11-02T05:49:24.3637409Z Collecting packaging>=24.0 (from wheel)
+2026-11-02T05:49:24.3765576Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-11-02T05:49:24.4105009Z Downloading setuptools-84.2.1-py3-none-any.whl (876 kB)
+2026-11-02T05:49:24.5386569Z    ---------------------------------------- 876.3/876.3 kB 9.7 MB/s  0:00:00
+2026-11-02T05:49:24.5518937Z Downloading wheel-0.48.0-py3-none-any.whl (33 kB)
+2026-11-02T05:49:24.5877087Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-11-02T05:49:24.7835630Z Installing collected packages: setuptools, packaging, wheel
+2026-11-02T05:49:24.7842507Z   Attempting uninstall: setuptools
+2026-11-02T05:49:24.7862266Z     Found existing installation: setuptools 65.5.0
+2026-11-02T05:49:25.1157746Z     Uninstalling setuptools-65.5.0:
+2026-11-02T05:49:25.1750149Z       Successfully uninstalled setuptools-65.5.0
+2026-11-02T05:49:26.4723290Z 
+2026-11-02T05:49:26.4733616Z Successfully installed packaging-26.3 setuptools-84.2.1 wheel-0.48.0
+2026-11-02T05:49:26.5383584Z ##[end-action id=__self.__run;outcome=success;conclusion=success;duration_ms=7222]
+2026-11-02T05:49:26.5386963Z ##[start-action display=Install dependencies (Windows);id=__self.__run_2]
+2026-11-02T05:49:26.5498726Z ##[group]Run pnpm install --frozen-lockfile
+2026-11-02T05:49:26.5499052Z [36;1mpnpm install --frozen-lockfile[0m
+2026-11-02T05:49:26.5513411Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-11-02T05:49:26.5513810Z env:
+2026-11-02T05:49:26.5514069Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:49:26.5514480Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:26.5514928Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-11-02T05:49:26.5515384Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:26.5515776Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:26.5516177Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:49:26.5516496Z   npm_config_msvs_version: 2022
+2026-11-02T05:49:26.5516728Z   GYP_MSVS_VERSION: 2022
+2026-11-02T05:49:26.5516994Z ##[endgroup]
+2026-11-02T05:49:27.1125544Z Lockfile is up to date, resolution step is skipped
+2026-11-02T05:49:27.1894760Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-11-02T05:49:27.2824620Z Packages: +746
+2026-11-02T05:49:27.2826353Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-11-02T05:49:28.1904155Z Progress: resolved 746, reused 579, downloaded 0, added 0
+2026-11-02T05:49:29.1908628Z Progress: resolved 746, reused 746, downloaded 0, added 153
+2026-11-02T05:49:30.1909234Z Progress: resolved 746, reused 746, downloaded 0, added 273
+2026-11-02T05:49:31.1994207Z Progress: resolved 746, reused 746, downloaded 0, added 415
+2026-11-02T05:49:32.2052513Z Progress: resolved 746, reused 746, downloaded 0, added 532
+2026-11-02T05:49:33.2105583Z Progress: resolved 746, reused 746, downloaded 0, added 685
+2026-11-02T05:49:33.7141997Z Progress: resolved 746, reused 746, downloaded 0, added 746, done
+2026-11-02T05:49:34.7671358Z 
+2026-11-02T05:49:34.7672185Z dependencies:
+2026-11-02T05:49:34.7672828Z + @modelcontextprotocol/client 2.0.0
+2026-11-02T05:49:34.7673550Z + @modelcontextprotocol/ext-apps 2.0.3
+2026-11-02T05:49:34.7674187Z + @modelcontextprotocol/server 2.0.0
+2026-11-02T05:49:34.7674740Z + @parcel/watcher 2.5.6
+2026-11-02T05:49:34.7675236Z + @xterm/addon-unicode11 0.9.0
+2026-11-02T05:49:34.7675734Z + better-sqlite3 12.11.1
+2026-11-02T05:49:34.7676186Z + drizzle-orm 0.32.2
+2026-11-02T05:49:34.7676590Z + mysql2 3.24.6
+2026-11-02T05:49:34.7677017Z + node-pty 1.1.0
+2026-11-02T05:49:34.7677419Z + nodemailer 10.1.7
+2026-11-02T05:49:34.7677815Z + pg 8.23.1
+2026-11-02T05:49:34.7678188Z + picomatch 4.0.4
+2026-11-02T05:49:34.7678599Z + postal-mime 4.0.11
+2026-11-02T05:49:34.7679014Z + smol-toml 1.9.1
+2026-11-02T05:49:34.7679378Z + ssh2 1.17.0
+2026-11-02T05:49:34.7679778Z + vscode-jsonrpc 8.2.0
+2026-11-02T05:49:34.7680301Z + vscode-languageserver-protocol 3.17.5
+2026-11-02T05:49:34.7680819Z + yaml 2.9.1
+2026-11-02T05:49:34.7681177Z + zod 4.6.7
+2026-11-02T05:49:34.7682103Z 
+2026-11-02T05:49:34.7682452Z devDependencies:
+2026-11-02T05:49:34.7682895Z + @base-ui/react 1.9.0
+2026-11-02T05:49:34.7683433Z + @codemirror/commands 6.11.1
+2026-11-02T05:49:34.7683989Z + @codemirror/merge 6.12.1
+2026-11-02T05:49:34.7684538Z + @codemirror/state 6.7.6
+2026-11-02T05:49:34.7685086Z + @codemirror/view 6.43.14
+2026-11-02T05:49:34.7688951Z + @electron/rebuild 4.2.1
+2026-11-02T05:49:34.7693813Z + @pierre/theme 2.0.0
+2026-11-02T05:49:34.7694397Z + @tailwindcss/vite 4.3.3
+2026-11-02T05:49:34.7696244Z + @tanstack/react-query 5.104.2
+2026-11-02T05:49:34.7697166Z + @testing-library/react 16.3.3
+2026-11-02T05:49:34.7697745Z + @testing-library/user-event 14.6.8
+2026-11-02T05:49:34.7698334Z + @types/better-sqlite3 7.6.13
+2026-11-02T05:49:34.7698832Z + @types/node 22.20.5
+2026-11-02T05:49:34.7699268Z + @types/pg 8.23.1
+2026-11-02T05:49:34.7699686Z + @types/react 19.3.0
+2026-11-02T05:49:34.7700136Z + @types/react-dom 19.3.0
+2026-11-02T05:49:34.7700603Z + @types/ssh2 1.15.6
+2026-11-02T05:49:34.7701072Z + @types/yauzl 3.4.0
+2026-11-02T05:49:34.7701501Z + @types/yazl 3.3.1
+2026-11-02T05:49:34.7701928Z + @vitejs/plugin-react 4.7.0
+2026-11-02T05:49:34.7703621Z + @xterm/addon-fit 0.11.0
+2026-11-02T05:49:34.7704844Z + @xterm/xterm 6.0.0
+2026-11-02T05:49:34.7705605Z + class-variance-authority 0.7.1
+2026-11-02T05:49:34.7706084Z + clsx 2.1.1
+2026-11-02T05:49:34.7707891Z + docx-preview 0.3.7
+2026-11-02T05:49:34.7708535Z + drizzle-kit 0.24.2
+2026-11-02T05:49:34.7709037Z + electron 42.11.14
+2026-11-02T05:49:34.7710560Z + electron-builder 26.15.3
+2026-11-02T05:49:34.7712230Z + electron-vite 5.0.0
+2026-11-02T05:49:34.7713577Z + es-module-lexer 2.3.2
+2026-11-02T05:49:34.7714272Z + highlight.js 11.11.1
+2026-11-02T05:49:34.7715016Z + i18next 26.4.4
+2026-11-02T05:49:34.7716002Z + i18next-browser-languagedetector 8.2.1
+2026-11-02T05:49:34.7717215Z + js-yaml 4.1.0
+2026-11-02T05:49:34.7717549Z + jsdom 30.1.3
+2026-11-02T05:49:34.7717856Z + katex 0.16.22
+2026-11-02T05:49:34.7718214Z + lucide-react 0.564.0
+2026-11-02T05:49:34.7718603Z + markdown-it 14.1.0
+2026-11-02T05:49:34.7719001Z + markdown-it-texmath 1.0.0
+2026-11-02T05:49:34.7719419Z + mermaid 11.12.0
+2026-11-02T05:49:34.7719745Z + mobx 6.16.1
+2026-11-02T05:49:34.7720081Z + mobx-react-lite 4.1.1
+2026-11-02T05:49:34.7720462Z + papaparse 5.5.3
+2026-11-02T05:49:34.7720799Z + parse5 8.0.1
+2026-11-02T05:49:34.7721181Z + parse5-sax-parser 8.0.0
+2026-11-02T05:49:34.7721623Z + pdf-lib 1.17.1
+2026-11-02T05:49:34.7722465Z + pdfjs-dist 5.4.296
+2026-11-02T05:49:34.7723922Z + postcss 8.5.30
+2026-11-02T05:49:34.7724360Z + postcss-value-parser 4.2.0
+2026-11-02T05:49:34.7724778Z + react 19.3.0
+2026-11-02T05:49:34.7725113Z + react-dom 19.3.0
+2026-11-02T05:49:34.7725466Z + react-i18next 17.0.16
+2026-11-02T05:49:34.7725924Z + react-resizable-panels 4.14.5
+2026-11-02T05:49:34.7726344Z + saxes 6.0.0
+2026-11-02T05:49:34.7726645Z + shiki 3.20.0
+2026-11-02T05:49:34.7726945Z + sonner 2.0.8
+2026-11-02T05:49:34.7727246Z + ssf 0.11.2
+2026-11-02T05:49:34.7727584Z + tailwind-merge 2.6.1
+2026-11-02T05:49:34.7727930Z + tailwindcss 4.3.3
+2026-11-02T05:49:34.7728300Z + tw-animate-css 1.4.0
+2026-11-02T05:49:34.7728694Z + typescript 5.9.3
+2026-11-02T05:49:34.7729028Z + vite 6.4.4
+2026-11-02T05:49:34.7729331Z + vitest 4.1.11
+2026-11-02T05:49:34.7729652Z + yauzl 3.4.0
+2026-11-02T05:49:34.7729960Z + yazl 3.3.1
+2026-11-02T05:49:34.7730145Z 
+2026-11-02T05:49:34.8217026Z 
+2026-11-02T05:49:34.8218296Z > smartdd@0.1.1 postinstall D:\a\SmartDD\SmartDD
+2026-11-02T05:49:34.8219137Z > electron-rebuild -f --only=better-sqlite3,node-pty
+2026-11-02T05:49:34.8219472Z 
+2026-11-02T05:49:34.9759701Z Searching dependency tree
+2026-11-02T05:49:35.2537635Z Building modules: better-sqlite3, node-pty
+2026-11-02T05:51:10.3824735Z ✔ Rebuild Complete
+2026-11-02T05:51:10.3947562Z ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+2026-11-02T05:51:10.3948469Z │                                                                              │
+2026-11-02T05:51:10.3949267Z │   Ignored build scripts: @parcel/watcher@2.5.6, cpu-features@0.0.10,         │
+2026-11-02T05:51:10.3950055Z │   electron-winstaller@5.4.0, ssh2@1.17.0.                                    │
+2026-11-02T05:51:10.3951012Z │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+2026-11-02T05:51:10.3951969Z │   to run scripts.                                                            │
+2026-11-02T05:51:10.3952566Z │                                                                              │
+2026-11-02T05:51:10.3953401Z ╰──────────────────────────────────────────────────────────────────────────────╯
+2026-11-02T05:51:10.4013034Z Done in 1m 43.6s using pnpm v10.27.0
+2026-11-02T05:51:10.4176570Z ##[end-action id=__self.__run_2;outcome=success;conclusion=success;duration_ms=103878]
+2026-11-02T05:51:10.4179124Z ##[start-action display=Install dependencies (macOS/Linux);id=__self.__run_3]
+2026-11-02T05:51:10.4188830Z ##[end-action id=__self.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-02T05:51:10.4312784Z ##[group]Run git ls-files --eol -- src/shared/application-module-catalog.json
+2026-11-02T05:51:10.4313429Z [36;1mgit ls-files --eol -- src/shared/application-module-catalog.json[0m
+2026-11-02T05:51:10.4313929Z [36;1mnode scripts/applications/generate-module-metadata.mjs[0m
+2026-11-02T05:51:10.4444497Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-02T05:51:10.4444887Z env:
+2026-11-02T05:51:10.4445175Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:51:10.4445658Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:10.4446171Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-11-02T05:51:10.4446679Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:10.4447133Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:10.4447602Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:10.4447999Z ##[endgroup]
+2026-11-02T05:51:10.7648950Z i/lf    w/lf    attr/text eol=lf      	src/shared/application-module-catalog.json
+2026-11-02T05:51:11.7692351Z {"metadata":"D:\\a\\SmartDD\\SmartDD\\src\\shared\\application-module-catalog.json","applications":3,"providers":4,"changed":false,"written":false}
+2026-11-02T05:51:11.8906506Z ##[group]Run pnpm test:release
+2026-11-02T05:51:11.8906852Z [36;1mpnpm test:release[0m
+2026-11-02T05:51:11.8946593Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-02T05:51:11.8946951Z env:
+2026-11-02T05:51:11.8947219Z   PNPM_HOME: C:\Users\runneradmin\setup-pnpm\node_modules\.bin
+2026-11-02T05:51:11.8947648Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:11.8948107Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-11-02T05:51:11.8948560Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:11.8948964Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:11.8949383Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-11-02T05:51:11.8949704Z ##[endgroup]
+2026-11-02T05:51:12.4452762Z 
+2026-11-02T05:51:12.4453377Z > smartdd@0.1.1 test:release D:\a\SmartDD\SmartDD
+2026-11-02T05:51:12.4455358Z > node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs scripts/applications/module-onboarding.test.mjs scripts/applications/module-metadata-imports.test.mjs
+2026-11-02T05:51:12.4456592Z 
+2026-11-02T05:51:16.7777973Z ✔ CLI builds pinned application bundles from an escaped native path with complete nested inventories (4178.6856ms)
+2026-11-02T05:51:16.7885566Z ✔ keeps Windows drive and UNC module source paths in the metadata bundle (0.9585ms)
+2026-11-02T05:51:16.7886792Z ✔ keeps POSIX source paths, relative imports and project aliases in the bundle (0.2646ms)
+2026-11-02T05:51:16.7887959Z ✔ continues externalizing Node builtins and third-party packages (1.5173ms)
+2026-11-02T05:51:16.7888857Z ✔ accepts a data-only onboarding (2.0388ms)
+2026-11-02T05:51:16.7889663Z ✔ rejects a shared-code change and a branch on the application name (1.5586ms)
+2026-11-02T05:51:16.7890904Z ✔ rejects a renderer or preload reference even when that path is not changed in this commit (0.3798ms)
+2026-11-02T05:51:16.7892000Z ✔ reports a missing bundle or catalog entry instead of passing quietly (0.3022ms)
+2026-11-02T05:51:16.7893044Z ✔ keeps the allowlist narrow (0.3823ms)
+2026-11-02T05:51:16.7895801Z ✔ Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode (2.3727ms)
+2026-11-02T05:51:16.7897368Z ﹣ Mac bundle cleanup removes signing-blocking metadata and preserves quarantine (0.1775ms) # SKIP
+2026-11-02T05:51:16.7898403Z ✔ custom version carry and numeric tag ordering (0.8186ms)
+2026-11-02T05:51:16.7899026Z ✔ rejects versions outside the agreed ranges and malformed tags (0.9314ms)
+2026-11-02T05:51:16.7899757Z ✔ metadata requires matching version and one nonempty exact changelog section (0.6965ms)
+2026-11-02T05:51:16.7900546Z ✔ packaging refuses another OS before rebuilding or producing installers (148.8376ms)
+2026-11-02T05:51:16.7901385Z ✔ native probe finishes after PTY exit even if a worker handle remains open (128.5154ms)
+2026-11-02T05:51:16.7902820Z ✔ release tag must be annotated, checked out, sequential and already in main (1451.884ms)
+2026-11-02T05:51:16.7903926Z ✔ installer filenames match native package architecture conventions (1.6134ms)
+2026-11-02T05:51:16.7904740Z ✔ WillYou packaging paths and workflow upload patterns stay consistent across platforms (1.1584ms)
+2026-11-02T05:51:16.7905486Z ✔ all seven installers must match their recorded checksums and commit (13.1825ms)
+2026-11-02T05:51:16.7906174Z ✔ missing platforms, dirty builds and unsigned Mac builds block publication (11.4913ms)
+2026-11-02T05:51:16.7906891Z ✔ preview permits unsigned assets while stable still requires signing (12.7624ms)
+2026-11-02T05:51:16.7907586Z ✔ missing MSI or Linux formats and altered manifest entries block publication (26.8961ms)
+2026-11-02T05:51:16.7908344Z ✔ workflow entry points keep builds read-only and publication dependent on all builds (27.7559ms)
+2026-11-02T05:51:16.7908863Z ℹ tests 24
+2026-11-02T05:51:16.7909068Z ℹ suites 0
+2026-11-02T05:51:16.7911348Z ℹ pass 23
+2026-11-02T05:51:16.7911694Z ℹ fail 0
+2026-11-02T05:51:16.7911918Z ℹ cancelled 0
+2026-11-02T05:51:16.7912148Z ℹ skipped 1
+2026-11-02T05:51:16.7912359Z ℹ todo 0
+2026-11-02T05:51:16.7912606Z ℹ duration_ms 4295.2879
+2026-11-02T05:51:16.9161691Z Post job cleanup.
+2026-11-02T05:51:16.9166289Z ##[start-action display=Run actions/setup-python@v5;id=__50adb58e-214d-4852-aa0e-e4b073352c10.__actions_setup-python]
+2026-11-02T05:51:16.9284180Z Post job cleanup.
+2026-11-02T05:51:17.0642376Z (node:1564) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T05:51:17.0643939Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T05:51:17.0749199Z ##[end-action id=__50adb58e-214d-4852-aa0e-e4b073352c10.__actions_setup-python;outcome=success;conclusion=success;duration_ms=158]
+2026-11-02T05:51:17.0752265Z ##[start-action display=Run actions/setup-node@v4;id=__50adb58e-214d-4852-aa0e-e4b073352c10.__actions_setup-node]
+2026-11-02T05:51:17.0874641Z Post job cleanup.
+2026-11-02T05:51:17.2543753Z (node:4212) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T05:51:17.2545431Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T05:51:17.2551395Z Cache hit occurred on the primary key node-cache-Windows-x64-pnpm-4c9bb76b2ca30386c7f28d72e318c06d1687bb0e5ce63ce65a31b3ec143c903f, not saving cache.
+2026-11-02T05:51:17.2643612Z ##[end-action id=__50adb58e-214d-4852-aa0e-e4b073352c10.__actions_setup-node;outcome=success;conclusion=success;duration_ms=188]
+2026-11-02T05:51:17.2648005Z ##[start-action display=Run pnpm/action-setup@v4;id=__50adb58e-214d-4852-aa0e-e4b073352c10.__pnpm_action-setup]
+2026-11-02T05:51:17.2784221Z Post job cleanup.
+2026-11-02T05:51:17.4544942Z Pruning is unnecessary.
+2026-11-02T05:51:17.4646763Z ##[end-action id=__50adb58e-214d-4852-aa0e-e4b073352c10.__pnpm_action-setup;outcome=success;conclusion=success;duration_ms=199]
+2026-11-02T05:51:17.4853011Z Post job cleanup.
+2026-11-02T05:51:17.6748896Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-02T05:51:17.7017718Z git version 2.56.0.windows.3
+2026-11-02T05:51:17.7076673Z Temporarily overriding HOME='D:\a\_temp\15822660-88dc-4876-a386-a8615af3abb8' before making global git config changes
+2026-11-02T05:51:17.7078187Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T05:51:17.7087755Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\SmartDD\SmartDD
+2026-11-02T05:51:17.7379106Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T05:51:17.7680383Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-02T05:51:18.2406265Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T05:51:18.2777730Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-02T05:51:18.7583321Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T05:51:18.7874622Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-02T05:51:19.2617936Z Cleaning up orphan processes
+2026-11-02T05:51:19.2831048Z Terminate orphan process: pid (5984) (vctip)
+2026-11-02T05:51:19.2919823Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5, pnpm/action-setup@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

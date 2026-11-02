@@ -2,7 +2,7 @@
   "schema": "m11-test-round-v1",
   "runId": "M11-C24-20261102T052455Z-_h4rvoju",
   "createdAt": "2026-11-02T05:30:23.335395+00:00",
-  "status": "candidate9bce Windowsmetadatafailed; isolated GitCRLFproof passed; LF-checkout candidatepending",
+  "status": "final44b validated,mainpushed,v0.1.1tagpushed;release41399417380building",
   "authorization": "user permitted next tag after T17; existing occupied-tag rule requires next0.1.1 after0.1.0 Windows build failure",
   "version": "0.1.1",
   "baseline": {
@@ -19,11 +19,11 @@
     "priorTagSource": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
     "scope": "repair deterministic Windows metadata build; release next occupied-version step; T17 stays passed and4formal cases stay deferred",
     "resources": {
-      "heavyNativeBuild": "/root coordinator",
+      "heavyNativeBuild": null,
       "uiFocus": null,
       "realCodex": null
     },
-    "candidate": null,
+    "candidate": "44b46ca42cc8fff192c4fd8ae051431f369a2b8b",
     "candidateMatchesAllFrozenFiles": 3238,
     "attempt": 2,
     "sourceManifestFile": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/source-manifest-eol-fixed.json",
@@ -31,10 +31,24 @@
     "sourceDelta": [
       ".gitattributes",
       ".github/workflows/ci.yml"
-    ]
+    ],
+    "localAcceptance": {
+      "package": "passed",
+      "dmgSha256": "8f958a369da8924a4aa69a232aa306a2b959c858d4b161c3c1754e9470cd1a92",
+      "asarSha256": "5a7dd20817cefab4f42f473f0915b9ab5ab6b2b6e42dce18b9e17b38648b5945",
+      "installedApp": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/local-installed Applications/WillYou.app",
+      "payloadEntries": 20060,
+      "startup": "passed UI+actual3builtin catalog, mail14/zentao3 tools,0connections",
+      "rendererErrors": 0,
+      "allOwnedProcessesExited": true
+    },
+    "candidateCi": {
+      "runId": 41396026050,
+      "status": "WindowsmetadataandCLI/bundlesgreen;Macfulltestpending"
+    }
   },
   "resources": {
-    "heavyNativeBuild": "/root coordinator",
+    "heavyNativeBuild": null,
     "uiFocus": null,
     "realCodex": null
   },
@@ -61,8 +75,8 @@
       "T28"
     ]
   },
-  "next": "commit exact LFcheckout/CI delta; waitnewWindowsandcompleteCI; rebuildfinalpackagefromnewGitcommit; releasev0.1.1 onlyafter gates",
-  "updatedAt": "2026-11-02T05:45:41.004553+00:00",
+  "next": "waitactualnewReleasealljobs,downloadnewCIarm64artifactnative/startup,verify7publicassetsandpreview,archivefinaldocs",
+  "updatedAt": "2026-11-02T06:27:19.244120+00:00",
   "candidateHistory": [
     {
       "commit": "9bcecccfd56536644eb692a900563cd283ea5937",
@@ -72,5 +86,42 @@
       "localPackage": "passed103.479s native6;notfinalpackage",
       "rejection": "Windowscatalogbytecomparison and expected LFcheckout"
     }
-  ]
+  ],
+  "finalCandidateCi": {
+    "run": 41396026050,
+    "head": "44b46ca42cc8fff192c4fd8ae051431f369a2b8b",
+    "conclusion": "success",
+    "releaseTestsPassed": 24,
+    "vitestPassed": 5866,
+    "vitestSkipped": 1000,
+    "vitestFailed": 0
+  },
+  "release": {
+    "schema": "willyou-v011-release-promotion-observation-v1",
+    "observedAt": "2026-11-02T06:27:19.244120+00:00",
+    "releaseCommit": "44b46ca42cc8fff192c4fd8ae051431f369a2b8b",
+    "mainPrior": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+    "mainProtectedObserved": false,
+    "mainFastForwardPushExitCode": 0,
+    "remoteMainLsRemote": "44b46ca42cc8fff192c4fd8ae051431f369a2b8b",
+    "tag": "v0.1.1",
+    "annotatedTagObject": "727e651fbcead7528b7ea86ddec95195e60471c1",
+    "metadataGitCheck": "Release metadata verified: v0.1.1 (preview)",
+    "tagPushExitCode": 0,
+    "releaseRun": 41399417380,
+    "releaseRunUrl": "https://github.com/uprxiao/SmartDD/actions/runs/41399417380",
+    "state": "in_progress; not yet public release",
+    "duplicateManualDispatches": 0,
+    "oldFailedTagRetained": "v0.1.0"
+  },
+  "localAcceptance": {
+    "package": "passed",
+    "dmgSha256": "8f958a369da8924a4aa69a232aa306a2b959c858d4b161c3c1754e9470cd1a92",
+    "asarSha256": "5a7dd20817cefab4f42f473f0915b9ab5ab6b2b6e42dce18b9e17b38648b5945",
+    "installedApp": "/private/tmp/willyou-m11-c24-v011-_h4rvoju/local-installed Applications/WillYou.app",
+    "payloadEntries": 20060,
+    "startup": "passed UI+actual3builtin catalog, mail14/zentao3 tools,0connections",
+    "rendererErrors": 0,
+    "allOwnedProcessesExited": true
+  }
 }

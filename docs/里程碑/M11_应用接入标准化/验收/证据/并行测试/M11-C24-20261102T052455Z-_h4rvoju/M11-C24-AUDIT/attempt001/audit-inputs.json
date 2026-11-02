@@ -1,0 +1,123 @@
+{
+  "candidate": "9bcecccfd56536644eb692a900563cd283ea5937",
+  "baseline": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "reviewedAt": "2026-11-02T05:41:34.734455+00:00",
+  "frozenManifestSha256": "54ff6dab2574f2b9d64f161727fbe8642c5add78ef233fe826d6c0ec6355d7c7",
+  "allNonDocsChanges": [
+    ".github/workflows/ci.yml",
+    "CHANGELOG.md",
+    "package.json",
+    "scripts/applications/generate-module-metadata.mjs",
+    "scripts/applications/module-metadata-imports.mjs",
+    "scripts/applications/module-metadata-imports.test.mjs",
+    "src/main/core/applications/__tests__/task-capability-launcher.test.ts"
+  ],
+  "keyInputs": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 2046,
+      "sha256": "eb6437c3e7401c6b5365d24ef226b75392899daedfe8f9d696dcd7110bd12155"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 15226,
+      "sha256": "49c59a6194f2e1365b765b4d341090479c538d70f4f2f71ce988c7a0446e08c0"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4606,
+      "sha256": "429c6a42ca9f4a51860d75bb264e685d14fc3443d15cd7cd5ca4aba1a0c73a4c"
+    },
+    {
+      "path": "scripts/applications/generate-module-metadata.mjs",
+      "bytes": 2804,
+      "sha256": "4eb35b97136fa3d5dfbeb11fcf60a69f3eda2a702a820608f86c88020f83c542"
+    },
+    {
+      "path": "scripts/applications/module-metadata-imports.mjs",
+      "bytes": 539,
+      "sha256": "f4258874d8e43f2a77da8e8ecabcf4c4d00479fbdde60a1903b6f267f3332e0e"
+    },
+    {
+      "path": "scripts/applications/module-metadata-imports.test.mjs",
+      "bytes": 1225,
+      "sha256": "39bedd0ac3b3ed4ba1c7e9b551d2e384711c5e1164ed7d01bff3680102a95069"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "bytes": 329795,
+      "sha256": "40f53ad3497264d55c09c45d10e13b441be59330c697baec1072a87b450025c0"
+    },
+    {
+      "path": "src/main/index.ts",
+      "bytes": 18536,
+      "sha256": "6800d4f69757453b9cd255bc5d8f4313a4253bb752a46c9089803a1fb2fd027d"
+    },
+    {
+      "path": "src/shared/application-module-catalog.json",
+      "bytes": 25154,
+      "sha256": "2f0ed28abd18bc4dd816a1a620e9ed63b77f2ee254ca40c6a4e6728b5c747f68"
+    },
+    {
+      "path": "release.config.json",
+      "bytes": 27,
+      "sha256": "2d45508d615d83638f5df835b5ffb2d6263252a9010371042aaf8fd6214d007b"
+    }
+  ],
+  "existingChecksReviewedNotRerun": [
+    {
+      "name": "typecheck",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 15.462,
+      "sourceAndFixtureDrift": [],
+      "logSha256": "65a5b6c1fde3c9efdcd8c25fd692f15c50cbd640bb1a63d7fd59656336b692a2",
+      "executionSha256": "660395fc95b2251b126dd36f737e8a5cf27ec8e171c35362b5f0bb67588a9e91"
+    },
+    {
+      "name": "release-tests",
+      "argv": [
+        "pnpm",
+        "test:release"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.984,
+      "sourceAndFixtureDrift": [],
+      "logSha256": "3d18d56a443e214640ace1d0f8596b00de9b4f4b8e777986c15caedfdf41be91",
+      "executionSha256": "aca448e38d7c17cb94baa2ed64f134d7376da22c69eb08a79ad6ceda6937e67c"
+    },
+    {
+      "name": "metadata-check",
+      "argv": [
+        "node",
+        "scripts/applications/generate-module-metadata.mjs",
+        "--scratch-root",
+        "/private/tmp/willyou-m11-c24-v011-_h4rvoju/metadata-scratch"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.39,
+      "sourceAndFixtureDrift": [],
+      "logSha256": "13499085df5541373f5ba604f2439e7a2b1ba5cbe03c2af5c26de7c6b34bedd3",
+      "executionSha256": "22a90ca57d4f9df8bb07058a2e0031c9c2ae1029428febfc972bd260b740ff4f"
+    },
+    {
+      "name": "release-metadata",
+      "argv": [
+        "node",
+        "scripts/release/metadata.mjs",
+        "--tag",
+        "v0.1.1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.024,
+      "sourceAndFixtureDrift": [],
+      "logSha256": "a9e00935fffedcb961e247d0222f2fa99946d2b64ea76459866ade4207fd1a87",
+      "executionSha256": "5cf632aa8e0a15dd76de4824c17bc75a28726bb999fdad82bc669f0de5ff5cb8"
+    }
+  ],
+  "priorTagCommit": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "versionTagScope": "local immutable ref and candidate evidence inspected; remote refs monitored by coordinator, not queried in this audit"
+}

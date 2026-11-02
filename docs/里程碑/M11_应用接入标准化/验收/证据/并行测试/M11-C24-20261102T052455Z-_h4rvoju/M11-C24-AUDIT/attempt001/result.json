@@ -1,0 +1,72 @@
+{
+  "schema": "willyou-c24-independent-candidate-audit-v1",
+  "candidate": "9bcecccfd56536644eb692a900563cd283ea5937",
+  "baseline": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "version": "0.1.1",
+  "status": "windows-ci-blocked-no-additional-static-source-blocker",
+  "scope": "narrow source and delivery-boundary review; no tests executed",
+  "skill": "/Users/liubu/.codex/skills/codex-reviewer/SKILL.md",
+  "report": "docs/review/review-20261102-1342.md",
+  "findings": [
+    {
+      "severity": "medium",
+      "blocking": true,
+      "type": "observed-candidate-ci-failure",
+      "path": "scripts/applications/generate-module-metadata.mjs",
+      "line": 28,
+      "evidence": "candidate-windows-metadata-failure-excerpt.log",
+      "actual": "Windows CI exit1 metadata stale; candidate9bce not ready for release",
+      "rootCauseConfirmedByAuditor": false,
+      "recommendation": "preserve strict byte comparison; coordinator resolves cause and verifies new frozen candidate, without moving v0.1.0"
+    },
+    {
+      "severity": "low",
+      "blocking": false,
+      "type": "historical-state-clarity",
+      "path": "docs/\u91cc\u7a0b\u7891/M11_\u5e94\u7528\u63a5\u5165\u6807\u51c6\u5316/README.md",
+      "lines": [
+        9,
+        11
+      ],
+      "recommendation": "qualify C23 in-progress statements as historical and point to final Windows failure/C24"
+    }
+  ],
+  "verified": {
+    "source": 3238,
+    "fixtures": 103,
+    "sourceOrCandidateDrift": 0,
+    "nonTestSrcFilesUnchanged": 757,
+    "srcChanges": [
+      "src/main/core/applications/__tests__/task-capability-launcher.test.ts"
+    ],
+    "precheckManifestFiles": 15,
+    "precheckHashFailures": 0,
+    "releaseRulesPassed": 24,
+    "releaseRulesFailed": 0,
+    "releaseRulesSkipped": 0,
+    "typecheck": "existing exit0 reviewed",
+    "metadata": "existing3apps4providers changed=false reviewed",
+    "s7CorrectedTestHash": "40f53ad3497264d55c09c45d10e13b441be59330c697baec1072a87b450025c0",
+    "tagV010UnchangedAt": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0"
+  },
+  "t17Reuse": "historical business evidence only: macOS arm64 real Codex0.166.0, 8 actual Mail v2 capabilities plus6 reused unchanged logic; no new package/platform/SMTP/autonomous-model claim",
+  "pendingNotExecutedByAuditor": [
+    "resolve actual Windows metadata stale failure on new candidate",
+    "new version package/native/install/startup checks",
+    "seven installer assets and preview publication"
+  ],
+  "formalLedger": {
+    "passed": 34,
+    "total": 38,
+    "deferred": [
+      "T12",
+      "T21",
+      "T22",
+      "T28"
+    ],
+    "completeM11": false,
+    "newPasses": 0
+  },
+  "finishedAt": "2026-11-02T05:42:32.118987+00:00",
+  "candidateReleaseReady": false
+}

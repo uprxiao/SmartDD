@@ -1,0 +1,210 @@
+[
+  {
+    "path": ".gitattributes",
+    "sha256": "a24189b17c3deb5f5659f8c7d7d80bc9cb83aa6463b178a74402b14783212ca3",
+    "excerpt": [
+      {
+        "line": 1,
+        "text": "# Immutable evidence, test payloads and upstream assets keep their exact bytes."
+      },
+      {
+        "line": 2,
+        "text": "# The generated catalog is compared byte-for-byte on Windows as well as macOS."
+      },
+      {
+        "line": 3,
+        "text": "src/shared/application-module-catalog.json text eol=lf"
+      },
+      {
+        "line": 4,
+        "text": "docs/\u91cc\u7a0b\u7891/M9_\u6587\u4ef6\u6d4f\u89c8\u5de5\u4f5c\u533a/\u9a8c\u6536/\u8bc1\u636e/** -whitespace"
+      },
+      {
+        "line": 5,
+        "text": "docs/\u91cc\u7a0b\u7891/M10_\u4e09\u65b9\u5e94\u7528\u63a5\u5165/\u9a8c\u6536/\u8bc1\u636e/** -whitespace"
+      },
+      {
+        "line": 6,
+        "text": "docs/\u91cc\u7a0b\u7891/M10_\u4e09\u65b9\u5e94\u7528\u63a5\u5165/\u9a8c\u6536/\u8bc1\u636e/vo-v009-20261101/** -text -whitespace"
+      },
+      {
+        "line": 7,
+        "text": "docs/\u91cc\u7a0b\u7891/M10_\u4e09\u65b9\u5e94\u7528\u63a5\u5165/\u9a8c\u6536/\u8bc1\u636e/\u5e76\u884c\u6d4b\u8bd5/m10-v008-20261031T170451-4q23/V009-G001/** -text -whitespace"
+      },
+      {
+        "line": 8,
+        "text": "licenses/** -text -whitespace"
+      },
+      {
+        "line": 9,
+        "text": "prototypes/m6-codex/public/assets/** -whitespace"
+      },
+      {
+        "line": 10,
+        "text": "*.pdf binary"
+      },
+      {
+        "line": 11,
+        "text": "docs/\u91cc\u7a0b\u7891/M10_\u4e09\u65b9\u5e94\u7528\u63a5\u5165/\u9a8c\u6536/\u8bc1\u636e/vo-v009-release-final-20261101/** -text -whitespace"
+      },
+      {
+        "line": 12,
+        "text": "docs/\u91cc\u7a0b\u7891/M10_\u4e09\u65b9\u5e94\u7528\u63a5\u5165/\u9a8c\u6536/\u8bc1\u636e/\u5e76\u884c\u6d4b\u8bd5/m10-v008-20261031T170451-4q23/V009-G003/** -text -whitespace"
+      }
+    ]
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "3a06c932098ec286c72735c5eb979ec7feadba077f8f07301946dfff59150602",
+    "excerpt": [
+      {
+        "line": 32,
+        "text": "  application-bundles:"
+      },
+      {
+        "line": 33,
+        "text": "    needs: workflow-check"
+      },
+      {
+        "line": 34,
+        "text": "    runs-on: windows-2022"
+      },
+      {
+        "line": 35,
+        "text": "    timeout-minutes: 15"
+      },
+      {
+        "line": 36,
+        "text": "    steps:"
+      },
+      {
+        "line": 37,
+        "text": "      - uses: actions/checkout@v4"
+      },
+      {
+        "line": 38,
+        "text": "        with:"
+      },
+      {
+        "line": 39,
+        "text": "          persist-credentials: false"
+      },
+      {
+        "line": 40,
+        "text": "      - uses: ./.github/actions/setup-build"
+      },
+      {
+        "line": 41,
+        "text": "      - name: Verify generated application module metadata on Windows"
+      },
+      {
+        "line": 42,
+        "text": "        run: |"
+      },
+      {
+        "line": 43,
+        "text": "          git ls-files --eol -- src/shared/application-module-catalog.json"
+      },
+      {
+        "line": 44,
+        "text": "          node scripts/applications/generate-module-metadata.mjs"
+      },
+      {
+        "line": 45,
+        "text": "      - name: Verify application CLI build and immutable bundles on Windows"
+      },
+      {
+        "line": 46,
+        "text": "        run: pnpm test:release"
+      },
+      {
+        "line": 47,
+        "text": "  checks:"
+      }
+    ]
+  },
+  {
+    "path": "docs/\u91cc\u7a0b\u7891/M11_\u5e94\u7528\u63a5\u5165\u6807\u51c6\u5316/README.md",
+    "sha256": "ce0e3d0c6dbed7be6be9a894cb9dcf5da77680e65d3d4f8d6318e18bd03161b8",
+    "excerpt": [
+      {
+        "line": 1,
+        "text": "# M11 \u5e94\u7528\u63a5\u5165\u6807\u51c6\u5316"
+      },
+      {
+        "line": 2,
+        "text": ""
+      },
+      {
+        "line": 3,
+        "text": "\u66f4\u65b0\uff1a2026-11-02\u3002\u6765\u6e90\uff1a[\u9700\u6c42\u6c60 F19-D](../../\u9700\u6c42\u6c60.md)\uff1b\u9636\u6bb5\u72b6\u6001\uff1a**\u9a8c\u6536\u4e2d\uff08T17 \u5df2\u901a\u8fc7\uff0cv0.1.1 \u53d1\u5e03\u4fee\u590d\uff09**\uff0c\u9700\u6c42\u57fa\u7ebf **R0.9**\u3002\u7528\u6237\u5df2\u5728\u672c\u8f6e\u786e\u8ba4\u539f\u578b\u3001\u8bbe\u8ba1\u3001\u6d4b\u8bd5\u7528\u4f8b\u8bc4\u5ba1\u5747\u5df2\u901a\u8fc7\uff0c\u5e76\u660e\u786e\u8981\u6c42\u5236\u5b9a\u76ee\u6807\u540e\u6267\u884c\uff1b\u6309\u5df2\u590d\u5ba1\u8303\u56f4\u5f00\u5c55\u751f\u4ea7\u5f00\u53d1\u4e0e\u9a8c\u6536\u3002"
+      },
+      {
+        "line": 4,
+        "text": ""
+      },
+      {
+        "line": 5,
+        "text": "**\u5f53\u524d\u63a5\u7eed\uff082026-11-02\uff09\uff1a**T17 \u90ae\u4ef6\u771f\u5b9e\u672c\u5730\u8865\u6d4b\u5df2\u901a\u8fc7\uff0c\u6b63\u5f0f\u4ecd **34/38\uff0889.47%\uff09**\uff1bT12\uff0fT21\uff0fT22\uff0fT28 \u6309\u7528\u6237\u8981\u6c42\u540e\u7eed\u8865\u6d4b\u3001\u4e0d\u8ba1\u901a\u8fc7\u3002`v0.1.0` \u5df2\u5360\u7528\uff0cWindows \u6253\u5305\u5728\u5e94\u7528\u76ee\u5f55\u5143\u6570\u636e\u751f\u6210\u9636\u6bb5\u5931\u8d25\uff0c\u672a\u516c\u5f00 Release\uff1b\u4fdd\u7559\u539f tag \u548c\u5931\u8d25\u8fd0\u884c\uff0c\u6309\u65e2\u5b9a\u8fdb\u4f4d\u89c4\u5219\u4fee\u590d\u4e3a **v0.1.1**\u3002\u5df2\u4fee\u6b63 Windows \u76d8\u7b26\uff0fUNC \u7edd\u5bf9\u8def\u5f84\u5224\u5b9a\uff0c\u589e\u52a0 Windows \u5b9e\u9645\u76ee\u5f55\u751f\u6210\u524d\u7f6e\u68c0\u67e5\uff1b\u7c7b\u578b\u300124 \u9879\u53d1\u5e03\u89c4\u5219\u548c\u672c\u673a\u771f\u5b9e\u76ee\u5f55\u751f\u6210\u5df2\u901a\u8fc7\uff0cWindows CI\u3001\u65b0\u5305\u4e0e\u53d1\u5e03\u5c1a\u5f85\u9a8c\u8bc1\u3002\u5f53\u524d\u4ee5 [C24 \u8f6e\u6b21](\u9a8c\u6536/\u5e76\u884c\u6d4b\u8bd5/\u8f6e\u6b21/M11-C24-20261102T052455Z-_h4rvoju/\u8f6e\u6b21\u8bb0\u5f55.json) \u4e3a\u63a5\u7eed\u5165\u53e3\u3002"
+      },
+      {
+        "line": 6,
+        "text": ""
+      },
+      {
+        "line": 7,
+        "text": "**C24 \u7b2c\u4e8c\u6b21\u5019\u9009\u51c6\u5907\uff1a**\u9996\u4e2a v0.1.1 \u5019\u9009 `9bceccc` \u5728\u65b0\u589e Windows metadata \u524d\u7f6e\u66b4\u9732 CRLF \u68c0\u51fa\u5dee\u5f02\uff0c\u672a\u6253\u65b0 tag\u3002\u79c1\u6709 Git `core.autocrlf=true` \u590d\u73b0\u65e7\u68c0\u67e5\u5931\u8d25\u3001\u5355\u6587\u4ef6 `eol=lf` \u540e\u901a\u8fc7\uff1b\u4fdd\u7559\u4e25\u683c\u5b57\u8282\u6bd4\u8f83\uff0c\u4ec5\u56fa\u5b9a\u751f\u6210\u76ee\u5f55\u7684\u68c0\u51fa\u6362\u884c\u3002\u65b0\u51bb\u7ed3 3238 \u6587\u4ef6\uff0b103 \u5939\u5177\uff0c\u4ec5 `.gitattributes`\uff0fCI \u8bca\u65ad\u4e0e\u4e0a\u4e2a\u5019\u9009\u4e0d\u540c\uff0cMac \u751f\u6210\u76ee\u5f55\u5b57\u8282\u4ecd\u672a\u53d8\uff1b\u7b49\u5f85\u65b0\u5019\u9009 Windows \u5b9e\u9645\u68c0\u67e5\u53ca\u6700\u7ec8\u5305\u590d\u9a8c\u3002"
+      },
+      {
+        "line": 8,
+        "text": ""
+      },
+      {
+        "line": 9,
+        "text": "**R0.4 \u786e\u8ba4\uff082026-11-01\uff09\uff1a**\u672c\u9636\u6bb5\u65e2\u662f\u5e95\u5ea7\u4f18\u5316\uff0c\u4e5f\u662f\u73b0\u6709\u7985\u9053\u3001\u90ae\u4ef6\u7684\u63a5\u5165\u4f18\u5316\u3002\u4e00\u80fd\u529b\u4e00\u5165\u53e3\uff1b\u90ae\u4ef6\u9996\u6279\u8d70 MCP\uff08\u542b\u53d1\u9001\uff0c\u5e26\u6388\u6743\u8bc1\u636e\u94fe\u95e8\u69db\uff09\uff0c\u7985\u9053\u76ee\u6807\u8d70 CLI\u3001\u4ee5 CLI \u8eab\u4efd\u5b9e\u9a8c\u901a\u8fc7\u4e3a\u524d\u63d0\uff0c\u4e0d\u901a\u8fc7\u5219\u4fdd\u6301 MCP\uff1b\u90ae\u4ef6\u5206 `foxmail`\uff0f`smtp` \u4e24\u4e2a\u8fde\u63a5\u69fd\uff0c\u53d1\u4ef6\u5730\u5740\u987b\u4e0e Foxmail \u8d26\u53f7\u4e00\u81f4\uff1b\u7985\u9053 Story \u7eb3\u5165\u5f00\u53d1\uff0c\u7528\u4f8b\u751f\u6210\u4f46\u6682\u4e0d\u6267\u884c\uff0c\u5f85\u7528\u6237\u63d0\u4f9b Story \u6570\u636e\u540e\u4e0e M10 T09\uff0fT10 \u4e00\u5e76\u8865\u6d4b\uff08\u672a\u6267\u884c\u4e0d\u8ba1\u901a\u8fc7\uff09\u3002"
+      },
+      {
+        "line": 10,
+        "text": ""
+      },
+      {
+        "line": 11,
+        "text": "\u672c\u8f6e\u8865\u6d4b\u4e0e\u53d1\u5e03\u8bb0\u5f55\uff1a[C23 \u8f6e\u6b21](\u9a8c\u6536/\u5e76\u884c\u6d4b\u8bd5/\u8f6e\u6b21/M11-C23-20261102T030852Z-2637/\u8f6e\u6b21\u8bb0\u5f55.json)\u3002\u4ee5\u4e0b C7 \u8d77\u4e3a\u5386\u53f2\u6279\u6b21\u8bb0\u5f55\uff0c\u5f53\u524d\u7ed3\u8bba\u4ee5\u4e0a\u8ff0\u63a5\u7eed\u548c\u6743\u5a01\u7528\u4f8b\u8d26\u4e3a\u51c6\u3002 tag \u540e\u7684 main CI \u53d1\u73b0\u4e00\u6761\u5f02\u6b65\u6536\u5c3e\u68c0\u67e5\u7ade\u6001\uff0c\u5df2\u6309\u771f\u5b9e\u5bbf\u4e3b\u987a\u5e8f\u8865\u6d4b\u8bd5\u7b49\u5f85\uff0c\u751f\u4ea7\u8f93\u5165\u672a\u53d8\uff1b\u539f\u7ea2\u4e0e\u72ec\u7acb\u8bca\u65ad\u89c1[\u6267\u884c\u8bb0\u5f55](\u9a8c\u6536/\u6267\u884c\u4e0e\u7f3a\u9677\u8bb0\u5f55.md)\uff0c\u539f\u5224\u636e\u5b9a\u54111/1\u5df2\u7eff\u3002C23 \u5f53\u65f6\u8fdb\u5165\u56db\u5e73\u53f0\u6253\u5305\uff0c\u6700\u7ec8 Windows \u5931\u8d25\u3001publish \u8df3\u8fc7\u3001Release404\uff1b\u6d4b\u8bd5\u4fee\u6b63\u5df2\u7eb3\u5165\u540e\u7eed v0.1.1 \u6e90\u7801\uff0c\u6700\u7ec8\u4ee5 C24 \u53ca\u65b0\u5019\u9009 CI \u4e3a\u51c6\u3002"
+      },
+      {
+        "line": 12,
+        "text": ""
+      },
+      {
+        "line": 13,
+        "text": "**C23 \u5386\u53f2\u8865\u6d4b\u7ed3\u679c\uff08v0.1.0 \u53d1\u5e03\u6700\u7ec8\u5931\u8d25\uff09\uff1aT17 \u90ae\u4ef6\u771f\u5b9e\u672c\u5730\u8865\u6d4b\u901a\u8fc7\u3002** \u771f\u5b9e DMG \u5b89\u88c5\u526f\u672c\uff0bCodex 0.166.0\uff0c\u7ecf\u771f\u5b9e MCP \u9a8c\u8bc1 30\uff0f100 \u5929\u3001\u5206\u9875\u3001\u6b63\u6587\u4e0e\u9644\u4ef6\u54c8\u5e0c\u3001\u56de\u590d\u8349\u7a3f\uff0f\u590d\u5236\uff0f\u9644\u4ef6\u5bfc\u5165\u53ca\u5ba1\u8ba1\uff1b\u672c\u8f6e 8 \u9879\u5b9e\u9645\u80fd\u529b\uff0c\u53e6 6 \u9879\u6309\u672a\u53d8\u5b9e\u73b0\u590d\u7528\u539f\u8bc1\u636e\u3002\u6765\u6e90 9187 \u9879\u672a\u6539\u3001\u96f6\u771f\u5b9e\u5916\u53d1\uff0c\u6240\u6709\u6d4b\u8bd5\u8fdb\u7a0b\uff0f\u76d1\u542c\u5df2\u9000\u51fa\u3002\u6b63\u5f0f\u4ecd **34/38\uff0889.47%\uff09**\uff0cT12\uff0fT21\uff0fT22\uff0fT28 \u540e\u7eed\u8865\u6d4b\u3001\u4e0d\u8ba1\u901a\u8fc7\u300228 \u9879\u53d7\u5f71\u54cd\u8f6f\u4ef6\u590d\u9a8c\u3001\u7c7b\u578b\u68c0\u67e5\u3001\u6784\u5efa\u300121 \u9879\u53d1\u5e03\u89c4\u5219\u68c0\u67e5\u5df2\u901a\u8fc7\uff1b\u5019\u9009\u5b8c\u6574 CI 5866 \u901a\u8fc7\uff0f1000 \u6761\u6761\u4ef6\u8df3\u8fc7\uff0c\u672c\u5730\u539f\u8f6e\u73af\u5883\u7ea2\u53ca\u5c40\u90e8\u8865\u9a8c\u805a\u5408\u76f8\u540c\uff0c0 \u672a\u89e3\u51b3\u5931\u8d25\u3002`5471b7ec73fbe82340dd9051bffec66e8ca3e9d0` \u5df2\u65e0\u51b2\u7a81\u5feb\u8fdb main \u5e76\u63a8\u9001\uff0c\u9644\u6ce8 `v0.1.0` \u5df2\u63a8\u9001\uff0c[\u53d1\u5e03\u4efb\u52a1](https://github.com/uprxiao/SmartDD/actions/runs/41390093647)\u5df2\u7ed3\u675f\uff1aWindows \u5931\u8d25\u3001publish \u8df3\u8fc7\u3001\u672a\u516c\u5f00 Release\uff1b\u4e09\u5e73\u53f0\u5305\u6210\u529f\u4e0d\u62b5\u6263\u4e03\u5305\u95e8\u69db\u3002\u8be6\u89c1 [T17 \u672c\u8f6e\u8bc1\u636e](\u9a8c\u6536/\u8bc1\u636e/\u5e76\u884c\u6d4b\u8bd5/M11-C23-20261102T030852Z-2637/M11-C23-A-T17-MAIL/composed-003/result.json)\u3002"
+      }
+    ]
+  },
+  {
+    "path": "docs/\u91cc\u7a0b\u7891/M11_\u5e94\u7528\u63a5\u5165\u6807\u51c6\u5316/\u4ea4\u4ed8\u8bf4\u660e.md",
+    "sha256": "de246097dccccf34e51d545575e2ff4e3052ad057f58c9e991e199e107f17d6f",
+    "excerpt": [
+      {
+        "line": 51,
+        "text": "### C24 \u68c0\u51fa\u6362\u884c\u4fee\u6b63\uff08\u5019\u9009\u66f4\u65b0\uff0c\u672a\u6253\u65b0 tag\uff09"
+      },
+      {
+        "line": 52,
+        "text": ""
+      },
+      {
+        "line": 53,
+        "text": "\u9996\u4e2a v0.1.1 \u5019\u9009 `9bceccc` \u5728 Windows metadata \u524d\u7f6e\u6bd4\u8f83\u65f6\u62a5 stale\uff1bMac \u7f16\u8bd1\u548c\u9996\u5305\u539f\u751f\u68c0\u67e5\u867d\u901a\u8fc7\uff0c\u4e0d\u80fd\u636e\u6b64\u653e\u884c\u3002\u79c1\u6709 Git \u6a21\u62df `core.autocrlf=true` \u5f97\u5230\u540c\u4e00\u76ee\u5f55\u7684 CRLF \u68c0\u51fa\uff0c\u539f\u4e25\u683c\u6bd4\u8f83 exit1\uff1b\u53ea\u6dfb\u52a0\u76ee\u6807\u76ee\u5f55 JSON \u7684 `text eol=lf` \u5c5e\u6027\u540e\uff0c\u68c0\u51fa LF\u3001\u539f\u68c0\u67e5 exit0\u3001\u6570\u636e\u5b8c\u5168\u76f8\u540c\u3002\u672a\u4fee\u6539\u751f\u6210\u5668\u9884\u671f\u6216\u653e\u5bbd\u6bd4\u8f83\u3002\u65b0\u7684 Windows CI \u4f1a\u8bb0\u5f55\u5b9e\u9645\u68c0\u51fa\u884c\u5c3e\uff0c\u518d\u6267\u884c\u539f\u68c0\u67e5\uff1b\u771f\u5b9e Windows \u901a\u8fc7\u4ecd\u5f85\u65b0\u5019\u9009\u7ed3\u679c\u3002"
+      },
+      {
+        "line": 54,
+        "text": ""
+      },
+      {
+        "line": 55,
+        "text": "\u66f4\u65b0\u51bb\u7ed3 SHA-256\uff1a`15a3224035d7a5d35d957e2f1f1e9ea045df0519cc7d561a73be3ac94e3dde9a`\u3002\u4e0e\u4e0a\u4e00\u51bb\u7ed3\u4ec5 Git \u5c5e\u6027\u53ca CI \u8bca\u65ad\u53d8\u5316\uff1b\u4e1a\u52a1\u6e90\u7801\u672a\u53d8\u3002\u9996\u5305\u5c5e\u4e8e\u65e7\u5019\u9009 `9bceccc`\uff0c\u6700\u7ec8\u5305\u5c06\u53e6\u7528\u65b0\u63d0\u4ea4\u91cd\u5efa\u5e76\u8bb0\u5f55\u5b9e\u9645\u6765\u6e90\u3002"
+      }
+    ]
+  }
+]

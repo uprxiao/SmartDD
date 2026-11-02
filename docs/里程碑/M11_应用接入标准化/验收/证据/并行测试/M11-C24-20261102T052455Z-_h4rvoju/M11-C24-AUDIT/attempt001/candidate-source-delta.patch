@@ -1,0 +1,196 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index beacdff35..d53208f53 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -33,16 +33,18 @@ jobs:
+     needs: workflow-check
+     runs-on: windows-2022
+     timeout-minutes: 15
+     steps:
+       - uses: actions/checkout@v4
+         with:
+           persist-credentials: false
+       - uses: ./.github/actions/setup-build
++      - name: Verify generated application module metadata on Windows
++        run: node scripts/applications/generate-module-metadata.mjs
+       - name: Verify application CLI build and immutable bundles on Windows
+         run: pnpm test:release
+   checks:
+     needs: workflow-check
+     runs-on: macos-latest
+     # Includes the full native-process/IO suite and the subsequent application build.
+     timeout-minutes: 45
+     steps:
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 32a26bc95..ea7451b0a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,14 +1,25 @@
+ # Changelog
+ 
+ 版本是否已发布以 GitHub Release 为准。
+ 
++## 0.1.1
++
++- 修复 Windows 生成应用目录元数据时把盘符绝对路径误判为外部依赖的问题；新增盘符、UNC、相对路径与依赖分类回归，Windows CI 提前执行真实目录元数据生成检查。
++- 修正资源关闭测试的等待边界：按实际宿主顺序等待任务／桥接资源关闭后再检查租约清零，保留原断言和时限。
++- 交付原 v0.1.0 未能公开的 M11 应用底座：统一能力、身份、权限、Skill／SOP、运行计划和结果；禅道使用 CLI，邮件使用 MCP，受控适配上游 MCP／CLI。
++- M11 34/38 通过，T17 邮件段已补齐真实本地 Foxmail 联测；T12、T21、T22、T28 后续补测，不计通过。本轮无真实邮件外发，发送测试仅使用合成 SMTP。
++- 业务验收范围为 macOS arm64、Codex 0.166.0；本机合成模型驱动不证明模型自主选择能力。Mac x64、其他 Agent、Windows／Linux 完整业务尚未验收；Windows／Linux 为实验性包。
++- 继续采用个人自测预发布，无 Apple Developer ID 签名、无公证，不设为 latest。v0.1.0 的 Windows 打包失败、未公开 Release，保留原 tag 及失败运行，使用新版本修复。
++
+ ## 0.1.0
+ 
++- 本标签 Windows 打包失败，未公开 Release；后续修复使用 v0.1.1，保留此版本记录。
++
+ - M11：统一应用能力、调用身份、权限、运行计划和结果信封；一项能力绑定一个生效入口。禅道新会话使用 CLI，邮件保留 MCP，继续复用原业务服务。
+ - 增加受控上游 MCP／CLI 适配、应用模块注册、Codex 版本能力判定及诊断；不支持的版本按声明降级或明确拒绝。
+ - 邮件拆分 Foxmail 本地只读来源与 SMTP 连接槽，统一发件身份、草稿修订、审阅和发送授权；本轮发送验收仅使用合成 SMTP。
+ - M11 权威账 34/38 通过，T17 邮件段已补齐真实本地联测：日期范围／分页、正文与附件、回复草稿／复制／导入及审计；原邮件库未改、无真实外发。T12、T21、T22、T28 经用户确认留待后续补测，未执行不计通过；不宣称全部 38 条验收通过。
+ - 业务验收以 macOS arm64、Codex 0.166.0 为边界。测试允许本机合成模型驱动真实 App／Agent／工具调用，不代表模型自主选择能力；其他 Agent 和平台完整业务仍待验收。
+ - 继续采用无 Apple Developer ID 签名、无公证的个人自测预发布，不设为 latest。Windows／Linux 为实验性安装包，原生检查不代表完整业务验收。
+ 
+ ## 0.0.9
+diff --git a/package.json b/package.json
+index 73756b6cd..cfa91dd32 100644
+--- a/package.json
++++ b/package.json
+@@ -1,11 +1,11 @@
+ {
+   "name": "smartdd",
+-  "version": "0.1.0",
++  "version": "0.1.1",
+   "private": true,
+   "productName": "WillYou",
+   "description": "WillYou - AI 开发工作台",
+   "homepage": "https://github.com/uprxiao/SmartDD",
+   "author": {
+     "name": "WillYou contributors"
+   },
+   "main": "out/main/index.js",
+@@ -17,17 +17,17 @@
+     "dev": "electron-vite dev",
+     "build": "electron-vite build",
+     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+     "files:prepare-tex": "python3 scripts/files/prepare-tex.py",
+     "files:prepare-office": "python3 scripts/files/prepare-office.py",
+     "files:prepare-libreoffice": "python3 scripts/files/prepare-libreoffice.py",
+     "test": "node scripts/run-tests.mjs",
+     "test:prepare": "node scripts/prepare-test-resources.mjs",
+-    "test:release": "node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs scripts/applications/module-onboarding.test.mjs",
++    "test:release": "node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs scripts/applications/module-onboarding.test.mjs scripts/applications/module-metadata-imports.test.mjs",
+     "release:next": "node scripts/release/version.mjs",
+     "release:check": "node scripts/release/metadata.mjs",
+     "db:generate": "drizzle-kit generate",
+     "rebuild": "electron-rebuild -f --only=better-sqlite3,node-pty",
+     "postinstall": "electron-rebuild -f --only=better-sqlite3,node-pty",
+     "probe": "electron-vite build && SMARTDD_PROBE=1 electron .",
+     "probe:m4:cli": "SMARTDD_M4_CLI_PROBE=1 pnpm test src/main/core/capabilities/cli-smoke.test.ts",
+     "probe:m4:ui": "pnpm build && node scripts/m4-ui-smoke.mjs",
+diff --git a/scripts/applications/generate-module-metadata.mjs b/scripts/applications/generate-module-metadata.mjs
+index 4c401df56..e141582d2 100644
+--- a/scripts/applications/generate-module-metadata.mjs
++++ b/scripts/applications/generate-module-metadata.mjs
+@@ -1,24 +1,25 @@
+ // Deterministic, data-only renderer/RPC metadata from the compiled module registry.
+ import { build } from 'vite';
+-import { builtinModules, createRequire } from 'node:module';
++import { createRequire } from 'node:module';
+ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync,symlinkSync } from 'node:fs';
+ import { resolve, join } from 'node:path';
+ import { parseArgs } from 'node:util';
++import { isExternalMetadataImport } from './module-metadata-imports.mjs';
+ const { values } = parseArgs({ options: { write: { type: 'boolean', default: false }, output: { type: 'string' }, 'scratch-root':{type:'string'} } });
+ const root = resolve('.'), output = resolve(values.output ?? 'src/shared/application-module-catalog.json');
+ const scratchRoot=values['scratch-root']?resolve(values['scratch-root']):join(root,'out');
+ mkdirSync(scratchRoot, { recursive: true });
+ const scratch = mkdtempSync(join(scratchRoot, '.module-metadata-'));
+ if(values['scratch-root'])symlinkSync(join(root,'node_modules'),join(scratch,'node_modules'),'dir');
+ try {
+-  await build({ configFile: false, publicDir: false, logLevel: 'error', resolve: { alias: { '@shared': join(root, 'src/shared'), '@main': join(root, 'src/main'), '@root': root } },
++  await build({ configFile: false, publicDir: false, cacheDir: join(scratch, '.vite'), logLevel: 'error', resolve: { alias: { '@shared': join(root, 'src/shared'), '@main': join(root, 'src/main'), '@root': root } },
+     build: { ssr: join(root, 'src/main/core/applications/modules/index.ts'), target: 'node22', outDir: scratch, minify: false, sourcemap: false,
+-      rollupOptions: { external: id => id.startsWith('node:') || builtinModules.includes(id) || (!id.startsWith('.') && !id.startsWith('/') && !id.startsWith('@shared/') && !id.startsWith('@main/') && !id.startsWith('@root/')),
++      rollupOptions: { external: isExternalMetadataImport,
+         output: { format: 'cjs', entryFileNames: 'modules.cjs', inlineDynamicImports: true } } } });
+   const { builtinApplicationModules: modules } = createRequire(import.meta.url)(join(scratch, 'modules.cjs'));
+   const metadata = { schema: 'willyou-app-module-catalog-v1', applications: modules.registered.map(module => ({
+     appId: module.appId, slots: [...module.slots], stopBeforeSwitch: module.stopBeforeSwitch,contractMajors:[...module.contractMajors],
+     capabilities:Object.values(module.capabilities).map(({method:_method,...capability})=>({...capability,legacyTool:module.legacyToolNames?.[capability.id]??null})),
+     presentation: module.presentation, providers: module.providers.map(provider => modules.providerPresentation(provider.id)),
+   })) };
+   const bytes = JSON.stringify(metadata, null, 2) + '\n';
+diff --git a/scripts/applications/module-metadata-imports.mjs b/scripts/applications/module-metadata-imports.mjs
+new file mode 100644
+index 000000000..af2c0536a
+--- /dev/null
++++ b/scripts/applications/module-metadata-imports.mjs
+@@ -0,0 +1,12 @@
++import { builtinModules } from 'node:module';
++import { isAbsolute, win32 } from 'node:path';
++
++// Rollup can pass Windows drive and UNC paths even when its diagnostic renders
++// the entry relative to the repository. Source paths must remain in the bundle.
++export function isExternalMetadataImport(id) {
++  return id.startsWith('node:') || builtinModules.includes(id) || (
++    !isAbsolute(id) && !win32.isAbsolute(id) &&
++    !id.startsWith('.') && !id.startsWith('@shared/') &&
++    !id.startsWith('@main/') && !id.startsWith('@root/')
++  );
++}
+diff --git a/scripts/applications/module-metadata-imports.test.mjs b/scripts/applications/module-metadata-imports.test.mjs
+new file mode 100644
+index 000000000..e2609f412
+--- /dev/null
++++ b/scripts/applications/module-metadata-imports.test.mjs
+@@ -0,0 +1,25 @@
++import { test } from 'node:test';
++import assert from 'node:assert/strict';
++import { isExternalMetadataImport } from './module-metadata-imports.mjs';
++
++test('keeps Windows drive and UNC module source paths in the metadata bundle', () => {
++  for (const id of [
++    'D:\\a\\SmartDD\\SmartDD\\src\\main\\core\\applications\\modules\\index.ts',
++    'D:/a/SmartDD/SmartDD/src/main/core/applications/modules/index.ts',
++    'C:\\项目 空格\\src\\main\\index.ts',
++    '\\\\server\\share\\project\\src\\main\\index.ts',
++    '//server/share/project/src/main/index.ts',
++  ]) assert.equal(isExternalMetadataImport(id), false, id);
++});
++
++test('keeps POSIX source paths, relative imports and project aliases in the bundle', () => {
++  for (const id of [
++    '/tmp/project/src/main/index.ts', './module.ts', '../module.ts',
++    '.\\module.ts', '@shared/applications', '@main/core/applications', '@root/package.json',
++  ]) assert.equal(isExternalMetadataImport(id), false, id);
++});
++
++test('continues externalizing Node builtins and third-party packages', () => {
++  for (const id of ['node:fs', 'fs', 'path', 'fs/promises', 'zod', 'nodemailer', '@scope/package', 'zod/validation'])
++    assert.equal(isExternalMetadataImport(id), true, id);
++});
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index 58de3d0e5..88091e6ce 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -180,17 +180,19 @@ describe('M11 S7 project stop and host disposal reach the actual shared upstream
+   const source=new CapabilityBundleSource(process.env.WILLYOU_TEST_BUNDLES??resolve('out/capability-bundles')),installed=await applications.builtin.install(source,source.index.apps.find(a=>a.appId==='sample-kv')!);await applications.builtin.packages.activate(installed.packageHash,0);await applications.selections.setAdded('sample-kv',true,0);
+   const pools=new Set<UpstreamSessionPool>(),acquire=UpstreamSessionPool.prototype.acquire;vi.spyOn(UpstreamSessionPool.prototype,'acquire').mockImplementation(function(this:UpstreamSessionPool,...args){pools.add(this);return acquire.apply(this,args);});
+   const sender={sender:{id:818,isDestroyed:()=>false},senderFrame:{}} as unknown as ApplicationUiSender,tested=await applications.testConnection(sender,{expectedRevision:0,name:'Shared reference',config:{kind:'sample-kv',service:'task-stop',prefix:'demo:',transport:'mcp',authMode:'token'},secret:'SYNTHETIC_STOP'}),connection=await applications.saveConnection(sender,'sample-kv',tested.operationId,tested.candidateHash);
+   const secondCwd=join(root,'project-b');mkdirSync(secondCwd);const second=projects.createProject({name:'Upstream B',aliases:[],description:'',rulesPath:null},[{label:'',path:secondCwd}]);for(const id of [projectId,second.id])await applications.selections.select({projectId:id,appId:'sample-kv',enabled:true,connections:{'sample-kv':connection.id},expectedRevision:0});
+   const a=await create(),b=await tasks.create({projectId:second.id,dirId:null,aiProfileId:codexId,firstMessage:''}),backend=join(support.store.root,'reference-services',digest('task-stop'));mkdirSync(backend,{recursive:true});writeFileSync(join(backend,'control.json'),JSON.stringify({delays:{'demo:a':2000,'demo:b':1500}}));
+   const service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),invoke=(runId:string,key:string)=>service.call(runId,randomUUID(),{operation:'smartdd_sample_kv_read_v2',contractMajor:2,connectionId:null,arguments:{key}}),one=invoke(a.task.runtimeSnapshot!.runId,'demo:a'),two=invoke(b.task.runtimeSnapshot!.runId,'demo:b');
+   await vi.waitFor(()=>expect([...pools].flatMap(pool=>pool.status()).map(row=>row.pending)).toContain(2),{timeout:5000});expect([...pools].flatMap(pool=>pool.status())).toHaveLength(1);const pid=[...pools][0].status()[0].pid!;expect(pid).toBeGreaterThan(0);
+   expect(await tasks.stopProject(projectId,5000)).toBe(true);expect(await one).toMatchObject({status:'error',error:{code:'CANCELED'}});expect(await two).toMatchObject({status:'ok',value:{data:{key:'demo:b'}}});expect(tasks.activePty(b.task.id)).not.toBeNull();
+-  tasks.kill(b.task.id);await applications.dispose();expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get()).toEqual({n:0});
++   // Match the host shutdown boundary: kill revokes immediately, while managed
++   // disposal joins the run/bridge exits before the application service closes.
++   tasks.kill(b.task.id);await managed.dispose();await applications.dispose();expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get()).toEqual({n:0});
+  },30000);
+ });
+ 
+ describe('M11 S4 data-only Mail v2 through the production task composition',()=>{
+  beforeEach(()=>{
+   // TestPtys does not fork a bridge child; settle only its synthetic handles.
+   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+   vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
