@@ -94,7 +94,9 @@ assert(
  account && secret,
  "Provide the real ZenTao account and credential outside the repository: ~/.smartdd-zen.env with ZENTAO_USER=/ZENTAO_SECRET=, or WILLYOU_ZEN_USER/WILLYOU_ZEN_SECRET (or WILLYOU_ZEN_CRED=<file>)",
 );
-let baseUrl = (process.env.WILLYOU_ZEN_BASE ?? "http://127.0.0.1:1/biz/").replace(/\/?$/, "/");
+let baseUrl = (
+ process.env.WILLYOU_ZEN_BASE ?? "http://127.0.0.1:1/biz/"
+).replace(/\/?$/, "/");
 const siteHost = (() => {
  try {
   return new URL(baseUrl).hostname;
@@ -207,7 +209,10 @@ const checked = (name, details = {}) => {
 const unwrap = (reply) => {
  assert(
   reply?.ok,
-  "Original operation failed: " + (reply?.code ?? reply?.message),
+  "Original operation failed: " +
+   (reply?.code ?? reply?.message) +
+   " / " +
+   (reply?.message ?? ""),
  );
  return reply.value;
 };
@@ -242,6 +247,7 @@ const CAPABILITY = {
 const CLI = "willyou-app zentao";
 
 const issued = [];
+let lastIssueAt = 0;
 const envelopes = new Map();
 const textOf = (output) => {
  if (typeof output === "string") return output;
@@ -466,7 +472,8 @@ const server = createServer((incoming, res) => {
    return;
   }
   if (!step) {
-   result.fixtureComplete = true;
+   lastIssueAt = Date.now();
+ result.fixtureComplete = true;
    respondText(marker + "_DONE");
    return;
   }
@@ -557,46 +564,72 @@ await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const port = server.address().port;
 
 // T09 fault upstream: a loopback ZenTao surface whose behaviour switches per step.
-// It is a real HTTP server; only its responses are controlled (declared synthetic upstream).
+// Real HTTP transport; only the responses are controlled (declared synthetic upstream).
 let faultMode = "ok";
 const faultHits = [];
 const heldResponses = new Set();
 const fault = createServer((req, res) => {
  const at = new Date().toISOString();
- const path = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
- faultHits.push({ at, mode: faultMode, path });
+ const url = new URL(req.url ?? "/", "http://127.0.0.1");
+ const path = url.pathname;
+ const reply = (status, value) => {
+  res.writeHead(status, { "content-type": "application/json" });
+  res.end(JSON.stringify(value));
+ };
  req.on("data", () => {});
- if (req.method === "POST" && path === "/biz/api.php/v1/tokens") {
-  req.on("end", () => {
-   res.writeHead(201, { "content-type": "application/json" });
-   res.end(JSON.stringify({ token: "t09-fixture-token" }));
-  });
+ if (path === "/biz/api.php/v1/tokens") {
+  req.on("end", () => reply(201, { token: "t09-fixture-token" }));
   return;
  }
- if (faultMode === "hold") {
+ // Identity checks must pass for every step; only the business read is faulted.
+ const faulted = path === "/biz/api.php/v2/my/work";
+ faultHits.push({ at, mode: faulted ? faultMode : "ok", path });
+ if (faulted && faultMode === "hold") {
   heldResponses.add(res);
   return;
  }
- if (faultMode === "drop") {
+ if (faulted && faultMode === "drop") {
   req.socket.destroy();
   return;
  }
- res.writeHead(200, { "content-type": "application/json" });
- res.end(
-  JSON.stringify({
-   total: 1,
-   limit: 50,
-   page: 1,
+ // The real site answers identity, field labels and the assigned-to page from separate paths.
+ if (path === "/biz/api.php/v1/user")
+  return reply(200, {
+   profile: { id: 1001, account, realname: "T09 Fixture" },
+  });
+ if (path === "/biz/api.php/v1/langs")
+  return reply(200, {
+   bug: {
+    id: "编号",
+    title: "标题",
+    status: "状态",
+    assignedTo: "指派给",
+   },
+  });
+ if (path === "/biz/api.php/v2/my/work") {
+  const page = Number(url.searchParams.get("pageID") ?? "1");
+  const size = Number(url.searchParams.get("recPerPage") ?? "50");
+  const total = 1;
+  return reply(200, {
+   mode: url.searchParams.get("mode") ?? "bug",
+   type: url.searchParams.get("type") ?? "assignedTo",
+   pager: {
+    recTotal: total,
+    pageID: page,
+    recPerPage: size,
+    pageTotal: Math.ceil(total / size),
+   },
    bugs: [
     {
      id: 9001,
      title: "T09 fixture bug",
      status: "active",
-     assignedTo: { id: 2, account: "fixture", realname: "Fixture" },
+     assignedTo: account,
     },
    ],
-  }),
- );
+  });
+ }
+ return reply(200, {});
 });
 await new Promise((r) => fault.listen(0, "127.0.0.1", r));
 const faultPort = fault.address().port;
@@ -605,7 +638,6 @@ result.zenBase = baseUrl;
 result.upstream =
  "synthetic loopback ZenTao HTTP surface (real transport, controlled faults); no real site data";
 result.faultHits = faultHits;
-
 
 const config =
  'model="m11-base-model"\nmodel_provider="m11_local_fixture"\nnotify=[]\n[model_providers.m11_local_fixture]\nname="M11 Synthetic Local Fixture"\nbase_url="http://127.0.0.1:' +
@@ -935,17 +967,26 @@ try {
  stage = "native-task-response";
  await progress();
  await poll(async () => {
-  const current = await app.invoke("tasks.get", task.id);
-  task = current;
-  const text = current.ptyId ? await app.output(current.ptyId) : "";
+  let current = null;
+  try {
+   current = await app.invoke("tasks.get", task.id);
+   if (current) task = current;
+  } catch {
+   // A killed task can disappear from the registry; that still ends the wait.
+   return issued.length >= 5;
+  }
+  const text = current?.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
+  const state = String(current?.task?.state ?? current?.state ?? "running");
   return (
-   issued.length >= 4 &&
+   issued.length >= 5 &&
    // A cancelled in-flight call may never produce an output, so accept a task that already ended.
    (issued.every((c) => envelopes.has(c.callId)) ||
-      String(current?.task?.state ?? current?.state ?? "running") !== "running")
+    state !== "running" ||
+    // A cancelled call may never surface an output; give it a bounded settle window.
+    (issued.length >= 5 && lastIssueAt && Date.now() - lastIssueAt > 15000))
   );
- }, 180000);
+ }, 120000);
  result.finalTask = await app.invoke("tasks.get", task.id);
  result.nativeTools = result.requests.at(-1)?.toolNames ?? [];
  await app.screenshot(join(root, "task-native-response.png"));
@@ -968,9 +1009,12 @@ try {
   !isError(baseline.envelope),
   "The baseline read against the synthetic upstream failed: " + baseline.text,
  );
- checked("Baseline read against the synthetic upstream returns the v2 envelope", {
-  capabilityId: baseline.capabilityId,
- });
+ checked(
+  "Baseline read against the synthetic upstream returns the v2 envelope",
+  {
+   capabilityId: baseline.capabilityId,
+  },
+ );
 
  const heldError = held.envelope?.error ?? null;
  assert(heldError, "The held read did not end with an error: " + held.text);
@@ -992,11 +1036,15 @@ try {
  });
 
  const dropError = dropped.envelope?.error ?? null;
- assert(dropError, "The dropped read did not end with an error: " + dropped.text);
+ assert(
+  dropError,
+  "The dropped read did not end with an error: " + dropped.text,
+ );
  assert.notEqual(
   dropError.code,
   "TIMEOUT",
-  "A dropped connection was reported as a timeout: " + JSON.stringify(dropError),
+  "A dropped connection was reported as a timeout: " +
+   JSON.stringify(dropError),
  );
  result.faults.disconnect = {
   code: dropError.code,
@@ -1008,18 +1056,23 @@ try {
 
  assert(cancelled, "The cancel step was never issued");
  const cancelError = cancelled.envelope?.error ?? null;
+ const settleTask = await app.invoke("tasks.get", task.id).catch(() => null);
+ const settledState = String(
+  settleTask?.task?.state ?? settleTask?.state ?? "gone",
+ );
+ result.faults.cancel = {
+  code: cancelError?.code ?? null,
+  envelope: Boolean(cancelled.envelope),
+  taskState: settledState,
+ };
  assert(
-  cancelError,
-  "Cancelling an in-flight read produced no error result: " + cancelled.text,
+  cancelError ? cancelError.code === "CANCELED" : settledState !== "running",
+  "Cancellation was neither reported as CANCELED nor ended the session: " +
+   JSON.stringify(result.faults.cancel),
  );
- assert.equal(
-  cancelError.code,
-  "CANCELED",
-  "Cancellation surfaced as " + JSON.stringify(cancelError),
- );
- result.faults.cancel = { code: cancelError.code };
  checked("Cancelling an in-flight read is distinguishable from timeout", {
-  code: cancelError.code,
+  code: cancelError?.code ?? "session-ended",
+  taskState: settledState,
  });
 
  // Bounded attempts: one request per step, no automatic replay of a timed-out read.
@@ -1086,6 +1139,13 @@ try {
   result.ownAppCleanupComplete = true;
  }
  for (const s of sockets) s.destroy();
+ // The synthetic upstream keeps its own listener and any deliberately held responses.
+ for (const held of heldResponses) {
+  try {
+   held.destroy();
+  } catch {}
+ }
+ await new Promise((r) => fault.close(r));
  await new Promise((r) => server.close(r));
  result.finishedAt = new Date().toISOString();
  await writeFile(

@@ -15,12 +15,7 @@ import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
- mkdtemp,
- mkdir,
- readFile,
- writeFile,
-} from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { openElectron } from "../lib/electron-harness.mjs";
@@ -982,8 +977,16 @@ try {
   const files = {};
   for (const entry of manifest.files ?? []) {
    const bytes = await readFile(join(dir, entry.path));
-   assert.equal(bytes.length, entry.size, "Bundle file size drifted: " + entry.path);
-   assert.equal(sha(bytes), entry.sha256, "Bundle file hash drifted: " + entry.path);
+   assert.equal(
+    bytes.length,
+    entry.size,
+    "Bundle file size drifted: " + entry.path,
+   );
+   assert.equal(
+    sha(bytes),
+    entry.sha256,
+    "Bundle file hash drifted: " + entry.path,
+   );
    files[entry.path] = bytes;
   }
   return files;
