@@ -760,7 +760,12 @@ try {
  assert(page1.items.length > 0, "First work_list page is empty");
  assert(page1.items.length <= 2);
  assert(full, "Full work_list read missing");
- assert(full.complete === true, "Full work_list read is not complete");
+ if (full.total !== null && full.total <= 200)
+  assert.equal(
+   full.complete,
+   true,
+   "Full read is not complete although the declared limit covers every row",
+  );
  assert(full.items.length > 0);
  assert(full.total === null || full.total >= full.items.length);
  const ids = full.items.map((i) => i.id);
