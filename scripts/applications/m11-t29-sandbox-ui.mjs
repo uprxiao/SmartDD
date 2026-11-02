@@ -12,7 +12,7 @@
 // from the real native tool list that Codex advertises; it is not real model reasoning,
 // not a UI form acceptance, and it does not cover the mail half of T17.
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -111,7 +111,9 @@ const scopeNegative = ["79303", "79489"];
 
 const root = await mkdtemp("/private/tmp/willyou-m11-t17-zentao-");
 const home = join(root, "home"),
- state = join(root, "codex"),
+ // The agent's home is also the app's state root, so the policy the run reads and the
+ // policy Codex reads are the same file.
+ state = join(home, ".codex"),
  cwd = join(root, "project"),
  userData = join(root, "userdata");
 const sha = (b) => createHash("sha256").update(b).digest("hex");
@@ -272,6 +274,19 @@ const isError = (value) =>
  value?.schema === "willyou-app-error" || value?.error;
 const variant = process.env.WILLYOU_T29_VARIANT ?? "default";
 const decoyPath = "/tmp/willyou-t29-decoy.sock";
+const { createServer: createNetServer } = await import("node:net");
+let decoyAccepted = 0;
+const decoy = createNetServer((socket) => {
+ decoyAccepted += 1;
+ socket.end("decoy\n");
+});
+try {
+ // A previous interrupted run can leave the socket file behind.
+ rmSync(decoyPath, { force: true });
+ await new Promise((resolve) => decoy.listen(decoyPath, resolve));
+ // Keep the probe listener from holding the process open after the run ends.
+ decoy.unref();
+} catch {}
 const outsideFile = join(home, "t29-outside.txt");
 const nextStep = () => {
  const done = (note) => issued.some((c) => c.note === note);
@@ -297,6 +312,12 @@ const nextStep = () => {
    command: `cat "${outsideFile}" 2>&1; echo "EXIT=$?"`,
    capability: "outside-read",
    note: "outside-read",
+  };
+ if (!done("outside-write"))
+  return {
+   command: `printf x > "${outsideFile}" 2>&1; echo "EXIT=$?"`,
+   capability: "outside-write",
+   note: "outside-write",
   };
  if (!done("decoy-socket"))
   return {
@@ -671,9 +692,12 @@ network_proxy=true
 const variantToml = policyVariants[variant] ?? "";
 await mkdir(join(home, ".agents"), { recursive: true });
 const namedOnly = variant === "named" || variant === "named-two";
+// Codex owns this file and appends its own [tui] section, so the policy must lead the
+// document: any table opened above it would swallow the key.
+const policyToml = namedOnly ? "" : variantToml;
 await writeFile(
  join(state, "config.toml"),
- baseConfig + (namedOnly ? "" : variantToml) + projectsSection,
+ policyToml + baseConfig + projectsSection,
 );
 if (namedOnly) await writeFile(join(state, "wy_t29.config.toml"), variantToml);
 result.userConfigSha256 = namedOnly
@@ -682,6 +706,7 @@ result.userConfigSha256 = namedOnly
      (await readFile(join(state, "wy_t29.config.toml"))),
    )
  : sha(await readFile(join(state, "config.toml")));
+result.configBefore = await readFile(join(state, "config.toml"), "utf8");
 await writeFile(outsideFile, "outside-workspace-secret\n", { mode: 0o600 });
 result.userConfigSha256 = sha(await readFile(join(state, "config.toml")));
 
@@ -1036,11 +1061,12 @@ try {
  await progress();
  const textOf = (note) => {
   const call = issued.find((c) => c.note === note);
-  return call ? (envelopes.get(call.callId) ?? "") : "";
+  return call ? (call.fullText ?? "") : "";
  };
  const surface = textOf("surface"),
   writeProbe = textOf("workspace-write"),
   outside = textOf("outside-read"),
+  outsideWrite = textOf("outside-write"),
   decoy = textOf("decoy-socket");
  result.probes = {
   surface: surface.slice(0, 400),
@@ -1073,11 +1099,16 @@ try {
   });
  } else {
   assert.equal(
-   sandboxPlan?.available,
-   true,
+   sandboxPlan?.source,
+   variant === "default"
+    ? "equivalent-simple-legacy-policy"
+    : "inherited-named-permissions",
    "The provable policy was rejected: " + JSON.stringify(sandboxPlan),
   );
-  assert.equal(sandboxPlan?.kind, "inherit", "Unexpected sandbox kind");
+  assert(
+   /EP=\/private\/tmp\/wy-cli-/.test(surface),
+   "The CLI endpoint was not injected: " + surface.slice(0, 120),
+  );
   if (variant === "named" || variant === "named-two") {
    assert.equal(
     sandboxPlan?.source,
@@ -1085,37 +1116,56 @@ try {
     "The named permission profile was not inherited: " +
      JSON.stringify(sandboxPlan),
    );
-   assert.equal(sandboxPlan?.parent, "wy_t29", "Unexpected parent profile");
   } else {
    assert.equal(
     sandboxPlan?.source,
     "equivalent-simple-legacy-policy",
     "Unexpected sandbox source: " + JSON.stringify(sandboxPlan),
    );
-   assert.equal(sandboxPlan?.parent, ":workspace", "Unexpected parent profile");
   }
-  assert(/zentao\.object\.list/.test(surface), "The CLI surface is missing");
+  // The surface is written to a file inside the session cwd, so read it from disk.
+  const surfaceFile = join(cwd, "capability-surface.json");
+  const surfaceText = existsSync(surfaceFile)
+   ? await readFile(surfaceFile, "utf8")
+   : "";
+  result.surfaceBytes = surfaceText.length;
+  result.surfaceIds = [
+   ...new Set(
+    [...surfaceText.matchAll(/"id"\s*:\s*"([a-zA-Z.]+)"/g)].map((m) => m[1]),
+   ),
+  ];
+  assert(
+   /zentao\.object\.list/.test(surfaceText),
+   "The CLI surface is missing: " + String(result.surfaceIds),
+  );
   assert.equal(
    writeProbe.trim().endsWith("ok"),
    true,
    "Workspace write did not succeed: " + writeProbe.slice(0, 120),
   );
   assert(
-   /Permission denied|Operation not permitted|EXIT=[1-9]/.test(outside),
-   "A read outside the workspace was not denied: " + outside.slice(0, 120),
+   /Permission denied|Operation not permitted|EXIT=[1-9]/.test(outsideWrite),
+   "A write outside the workspace was not denied: " +
+    outsideWrite.slice(0, 120),
+  );
+  assert.equal(
+   decoyAccepted,
+   0,
+   "An extra unix socket outside the grant was reachable",
   );
   assert(
    /EXIT=[1-9]|Permission denied|Operation not permitted/.test(decoy),
-   "An extra unix socket was reachable: " + decoy.slice(0, 120),
+   "An extra unix socket outside the grant was reachable: " +
+    decoy.slice(0, 120),
   );
   checked(
    "Only the CLI endpoint is added and the inherited policy still holds",
    {
-    parent: sandboxPlan?.parent,
     source: sandboxPlan?.source,
     workspaceWrite: writeProbe.trim().slice(0, 40),
-    outsideRead: outside.trim().slice(0, 80),
+    outsideWrite: outsideWrite.trim().slice(0, 80),
     decoySocket: decoy.trim().slice(0, 80),
+    decoyAccepted,
    },
   );
   if (variant === "named" || variant === "named-two") {
@@ -1149,13 +1199,21 @@ try {
   }
  }
  const configNow = await readFile(join(state, "config.toml"));
- assert.equal(
-  sha(configNow),
-  result.userConfigSha256,
-  "The user configuration changed during the run",
- );
- checked("The user configuration is unchanged", {
-  sha256: result.userConfigSha256,
+ const policyNow = namedOnly
+  ? await readFile(join(state, "wy_t29.config.toml"))
+  : null;
+ const policyIntact = namedOnly
+  ? sha(configNow + policyNow) === result.userConfigSha256
+  : configNow.startsWith(policyToml);
+ result.configAfter = {
+  policyIntact,
+  sha256: sha(configNow),
+  codexAppended: configNow.length > result.configBefore.length,
+ };
+ assert(policyIntact, "The application rewrote the user policy during the run");
+ checked("The user policy is unchanged by the application", {
+  policyIntact,
+  appendedByCodex: result.configAfter.codexAppended,
  });
  result.finalTask = await app.invoke("tasks.get", task.id).catch(() => null);
  const finalState =
