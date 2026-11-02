@@ -1,0 +1,63 @@
+{
+  "schema": "readonly-native-timeout-history-diagnosis-v1",
+  "status": "history-confirmed-cause-not-confirmed",
+  "oldJob": {
+    "id": 125107540154,
+    "runId": 41390093647,
+    "headSha": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+    "conclusion": "success",
+    "nativeBuildStep": {
+      "name": "Build and verify packaged native modules",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-11-02T05:16:27Z",
+      "completed_at": "2026-11-02T05:27:51Z"
+    },
+    "nativeBuildStepElapsedSeconds": 684.0
+  },
+  "oldProbeSuccess": {
+    "timestamp": "2026-11-02T05:27:44.4241200Z",
+    "actualPayload": {
+      "version": "0.1.0",
+      "platform": "darwin",
+      "arch": "x64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    },
+    "installerVerifiedAt": "2026-11-02T05:27:51.3757410Z"
+  },
+  "timingBoundary": {
+    "previousBlockMapLogAt": "2026-11-02T05:26:41.1067570Z",
+    "blockMapToProbeJSONSeconds": 63.317363,
+    "nativeProbeExactDurationAvailable": false,
+    "reason": "Original log has no native-smoke subprocess start marker. The interval includes block-map completion and other packaging tail work. It is not the probe duration.",
+    "outerLimitMs": 30000,
+    "outerLimitSource": "Coordinator verified unchanged build/native-smoke/common/electron-builder source between v0.1.0 and v0.1.1. Not independently re-read by this execution group.",
+    "logicalBound": "Old packaged probe completed successfully under the same configured original limit, based on coordinator source identity evidence."
+  },
+  "currentFirstAttempt": {
+    "runId": 41399417380,
+    "runAttempt": 1,
+    "headSha": "44b46ca42cc8fff192c4fd8ae051431f369a2b8b",
+    "status": "Mac x64 packaged native-smoke outer ETIMEDOUT; internal phase unobserved; no business assertion failure exposed"
+  },
+  "decisionBoundary": "Evidence supports considering one unchanged-tag/commit/threshold environment retry; does not identify root cause or prove an environment-only defect. Coordinator alone owns retry. No retry/test/build/Agent executed here.",
+  "rawEvidence": [
+    {
+      "path": "v010-mac-x64-job.json",
+      "bytes": 2655,
+      "sha256": "e1a4c31952b5636526adfb1c59d609977e271da37dd8e27ebd1c7c0a43e6ff53"
+    },
+    {
+      "path": "v010-mac-x64-full.log",
+      "bytes": 94743,
+      "sha256": "6c68b35639564801a85e5aec99e145ddb492fc80088a0bf6a7e5117756b210a4"
+    }
+  ],
+  "finishedAt": "2026-11-02T07:12:24.630245+00:00"
+}

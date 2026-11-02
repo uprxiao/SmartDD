@@ -1,0 +1,8 @@
+import datetime,json,subprocess,hashlib
+from pathlib import Path
+P=Path('/private/tmp/willyou-m11-c24-v011-_h4rvoju/release-watch/attempt002');r=json.loads((P/'latest-run.json').read_text());j=next((x for x in r['jobs'] if x['name']=='publish'),None)
+if not j or j['status'] not in ('in_progress','completed') or j['conclusion']=='skipped':print('Publish has not started; no Release request made.');raise SystemExit()
+i=len(list(P.glob('public-release-probe-*.receipt.json')))+1;n=f'public-release-probe-{i:03d}';a=['env','-u','GH_TOKEN','-u','GITHUB_TOKEN','gh','api','repos/uprxiao/SmartDD/releases/tags/v0.1.1'];q=subprocess.run(a,stdin=subprocess.DEVNULL,capture_output=True,timeout=25);(P/(n+'.json')).write_bytes(q.stdout);(P/(n+'.stderr.log')).write_bytes(q.stderr);m={'argv':a,'exitCode':q.returncode,'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'path':n+'.json','sha256':hashlib.sha256(q.stdout).hexdigest()};(P/(n+'.receipt.json')).write_text(json.dumps(m,indent=2)+'\n')
+if q.returncode:print(json.dumps({'stage':'release-api-not-yet-visible','exitCode':q.returncode,'path':n+'.json'}));raise SystemExit()
+b=json.loads(q.stdout);arm=[{k:x.get(k) for k in ('id','name','size','digest','browser_download_url')} for x in b.get('assets',[]) if x['name']=='WillYou-0.1.1-mac-arm64.dmg'];public=b.get('tag_name')=='v0.1.1' and b.get('draft') is False and b.get('prerelease') is True
+print(json.dumps({'stage':'public-release-visible' if public else 'release-still-preparing','url':b.get('html_url'),'draft':b.get('draft'),'prerelease':b.get('prerelease'),'assets':len(b.get('assets',[])),'arm64DMG':arm,'evidence':n+'.json'}))
