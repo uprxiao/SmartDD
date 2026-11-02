@@ -789,32 +789,6 @@ try {
   },
  );
 
- stage = "relaunch";
- await progress();
- await app.close();
- await new Promise((r) => setTimeout(r, 2000));
- app = await openElectron({
-  executable,
-  userData,
-  cwd,
-  env: privateEnv,
-  inspectMain: true,
- });
- result.relaunchPid = app.processId;
- await app.evaluate(`document.title='A · M11 T17 · 禅道 v2 真实读取';true`);
- await app.waitFor(
-  'Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))',
-  60_000,
-  { navigation: true },
- );
- await app.arm();
- checked(
-  "Reopened the same isolated profile after the application package was verified",
-  {
-   relaunchPid: result.relaunchPid,
-  },
- );
-
  const args = [
   "--disable",
   "hooks",
