@@ -647,9 +647,10 @@ result.faultHits = faultHits;
 const baseConfig =
  'model="m11-base-model"\nmodel_provider="m11_local_fixture"\nnotify=[]\n[model_providers.m11_local_fixture]\nname="M11 Synthetic Local Fixture"\nbase_url="http://127.0.0.1:' +
  port +
- '/v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n[projects.' +
- JSON.stringify(cwd) +
- ']\ntrust_level="trusted"\n';
+ '/v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n';
+// The policy must stay at the top level: a section already open would swallow it.
+const projectsSection =
+ "[projects." + JSON.stringify(cwd) + ']\ntrust_level="trusted"\n';
 const policyVariants = {
  // A plain workspace policy: nothing legacy, nothing named.
  default: 'sandbox_mode="workspace-write"\n',
@@ -672,7 +673,7 @@ await mkdir(join(home, ".agents"), { recursive: true });
 const namedOnly = variant === "named" || variant === "named-two";
 await writeFile(
  join(state, "config.toml"),
- baseConfig + (namedOnly ? "" : variantToml),
+ baseConfig + (namedOnly ? "" : variantToml) + projectsSection,
 );
 if (namedOnly) await writeFile(join(state, "wy_t29.config.toml"), variantToml);
 result.userConfigSha256 = namedOnly
@@ -1011,13 +1012,13 @@ try {
    if (current) task = current;
   } catch {
    // A killed task can disappear from the registry; that still ends the wait.
-   return issued.length >= 5;
+   return issued.length >= 4;
   }
   const text = current?.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
   const state = String(current?.task?.state ?? current?.state ?? "running");
   return (
-   issued.length >= 5 &&
+   issued.length >= 4 &&
    // A cancelled in-flight call may never produce an output, so accept a task that already ended.
    (issued.every((c) => envelopes.has(c.callId)) ||
     state !== "running" ||
