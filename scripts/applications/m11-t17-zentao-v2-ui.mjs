@@ -236,16 +236,20 @@ const invokeSettled = async (channel, ...args) => {
  }
 };
 
-const TOOL = {
- work_list: "smartdd_zentao_work_list_v2",
- object_get: "smartdd_zentao_object_get_v2",
- resource: "smartdd_zentao_resource_v2",
+const CAPABILITY = {
+ work_list: "zentao.object.list",
+ object_get: "zentao.object.get",
+ resource: "zentao.resource.read",
 };
-const LEGACY = [
+const LEGACY_TOOLS = [
  "smartdd_zentao_work_list_v1",
  "smartdd_zentao_object_get_v1",
  "smartdd_zentao_resource_v1",
 ];
+const CLI = "willyou-app zentao";
+const shellQuote = (text) => "'" + text.replace(/'/g, `'"'"'`) + "'";
+const cliJson = (path, params) =>
+ CLI + " " + path + " --json " + shellQuote(JSON.stringify(params));
 
 const issued = [];
 const envelopes = new Map();
@@ -272,54 +276,74 @@ const isError = (value) =>
 const nextStep = () => {
  const last = issued.at(-1);
  if (!last)
-  return { tool: "work_list", args: { kind: "bug", limit: 2 }, note: "page1" };
+  return {
+   command: "willyou-app --list",
+   capability: "capabilities/list",
+   note: "capability-list",
+  };
  const at = envelopes.get(last.callId);
- if (issued.length === 1) {
+ if (issued.length === 1)
+  return {
+   command: CLI + " object list --kind bug --limit 2",
+   capability: CAPABILITY.work_list,
+   note: "page1",
+  };
+ if (issued.length === 2) {
   const cursor = at?.data?.nextCursor ?? null;
   return {
-   tool: "work_list",
-   args: { kind: "bug", limit: 2, ...(cursor ? { cursor } : {}) },
+   command: cursor
+    ? cliJson("object list", { kind: "bug", limit: 2, cursor })
+    : null,
+   capability: CAPABILITY.work_list,
    note: cursor ? "page2" : "page2-no-cursor",
   };
  }
- if (issued.length === 2)
+ if (issued.length === 3)
   return {
-   tool: "work_list",
-   args: { kind: "bug", limit: 200 },
+   command: cliJson("object list", { kind: "bug", limit: 200 }),
+   capability: CAPABILITY.work_list,
    note: "full-scope",
   };
- if (issued.length === 3) {
+ if (issued.length === 4) {
   const items = at?.data?.items ?? [];
   const target = items.find((i) => i.id === scopeTarget) ?? items[0];
   return {
-   tool: "object_get",
-   args: { kind: "bug", reference: target?.reference },
+   command: target
+    ? cliJson("object get", { kind: "bug", reference: target.reference })
+    : null,
+   capability: CAPABILITY.object_get,
    note: "object " + (target?.id ?? "none"),
   };
  }
- if (issued.length === 4) {
+ if (issued.length === 5) {
   if (!at?.data?.body) {
    result.bodyMissing = true;
    return null;
   }
   return {
-   tool: "resource",
-   args: { resource: at.data.body, offset: 0, length: 4096 },
+   command: cliJson("resource read", {
+    resource: at.data.body,
+    offset: 0,
+    length: 4096,
+   }),
+   capability: CAPABILITY.resource,
    note: "resource-offset-0",
+   resource: at.data.body,
   };
  }
- if (issued.length >= 5) {
+ if (issued.length >= 6) {
   const data = at?.data;
-  if (!data || data.eof || data.nextOffset === null || issued.length >= 7)
+  if (!data || data.eof || data.nextOffset === null || issued.length >= 8)
    return null;
   return {
-   tool: "resource",
-   args: {
-    resource: last.args.resource,
+   command: cliJson("resource read", {
+    resource: last.resource,
     offset: data.nextOffset,
     length: 4096,
-   },
+   }),
+   capability: CAPABILITY.resource,
    note: "resource-offset-" + data.nextOffset,
+   resource: last.resource,
   };
  }
  return null;
@@ -371,6 +395,7 @@ const server = createServer((incoming, res) => {
    model: body.model,
    requestBytes: bytes,
    sha256: sha(raw),
+   toolNames: tools.map((t) => t.name ?? t.type),
    zentaoToolNames: zentaoTools.map((t) => t.name),
   });
   // Absorb the real tool output for every call this fixture issued.
@@ -381,6 +406,7 @@ const server = createServer((incoming, res) => {
    const text = textOf(item.output);
    const value = envelopeOf(text);
    envelopes.set(item.call_id, value);
+   known.text = text.slice(0, 4000);
    known.outputSha256 = sha(text);
    known.outputLength = text.length;
    known.envelope = isError(value) ? value : undefined;
@@ -473,11 +499,11 @@ const server = createServer((incoming, res) => {
    respondText(marker + "_DONE");
    return;
   }
-  const ns = tools.find((t) => t.name === TOOL[step.tool])?.namespace;
-  if (!ns) {
+  const shell = tools.find((t) => t.name === "exec_command");
+  if (!shell) {
    result.fixtureFailure = {
     code: "TOOL_MISSING",
-    message: "Native request is missing " + TOOL[step.tool],
+    message: "Native request is missing the exec_command shell tool",
    };
    respondText(marker + "_FIXTURE_FAILED");
    return;
@@ -487,23 +513,26 @@ const server = createServer((incoming, res) => {
    type: "function_call",
    id: "fc_m11_t17_" + issued.length,
    call_id: callId,
-   name: TOOL[step.tool],
-   namespace: ns,
-   arguments: JSON.stringify(step.args),
+   name: "exec_command",
+   arguments: JSON.stringify({
+    cmd: step.command,
+    max_output_tokens: 12000,
+   }),
    status: "completed",
   };
   issued.push({
    callId,
-   tool: TOOL[step.tool],
+   command: step.command,
+   capability: step.capability,
    note: step.note,
-   args: step.args,
+   resource: step.resource,
    at: new Date().toISOString(),
   });
   result.calls = issued.map((c) => ({
    callId: c.callId,
-   tool: c.tool,
+   command: c.command,
+   capability: c.capability,
    note: c.note,
-   args: c.args,
    at: c.at,
    capabilityId: c.capabilityId ?? null,
    outputLength: c.outputLength ?? null,
@@ -838,33 +867,41 @@ try {
   );
  }, 180000);
  result.finalTask = await app.invoke("tasks.get", task.id);
- result.nativeToolDefinitions = JSON.parse(
-  await readFile(join(root, "native-tool-definitions.json"), "utf8"),
- ).map((t) => t.name);
+ result.nativeTools = result.requests.at(-1)?.toolNames ?? [];
  await app.screenshot(join(root, "task-native-response.png"));
 
  stage = "assertions";
  await progress();
- const defs = result.nativeToolDefinitions;
- for (const name of Object.values(TOOL))
-  assert(defs.includes(name), "Missing v2 tool " + name);
- for (const name of LEGACY)
-  assert(!defs.includes(name), "Legacy v1 tool still exposed: " + name);
+ const defs = result.nativeTools;
+ assert(defs.includes("exec_command"), "The native session has no shell tool");
+ assert(!defs.some((n) => LEGACY_TOOLS.includes(n)), "The native session still advertises a v1 tool");
+ const capabilitySurface = issued[0]?.text ?? "";
+ for (const id of Object.values(CAPABILITY))
+  assert(
+   capabilitySurface.includes(id),
+   "The session capability surface is missing " + id,
+  );
+ for (const name of LEGACY_TOOLS)
+  assert(
+   !capabilitySurface.includes(name),
+   "A legacy v1 tool is still advertised: " + name,
+  );
  checked(
-  "Every v1 ZenTao capability maps to an exposed v2 tool with no legacy tool left",
+  "Every v1 ZenTao capability maps to an exposed v2 capability with no legacy tool left",
   {
-   tools: defs,
+   capabilities: Object.values(CAPABILITY),
+   nativeTools: defs,
   },
  );
 
  const values = new Map([...envelopes].map(([id, v]) => [id, v]));
- const byTool = (name) =>
+ const byCapability = (name) =>
   issued
-   .filter((c) => c.tool === name)
+   .filter((c) => c.capability === name)
    .map((c) => ({ call: c, value: values.get(c.callId) }));
- for (const each of byTool(TOOL.work_list).concat(
-  byTool(TOOL.object_get),
-  byTool(TOOL.resource),
+ for (const each of byCapability(CAPABILITY.work_list).concat(
+  byCapability(CAPABILITY.object_get),
+  byCapability(CAPABILITY.resource),
  )) {
   assert(
    !isError(each.value),
@@ -872,17 +909,20 @@ try {
   );
   assert.equal(each.value.schema, "willyou-app-result-v2");
   assert.equal(each.value.contractMajor, 2);
-  assert.equal(each.value.operation.origin, "mcp");
+  assert.equal(each.value.operation.origin, "cli");
   assert.equal(each.value.operation.effectState, "read-only");
+  assert.equal(each.value.capabilityId, each.call.capability);
  }
  checked(
-  "All live reads returned the unified v2 envelope through the real MCP origin",
+  "All live reads returned the unified v2 envelope through the real CLI origin",
   {
    calls: issued.length,
   },
  );
 
- const [page1, page2, full] = byTool(TOOL.work_list).map((x) => x.value.data);
+ const [page1, page2, full] = byCapability(CAPABILITY.work_list).map(
+  (x) => x.value.data,
+ );
  assert(page1, "First work_list page missing");
  assert(page1.items.length > 0, "First work_list page is empty");
  assert(page1.items.length <= 2);
@@ -950,7 +990,7 @@ try {
   page2: page2 ? page2.items.length : 0,
  });
 
- const object = byTool(TOOL.object_get)[0].value.data;
+ const object = byCapability(CAPABILITY.object_get)[0].value.data;
  assert.equal(object.kind, "bug");
  assert.equal(object.id, scopeTarget);
  assert.equal(object.complete, true);
@@ -986,7 +1026,7 @@ try {
   },
  );
 
- const chunks = byTool(TOOL.resource).map((x) => x.value.data);
+ const chunks = byCapability(CAPABILITY.resource).map((x) => x.value.data);
  assert(
   !result.bodyMissing,
   "object_get returned no readable body although the recorded baseline bug carries a steps field",
@@ -1037,7 +1077,7 @@ try {
  result.runPlan = await readRunPlan();
  assert.equal(
   result.runPlan.applications.find((a) => a.appId === "zentao").effectiveEntry,
-  "mcp",
+  "cli",
  );
  const session = await app.invoke("applications.session", task.id);
  assert(session.ok, session.message);
