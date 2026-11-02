@@ -666,6 +666,12 @@ async function readRunPlan() {
  );
 }
 
+async function packageState(appId) {
+ return app.mainEvaluate(
+  `(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json');const DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData, "smartdd.db"))},{readonly:true});try{const row=db.prepare("SELECT state FROM capability_resources WHERE kind='application-package' AND relative_path LIKE ? ORDER BY generation DESC LIMIT 1").get(${JSON.stringify(appId + "/%")});return row?row.state:null}finally{db.close()}})()`,
+ );
+}
+
 try {
  await progress();
  app = await openElectron({
@@ -760,6 +766,19 @@ try {
   "Project selection enables only this project and this saved connection",
  );
 
+ stage = "application-package";
+ await progress();
+ result.applicationPackageState = await poll(async () => {
+  const state = await packageState("zentao");
+  return state === "ready" ? state : null;
+ }, 60000);
+ checked(
+  "The ZenTao package finished verification before the session was created",
+  {
+   state: result.applicationPackageState,
+  },
+ );
+
  const args = [
   "--disable",
   "hooks",
@@ -852,6 +871,24 @@ try {
  checked("Real composer input and launch button created exactly one Task", {
   taskId: task.id,
  });
+ stage = "launch-plan";
+ await progress();
+ const launchPlan = await readRunPlan();
+ const snapshotPackages = await app.mainEvaluate(
+  `(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json');const DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData, "smartdd.db"))},{readonly:true});try{const row=db.prepare("SELECT json_array_length(json_extract(snapshot_json,'$.packages')) AS n FROM capability_session_snapshots WHERE snapshot_hash=?").get(${JSON.stringify(launchPlan.snapshotHash)});return row?row.n:null}finally{db.close()}})()`,
+ );
+ result.launchPlan = {
+  snapshotHash: launchPlan.snapshotHash,
+  applications: launchPlan.applications,
+  allowed: launchPlan.allowed,
+  grades: launchPlan.grades,
+  snapshotPackages,
+ };
+ assert(
+  launchPlan.applications.length > 0,
+  "The run plan dropped the selected ZenTao application: " +
+   JSON.stringify({ applications: launchPlan.applications, grades: launchPlan.grades, snapshotPackages }),
+ );
 
  stage = "native-task-response";
  await progress();
@@ -874,7 +911,10 @@ try {
  await progress();
  const defs = result.nativeTools;
  assert(defs.includes("exec_command"), "The native session has no shell tool");
- assert(!defs.some((n) => LEGACY_TOOLS.includes(n)), "The native session still advertises a v1 tool");
+ assert(
+  !defs.some((n) => LEGACY_TOOLS.includes(n)),
+  "The native session still advertises a v1 tool",
+ );
  const capabilitySurface = issued[0]?.text ?? "";
  for (const id of Object.values(CAPABILITY))
   assert(
