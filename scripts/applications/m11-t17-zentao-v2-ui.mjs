@@ -668,7 +668,7 @@ async function readRunPlan() {
 
 async function packageState(appId) {
  return app.mainEvaluate(
-  `(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json');const DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData, "smartdd.db"))},{readonly:true});try{const row=db.prepare("SELECT state FROM capability_resources WHERE kind='application-package' AND relative_path LIKE ? ORDER BY generation DESC LIMIT 1").get(${JSON.stringify(appId + "/%")});return row?row.state:null}finally{db.close()}})()`,
+  `(()=>{const req=process.getBuiltinModule('module').createRequire(process.resourcesPath+'/app.asar/package.json');const DB=req('better-sqlite3'),db=new DB(${JSON.stringify(join(userData, "smartdd.db"))},{readonly:true});try{const row=db.prepare("SELECT state FROM capability_resources WHERE kind='application-package' AND relative_path LIKE ? ORDER BY generation DESC LIMIT 1").get(${JSON.stringify("%/" + appId + "/%")});return row?row.state:null}finally{db.close()}})()`,
  );
 }
 
@@ -776,6 +776,32 @@ try {
   "The ZenTao package finished verification before the session was created",
   {
    state: result.applicationPackageState,
+  },
+ );
+
+ stage = "relaunch";
+ await progress();
+ await app.close();
+ await new Promise((r) => setTimeout(r, 2000));
+ app = await openElectron({
+  executable,
+  userData,
+  cwd,
+  env: privateEnv,
+  inspectMain: true,
+ });
+ result.relaunchPid = app.processId;
+ await app.evaluate(`document.title='A · M11 T17 · 禅道 v2 真实读取';true`);
+ await app.waitFor(
+  'Boolean(window.electronAPI && document.querySelector("[data-testid=nav-settings]"))',
+  60_000,
+  { navigation: true },
+ );
+ await app.arm();
+ checked(
+  "Reopened the same isolated profile after the application package was verified",
+  {
+   relaunchPid: result.relaunchPid,
   },
  );
 
@@ -887,7 +913,11 @@ try {
  assert(
   launchPlan.applications.length > 0,
   "The run plan dropped the selected ZenTao application: " +
-   JSON.stringify({ applications: launchPlan.applications, grades: launchPlan.grades, snapshotPackages }),
+   JSON.stringify({
+    applications: launchPlan.applications,
+    grades: launchPlan.grades,
+    snapshotPackages,
+   }),
  );
 
  stage = "native-task-response";
