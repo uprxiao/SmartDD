@@ -349,6 +349,8 @@ const server = createServer((incoming, res) => {
   }
   const raw = JSON.stringify(body);
   const taskRequest = raw.includes(marker);
+  // The profile health probe runs a real Codex exec asking for an exact connectivity code.
+  const probeCode = /Reply with exactly ([A-Za-z0-9_-]+)/.exec(raw)?.[1] ?? null;
   const tools = (body.tools ?? []).flatMap((t) =>
    t.type === "namespace"
     ? (t.tools ?? []).map((v) => ({ ...v, namespace: t.name }))
@@ -454,7 +456,7 @@ const server = createServer((incoming, res) => {
    res.end();
   };
   if (!taskRequest) {
-   respondText("M11_T17_FIXTURE_OK");
+   respondText(probeCode ?? "M11_T17_FIXTURE_OK");
    return;
   }
   let step;
