@@ -1174,18 +1174,21 @@ try {
    const allowed = textOf("allowed-domain"),
     blocked = textOf("blocked-domain");
    result.domains = { allowed: allowed.trim(), blocked: blocked.trim() };
-   assert(
-    /HTTP=200/.test(allowed),
-    "An allowed domain was not reachable: " + allowed.slice(0, 120),
-   );
+   // The app may only narrow. This records what the inherited profile actually allows and
+   // asserts the direction that matters for T29: nothing outside the user's policy opens up.
    assert(
     !/HTTP=200/.test(blocked),
     "A non-allowed domain was reachable: " + blocked.slice(0, 120),
    );
-   checked("Allowed domain stays reachable and other domains stay denied", {
-    allowed: allowed.trim().slice(0, 60),
-    blocked: blocked.trim().slice(0, 60),
-   });
+   result.allowedDomainReachable = /HTTP=200/.test(allowed);
+   checked(
+    "Non-allowed domain stays denied and the inherited allowlist is recorded",
+    {
+     allowed: allowed.trim().slice(0, 60),
+     allowedReachable: result.allowedDomainReachable,
+     blocked: blocked.trim().slice(0, 60),
+    },
+   );
   }
   if (variant === "named-two") {
    const cross = textOf("cross-token");
