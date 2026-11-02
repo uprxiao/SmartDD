@@ -1,0 +1,666 @@
+{
+  "schema": "m11-t37-skill-v2-v1",
+  "startedAt": "2026-11-02T01:28:49.800Z",
+  "root": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX",
+  "userData": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/userdata",
+  "home": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/home",
+  "state": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/codex",
+  "cwd": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/project",
+  "branch": "feature/0.1.0",
+  "sourceCommit": "37ccc59fef0c0d8d4905e2f53f707ff39705a54d",
+  "sourceDirty": false,
+  "app": "/private/tmp/willyou-m11-s7/package-c7-attempt-001/mac-arm64/WillYou.app",
+  "asarSha256": "b87809c74aa2e4d9750710a053af71b9b96dd6f355790db3879384d18bd39b42",
+  "baseUrl": "http://192.168.106.185/biz/",
+  "account": "lvhuixiao",
+  "scopeTarget": "79967",
+  "scopeNegative": [
+    "79303",
+    "79489"
+  ],
+  "kindCovered": [
+    "bug"
+  ],
+  "credential": {
+    "source": "private-file",
+    "secretPresent": true,
+    "secretLength": 7,
+    "secretRecorded": false
+  },
+  "layer": "A: real packaged App + real Codex 0.166.0 + real v2 ZenTao MCP capability against the approved private site, read-only; model response is a private synthetic fixture that selects the declared calls; connection test/save and project selection are IPC prerequisites",
+  "isolation": {
+    "minimalDriverEnv": true,
+    "freshHome": true,
+    "freshCodexHome": true,
+    "freshUserData": true,
+    "noDailyCredentialsCopied": true,
+    "proxy": "unreachable loopback except localhost; direct route to the approved site",
+    "secretHandling": "read once before the scrub, never printed or persisted"
+  },
+  "marker": "M11_T37_ZENTAO_Pz3NIX",
+  "requests": [
+    {
+      "at": "2026-11-02T01:28:53.412Z",
+      "kind": "fixture",
+      "model": "m11-base-model",
+      "requestBytes": 29645,
+      "sha256": "a06192db44cf02883b6aa7c6fbad71143e899659810887b8be910f709825adff",
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "request_user_input",
+        "view_image",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "zentaoToolNames": []
+    },
+    {
+      "at": "2026-11-02T01:28:54.927Z",
+      "kind": "agent-task",
+      "model": "m11-base-model",
+      "requestBytes": 36433,
+      "sha256": "f88a45724d13b9fa54ae942ee4ce26752cb32596cf78ccf032efa38005a80bd8",
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "create_worktree",
+        "get_worktree_creation_status",
+        "list_worktrees",
+        "project_context",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "zentaoToolNames": []
+    },
+    {
+      "at": "2026-11-02T01:28:55.014Z",
+      "kind": "agent-task",
+      "model": "m11-base-model",
+      "requestBytes": 37444,
+      "sha256": "f8ff9276fca1ff97660f15d025d777a104d8955a128114aba145f6529b493962",
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "create_worktree",
+        "get_worktree_creation_status",
+        "list_worktrees",
+        "project_context",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ],
+      "zentaoToolNames": []
+    }
+  ],
+  "calls": [
+    {
+      "callId": "call_m11_t17_0",
+      "command": "echo \"EP=$WILLYOU_ENDPOINT\"; echo \"TOKEN=${WILLYOU_RUN_TOKEN:+present}\"; ls -ld \"$(dirname \"$WILLYOU_ENDPOINT\")\" 2>&1; willyou-app --list > capability-surface.json 2>&1; wc -c < capability-surface.json; tr -d '\\n' < capability-surface.json | grep -o '\"id\":[ ]*\"[a-zA-Z.]*\"' | sort -u; grep -c '_v1\"' capability-surface.json || true",
+      "capability": "capabilities/list",
+      "note": "capability-list",
+      "at": "2026-11-02T01:28:54.927Z",
+      "capabilityId": null,
+      "outputLength": null,
+      "outputSha256": null,
+      "failure": null
+    }
+  ],
+  "checks": [
+    {
+      "name": "Real ZenTao connection tested and saved through the original IPC contract with the operator-provided private credential",
+      "at": "2026-11-02T01:28:53.231Z",
+      "passed": true,
+      "identity": "zentao",
+      "impacts": 0
+    },
+    {
+      "name": "Project selection enables only this project and this saved connection",
+      "at": "2026-11-02T01:28:53.329Z",
+      "passed": true
+    },
+    {
+      "name": "The ZenTao package finished verification before the session was created",
+      "at": "2026-11-02T01:28:53.333Z",
+      "passed": true,
+      "state": "ready"
+    },
+    {
+      "name": "Real composer input and launch button created exactly one Task",
+      "at": "2026-11-02T01:28:54.648Z",
+      "passed": true,
+      "taskId": "2e108917-3d5f-4de1-baa5-cb8c890ff24e"
+    },
+    {
+      "name": "Every v1 ZenTao capability maps to an exposed v2 capability with no legacy tool left",
+      "at": "2026-11-02T01:28:55.174Z",
+      "passed": true,
+      "capabilities": [
+        "zentao.object.list",
+        "zentao.object.get",
+        "zentao.resource.read"
+      ],
+      "nativeTools": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "create_worktree",
+        "get_worktree_creation_status",
+        "list_worktrees",
+        "project_context",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    },
+    {
+      "name": "Run plan Skill render hashes match the bytes actually delivered",
+      "at": "2026-11-02T01:28:55.176Z",
+      "passed": true,
+      "skills": 2,
+      "entries": [
+        {
+          "appId": "zentao",
+          "nativeName": "smartdd-a-zentao-bug-analysis-99ab44649810",
+          "files": 2,
+          "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007"
+        },
+        {
+          "appId": "zentao",
+          "nativeName": "smartdd-a-zentao-story-review-441f08c45b06",
+          "files": 2,
+          "renderedHash": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c"
+        }
+      ]
+    }
+  ],
+  "status": "passed-skill-render-hash",
+  "formalCasePassesAdded": 0,
+  "cli": {
+    "path": "/private/tmp/willyou-m11-t17-codex-pin/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "version": "codex-cli 0.166.0",
+    "entrySha256": "39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1"
+  },
+  "pid": 60682,
+  "projectId": "a1f6842d-0d15-4459-a17a-e8ce0c1b690c",
+  "connectionTest": {
+    "ok": true,
+    "identity": {
+      "providerId": "zentao",
+      "serviceId": "http://192.168.106.185/biz/",
+      "accountId": "uid:238",
+      "contractMajor": 1
+    },
+    "impacts": 0,
+    "expiresAt": "2026-11-02T01:38:52.560Z"
+  },
+  "connection": {
+    "id": "e8aa73ba-5c28-4b48-9fbe-8dabfc20bb19",
+    "availability": "connected",
+    "config": {
+      "kind": "zentao",
+      "baseUrl": "http://192.168.106.185/biz/",
+      "username": "lvhuixiao",
+      "authMode": "password"
+    },
+    "identityRevision": 1,
+    "hasSecret": true,
+    "testedAt": "2026-11-02T01:28:53.153Z"
+  },
+  "applicationPackageState": "ready",
+  "profileId": "67bb3073-ea9c-4d5d-89fd-aa6751de7c7a",
+  "installationInitialFocus": [
+    {
+      "pid": 60682,
+      "before": {
+        "focused": true,
+        "visibility": "visible"
+      },
+      "requested": false,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 60682,
+    "checkedInputs": 9
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 60682,
+      "checkedInputs": 9
+    }
+  ],
+  "taskId": "2e108917-3d5f-4de1-baa5-cb8c890ff24e",
+  "launchPlan": {
+    "snapshotHash": "13a7994b606248652e2ea03d54644b8bdb7713c7f423ca0679f63d3051e49037",
+    "applications": [
+      {
+        "appId": "zentao",
+        "effectiveEntry": "cli",
+        "fallback": false,
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+        "primaryEntry": "cli",
+        "reason": null
+      }
+    ],
+    "allowed": [
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.object.list",
+        "cliCommand": [
+          "zentao",
+          "object",
+          "list"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_work_list_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      },
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.object.get",
+        "cliCommand": [
+          "zentao",
+          "object",
+          "get"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_object_get_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      },
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.resource.read",
+        "cliCommand": [
+          "zentao",
+          "resource",
+          "read"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_resource_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      }
+    ],
+    "grades": {
+      "cli": true,
+      "configuration": true,
+      "discoveryObserved": false,
+      "evidence": [
+        "agent-adapter:codex:765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655"
+      ],
+      "mcp": true,
+      "skill": true,
+      "userMessageObserved": false
+    },
+    "snapshotPackages": 1
+  },
+  "cliBridge": [
+    {
+      "dir": "/private/tmp/wy-cli-501-22U5EY",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-6GkVmW",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-9qetMM",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-B2Bmr2",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-FjPzRD",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-GEBPkJ",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-KJdIhj",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-TjIBAI",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-XyLLB8",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-ceUjBT",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-p931sW",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-pN7u2K",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-u9u57p",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-yzIIeR",
+      "files": [
+        "cli.sock"
+      ]
+    },
+    {
+      "dir": "/private/tmp/wy-cli-501-zt2H7z",
+      "files": [
+        "cli.sock"
+      ]
+    }
+  ],
+  "fixtureComplete": true,
+  "finalTask": {
+    "id": "2e108917-3d5f-4de1-baa5-cb8c890ff24e",
+    "projectId": "a1f6842d-0d15-4459-a17a-e8ce0c1b690c",
+    "projectName": "M11 T37 禅道 v2 隔离项目",
+    "dirId": "827253da-e8d4-4032-9a7b-d956eafc87b1",
+    "cwd": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/project",
+    "aiProfileId": "67bb3073-ea9c-4d5d-89fd-aa6751de7c7a",
+    "aiProfileName": "M11 T37 私有 Codex 0.166.0",
+    "aiProfileColor": null,
+    "runner": "codex",
+    "nativeSessionId": null,
+    "title": "M11_T37_ZENTAO_Pz3NIX：用本项目的禅道能力列出我被指派的 Bug（先按每页两条分页，再取完整列表）…",
+    "firstMessage": "M11_T37_ZENTAO_Pz3NIX：用本项目的禅道能力列出我被指派的 Bug（先按每页两条分页，再取完整列表），打开其中一条的详情并读取正文首个分块。全程只读，返回 M11_T37_ZENTAO_Pz3NIX_DONE。",
+    "injectedEnvNames": [
+      "ALL_PROXY",
+      "CLAUDE_CONFIG_DIR",
+      "CODEX_HOME",
+      "HOME",
+      "HTTPS_PROXY",
+      "HTTP_PROXY",
+      "NO_PROXY",
+      "PATH",
+      "PROJECT_DB_CONFIG",
+      "REMOTE_SERVERS_CONFIG",
+      "SHELL",
+      "SMARTDD_CONFIG_VERSION",
+      "SMARTDD_PROJECT_CONTEXT",
+      "SMARTDD_PROJECT_ID",
+      "SMARTDD_RESOURCE_AUDIT",
+      "WILLYOU_ENDPOINT",
+      "WILLYOU_RUN_TOKEN",
+      "ZDOTDIR"
+    ],
+    "runtimeSnapshot": {
+      "runId": "43447608-5c45-462e-9789-0a9a3ee3a3fa",
+      "projectId": "a1f6842d-0d15-4459-a17a-e8ce0c1b690c",
+      "configVersion": 1,
+      "configHash": "c8c5dffaf66bb364765fc9d18e1dc39c2975e48a507fd5842095c6ee50c9d718",
+      "manifestPath": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/userdata/capabilities/runs/a1f6842d-0d15-4459-a17a-e8ce0c1b690c/2e108917-3d5f-4de1-baa5-cb8c890ff24e/43447608-5c45-462e-9789-0a9a3ee3a3fa/manifest.json",
+      "auditPath": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/userdata/capabilities/resource-audit/a1f6842d-0d15-4459-a17a-e8ce0c1b690c/2e108917-3d5f-4de1-baa5-cb8c890ff24e.jsonl",
+      "skills": [
+        {
+          "skillId": "project-db-diagnostics",
+          "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
+          "version": "1.0.0",
+          "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+          "path": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        },
+        {
+          "skillId": "remote-password-ssh",
+          "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
+          "version": "1.0.0",
+          "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+          "path": "/private/tmp/willyou-m11-t37-zentao-Pz3NIX/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+          "loaded": "unverified",
+          "enabled": true
+        }
+      ],
+      "mcp": [
+        {
+          "name": "smartdd_project_3e6c2c3bf70b",
+          "loaded": "unverified"
+        }
+      ],
+      "selfCheck": {
+        "status": "passed",
+        "issues": [],
+        "at": 1793582934808
+      },
+      "sessionCapabilities": {
+        "schema": 3,
+        "taskId": "2e108917-3d5f-4de1-baa5-cb8c890ff24e",
+        "snapshotHash": "13a7994b606248652e2ea03d54644b8bdb7713c7f423ca0679f63d3051e49037"
+      }
+    },
+    "configVersion": 1,
+    "projectConfigVersion": 1,
+    "archivedAt": null,
+    "createdAt": 1793582933786,
+    "updatedAt": 1793582933786,
+    "lastLaunchedAt": 1793582934578,
+    "ptyId": "ffe2b5b8-c5b8-4b3a-9bbc-cf7ac1ad1282",
+    "recovery": "not-started",
+    "recoveryReason": "还没有发过消息，Codex 未生成会话；打开时会新开一个"
+  },
+  "nativeTools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "create_worktree",
+    "get_worktree_creation_status",
+    "list_worktrees",
+    "project_context",
+    "get_goal",
+    "create_goal",
+    "update_goal"
+  ],
+  "capabilitySurface": {
+    "length": 322,
+    "hasList": true,
+    "head": "Chunk ID: 844c45\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 55\nOutput:\nEP=/private/tmp/wy-cli-501-22U5EY/cli.sock\nTOKEN=present\ndrwx------@ 3 hx  wheel  96 Nov  2 09:28 /private/tmp/wy-cli-501-22U5EY\n   16773\n\"id\":\"zentao.object.get\"\n\"id\":\"zentao.object.list\"\n\"id\":\"ze"
+  },
+  "runPlan": {
+    "allowed": [
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.object.list",
+        "cliCommand": [
+          "zentao",
+          "object",
+          "list"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_work_list_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      },
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.object.get",
+        "cliCommand": [
+          "zentao",
+          "object",
+          "get"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_object_get_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      },
+      {
+        "appId": "zentao",
+        "capabilityId": "zentao.resource.read",
+        "cliCommand": [
+          "zentao",
+          "resource",
+          "read"
+        ],
+        "contractMajor": 2,
+        "entry": "cli",
+        "mcpTool": "smartdd_zentao_resource_v2",
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+      }
+    ],
+    "applications": [
+      {
+        "appId": "zentao",
+        "effectiveEntry": "cli",
+        "fallback": false,
+        "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+        "primaryEntry": "cli",
+        "reason": null
+      }
+    ],
+    "capabilityAdapter": {
+      "hash": "765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+      "id": "codex",
+      "version": "1.3.0"
+    },
+    "cliVersion": "0.166.0",
+    "createdAt": "2026-11-02T01:28:54.432Z",
+    "grades": {
+      "cli": true,
+      "configuration": true,
+      "discoveryObserved": false,
+      "evidence": [
+        "agent-adapter:codex:765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655"
+      ],
+      "mcp": true,
+      "skill": true,
+      "userMessageObserved": false
+    },
+    "planHash": "f205fb7b55f4fe3c6ddcc1a9cc7475be2b9e61f3bad6efd438fd75bd6cca23ae",
+    "projectId": "a1f6842d-0d15-4459-a17a-e8ce0c1b690c",
+    "runId": "43447608-5c45-462e-9789-0a9a3ee3a3fa",
+    "runner": {
+      "hash": "765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+      "id": "codex",
+      "version": "1.3.0"
+    },
+    "sandbox": {
+      "digest": "146d43dfe30324e78572da9658252a06ec6871a5c7e2b4d09d575b99d5e54ec9",
+      "source": "explicit-full-access"
+    },
+    "schema": "willyou-application-run-plan-v1",
+    "skills": [
+      {
+        "appId": "zentao",
+        "nativeName": "smartdd-a-zentao-bug-analysis-99ab44649810",
+        "parametersHash": "b2cd54f27d9b2c219e501042189f8142cf0fbb84a08adf6eff05b23acd46766b",
+        "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007",
+        "skillId": "bug-analysis",
+        "templateHash": "f994c237ee6f3e464c76d74e570f255bd07633f3b37a16770ba9d4f9aff8bb7b"
+      },
+      {
+        "appId": "zentao",
+        "nativeName": "smartdd-a-zentao-story-review-441f08c45b06",
+        "parametersHash": "8c7d50f94c5226696a25036ac1c5b08621c766ba4f4a4da5698e46104aaaf25d",
+        "renderedHash": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c",
+        "skillId": "story-review",
+        "templateHash": "40c52d743df3ce86e450e440b556ba9cd504d3a9f64dca588346c54a31a4a15c"
+      }
+    ],
+    "snapshotHash": "13a7994b606248652e2ea03d54644b8bdb7713c7f423ca0679f63d3051e49037",
+    "taskId": "2e108917-3d5f-4de1-baa5-cb8c890ff24e"
+  },
+  "runPlanKeys": [
+    "allowed",
+    "applications",
+    "capabilityAdapter",
+    "cliVersion",
+    "createdAt",
+    "grades",
+    "planHash",
+    "projectId",
+    "runId",
+    "runner",
+    "sandbox",
+    "schema",
+    "skills",
+    "snapshotHash",
+    "taskId"
+  ],
+  "deliveredSkills": [
+    {
+      "appId": "zentao",
+      "skillId": "bug-analysis",
+      "nativeName": "smartdd-a-zentao-bug-analysis-99ab44649810",
+      "files": 2,
+      "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007",
+      "recomputed": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007"
+    },
+    {
+      "appId": "zentao",
+      "skillId": "story-review",
+      "nativeName": "smartdd-a-zentao-story-review-441f08c45b06",
+      "files": 2,
+      "renderedHash": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c",
+      "recomputed": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c"
+    }
+  ],
+  "rendererErrors": [],
+  "ownAppCleanupComplete": true,
+  "finishedAt": "2026-11-02T01:28:55.426Z"
+}
