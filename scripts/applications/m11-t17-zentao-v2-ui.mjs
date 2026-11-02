@@ -44,7 +44,8 @@ assert(
 
 // --- private credentials: read once, before the environment scrub, never recorded ---
 const defaultCred = join(homedir(), ".smartdd-zen.env");
-const credPath = process.env.WILLYOU_ZEN_CRED ?? (existsSync(defaultCred) ? defaultCred : null);
+const credPath =
+ process.env.WILLYOU_ZEN_CRED ?? (existsSync(defaultCred) ? defaultCred : null);
 const parseCred = (text) => {
  const out = {};
  for (const line of text.split("\n")) {
@@ -52,7 +53,10 @@ const parseCred = (text) => {
   if (!trimmed || trimmed.startsWith("#")) continue;
   const at = trimmed.indexOf("=");
   if (at <= 0) continue;
-  out[trimmed.slice(0, at).trim()] = trimmed.slice(at + 1).trim().replace(/^["']|["']$/g, "");
+  out[trimmed.slice(0, at).trim()] = trimmed
+   .slice(at + 1)
+   .trim()
+   .replace(/^["']|["']$/g, "");
  }
  return out;
 };
@@ -75,7 +79,16 @@ assert(
  account && secret,
  "Provide the real ZenTao account and credential outside the repository: ~/.smartdd-zen.env with ZENTAO_USER=/ZENTAO_SECRET=, or WILLYOU_ZEN_USER/WILLYOU_ZEN_SECRET (or WILLYOU_ZEN_CRED=<file>)",
 );
-const baseUrl = (process.env.WILLYOU_ZEN_BASE ?? "http://192.168.106.185/biz/").replace(/\/?$/, "/");
+const baseUrl = (
+ process.env.WILLYOU_ZEN_BASE ?? "http://192.168.106.185/biz/"
+).replace(/\/?$/, "/");
+const siteHost = (() => {
+ try {
+  return new URL(baseUrl).hostname;
+ } catch {
+  throw new Error("WILLYOU_ZEN_BASE is not a valid absolute URL: " + baseUrl);
+ }
+})();
 const connectionName = process.env.WILLYOU_ZEN_CONNECTION ?? "M11 T17 本人只读";
 const projectName = "M11 T17 禅道 v2 隔离项目";
 const scopeTarget = "79967";
@@ -96,9 +109,15 @@ const result = {
  home,
  state,
  cwd,
- branch: execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim(),
- sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
- sourceDirty: !!execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim(),
+ branch: execFileSync("git", ["branch", "--show-current"], {
+  encoding: "utf8",
+ }).trim(),
+ sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], {
+  encoding: "utf8",
+ }).trim(),
+ sourceDirty: !!execFileSync("git", ["status", "--porcelain"], {
+  encoding: "utf8",
+ }).trim(),
  app: appRoot,
  asarSha256: sha(await readFile(join(appRoot, "Contents/Resources/app.asar"))),
  baseUrl,
@@ -120,7 +139,8 @@ const result = {
   freshCodexHome: true,
   freshUserData: true,
   noDailyCredentialsCopied: true,
-  proxy: "unreachable loopback except localhost; direct route to the approved site",
+  proxy:
+   "unreachable loopback except localhost; direct route to the approved site",
   secretHandling: "read once before the scrub, never printed or persisted",
  },
  marker,
@@ -157,14 +177,25 @@ const progress = async () => {
   taskId: task?.id,
   calls: result.calls.length,
  };
- await writeFile(join(root, "progress.json"), JSON.stringify(value, null, 2) + "\n");
+ await writeFile(
+  join(root, "progress.json"),
+  JSON.stringify(value, null, 2) + "\n",
+ );
  console.log(JSON.stringify(value));
 };
 const checked = (name, details = {}) => {
- result.checks.push({ name, at: new Date().toISOString(), passed: true, ...details });
+ result.checks.push({
+  name,
+  at: new Date().toISOString(),
+  passed: true,
+  ...details,
+ });
 };
 const unwrap = (reply) => {
- assert(reply?.ok, "Original operation failed: " + (reply?.code ?? reply?.message));
+ assert(
+  reply?.ok,
+  "Original operation failed: " + (reply?.code ?? reply?.message),
+ );
  return reply.value;
 };
 
@@ -199,10 +230,12 @@ const envelopeOf = (text) => {
   return { schema: "unparsable", rawHead: text.slice(0, 200) };
  }
 };
-const isError = (value) => value?.schema === "willyou-app-error" || value?.error;
+const isError = (value) =>
+ value?.schema === "willyou-app-error" || value?.error;
 const nextStep = () => {
  const last = issued.at(-1);
- if (!last) return { tool: "work_list", args: { kind: "bug", limit: 2 }, note: "page1" };
+ if (!last)
+  return { tool: "work_list", args: { kind: "bug", limit: 2 }, note: "page1" };
  const at = envelopes.get(last.callId);
  if (issued.length === 1) {
   const cursor = at?.data?.nextCursor ?? null;
@@ -213,7 +246,11 @@ const nextStep = () => {
   };
  }
  if (issued.length === 2)
-  return { tool: "work_list", args: { kind: "bug", limit: 200 }, note: "full-scope" };
+  return {
+   tool: "work_list",
+   args: { kind: "bug", limit: 200 },
+   note: "full-scope",
+  };
  if (issued.length === 3) {
   const items = at?.data?.items ?? [];
   const target = items.find((i) => i.id === scopeTarget) ?? items[0];
@@ -231,10 +268,15 @@ const nextStep = () => {
   };
  if (issued.length >= 5) {
   const data = at?.data;
-  if (!data || data.eof || data.nextOffset === null || issued.length >= 7) return null;
+  if (!data || data.eof || data.nextOffset === null || issued.length >= 7)
+   return null;
   return {
    tool: "resource",
-   args: { resource: last.args.resource, offset: data.nextOffset, length: 4096 },
+   args: {
+    resource: last.args.resource,
+    offset: data.nextOffset,
+    length: 4096,
+   },
    note: "resource-offset-" + data.nextOffset,
   };
  }
@@ -484,7 +526,8 @@ const privateEnv = {
  HTTP_PROXY: "http://127.0.0.1:1",
  HTTPS_PROXY: "http://127.0.0.1:1",
  ALL_PROXY: "http://127.0.0.1:1",
- NO_PROXY: "127.0.0.1,localhost",
+ // The approved site must stay on the direct route; only the loopback fixture is proxied.
+ NO_PROXY: ["127.0.0.1", "localhost", siteHost].join(","),
  SHELL: "/bin/zsh",
 };
 for (const name of Object.keys(process.env))
@@ -547,7 +590,13 @@ async function readRunPlan() {
 
 try {
  await progress();
- app = await openElectron({ executable, userData, cwd, env: privateEnv, inspectMain: true });
+ app = await openElectron({
+  executable,
+  userData,
+  cwd,
+  env: privateEnv,
+  inspectMain: true,
+ });
  result.pid = app.processId;
  await app.evaluate(`document.title='A · M11 T17 · 禅道 v2 真实读取';true`);
 
@@ -569,7 +618,9 @@ try {
  const catalog = unwrap(await app.invoke("applications.catalog"));
  const zentao = catalog.find((x) => x.appId === "zentao");
  assert(zentao, "Catalog does not list the ZenTao application");
- unwrap(await app.invoke("applications.setAdded", "zentao", true, zentao.revision));
+ unwrap(
+  await app.invoke("applications.setAdded", "zentao", true, zentao.revision),
+ );
  const candidate = unwrap(
   await app.invoke("applications.testConnection", {
    name: connectionName,
@@ -590,12 +641,14 @@ try {
    "zentao",
    candidate.operationId,
    candidate.candidateHash,
-   candidate.compatibility.impacts.length ? candidate.compatibility.planHash : undefined,
+   candidate.compatibility.impacts.length
+    ? candidate.compatibility.planHash
+    : undefined,
   ),
  );
- connection = unwrap(await app.invoke("applications.connections", "zentao")).find(
-  (c) => c.id === candidate.connectionId,
- );
+ connection = unwrap(
+  await app.invoke("applications.connections", "zentao"),
+ ).find((c) => c.id === candidate.connectionId);
  assert(connection?.hasSecret, "Saved connection has no credential");
  assert.equal(connection.authorization, "connected");
  result.connection = {
@@ -608,7 +661,10 @@ try {
  };
  checked(
   "Real ZenTao connection tested and saved through the original IPC contract with the operator-provided private credential",
-  { identity: candidate.identity.providerId, impacts: candidate.compatibility.impacts.length },
+  {
+   identity: candidate.identity.providerId,
+   impacts: candidate.compatibility.impacts.length,
+  },
  );
  unwrap(
   await app.invoke("applications.select", {
@@ -624,7 +680,9 @@ try {
  );
  assert(selection.enabled);
  assert.equal(selection.connections.zentao, connection.id);
- checked("Project selection enables only this project and this saved connection");
+ checked(
+  "Project selection enables only this project and this saved connection",
+ );
 
  const args = [
   "--disable",
@@ -697,11 +755,16 @@ try {
  await key("a", "KeyA", 65, 4, ["selectAll"]);
  await app.cdp("Input.insertText", { text: prompt });
  assert.equal(
-  await app.evaluate(`document.querySelector('[data-testid=home-input]').value`),
+  await app.evaluate(
+   `document.querySelector('[data-testid=home-input]').value`,
+  ),
   prompt,
  );
  await app.screenshot(join(root, "composer.png"));
- assert.equal((await app.invoke("tasks.list", { includeArchived: true })).length, 0);
+ assert.equal(
+  (await app.invoke("tasks.list", { includeArchived: true })).length,
+  0,
+ );
  stage = "ui-task-launch";
  await progress();
  await click("[data-testid=home-launch]");
@@ -721,10 +784,7 @@ try {
   task = current;
   const text = current.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
-  return (
-   issued.length >= 5 &&
-   issued.every((c) => envelopes.has(c.callId))
-  );
+  return issued.length >= 5 && issued.every((c) => envelopes.has(c.callId));
  }, 180000);
  result.finalTask = await app.invoke("tasks.get", task.id);
  result.nativeToolDefinitions = JSON.parse(
@@ -735,25 +795,41 @@ try {
  stage = "assertions";
  await progress();
  const defs = result.nativeToolDefinitions;
- for (const name of Object.values(TOOL)) assert(defs.includes(name), "Missing v2 tool " + name);
- for (const name of LEGACY) assert(!defs.includes(name), "Legacy v1 tool still exposed: " + name);
- checked("Every v1 ZenTao capability maps to an exposed v2 tool with no legacy tool left", {
-  tools: defs,
- });
+ for (const name of Object.values(TOOL))
+  assert(defs.includes(name), "Missing v2 tool " + name);
+ for (const name of LEGACY)
+  assert(!defs.includes(name), "Legacy v1 tool still exposed: " + name);
+ checked(
+  "Every v1 ZenTao capability maps to an exposed v2 tool with no legacy tool left",
+  {
+   tools: defs,
+  },
+ );
 
  const values = new Map([...envelopes].map(([id, v]) => [id, v]));
  const byTool = (name) =>
-  issued.filter((c) => c.tool === name).map((c) => ({ call: c, value: values.get(c.callId) }));
- for (const each of byTool(TOOL.work_list).concat(byTool(TOOL.object_get), byTool(TOOL.resource))) {
-  assert(!isError(each.value), "Capability returned an error: " + JSON.stringify(each.value).slice(0, 400));
+  issued
+   .filter((c) => c.tool === name)
+   .map((c) => ({ call: c, value: values.get(c.callId) }));
+ for (const each of byTool(TOOL.work_list).concat(
+  byTool(TOOL.object_get),
+  byTool(TOOL.resource),
+ )) {
+  assert(
+   !isError(each.value),
+   "Capability returned an error: " + JSON.stringify(each.value).slice(0, 400),
+  );
   assert.equal(each.value.schema, "willyou-app-result-v2");
   assert.equal(each.value.contractMajor, 2);
   assert.equal(each.value.operation.origin, "mcp");
   assert.equal(each.value.operation.effectState, "read-only");
  }
- checked("All live reads returned the unified v2 envelope through the real MCP origin", {
-  calls: issued.length,
- });
+ checked(
+  "All live reads returned the unified v2 envelope through the real MCP origin",
+  {
+   calls: issued.length,
+  },
+ );
 
  const [page1, page2, full] = byTool(TOOL.work_list).map((x) => x.value.data);
  assert(page1, "First work_list page missing");
@@ -769,16 +845,30 @@ try {
  assert(full.items.length > 0);
  assert(full.total === null || full.total >= full.items.length);
  const ids = full.items.map((i) => i.id);
- assert(ids.includes(scopeTarget), "Assigned target bug " + scopeTarget + " is missing");
- for (const negative of scopeNegative)
-  assert(!ids.includes(negative), "Out-of-scope bug " + negative + " leaked into the new entry");
  assert(
-  full.items.every((i) => typeof i.assignedTo === "string" && i.assignedTo.length > 0),
+  ids.includes(scopeTarget),
+  "Assigned target bug " + scopeTarget + " is missing",
+ );
+ for (const negative of scopeNegative)
+  assert(
+   !ids.includes(negative),
+   "Out-of-scope bug " + negative + " leaked into the new entry",
+  );
+ assert(
+  full.items.every(
+   (i) => typeof i.assignedTo === "string" && i.assignedTo.length > 0,
+  ),
   "Full work_list read returned an item without an assignee",
  );
  result.workList = {
-  page1: { ids: page1.items.map((i) => i.id), nextCursor: !!page1.nextCursor, total: page1.total },
-  page2: page2 ? { ids: page2.items.map((i) => i.id), nextCursor: !!page2.nextCursor } : null,
+  page1: {
+   ids: page1.items.map((i) => i.id),
+   nextCursor: !!page1.nextCursor,
+   total: page1.total,
+  },
+  page2: page2
+   ? { ids: page2.items.map((i) => i.id), nextCursor: !!page2.nextCursor }
+   : null,
   full: {
    ids,
    total: full.total,
@@ -798,7 +888,11 @@ try {
    .filter((id) => page1.items.some((p) => p.id === id));
   assert.equal(overlap.length, 0, "Cursor page repeated page one items");
  } else {
-  assert.equal(issued[1].note, "page2-no-cursor", "Paging was skipped for an unexpected reason");
+  assert.equal(
+   issued[1].note,
+   "page2-no-cursor",
+   "Paging was skipped for an unexpected reason",
+  );
  }
  checked("Cursor paging honours the page limit and does not repeat rows", {
   page1: page1.items.length,
@@ -812,8 +906,12 @@ try {
  assert(Array.isArray(object.missing));
  assert.equal(object.fields?.id, scopeTarget);
  assert.equal(object.fields?.status, "active");
- assert(object.fields?.product !== undefined && object.fields?.project !== undefined);
- assert(object.body && typeof object.body.size === "number" && object.body.size > 0);
+ assert(
+  object.fields?.product !== undefined && object.fields?.project !== undefined,
+ );
+ assert(
+  object.body && typeof object.body.size === "number" && object.body.size > 0,
+ );
  assert(Array.isArray(object.attachments));
  result.objectRead = {
   id: object.id,
@@ -822,14 +920,20 @@ try {
   fieldKeys: Object.keys(object.fields ?? {}),
   fieldsSha256: sha(JSON.stringify(object.fields)),
   body: object.body,
-  attachments: object.attachments.map((a) => ({ filename: a.filename, size: a.resource?.size })),
+  attachments: object.attachments.map((a) => ({
+   filename: a.filename,
+   size: a.resource?.size,
+  })),
   reference: object.reference,
  };
- checked("Object detail matches the recorded M10 baseline for the same assigned bug", {
-  id: object.id,
-  attachments: object.attachments.length,
-  bodySize: object.body.size,
- });
+ checked(
+  "Object detail matches the recorded M10 baseline for the same assigned bug",
+  {
+   id: object.id,
+   attachments: object.attachments.length,
+   bodySize: object.body.size,
+  },
+ );
 
  const chunks = byTool(TOOL.resource).map((x) => x.value.data);
  assert(chunks.length >= 1);
@@ -849,19 +953,31 @@ try {
  const stitchedBytes = Buffer.byteLength(stitched, "utf8");
  assert(stitched.length > 0);
  if (lastChunk.eof)
-  assert.equal(stitchedBytes, object.body.size, "Bounded reads do not reconstruct the whole resource");
+  assert.equal(
+   stitchedBytes,
+   object.body.size,
+   "Bounded reads do not reconstruct the whole resource",
+  );
  result.resourceRead = {
-  chunks: chunks.map((c) => ({ offset: c.offset, length: c.length, eof: c.eof, nextOffset: c.nextOffset })),
+  chunks: chunks.map((c) => ({
+   offset: c.offset,
+   length: c.length,
+   eof: c.eof,
+   nextOffset: c.nextOffset,
+  })),
   stitchedBytes,
   stitchedSha256: sha(stitched),
   declaredSize: object.body.size,
   head: stitched.slice(0, 120),
  };
- checked("Bounded resource chunks keep offset/length/eof arithmetic and reconstruct the declared resource", {
-  chunks: chunks.length,
-  stitchedBytes,
-  declaredSize: object.body.size,
- });
+ checked(
+  "Bounded resource chunks keep offset/length/eof arithmetic and reconstruct the declared resource",
+  {
+   chunks: chunks.length,
+   stitchedBytes,
+   declaredSize: object.body.size,
+  },
+ );
 
  result.runPlan = await readRunPlan();
  assert.equal(
@@ -870,8 +986,13 @@ try {
  );
  const session = await app.invoke("applications.session", task.id);
  assert(session.ok, session.message);
- const zentaoEvidence = session.value.applications.find((a) => a.appId === "zentao");
- assert(zentaoEvidence, "Session diagnostics do not list the ZenTao application");
+ const zentaoEvidence = session.value.applications.find(
+  (a) => a.appId === "zentao",
+ );
+ assert(
+  zentaoEvidence,
+  "Session diagnostics do not list the ZenTao application",
+ );
  assert(
   zentaoEvidence.evidence.successfulToolRequests >= 3,
   "Host operation audit did not record the live reads",
@@ -881,9 +1002,12 @@ try {
   successfulToolRequests: zentaoEvidence.evidence.successfulToolRequests,
   failedToolRequests: zentaoEvidence.evidence.failedToolRequests ?? 0,
  };
- checked("Host operation audit and run plan record the live reads as MCP read-only", {
-  successful: zentaoEvidence.evidence.successfulToolRequests,
- });
+ checked(
+  "Host operation audit and run plan record the live reads as MCP read-only",
+  {
+   successful: zentaoEvidence.evidence.successfulToolRequests,
+  },
+ );
  assert.deepEqual(app.rendererErrors, []);
  result.status = "passed-real-zentao-v2-reads";
 } catch (error) {
@@ -894,9 +1018,13 @@ try {
  process.exitCode = isAppFocusYield(error) ? 2 : 1;
  if (app)
   try {
-   if (task?.id) result.failureSession = await app.invoke("applications.session", task.id);
+   if (task?.id)
+    result.failureSession = await app.invoke("applications.session", task.id);
    if (task?.ptyId)
-    await writeFile(join(root, "terminal-failure.txt"), await app.output(task.ptyId));
+    await writeFile(
+     join(root, "terminal-failure.txt"),
+     await app.output(task.ptyId),
+    );
    result.dom = await app.evaluate("document.body.innerText").catch(() => null);
    await app.screenshot(join(root, "failure.png"));
   } catch {}
@@ -916,7 +1044,10 @@ try {
  for (const s of sockets) s.destroy();
  await new Promise((r) => server.close(r));
  result.finishedAt = new Date().toISOString();
- await writeFile(join(root, "result.json"), JSON.stringify(result, null, 2) + "\n");
+ await writeFile(
+  join(root, "result.json"),
+  JSON.stringify(result, null, 2) + "\n",
+ );
  console.log(
   JSON.stringify({
    status: result.status,
