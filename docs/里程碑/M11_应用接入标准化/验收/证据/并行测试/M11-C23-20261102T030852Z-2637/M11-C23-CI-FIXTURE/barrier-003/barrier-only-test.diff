@@ -1,0 +1,37 @@
+--- corrected-S7
++++ controlled-B-exit-S7
+@@ -172,11 +172,13 @@
+ });
+ 
+ describe('M11 S7 project stop and host disposal reach the actual shared upstream',()=>{
+- it('stops only project A calls, preserves project B and reaps all reference MCP children on host disposal',async()=>{
++ it('controlled B bridge exit exposes pending lease until managed completion',async()=>{
+   writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});
+   const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
++  let delayedB:string|null=null;let releaseB!:()=>void,requestedB!:()=>void;
++  const bExitGate=new Promise<void>(resolve=>{releaseB=resolve;}),bExitRequested=new Promise<void>(resolve=>{requestedB=resolve;});
+   vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+-  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
++  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);if(id===delayedB)queueFixtureBridgeExit({exited:async()=>{requestedB();await bExitGate;return handle.exited();}});else queueFixtureBridgeExit(handle);}});
+   const source=new CapabilityBundleSource(process.env.WILLYOU_TEST_BUNDLES??resolve('out/capability-bundles')),installed=await applications.builtin.install(source,source.index.apps.find(a=>a.appId==='sample-kv')!);await applications.builtin.packages.activate(installed.packageHash,0);await applications.selections.setAdded('sample-kv',true,0);
+   const pools=new Set<UpstreamSessionPool>(),acquire=UpstreamSessionPool.prototype.acquire;vi.spyOn(UpstreamSessionPool.prototype,'acquire').mockImplementation(function(this:UpstreamSessionPool,...args){pools.add(this);return acquire.apply(this,args);});
+   const sender={sender:{id:818,isDestroyed:()=>false},senderFrame:{}} as unknown as ApplicationUiSender,tested=await applications.testConnection(sender,{expectedRevision:0,name:'Shared reference',config:{kind:'sample-kv',service:'task-stop',prefix:'demo:',transport:'mcp',authMode:'token'},secret:'SYNTHETIC_STOP'}),connection=await applications.saveConnection(sender,'sample-kv',tested.operationId,tested.candidateHash);
+@@ -187,7 +189,17 @@
+   expect(await tasks.stopProject(projectId,5000)).toBe(true);expect(await one).toMatchObject({status:'error',error:{code:'CANCELED'}});expect(await two).toMatchObject({status:'ok',value:{data:{key:'demo:b'}}});expect(tasks.activePty(b.task.id)).not.toBeNull();
+    // Match the host shutdown boundary: kill revokes immediately, while managed
+    // disposal joins the run/bridge exits before the application service closes.
+-   tasks.kill(b.task.id);await managed.dispose();await applications.dispose();expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get()).toEqual({n:0});
++   delayedB=tasks.activePty(b.task.id)!;
++  try{
++   tasks.kill(b.task.id);await bExitRequested;await applications.dispose();
++   const beforeCount=sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get(),beforeLeases=sqlite.prepare("SELECT owner_kind,owner_id,state FROM capability_resource_leases WHERE state='active'").all(),beforeProcesses=sqlite.prepare("SELECT kind,state FROM capability_run_processes WHERE run_id=?").all(b.task.runtimeSnapshot!.runId);
++   const evidence={injection:'Only B synthetic bridge exited confirmation is held; actual upstream/CLI exit logic untouched',beforeCount,beforeLeases,beforeProcesses,expectedPendingOwner:b.task.runtimeSnapshot!.runId,upstreamPoolClosed:[...pools].flatMap(pool=>pool.status()).length===0};
++   writeFileSync(process.env.WILLYOU_S7_BARRIER_OBSERVATION!,JSON.stringify(evidence));
++   expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(beforeCount).toEqual({n:1});expect(beforeLeases).toEqual([{owner_kind:'run',owner_id:b.task.runtimeSnapshot!.runId,state:'active'}]);
++   releaseB();expect(await drainFixtureBridgeExits()).toEqual([]);await managed.dispose();
++   const afterCount=sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get();
++   writeFileSync(process.env.WILLYOU_S7_BARRIER_OBSERVATION!,JSON.stringify({...evidence,afterCount,bridgeExitGateReleased:true,managedCompletionAwaited:true}));expect(afterCount).toEqual({n:0});
++  }finally{releaseB();}
+  },30000);
+ });
+ 

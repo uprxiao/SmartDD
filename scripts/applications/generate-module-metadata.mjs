@@ -1,9 +1,10 @@
 // Deterministic, data-only renderer/RPC metadata from the compiled module registry.
 import { build } from 'vite';
-import { builtinModules, createRequire } from 'node:module';
+import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync,symlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { isExternalMetadataImport } from './module-metadata-imports.mjs';
 const { values } = parseArgs({ options: { write: { type: 'boolean', default: false }, output: { type: 'string' }, 'scratch-root':{type:'string'} } });
 const root = resolve('.'), output = resolve(values.output ?? 'src/shared/application-module-catalog.json');
 const scratchRoot=values['scratch-root']?resolve(values['scratch-root']):join(root,'out');
@@ -11,9 +12,9 @@ mkdirSync(scratchRoot, { recursive: true });
 const scratch = mkdtempSync(join(scratchRoot, '.module-metadata-'));
 if(values['scratch-root'])symlinkSync(join(root,'node_modules'),join(scratch,'node_modules'),'dir');
 try {
-  await build({ configFile: false, publicDir: false, logLevel: 'error', resolve: { alias: { '@shared': join(root, 'src/shared'), '@main': join(root, 'src/main'), '@root': root } },
+  await build({ configFile: false, publicDir: false, cacheDir: join(scratch, '.vite'), logLevel: 'error', resolve: { alias: { '@shared': join(root, 'src/shared'), '@main': join(root, 'src/main'), '@root': root } },
     build: { ssr: join(root, 'src/main/core/applications/modules/index.ts'), target: 'node22', outDir: scratch, minify: false, sourcemap: false,
-      rollupOptions: { external: id => id.startsWith('node:') || builtinModules.includes(id) || (!id.startsWith('.') && !id.startsWith('/') && !id.startsWith('@shared/') && !id.startsWith('@main/') && !id.startsWith('@root/')),
+      rollupOptions: { external: isExternalMetadataImport,
         output: { format: 'cjs', entryFileNames: 'modules.cjs', inlineDynamicImports: true } } } });
   const { builtinApplicationModules: modules } = createRequire(import.meta.url)(join(scratch, 'modules.cjs'));
   const metadata = { schema: 'willyou-app-module-catalog-v1', applications: modules.registered.map(module => ({

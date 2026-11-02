@@ -1,0 +1,96 @@
+{
+  "schema": "v010-s7-controlled-observation-boundary-proof-v1",
+  "status": "passed",
+  "execution": {
+    "argv": [
+      "pnpm",
+      "test",
+      "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "--config",
+      "vitest.probe.config.ts",
+      "--maxWorkers=1",
+      "--testNamePattern",
+      "controlled B bridge exit exposes pending lease until managed completion",
+      "--reporter=json",
+      "--outputFile=/private/tmp/willyou-m11-c23-2637/software-diagnosis-main-ci/attempt003/barrier/vitest.json",
+      "--reporter=verbose"
+    ],
+    "cwd": "/private/tmp/willyou-m11-c23-2637/software-diagnosis-main-ci/attempt003/source-barrier",
+    "pid": 56976,
+    "processGroup": 56976,
+    "startedAt": "2026-11-02T05:19:42.960496+00:00",
+    "outerBudgetSeconds": 180,
+    "originalTestTimeoutMs": 30000,
+    "phase": "barrier",
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedSeconds": 6.749,
+    "finishedAt": "2026-11-02T05:19:49.704855+00:00"
+  },
+  "counts": {
+    "reportedTotal": 269,
+    "observed": 269,
+    "selected": 1,
+    "passed": 1,
+    "failed": 0,
+    "selectedNotExecuted": 0,
+    "filtered": 268,
+    "outsideExecuted": 0
+  },
+  "observation": "barrier/barrier-observation.json",
+  "observationSummary": {
+    "injection": "Only B synthetic bridge exited confirmation is held; actual upstream/CLI exit logic untouched",
+    "beforeCount": {
+      "n": 1
+    },
+    "beforeLeases": [
+      {
+        "owner_kind": "run",
+        "owner_id": "ad0bcba9-9099-4a24-9e20-2c30a1eaca7c",
+        "state": "active"
+      }
+    ],
+    "beforeProcesses": [
+      {
+        "kind": "cli",
+        "state": "exited"
+      },
+      {
+        "kind": "bridge",
+        "state": "armed"
+      }
+    ],
+    "expectedPendingOwner": "ad0bcba9-9099-4a24-9e20-2c30a1eaca7c",
+    "upstreamPoolClosed": true,
+    "afterCount": {
+      "n": 0
+    },
+    "bridgeExitGateReleased": true,
+    "managedCompletionAwaited": true
+  },
+  "sourcePins": "source-pins.json",
+  "instrumentationDiff": "barrier-only-test.diff",
+  "correctedPublicTestEvidence": "/private/tmp/willyou-m11-c23-2637/software-diagnosis-main-ci/attempt002",
+  "sourceAndFixtureDrift": {
+    "code": [],
+    "fixtures": [],
+    "privateConfig": false
+  },
+  "conclusion": "A delayed B synthetic bridge exited notification deterministically leaves its run lease active at the old applications.dispose observation point, even after actual upstream process/pool closure. Releasing that notification and awaiting managed disposal releases the lease to zero. This establishes an observation race in the old test completion boundary; it does not identify the exact historical CI row, which was not logged.",
+  "allOriginalProjectIsolationAssertionsRetained": true,
+  "upstreamPoolClosedAndActualPidExitedAssertionsRetained": true,
+  "productionExitLogicChanged": false,
+  "syntheticBNotificationOnlyDelayed": true,
+  "uncontrolledSleepOrThresholdChange": false,
+  "original30SecondTimeoutRetained": true,
+  "publicSourcesModifiedByExecutor": false,
+  "proofIsDerivedDiagnosticNotOriginalTaggedTest": true,
+  "originalMainCiRedPreserved": true,
+  "correctionIsNotInImmutable5471": true,
+  "heavyNativeLeaseReleased": true,
+  "formalCasePassesAdded": 0,
+  "runtimeSourceAndPrivateCacheNotForGitArchive": [
+    "/private/tmp/willyou-m11-c23-2637/software-diagnosis-main-ci/attempt003/source-barrier",
+    "/private/tmp/willyou-m11-c23-2637/software-diagnosis-main-ci/attempt003/cache-barrier"
+  ]
+}
