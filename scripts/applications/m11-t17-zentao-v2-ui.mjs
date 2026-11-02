@@ -37,10 +37,16 @@ const executable = requestedApp.endsWith(".app")
  ? join(
     requestedApp,
     "Contents/MacOS",
-    requestedApp.split("/").at(-1).replace(/\.app$/, ""),
+    requestedApp
+     .split("/")
+     .at(-1)
+     .replace(/\.app$/, ""),
    )
  : requestedApp;
-assert(existsSync(executable), "Acceptance executable is missing: " + executable);
+assert(
+ existsSync(executable),
+ "Acceptance executable is missing: " + executable,
+);
 const appRoot = resolve(dirname(executable), "../..");
 assert(
  /^\/private\/tmp\//.test(appRoot),
@@ -207,6 +213,26 @@ const unwrap = (reply) => {
  );
  return reply.value;
 };
+// The packaged registry loads and verifies its fixed bundles asynchronously, so an
+// early call can legitimately answer CAPABILITY_UNAVAILABLE. Wait for a bounded window
+// instead of treating the first answer as a product failure.
+const invokeSettled = async (channel, ...args) => {
+ const end = Date.now() + 120000;
+ let reply;
+ for (;;) {
+  reply = await app.invoke(channel, ...args);
+  if (reply?.ok) return reply;
+  if (
+   !["CAPABILITY_UNAVAILABLE", "RESOURCE_RECOVERY_REQUIRED"].includes(reply?.code)
+  )
+   return reply;
+  if (Date.now() > end)
+   throw new Error(
+    channel + " stayed unavailable (" + reply.code + ") for 120s",
+   );
+  await new Promise((r) => setTimeout(r, 250));
+ }
+};
 
 const TOOL = {
  work_list: "smartdd_zentao_work_list_v2",
@@ -269,12 +295,17 @@ const nextStep = () => {
    note: "object " + (target?.id ?? "none"),
   };
  }
- if (issued.length === 4)
+ if (issued.length === 4) {
+  if (!at?.data?.body) {
+   result.bodyMissing = true;
+   return null;
+  }
   return {
    tool: "resource",
-   args: { resource: at?.data?.body, offset: 0, length: 4096 },
+   args: { resource: at.data.body, offset: 0, length: 4096 },
    note: "resource-offset-0",
   };
+ }
  if (issued.length >= 5) {
   const data = at?.data;
   if (!data || data.eof || data.nextOffset === null || issued.length >= 7)
@@ -433,6 +464,7 @@ const server = createServer((incoming, res) => {
    return;
   }
   if (!step) {
+   result.fixtureComplete = true;
    respondText(marker + "_DONE");
    return;
   }
@@ -622,14 +654,19 @@ try {
   [{ label: "isolated", path: cwd }],
  );
  result.projectId = project.id;
- const catalog = unwrap(await app.invoke("applications.catalog"));
+ const catalog = unwrap(await invokeSettled("applications.catalog"));
  const zentao = catalog.find((x) => x.appId === "zentao");
  assert(zentao, "Catalog does not list the ZenTao application");
  unwrap(
-  await app.invoke("applications.setAdded", "zentao", true, zentao.revision),
+  await invokeSettled(
+   "applications.setAdded",
+   "zentao",
+   true,
+   zentao.revision,
+  ),
  );
  const candidate = unwrap(
-  await app.invoke("applications.testConnection", {
+  await invokeSettled("applications.testConnection", {
    name: connectionName,
    expectedRevision: 0,
    config: { kind: "zentao", baseUrl, username: account, authMode: "password" },
@@ -643,7 +680,7 @@ try {
   expiresAt: candidate.expiresAt,
  };
  unwrap(
-  await app.invoke(
+  await invokeSettled(
    "applications.saveConnection",
    "zentao",
    candidate.operationId,
@@ -654,7 +691,7 @@ try {
   ),
  );
  connection = unwrap(
-  await app.invoke("applications.connections", "zentao"),
+  await invokeSettled("applications.connections", "zentao"),
  ).find((c) => c.id === candidate.connectionId);
  assert(connection?.hasSecret, "Saved connection has no credential");
  assert.equal(connection.authorization, "connected");
@@ -674,7 +711,7 @@ try {
   },
  );
  unwrap(
-  await app.invoke("applications.select", {
+  await invokeSettled("applications.select", {
    projectId: project.id,
    appId: "zentao",
    enabled: true,
@@ -683,7 +720,7 @@ try {
   }),
  );
  const selection = unwrap(
-  await app.invoke("applications.projectSettings", project.id, "zentao"),
+  await invokeSettled("applications.projectSettings", project.id, "zentao"),
  );
  assert(selection.enabled);
  assert.equal(selection.connections.zentao, connection.id);
@@ -712,17 +749,17 @@ try {
   "never",
  ];
  profile = await app.invoke("aiProfiles.create", {
-   name: "M11 T17 私有 Codex 0.166.0",
-   runner: "codex",
-   executable: cli,
-   env: Object.entries(privateEnv).map(([name, value]) => ({
-    name,
-    value,
-    secret: false,
-   })),
-   args,
-   color: null,
-   isDefault: true,
+  name: "M11 T17 私有 Codex 0.166.0",
+  runner: "codex",
+  executable: cli,
+  env: Object.entries(privateEnv).map(([name, value]) => ({
+   name,
+   value,
+   secret: false,
+  })),
+  args,
+  color: null,
+  isDefault: true,
  });
  result.profileId = profile.id;
 
@@ -789,7 +826,9 @@ try {
   task = current;
   const text = current.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
-  return issued.length >= 5 && issued.every((c) => envelopes.has(c.callId));
+  return issued.length >= 4 &&
+   result.fixtureComplete === true &&
+   issued.every((c) => envelopes.has(c.callId));
  }, 180000);
  result.finalTask = await app.invoke("tasks.get", task.id);
  result.nativeToolDefinitions = JSON.parse(
@@ -941,6 +980,10 @@ try {
  );
 
  const chunks = byTool(TOOL.resource).map((x) => x.value.data);
+ assert(
+  !result.bodyMissing,
+  "object_get returned no readable body although the recorded baseline bug carries a steps field",
+ );
  assert(chunks.length >= 1);
  let stitched = "";
  for (const [index, chunk] of chunks.entries()) {
