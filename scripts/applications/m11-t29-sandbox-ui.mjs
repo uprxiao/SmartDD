@@ -288,6 +288,8 @@ try {
  decoy.unref();
 } catch {}
 const outsideFile = join(home, "t29-outside.txt");
+// /Users/Shared is outside every sandbox-writable root (unlike TMPDIR or the run root).
+const outsideWriteFile = "/Users/Shared/willyou-t29-outside.txt";
 const nextStep = () => {
  const done = (note) => issued.some((c) => c.note === note);
  if (!done("surface"))
@@ -315,7 +317,7 @@ const nextStep = () => {
   };
  if (!done("outside-write"))
   return {
-   command: `printf x > "${outsideFile}" 2>&1; echo "EXIT=$?"`,
+   command: `printf x > "${outsideWriteFile}" 2>&1; echo "EXIT=$?"`,
    capability: "outside-write",
    note: "outside-write",
   };
@@ -1198,7 +1200,7 @@ try {
    });
   }
  }
- const configNow = await readFile(join(state, "config.toml"));
+ const configNow = String(await readFile(join(state, "config.toml"), "utf8"));
  const policyNow = namedOnly
   ? await readFile(join(state, "wy_t29.config.toml"))
   : null;
