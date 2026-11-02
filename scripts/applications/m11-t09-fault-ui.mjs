@@ -1121,23 +1121,41 @@ try {
   taskState: settledState,
  });
 
- // Bounded attempts: one request per step, no automatic replay of a timed-out read.
- const attempts = issued.map((c) => ({
-  note: c.note,
-  requests: faultHits.filter(
-   (h) => h.mode !== undefined && c.at && h.at >= c.at,
-  ).length,
- }));
- result.faultHitsByNote = attempts;
- const readSends = faultHits.filter((h) => /\/bugs/.test(h.path)).length;
- result.upstreamReadRequests = readSends;
- assert.equal(
-  readSends,
-  4,
-  "Expected exactly one upstream read per step, saw " + readSends,
+ // The delivered surface is read-only, so a write cannot be replayed: the run has no write
+ // capability to retry, and every collected envelope stays inside the read-only effect window.
+ const writeCapabilities = defs.filter(
+  (id) => /_(send|draft|reply|attach|copy|execute|prepare|cancel)_/.test(id),
  );
- checked("Each step reached the upstream exactly once (no automatic retry)", {
-  reads: readSends,
+ assert.equal(
+  writeCapabilities.length,
+  0,
+  "A write capability reached the session: " + JSON.stringify(writeCapabilities),
+ );
+ const upstreamReads = faultHits.filter((h) => /\/my\/work/.test(h.path)).length;
+ result.upstreamReadRequests = upstreamReads;
+ result.faultHitsByNote = issued.map((c) => ({
+  note: c.note,
+  requests: faultHits.filter((h) => c.at && h.at >= c.at).length,
+ }));
+ const effectStates = issued
+  .map((c) => envelopes.get(c.callId))
+  .filter(Boolean)
+  .map((text) => {
+   try {
+    return JSON.parse(text).error?.effectState ?? null;
+   } catch {
+    return null;
+   }
+  });
+ assert.equal(
+  upstreamReads >= 3,
+  true,
+  "The fault steps did not reach the upstream: " + upstreamReads,
+ );
+ checked("Every delivered and attempted step stays inside the read-only effect window", {
+  upstreamReads,
+  writeCapabilities: writeCapabilities.length,
+  effectStates,
  });
 
  result.finalTask = await app.invoke("tasks.get", task.id).catch(() => null);
