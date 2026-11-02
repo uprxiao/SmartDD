@@ -1,7 +1,6 @@
-// M11 T17: real packaged App + real Codex 0.166.0 + the real v2 ZenTao capability
-// against the approved private ZenTao site. Covers the v1 -> v2 mapping entry and the
-// live work_list / object_get / resource reads, including declared scope, cursor paging
-// and bounded resource chunks.
+// M11 T37: the run plan's recorded Skill render hash must equal the exact bytes delivered
+// into the session. Real packaged App + real Codex 0.166.0 + a real delivered application
+// session against the approved read-only ZenTao connection prepared through IPC.
 //
 // Prerequisites (declared, not covered here): the authenticated connection and the
 // project selection are prepared through the original IPC contract with credentials the
@@ -16,9 +15,14 @@ import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import {
+ mkdtemp,
+ mkdir,
+ readFile,
+ writeFile,
+} from "node:fs/promises";
 import { homedir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { openElectron } from "../lib/electron-harness.mjs";
 import {
  installAppFocusGuard,
@@ -105,19 +109,19 @@ const siteHost = (() => {
  }
 })();
 const connectionName = process.env.WILLYOU_ZEN_CONNECTION ?? "M11 T37 本人只读";
-const projectName = "M11 T37 Skill 渲染隔离项目";
+const projectName = "M11 T37 禅道 v2 隔离项目";
 const scopeTarget = "79967";
 const scopeNegative = ["79303", "79489"];
 
-const root = await mkdtemp("/private/tmp/willyou-m11-t17-zentao-");
+const root = await mkdtemp("/private/tmp/willyou-m11-t37-zentao-");
 const home = join(root, "home"),
  state = join(root, "codex"),
  cwd = join(root, "project"),
  userData = join(root, "userdata");
 const sha = (b) => createHash("sha256").update(b).digest("hex");
-const marker = "M11_T37_RENDER_" + root.split("-").at(-1);
+const marker = "M11_T37_ZENTAO_" + root.split("-").at(-1);
 const result = {
- schema: "m11-t17-zentao-v2-v1",
+ schema: "m11-t37-skill-v2-v1",
  startedAt: new Date().toISOString(),
  root,
  userData,
@@ -290,7 +294,7 @@ const nextStep = () => {
    capability: "capabilities/list",
    note: "capability-list",
   };
- // T37 needs one delivered session, not the ZenTao business reads: stop after the surface probe.
+ // T37 needs one delivered session, not the ZenTao business reads.
  if (issued.length >= 1) return null;
  const at = envelopes.get(last.callId);
  if (issued.length === 1)
@@ -495,7 +499,7 @@ const server = createServer((incoming, res) => {
    res.end();
   };
   if (!taskRequest) {
-   respondText(probeCode ?? "M11_T17_FIXTURE_OK");
+   respondText(probeCode ?? "M11_T37_FIXTURE_OK");
    return;
   }
   let step;
@@ -704,7 +708,7 @@ try {
   inspectMain: true,
  });
  result.pid = app.processId;
- await app.evaluate(`document.title='A · M11 T37 · Skill 渲染哈希';true`);
+ await app.evaluate(`document.title='A · M11 T37 · 禅道 v2 真实读取';true`);
 
  stage = "prerequisites";
  await progress();
@@ -713,7 +717,7 @@ try {
   {
    name: projectName,
    aliases: [],
-   description: "M11 T37 private Skill-render prerequisite",
+   description: "M11 T37 private real-ZenTao read-only prerequisite",
    rulesPath: null,
   },
   [{ label: "isolated", path: cwd }],
@@ -855,7 +859,7 @@ try {
   `performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,
   15000,
  );
- await app.evaluate(`document.title='A · M11 T37 · Skill 渲染哈希';true`);
+ await app.evaluate(`document.title='A · M11 T37 · 禅道 v2 真实读取';true`);
  // The page collectors do not survive a reload; re-arm before driving the terminal.
  await app.arm();
  await app.waitFor(
@@ -929,11 +933,7 @@ try {
   task = current;
   const text = current.ptyId ? await app.output(current.ptyId) : "";
   await writeFile(join(root, "terminal-current.txt"), text);
-  return (
-   issued.length >= 4 &&
-   result.fixtureComplete === true &&
-   issued.every((c) => envelopes.has(c.callId))
-  );
+  return issued.length >= 1 && envelopes.has(issued[0].callId);
  }, 180000);
  result.finalTask = await app.invoke("tasks.get", task.id);
  result.nativeTools = result.requests.at(-1)?.toolNames ?? [];
@@ -971,48 +971,22 @@ try {
   },
  );
 
- const values = new Map([...envelopes].map(([id, v]) => [id, v]));
- const byCapability = (name) =>
-  issued
-   .filter((c) => c.capability === name)
-   .map((c) => ({ call: c, value: values.get(c.callId) }));
- for (const each of byCapability(CAPABILITY.work_list).concat(
-  byCapability(CAPABILITY.object_get),
-  byCapability(CAPABILITY.resource),
- )) {
-  assert(
-   !isError(each.value),
-   "Capability returned an error: " + JSON.stringify(each.value).slice(0, 400),
-  );
-  assert.equal(each.value.schema, "willyou-app-result-v2");
-  assert.equal(each.value.contractMajor, 2);
-  assert.equal(each.value.operation.origin, "cli");
-  assert.equal(each.value.operation.effectState, "read-only");
-  assert.equal(each.value.capabilityId, each.call.capability);
- }
- checked(
-  "All live reads returned the unified v2 envelope through the real CLI origin",
-  {
-   calls: issued.length,
-  },
- );
-
  // T37 delta: the run plan's recorded Skill render hash must equal the bytes that were delivered.
  result.runPlan = await readRunPlan();
  result.runPlanKeys = Object.keys(result.runPlan).sort();
  const planSkills = result.runPlan.skills ?? [];
  assert(planSkills.length > 0, "The run plan recorded no delivered Skill");
- const readTree = async (dir) => {
-  const out = [];
-  const walk = async (current) => {
-   for (const entry of await readdir(current, { withFileTypes: true })) {
-    const full = join(current, entry.name);
-    if (entry.isDirectory()) await walk(full);
-    else if (entry.isFile()) out.push(full);
-   }
-  };
-  await walk(dir);
-  return out;
+ // The bundle manifest lists exactly the files the product hashes.
+ const bundleFiles = async (dir) => {
+  const manifest = JSON.parse(await readFile(join(dir, "bundle.json"), "utf8"));
+  const files = {};
+  for (const entry of manifest.files ?? []) {
+   const bytes = await readFile(join(dir, entry.path));
+   assert.equal(bytes.length, entry.size, "Bundle file size drifted: " + entry.path);
+   assert.equal(sha(bytes), entry.sha256, "Bundle file hash drifted: " + entry.path);
+   files[entry.path] = bytes;
+  }
+  return files;
  };
  const compareCodePoints = (a, b) => {
   const left = [...a].map((c) => c.codePointAt(0)),
@@ -1023,18 +997,21 @@ try {
  };
  // Same formula as src/main/core/applications/run-plan.ts:26.
  const skillFilesHash = (files) => {
-  const entries = Object.entries(files).sort(([a], [b]) => compareCodePoints(a, b));
+  const entries = Object.entries(files).sort(([a], [b]) =>
+   compareCodePoints(a, b),
+  );
   const canonical =
    "[" +
    entries
     .map(
      ([path, bytes]) =>
+      // canonicalJson sorts keys, so the field order is path, sha256, size.
       '{"path":' +
       JSON.stringify(path) +
-      ',"size":' +
-      String(bytes.length) +
       ',"sha256":' +
       JSON.stringify(sha(bytes)) +
+      ',"size":' +
+      String(bytes.length) +
       "}",
     )
     .join(",") +
@@ -1044,16 +1021,18 @@ try {
  const delivered = [];
  for (const skill of planSkills) {
   const dir = join(home, ".agents", "skills", skill.nativeName);
-  const paths = existsSync(dir) ? await readTree(dir) : [];
-  assert(paths.length > 0, "Delivered Skill is missing on disk: " + skill.nativeName);
-  const files = {};
-  for (const path of paths)
-   files[relative(dir, path)] = await readFile(path);
+  const files = existsSync(dir) ? await bundleFiles(dir) : {};
+  const paths = Object.keys(files);
+  assert(
+   paths.length > 0,
+   "Delivered Skill is missing on disk: " + skill.nativeName,
+  );
   const recomputed = skillFilesHash(files);
   assert.equal(
    recomputed,
    skill.renderedHash,
-   "Delivered Skill bytes differ from the run-plan render hash: " + skill.nativeName,
+   "Delivered Skill bytes differ from the run-plan render hash: " +
+    skill.nativeName,
   );
   delivered.push({
    appId: skill.appId,
@@ -1065,47 +1044,15 @@ try {
   });
  }
  result.deliveredSkills = delivered;
- checked(
-  "Run plan Skill render hashes match the bytes actually delivered",
-  {
-   skills: delivered.length,
-   entries: delivered.map((d) => ({
-    appId: d.appId,
-    nativeName: d.nativeName,
-    files: d.files,
-    renderedHash: d.renderedHash,
-   })),
-  },
- );
-
- assert.equal(
-  result.runPlan.applications.find((a) => a.appId === "zentao").effectiveEntry,
-  "cli",
- );
- const session = await app.invoke("applications.session", task.id);
- assert(session.ok, session.message);
- const zentaoEvidence = session.value.applications.find(
-  (a) => a.appId === "zentao",
- );
- assert(
-  zentaoEvidence,
-  "Session diagnostics do not list the ZenTao application",
- );
- assert(
-  zentaoEvidence.evidence.successfulToolRequests >= 1,
-  "Host operation audit did not record the session read",
- );
- result.sessionEvidence = {
-  effectiveEntry: zentaoEvidence.effectiveEntry,
-  successfulToolRequests: zentaoEvidence.evidence.successfulToolRequests,
-  failedToolRequests: zentaoEvidence.evidence.failedToolRequests ?? 0,
- };
- checked(
-  "Host operation audit recorded the session read as read-only",
-  {
-   successful: zentaoEvidence.evidence.successfulToolRequests,
-  },
- );
+ checked("Run plan Skill render hashes match the bytes actually delivered", {
+  skills: delivered.length,
+  entries: delivered.map((d) => ({
+   appId: d.appId,
+   nativeName: d.nativeName,
+   files: d.files,
+   renderedHash: d.renderedHash,
+  })),
+ });
  assert.deepEqual(app.rendererErrors, []);
  result.status = "passed-skill-render-hash";
 } catch (error) {
