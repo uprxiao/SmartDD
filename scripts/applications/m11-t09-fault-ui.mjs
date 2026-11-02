@@ -248,6 +248,7 @@ const CLI = "willyou-app zentao";
 
 const issued = [];
 let lastIssueAt = 0;
+let phase = "probe";
 const envelopes = new Map();
 const textOf = (output) => {
  if (typeof output === "string") return output;
@@ -271,13 +272,17 @@ const isError = (value) =>
  value?.schema === "willyou-app-error" || value?.error;
 const nextStep = () => {
  const last = issued.at(-1);
- if (!last)
+ const read = () => ({
+  command: CLI + " object list --kind bug --limit 2",
+  capability: CAPABILITY.work_list,
+ });
+ if (!last) {
+  phase = "baseline";
   return {
    command: [
     'echo "EP=$WILLYOU_ENDPOINT"',
     'echo "TOKEN=${WILLYOU_RUN_TOKEN:+present}"',
     'ls -ld "$(dirname "$WILLYOU_ENDPOINT")" 2>&1',
-    // The shell tool truncates long single-line output, so print only what is asserted.
     "willyou-app --list > capability-surface.json 2>&1",
     "wc -c < capability-surface.json",
     "tr -d '\\n' < capability-surface.json | grep -o '\"id\":[ ]*\"[a-zA-Z.]*\"' | sort -u",
@@ -286,42 +291,53 @@ const nextStep = () => {
    capability: "capabilities/list",
    note: "capability-list",
   };
- if (issued.length === 1) {
+ }
+ const session = /Process running with session ID (\d+)/.exec(last.text ?? "")?.[1];
+ if (phase === "baseline") {
+  phase = "held";
   faultMode = "ok";
-  return {
-   command: CLI + " object list --kind bug --limit 2",
-   capability: CAPABILITY.work_list,
-   note: "baseline-read",
-  };
+  return { ...read(), note: "baseline-read" };
  }
- if (issued.length === 2) {
+ if (phase === "held") {
+  phase = "held-poll";
   faultMode = "hold";
-  return {
-   command: CLI + " object list --kind bug --limit 2",
-   capability: CAPABILITY.work_list,
-   note: "held-read",
-  };
+  return { ...read(), note: "held-read" };
  }
- if (issued.length === 3) {
+ if (phase === "held-poll") {
+  // Keep collecting the held read until the app's own deadline ends it.
+  if (session) {
+   lastIssueAt = Date.now();
+   return {
+    note: "held-poll",
+    capability: CAPABILITY.work_list,
+    stdin: { session_id: Number(session) },
+   };
+  }
+  phase = "dropped";
+ }
+ if (phase === "dropped") {
+  phase = "cancel";
   faultMode = "drop";
-  return {
-   command: CLI + " object list --kind bug --limit 2",
-   capability: CAPABILITY.work_list,
-   note: "dropped-read",
-  };
+  return { ...read(), note: "dropped-read" };
  }
- if (issued.length === 4) {
-  // Cancel from the host while this read is still in flight.
+ if (phase === "cancel") {
+  phase = "cancel-poll";
   faultMode = "hold";
+  lastIssueAt = Date.now();
   setTimeout(() => {
    void app.invoke("tasks.kill", task.id).catch(() => {});
   }, 1500);
+  return { ...read(), note: "cancelled-read" };
+ }
+ if (phase === "cancel-poll" && session) {
+  lastIssueAt = Date.now();
   return {
-   command: CLI + " object list --kind bug --limit 2",
+   note: "cancel-poll",
    capability: CAPABILITY.work_list,
-   note: "cancelled-read",
+   stdin: { session_id: Number(session) },
   };
  }
+ phase = "done";
  return null;
 };
 
@@ -473,7 +489,7 @@ const server = createServer((incoming, res) => {
   }
   if (!step) {
    lastIssueAt = Date.now();
- result.fixtureComplete = true;
+   result.fixtureComplete = true;
    respondText(marker + "_DONE");
    return;
   }
@@ -487,20 +503,22 @@ const server = createServer((incoming, res) => {
    return;
   }
   const callId = "call_m11_t09_" + issued.length;
+  // A read that outlives Codex's shell yield returns a session id; collect it with write_stdin.
+  const toolName = step.stdin ? "write_stdin" : "exec_command";
+  const toolArguments = step.stdin
+   ? { session_id: step.stdin.session_id, chars: "", yield_time_ms: 30000 }
+   : { cmd: step.command, max_output_tokens: 12000 };
   const call = {
    type: "function_call",
    id: "fc_m11_t09_" + issued.length,
    call_id: callId,
-   name: "exec_command",
-   arguments: JSON.stringify({
-    cmd: step.command,
-    max_output_tokens: 12000,
-   }),
+   name: toolName,
+   arguments: JSON.stringify(toolArguments),
    status: "completed",
   };
   issued.push({
    callId,
-   command: step.command,
+   command: step.stdin ? toolName + " " + JSON.stringify(toolArguments) : step.command,
    capability: step.capability,
    note: step.note,
    resource: step.resource,
@@ -995,7 +1013,14 @@ try {
  await progress();
  const defs = result.nativeTools;
  assert(defs.includes("exec_command"), "The native session has no shell tool");
- const byNote = (name) => issued.find((c) => c.note === name);
+ // A polled read settles in the last chunk of its group, so take the last one.
+ const groupOf = (name) => {
+  const prefix = name.replace(/-read$/, "");
+  return issued.filter((c) =>
+   c.note === name || c.note === prefix + "-poll" || c.note === "cancel-poll" && prefix === "cancelled",
+  );
+ };
+ const byNote = (name) => groupOf(name).at(-1);
  const baseline = byNote("baseline-read"),
   held = byNote("held-read"),
   dropped = byNote("dropped-read"),
