@@ -1123,15 +1123,18 @@ try {
 
  // The delivered surface is read-only, so a write cannot be replayed: the run has no write
  // capability to retry, and every collected envelope stays inside the read-only effect window.
- const writeCapabilities = defs.filter(
-  (id) => /_(send|draft|reply|attach|copy|execute|prepare|cancel)_/.test(id),
+ const writeCapabilities = defs.filter((id) =>
+  /_(send|draft|reply|attach|copy|execute|prepare|cancel)_/.test(id),
  );
  assert.equal(
   writeCapabilities.length,
   0,
-  "A write capability reached the session: " + JSON.stringify(writeCapabilities),
+  "A write capability reached the session: " +
+   JSON.stringify(writeCapabilities),
  );
- const upstreamReads = faultHits.filter((h) => /\/my\/work/.test(h.path)).length;
+ const upstreamReads = faultHits.filter((h) =>
+  /\/my\/work/.test(h.path),
+ ).length;
  result.upstreamReadRequests = upstreamReads;
  result.faultHitsByNote = issued.map((c) => ({
   note: c.note,
@@ -1152,11 +1155,14 @@ try {
   true,
   "The fault steps did not reach the upstream: " + upstreamReads,
  );
- checked("Every delivered and attempted step stays inside the read-only effect window", {
-  upstreamReads,
-  writeCapabilities: writeCapabilities.length,
-  effectStates,
- });
+ checked(
+  "Every delivered and attempted step stays inside the read-only effect window",
+  {
+   upstreamReads,
+   writeCapabilities: writeCapabilities.length,
+   effectStates,
+  },
+ );
 
  result.finalTask = await app.invoke("tasks.get", task.id).catch(() => null);
  const finalState =
