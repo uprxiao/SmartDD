@@ -611,17 +611,15 @@ try {
 
  stage = "prerequisites";
  await progress();
- project = unwrap(
-  await app.invoke(
-   "projects.create",
-   {
-    name: projectName,
-    aliases: [],
-    description: "M11 T17 private real-ZenTao read-only prerequisite",
-    rulesPath: null,
-   },
-   [{ label: "isolated", path: cwd }],
-  ),
+ project = await app.invoke(
+  "projects.create",
+  {
+   name: projectName,
+   aliases: [],
+   description: "M11 T17 private real-ZenTao read-only prerequisite",
+   rulesPath: null,
+  },
+  [{ label: "isolated", path: cwd }],
  );
  result.projectId = project.id;
  const catalog = unwrap(await app.invoke("applications.catalog"));
@@ -713,8 +711,7 @@ try {
   "--ask-for-approval",
   "never",
  ];
- profile = unwrap(
-  await app.invoke("aiProfiles.create", {
+ profile = await app.invoke("aiProfiles.create", {
    name: "M11 T17 私有 Codex 0.166.0",
    runner: "codex",
    executable: cli,
@@ -726,8 +723,7 @@ try {
    args,
    color: null,
    isDefault: true,
-  }),
- );
+ });
  result.profileId = profile.id;
 
  stage = "profile-health";
