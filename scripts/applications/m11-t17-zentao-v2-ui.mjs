@@ -280,9 +280,12 @@ const nextStep = () => {
    command: [
     'echo "EP=$WILLYOU_ENDPOINT"',
     'echo "TOKEN=${WILLYOU_RUN_TOKEN:+present}"',
-    'ls -la "$(dirname "$WILLYOU_ENDPOINT")" 2>&1 | head -8',
-    'echo "--- list ---"',
-    "willyou-app --list 2>&1 | head -20",
+    'ls -ld "$(dirname "$WILLYOU_ENDPOINT")" 2>&1',
+    // The shell tool truncates long single-line output, so print only what is asserted.
+    'willyou-app --list > capability-surface.json 2>&1',
+    'wc -c < capability-surface.json',
+    "tr -d '\\n' < capability-surface.json | grep -o '\"id\":[ ]*\"[a-zA-Z.]*\"' | sort -u",
+    "grep -c '_v1\"' capability-surface.json || true",
    ].join("; "),
    capability: "capabilities/list",
    note: "capability-list",
@@ -943,6 +946,11 @@ try {
   "The native session still advertises a v1 tool",
  );
  const capabilitySurface = issued[0]?.fullText ?? "";
+ result.capabilitySurface = {
+  length: capabilitySurface.length,
+  hasList: capabilitySurface.includes("zentao.object.list"),
+  head: capabilitySurface.slice(0, 300),
+ };
  for (const id of Object.values(CAPABILITY))
   assert(
    capabilitySurface.includes(id),
