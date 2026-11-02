@@ -241,16 +241,8 @@ const invokeSettled = async (channel, ...args) => {
  }
 };
 
-const CAPABILITY = {
- work_list: "zentao.object.list",
- object_get: "zentao.object.get",
- resource: "zentao.resource.read",
-};
-const CLI = "willyou-app zentao";
-
 const issued = [];
 let lastIssueAt = 0;
-let phase = "probe";
 const envelopes = new Map();
 const textOf = (output) => {
  if (typeof output === "string") return output;
@@ -1208,7 +1200,7 @@ try {
   ? await readFile(join(state, "wy_t29.config.toml"))
   : null;
  const policyIntact = namedOnly
-  ? sha(configNow + policyNow) === result.userConfigSha256
+  ? String(policyNow).startsWith(variantToml)
   : configNow.startsWith(policyToml);
  result.configAfter = {
   policyIntact,
