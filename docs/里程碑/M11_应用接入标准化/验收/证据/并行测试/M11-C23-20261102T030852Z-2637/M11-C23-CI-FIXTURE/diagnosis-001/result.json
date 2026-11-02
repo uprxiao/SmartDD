@@ -1,0 +1,113 @@
+{
+  "schema": "v010-main-ci-readonly-diagnosis-v1",
+  "status": "diagnosed-without-test-execution",
+  "candidate": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "ciRun": 41390065811,
+  "ciConclusion": "failure",
+  "evidence": {
+    "ciJson": "/private/tmp/willyou-m11-c23-2637/github-main-ci-failure.json",
+    "ciJsonSha256": "796c87695c3d63f63e8509d48e7d6885d006da216eb83475fb80934cfb7cbacd",
+    "ciLog": "/private/tmp/willyou-m11-c23-2637/github-main-ci-failure.log",
+    "ciLogSha256": "b8ab5f88fb97179ce8c5173d5256b25d7d0cb7c5b517d1b6dc200e3496369e9f",
+    "frozenSource": "/private/tmp/willyou-m11-c23-2637/software-source-fixtures-attempt-003",
+    "sourceHashes": {
+      "src/main/core/applications/__tests__/task-capability-launcher.test.ts": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764",
+      "src/main/core/tasks/task-service.ts": "695a4688a87fdc6b7306816e5d0564bebe70e1f2deff72ece0ac0e5bc3fbe225",
+      "src/main/core/applications/task-capability-launcher.ts": "b25642215b4eeb1748bab5de1a178054eac780202018ab59280e04a01ceeedbf",
+      "src/main/core/applications/application-service.ts": "c191dab2163c1921991a121c70e316fb4503f96a045d6ee90e13f1bf91f1a144",
+      "src/main/core/applications/run-registry.ts": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "src/main/core/applications/run-recovery.ts": "f3fd283544902264b7766487dc3ca5f7641e553588d27b545de3561468d125cc",
+      "src/main/index.ts": "6800d4f69757453b9cd255bc5d8f4313a4253bb752a46c9089803a1fb2fd027d"
+    },
+    "sourceMatchesPreviouslyVerifiedCandidateInputs": true
+  },
+  "observedFailure": {
+    "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+    "line": 188,
+    "column": 259,
+    "expected": {
+      "n": 0
+    },
+    "actual": {
+      "n": 1
+    },
+    "failedStage": "Global active capability_resource_leases count after ApplicationService.dispose",
+    "priorAssertionsAlreadyPassed": [
+      "Project A stop returned true",
+      "A call returned CANCELED",
+      "B call completed successfully and its PTY remained active",
+      "Upstream pool empty after applications.dispose",
+      "Actual reference MCP PID no longer existed"
+    ]
+  },
+  "conclusion": {
+    "classification": "High-confidence test observation/completion-contract race; not evidence yet of a persistent production lease leak",
+    "mechanism": "TaskService.kill returns void and starts managed stop without awaiting it. Synthetic CLI/bridge exit callbacks also update the SQLite lifecycle asynchronously. ApplicationService.dispose owns business contexts/upstream pools but does not join ManagedTaskCapabilities run/bridge/hold shutdown. The test asserts all capability leases released before awaiting that separate owner.",
+    "confidenceBoundary": "CI reports only the count, not lease owner_kind/owner_id/run state. Read-only analysis cannot prove exactly which lease was still pending or prove the eventual post-drain count. A completion-aligned targeted verification remains required.",
+    "whyDifferentRunsCanDiffer": "Unrelated ApplicationService/upstream disposal may happen to take long enough for managed shutdown on one run, but it is not its synchronization contract."
+  },
+  "references": [
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "lines": "65-71",
+      "fact": "queueFixtureBridgeExit starts handle.exited Promise; drainFixtureBridgeExits explicitly joins and retains rejections"
+    },
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "lines": "73-77",
+      "fact": "TestPtys.kill emits exit synchronously, but does not await the listener asynchronous work"
+    },
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "lines": "177-179,188",
+      "fact": "B kill queues synthetic bridge exit; test awaits only applications.dispose before global lease assertion"
+    },
+    {
+      "file": "src/main/core/tasks/task-service.ts",
+      "lines": "407-416,804-805",
+      "fact": "kill and onPtyExit invoke managed stop/exited with void; neither is an awaitable completion barrier"
+    },
+    {
+      "file": "src/main/core/applications/application-service.ts",
+      "lines": "287-289",
+      "fact": "ApplicationService.dispose joins data/upstream/context services, not the separate managed Task capabilities owner"
+    },
+    {
+      "file": "src/main/core/applications/task-capability-launcher.ts",
+      "lines": "477-489",
+      "fact": "ManagedTaskCapabilities tracks stopping promises, run/bridge/broker/CLI disposal and hold/runtime release"
+    },
+    {
+      "file": "src/main/core/applications/run-recovery.ts",
+      "lines": "9-15",
+      "fact": "Run leases release only after revocation plus all owned processes and activities have settled"
+    },
+    {
+      "file": "src/main/index.ts",
+      "lines": "310-314",
+      "fact": "Real host shutdown does tasks.dispose + ptys.killAll, then await managedTasks.dispose before applications.dispose"
+    },
+    {
+      "file": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+      "lines": "90-96",
+      "fact": "Fixture afterEach drains bridge exits and awaits managed.dispose only after the test body assertion"
+    }
+  ],
+  "recommendation": {
+    "changeType": "Test/fixture completion boundary only; no production change justified by this count alone",
+    "preferredShutdown": "Keep project A/B isolation assertions unchanged. At final shutdown, kill remaining B, assert drainFixtureBridgeExits returns no failures, await managed.dispose, then await applications.dispose, mirroring the real host owner order; retain pool empty, actual child PID exited and global lease zero assertions.",
+    "doNotDo": [
+      "Do not replace n:0 with n:1",
+      "Do not add arbitrary sleep or relax the count",
+      "Do not treat a rerun turning green as root-cause proof",
+      "Do not claim the new completion-aligned test passed without executing it under a separately approved lease"
+    ],
+    "ifStillFailing": "Capture remaining active lease rows including owner_kind/owner_id/resource_id, joined capability_runs state/revocation/task_id, process rows and active activities. A nonzero lease after the managed completion barrier is materially different and must be treated as a potential product defect."
+  },
+  "testCommandsExecuted": 0,
+  "nativeUiHeavyLeaseUsed": false,
+  "productionOrPublicSourcesModified": false,
+  "originalRedPreserved": true,
+  "formalCasePassesAdded": 0,
+  "at": "2026-11-02T05:13:27.722410+00:00"
+}

@@ -1,0 +1,257 @@
+{
+  "schema": "v010-final-candidate-audit-result-v1",
+  "candidate": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "status": "no-audit-blocking-findings-with-existing-release-gates-pending",
+  "scenario": "B document and code consistency review",
+  "skill": "codex-reviewer",
+  "scope": "C23 materials at fixed Git candidate; original M9/M10 history not rescanned; no App/native/Codex/tests/build/Agent launched; no shared files written",
+  "findings": [],
+  "checks": [
+    {
+      "id": "A1-version-preview",
+      "status": "passed",
+      "evidence": [
+        "package.json:3",
+        "CHANGELOG.md:3",
+        "release.config.json:2",
+        "scripts/release/policy.mjs:6",
+        "scripts/release/publish.mjs:35",
+        "AGENTS.md release rules"
+      ],
+      "actual": "0.0.9 →0.1.0 under third-digit rollover; preview→prerelease true/latest false; no local tag points to candidate, origin tracking feature tip matches; documents explicitly still preparing, not released."
+    },
+    {
+      "id": "A2-authority",
+      "status": "passed",
+      "actual": {
+        "unique": 38,
+        "passed": 34,
+        "deferred": 4,
+        "deferredIds": [
+          "T12",
+          "T21",
+          "T22",
+          "T28"
+        ],
+        "passRate": 89.47,
+        "t17MentionsEightSix": true
+      },
+      "evidence": [
+        "docs/里程碑/M11_应用接入标准化/验收/测试用例.md:3",
+        "docs/里程碑/M11_应用接入标准化/验收/测试用例.md:49",
+        "docs/里程碑/M11_应用接入标准化/交付说明.md:13"
+      ],
+      "boundary": "T17 actual8 capability chain + six unchanged-logic reused;143/496 expected vs140/482 returned with3/14 explicit problems; complete=false. T12/T21/T22/T28 deferred and not passed."
+    },
+    {
+      "id": "A3-C23-evidence-privacy",
+      "status": "passed",
+      "actual": {
+        "files": 108,
+        "manifests": 16,
+        "hashProblems": 0,
+        "realProfileOrAddressFindings": 0,
+        "rawDatabaseFiles": 0
+      },
+      "evidence": [
+        "automated-observations.json",
+        "manual-heuristic-triage.json"
+      ],
+      "boundary": "Only C23 committed blobs scanned and T17 field schema reviewed. Code referring to a private config path is code, not real config content. No runtime DB/mail/body/address/profile-account plaintext or actual credentials observed. This is bounded candidate audit, not a proof of every possible secret syntax."
+    },
+    {
+      "id": "A4-four-test-corrections",
+      "status": "passed",
+      "actual": [
+        {
+          "path": "src/main/core/projects/transfer-crash.test.ts",
+          "expectedAfter": "e8e30dff7c8ca00145b9c3456c9bed6d5a2edfdafc14e2a16a7ac0f7ce38a73b",
+          "candidateSha256": "e8e30dff7c8ca00145b9c3456c9bed6d5a2edfdafc14e2a16a7ac0f7ce38a73b",
+          "softwareSha256": "e8e30dff7c8ca00145b9c3456c9bed6d5a2edfdafc14e2a16a7ac0f7ce38a73b",
+          "matches": true
+        },
+        {
+          "path": "src/main/core/applications/__tests__/agent-adapters.test.ts",
+          "expectedAfter": "12679d7ecf1ddc5e7ff7d09613eaf68a04b831de005b026d34c6468d2d49e2b2",
+          "candidateSha256": "12679d7ecf1ddc5e7ff7d09613eaf68a04b831de005b026d34c6468d2d49e2b2",
+          "softwareSha256": "12679d7ecf1ddc5e7ff7d09613eaf68a04b831de005b026d34c6468d2d49e2b2",
+          "matches": true
+        },
+        {
+          "path": "src/main/core/applications/__tests__/application-controller.test.ts",
+          "expectedAfter": "09e91809aa57c2367b2184619b485aa84b757f22163a902729f51adddc18d429",
+          "candidateSha256": "09e91809aa57c2367b2184619b485aa84b757f22163a902729f51adddc18d429",
+          "softwareSha256": "09e91809aa57c2367b2184619b485aa84b757f22163a902729f51adddc18d429",
+          "matches": true
+        },
+        {
+          "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+          "expectedAfter": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764",
+          "candidateSha256": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764",
+          "softwareSha256": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764",
+          "matches": true
+        }
+      ],
+      "evidence": [
+        "src/main/core/applications/__tests__/agent-adapters.test.ts:13",
+        "src/main/core/applications/__tests__/agent-adapters.test.ts:30",
+        "src/main/core/applications/__tests__/agent-adapters.test.ts:129",
+        "src/main/core/applications/__tests__/task-capability-launcher.test.ts:1005",
+        "src/main/core/applications/__tests__/application-controller.test.ts:64",
+        "src/main/core/projects/transfer-crash.test.ts:18"
+      ],
+      "reasoning": "Unknown semantic Codex99 remains positive best-effort MCP with no CLI/sandbox injection, no declared evidence levels, unchanged bytes; unverified negatives keep exact SCOPE_DENIED/no-bridge/no-grant/snapshot/H/lease/recovery assertions. Claude99 remains unsupported in adapter checks. Controller list tracks3 pre-existing planned M11 endpoints and adds foreign-frame/main-frame gating before forwarding. Crash fixture only externalizes node-pty resolution; all SIGKILL/recovery/isolation/journal expectations/timeouts remain."
+    },
+    {
+      "id": "A5-production-package-equivalence",
+      "status": "passed",
+      "actual": {
+        "count": 1333,
+        "priorCount": 1333,
+        "changedRelativeToC7": [
+          "package.json"
+        ],
+        "candidateProblems": [],
+        "softwareProductionProblems": [],
+        "packageComparison": {
+          "version": "0.1.0",
+          "previous": "0.0.9",
+          "onlyVersionChanged": true
+        }
+      },
+      "evidence": [
+        "electron-builder.config.cjs:9",
+        "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C23-20261102T030852Z-2637/M11-C23-RELEASE-CANDIDATE/attempt-001/production-inputs.json"
+      ],
+      "boundary": "1333 production input bytes independently compared; only package version vs C7, candidate equals current frozen software source on all1333 plus exact4 after-hashes. Builder files select out/**, NOTICE/licenses and explicit native/upstream resources; docs and scripts acceptance drivers are not package roots. No statement that final fullsuite was launched from later Git checkout."
+    },
+    {
+      "id": "A6-recoverable-source",
+      "status": "passed-private-proof-awaiting-planned-final-archive",
+      "actual": {
+        "baseCommit": "73946425efe7735bf7e7bedd62142f9a885179c4",
+        "manifestSha256": "b5b62e1758ae526a4eea48c18070c7d8fe1ef1e615fa34a73f24c06245e0fcb0",
+        "frozenCount": 3233,
+        "gitUnchanged": 3231,
+        "patched": [
+          "CHANGELOG.md",
+          "package.json"
+        ],
+        "patchSha256": "30af1a85f45a91dd0d354610ec95f31b0d313c5b7f909df0ebc9139848026187",
+        "receiptMatches": true,
+        "problems": [],
+        "currentlyArchivedInCandidate": false,
+        "finalArchiveRequiredAsCoordinatorPlanned": true
+      },
+      "boundary": "Independently reconstructed all3233 hashes in memory from Git739 + exact2 textual metadata patches, patchSHA30af1a85... matches. Proof/patch not yet in5471 candidate, root has explicitly scheduled final archival; this audit does not claim already committed."
+    }
+  ],
+  "pendingExistingReleaseGates": [
+    "Await final local fullsuite and GitHub candidate CI41385156673; this audit did not execute or assume their result",
+    "Archive source-recovery/result.json and frozen-source.patch with final results as already planned; if only evidence/docs change, do not infer production change",
+    "Verify final main commit/remote main ancestry, final clean tree and tags resynced before annotatedv0.1.0; build/release7 assets and verify actual Release afterward"
+  ],
+  "noAdditionalTestsRequested": true,
+  "notReleaseAuthorization": true,
+  "formalCasePassesAdded": 0,
+  "heuristicTriage": "First heuristic snapshot is retained. Its6 sk-shaped matches were substrings in3 task-/disk- source filenames duplicated across2 manifests; corrected token boundary finds no credentials. First31 pass count only recognized bold formatting; manual T09/T11/T29 explicit pass rows normalize to34 without changing ledger.",
+  "skillOutputPlacement": "The skill default docs/review output is overridden by the explicit group assignment allowing private audit directory only; no shared review/ledger was changed.",
+  "commands": [
+    {
+      "program": "git",
+      "argv": [
+        "ls-tree",
+        "-r",
+        "-z",
+        "--name-only",
+        "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+        "--",
+        "docs/里程碑/M11_应用接入标准化/验收/证据/并行测试/M11-C23-20261102T030852Z-2637"
+      ],
+      "inputSpecs": 0
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 108
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 3233
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1333
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "cat-file",
+        "--batch"
+      ],
+      "inputSpecs": 1
+    },
+    {
+      "program": "git",
+      "argv": [
+        "for-each-ref",
+        "--format=%(refname) %(objectname)",
+        "refs/tags",
+        "refs/remotes/origin/feature/0.1.0"
+      ],
+      "inputSpecs": 0
+    }
+  ],
+  "finishedAt": "2026-11-02T04:02:59.523Z"
+}

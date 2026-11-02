@@ -1,0 +1,33 @@
+{
+  "schema": "willyou-ci-shutdown-observation-race-v1",
+  "releaseCommit": "5471b7ec73fbe82340dd9051bffec66e8ca3e9d0",
+  "tag": "v0.1.0",
+  "tagUnchanged": true,
+  "featureFullCi": {
+    "run": 41385156673,
+    "passed": 5866,
+    "skipped": 1000,
+    "conclusion": "success"
+  },
+  "mainOriginalCi": {
+    "run": 41390065811,
+    "passed": 5865,
+    "failed": 1,
+    "skipped": 1000,
+    "conclusion": "failure",
+    "failure": "S7 reads active resource leases before asynchronous managed run/bridge cleanup finishes; got1 vs expected0"
+  },
+  "releaseFullCi": {
+    "run": 41390093647,
+    "checksJob": 125099680803,
+    "conclusion": "success",
+    "packages": "building"
+  },
+  "diagnosis": "TaskService.kill is void and starts asynchronous managed stop; ApplicationService.dispose closes data/upstream services, while actual host shutdown separately awaits ManagedTaskCapabilities.dispose first. The test omitted that owner completion barrier.",
+  "maintenance": "One test adds await managed.dispose before existing await applications.dispose and exact original assertions. Values, timeout and all business code unchanged; no retry used to rewrite the original red.",
+  "oldTestSha256": "2e614ee4a1e6eb789adce2b7ff2a1d5e22cb12748a83b69ac52a8cd1c6115764",
+  "newTestSha256": "40f53ad3497264d55c09c45d10e13b441be59330c697baec1072a87b450025c0",
+  "patchSha256": "4e518f3b57cdf626e99b698202ed1ca6f592c74112d49f35759671bfd2d5d09f",
+  "productionInputsUnchanged": 1333,
+  "scope": "Follow-up test maintenance is separate from immutable released source; v0.1.0 continues to publish5471 and does not claim this test change is in that tag. New test baseline must receive its own validation and CI."
+}

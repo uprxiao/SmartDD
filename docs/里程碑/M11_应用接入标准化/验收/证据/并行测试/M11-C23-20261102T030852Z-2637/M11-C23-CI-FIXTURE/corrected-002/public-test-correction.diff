@@ -1,0 +1,13 @@
+--- 5471/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ corrected/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -185,7 +185,9 @@
+   const service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),invoke=(runId:string,key:string)=>service.call(runId,randomUUID(),{operation:'smartdd_sample_kv_read_v2',contractMajor:2,connectionId:null,arguments:{key}}),one=invoke(a.task.runtimeSnapshot!.runId,'demo:a'),two=invoke(b.task.runtimeSnapshot!.runId,'demo:b');
+   await vi.waitFor(()=>expect([...pools].flatMap(pool=>pool.status()).map(row=>row.pending)).toContain(2),{timeout:5000});expect([...pools].flatMap(pool=>pool.status())).toHaveLength(1);const pid=[...pools][0].status()[0].pid!;expect(pid).toBeGreaterThan(0);
+   expect(await tasks.stopProject(projectId,5000)).toBe(true);expect(await one).toMatchObject({status:'error',error:{code:'CANCELED'}});expect(await two).toMatchObject({status:'ok',value:{data:{key:'demo:b'}}});expect(tasks.activePty(b.task.id)).not.toBeNull();
+-  tasks.kill(b.task.id);await applications.dispose();expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get()).toEqual({n:0});
++   // Match the host shutdown boundary: kill revokes immediately, while managed
++   // disposal joins the run/bridge exits before the application service closes.
++   tasks.kill(b.task.id);await managed.dispose();await applications.dispose();expect([...pools].flatMap(pool=>pool.status())).toEqual([]);expect(()=>process.kill(pid,0)).toThrow();expect(sqlite.prepare("SELECT count(*) n FROM capability_resource_leases WHERE state='active'").get()).toEqual({n:0});
+  },30000);
+ });
+ 
