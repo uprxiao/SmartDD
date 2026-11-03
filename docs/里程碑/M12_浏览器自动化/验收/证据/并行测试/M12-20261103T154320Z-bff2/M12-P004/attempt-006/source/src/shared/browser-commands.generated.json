@@ -1,0 +1,7756 @@
+[
+  {
+    "id": "browser.identity.get",
+    "command": [
+      "browser",
+      "identity",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser identity get",
+    "cases": [
+      "M12-T089"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.identity.set",
+    "command": [
+      "browser",
+      "identity",
+      "set"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "clean",
+            "native"
+          ]
+        },
+        "reset": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser identity set --mode <clean|native> [--reset true]",
+    "cases": [
+      "M12-T089"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.snapshot",
+    "command": [
+      "browser",
+      "snapshot"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser snapshot [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T050",
+      "M12-T051"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "origin": {
+              "type": "string"
+            },
+            "snapshot": {
+              "type": "string"
+            },
+            "refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "available": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "role",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "browserPageId": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "snapshot",
+            "refs",
+            "browserPageId",
+            "url",
+            "title"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.screenshot",
+    "command": [
+      "browser",
+      "screenshot"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser screenshot [--format <png|jpeg>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T054"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "file",
+        "format",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.nav.goto",
+    "command": [
+      "browser",
+      "goto"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser goto --url <url> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T072"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "navigated": {
+          "const": true
+        }
+      },
+      "required": [
+        "navigated"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.nav.back",
+    "command": [
+      "browser",
+      "back"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser back [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T072"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.reload",
+    "command": [
+      "browser",
+      "reload"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser reload [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T072"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.forward",
+    "command": [
+      "browser",
+      "forward"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser forward [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T072"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.eval",
+    "command": [
+      "browser",
+      "eval"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "expression"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser eval --expression <js> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T057"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "origin": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "origin"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.scroll",
+    "command": [
+      "browser",
+      "scroll"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down"
+          ]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "direction"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser scroll --direction <up|down> [--amount <pixels>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.wait",
+    "command": [
+      "browser",
+      "wait"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "selector": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90000
+        },
+        "text": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "url": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "load": {
+          "enum": [
+            "load",
+            "domcontentloaded",
+            "networkidle"
+          ]
+        },
+        "state": {
+          "enum": [
+            "hidden",
+            "visible"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser wait [--selector <sel>] [--timeout <ms>] [--text <text>] [--url <pattern>] [--load <state>] [--state <hidden|visible>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T036",
+      "M12-T066"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "waited": {
+          "const": true
+        }
+      },
+      "required": [
+        "waited"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.nav.pdf",
+    "command": [
+      "browser",
+      "pdf"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser pdf [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T056"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.nav.full-screenshot",
+    "command": [
+      "browser",
+      "full-screenshot"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser full-screenshot [--format <png|jpeg>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T055"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "file",
+        "format",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.interact.click",
+    "command": [
+      "browser",
+      "click"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser click --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "clicked": {
+          "type": "string"
+        },
+        "path": {
+          "const": "cdp"
+        },
+        "newTab": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        },
+        "dialogOpened": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "clicked"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.interact.dblclick",
+    "command": [
+      "browser",
+      "dblclick"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser dblclick --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.fill",
+    "command": [
+      "browser",
+      "fill"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser fill --element <ref> --value <text> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063",
+      "M12-T064"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "filled": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "filled"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.interact.type",
+    "command": [
+      "browser",
+      "type"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser type --input <text> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T060",
+      "M12-T063"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "typed": {
+          "const": true
+        },
+        "progress": {
+          "type": "object",
+          "properties": {
+            "confirmedChars": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inFlight": {
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "offset",
+                "length"
+              ],
+              "additionalProperties": false
+            },
+            "observed": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "at",
+                "length",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "confirmedChars"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "typed",
+        "progress"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.interact.select",
+    "command": [
+      "browser",
+      "select"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser select --element <ref> --value <value> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.check",
+    "command": [
+      "browser",
+      "check"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser check --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.uncheck",
+    "command": [
+      "browser",
+      "uncheck"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser uncheck --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.focus",
+    "command": [
+      "browser",
+      "focus"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser focus --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.clear",
+    "command": [
+      "browser",
+      "clear"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser clear --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.select-all",
+    "command": [
+      "browser",
+      "select-all"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser select-all --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.keypress",
+    "command": [
+      "browser",
+      "keypress"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser keypress --key <name> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.hover",
+    "command": [
+      "browser",
+      "hover"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser hover --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.drag",
+    "command": [
+      "browser",
+      "drag"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "to": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser drag --from <ref> --to <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.upload",
+    "command": [
+      "browser",
+      "upload"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "files": {
+          "anyOf": [
+            {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ],
+              "maxLength": 262144
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser upload --element <ref> --files <path,...> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T067"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.scrollintoview",
+    "command": [
+      "browser",
+      "scrollintoview"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser scrollintoview --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.get",
+    "command": [
+      "browser",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "what": {
+          "enum": [
+            "text",
+            "html",
+            "value",
+            "url",
+            "title",
+            "count",
+            "box"
+          ]
+        },
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "what"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser get --what <property> [--element <ref>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T058"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.is",
+    "command": [
+      "browser",
+      "is"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "what": {
+          "enum": [
+            "visible",
+            "enabled",
+            "checked"
+          ]
+        },
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "what",
+        "element"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser is --what <state> --element <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T058"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.inserttext",
+    "command": [
+      "browser",
+      "inserttext"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser inserttext --text <text> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T063"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "typed": {
+          "const": true
+        },
+        "progress": {
+          "type": "object",
+          "properties": {
+            "confirmedChars": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inFlight": {
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "offset",
+                "length"
+              ],
+              "additionalProperties": false
+            },
+            "observed": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "at",
+                "length",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "confirmedChars"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "typed",
+        "progress"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.interact.mouse-move",
+    "command": [
+      "browser",
+      "mouse",
+      "move"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser mouse move --x <n> --y <n> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T062"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.mouse-down",
+    "command": [
+      "browser",
+      "mouse",
+      "down"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "button": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "middle"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser mouse down [--button <left|right|middle>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T062"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.mouse-up",
+    "command": [
+      "browser",
+      "mouse",
+      "up"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "button": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "middle"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser mouse up [--button <left|right|middle>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T062"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.mouse-wheel",
+    "command": [
+      "browser",
+      "mouse",
+      "wheel"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "dy": {
+          "type": "number"
+        },
+        "dx": {
+          "type": "number"
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "dy"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser mouse wheel --dy <n> [--dx <n>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T062"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.find",
+    "command": [
+      "browser",
+      "find"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "locator": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "action": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "text": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "name": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "exact": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "locator",
+        "value",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser find --locator <type> --value <text> --action <action> [--text <text>] [--task <任务ID>] [--page <页面ID>] [--name <名称>] [--exact true]",
+    "cases": [
+      "M12-T065"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.download",
+    "command": [
+      "browser",
+      "download"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "selector": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "path": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "selector",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser download --selector <ref> --path <path> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T067"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.highlight",
+    "command": [
+      "browser",
+      "highlight"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "selector": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "selector"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser highlight --selector <ref> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T061"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.tab.list",
+    "command": [
+      "browser",
+      "tab",
+      "list"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "show-profile": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab list [--task <任务ID>] [--show-profile true]",
+    "cases": [
+      "M12-T034",
+      "M12-T073"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "tabs": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "pageId": {
+                    "type": "string"
+                  },
+                  "browserPageId": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "profileId": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "const": "tab"
+                  }
+                },
+                "required": [
+                  "pageId",
+                  "browserPageId",
+                  "index",
+                  "active",
+                  "title",
+                  "url",
+                  "profileId",
+                  "kind"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "pageId": {
+                    "type": "string"
+                  },
+                  "browserPageId": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "profileId": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "const": "popup"
+                  },
+                  "openerPageId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pageId",
+                  "browserPageId",
+                  "index",
+                  "active",
+                  "title",
+                  "url",
+                  "profileId",
+                  "kind",
+                  "openerPageId"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "tabs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.tab.show",
+    "command": [
+      "browser",
+      "tab",
+      "show"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab show --page <id> [--task <任务ID>]",
+    "cases": [
+      "M12-T073"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.tab.current",
+    "command": [
+      "browser",
+      "tab",
+      "current"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab current [--task <任务ID>]",
+    "cases": [
+      "M12-T073"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.tab.switch",
+    "command": [
+      "browser",
+      "tab",
+      "switch"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "focus": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab switch (--index <n> | --page <id>) [--task <任务ID>] [--focus true]",
+    "cases": [
+      "M12-T073",
+      "M12-T115"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.tab.create",
+    "command": [
+      "browser",
+      "tab",
+      "create"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "profile": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab create [--url <url>] [--task <任务ID>] [--profile <id>]",
+    "cases": [
+      "M12-T073",
+      "M12-T105"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "pageId",
+        "url"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.tab.close",
+    "command": [
+      "browser",
+      "tab",
+      "close"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab close [--index <n>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T073"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.interact.exec",
+    "command": [
+      "browser",
+      "exec"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser exec --command \"<agent-browser command>\" [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T039"
+    ],
+    "output": {}
+  },
+  {
+    "id": "browser.profile.list",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "list"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile list",
+    "cases": [
+      "M12-T075"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.create",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "create"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "isolated",
+            "imported"
+          ]
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile create --label <name> [--scope <isolated|imported>]",
+    "cases": [
+      "M12-T075",
+      "M12-T077"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.delete",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "delete"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile delete --profile <id>",
+    "cases": [
+      "M12-T075",
+      "M12-T079"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.set",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "set"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "profile": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile set (--page <id> | --task <任务ID>) --profile <id>",
+    "cases": [
+      "M12-T075"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.show",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "show"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile show --page <id> [--task <任务ID>]",
+    "cases": [
+      "M12-T075"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.use-default",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "use-default"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile use-default --page <id> [--task <任务ID>]",
+    "cases": [
+      "M12-T075"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.profile.clone",
+    "command": [
+      "browser",
+      "tab",
+      "profile",
+      "clone"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser tab profile clone --profile <id> [--page <id>] [--task <任务ID>]",
+    "cases": [
+      "M12-T075"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.cookie.get",
+    "command": [
+      "browser",
+      "cookie",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser cookie get [--url <url>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T084"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.cookie.set",
+    "command": [
+      "browser",
+      "cookie",
+      "set"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "domain": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "path": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "secure": {
+          "type": "boolean"
+        },
+        "httpOnly": {
+          "type": "boolean"
+        },
+        "sameSite": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "expires": {
+          "type": "number"
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser cookie set --name <n> --value <v> [--domain <d>] [--path <p>] [--secure true] [--httpOnly true] [--sameSite <s>] [--expires <epoch>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T084"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.cookie.delete",
+    "command": [
+      "browser",
+      "cookie",
+      "delete"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "domain": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "url": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser cookie delete --name <n> [--domain <d>] [--url <u>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T084"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.capture.intercept-enable",
+    "command": [
+      "browser",
+      "intercept",
+      "enable"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "patterns": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser intercept enable [--patterns <glob,...>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T071"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.capture.intercept-disable",
+    "command": [
+      "browser",
+      "intercept",
+      "disable"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser intercept disable [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T071"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.capture.intercept-list",
+    "command": [
+      "browser",
+      "intercept",
+      "list"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser intercept list [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T071"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.capture.start",
+    "command": [
+      "browser",
+      "capture",
+      "start"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser capture start [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T070"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.capture.stop",
+    "command": [
+      "browser",
+      "capture",
+      "stop"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser capture stop [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T070"
+    ],
+    "output": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "bytes",
+            "sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "browser.nav.console",
+    "command": [
+      "browser",
+      "console"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser console [--limit <n>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T069"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "messages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "messages"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.network",
+    "command": [
+      "browser",
+      "network"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser network [--limit <n>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T069"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "requests": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "requests"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.viewport",
+    "command": [
+      "browser",
+      "viewport"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "mobile": {
+          "type": "boolean"
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser viewport --width <w> --height <h> [--scale <n>] [--mobile true] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.geolocation",
+    "command": [
+      "browser",
+      "geolocation"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "accuracy": {
+          "type": "number",
+          "minimum": 0
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser geolocation --latitude <lat> --longitude <lon> [--accuracy <n>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.set-device",
+    "command": [
+      "browser",
+      "set",
+      "device"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set device --name <device> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.set-offline",
+    "command": [
+      "browser",
+      "set",
+      "offline"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "on",
+            "off"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set offline [--state <on|off>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.set-headers",
+    "command": [
+      "browser",
+      "set",
+      "headers"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "headers"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set headers --headers <json> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.set-credentials",
+    "command": [
+      "browser",
+      "set",
+      "credentials"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "pass": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "user",
+        "pass"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set credentials --user <user> --pass <pass> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T087"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.set-media",
+    "command": [
+      "browser",
+      "set",
+      "media"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "color-scheme": {
+          "type": "string",
+          "enum": [
+            "dark",
+            "light"
+          ]
+        },
+        "reduced-motion": {
+          "type": "string",
+          "enum": [
+            "reduce",
+            "no-preference"
+          ]
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set media [--color-scheme <dark|light>] [--reduced-motion <reduce|no-preference>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.clipboard-read",
+    "command": [
+      "browser",
+      "clipboard",
+      "read"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser clipboard read [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T088"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.clipboard-write",
+    "command": [
+      "browser",
+      "clipboard",
+      "write"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 16777216
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser clipboard write --text <text> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T088"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.dialog-accept",
+    "command": [
+      "browser",
+      "dialog",
+      "accept"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser dialog accept [--text <text>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T068"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.env.dialog-dismiss",
+    "command": [
+      "browser",
+      "dialog",
+      "dismiss"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser dialog dismiss [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T068"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.local-get",
+    "command": [
+      "browser",
+      "storage",
+      "local",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage local get --key <key> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.local-set",
+    "command": [
+      "browser",
+      "storage",
+      "local",
+      "set"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage local set --key <key> --value <value> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.local-clear",
+    "command": [
+      "browser",
+      "storage",
+      "local",
+      "clear"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage local clear [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.session-get",
+    "command": [
+      "browser",
+      "storage",
+      "session",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage session get --key <key> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.session-set",
+    "command": [
+      "browser",
+      "storage",
+      "session",
+      "set"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage session set --key <key> --value <value> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.storage.session-clear",
+    "command": [
+      "browser",
+      "storage",
+      "session",
+      "clear"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser storage session clear [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T085"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.nav.wait-fn",
+    "command": [
+      "browser",
+      "wait",
+      "fn"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "fn": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90000
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "fn"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser wait fn --fn <js> [--timeout <ms>] [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T066",
+      "M12-T095"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.access.request",
+    "command": [
+      "browser",
+      "access",
+      "request"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "observe",
+            "control"
+          ]
+        }
+      },
+      "required": [
+        "task",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser access request --task <任务ID> --mode <observe|control>",
+    "cases": [
+      "M12-T095",
+      "M12-T096"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser.operation.get",
+    "command": [
+      "browser",
+      "operation",
+      "get"
+    ],
+    "semantics": "read",
+    "input": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "request"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser operation get --request <requestId>",
+    "cases": [
+      "M12-T037",
+      "M12-T094"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "not-found"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "requestId": {
+              "type": "string"
+            },
+            "pageId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "command": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "succeeded",
+                "failed",
+                "unknown"
+              ]
+            },
+            "effectState": {
+              "enum": [
+                "completed",
+                "not-started",
+                "unknown"
+              ]
+            },
+            "progress": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "confirmedChars": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "inFlight": {
+                      "type": "object",
+                      "properties": {
+                        "offset": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "length": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "offset",
+                        "length"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "observed": {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "string"
+                        },
+                        "length": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "length",
+                        "sha256"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "confirmedChars"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "summary": {},
+            "errorCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "createdAt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "updatedAt": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "requestId",
+            "pageId",
+            "command",
+            "state",
+            "effectState",
+            "progress",
+            "summary",
+            "errorCode",
+            "createdAt",
+            "updatedAt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+]

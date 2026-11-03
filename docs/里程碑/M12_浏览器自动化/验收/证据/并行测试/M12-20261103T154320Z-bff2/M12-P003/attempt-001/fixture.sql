@@ -1,0 +1,1 @@
+INSERT INTO tasks(id,project_id,dir_id,cwd,ai_profile_id,ai_profile_name,runner,native_session_id,title,first_message,injected_env_names,state_root,created_at,updated_at) VALUES(@id,NULL,NULL,@cwd,@profile,@profileName,'codex',NULL,@title,'','[]',@state,@now,@now);

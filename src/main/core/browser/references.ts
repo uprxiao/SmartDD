@@ -15,8 +15,16 @@ interface ArmedReference {
   node: NodeRef;
   hostClick: boolean;
   click(options?: ActionOptions): Promise<{ clicked: string; path: 'cdp' }>;
+  pointer(kind:'hover'|'dblclick',options?:ActionOptions):Promise<void>;
+  scroll(options?:ActionOptions):Promise<void>;
+  highlight(options?:ActionOptions):Promise<void>;
   fill(value: string, options?: ActionOptions): Promise<{ filled: string }>;
-  finish(): Promise<GuardState>;
+  read(what: 'text'|'html'|'value'|'box'|'visible'|'enabled'|'checked'|'selected'): Promise<unknown>;
+  select(value: string, options?: ActionOptions): Promise<void>;
+  focus(options?: ActionOptions): Promise<void>;
+  upload(files: string[], options?: ActionOptions): Promise<void>;
+  selectAll(options?: ActionOptions): Promise<void>;
+  finish(preserveGuard?: boolean): Promise<GuardState>;
 }
 interface FrameTree { frame: { id: string }; childFrames?: FrameTree[] }
 const helperSnapshotSchema = z.object({
@@ -126,7 +134,8 @@ export class BrowserReferences {
       return { origin: parsed.data.origin, snapshot: parsed.data.snapshot.replace(/ref=(e\d+)/g, (_match, id:string) => 'ref=' + (mapping.get(id) ?? id)), refs };
     }
   }
-  async arm(ref: string): Promise<ArmedReference> {
+  async arm(ref: string, options:{append?:boolean;locator?:boolean} = {}): Promise<ArmedReference> {
+    const append=options.append===true,locator=options.locator!==false;
     const node = this.refs.get(ref); if (!node) throw staleReference();
     try {
       const current=await this.proxy.send<{nodes:BrowserAXTree['nodes']}>('Accessibility.getFullAXTree',{frameId:node.frameId},node.sessionId);
@@ -140,7 +149,7 @@ export class BrowserReferences {
     catch(error){if(this.frameGone(error)||error instanceof Error&&/could not find node|no node|node.*(?:not found|detached)/i.test(error.message))throw staleReference();throw error;}
     const objectId = resolved.object.objectId; if (!objectId) throw staleReference();
     const armed = await this.proxy.send<{result:{value?:boolean};exceptionDetails?:unknown}>('Runtime.callFunctionOn',{
-      objectId,functionDeclaration:'function(){return globalThis.__wyBrowserGuard?.arm(this) ?? false}',returnByValue:true,
+      objectId,functionDeclaration:'function(append){return globalThis.__wyBrowserGuard?.arm(this,append) ?? false}',arguments:[{value:append}],returnByValue:true,
     },node.sessionId);
     if (armed.result.value !== true) { await this.proxy.send('Runtime.releaseObject',{objectId},node.sessionId).catch(()=>{}); throw staleReference(); }
     const nonce = randomBytes(16).toString('hex');
@@ -151,9 +160,9 @@ export class BrowserReferences {
       }, node.sessionId);
       hostClick = location.result.value === true;
       // Apply the locator attribute to the held object, never to a role/name re-resolution.
-      await this.proxy.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(value){this.setAttribute("data-willyou-ref",value)}',arguments:[{value:nonce}]},node.sessionId);
-    } catch(error) { await this.disarm(node,contextId,objectId).catch(()=>{}); throw error; }
-    return {selector:`[data-willyou-ref="${nonce}"]`,node,hostClick,click:async(options={})=>{
+      if(locator)await this.proxy.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(value){this.setAttribute("data-willyou-ref",value)}',arguments:[{value:nonce}]},node.sessionId);
+    } catch(error) { await this.disarm(node,contextId,objectId,false,locator).catch(()=>{}); throw error; }
+    const pointer=async(kind:'click'|'hover'|'dblclick',options:ActionOptions={})=>{
       const check = () => { if (options.signal?.aborted) throw options.signal.reason ?? new BrowserError('BROWSER_ERROR', '点击已取消'); };
       const connected = async () => (await this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn', {
         objectId, functionDeclaration:'function(){return this.isConnected&&globalThis.__wyBrowserGuard.valid()}', returnByValue:true,
@@ -184,10 +193,28 @@ export class BrowserReferences {
       } finally { await this.proxy.send('Runtime.releaseObject', {objectId:hitObject.object.objectId}, node.sessionId).catch(()=>{}); }
       check();
       if (!await connected()) throw staleReference();
-      await this.proxy.send('Input.dispatchMouseEvent', {type:'mousePressed',x,y,button:'left',buttons:1,clickCount:1}, node.sessionId);
-      await this.proxy.send('Input.dispatchMouseEvent', {type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:1}, node.sessionId);
-      check();
-      return {clicked:ref,path:'cdp'};
+      if(kind==='hover')await this.proxy.send('Input.dispatchMouseEvent',{type:'mouseMoved',x,y,button:'none',buttons:0},node.sessionId);
+      else for(let count=1;count<=(kind==='dblclick'?2:1);count++){
+        check();if(!await connected())throw staleReference();
+        await this.proxy.send('Input.dispatchMouseEvent', {type:'mousePressed',x,y,button:'left',buttons:1,clickCount:count}, node.sessionId);
+        await this.proxy.send('Input.dispatchMouseEvent', {type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:count}, node.sessionId);
+      }
+      check();return {clicked:ref,path:'cdp' as const};
+    };
+    return {selector:`[data-willyou-ref="${nonce}"]`,node,hostClick,click:options=>pointer('click',options),pointer:async(kind,options)=>{await pointer(kind,options);},
+    scroll:async(options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;options.dispatched?.();await this.proxy.send('DOM.scrollIntoViewIfNeeded',{objectId},node.sessionId);
+    },highlight:async(options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;
+      options.dispatched?.();const result=await this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn',{
+        objectId,functionDeclaration:`function(){
+          if(!this.isConnected||!globalThis.__wyBrowserGuard.valid())return false;
+          const outline=this.style.outline,offset=this.style.outlineOffset;
+          this.style.outline='2px solid red';this.style.outlineOffset='2px';
+          const appliedOutline=this.style.outline,appliedOffset=this.style.outlineOffset,element=this;
+          setTimeout(()=>{if(element.style.outline===appliedOutline)element.style.outline=outline;if(element.style.outlineOffset===appliedOffset)element.style.outlineOffset=offset;},3000);return true;
+        }`,returnByValue:true,
+      },node.sessionId);if(result.result.value!==true){options.notStarted?.();throw staleReference();}
     },fill:async(value,options={})=>{
       const check=()=>{if(options.signal?.aborted)throw options.signal.reason??new BrowserError('BROWSER_ERROR','填写已取消');};
       check(); options.dispatched?.();
@@ -223,14 +250,73 @@ export class BrowserReferences {
       if(!valid.result.value)throw staleReference();
       await this.proxy.send('Input.insertText',{text:value},node.sessionId);check();
       return {filled:ref};
-    },finish:()=>this.disarm(node,contextId,objectId)};
+    },read:async(what)=>{
+      const result=await this.proxy.send<{result:{value?:{valid:boolean;value:unknown}}}>('Runtime.callFunctionOn',{
+        objectId,functionDeclaration:`function(what){
+          if(!this.isConnected||!globalThis.__wyBrowserGuard.valid())return {valid:false};
+          const rect=this.getBoundingClientRect(),style=getComputedStyle(this);
+          let checked=false;
+          if(this.matches('input[type="checkbox"],input[type="radio"]'))checked=this.checked;
+          else if(['checkbox','radio','switch','menuitemcheckbox','menuitemradio','option','treeitem'].includes(this.getAttribute('role')))checked=this.getAttribute('aria-checked')==='true';
+          else {const label=this.closest('label'),input=label?.control??this.querySelector('input[type="checkbox"],input[type="radio"]');checked=!!input?.checked;}
+          const values={text:this.innerText||this.textContent||'',html:this.innerHTML,value:this.value??(this.isContentEditable?this.textContent:null),box:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},visible:!!(rect.width&&rect.height)&&style.visibility!=='hidden'&&style.display!=='none',enabled:!this.matches(':disabled')&&this.getAttribute('aria-disabled')!=='true',checked,selected:this instanceof HTMLSelectElement?Array.from(this.selectedOptions,option=>option.value):null};
+          return {valid:true,value:values[what]};
+        }`,arguments:[{value:what}],returnByValue:true,
+      },node.sessionId);
+      if(!result.result.value?.valid)throw staleReference();return result.result.value.value;
+    },select:async(value,options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;
+      options.dispatched?.();
+      const result=await this.proxy.send<{result:{value?:string}}>('Runtime.callFunctionOn',{
+        objectId,functionDeclaration:`function(value){
+          const guard=globalThis.__wyBrowserGuard;
+          if(!this.isConnected||!guard.valid())return 'stale';
+          if(!(this instanceof HTMLSelectElement)||this.disabled)return 'unsupported';
+          const option=Array.from(this.options).find(option=>option.value===value||option.label===value);
+          if(!option||option.disabled)return 'missing';
+          this.value=option.value;this.dispatchEvent(new Event('input',{bubbles:true}));
+          if(!this.isConnected||!guard.valid())return 'changed';
+          this.dispatchEvent(new Event('change',{bubbles:true}));return 'selected';
+        }`,arguments:[{value}],returnByValue:true,
+      },node.sessionId);
+      if(result.result.value==='stale'){options.notStarted?.();throw staleReference();}
+      if(result.result.value==='changed')throw staleReference();
+      if(result.result.value!=='selected'){options.notStarted?.();throw new ApplicationError('INVALID_INPUT','选项不存在、已禁用或元素不是选择框');}
+    },focus:async(options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;
+      options.dispatched?.();
+      const result=await this.proxy.send<{result:{value?:string}}>('Runtime.callFunctionOn',{
+        objectId,functionDeclaration:`function(){const guard=globalThis.__wyBrowserGuard;if(!this.isConnected||!guard.valid())return 'stale';this.focus();if(!this.isConnected||!guard.valid())return 'changed';const focused=this.getRootNode().activeElement??this.ownerDocument.activeElement;return focused===this||this.contains(focused)?'focused':'failed';}`,returnByValue:true,
+      },node.sessionId);
+      if(result.result.value==='stale'){options.notStarted?.();throw staleReference();}
+      if(result.result.value==='changed')throw staleReference();
+      if(result.result.value!=='focused')throw new BrowserError('BROWSER_ERROR','目标未取得焦点');
+    },upload:async(files,options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;
+      const allowed=await this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(count){return this.isConnected&&globalThis.__wyBrowserGuard.valid()&&this instanceof HTMLInputElement&&this.type==="file"&&!this.disabled&&(count<=1||this.multiple)}',arguments:[{value:files.length}],returnByValue:true},node.sessionId);
+      if(!allowed.result.value){options.notStarted?.();throw new ApplicationError('INVALID_INPUT','上传目标不是可用文件框或不支持多个文件');}
+      options.dispatched?.();await this.proxy.send('DOM.setFileInputFiles',{objectId,files},node.sessionId);
+    },selectAll:async(options={})=>{
+      if(options.signal?.aborted)throw options.signal.reason;
+      options.dispatched?.();
+      const result=await this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn',{
+        objectId,functionDeclaration:`function(){
+          const guard=globalThis.__wyBrowserGuard;if(!this.isConnected||!guard.valid())return false;
+          this.focus();if(!this.isConnected||!guard.valid())return false;
+          if(this instanceof HTMLInputElement||this instanceof HTMLTextAreaElement)this.select();
+          else if(this.isContentEditable){const selection=this.ownerDocument.getSelection(),range=this.ownerDocument.createRange();range.selectNodeContents(this);selection.removeAllRanges();selection.addRange(range);}
+          else return false;return true;
+        }`,returnByValue:true,
+      },node.sessionId);
+      if(!result.result.value)throw new BrowserError('BROWSER_ERROR','目标不能选中文本或操作期间已替换');
+    },finish:(preserve=false)=>this.disarm(node,contextId,objectId,preserve,locator)};
   }
-  private async disarm(node:NodeRef,contextId:number,objectId:string):Promise<GuardState> {
+  private async disarm(node:NodeRef,contextId:number,objectId:string,preserve=false,locator=true):Promise<GuardState> {
     try {
-      const result = await this.proxy.send<{result:{value:GuardState}}>('Runtime.evaluate',{expression:'globalThis.__wyBrowserGuard.disarm()',contextId,returnByValue:true},node.sessionId);
+      const result = await this.proxy.send<{result:{value:GuardState}}>('Runtime.evaluate',{expression:preserve?'globalThis.__wyBrowserGuard.state()':'globalThis.__wyBrowserGuard.disarm()',contextId,returnByValue:true},node.sessionId);
       return result.result.value;
     } finally {
-      await this.proxy.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){this.removeAttribute("data-willyou-ref")}'},node.sessionId).catch(()=>{});
+      if(locator)await this.proxy.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){this.removeAttribute("data-willyou-ref")}'},node.sessionId).catch(()=>{});
       await this.proxy.send('Runtime.releaseObject',{objectId},node.sessionId).catch(()=>{});
     }
   }

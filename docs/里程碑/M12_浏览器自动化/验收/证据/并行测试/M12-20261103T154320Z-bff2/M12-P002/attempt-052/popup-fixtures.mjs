@@ -1,0 +1,8 @@
+// Shared synthetic OAuth fixture. Explicit Window methods avoid inline-handler
+// Document scope (notably document.close). No credentials or external services.
+export function popupFixtureHtml(path,{openerOrigin,authorizationOrigin=openerOrigin}){
+ if(path==='/s2-popups')return `<!doctype html><title>S2 popup opener</title><a href="/s2-child" target="_blank">Ordinary tab</a><a href="/s2-child" target="m12-named">Named popup</a><button onclick="window.s2OpenOAuth()">OAuth login</button><p id="oauth-result">not logged in</p><script>window.oauthResult=null;addEventListener('message',e=>{if(e.origin===${JSON.stringify(authorizationOrigin)}&&e.data?.type==='s2-oauth'){window.oauthResult=e.data.account;document.getElementById('oauth-result').textContent=e.data.account;}});window.s2OpenOAuth=()=>window.open(${JSON.stringify(authorizationOrigin+'/s2-oauth')},'m12-oauth','width=480,height=360');window.s2Burst=()=>{const opened=Array.from({length:20},(_,i)=>window.open('/s2-child?i='+i,'_blank'));return{attempted:20,opened:opened.filter(Boolean).length};};</script>`;
+ if(path==='/s2-oauth')return `<!doctype html><title>S2 OAuth fixture</title><script>window.s2Errors=[];addEventListener('error',e=>s2Errors.push(e.message));window.s2Authorize=()=>{window.opener.postMessage({type:'s2-oauth',account:document.getElementById('account').value},${JSON.stringify(openerOrigin)});window.close();};</script><input id="account" aria-label="Account"><button onclick="window.s2Authorize()">Authorize</button>`;
+ if(path==='/s2-child')return '<title>S2 popup child</title><h1>Child page</h1>';
+ return null;
+}

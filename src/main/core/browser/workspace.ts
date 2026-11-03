@@ -24,11 +24,15 @@ export class BrowserWorkspace {
   private shuttingDown=false;
   private placementVersion=0;
   private readonly finds=new Map<string,{requestId:number;active:number;total:number}>();
+  private readonly agentActive=new Map<string,string>();
   private reconciling?:Promise<void>;
   constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
-      else if(!this.shuttingDown&&event.page.kind==='tab'&&!this.closingTabs.has(event.page.id)){
+      else if(!this.shuttingDown){
+        const id=event.page.id;this.runtime.delete(id);this.finds.delete(id);this.navigations.delete(id);this.cancelRecovery(id);
+        if(this.agentActive.get(event.page.taskId)===id)this.agentActive.delete(event.page.taskId);
+        if(event.page.kind!=='tab'||this.closingTabs.has(id))return;
         const state=this.tasks.get(event.page.taskId);if(state){state.tabs=state.tabs.filter(t=>t.id!==event.page.id);if(state.activeId===event.page.id)state.activeId=state.tabs.at(-1)?.id??null;this.save(event.page.taskId);}
       }
     });
@@ -63,7 +67,17 @@ export class BrowserWorkspace {
   }
   select(taskId:string,id:string|null):BrowserWorkspaceState{
     const state=this.load(taskId);if(id&&!state.tabs.some(t=>t.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
-    state.activeId=id;if(id&&this.options.pages.list(taskId).some(p=>p.id===id))this.options.pages.activate(taskId,id);this.save(taskId);return this.snapshot(taskId);
+    state.activeId=id;if(id){this.agentActive.set(taskId,id);if(this.options.pages.list(taskId).some(p=>p.id===id))this.options.pages.activate(taskId,id);}this.save(taskId);return this.snapshot(taskId);
+  }
+  /** Agent activity can move while the user's file/page view remains unchanged. */
+  commandTarget(taskId:string,id:string,focus=false):void{
+    const state=this.load(taskId),live=this.options.pages.list(taskId),page=live.find(page=>page.id===id);
+    if(!state.tabs.some(tab=>tab.id===id)&&!page)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
+    const previous=this.agentActive.get(taskId)??state.activeId;
+    if(previous!==id){live.find(page=>page.id===previous)?.references.invalidate();page?.references.invalidate();}
+    this.agentActive.set(taskId,id);if(page)this.options.pages.activate(taskId,id);
+    if(focus){if(page?.kind==='popup')page.popupWindow?.show();else{this.select(taskId,id);this.options.shortcut?.(taskId,'show');}}
+    this.changed(taskId);
   }
   private ensure(taskId:string,id:string):Promise<BrowserPage>{
     const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live)return Promise.resolve(live);
@@ -74,14 +88,15 @@ export class BrowserWorkspace {
   }
   /** Explicit Agent use of a startup tab initializes its engine lazily too. */
   async target(taskId:string,id?:string):Promise<BrowserPage>{
-    const state=this.load(taskId),target=id??state.activeId;
+    const state=this.load(taskId),target=id??this.agentActive.get(taskId)??state.activeId;
     if(target)return this.ensure(taskId,target);
     const live=this.options.pages.list(taskId);if(live.length)return this.options.pages.get(taskId);
     const first=state.tabs[0];if(first)return this.ensure(taskId,first.id);
     throw new BrowserError('BROWSER_NO_TAB','本任务没有网页标签');
   }
   list(taskId:string){
-    const state=this.load(taskId);return[...state.tabs.map(t=>({pageId:t.id,browserPageId:t.id,title:t.title,url:t.url,profileId:t.profileId,kind:'tab' as const})),...this.options.pages.list(taskId).filter(p=>p.kind==='popup').map(p=>({pageId:p.id,browserPageId:p.id,title:p.view.webContents.getTitle(),url:p.view.webContents.getURL(),profileId:p.profileId,kind:'popup' as const,openerPageId:p.openerPageId}))];
+    const state=this.load(taskId),pages=[...state.tabs.map(t=>({pageId:t.id,browserPageId:t.id,title:t.title,url:t.url,profileId:t.profileId,kind:'tab' as const})),...this.options.pages.list(taskId).filter(p=>p.kind==='popup').map(p=>({pageId:p.id,browserPageId:p.id,title:p.contents.getTitle(),url:p.contents.getURL(),profileId:p.profileId,kind:'popup' as const,openerPageId:p.openerPageId}))],active=this.agentActive.get(taskId)??state.activeId??pages[0]?.pageId;
+    return pages.map((page,index)=>({...page,index,active:page.pageId===active}));
   }
   async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine='bing'):Promise<BrowserWorkspaceState>{
     const url=normalizeBrowserNavigationUrl(address,engine);if(url===null){this.notices.set(taskId,'请输入有效的 http(s) 或 localhost 地址');this.changed(taskId);return this.snapshot(taskId);}
@@ -97,7 +112,7 @@ export class BrowserWorkspace {
     finally{if(this.navigations.get(page.id)===request)this.navigations.delete(page.id);}
   }
   async action(taskId:string,id:string,action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'):Promise<void>{
-    const page=await this.target(taskId,id),wc=page.view.webContents;
+    const page=await this.target(taskId,id),wc=page.contents;
     if(action==='focus'){wc.focus();return;}if(action==='stop'){const request=this.navigations.get(id);if(request)request.stopped=true;wc.stop();this.cancelRecovery(id);return;}
     const failure=this.runtime.get(id)?.failure;
     if(failure&&(action==='reload'||action==='hard-reload')){await this.loadUrl(page,failure.url);return;}
@@ -112,14 +127,14 @@ export class BrowserWorkspace {
     const page=await this.ensure(taskId,id);if(version!==this.placementVersion)return;await this.options.pages.placement(taskId,page.id,rect);
   }
   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
-    this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.view.webContents;
+    this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.contents;
     if(!text){wc.stopFindInPage('clearSelection');this.finds.delete(id);this.changed(taskId);return;}
     const requestId=wc.findInPage(text,{forward,findNext:next});this.finds.set(id,{requestId,active:0,total:0});
   }
-  async close(taskId:string,id:string):Promise<BrowserWorkspaceState>{
+  async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return this.snapshot(taskId);
     this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending;
-    this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id);}finally{this.closingTabs.delete(id);}
+    this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
     state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);return this.snapshot(taskId);
   }
   reopen(taskId:string):BrowserWorkspaceState{const state=this.load(taskId),old=state.closed.pop();if(old){const tab={...old,id:randomUUID()};state.tabs.push(tab);state.activeId=tab.id;this.save(taskId);}return this.snapshot(taskId);}
@@ -130,7 +145,7 @@ export class BrowserWorkspace {
     const timer=setTimeout(()=>{this.recovering.delete(page.id);if(!page.closed&&!this.shuttingDown)void this.loadUrl(page,failure.url);},failure.recovery==='poll'?2000:5000);timer.unref();this.recovering.set(page.id,timer);
   }
   private attached(page:BrowserPage){
-    const state=this.load(page.taskId),wc=page.view.webContents;
+    const state=this.load(page.taskId),wc=page.contents;
     if(page.kind==='tab'&&!state.tabs.some(t=>t.id===page.id)){state.tabs.push({id:page.id,url:wc.getURL()||BROWSER_BLANK_URL,title:wc.getTitle()||'新标签页',favicon:null,profileId:page.profileId});if(page.openerPageId)state.activeId=page.id;this.save(page.taskId);}
     const runtime=idle();this.runtime.set(page.id,runtime);
     const update=()=>{if(page.closed||wc.isDestroyed()||this.shuttingDown)return;runtime.loading=wc.isLoading();runtime.canGoBack=wc.navigationHistory.canGoBack();runtime.canGoForward=wc.navigationHistory.canGoForward();this.changed(page.taskId);};

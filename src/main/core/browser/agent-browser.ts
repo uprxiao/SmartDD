@@ -43,7 +43,10 @@ export class BrowserHelper {
   private environment(): NodeJS.ProcessEnv {
     return { PATH: process.env.PATH, HOME: this.options.home, TMPDIR: join(this.options.home, 'tmp'),
       XDG_CONFIG_HOME: join(this.options.home, 'config'), XDG_CACHE_HOME: join(this.options.home, 'cache'),
-      AGENT_BROWSER_SOCKET_DIR: this.socketDirectory(), AGENT_BROWSER_IDLE_TIMEOUT_MS: '600000' };
+      AGENT_BROWSER_SOCKET_DIR: this.socketDirectory(), AGENT_BROWSER_IDLE_TIMEOUT_MS: '600000',
+      // The explicit dialog accept/dismiss contract includes alerts. The pinned
+      // kernel otherwise consumes alert/beforeunload before the caller can act.
+      AGENT_BROWSER_NO_AUTO_DIALOG: '1' };
   }
   private async checkSession(): Promise<boolean> {
     await this.closing;
@@ -122,7 +125,10 @@ export class BrowserHelper {
     if (!Array.isArray(records) || records.length !== 1 || records[0].success !== true) {
       // execFile's error.message includes argv, including the private CDP capability URL.
       const message = String(records?.[0]?.error ?? 'agent-browser 执行失败，未返回有效结果').replaceAll(this.options.endpoint, '<page-cdp>');
-      const error = helperError(message);
+      // A semantic locator has no snapshot reference. Preserve its real failure
+      // text instead of turning a missing match into an opaque stale-ref error.
+      const error = command[0]==='find'&&!/timed out|timeout/i.test(message)
+        ? new BrowserError('BROWSER_ERROR',message.slice(0,2048)) : helperError(message);
       if (error.code === 'BROWSER_TIMEOUT') return this.timeoutFailure(timeout, error.message);
       if (/failed to read|failed to send|invalid response:/i.test(message)) await this.close();
       throw error;

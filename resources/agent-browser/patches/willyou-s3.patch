@@ -1,0 +1,275 @@
+--- a/cli/Cargo.lock
++++ b/cli/Cargo.lock
+@@ -45,7 +45,7 @@
+ 
+ [[package]]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.2"
+ dependencies = [
+  "aes-gcm",
+  "async-trait",
+--- a/cli/Cargo.toml
++++ b/cli/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.2"
+ edition = "2021"
+ description = "Fast browser automation CLI for AI agents"
+ license = "Apache-2.0"
+--- a/cli/src/commands.rs
++++ b/cli/src/commands.rs
+@@ -2246,7 +2246,13 @@
+             let mut fill_parts: Vec<&str> = Vec::new();
+ 
+             if rest.len() > 3 {
++                // WillYou: the first payload is literal, including "--name" or
++                // "--exact". Remaining tokens are locator options.
+                 let mut i = 3;
++                if matches!(*subaction, "fill" | "type") {
++                    fill_parts.push(rest[3]);
++                    i = 4;
++                }
+                 while i < rest.len() {
+                     match rest[i] {
+                         "--exact" => {
+@@ -2286,9 +2292,11 @@
+                     }
+                     Ok(cmd)
+                 }
+-                "text" => Ok(
+-                    json!({ "id": id, "action": "getbytext", "text": value, "subaction": subaction, "exact": exact }),
+-                ),
++                "text" => {
++                    let mut cmd = json!({ "id": id, "action": "getbytext", "text": value, "subaction": subaction, "exact": exact });
++                    if let Some(v) = fill_value { cmd["value"] = json!(v); }
++                    Ok(cmd)
++                },
+                 "label" => {
+                     let mut cmd = json!({ "id": id, "action": "getbylabel", "label": value, "subaction": subaction, "exact": exact });
+                     if let Some(v) = fill_value {
+@@ -2306,9 +2314,11 @@
+                 "alt" => Ok(
+                     json!({ "id": id, "action": "getbyalttext", "text": value, "subaction": subaction, "exact": exact }),
+                 ),
+-                "title" => Ok(
+-                    json!({ "id": id, "action": "getbytitle", "text": value, "subaction": subaction, "exact": exact }),
+-                ),
++                "title" => {
++                    let mut cmd = json!({ "id": id, "action": "getbytitle", "text": value, "subaction": subaction, "exact": exact });
++                    if let Some(v) = fill_value { cmd["value"] = json!(v); }
++                    Ok(cmd)
++                },
+                 "testid" => {
+                     let mut cmd = json!({ "id": id, "action": "getbytestid", "testId": value, "subaction": subaction });
+                     if let Some(v) = fill_value {
+@@ -4299,6 +4309,18 @@
+         assert_eq!(cmd["value"], "hello");
+     }
+ 
++    #[test]
++    fn test_willyou_semantic_find_keeps_literal_payload() {
++        for locator in ["role", "text", "label", "placeholder", "title", "testid", "first", "last"] {
++            for payload in ["--name", "--exact", "", "quoted \"value\"\n中文"] {
++                let input: Vec<String> = ["find", locator, "target", "fill", payload, "--name", "Actual name", "--exact"].iter().map(|value| value.to_string()).collect();
++                let cmd = parse_command(&input, &default_flags()).unwrap();
++                assert_eq!(cmd["value"], payload, "locator {locator}");
++                assert_eq!(cmd["subaction"], "fill");
++            }
++        }
++    }
++
+     // === Download Tests ===
+ 
+     #[test]
+--- a/cli/src/connection.rs
++++ b/cli/src/connection.rs
+@@ -776,35 +776,10 @@
+     }
+ }
+ 
++// WillYou S1: a lost reply is not proof that a browser write did not run.
++// Exactly one IPC send, including EOF/EAGAIN; recovery belongs to the host.
+ pub fn send_command(cmd: Value, session: &str) -> Result<Response, String> {
+-    // Retry logic for transient errors (EAGAIN/EWOULDBLOCK/connection issues)
+-    const MAX_RETRIES: u32 = 5;
+-    const RETRY_DELAY_MS: u64 = 200;
+-
+-    let mut last_error = String::new();
+-
+-    for attempt in 0..MAX_RETRIES {
+-        if attempt > 0 {
+-            thread::sleep(Duration::from_millis(RETRY_DELAY_MS * (attempt as u64)));
+-        }
+-
+-        match send_command_once(&cmd, session) {
+-            Ok(response) => return Ok(response),
+-            Err(e) => {
+-                if is_transient_error(&e) {
+-                    last_error = e;
+-                    continue;
+-                }
+-                // Non-transient error, fail immediately
+-                return Err(e);
+-            }
+-        }
+-    }
+-
+-    Err(format!(
+-        "{} (after {} retries - daemon may be busy or unresponsive)",
+-        last_error, MAX_RETRIES
+-    ))
++    send_command_once(&cmd, session)
+ }
+ 
+ /// Check if an error is transient and worth retrying against the SAME daemon.
+--- a/cli/src/main.rs
++++ b/cli/src/main.rs
+@@ -25,7 +25,7 @@
+ 
+ use commands::{gen_id, parse_command, ParseError};
+ use connection::{
+-    cleanup_stale_files, daemon_unreachable, ensure_daemon, get_socket_dir, is_pid_alive,
++    cleanup_stale_files, ensure_daemon, get_socket_dir, is_pid_alive,
+     send_command, walk_daemons, DaemonOptions,
+ };
+ use flags::{clean_args, parse_flags, Flags};
+@@ -1302,23 +1302,14 @@
+     }
+ }
+ 
+-/// send_command plus the daemon-shutdown-race recovery: ensure_daemon no
+-/// longer pays a settle-sleep on every invocation, so a daemon that exited
+-/// right after its liveness check surfaces as an unreachable socket on the
+-/// request itself. Respawn once and retry before reporting failure.
++// WillYou S1: never respawn and replay a submitted command. The host can
++// rebuild the session with a separate read after reporting an unknown write.
+ fn send_command_with_respawn(
+     cmd: serde_json::Value,
+     session: &str,
+-    daemon_opts: &DaemonOptions,
++    _daemon_opts: &DaemonOptions,
+ ) -> Result<connection::Response, String> {
+-    let first_attempt = send_command(cmd.clone(), session);
+-    match first_attempt {
+-        Err(ref e) if daemon_unreachable(e) => match ensure_daemon(session, daemon_opts) {
+-            Ok(_) => send_command(cmd, session),
+-            Err(_) => first_attempt,
+-        },
+-        other => other,
+-    }
++    send_command(cmd, session)
+ }
+ 
+ fn run_batch(
+--- a/cli/src/native/actions.rs
++++ b/cli/src/native/actions.rs
+@@ -5819,6 +5819,21 @@
+     let session_id = mgr.active_session_id()?.to_string();
+ 
+     match subaction {
++        // WillYou S3: every semantic locator exposes the documented seven
++        // actions through the same implementation (including nth/first/last).
++        "type" => {
++            let value = cmd.get("value").and_then(|v| v.as_str()).ok_or("Missing 'value' for type subaction")?;
++            interaction::type_text(&mgr.client, &session_id, &state.ref_map, selector, value, false, None, &state.iframe_sessions).await?;
++            Ok(json!({ "typed": selector }))
++        }
++        "focus" => {
++            interaction::focus(&mgr.client, &session_id, &state.ref_map, selector, &state.iframe_sessions).await?;
++            Ok(json!({ "focused": selector }))
++        }
++        "uncheck" => {
++            interaction::uncheck(&mgr.client, &session_id, &state.ref_map, selector, &state.iframe_sessions).await?;
++            Ok(json!({ "unchecked": selector }))
++        }
+         "click" => {
+             let result = interaction::click(
+                 &mgr.client,
+@@ -5913,13 +5928,12 @@
+         .map(|n| {
+             if exact {
+                 format!(
+-                    "el.getAttribute('aria-label') === {} || el.textContent.trim() === {}",
+-                    serde_json::to_string(n).unwrap_or_default(),
++                    "accessibleName(el) === {}",
+                     serde_json::to_string(n).unwrap_or_default()
+                 )
+             } else {
+                 format!(
+-                    "(el.getAttribute('aria-label') || '').includes({n}) || el.textContent.includes({n})",
++                    "accessibleName(el).includes({n})",
+                     n = serde_json::to_string(n).unwrap_or_default()
+                 )
+             }
+@@ -5928,7 +5942,24 @@
+ 
+     let js = format!(
+         r#"(() => {{
+-            const els = document.querySelectorAll('[role="{role}"], {role}');
++            const role = {role_json};
++            const implicit = {{
++                button:'button,input[type="button"],input[type="submit"],input[type="reset"]',
++                textbox:'textarea,input:not([type]),input[type="text"],input[type="email"],input[type="tel"],input[type="url"],input[type="password"],[contenteditable="true"]',
++                searchbox:'input[type="search"]', checkbox:'input[type="checkbox"]', radio:'input[type="radio"]',
++                combobox:'select:not([multiple])', listbox:'select[multiple]', option:'option', link:'a[href],area[href]',
++                img:'img', heading:'h1,h2,h3,h4,h5,h6', slider:'input[type="range"]', spinbutton:'input[type="number"]',
++                list:'ul,ol', listitem:'li', table:'table', row:'tr', cell:'td', columnheader:'th', progressbar:'progress'
++            }};
++            const selector = '[role="' + CSS.escape(role) + '"]' + (implicit[role] ? ', ' + implicit[role] : '');
++            const accessibleName = el => {{
++                const aria = el.getAttribute('aria-label'); if (aria !== null) return aria;
++                const ids = el.getAttribute('aria-labelledby');
++                if (ids) return ids.split(/\s+/).map(id => document.getElementById(id)?.textContent || '').join(' ').trim();
++                const labels = Array.from(el.labels || []).map(label => label.textContent.trim()).join(' ');
++                return labels || el.getAttribute('alt') || el.getAttribute('title') || el.textContent.trim();
++            }};
++            const els = document.querySelectorAll(selector);
+             for (const el of els) {{
+                 if ({name_match}) {{
+                     el.setAttribute('data-agent-browser-located', 'true');
+@@ -5937,7 +5968,7 @@
+             }}
+             return false;
+         }})()"#,
+-        role = role,
++        role_json = serde_json::to_string(role).unwrap_or_default(),
+         name_match = name_match,
+     );
+ 
+--- a/cli/src/native/browser.rs
++++ b/cli/src/native/browser.rs
+@@ -432,7 +432,7 @@
+     }
+ 
+     pub async fn connect_cdp(url: &str) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, None).await
++        Self::connect_cdp_inner(url, true, None).await
+     }
+ 
+     /// Connect to a provider CDP proxy where the WebSocket IS the page session.
+@@ -445,7 +445,7 @@
+         url: &str,
+         headers: Option<Vec<(String, String)>>,
+     ) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, headers).await
++        Self::connect_cdp_inner(url, true, headers).await
+     }
+ 
+     async fn connect_cdp_inner(
+@@ -639,6 +639,13 @@
+         self.client
+             .send_command_no_params("Network.enable", None)
+             .await?;
++        // WillYou only exposes this page and its own iframe sessions. Subscribe
++        // without browser discovery, including frames attached before connect.
++        self.client.send_command(
++            "Target.setAutoAttach",
++            Some(json!({"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true})),
++            None,
++        ).await?;
+         Ok(())
+     }
+ 

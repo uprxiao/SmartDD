@@ -1,0 +1,6 @@
+export function matrix(port){
+const commands=['connect '+port,'batch "open x" "close --all"','close --all','tab new','session list','stream enable','auth save x --password p','record start a.webm','open http://x','screenshot /tmp/a.png','network har start','chat hi','install','doctor','profiles'];
+const rows=commands.map((command,i)=>({id:'command-'+String(i+1).padStart(2,'0'),command,contract:true}));
+for(const [flag,value]of [['--cdp','1'],['--session','x'],['--ignore-https-errors',''],['--init-script','a.js'],['--extension','x'],['--proxy','x'],['--allow-file-access',''],['--provider','x']])for(const position of ['prefix','suffix']){const option=flag+(value?' '+value:'');rows.push({id:'global-'+flag.slice(2)+'-'+position,command:position==='prefix'?option+' get title':'get title '+option,contract:true})}
+for(const position of ['prefix','suffix']){const option='--cdp '+port;rows.push({id:'target-cdp-'+position,command:position==='prefix'?option+' get title':'get title '+option,contract:false,reason:'Real isolated target port instead of numeric1'})}
+return {negative:rows,positive:[{id:'get-title',command:'get title',expected:['get','title']},{id:'press-enter',command:'press Enter',expected:['press','Enter']},{id:'network-api',command:'network requests --filter api',expected:['network','requests','--filter','api']}]};}

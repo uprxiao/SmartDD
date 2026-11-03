@@ -11,9 +11,13 @@ const require=createRequire(resolve('package.json')), result={at:new Date().toIS
 let host, exited, logs='', seq=0;
 const persist=()=>writeFile(join(output,'live.json'),JSON.stringify(result,null,2));
 const call=command=>new Promise((ok,no)=>{
-  const id=++seq,timer=setTimeout(()=>{host.off('message',receive);no(Error('fixture command timeout: '+command.command));},110000);
-  const receive=message=>{if(message.id!==id)return;clearTimeout(timer);host.off('message',receive);message.error?no(Error(message.error)):ok(message.value);};
-  host.on('message',receive);host.send({...command,id});
+  if(!host?.connected||host.exitCode!==null||host.signalCode!==null){no(Error('Owned service host is already disconnected'));return;}
+  const id=++seq;let settled=false;
+  const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);host.off('message',receive);host.off('exit',onExit);host.off('error',onError);error?no(error):ok(value);};
+  const receive=message=>{if(message.id===id)finish(message.error?Error(message.error):null,message.value);};
+  const onExit=(code,signal)=>finish(Error('Owned service host exited during '+command.command+': '+code+'/'+signal));
+  const onError=error=>finish(error),timer=setTimeout(()=>finish(Error('fixture command timeout: '+command.command)),110000);
+  host.on('message',receive);host.once('exit',onExit);host.once('error',onError);host.send({...command,id},error=>{if(error)finish(error);});
 });
 const cli=async(args,input)=>{
   const started=performance.now(),raw=await call({command:'cli',args,input});
@@ -36,7 +40,7 @@ try {
   result.baseline={hostSha256:createHash('sha256').update(compiled).digest('hex'),bundleIndex:JSON.parse(await readFile(join(resources,'capability-bundles/index.json'),'utf8')).indexHash};
   const env={PATH:process.env.PATH,HOME:join(output,'home'),TMPDIR:output,M12_RESOURCE_ROOT:resources};
   host=spawn(require('electron'),[join(output,'build/host.cjs'),'--user-data-dir='+join(output,'userData')],{env,stdio:['ignore','pipe','pipe','ipc']});
-  result.hostPid=host.pid;host.stdout.on('data',bytes=>logs+=bytes);host.stderr.on('data',bytes=>logs+=bytes);
+  result.hostPid=host.pid;host.on('error',error=>{result.hostErrors??=[];result.hostErrors.push(String(error));});host.on('message',message=>{if(message.fatal){result.hostFatals??=[];result.hostFatals.push(message.fatal);void persist();}});host.stdout.on('data',bytes=>logs+=bytes);host.stderr.on('data',bytes=>logs+=bytes);
   exited=new Promise(ok=>host.once('exit',(code,signal)=>ok({code,signal})));
   result.ready=await new Promise((ok,no)=>{const timer=setTimeout(()=>no(Error('service host ready timeout')),30000);host.on('message',message=>{if(message.ready||message.fatal){clearTimeout(timer);message.fatal?no(Error(message.fatal)):ok(message);}});host.once('exit',()=>{clearTimeout(timer);no(Error('service host early exit'));});});await persist();
   await cli(['--list']);
@@ -65,7 +69,7 @@ try {
 } catch(error) { result.failure=String(error.stack??error); }
 finally {
   if(host) {
-    if(result.ready)try{result.cleanup=await call({command:'close'});}catch(error){result.cleanupError=String(error);host.kill('SIGTERM');}
+    if(result.ready&&host.connected&&host.exitCode===null&&host.signalCode===null)try{result.cleanup=await call({command:'close'});}catch(error){result.cleanupError=String(error);host.kill('SIGTERM');}
     else host.kill('SIGTERM');
     const hardStop=setTimeout(()=>host.kill('SIGKILL'),5000);result.hostExit=await exited;clearTimeout(hardStop);
   }

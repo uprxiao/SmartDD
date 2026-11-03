@@ -193,7 +193,7 @@
     "technicalDesign": "V1.1 §11",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P002",
+    "currentGroup": "M12-P007",
     "groups": [
       {
         "id": "M12-P001",
@@ -228,7 +228,7 @@
         "id": "M12-P002",
         "name": "S2界面与导航",
         "owner": "/root",
-        "status": "implementation starting; not yet tested",
+        "status": "S2 implemented; available A/I/U batches executed; T004 delegated, S4/settings/native-system dependencies retained",
         "dependsOn": [
           "M12-P001"
         ],
@@ -398,6 +398,53 @@
           "build": "not allocated",
           "nativeUi": "not allocated"
         }
+      },
+      {
+        "id": "M12-P003",
+        "name": "S2 no-project/deleted-project T004",
+        "owner": "/root/s2_t004_test",
+        "status": "ready; resource lease granted, not yet counted as executed",
+        "dependsOn": [
+          "M12-P002 package006"
+        ],
+        "criteriaSource": "测试用例.md#M12-T004",
+        "cases": [
+          "M12-T004"
+        ],
+        "layers": [
+          "A",
+          "R"
+        ],
+        "resources": [
+          "nativeUi",
+          "nativePTY"
+        ],
+        "baseline": "/private/tmp/willyou-m12-p003-baseline-001/baseline.json",
+        "privateRoot": "/private/tmp/willyou-m12-t004-executor-001"
+      },
+      {
+        "id": "M12-P007",
+        "cases": [
+          "M12-T065"
+        ],
+        "supplements": [
+          "M12-T030 role --name/--exact native parser"
+        ],
+        "layers": [
+          "I"
+        ],
+        "owner": "/root/s2_t004_test",
+        "status": "preparing frozen host; native lease granted",
+        "baseline": "/private/tmp/willyou-m12-p007-baseline-001/baseline.json",
+        "supplement": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-nth.json",
+        "supplementSha256": "25c3cf2b08c5007bf1d6b0718cf4662a376a9df4c43abccea828da7aaf5f6c3a",
+        "privateRoot": "/private/tmp/willyou-m12-t065-executor-001",
+        "pids": [],
+        "ports": [],
+        "next": "hash/preflight then real native locator matrix",
+        "criteriaSource": "测试用例.md T065 and 技研/E3_待核实事实_20261103.md",
+        "criteria": "10 locators and 7 actions, all semantically valid combinations, iframe and nth focus known limitations; independent actual page event/state verification; no retry of unknown writes",
+        "applicability": "64 effective combinations, six nonsensical element/action pairs explicitly excluded (four alt/img mutations and two placeholder/text-input checkbox actions); this does not omit a valid requirement"
       }
     ],
     "autonomy": {
@@ -430,6 +477,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-03T16:13:21.862545+00:00"
+    "updatedAt": "2026-11-03T18:32:32.829713+00:00",
+    "independentNext": "P005 T036 timed waits on frozen I source; coordinator fixes S3 close deadlock and prepares remaining tests without native/build contention"
   }
 }

@@ -1,5 +1,5 @@
 import {execFileSync,spawn,type ChildProcess} from 'node:child_process';
-import {cpSync,mkdtempSync,readFileSync,realpathSync,rmSync} from 'node:fs';
+import {cpSync,mkdtempSync,readFileSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {createServer} from 'node:net';
 import {afterAll,afterEach,beforeAll,beforeEach,describe,expect,it,vi} from 'vitest';
@@ -8,10 +8,11 @@ import {MacUnixPeerIdentityReader} from '../unix-peer-identity';
 import {digest} from '../manifest';
 import {cliFixture} from './cli-fixture';
 import {ApplicationError} from '@shared/applications';
+import * as pty from 'node-pty';
 
 let directory:string,binary:string,f:Awaited<ReturnType<typeof cliFixture>>,gateway:ApplicationCliGateway,environment:Record<string,string>;
 const children=new Map<ChildProcess,Promise<{code:number|null;signal:string|null;stdout:string;stderr:string;timedOut:boolean}>>();
-function launch(args:string[],options:{path?:string;env?:Record<string,string>;input?:string}={}){
+function launch(args:string[],options:{path?:string;env?:Record<string,string>;input?:string|Buffer}={}){
  const child=spawn(options.path??binary,args,{env:options.env??environment,stdio:[options.input===undefined?'ignore':'pipe','pipe','pipe']});if(options.input!==undefined)child.stdin!.end(options.input);let stdout='',stderr='',timedOut=false;const timer=setTimeout(()=>{timedOut=true;child.kill('SIGKILL');},10000);
  const done=new Promise<{code:number|null;signal:string|null;stdout:string;stderr:string;timedOut:boolean}>((ok,fail)=>{child.stdout?.on('data',chunk=>{stdout+=chunk;if(Buffer.byteLength(stdout)>2*1024*1024)child.kill('SIGKILL');});child.stderr?.on('data',chunk=>{stderr+=chunk;if(Buffer.byteLength(stderr)>65536)child.kill('SIGKILL');});child.once('error',fail);child.once('close',(code,signal)=>{clearTimeout(timer);children.delete(child);ok({code,signal,stdout,stderr,timedOut});});});children.set(child,done);return{child,done};
 }
@@ -45,6 +46,24 @@ describe('M11 native standalone CLI with real kernel peer identification (contro
  });
  it('rejects an actual copied native executable despite a valid token and correct ancestor',async()=>{
   const copy=join(directory,'unmanaged-copy');cpSync(binary,copy);const result=await launch(['--list'],{path:copy}).done;expect(result.code).toBe(2);expect(JSON.parse(result.stdout)).toMatchObject({error:{code:'EXECUTABLE_MISMATCH'}});expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:0});
+ });
+ it('removes exactly one terminal newline, rejects invalid UTF-8, and refuses stdin from a real TTY',async()=>{
+  const execute=vi.spyOn(f.applications.data,'execute').mockResolvedValue({items:[],nextCursor:null} as never);
+  const piped=await launch(['mail','draft','list','--stdin','cursor'],{input:'abc\n\n'}).done;
+  expect(piped.code).toBe(0);expect(execute.mock.calls[0][2]).toMatchObject({cursor:'abc\n'});
+  const invalid=await launch(['mail','draft','list','--stdin','cursor'],{input:Buffer.from([255])}).done;
+  expect(invalid.code).toBe(2);expect(JSON.parse(invalid.stdout).error.code).toBe('INVALID_INPUT');expect(execute).toHaveBeenCalledTimes(1);
+  const terminal=pty.spawn(binary,['mail','draft','list','--stdin','cursor'],{name:'xterm-256color',cols:100,rows:30,cwd:directory,env:environment});
+  let output='';terminal.onData(data=>output+=data);
+  const actual=await new Promise<{exitCode:number;signal?:number}>((resolve,reject)=>{
+    const timer=setTimeout(()=>{terminal.kill();reject(Error('native stdin TTY did not reject within 5s'));},5000);
+    terminal.onExit(event=>{clearTimeout(timer);resolve(event);});
+  });
+  if(process.env.WILLYOU_NATIVE_TTY_EVIDENCE)writeFileSync(process.env.WILLYOU_NATIVE_TTY_EVIDENCE,JSON.stringify({at:new Date().toISOString(),pid:terminal.pid,...actual,output,cliSha256:digest(readFileSync(binary))},null,2)+'\n');
+  const lines=output.trim().split(/\r?\n/);
+  expect(actual.exitCode).toBe(2);expect(lines).toHaveLength(2);
+  expect(JSON.parse(lines[0]).error).toMatchObject({code:'INVALID_INPUT',message:'请通过管道提供标准输入',attemptCount:0});
+  expect(lines[1]).toBe('willyou-app: INVALID_INPUT');
  });
  it('classifies a disconnected submitted write as unknown, exits 5 without automatic retry and reports the sent request id (M12-D03)',async()=>{
   const path=join(directory,'unknown.sock');let calls=0,connections=0,callId='';const sockets=new Set<import('node:net').Socket>();const server=createServer(socket=>{connections++;sockets.add(socket);socket.on('close',()=>sockets.delete(socket));socket.on('error',()=>{});let input='';socket.on('data',chunk=>{input+=chunk;let end;while((end=input.indexOf('\n'))>=0){const req=JSON.parse(input.slice(0,end));input=input.slice(end+1);if(req.method==='capabilities/list')socket.write(JSON.stringify({schema:1,id:req.id,status:'ok',value:{capabilities:[{id:'sample-kv.value.put',contractMajor:2,command:['sample-kv','value','put'],annotations:{readOnlyHint:false}}],unavailable:[]}})+'\n');else{calls++;callId=req.id;socket.destroy();}}});});await new Promise<void>(ok=>server.listen(path,ok));

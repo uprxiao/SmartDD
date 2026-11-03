@@ -7,6 +7,8 @@ import {events,rpc} from '@renderer/lib/ipc';
 import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';
 import {browserWorkspaceFor,openNewBrowserTab,type BrowserWorkspaceStore} from './store';
 import './workspace.css';
+import {navigation} from '@renderer/core/navigation';
+import {tasksStore} from '@renderer/core/tasks-store';
 
 export function useBrowserShortcuts(){
   useEffect(()=>{
@@ -18,7 +20,8 @@ export function useBrowserShortcuts(){
       const header=document.querySelector<HTMLButtonElement>('[data-testid=task-new-browser]');
       if(header){event.preventDefault();header.click();}else if(taskId){event.preventDefault();openNewBrowserTab(taskId);}
     };
-    document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);
+    const off=events.on(browserShortcutEvent,event=>{if(event.action==='show'&&navigation.currentViewId==='task'&&tasksStore.current?.id===event.taskId&&!navigation.filePanelOpen)navigation.toggleFilePanel();});
+    document.addEventListener('keydown',key);return()=>{document.removeEventListener('keydown',key);off();};
   },[]);
 }
 export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=>void}){
@@ -35,7 +38,7 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
   const run=(work:()=>Promise<unknown>)=>void store.run(work);
   const action=(value:'reload'|'hard-reload'|'stop'|'back'|'forward')=>run(()=>rpc.browser.action({taskId,tabId,action:value}));
   const shortcut=(value:BrowserShortcut)=>{
-    if(value==='new')openNewBrowserTab(taskId);else if(value==='reopen')void store.reopen();else if(value==='close')void store.close(tabId);
+    if(value==='show')return;else if(value==='new')openNewBrowserTab(taskId);else if(value==='reopen')void store.reopen();else if(value==='close')void store.close(tabId);
     else if(value==='address'){void rpc.browser.focusChrome().then(()=>{input.current?.focus();input.current?.select();});}else if(value==='find')setFind(true);else action(value);
   };
   useEffect(()=>events.on(browserShortcutEvent,event=>{if(event.taskId===taskId)shortcut(event.action);}),[taskId,tabId]);

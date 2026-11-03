@@ -4,7 +4,7 @@ import { BROWSER_GUARD_SOURCE } from '../action-guard';
 
 declare global {
   var __wyBrowserGuard: {
-    arm(node:Node):boolean;
+    arm(node:Node,append?:boolean):boolean;
     disarm():{accepted:string[];blocked:string[];connected:boolean};
   };
 }
@@ -47,5 +47,29 @@ describe('S1 guard bootstrap before page listeners',()=>{
       expect(seen).toEqual([previous]);
       expect(guard.disarm()).toMatchObject({accepted:['change'],blocked:['change','change'],connected:false});
     }finally{guard.disarm();window.removeEventListener('change',onChange,true);document.body.replaceChildren();}
+  });
+  it('guards both drag endpoints and blocks the drop if either retained node is replaced',()=>{
+    const guard=globalThis.__wyBrowserGuard,source=document.createElement('div'),target=document.createElement('div');document.body.append(source,target);
+    const seen:EventTarget[]=[];const onDrop=(event:Event)=>seen.push(event.target!);window.addEventListener('drop',onDrop,true);
+    try{
+      guard.arm(source);guard.arm(target,true);
+      expect(source.dispatchEvent(new Event('dragstart',{bubbles:true,cancelable:true}))).toBe(true);
+      expect(target.dispatchEvent(new Event('drop',{bubbles:true,cancelable:true}))).toBe(true);
+      source.replaceWith(source.cloneNode());
+      expect(target.dispatchEvent(new Event('drop',{bubbles:true,cancelable:true}))).toBe(false);
+      expect(seen).toEqual([target]);expect(guard.disarm()).toMatchObject({connected:false,blocked:['drop']});
+    }finally{guard.disarm();window.removeEventListener('drop',onDrop,true);document.body.replaceChildren();}
+  });
+  it('permits a drag to cross intermediate nodes while only accepting a drop on the held destination',()=>{
+    const guard=globalThis.__wyBrowserGuard,source=document.createElement('div'),target=document.createElement('div'),middle=document.createElement('div');document.body.append(source,middle,target);
+    try{
+      guard.arm(source);guard.arm(target,true);
+      expect(middle.dispatchEvent(new Event('dragenter',{bubbles:true,cancelable:true}))).toBe(true);
+      expect(middle.dispatchEvent(new Event('dragleave',{bubbles:true,cancelable:true}))).toBe(true);
+      expect(source.dispatchEvent(new Event('drop',{bubbles:true,cancelable:true}))).toBe(false);
+      expect(target.dispatchEvent(new Event('drop',{bubbles:true,cancelable:true}))).toBe(true);
+      source.remove();expect(middle.dispatchEvent(new Event('dragenter',{bubbles:true,cancelable:true}))).toBe(false);
+      expect(guard.disarm().blocked).toEqual(['drop','dragenter']);
+    }finally{guard.disarm();document.body.replaceChildren();}
   });
 });

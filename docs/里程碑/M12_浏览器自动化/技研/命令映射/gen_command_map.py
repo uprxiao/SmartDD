@@ -1,6 +1,6 @@
-"""Generate the M12 80-command mapping table from Orca's CLI specs.
+"""Generate the M12 command map and runtime input contracts from pinned Orca specs.
 
-Usage: python3 -I gen_command_map.py <orca repo> <output.md>
+Usage: python3 -I gen_command_map.py <orca repo> <output.md> [runtime-output.json]
 Also writes, next to <output.md>: exec-allowlist.json and 命令用例对照.generated.md (review 2026-11-03 R02, R05, R14).
 The Orca source is read, never modified. Rules come from M12 需求 R0.6 (P1 mixed, P2/R02.11, P3/P4, O6, C5, K12, K13).
 """
@@ -9,9 +9,11 @@ import sys
 
 import json
 import os
+from pathlib import Path
 
 ORCA, OUT = sys.argv[1], sys.argv[2]
 HERE = os.path.dirname(os.path.abspath(OUT))
+RUNTIME_OUT = sys.argv[3] if len(sys.argv) > 3 else str(Path(__file__).resolve().parents[5] / 'src/shared/browser-commands.generated.json')
 
 GROUPS = {}
 text = open(f'{ORCA}/src/shared/orca-browser-cli-commands.ts', encoding='utf-8').read()
@@ -32,13 +34,13 @@ NOT_PAGE_TARGETED = {'open-url', 'tab list', 'tab current', 'tab create', 'tab p
 READ = {'snapshot', 'screenshot', 'full-screenshot', 'pdf', 'get', 'is', 'wait', 'tab list', 'tab show', 'tab current',
         'tab profile list', 'tab profile show', 'cookie get', 'intercept list', 'console', 'network', 'clipboard read',
         'storage local get', 'storage session get', 'browser identity get'}
-FILE_ALWAYS = {'screenshot', 'full-screenshot', 'pdf'}
+FILE_ALWAYS = {'screenshot', 'full-screenshot', 'pdf', 'capture stop'}
 FILE_OVERFLOW = {'snapshot', 'console', 'network', 'get', 'eval', 'cookie get', 'storage local get', 'storage session get',
                  'clipboard read', 'tab list'}
 TEXT_FLAGS = {'fill': ['value'], 'type': ['input'], 'inserttext': ['text'], 'clipboard write': ['text'],
               'dialog accept': ['text'], 'storage local set': ['value'], 'storage session set': ['value'],
               'cookie set': ['value'], 'set credentials': ['user', 'pass'], 'eval': ['expression'],
-              'find': ['value', 'text'], 'select': ['value'], 'wait': ['text', 'fn']}
+              'find': ['value', 'text', 'name'], 'select': ['value'], 'wait': ['text', 'fn']}
 SECRET_FLAGS = {'set credentials': ['pass']}
 NOTES = {
     'open-url': '**不适用（用户 2026-11-03 确认）**，不实现，调用返回未知命令。Orca 用于远程配对场景，在承载终端的那台桌面上打开网址；WillYou 是单机，等价操作为 `tab create --url`',
@@ -59,6 +61,7 @@ NOTES = {
     'tab profile delete': 'R05：项目默认 profile 不能删除；删除后用它的标签回到项目 profile',
     'tab profile create': 'C1：账号不同时为任务新建独立 profile；`--scope imported` 只建空 profile，导入 Cookie 只能由用户在界面完成（O11）',
     'snapshot': '引用由宿主分配并绑定节点身份，规则见需求 R03.2',
+    'find': 'R04.3：role 可配 --name 与 --exact；Orca 规格漏列这两个底层参数。nth的value为“零基索引 CSS选择器”（如“1 button”），action仍是动作、text仍是填写载荷，不借action槽传selector',
 }
 
 
@@ -85,7 +88,14 @@ def willyou_usage(key, usage):
             rest = ''.join(toks[i + 1:]).lstrip()
             if not rest.startswith('<') and not rest.startswith('"<'):
                 out[-1] = tok.replace(bare.group(1), bare.group(1) + ' true')
-    return (willyou(key) + ' ' + ' '.join(''.join(out).split())).strip()
+    rewritten = (willyou(key) + ' ' + ' '.join(''.join(out).split())).strip()
+    # withBrowserPageTarget adds this option at runtime; it is absent from most
+    # source usage literals. The generated manifest must expose that same target.
+    if key not in NOT_PAGE_TARGETED and '--page' not in rewritten:
+        rewritten += ' [--page <页面ID>]'
+    if key == 'find':
+        rewritten += ' [--name <名称>] [--exact true]'
+    return rewritten
 
 
 def native_parse(argv):
@@ -143,7 +153,7 @@ def check(key, usage):
 
 
 EXTRAS = [
-    ('新增', 'wait fn', 'willyou-app browser wait fn --fn <js> [--timeout <ms>] [--task <任务ID>]', '写（operation-receipt）', 'R0.10（review2 D02，E4 实测）：条件脚本能写页面且会被反复执行，所以从 `wait` 拆出为写命令；observe 授权下拒绝；不自动重试'),
+    ('新增', 'wait fn', 'willyou-app browser wait fn --fn <js> [--timeout <ms>] [--task <任务ID>] [--page <页面ID>]', '写（operation-receipt）', 'R0.10（review2 D02，E4 实测）：条件脚本能写页面且会被反复执行，所以从 `wait` 拆出为写命令；observe 授权下拒绝；不自动重试'),
     ('新增', 'browser access request', 'willyou-app browser access request --task <任务ID> --mode <observe|control>', '写（operation-receipt）', 'P4／R06.3：申请跨任务授权，宿主弹窗；申请本身不要求已有授权（review R03）'),
     ('新增', 'browser operation get', 'willyou-app browser operation get --request <requestId>', '读', 'R0.9（review R04）：按原调用的 requestId 查询写命令的结果：成功／失败／未知／不存在；只能查本次运行自己的调用'),
 ]
@@ -225,3 +235,124 @@ with open(os.path.join(HERE, '命令用例对照.generated.md'), 'w', encoding='
     for r in rows:
         f.write(f'| `{r[1]}` | {r[7]} | ' + '、'.join('M12-' + t for t in COVERAGE[r[1]]) + ' |\n')
 print(len(rows), counts, 'read', reads, 'kept', kept, 'added', added)
+
+# The CLI and host consume this one generated catalogue. Do not add hand-written
+# capabilities in the manifest or a second read/write classification in the host.
+TEXT = {'type': ['string', 'number', 'boolean'], 'maxLength': 262144}
+BOOL = {'type': 'boolean'}
+FIELD_OVERRIDES = {
+    'format': {'enum': ['png', 'jpeg']},
+    'timeout': {'type': 'integer', 'minimum': 1, 'maximum': 90000},
+    'limit': {'type': 'integer', 'minimum': 1},
+    'index': {'type': 'integer', 'minimum': 0},
+    'width': {'type': 'integer', 'minimum': 1, 'maximum': 32768},
+    'height': {'type': 'integer', 'minimum': 1, 'maximum': 32768},
+    'scale': {'type': 'number', 'exclusiveMinimum': 0, 'maximum': 10},
+    'latitude': {'type': 'number', 'minimum': -90, 'maximum': 90},
+    'longitude': {'type': 'number', 'minimum': -180, 'maximum': 180},
+    'accuracy': {'type': 'number', 'minimum': 0},
+    'amount': {'type': 'number', 'minimum': 0},
+    **{name: {'type': 'number'} for name in ['x', 'y', 'dx', 'dy', 'expires']},
+}
+COMMAND_FIELD_OVERRIDES = {
+    ('find', 'locator'): {'enum': ['role', 'text', 'label', 'placeholder', 'alt', 'title', 'testid', 'first', 'last', 'nth']},
+    ('find', 'action'): {'enum': ['click', 'fill', 'type', 'hover', 'focus', 'check', 'uncheck']},
+    ('wait', 'load'): {'enum': ['load', 'domcontentloaded', 'networkidle']},
+    ('wait', 'state'): {'enum': ['hidden', 'visible']},
+    ('set offline', 'state'): {'enum': ['on', 'off']},
+    ('get', 'what'): {'enum': ['text', 'html', 'value', 'url', 'title', 'count', 'box']},
+    ('is', 'what'): {'enum': ['visible', 'enabled', 'checked']},
+    ('set headers', 'headers'): {'type': 'object', 'additionalProperties': {'type': 'string'}},
+    ('upload', 'files'): {'anyOf': [TEXT, {'type': 'array', 'minItems': 1, 'items': {'type': 'string'}}]},
+    ('clipboard write', 'text'): {'type': ['string', 'number', 'boolean'], 'maxLength': 16777216},
+}
+STABLE_IDS = {
+    'eval': 'browser.interact.eval', 'exec': 'browser.interact.exec',
+    'console': 'browser.nav.console', 'network': 'browser.nav.network',
+    'wait fn': 'browser.nav.wait-fn', 'browser access request': 'browser.access.request',
+    'browser operation get': 'browser.operation.get',
+}
+
+def obj(properties, required=None):
+    return {'type': 'object', 'properties': properties, 'required': list(properties) if required is None else required, 'additionalProperties': False}
+
+
+def arr(items):
+    return {'type': 'array', 'items': items}
+
+
+STRING, INTEGER, BOOLEAN = {'type': 'string'}, {'type': 'integer', 'minimum': 0}, {'type': 'boolean'}
+HASH = {'type': 'string', 'pattern': '^[a-f0-9]{64}$'}
+FILE = obj({'path': STRING, 'bytes': INTEGER, 'sha256': HASH})
+ARTIFACT = obj({'file': FILE, 'truncatedPreview': {'type': 'string', 'maxLength': 4096}})
+PROGRESS = obj({'confirmedChars': INTEGER, 'inFlight': obj({'offset': INTEGER, 'length': INTEGER}), 'observed': obj({'at': STRING, 'length': INTEGER, 'sha256': HASH})}, ['confirmedChars'])
+RECEIPT = obj({'requestId': STRING, 'pageId': {'anyOf': [STRING, {'type': 'null'}]}, 'command': STRING, 'state': {'enum': ['succeeded', 'failed', 'unknown']}, 'effectState': {'enum': ['completed', 'not-started', 'unknown']}, 'progress': {'anyOf': [PROGRESS, {'type': 'null'}]}, 'summary': {}, 'errorCode': {'anyOf': [STRING, {'type': 'null'}]}, 'createdAt': INTEGER, 'updatedAt': INTEGER})
+PAGE = {'pageId': STRING, 'browserPageId': STRING, 'index': INTEGER, 'active': BOOLEAN, 'title': STRING, 'url': STRING, 'profileId': STRING}
+PAGE_RESULT = {'anyOf': [obj({**PAGE, 'kind': {'const': 'tab'}}), obj({**PAGE, 'kind': {'const': 'popup'}, 'openerPageId': STRING})]}
+ELEMENT_VALUE = {'anyOf': [STRING, {'type': 'number'}, BOOLEAN, {'type': 'null'}, obj({key: {'type': 'number'} for key in ['x', 'y', 'width', 'height']})]}
+OUTPUTS = {
+    'tab list': obj({'tabs': arr({'anyOf': [obj({**PAGE, 'kind': {'const': 'tab'}}), obj({**PAGE, 'kind': {'const': 'popup'}, 'openerPageId': STRING})]})}),
+    'tab create': obj({'pageId': STRING, 'url': STRING}), 'goto': obj({'navigated': {'const': True}}),
+    'snapshot': {'anyOf': [ARTIFACT, obj({'origin': STRING, 'snapshot': STRING, 'refs': arr(obj({'ref': STRING, 'role': STRING, 'name': STRING, 'available': BOOLEAN}, ['ref', 'role', 'name'])), 'browserPageId': STRING, 'url': STRING, 'title': STRING}, ['snapshot', 'refs', 'browserPageId', 'url', 'title'])]},
+    'click': obj({'clicked': STRING, 'path': {'const': 'cdp'}, 'newTab': BOOLEAN, 'url': STRING, 'dialogOpened': BOOLEAN}, ['clicked']),
+    'fill': obj({'filled': STRING}), 'type': obj({'typed': {'const': True}, 'progress': PROGRESS}), 'inserttext': obj({'typed': {'const': True}, 'progress': PROGRESS}),
+    'wait': obj({'waited': {'const': True}}),
+    'wait fn': obj({'waited': {'const': True}}),
+    'get': {'anyOf': [ARTIFACT, obj({'result': ELEMENT_VALUE})]}, 'is': obj({'result': BOOLEAN}),
+    'tab show': obj({'result': PAGE_RESULT}), 'tab current': obj({'result': PAGE_RESULT}),
+    'tab switch': obj({'result': obj({'pageId': STRING, 'url': STRING})}), 'tab close': obj({'result': obj({'closed': STRING})}),
+    'screenshot': obj({'file': FILE, 'format': {'enum': ['png', 'jpeg']}, 'width': INTEGER, 'height': INTEGER}),
+    'full-screenshot': obj({'file': FILE, 'format': {'enum': ['png', 'jpeg']}, 'width': INTEGER, 'height': INTEGER}),
+    'pdf': obj({'file': FILE}), 'capture stop': obj({'file': FILE}), 'browser operation get': {'anyOf': [obj({'state': {'const': 'not-found'}}), RECEIPT]},
+    'eval': {'anyOf': [ARTIFACT, obj({'value': STRING, 'origin': STRING})]},
+    'exec': {},
+    'console': {'anyOf': [ARTIFACT, obj({'messages': arr(obj({'type': STRING, 'text': STRING, 'args': arr({})}, ['type', 'text']))})]},
+    'network': {'anyOf': [ARTIFACT, obj({'requests': arr({'type': 'object'})})]},
+}
+
+
+def runtime_contract(row):
+    group, key, _, usage, _, semantics, _, disposition, _ = row
+    assert disposition != '不适用'
+    fields, required = {}, []
+    for match in re.finditer(r'--([A-Za-z][A-Za-z0-9-]*)\s+(?:"?<([^>]+)>"?|(true))', usage):
+        name, placeholder, bare = match.groups()
+        before = usage[:match.start()]
+        # Parenthesized alternatives are checked together in the command handler;
+        # neither member is individually required by the JSON schema.
+        optional = before.count('[') > before.count(']') or before.count('(') > before.count(')')
+        schema = BOOL if bare else TEXT
+        if placeholder and '|' in placeholder:
+            schema = {'type': 'string', 'enum': placeholder.split('|')}
+        schema = COMMAND_FIELD_OVERRIDES.get((key, name), FIELD_OVERRIDES.get(name, schema))
+        fields[name] = schema
+        if not optional:
+            required.append(name)
+    parts = key.split()
+    if parts[0] == 'browser':
+        parts = parts[1:]
+    if parts[0] == group:
+        parts = parts[1:]
+    if group == 'profile' and parts[:2] == ['tab', 'profile']:
+        parts = parts[2:]
+    capability_id = STABLE_IDS.get(key, 'browser.' + group + '.' + '-'.join(parts))
+    return {
+        'id': capability_id, 'command': willyou(key).split()[1:],
+        'semantics': 'read' if semantics == '读' else 'write',
+        'input': {'type': 'object', 'properties': fields, 'required': required, 'additionalProperties': False},
+        'usage': usage, 'cases': ['M12-' + case for case in COVERAGE[key]],
+        'output': OUTPUTS.get(key, {'anyOf': [ARTIFACT, obj({'result': {}})]}),
+    }
+
+
+catalogue = [runtime_contract(row) for row in rows if row[7] != '不适用']
+assert len(catalogue) == 82
+assert len({item['id'] for item in catalogue}) == len(catalogue), 'duplicate capability id'
+assert len({tuple(item['command']) for item in catalogue}) == len(catalogue), 'duplicate CLI command'
+assert sum(item['semantics'] == 'read' for item in catalogue) == 21
+for item in catalogue:
+    assert all(name in item['input']['properties'] for name in item['input']['required'])
+with open(RUNTIME_OUT, 'w', encoding='utf-8') as f:
+    json.dump(catalogue, f, ensure_ascii=False, indent=2)
+    f.write('\n')
+print('runtime contracts:', len(catalogue), '->', RUNTIME_OUT)

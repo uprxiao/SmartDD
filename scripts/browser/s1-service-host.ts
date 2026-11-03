@@ -32,6 +32,8 @@ import { digest } from '../../src/main/core/applications/manifest';
 import { ApplicationError } from '../../src/shared/applications';
 import { FileWorkspacePersistence } from '../../src/main/core/files/workspace-persistence';
 import { BrowserWorkspace } from '../../src/main/core/browser/workspace';
+import {popupFixtureHtml} from './popup-fixtures.mjs';
+import {s3FixtureHtml} from './s3-fixtures.mjs';
 
 for (const event of ['uncaughtException','unhandledRejection'] as const) process.on(event,error => {
   process.send?.({ fatal:String(error instanceof Error ? error.stack : error) }); app.exit(1);
@@ -50,10 +52,12 @@ let clearInputFault:(()=>void)|undefined;
 const proxyForwarded=new Map<string,{method:string;sessionId?:string}[]>();
 let errorHits=0,errorClose:Promise<void>|undefined,errorNavigation:Promise<void>|undefined;
 const errorEvents:unknown[]=[];
+const popupDestroyedEvents:{pageId:string;at:number}[]=[];
+const retiredHelperCleanups:{pageId:string;cleanup:unknown}[]=[];
 type CliResult={code:number|null;signal:NodeJS.Signals|null;stdout:string;stderr:string;timedOut:boolean};
 const cliJobs=new Map<number,{child:ReturnType<typeof spawn>;done:Promise<CliResult>}>();
 const commits:{key:string;bytes:number;sha256:string;at:string}[]=[];
-function launchCli(args:string[],input?:string){
+function launchCli(args:string[],input?:string|Buffer){
   const child=spawn(binary,args,{env:environment,stdio:[input===undefined?'ignore':'pipe','pipe','pipe']});children.add(child);
   if(input!==undefined)child.stdin!.end(input);
   let stdout='',stderr='',timedOut=false;
@@ -72,10 +76,30 @@ async function actionBackend(page:BrowserPage):Promise<number>{
 }
 const children = new Set<ReturnType<typeof spawn>>();
 const timingEvents:{label:string|null;phase:string|null;at:number}[]=[];
+const s3Requests:{path:string;method:string;bytes:number;sha256:string;headers:IncomingMessage['headers']}[]=[];
+const s3Dialogs:{pageId:string;method:string;params:Record<string,unknown>}[]=[];
+const promptProbeContexts=new Map<string,number>();
 const respond = (request:IncomingMessage,response:ServerResponse) => {
   const url=new URL(request.url??'/','http://127.0.0.1');
+  if(url.pathname.startsWith('/s3-api/')){
+    const chunks:Buffer[]=[];request.on('data',chunk=>chunks.push(chunk));request.on('end',()=>{
+      const body=Buffer.concat(chunks),record={path:url.pathname,method:request.method??'GET',bytes:body.length,sha256:digest(body),headers:request.headers};s3Requests.push(record);
+      const finish=()=>{response.setHeader('content-type','application/json');response.setHeader('cache-control','no-store');response.end(JSON.stringify({received:true,...record}));};
+      if(url.pathname==='/s3-api/delay')setTimeout(finish,Number(url.searchParams.get('ms')??100));else finish();
+    });return;
+  }
+  if(url.pathname.startsWith('/s3-')){
+    s3Requests.push({path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers});
+    const finish=()=>{response.setHeader('content-type','text/html; charset=utf-8');response.end(s3FixtureHtml);};
+    if(url.pathname==='/s3-delayed-page')setTimeout(finish,1600);else finish();return;
+  }
   if(url.pathname==='/s2-file-script'){response.setHeader('content-type','text/html');response.end('<title>S2 blocked file script</title><script>location.href="file:///etc/hosts"</script>');return;}
   if(url.pathname==='/s2-file-redirect'){response.writeHead(302,{location:'file:///etc/hosts'});response.end();return;}
+  if(['/s2-popups','/s2-oauth','/s2-child'].includes(url.pathname)){
+    const address=server.address();if(!address||typeof address==='string')throw Error('Popup fixture server not ready');
+    const openerOrigin='http://127.0.0.1:'+address.port,authorizationOrigin=url.searchParams.get('cross')==='true'?'http://localhost:'+address.port:openerOrigin;
+    response.setHeader('content-type','text/html');response.end(popupFixtureHtml(url.pathname,{openerOrigin,authorizationOrigin}));return;
+  }
   if(url.pathname==='/commit'){
     const chunks:Buffer[]=[];request.on('data',chunk=>chunks.push(chunk));request.on('end',()=>{
       const body=Buffer.concat(chunks);commits.push({key:url.searchParams.get('key')??'',bytes:body.length,sha256:digest(body),at:new Date().toISOString()});
@@ -131,10 +155,12 @@ app.whenReady().then(async () => {
     const row = fixture.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string}|undefined;
     return row?.project_id ?? null;
   }});
+  browser.pages.observe(event=>{if(event.type==='created')event.page.contents.on('destroyed',()=>popupDestroyedEvents.push({pageId:event.page.id,at:Date.now()}));else retiredHelperCleanups.push({pageId:event.page.id,cleanup:event.page.helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true}});});
   const createPage=browser.pages.create.bind(browser.pages);
   browser.pages.create=async(task,project,savedId)=>{
     const page=await createPage(task,project,savedId);
     page.proxy.onEvent(event=>{if(['Runtime.executionContextCreated','Runtime.executionContextDestroyed','Runtime.executionContextsCleared','Target.attachedToTarget','Page.frameNavigated'].includes(event.method))contextEvents.push({pageId:page.id,...event});});
+    page.proxy.onEvent(event=>{if(event.method==='Page.javascriptDialogOpening'||event.method==='Page.javascriptDialogClosed')s3Dialogs.push({pageId:page.id,method:event.method,params:event.params});});
     return page;
   };
   await new RuntimeRegistry(fixture.store).install(source.runtime());
@@ -172,10 +198,38 @@ app.whenReady().then(async () => {
   process.send?.({ready:true,pid:process.pid,taskId,runId:run.runId,url:`http://127.0.0.1:${address.port}/`,versions:process.versions,boundary:'I: real BrowserService/M11 module/CLI/gateway/SQLite/kernel peers; controlled Electron process as run root; synthetic page; not packaged App or real Agent'});
 }).catch(error=>{process.send?.({fatal:String(error.stack??error)});app.exit(1);});
 
-process.on('message',async (message:{id:number;command:string;args?:string[];input?:string;paused?:boolean;expression?:string;opacity?:number;ignoreMouse?:boolean;focusEmulation?:boolean;pageId?:string;mode?:string;ref?:string;kind?:string;point?:string;threshold?:number;selection?:[number,number];pid?:number}) => {
+process.on('message',async (message:{id:number;command:string;args?:string[];input?:string;inputBase64?:string;paused?:boolean;expression?:string;opacity?:number;ignoreMouse?:boolean;focusEmulation?:boolean;pageId?:string;mode?:string;ref?:string;kind?:string;point?:string;threshold?:number;selection?:[number,number];pid?:number}) => {
   try {
     let value:unknown;
-    if (message.command === 'cli') value = await launchCli(message.args!,message.input).done;
+    if (message.command === 'cli') value = await launchCli(message.args!,message.inputBase64===undefined?message.input:Buffer.from(message.inputBase64,'base64')).done;
+    else if(message.command==='s3-server-requests')value={requests:s3Requests};
+    else if(message.command==='s3-dialog-state')value={events:s3Dialogs};
+    else if(message.command==='s3-prompt-probe-info'){
+      const page=browser.pages.get(taskId,message.pageId),tree=await page.proxy.send<{frameTree:{frame:{id:string}}}>('Page.getFrameTree');
+      const isolated=await page.proxy.send<{executionContextId:number}>('Page.createIsolatedWorld',{frameId:tree.frameTree.frame.id,worldName:'M12-prompt-diagnostic'});promptProbeContexts.set(page.id,isolated.executionContextId);
+      const expression='({promptSource:String(window.prompt),prototypeHasPrompt:Object.prototype.hasOwnProperty.call(Window.prototype,"prompt")})';
+      value={main:await page.proxy.send('Runtime.evaluate',{expression,returnByValue:true}),isolated:await page.proxy.send('Runtime.evaluate',{expression,contextId:isolated.executionContextId,returnByValue:true})};
+    }
+    else if(message.command==='s3-prompt-probe-open'){
+      const page=browser.pages.get(taskId,message.pageId),contextId=promptProbeContexts.get(page.id);if(contextId===undefined)throw Error('Prompt probe context was not created');
+      value=await page.proxy.send('Runtime.evaluate',{expression:'window.prompt("M12 isolated native prompt","initial")',contextId,returnByValue:true});
+    }
+    else if(message.command==='s3-load-delayed'){
+      const page=browser.pages.get(taskId,message.pageId),address=server.address();if(!address||typeof address==='string')throw Error('No fixture server');
+      const url='http://127.0.0.1:'+address.port+'/s3-delayed-page';void browser.pages.navigate(page,url).catch(error=>contextEvents.push({fixturePrecondition:'delayed navigation',message:String(error)}));value={url,loading:page.contents.isLoading(),boundary:'fixture establishes an already-loading page; reload itself must use CLI'};
+    }
+    else if(message.command==='s3-page-status'){const page=browser.pages.get(taskId,message.pageId);value={url:page.contents.getURL(),loading:page.contents.isLoading(),workspace:browser.workspace.snapshot(taskId)};}
+    else if(message.command==='s2-security-info'){
+      const page=browser.pages.get(taskId),prefs=page.contents.getLastWebPreferences();
+      value={pageId:page.id,profileId:page.profileId,pageIds:browser.pages.list(taskId).map(p=>p.id),preferences:{sandbox:prefs.sandbox,contextIsolation:prefs.contextIsolation,nodeIntegration:prefs.nodeIntegration,partition:prefs.partition}};
+    }
+    else if(message.command==='s2-popup-state'){
+      const pages=browser.pages.list(taskId),page=message.pageId?pages.find(p=>p.id===message.pageId):undefined;
+      const states=await Promise.all(pages.map(async p=>{try{return{pageId:p.id,...(await p.proxy.send<{result:{value:Record<string,unknown>}}>('Runtime.evaluate',{expression:'({url:location.href,hasOpener:!!window.opener,account:document.getElementById("account")?.value??null,errors:window.s2Errors??null})',returnByValue:true})).result.value};}catch{return{pageId:p.id,unavailable:true};}}));
+      value={workspace:browser.workspace.snapshot(taskId),destroyedEvents:popupDestroyedEvents,retiredHelperCleanups,states,pages:pages.map(p=>({pageId:p.id,kind:p.kind,profileId:p.profileId,openerPageId:p.openerPageId,url:p.contents.getURL(),hasNativeWindow:!!p.popupWindow,sameSessionAsOpener:p.openerPageId?pages.find(parent=>parent.id===p.openerPageId)?.contents.session===p.contents.session:true})),...(page?{opener:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({url:location.href,result:window.oauthResult??null,text:document.getElementById("oauth-result")?.textContent})',returnByValue:true})).result.value}:{})};
+    }
+    else if(message.command==='s2-close-page'){await browser.pages.close(taskId,message.pageId!);value={closed:message.pageId};}
+    else if(message.command==='s2-close-all-pages'){for(const page of browser.pages.list(taskId))if(browser.pages.list(taskId).some(p=>p.id===page.id))await browser.pages.close(taskId,page.id);value={remaining:browser.pages.list(taskId).length};}
     else if(message.command==='s2-file-start'){
       const route={source:'task-cwd',sourceId:taskId,sourcePath:fixture.cwd,relativePath:'legacy.txt',mode:'document'};
       const old={schemaVersion:1,routes:[route],active:route,treeSource:null,expanded:{},collapsedRoots:[],filters:{},treeWidth:250};
@@ -217,7 +271,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     }
     else if (message.command === 'observe') {
       const page=browser.pages.get(taskId,message.pageId);
-      value={...(await page.proxy.send<{result:{value:{hits:string[];value:string;url:string}}}>('Runtime.evaluate',{expression:'({hits:window.hits,instances:window.hitInstances,inputEvents:window.inputEvents,value:document.getElementById("field")?.value??null,url:location.href})',returnByValue:true})).result.value,rect:page.view.getBounds(),guardResponse:guardResponses.get(page.id)};
+      value={...(await page.proxy.send<{result:{value:{hits:string[];value:string;url:string}}}>('Runtime.evaluate',{expression:'({hits:window.hits,instances:window.hitInstances,inputEvents:window.inputEvents,value:document.getElementById("field")?.value??null,url:location.href})',returnByValue:true})).result.value,rect:page.kind==='tab'?page.view.getBounds():page.rect,guardResponse:guardResponses.get(page.id)};
     }
     else if(message.command==='nested-observe'){
       const page=browser.pages.get(taskId);
@@ -274,7 +328,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
         while(helper.options.processes.state(identity)==='running'&&performance.now()<deadline)await new Promise(ok=>setTimeout(ok,20));
         if(helper.options.processes.state(identity)!=='stopped')throw Error('Killed private helper has not stopped');
       }
-      value={pageId:page.id,pid,identity,state:identity?helper.options.processes?.state(identity):'absent',url:page.view.webContents.getURL(),observed:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({hits:window.hits,value:document.getElementById("field")?.value})',returnByValue:true})).result.value};
+      value={pageId:page.id,pid,identity,state:identity?helper.options.processes?.state(identity):'absent',url:page.contents.getURL(),observed:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({hits:window.hits,value:document.getElementById("field")?.value})',returnByValue:true})).result.value};
     }
     else if(message.command==='input-observe'||message.command==='input-select'){
       const page=browser.pages.get(taskId);
@@ -327,10 +381,10 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     else if(message.command==='proxy-inspect'){
       const page=browser.pages.get(taskId,message.pageId);
       if(!proxyForwarded.has(page.id)){
-        const calls:{method:string;sessionId?:string}[]=[],original=page.view.webContents.debugger.sendCommand.bind(page.view.webContents.debugger);proxyForwarded.set(page.id,calls);
-        page.view.webContents.debugger.sendCommand=(method,params,sessionId)=>{calls.push({method,sessionId});return sessionId?original(method,params,sessionId):original(method,params);};
+        const calls:{method:string;sessionId?:string}[]=[],original=page.contents.debugger.sendCommand.bind(page.contents.debugger);proxyForwarded.set(page.id,calls);
+        page.contents.debugger.sendCommand=(method,params,sessionId)=>{calls.push({method,sessionId});return sessionId?original(method,params,sessionId):original(method,params);};
       }
-      value={pageId:page.id,endpoint:page.proxy.endpoint,discoveryEndpoint:page.proxy.discoveryEndpoint,parked:!host.contentView.children.includes(page.view),host:{id:host.id,title:host.getTitle(),url:host.webContents.getURL(),destroyed:host.isDestroyed()},pages:browser.pages.list(taskId).map(item=>({id:item.id,url:item.view.webContents.getURL(),destroyed:item.view.webContents.isDestroyed(),bounds:item.view.getBounds()})),forwarded:proxyForwarded.get(page.id)};
+      value={pageId:page.id,endpoint:page.proxy.endpoint,discoveryEndpoint:page.proxy.discoveryEndpoint,parked:!host.contentView.children.includes(page.view),host:{id:host.id,title:host.getTitle(),url:host.webContents.getURL(),destroyed:host.isDestroyed()},pages:browser.pages.list(taskId).map(item=>({id:item.id,url:item.contents.getURL(),destroyed:item.contents.isDestroyed(),bounds:item.view.getBounds()})),forwarded:proxyForwarded.get(page.id)};
     }
     else if(message.command==='error-wrong-helper-sha'){
       const page=browser.pages.get(taskId,message.pageId);page.helper.options.sha256='0'.repeat(64);
@@ -353,7 +407,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
         if(method==='Runtime.evaluate'&&params.awaitPromise===true){
           page.proxy.send=original;
           const work=original(method,params,sessionId);
-          setTimeout(()=>{errorNavigation=browser.pages.navigate(page,page.view.webContents.getURL());errorNavigation.catch(error=>errorEvents.push({event:'navigation-failed',error:String(error)}));},30);
+          setTimeout(()=>{errorNavigation=browser.pages.navigate(page,page.contents.getURL());errorNavigation.catch(error=>errorEvents.push({event:'navigation-failed',error:String(error)}));},30);
           return work;
         }
         return original(method,params,sessionId);
@@ -362,7 +416,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     }
     else if(message.command==='error-status'){
       await errorNavigation;await errorClose;
-      value={hits:errorHits,events:errorEvents,pages:browser.pages.list(taskId).map(page=>({id:page.id,url:page.view.webContents.getURL(),closed:page.closed}))};
+      value={hits:errorHits,events:errorEvents,pages:browser.pages.list(taskId).map(page=>({id:page.id,url:page.contents.getURL(),closed:page.closed}))};
     }
     else if(message.command==='identity-mutate'){
       const page=browser.pages.get(taskId,message.pageId),scripts:Record<string,string>={
@@ -423,22 +477,22 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     else if(message.command==='identity-clear'){const page=browser.pages.get(taskId,message.pageId);raceRestores.get(page.id)?.();value={cleared:true};}
     else if(message.command==='identity-observe-guards'){
       const page=browser.pages.get(taskId,message.pageId),original=page.references.arm.bind(page.references);
-      page.references.arm=async ref=>{const armed=await original(ref);return {...armed,finish:async()=>{const observed=await armed.finish();guardResponses.set(page.id,{result:{value:observed}});return observed;}};};
+      page.references.arm=async(ref,options)=>{const armed=await original(ref,options);return {...armed,finish:async preserve=>{const observed=await armed.finish(preserve);guardResponses.set(page.id,{result:{value:observed}});return observed;}};};
       value={observer:'read-only returned guard states, private fixture lifetime'};
     }
     else if (message.command === 'placement') {
       const page=browser.pages.get(taskId);
-      if(!observedContents.has(page.view.webContents.id)){
-        observedContents.add(page.view.webContents.id);
+      if(!observedContents.has(page.contents.id)){
+        observedContents.add(page.contents.id);
         // Read-only observation of the exact guard response. No commands, events or business outputs are changed.
-        const original=page.view.webContents.debugger.sendCommand.bind(page.view.webContents.debugger);
-        page.view.webContents.debugger.sendCommand=(method,params,sessionId)=>(sessionId?original(method,params,sessionId):original(method,params)).then(result=>{
+        const original=page.contents.debugger.sendCommand.bind(page.contents.debugger);
+        page.contents.debugger.sendCommand=(method,params,sessionId)=>(sessionId?original(method,params,sessionId):original(method,params)).then(result=>{
           if(method==='Runtime.evaluate'&&params?.expression==='globalThis.__wyBrowserGuard.disarm()')guardResponses.set(page.id,result);
           return result;
         });
       }
       if(message.args?.[0]==='secondary'){
-        if(!secondary){const otherTask=randomUUID();fixture.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(otherTask,'p1',fixture.cwd,'codex','[I] secondary task',1,1);const other=await browser.pages.create(otherTask,'p1');await browser.pages.navigate(other,page.view.webContents.getURL());secondary={taskId:otherTask,pageId:other.id};}
+        if(!secondary){const otherTask=randomUUID();fixture.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(otherTask,'p1',fixture.cwd,'codex','[I] secondary task',1,1);const other=await browser.pages.create(otherTask,'p1');await browser.pages.navigate(other,page.contents.getURL());secondary={taskId:otherTask,pageId:other.id};}
         await browser.pages.placement(secondary.taskId,secondary.pageId,{x:0,y:0,width:1000,height:700});
       }else await browser.pages.placement(taskId,page.id,{x:0,y:0,width:1000,height:700});
       value={placement:message.args?.[0]==='secondary'?'secondary-task-visible-primary-parked':'primary-mounted',primaryInMain:host.contentView.children.includes(page.view),primaryPageId:page.id,secondary};
@@ -454,7 +508,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
       // Fault/diagnostic configuration only, never used as acceptance of the unchanged production environment.
       value={opacity:park.getOpacity(),ignoreMouse:message.ignoreMouse!==false,focusEmulation:message.focusEmulation===true};
     }
-    else if (message.command === 'reset') { const page=browser.pages.get(taskId);await browser.pages.navigate(page,page.view.webContents.getURL());value={reset:true}; }
+    else if (message.command === 'reset') { const page=browser.pages.get(taskId);await browser.pages.navigate(page,page.contents.getURL());value={reset:true}; }
     else if (message.command === 'replace-next-arm') {
       const page=browser.pages.get(taskId),original=page.references.arm.bind(page.references);
       // Explicit race latch: replace the field after host identity check/arming, before the native fill path.
@@ -474,7 +528,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
       console.error('[S1 cleanup] gateway');await gateway.close(); console.error('[S1 cleanup] run');await run.cli.exited();
       const helpers=browser.pages.list(taskId).map(page=>page.helper);
       console.error('[S1 cleanup] applications');await applications.dispose(); await browser.dispose();console.error('[S1 cleanup] helpers '+JSON.stringify(helpers.map(helper=>helper.cleanup)));
-      value={closed:true,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
+      value={closed:true,retiredHelperCleanups,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
       fixture.cleanup();server.closeAllConnections();ipv6Server.closeAllConnections(); await Promise.all([new Promise<void>(ok=>server.close(()=>ok())),new Promise<void>(ok=>ipv6Server.close(()=>ok()))]); host.destroy();
     }
     else throw Error('Unknown fixture command');

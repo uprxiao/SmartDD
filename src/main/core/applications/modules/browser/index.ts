@@ -1,5 +1,5 @@
 import { ApplicationError } from '@shared/applications';
-import commands from '@shared/browser-s1-commands.json';
+import commands from '@shared/browser-commands.generated.json';
 import type { ApplicationModuleData, ApplicationModuleDefinition, ApplicationModuleServices, ApplicationModuleCapability } from '../registry';
 import type { ApplicationExecutionContext } from '../../execution-context';
 import type { BrowserService } from '../../../browser/service';
@@ -32,7 +32,7 @@ class BrowserModuleData implements ApplicationModuleData {
   }
   async execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<unknown>{
     const rule=rules[method],command=commands.find(item=>item.id===method);
-    if(!rule||!command)throw new ApplicationError('CAPABILITY_UNAVAILABLE','S1未开放此浏览器命令');
+    if(!rule||!command)throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未登记');
     this.services.contexts.require(context,rule.permission);
     const caller=this.services.contexts.caller(context);
     if(caller.kind!=='agent'||caller.entry!=='cli'||!context.projectId||!context.taskId||!context.runId)
