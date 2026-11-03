@@ -21,8 +21,7 @@ export function installAppFocusGuard(app,record,{enabled=true,allowOwnedViews=fa
   if(!enabled)return;
   const cdp=app.cdp.bind(app);let yielded;
   record.focusGuard={enabled:true,appPid:app.processId,checkedInputs:0};record.focusGuards??=[];record.focusGuards.push(record.focusGuard);
-  app.cdp=async(method,...args)=>{
-    if(method.startsWith('Input.')||method==='Page.bringToFront'){
+  const check=async(method)=>{
       if(yielded)throw yielded;
       const state=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState,title:document.title})');
       if(allowOwnedViews&&!state?.focused&&state?.visibility==='visible'){
@@ -35,7 +34,10 @@ export function installAppFocusGuard(app,record,{enabled=true,allowOwnedViews=fa
         Object.assign(record.focusGuard,{yieldedAt:new Date().toISOString(),blockedMethod:method,state});throw yielded;
       }
       record.focusGuard.checkedInputs++;
-    }
+  };
+  app.checkInputFocus=check;
+  app.cdp=async(method,...args)=>{
+    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);
     return cdp(method,...args);
   };
 }

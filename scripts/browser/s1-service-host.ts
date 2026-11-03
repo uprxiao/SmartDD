@@ -1,7 +1,7 @@
 // I-level composition. Real service/module/CLI/gateway/SQLite/kernel peers; controlled run root and synthetic website.
 import { app, BrowserWindow } from 'electron';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -30,6 +30,8 @@ import { MacUnixPeerIdentityReader } from '../../src/main/core/applications/unix
 import { ApplicationCliGateway } from '../../src/main/core/applications/cli-gateway';
 import { digest } from '../../src/main/core/applications/manifest';
 import { ApplicationError } from '../../src/shared/applications';
+import { FileWorkspacePersistence } from '../../src/main/core/files/workspace-persistence';
+import { BrowserWorkspace } from '../../src/main/core/browser/workspace';
 
 for (const event of ['uncaughtException','unhandledRejection'] as const) process.on(event,error => {
   process.send?.({ fatal:String(error instanceof Error ? error.stack : error) }); app.exit(1);
@@ -72,6 +74,8 @@ const children = new Set<ReturnType<typeof spawn>>();
 const timingEvents:{label:string|null;phase:string|null;at:number}[]=[];
 const respond = (request:IncomingMessage,response:ServerResponse) => {
   const url=new URL(request.url??'/','http://127.0.0.1');
+  if(url.pathname==='/s2-file-script'){response.setHeader('content-type','text/html');response.end('<title>S2 blocked file script</title><script>location.href="file:///etc/hosts"</script>');return;}
+  if(url.pathname==='/s2-file-redirect'){response.writeHead(302,{location:'file:///etc/hosts'});response.end();return;}
   if(url.pathname==='/commit'){
     const chunks:Buffer[]=[];request.on('data',chunk=>chunks.push(chunk));request.on('end',()=>{
       const body=Buffer.concat(chunks);commits.push({key:url.searchParams.get('key')??'',bytes:body.length,sha256:digest(body),at:new Date().toISOString()});
@@ -128,8 +132,8 @@ app.whenReady().then(async () => {
     return row?.project_id ?? null;
   }});
   const createPage=browser.pages.create.bind(browser.pages);
-  browser.pages.create=async(task,project)=>{
-    const page=await createPage(task,project);
+  browser.pages.create=async(task,project,savedId)=>{
+    const page=await createPage(task,project,savedId);
     page.proxy.onEvent(event=>{if(['Runtime.executionContextCreated','Runtime.executionContextDestroyed','Runtime.executionContextsCleared','Target.attachedToTarget','Page.frameNavigated'].includes(event.method))contextEvents.push({pageId:page.id,...event});});
     return page;
   };
@@ -172,6 +176,20 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
   try {
     let value:unknown;
     if (message.command === 'cli') value = await launchCli(message.args!,message.input).done;
+    else if(message.command==='s2-file-start'){
+      const route={source:'task-cwd',sourceId:taskId,sourcePath:fixture.cwd,relativePath:'legacy.txt',mode:'document'};
+      const old={schemaVersion:1,routes:[route],active:route,treeSource:null,expanded:{},collapsedRoots:[],filters:{},treeWidth:250};
+      const raw=JSON.stringify(old,null,2),key='fileWorkspace.v1:task:'+taskId;
+      fixture.sqlite.prepare('INSERT INTO app_settings(key,value,updated_at) VALUES(?,?,?)').run(key,raw,1);
+      const local=join(app.getPath('userData'),'s2-local.html');writeFileSync(local,'<!doctype html><title>S2 local input</title><p>local native integration</p>');
+      value={raw,loaded:new FileWorkspacePersistence(drizzle(fixture.sqlite,{schema})).load({kind:'task',taskId}),localUrl:'file://'+local};
+    }
+    else if(message.command==='s2-file-finish'){
+      const before=browser.workspace.snapshot(taskId),last=before.tabs.at(-1);if(before.tabs.length!==2||!last)throw Error('Two original CLI-created tabs required');
+      await browser.workspace.close(taskId,last.id);await browser.workspace.dispose();
+      const restored=new BrowserWorkspace({sqlite:fixture.sqlite,pages:browser.pages,taskProject:id=>id===taskId?'p1':null});
+      try{value={closedPageId:last.id,browserRestored:restored.snapshot(taskId),file:new FileWorkspacePersistence(drizzle(fixture.sqlite,{schema})).load({kind:'task',taskId}),records:fixture.sqlite.prepare("SELECT key,value FROM app_settings WHERE key IN (?,?) ORDER BY key").all('fileWorkspace.v1:task:'+taskId,'browserWorkspace.v1:'+taskId)};}finally{await restored.dispose();}
+    }
     else if(message.command==='cli-begin'){const job=launchCli(message.args!,message.input);value={pid:job.pid};}
     else if(message.command==='cli-result'){const job=cliJobs.get(message.pid!);if(!job)throw Error('Unknown owned CLI job');value=await job.done;}
     else if(message.command==='cli-sigterm'){const job=cliJobs.get(message.pid!);if(!job||job.child.exitCode!==null||job.child.signalCode!==null)throw Error('Owned CLI is no longer running');value={sent:job.child.kill('SIGTERM'),pid:message.pid};}

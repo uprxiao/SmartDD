@@ -21,7 +21,6 @@ export class BrowserPageRegistry {
   private readonly pages=new Map<string,BrowserPage>();
   private readonly active=new Map<string,string>();
   private readonly park=new BrowserParkWindow();
-  private ordinal=0;
   private mounted?:BrowserPage;
   private readonly observers=new Set<(event:BrowserPageEvent)=>void>();
   private readonly closing=new Map<string,Promise<void>>();
@@ -35,7 +34,9 @@ export class BrowserPageRegistry {
     return page;
   }
   async create(taskId:string,projectId:string,savedId?:string):Promise<BrowserPage>{
-    const id=savedId??randomUUID(),short='k'+(++this.ordinal).toString(36),profileId=browserProjectProfile(projectId);
+    // A restored persistent page ID still needs a fresh reference scope. Counters
+    // alone repeat after restart and can turn an old ref into a valid new ref.
+    const id=savedId??randomUUID(),short='k'+randomUUID().replaceAll('-',''),profileId=browserProjectProfile(projectId);
     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
     const view=new WebContentsView({webPreferences:{partition:'persist:wy-browser-'+profileId,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
     const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);
@@ -61,7 +62,7 @@ export class BrowserPageRegistry {
   /** Electron binds the opener to the returned WebContents. The child uses its
    * own native window and the opener's exact session, never an App preload. */
   createPopup(opener:BrowserPage,options:BrowserWindowConstructorOptions,asTab=false):WebContents{
-    const id=randomUUID(),short='k'+(++this.ordinal).toString(36);
+    const id=randomUUID(),short='k'+randomUUID().replaceAll('-','');
     const view=new WebContentsView({webPreferences:{session:opener.view.webContents.session,sandbox:true,contextIsolation:true,nodeIntegration:false,webSecurity:true,backgroundThrottling:false}});
     const window=asTab?undefined:new BaseWindow({width:Math.max(320,Math.min(options.width??800,1400)),height:Math.max(240,Math.min(options.height??600,1000)),show:false,title:'WillYou · 网页登录'});
     const bounds=window?.getContentBounds()??{width:1000,height:700};window?.contentView.addChildView(view);view.setBounds({x:0,y:0,width:bounds.width,height:bounds.height});

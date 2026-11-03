@@ -1,11 +1,12 @@
 import {randomUUID} from 'node:crypto';
 import type Database from 'better-sqlite3';
 import {shell} from 'electron';
-import {BROWSER_BLANK_URL,describeBrowserLoadFailure,isBrowserSearchUrl,normalizeBrowserNavigationUrl,type BrowserSearchEngine} from '@shared/browser-navigation';
+import {BROWSER_BLANK_URL,describeBrowserLoadFailure,normalizeBrowserNavigationUrl,type BrowserSearchEngine} from '@shared/browser-navigation';
 import {browserWorkspaceSchema,type BrowserWorkspaceState,type BrowserTabState,type SavedBrowserWorkspace,type BrowserShortcut} from '@shared/browser-workspace';
 import {BrowserPageRegistry,browserProjectProfile,type BrowserPage} from './page-registry';
 import {BrowserError} from './errors';
 import {browserFavicon} from './favicon';
+import {browserRecentTitle,browserRecentVisit} from './recent-sites';
 
 type Runtime=Pick<BrowserTabState,'loading'|'canGoBack'|'canGoForward'|'failure'>;
 const idle=():Runtime=>({loading:false,canGoBack:false,canGoForward:false,failure:null});
@@ -14,6 +15,7 @@ export class BrowserWorkspace {
   private readonly tasks=new Map<string,SavedBrowserWorkspace>();
   private readonly runtime=new Map<string,Runtime>();
   private readonly opening=new Map<string,Promise<BrowserPage>>();
+  private readonly navigations=new Map<string,{stopped:boolean}>();
   private readonly closingTabs=new Set<string>();
   private readonly recovering=new Map<string,ReturnType<typeof setTimeout>>();
   private readonly notices=new Map<string,string>();
@@ -90,11 +92,13 @@ export class BrowserWorkspace {
   }
   private async loadUrl(page:BrowserPage,url:string):Promise<void>{
     this.cancelRecovery(page.id);const run=this.runtime.get(page.id)??idle();run.failure=null;this.runtime.set(page.id,run);
-    try{await this.options.pages.navigate(page,url);}catch(error){if(page.closed)return;const message=error instanceof Error?error.message:String(error);if(!run.failure&&!message.includes('ERR_ABORTED')){run.failure=describeBrowserLoadFailure(-2,'ERR_FAILED',url);this.changed(page.taskId);}}
+    const request={stopped:false};this.navigations.set(page.id,request);
+    try{await this.options.pages.navigate(page,url);}catch(error){if(page.closed||request.stopped||this.navigations.get(page.id)!==request)return;const message=error instanceof Error?error.message:String(error);if(!run.failure&&!message.includes('ERR_ABORTED')){run.failure=describeBrowserLoadFailure(-2,'ERR_FAILED',url);this.changed(page.taskId);}}
+    finally{if(this.navigations.get(page.id)===request)this.navigations.delete(page.id);}
   }
   async action(taskId:string,id:string,action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'):Promise<void>{
     const page=await this.target(taskId,id),wc=page.view.webContents;
-    if(action==='focus'){wc.focus();return;}if(action==='stop'){wc.stop();this.cancelRecovery(id);return;}
+    if(action==='focus'){wc.focus();return;}if(action==='stop'){const request=this.navigations.get(id);if(request)request.stopped=true;wc.stop();this.cancelRecovery(id);return;}
     const failure=this.runtime.get(id)?.failure;
     if(failure&&(action==='reload'||action==='hard-reload')){await this.loadUrl(page,failure.url);return;}
     if(action==='reload')wc.reload();else if(action==='hard-reload')wc.reloadIgnoringCache();
@@ -132,13 +136,13 @@ export class BrowserWorkspace {
     const update=()=>{if(page.closed||wc.isDestroyed()||this.shuttingDown)return;runtime.loading=wc.isLoading();runtime.canGoBack=wc.navigationHistory.canGoBack();runtime.canGoForward=wc.navigationHistory.canGoForward();this.changed(page.taskId);};
     wc.on('did-start-loading',update);wc.on('did-stop-loading',update);
     wc.on('found-in-page',(_event,result)=>{const query=this.finds.get(page.id);if(query?.requestId===result.requestId){query.active=result.activeMatchOrdinal;query.total=result.matches;this.changed(page.taskId);}});
+    let faviconGeneration=0;
     const committed=()=>{
       if(page.closed||wc.isDestroyed())return;runtime.failure=null;this.cancelRecovery(page.id);
       const tab=state.tabs.find(t=>t.id===page.id);if(tab){tab.url=wc.getURL();tab.title=wc.getTitle()||tab.url;this.save(page.taskId);this.remember(page.taskId,tab.url,tab.title);}update();
     };
-    wc.on('did-navigate',committed);wc.on('did-navigate-in-page',(_event,_url,main)=>{if(main)committed();});
-    wc.on('page-title-updated',(_event,title)=>{const tab=state.tabs.find(t=>t.id===page.id);if(tab){tab.title=title;this.save(page.taskId);}});
-    let faviconGeneration=0;
+    wc.on('did-navigate',()=>{faviconGeneration++;const tab=state.tabs.find(t=>t.id===page.id);if(tab)tab.favicon=null;committed();});wc.on('did-navigate-in-page',(_event,_url,main)=>{if(main)committed();});
+    wc.on('page-title-updated',(_event,title)=>{const tab=state.tabs.find(t=>t.id===page.id);if(tab){tab.title=title;this.save(page.taskId);const current=this.snapshot(page.taskId),recent=browserRecentTitle(current.recent,wc.getURL(),title);if(recent!==current.recent)this.saveRecent(current.projectId,recent);}});
     wc.on('page-favicon-updated',(_event,urls)=>{const generation=++faviconGeneration,url=urls.find(url=>/^https?:/.test(url));const tab=state.tabs.find(t=>t.id===page.id);if(!tab)return;if(!url){tab.favicon=null;this.save(page.taskId);return;}void browserFavicon(wc.session,url,page.abort.signal).then(icon=>{if(!page.closed&&!this.shuttingDown&&generation===faviconGeneration&&state.tabs.includes(tab)){tab.favicon=icon;this.save(page.taskId);}});});
     wc.on('did-fail-load',(_event,code,description,url,main)=>{if(!main||code===-3||page.closed)return;runtime.loading=false;runtime.failure=describeBrowserLoadFailure(code,description,url);this.changed(page.taskId);this.scheduleRecovery(page);});
     let gesture=0,burstAt=0,burst=0;
@@ -160,10 +164,11 @@ export class BrowserWorkspace {
     update();
   }
   private remember(taskId:string,url:string,title:string){
-    if(isBrowserSearchUrl(url))return;let host:string;try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))return;host=parsed.host;}catch{return;}
-    const state=this.snapshot(taskId),recent=[{url,title,host,visitedAt:Date.now()},...state.recent.filter(r=>r.host!==host)].slice(0,8);
-    this.options.sqlite.prepare('INSERT INTO app_settings(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').run('browserRecent.v1:'+state.projectId,JSON.stringify(recent),Date.now());
-    for(const id of this.tasks.keys())if(this.options.taskProject(id)===state.projectId)this.changed(id);
+    const state=this.snapshot(taskId),recent=browserRecentVisit(state.recent,url,title,Date.now());if(recent!==state.recent)this.saveRecent(state.projectId,recent);
+  }
+  private saveRecent(projectId:string,recent:BrowserWorkspaceState['recent']){
+    this.options.sqlite.prepare('INSERT INTO app_settings(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').run('browserRecent.v1:'+projectId,JSON.stringify(recent),Date.now());
+    for(const id of this.tasks.keys())if(this.options.taskProject(id)===projectId)this.changed(id);
   }
   reconcile():Promise<void>{
     if(this.reconciling)return this.reconciling;

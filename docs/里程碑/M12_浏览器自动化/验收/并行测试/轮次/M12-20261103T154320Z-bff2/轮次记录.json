@@ -1,19 +1,19 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-03T17:02:54.325853+00:00",
-  "status": "S2-first-formal-batch-accounted",
+  "updatedAt": "2026-11-03T17:47:58.597170+00:00",
+  "status": "S2-seven-error-categories-complete",
   "coordinator": "/root",
   "agents": [],
   "branch": "feature/0.1.1",
   "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
-  "sourceState": "M11兼容修复与相关测试已冻结；另有既有流程文档及外部驱动增量，未改正在运行的生产输入",
+  "sourceState": "本地a2beb417后发现旧引用跨进程编号碰撞；红测已归档，生产修复复验中",
   "requirements": "R1.2",
   "technicalDesign": "V1.1 §11",
   "plan": "../../../S1执行计划.json#continuation",
   "currentGroup": "M12-P002",
   "resources": {
-    "build": "free; package002 frozen",
+    "build": "free",
     "nativeUi": "free"
   },
   "groups": [
@@ -100,16 +100,16 @@
     {
       "id": "M12-P002",
       "owner": "/root",
-      "status": "T001/T002/T020 A accounted; remaining S2 cases pending",
-      "privateRoot": "/private/tmp/willyou-m12-s2-formal-002",
+      "status": "native lifecycle and ten-error matrix passed; further S2 cases pending",
+      "privateRoot": "/private/tmp/willyou-m12-s2-native-regression-logs",
       "pids": [],
       "sessions": [],
       "ports": [],
-      "testBaseline": "/private/tmp/willyou-m12-p002-software-004/inputs.json",
-      "next": "remaining S2 navigation/recovery and affected native core regression; no new build without production changes",
+      "testBaseline": "/private/tmp/willyou-m12-p002-software-007/inputs.json",
+      "next": "S2 remaining cases: isolation, no-project/deleted project, popups; dependency and native-system gaps kept",
       "package": {
-        "path": "/private/tmp/willyou-m12-s2-package-002/mac-arm64/WillYou.app",
-        "asarSha256": "0d24992f125eaf86baf84d88d40e01b0f278baa3f0da05d7e94d17b09b650bc8"
+        "path": "/private/tmp/willyou-m12-s2-package-005/mac-arm64/WillYou.app",
+        "asarSha256": "c1cf5437d1d0c7c17cf0278fffde13a0709f849b4fc0a4d7fb8e0a6853ff94f8"
       },
       "externalDrivers": [
         {
@@ -129,9 +129,35 @@
           "sha256": "728a91425d6dde125d391c4bef771a050bcee7433b9d2296142db6230d9ef9d6"
         }
       ],
-      "defect": "S2-M9-HIDDEN-SCROLL closed"
+      "defect": "prior S2 defects closed incl S2-RECENT-TITLE",
+      "regressionInputs": [
+        {
+          "path": "scripts/browser/s1-service-host.ts",
+          "sha256": "d53a029e8216597dbd96aa39029c467f15c31343408a2c5e3d7cc7e066c19844"
+        },
+        {
+          "path": "scripts/browser/s1-lifecycle-probe.mjs",
+          "sha256": "9a65993bcbc77773fded1599997fee5551a4918adb2fc251635d7ad300dd6c6e"
+        },
+        {
+          "path": "scripts/browser/adjudicate-s1-lifecycle.mjs",
+          "sha256": "5a5d5f31b8904a72d565ac16b48d2684d55b303cce7f09635adb717034ffbf59"
+        },
+        {
+          "path": "scripts/browser/s1-error-probe.mjs",
+          "sha256": "8413748f73a6f31d439e786d228eb633317f66485853fa8ffc9ef551ba75eb9d"
+        },
+        {
+          "path": "scripts/browser/adjudicate-s1-errors.mjs",
+          "sha256": "76a3324245d0ee06daa80e486d17f44a7394228ca7147f16eedb83a1c9403bce"
+        }
+      ],
+      "implementationCommit": "a2beb41744c4ec2d0b4f0bc2ff3328c7c132af1a"
     }
   ],
   "next": "S2界面、导航与独立持久化；对应层级测试及真实App验收",
-  "countAuthority": "验收/测试用例.md；本记录不另维护通过率"
+  "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
+  "implementationCheckpoint": "a2beb41744c4ec2d0b4f0bc2ff3328c7c132af1a",
+  "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
+  "currentSourceCommit": "a2beb41744c4ec2d0b4f0bc2ff3328c7c132af1a"
 }
