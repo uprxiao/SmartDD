@@ -2,15 +2,19 @@
 // No daily credentials or external sites. One transient gateway disconnect is deliberate fault injection.
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
+import {createServer as createNetServer} from 'node:net';
 import {execFileSync} from 'node:child_process';
-import {mkdir,readFile,writeFile,cp} from 'node:fs/promises';
+import {mkdir,readFile,writeFile,cp,readdir,rm,access} from 'node:fs/promises';
 import {join,resolve,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 import {focusNewInstalledWindow} from '../applications/fixtures/dmg-install-ui.mjs';
-const [root,executable,expectedAsar]=process.argv.slice(2);
+const [root,executable,expectedAsar,policyMode='named-workspace',approval='on-request']=process.argv.slice(2);
+assert(['named-workspace','workspace-write','read-only'].includes(policyMode)&&['on-request','never'].includes(approval));
+const policyProbe=process.argv.length>5;
 assert(root?.startsWith('/private/tmp/willyou-m12-s1-')&&executable?.startsWith('/private/tmp/willyou-m12-s1-')&&expectedAsar);
+await access(executable);
 await mkdir(root,{recursive:false});
 const home=join(root,'agent-home'),state=join(root,'codex'),cwd=join(root,'project'),userData=join(root,'userdata'),cli=join(root,'tools/codex');
 for(const p of [home,state,join(cwd,'.git'),dirname(cli)])await mkdir(p,{recursive:true});
@@ -18,7 +22,7 @@ await cp('/Users/liubu/.codex/packages/app-server-daemon/releases/0.166.0-aarch6
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex'),quote=s=>"'"+s.replaceAll("'","'\\''")+"'";
 const asar=join(resolve(dirname(executable),'../Resources'),'app.asar');
 assert.equal(sha(await readFile(asar)),expectedAsar);assert.equal(execFileSync(cli,['--version'],{encoding:'utf8'}).trim(),'codex-cli 0.166.0');
-const marker='M12_S1_'+root.split('-').at(-1),result={startedAt:new Date().toISOString(),root,userData,asarSha256:expectedAsar,cliSha256:sha(await readFile(cli)),sandbox:'M11 supported named :workspace inherited permissions, on-request; no bypass. Prior explicit --sandbox override failure retained separately',layer:'I+R: packaged App -> real managed Codex -> native CLI -> host service; Responses provider is synthetic loopback, not real model reasoning',calls:[],outputs:[],commits:[],files:[],checks:[]};
+const marker='M12_S1_'+root.split('-').at(-1),result={startedAt:new Date().toISOString(),root,userData,asarSha256:expectedAsar,cliSha256:sha(await readFile(cli)),sandbox:{policyMode,approval,probe:policyProbe,noBypass:true},layer:'I+R: packaged App -> real managed Codex -> native CLI -> host service; Responses provider is synthetic loopback, not real model reasoning',calls:[],outputs:[],commits:[],files:[],checks:[]};
 let app,project,profile,task,stage='setup',phase='first',cursor=0,pending,serial=0;
 const sockets=new Set(),seen=new Set();
 const persist=async()=>writeFile(join(root,'live.json'),JSON.stringify({...result,stage,phase,cursor,pid:app?.processId},null,2)+'\n');
@@ -26,6 +30,21 @@ const poll=async(fn,ms=20000)=>{const end=Date.now()+ms;let last;do{last=await f
 const outputText=value=>typeof value==='string'?value:Array.isArray(value)?value.map(x=>x.text??'').join(''):JSON.stringify(value);
 const jsonOf=text=>{const start=text.indexOf('{');assert(start>=0,'No JSON in native output: '+text.slice(0,300));return JSON.parse(text.slice(start).trim());};
 const data={};
+const canary=join(cwd,'m12-policy-canary.txt'),outside=resolve('.m12-policy-outside-'+sha(root).slice(0,12)+'.txt'),decoyPath='/private/tmp/m12-p001-'+sha(root).slice(0,12)+'.sock';
+const decoyPeers=new Set();let decoyConnections=0;
+const decoy=policyProbe?createNetServer(socket=>{decoyConnections++;decoyPeers.add(socket);socket.on('error',()=>{});socket.on('close',()=>decoyPeers.delete(socket));socket.end();}):null;
+if(decoy)await new Promise((ok,no)=>{decoy.once('error',no);decoy.listen(decoyPath,ok);});
+const filesystemCommand=()=>{
+ const script='import json,pathlib,socket; records=[]\nfor name,path in '+JSON.stringify([['inside',canary],['outside',outside]])+':\n try:\n  pathlib.Path(path).write_text('+JSON.stringify(marker)+');records.append({"name":name,"wrote":True})\n except OSError as e:records.append({"name":name,"wrote":False,"error":type(e).__name__})\ns=socket.socket(socket.AF_UNIX);s.settimeout(2)\ntry:s.connect('+JSON.stringify(decoyPath)+');connected=True\nexcept OSError:connected=False\nfinally:s.close()\nt=socket.socket();t.settimeout(2)\ntry:t.connect(("127.0.0.1",'+server.address().port+'));tcp=True\nexcept OSError:tcp=False\nfinally:t.close()\nprint(json.dumps({"writes":records,"otherSocketConnected":connected,"directTcpConnected":tcp}))';
+ return 'python3 -c '+quote(script);
+};
+async function nativeContexts(){
+ const directory=join(state,'sessions'),contexts=[];
+ for(const name of await readdir(directory,{recursive:true})){if(!name.endsWith('.jsonl'))continue;const path=join(directory,name),bytes=await readFile(path),raw=bytes.toString();if(!raw.includes(marker))continue;
+ for(const line of raw.split('\n')){if(!line.trim())continue;let row;try{row=JSON.parse(line);}catch{continue;}if(row.type==='turn_context')contexts.push({source:path,sha256:sha(bytes),approval:row.payload.approval_policy,sandbox:row.payload.sandbox_policy});}}
+ return contexts;
+}
+
 const commandSteps=()=>phase==='restart'?[
  {name:'new-run-get',cmd:()=> 'willyou-app browser operation get --request '+quote(result.disconnected.requestId)},
 ]:[
@@ -41,6 +60,7 @@ const commandSteps=()=>phase==='restart'?[
  {name:'large-console',cmd:()=> 'willyou-app browser console --limit 1'},
  {name:'large-network',cmd:()=> 'willyou-app browser network --limit 1'},
  {name:'sandbox-read',cmd:()=> 'python3 -c '+quote('import json,hashlib,pathlib; files='+JSON.stringify(['large-snapshot','large-console','large-network'].map(name=>data[name].data.file))+'; print(json.dumps({"files":[{"path":f["path"],"bytes":len(pathlib.Path(f["path"]).read_bytes()),"sha256":hashlib.sha256(pathlib.Path(f["path"]).read_bytes()).hexdigest(),"parsed":bool(json.loads(pathlib.Path(f["path"]).read_text()))} for f in files]}))')},
+ ...(policyProbe?[{name:'filesystem-policy',cmd:filesystemCommand}]:[]),
 ];
 function sendResponse(res,body,call,text){
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
@@ -67,6 +87,7 @@ const server=createServer((req,res)=>{
    if(background){pending={sessionId:Number(background[1]),step:issued.step};continue;}
    const value=jsonOf(text);data[issued.step]=value;pending=undefined;cursor++;
    if(issued.step==='post-disconnect'){assert(value.requestId&&value.requestId===result.disconnected.requestId);assert.equal(value.error.effectState,'unknown');}
+   else if(issued.step==='filesystem-policy'){result.filesystemPolicy=value;assert.equal(value.otherSocketConnected,false);assert.equal(value.directTcpConnected,false);assert.equal(value.writes.find(x=>x.name==='inside').wrote,policyMode!=='read-only');assert.equal(value.writes.find(x=>x.name==='outside').wrote,false);}
    else if(issued.step==='sandbox-read'){result.sandboxRead=value;assert.equal(value.files.length,3);}
    else{assert.equal(value.schema,'willyou-app-result-v2');if(issued.step.startsWith('large-')&&issued.step!=='large-goto')assert(value.data.file,'Expected large artifact');}
   }
@@ -81,7 +102,7 @@ const server=createServer((req,res)=>{
 });
 server.on('connection',socket=>{sockets.add(socket);socket.on('error',()=>{});socket.on('close',()=>sockets.delete(socket));});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const site='http://127.0.0.1:'+server.address().port+'/';
-await writeFile(join(state,'config.toml'),'default_permissions=":workspace"\napproval_policy="on-request"\nmodel="s1-private-model"\nmodel_provider="s1_fixture"\nnotify=[]\n[model_providers.s1_fixture]\nname="S1 Local Fixture"\nbase_url="'+site+'v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n[projects.'+JSON.stringify(cwd)+']\ntrust_level="trusted"\n');
+await writeFile(join(state,'config.toml'),(policyMode==='named-workspace'?'default_permissions=":workspace"\n':'')+'approval_policy='+JSON.stringify(approval)+'\nmodel="s1-private-model"\nmodel_provider="s1_fixture"\nnotify=[]\n[model_providers.s1_fixture]\nname="S1 Local Fixture"\nbase_url="'+site+'v1"\nwire_api="responses"\nrequires_openai_auth=false\n[analytics]\nenabled=false\n[feedback]\nenabled=false\n[projects.'+JSON.stringify(cwd)+']\ntrust_level="trusted"\n');
 const privateEnv={PATH:process.env.PATH,HOME:home,ZDOTDIR:home,CODEX_HOME:state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',ALL_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost',SHELL:'/bin/zsh'};
 async function click(selector,text){const geometry=()=>app.evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getBoundingClientRect().height&&${text===undefined?'true':`e.textContent.trim()===${JSON.stringify(text)}`});if(!e)throw Error('Control missing');e.scrollIntoView({behavior:'instant',block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);let p=await geometry();await app.evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');assert.deepEqual(await geometry(),p);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
 async function reload(){const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,20000);await app.evaluate(`document.title='A · M12 S1 · 隔离技术门槛';true`);await focusNewInstalledWindow(app,userData,result);installAppFocusGuard(app,result);}
@@ -97,7 +118,7 @@ try{
  app=await openElectron({executable,userData,cwd,env:{CODEX_HOME:state},inspectMain:true});result.firstPid=app.processId;
  project=await app.invoke('projects.create',{name:'M12 S1 私有门槛',aliases:[],description:'Local synthetic test',rulesPath:null},[{label:'fixture',path:cwd}]);
  const catalog=await poll(async()=>{const c=await app.invoke('applications.catalog');return c.ok&&c.value.find(a=>a.appId==='browser');},30000);assert((await app.invoke('applications.setAdded','browser',true,catalog.revision)).ok);assert((await app.invoke('applications.select',{projectId:project.id,appId:'browser',enabled:true,expectedRevision:0,connections:{}})).ok);
- profile=await app.invoke('aiProfiles.create',{name:'M12 S1 Codex 0.166.0',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args:['--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','-c','skills.config=[]','--ask-for-approval','on-request'],color:null,isDefault:true});
+ profile=await app.invoke('aiProfiles.create',{name:'M12 S1 Codex 0.166.0',runner:'codex',executable:cli,env:Object.entries(privateEnv).map(([name,value])=>({name,value,secret:false})),args:['--disable','hooks','--disable','apps','--disable','remote_plugin','--disable','multi_agent','--disable','shell_snapshot','-c','web_search="disabled"','-c','skills.config=[]','--ask-for-approval',approval,...(policyMode==='named-workspace'?[]:['--sandbox',policyMode])],color:null,isDefault:true});
  result.profileHealth=await poll(async()=>{const p=await app.invoke('aiProfiles.get',profile.id);return !p.checking&&p.check?p.check:null;},45000);assert.equal(result.profileHealth.status,'ok');
  stage='first-setup-reload';await reload();
  await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own instance only');const net=process.getBuiltinModule('net'),original=net.Server.prototype.emit,f={original,sockets:new Map()};globalThis.__m12S1Fault=f;net.Server.prototype.emit=function(event,...args){if(event==='connection'&&typeof this.address()==='string'){const socket=args[0];let buffer='';socket.on('data',bytes=>{buffer+=bytes;if(buffer.length>2097152){buffer='';return;}let at;while((at=buffer.indexOf('\\n'))>=0){const line=buffer.slice(0,at);buffer=buffer.slice(at+1);try{const request=JSON.parse(line);if(request.method==='capabilities/call'&&request.call?.operation==='browser.interact.eval'&&request.call.arguments?.expression?.includes(${JSON.stringify('commit?key='+marker)}))f.sockets.set(request.id,socket);}catch{}}});}return original.call(this,event,...args)};return true})()`);
@@ -112,9 +133,13 @@ try{
  stage='history-ui';await click('[data-testid=nav-apps]');await app.waitFor("!!document.querySelector('.m10-nav')",10000);await click('.m10-nav','调用记录');await app.waitFor("[...document.querySelectorAll('.m10-activity-row')].some(e=>e.innerText.includes('browser.interact.eval'))",10000);
  const records=await app.invoke('applications.activity',{appId:'browser',projectId:project.id,limit:100});result.historyRecords=records;const old=records.value.items.find(i=>i.requestId===result.disconnected.requestId);assert(old,'Original request must survive restart');result.historyOperation=old;
  const labels=await app.evaluate("[...document.querySelectorAll('.m10-activity-row')].filter(e=>e.innerText.includes('browser.interact.eval')).map(e=>e.innerText)");result.historyUiRows=labels;assert(labels.some(text=>text.includes('调用结果未知')||text.includes('调用完成')||text.includes('调用失败')));await app.screenshot(join(root,'history-after-restart.png'));
+ result.storedProfileArgs=(await app.invoke('aiProfiles.get',profile.id)).args;assert.deepEqual(result.storedProfileArgs,profile.args);
+ await app.invoke('tasks.kill',task.id);result.nativeContexts=await nativeContexts();if(policyProbe){assert(result.nativeContexts.length>=2);assert(result.nativeContexts.every(x=>x.approval===approval&&x.sandbox?.type===(policyMode==='read-only'?'read-only':'workspace-write')));assert.equal(decoyConnections,0);result.decoyConnections=decoyConnections;}
  result.status='passed';
 }catch(error){result.status=isAppFocusYield(error)?'deferred-focus-loss':'failed';result.failedStage=stage;result.error=String(error.stack??error);if(app)try{await writeFile(join(root,'failure-dom.txt'),await app.evaluate('document.body.innerText'));await app.screenshot(join(root,'failure.png'));if(task?.id){result.failureSession=await app.invoke('applications.session',task.id);const current=await app.invoke('tasks.get',task.id);if(current.ptyId)await writeFile(join(root,'failure-terminal.txt'),await app.output(current.ptyId));}}catch{}}
 finally{
  if(app){try{await app.mainEvaluate("(()=>{const f=globalThis.__m12S1Fault;if(f){process.getBuiltinModule('net').Server.prototype.emit=f.original;delete globalThis.__m12S1Fault;}return true})()");result.faultRestored=true;}catch{}if(task?.id)try{await app.invoke('tasks.kill',task.id);}catch{}await writeFile(join(root,'electron.txt'),app.logs());await app.close();result.appClosed=true;}
+ if(decoy){for(const peer of decoyPeers)peer.destroy();await new Promise(r=>decoy.close(r));await rm(decoyPath,{force:true});result.decoyClosed=true;}
+ try{const value=await readFile(outside,'utf8');if(value===marker){await rm(outside);result.unexpectedOutsideCanaryRemoved=true;}}catch{}
  for(const socket of sockets)socket.destroy();server.closeAllConnections();await new Promise(r=>server.close(r));result.finishedAt=new Date().toISOString();await writeFile(join(root,'result.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({status:result.status,stage,error:result.error,root,calls:result.calls.length}));
 }

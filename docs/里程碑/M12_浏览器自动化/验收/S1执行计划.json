@@ -170,10 +170,266 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-03T15:04:02.863186+00:00",
-  "status": "S1门槛完成；后续批次未开始",
+  "updatedAt": "2026-11-03T15:45:23.097742+00:00",
+  "status": "S1门槛完成；S2-S6总目标active，前置缺陷定位",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
   "pauseHandoff": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
-  "next": "S1结果已归账；后续批次由用户决定，先处理开放M11显式sandbox参数兼容缺陷"
+  "next": "先定位、修复并真实复验S1-M11-CLI-SANDBOX，再按技术方案§11分批推进S2-S6",
+  "followupAgreement": {
+    "document": "../技研/技术方案.md#11-开发顺序",
+    "recordedAt": "2026-11-03",
+    "status": "用户已明确授权建立并启动后续总目标",
+    "historyBoundary": "本文件保留S1原授权、分组及执行事实；开工后补后续分组，不重放S1已完成组，结果仍只记原用例账"
+  },
+  "continuation": {
+    "schema": 1,
+    "startedAt": "2026-11-03T15:43:20.637045+00:00",
+    "authorization": "用户要求建立覆盖S2-S6全部剩余开发、测试和测试缺陷修复复验的总目标",
+    "status": "active",
+    "branch": "feature/0.1.1",
+    "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
+    "requirements": "R1.2",
+    "technicalDesign": "V1.1 §11",
+    "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
+    "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
+    "currentGroup": "M12-P002",
+    "groups": [
+      {
+        "id": "M12-P001",
+        "name": "M11显式sandbox参数接入修复与复验",
+        "owner": "/root",
+        "status": "complete; explicit workspace/readonly and named workspace A/R verified",
+        "defect": "S1-M11-CLI-SANDBOX",
+        "criteriaSource": "../技研/技术方案.md#112-先修-m11-接入兼容缺陷",
+        "originalRed": "证据/并行测试/M12-20261103T092732Z-s1a/S1-G001/attempt-019/",
+        "layers": [
+          "U",
+          "I",
+          "A",
+          "R"
+        ],
+        "relatedCaseIds": [
+          "M12-T030",
+          "M12-T032",
+          "M12-T035",
+          "M12-T037",
+          "M12-T045"
+        ],
+        "coverageNote": "原用例仅作受影响回归关联，本组另核对原失败配置；关联不代表整条已执行或通过，开跑前补齐具体判据、命令与冻结输入",
+        "resources": {
+          "implementation": "released",
+          "build": "released",
+          "nativeUi": "released"
+        },
+        "next": "closed; continue S2"
+      },
+      {
+        "id": "M12-P002",
+        "name": "S2界面与导航",
+        "owner": "/root",
+        "status": "implementation starting; not yet tested",
+        "dependsOn": [
+          "M12-P001"
+        ],
+        "criteriaSource": "../技研/技术方案.md#113-批次范围与用例导航",
+        "caseCriteria": [
+          {
+            "caseId": "M12-T001",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T002",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T003",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T004",
+            "layers": "A＋R",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T005",
+            "layers": "U",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T006",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T007",
+            "layers": "I＋A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T008",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T009",
+            "layers": "A＋S",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T010",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T011",
+            "layers": "U＋A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T013",
+            "layers": "A＋I",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T014",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T018",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T019",
+            "layers": "I＋A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T020",
+            "layers": "A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T023",
+            "layers": "I",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T024",
+            "layers": "A＋S",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          },
+          {
+            "caseId": "M12-T025",
+            "layers": "U＋A",
+            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
+            "validOldEvidence": "none counted for this group",
+            "remaining": "全部原要求层级",
+            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+          }
+        ],
+        "crossBatchCases": [
+          {
+            "caseId": "M12-T107",
+            "scope": "仅在新UI就绪后补A层；S1 I层是否复用需核对变更与哈希"
+          }
+        ],
+        "resources": {
+          "implementation": "coordinator only",
+          "build": "not allocated",
+          "nativeUi": "not allocated"
+        }
+      }
+    ],
+    "autonomy": {
+      "confirmedAt": "2026-11-03T15:45:23.097742+00:00",
+      "instruction": "用户夜间休息期间继续自主开发与测试；必须本人参与的用例保留缺项并后置，转到其他可执行测试或独立后续开发，不暂停整个目标，不记作通过",
+      "userWork": "集中整理原用例编号、缺少操作、环境/设备及预计配合步骤，用户次日参与时统一补验",
+      "priority": "优先已就绪、自主可闭环且共用前置的开发/测试；基础依赖未成立不越过执行段",
+      "status": "active"
+    },
+    "systemPrerequisites": [
+      {
+        "caseId": "M12-T083",
+        "missing": "Chrome/Edge合成测试profile准备，用户在场操作钥匙串拒绝/允许",
+        "handling": "用户参与步骤后置；其余Cookie导入/恢复用例独立继续"
+      },
+      {
+        "caseId": "M12-T110",
+        "missing": "双显示器与全屏空间，确认设备可用后执行",
+        "handling": "没有设备先保留缺项，推进其他项"
+      },
+      {
+        "caseId": "M12-T127",
+        "missing": "用户指定一个授权范围内的真实禅道Bug；先核查既有M10可复用授权/数据",
+        "handling": "不自行挑选生产对象；合成R流程独立继续"
+      },
+      {
+        "caseId": "M12-T141",
+        "missing": "原生macOS x64真机及该架构M11前置",
+        "handling": "不以Rosetta或arm64结果代替"
+      }
+    ],
+    "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
+    "updatedAt": "2026-11-03T16:13:21.862545+00:00"
+  }
 }

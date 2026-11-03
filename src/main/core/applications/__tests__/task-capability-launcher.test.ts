@@ -129,6 +129,33 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   const text=readFileSync(join(home,'.agents/skills',plan.skills[0].nativeName,'SKILL.md'),'utf8');expect(text).toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain('willyou-app mail draft list');
  });
 
+ it.each([['--sandbox','read-only'],['--sandbox=read-only'],['-sread-only']])('replaces only the proved legacy selector at the actual task fork: %j',async(...selector)=>{
+  const profile=profiles.get(codexId),args=[...selector,'--ask-for-approval','never'];
+  profiles.update(codexId,{name:profile.name,runner:'codex',executable:profiles.resolve(codexId).command,args,env:[],color:null,isDefault:true});
+  const running=await create(),launch=ptys.launches[0];
+  expect(launch.args).not.toContain('--sandbox');expect(launch.args).not.toContain('--sandbox=read-only');expect(launch.args).not.toContain('-sread-only');
+  const approval=launch.args!.indexOf('--ask-for-approval');expect(approval).toBeGreaterThanOrEqual(0);
+  expect(launch.args!.slice(approval,approval+2)).toEqual(['--ask-for-approval','never']);
+  expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.cli!.endpoint).slice(0,12)+'.extends=":read-only"');
+  expect(profiles.get(codexId).args).toEqual(args);
+  expect(await request(launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list'}});
+  tasks.kill(running.task.id);
+ });
+
+ it('restores original sandbox argv when an authenticated CLI launch is narrowed to native-only before the fork',async()=>{
+  const profile=profiles.get(codexId),args=['--sandbox','read-only','--ask-for-approval','never'];
+  profiles.update(codexId,{name:profile.name,runner:'codex',executable:profiles.resolve(codexId).command,args,env:[],color:null,isDefault:true});
+  const original=managed.prepare.bind(managed);
+  vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{
+   const launch=await original(input);expect(launch.profileArgs).toEqual(['--ask-for-approval','never']);
+   return launch.nativeOnly!('managed_launch_payload_too_large');
+  });
+  const running=await create(),launch=ptys.launches[0];
+  expect(launch.args!.slice(0,args.length)).toEqual(args);expect(launch.args!.join(' ')).not.toContain('wy_cli_');
+  expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(profiles.get(codexId).args).toEqual(args);
+  tasks.kill(running.task.id);
+ });
+
  // M11 T25 regression: FakePTY only; no actual Agent/App/native PTY.
  const t25Unknown=()=>writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n',{mode:0o700});
  async function t25Capture(running:Awaited<ReturnType<typeof create>>){

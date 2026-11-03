@@ -1,0 +1,158 @@
+{
+  "schema": "m12-s2-ui-preflight-v1",
+  "startedAt": "2026-11-03T16:42:36.423Z",
+  "root": "/private/tmp/willyou-m12-s2-ui-004",
+  "userData": "/private/tmp/willyou-m12-s2-ui-004/userdata",
+  "asarSha256": "e8b699792de3b7503186012cc1cd0f4ca30e8982950558197eb9c34d6181c209",
+  "layer": "A real packaged UI; controlled private sleep process is not a real Agent R",
+  "checks": [
+    {
+      "name": "startup no native view",
+      "passed": true
+    }
+  ],
+  "actions": [
+    {
+      "stage": "file-precondition",
+      "kind": "click",
+      "selector": "[data-testid=\"sidebar-task\"][data-task-id=\"442612df-0b04-4336-8712-8888cb9719bc\"]"
+    },
+    {
+      "stage": "file-precondition",
+      "kind": "click",
+      "selector": "[data-testid=task-resume]"
+    },
+    {
+      "stage": "file-precondition",
+      "kind": "click",
+      "selector": "[data-testid=task-files]"
+    },
+    {
+      "stage": "file-precondition",
+      "kind": "click",
+      "selector": "[role=treeitem]",
+      "text": "fixture.md"
+    },
+    {
+      "stage": "startup-page",
+      "kind": "click",
+      "selector": "[data-testid=task-new-browser]"
+    },
+    {
+      "stage": "first-navigation",
+      "kind": "click",
+      "selector": "[aria-label=\"网页地址\"]"
+    },
+    {
+      "stage": "first-navigation",
+      "kind": "address",
+      "value": "http://127.0.0.1:59477/a"
+    },
+    {
+      "stage": "first-navigation",
+      "kind": "click",
+      "selector": "[data-testid=task-new-browser]"
+    },
+    {
+      "stage": "first-navigation",
+      "kind": "click",
+      "selector": "[aria-label=\"网页地址\"]"
+    },
+    {
+      "stage": "first-navigation",
+      "kind": "address",
+      "value": "http://127.0.0.1:59477/b"
+    },
+    {
+      "stage": "file-and-browser-switch",
+      "kind": "click",
+      "selector": "[role=tab]",
+      "text": "fixture.md"
+    }
+  ],
+  "requests": [
+    {
+      "url": "/a",
+      "method": "GET",
+      "cacheControl": null
+    },
+    {
+      "url": "/favicon.ico",
+      "method": "GET",
+      "cacheControl": null
+    },
+    {
+      "url": "/b",
+      "method": "GET",
+      "cacheControl": null
+    },
+    {
+      "url": "/favicon.ico",
+      "method": "GET",
+      "cacheControl": null
+    }
+  ],
+  "appPid": 52972,
+  "projectId": "16f5b12e-5312-4ccd-9a8d-fd71bd9da58d",
+  "taskIds": [
+    "442612df-0b04-4336-8712-8888cb9719bc",
+    "ff5f1ed9-4f09-42c4-b0d7-7c1798fb8481"
+  ],
+  "initialPty": "cbd55bd6-efa1-4f6b-876e-e8a731abd0de",
+  "initialPids": [
+    53008,
+    53039
+  ],
+  "installationInitialFocus": [
+    {
+      "pid": 52972,
+      "before": {
+        "focused": false,
+        "visibility": "visible"
+      },
+      "requested": true,
+      "after": {
+        "focused": true,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "focusGuard": {
+    "enabled": true,
+    "appPid": 52972,
+    "checkedInputs": 37
+  },
+  "focusGuards": [
+    {
+      "enabled": true,
+      "appPid": 52972,
+      "checkedInputs": 37
+    }
+  ],
+  "fileTextBefore": "# M12 file fixture\n\n\nfixture-line-0\nfixture-line-1\nfixture-line-2\nfixture-line-3\nfixture-line-4\nfixture-line-5\nfixture-line-6\nfixture-line-7\nfixture-line-8\nfixture-line-9\nfixture-line-10\nfixture-line-11\nfixture-line-12\nfixture-line-13\nfixture-line-14\nfixture-line-15\nfixture-line-16\nfixture-line-17\nfixture-line-18\nfixture-line-19\nfixture-line-20\nfixture-line-21\nfixture-line-22\nfixture-line-23\nfixture-line-24\nfixture-line-25\nfixture-line-26\nfixture-line-27\nfixture-line-28\nfixture-line-29\nfixture-line-30\nfixture-line-31\nfixture-line-32\nfixture-line-33",
+  "viewsBeforeBlank": [
+    {
+      "id": 1,
+      "url": "file:///private/tmp/willyou-m12-s2-package-001/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+      "type": "window"
+    }
+  ],
+  "viewsAfterBlank": [
+    {
+      "id": 1,
+      "url": "file:///private/tmp/willyou-m12-s2-package-001/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html",
+      "type": "window"
+    }
+  ],
+  "firstTwo": {
+    "a": "811ee22f-7b4b-4c0f-ae75-43a1938caaea",
+    "b": "41fd1a09-b77f-4922-97da-5d4e72ef586a"
+  },
+  "status": "failed",
+  "failedStage": "file-and-browser-switch",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '此块预览复杂度超过预算，显示完整源码\\n' +\n+   'M12 file fixture\\n' +\n- '# M12 file fixture\\n' +\n    '\\n' +\n    '\\n' +\n    'fixture-line-0\\n' +\n    'fixture-line-1\\n' +\n    'fixture-line-2\\n' +\n\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s2-packaged-ui.mjs:45:176",
+  "failureDOM": "M12 S2 T1\n新建标签页\n应用\n文件\nWillYou\n新建任务\n⌘N\n任务历史\n2\n应用\n项目\nM12 S2 isolated\nM12 S2 T2\nM12 S2 T1\n设置\n \nfixture.md\nPage A\nPage B\n任务启动目录\n›\nfixture.md\n打开\n此块预览复杂度超过预算，显示完整源码\nM12 file fixture\n\n\nfixture-line-0\nfixture-line-1\nfixture-line-2\nfixture-line-3\nfixture-line-4\nfixture-line-5\nfixture-line-6\nfixture-line-7\nfixture-line-8\nfixture-line-9\nfixture-line-10\nfixture-line-11\nfixture-line-12\nfixture-line-13\nfixture-line-14\nfixture-line-15\nfixture-line-16\nfixture-line-17\nfixture-line-18\nfixture-line-19\nfixture-line-20\nfixture-line-21\nfixture-line-22\nfixture-line-23\nfixture-line-24\nfixture-line-25\nfixture-line-26\nfixture-line-27\nfixture-line-28\nfixture-line-29\nfixture-line-30\nfixture-line-31\nfixture-line-32\nfixture-line-33\nproject · 任务启动目录\nproject\n.git\nfixture.md\n13.2 KiB\nUTF-8\nCodex\n·\nS2 controlled terminal only\n2 个运行中",
+  "appClosed": true,
+  "fixtureServerClosed": true,
+  "finishedAt": "2026-11-03T16:42:42.141Z"
+}

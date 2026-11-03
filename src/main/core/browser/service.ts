@@ -10,6 +10,9 @@ import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-brow
 import { join } from 'node:path';
 import { browserExecArguments } from './exec-policy';
 import type { BrowserProgress } from './input-progress';
+import {BrowserWorkspace} from './workspace';
+import type {BrowserShortcut} from '@shared/browser-workspace';
+import {normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
 
 export interface BrowserScope {
   projectId:string;taskId:string;runId:string;requestId:string;operationId:string;signal:AbortSignal;assertActive():void;
@@ -24,12 +27,14 @@ const text=(value:unknown):string=>{
 export class BrowserService {
   readonly pages:BrowserPageRegistry;
   readonly operations:BrowserOperations;
+  readonly workspace:BrowserWorkspace;
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
   private readonly readWaits=new Map<string,Set<AbortController>>();
   private closed=false;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;window?:()=>BrowserWindow|null}){
+  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.pages=new BrowserPageRegistry(options);this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages});
     this.artifacts=new BrowserArtifacts(join(options.userData,'browser/artifacts'));
   }
   pause(taskId:string,value:boolean):void{
@@ -54,11 +59,13 @@ export class BrowserService {
     try{
       this.admit(scope,args);
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
-      if(command==='tab list')return{tabs:this.pages.list(scope.taskId).map(item=>({pageId:item.id,title:item.view.webContents.getTitle(),url:item.view.webContents.getURL(),profileId:item.profileId}))};
+      if(command==='tab list')return{tabs:this.workspace.list(scope.taskId)};
+      const navigation=command==='goto'||command==='tab create'&&args.url!==undefined?normalizeBrowserNavigationUrl(text(args.url)):undefined;
+      if(navigation===null)throw new ApplicationError('INVALID_INPUT','导航地址或协议无效');
       if(command==='type'&&Array.from(text(args.input)).length>16384)throw new ApplicationError('INVALID_INPUT','type 最多16384字符；长文本请改用 inserttext');
       if(command==='wait'&&(args.fn!==undefined||args.timeout!==undefined&&(!Number.isInteger(args.timeout)||Number(args.timeout)<1||Number(args.timeout)>90000)))throw new ApplicationError('INVALID_INPUT','wait 不接受脚本，timeout须为1到90000毫秒');
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
-      if(command!=='tab create')page=this.pages.get(scope.taskId,args.page===undefined?undefined:text(args.page));
+      if(command!=='tab create')page=await this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page));
       if(!read){
         const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,page?.id??null,command);
         if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
@@ -67,7 +74,7 @@ export class BrowserService {
       if(command==='tab create'){
         if(args.profile!==undefined)throw new ApplicationError('INVALID_INPUT','S1只使用项目默认登录态');
         send();page=await this.pages.create(scope.taskId,scope.projectId);
-        if(args.url!==undefined)await this.pages.navigate(page,text(args.url));
+        if(navigation!==undefined)await this.pages.navigate(page,navigation);
         result={pageId:page.id,url:page.view.webContents.getURL()};
       }else{
         const target=page!;
@@ -79,7 +86,7 @@ export class BrowserService {
           await target.helper.ensureSession();
           if(signal.aborted)throw signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
           if(command==='goto'){
-            const url=text(args.url);try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();}catch{throw new ApplicationError('INVALID_INPUT','导航地址或协议无效');}
+            const url=navigation!;
             send();await this.pages.navigate(target,url);return{navigated:true};
           }
           if(command==='snapshot')return this.artifacts.result(scope.taskId,'snapshot',{
@@ -212,5 +219,5 @@ export class BrowserService {
       throw dispatched||read?failure:applicationPreflightFailure(failure,scope.operationId);
     }
   }
-  async dispose():Promise<void>{this.closed=true;await this.pages.dispose();}
+  async dispose():Promise<void>{this.closed=true;await this.workspace.dispose();await this.pages.dispose();}
 }

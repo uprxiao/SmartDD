@@ -39,6 +39,11 @@ function Editor({ value }: { value: ReturnType<typeof fixture> }) {
 const button = (name: string) => screen.getByRole('button', { name }) as HTMLButtonElement;
 const editor = () => EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)!;
 const editOneCharacter = () => act(() => { editor().dispatch({ changes: { from: 2, to: 3, insert: 'X' }, selection: { anchor: 3 }, userEvent: 'input.type' }); });
+it('retains a visible scroll checkpoint through browser hiding and a task remount',async()=>{
+ const value=fixture('browser-scroll.txt',Array.from({length:100},(_,i)=>'line '+i).join('\n'));await value.buffer.load();const mounted=render(<Editor value={value}/>);
+ editor().scrollDOM.scrollTop=500;fireEvent.scroll(editor().scrollDOM);mounted.container.hidden=true;editor().scrollDOM.scrollTop=0;fireEvent.scroll(editor().scrollDOM);mounted.unmount();expect(value.buffer.scrollTop).toBe(500);
+ render(<Editor value={value}/>);expect(editor().scrollDOM.scrollTop).toBe(500);
+});
 
 it('describes the actual UTF16 caret position without changing the file or editor identity', async () => {
   const value = fixture('游标🙂.ts', 'alpha\r\n中文🙂\r\n');

@@ -1,0 +1,137 @@
+{
+  "runId": "M12-20261103T154320Z-bff2",
+  "createdAt": "2026-11-03T15:43:20.637045+00:00",
+  "updatedAt": "2026-11-03T17:02:54.325853+00:00",
+  "status": "S2-first-formal-batch-accounted",
+  "coordinator": "/root",
+  "agents": [],
+  "branch": "feature/0.1.1",
+  "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
+  "sourceState": "M11兼容修复与相关测试已冻结；另有既有流程文档及外部驱动增量，未改正在运行的生产输入",
+  "requirements": "R1.2",
+  "technicalDesign": "V1.1 §11",
+  "plan": "../../../S1执行计划.json#continuation",
+  "currentGroup": "M12-P002",
+  "resources": {
+    "build": "free; package002 frozen",
+    "nativeUi": "free"
+  },
+  "groups": [
+    {
+      "id": "M12-P001",
+      "owner": "/root",
+      "status": "complete",
+      "privateRoot": "/private/tmp/willyou-m12-s1-p001-named-001",
+      "pids": [],
+      "sessions": [],
+      "ports": [],
+      "testBaseline": "frozenInputs，私有cache已在测试启动前设置；typecheck已通过，回归仍在执行",
+      "frozenInputs": [
+        {
+          "path": "src/main/core/applications/codex-effective-sandbox.ts",
+          "sha256": "149f73d1761171359ed4358a8240ef1a8e2badc26c0fe51b0fb0693cbbcfd01f"
+        },
+        {
+          "path": "src/main/core/applications/task-capability-launcher.ts",
+          "sha256": "c27799a4f265ad76ce2afe53ee90ea200da58a1e6c7b2a8c227ac3d68fbbd76b"
+        },
+        {
+          "path": "src/main/core/tasks/capability-lifecycle.ts",
+          "sha256": "1ddd44d6fc0967d58aac180a87d307c7d1e73e804b34993e9f329311281b2f43"
+        },
+        {
+          "path": "src/main/core/tasks/task-service.ts",
+          "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+        },
+        {
+          "path": "src/main/core/applications/__tests__/codex-effective-sandbox.test.ts",
+          "sha256": "36357f957ff23a7d5e14ffef60a1576668c305dd2c6d71008b7f6bb0d8920e50"
+        },
+        {
+          "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+          "sha256": "1983512019396687f2844ed729a04c7ad1788e942fa2419be472df69beb577c9"
+        }
+      ],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-001",
+          "manifestSha256": "4f814e1e005f341afecb05f4ff88a5a22c11fb623509aaa6f860af6dcc76f430",
+          "accounted": "执行记录待同步；正式用例不更新"
+        },
+        {
+          "attempt": "attempt-002",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-002",
+          "manifestSha256": "3a62c4743b2aad4f7f09e3bc6adc92baf01c304a44b009315e9a029fc7e6aa90",
+          "accounted": "no formal case updates"
+        },
+        {
+          "attempt": "attempt-003",
+          "path": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-003",
+          "status": "fixture-failed before App spawn; preserved"
+        },
+        {
+          "attempt": "attempt-004",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-004",
+          "manifestSha256": "3a24062615355142821f6bf862e5cbbc99ac55d8e9f6acf23891c10bc420b1fe",
+          "accounted": "software and policy supplement only; no new formal case pass"
+        },
+        {
+          "attempt": "attempt-005",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-005",
+          "manifestSha256": "0f8399150ad0f0e093d9e62b798b64841fa2f8a321731eb0e6db742e42a51327",
+          "accounted": "no formal case updates"
+        }
+      ],
+      "package": {
+        "at": "2026-11-03T16:08:12.009802+00:00",
+        "executable": "/private/tmp/willyou-m12-s1-p001-package-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "asarSha256": "485ce66a1c10681e8369db19c1f0da4006db26e807431264d3d9bbfb7da89ce9",
+        "helperSha256": "e0e8999229c58be38b80f91e5f35250b7f3edbe2884065ec85a87069dccd88ea",
+        "sourceInputs": "/private/tmp/willyou-m12-p001-software-001/build-inputs-current.json"
+      },
+      "externalDriver": {
+        "path": "scripts/browser/s1-packaged-agent.mjs",
+        "sha256": "0b4cb470e8d36edcc22f02161614d7a49c11bd884e27afa28f5a7cb3a0bd1489",
+        "preflight": "node syntax, 11 CDP literals, generated Python AST passed; App file existence checked before fixture creation"
+      },
+      "next": "M12-P002"
+    },
+    {
+      "id": "M12-P002",
+      "owner": "/root",
+      "status": "T001/T002/T020 A accounted; remaining S2 cases pending",
+      "privateRoot": "/private/tmp/willyou-m12-s2-formal-002",
+      "pids": [],
+      "sessions": [],
+      "ports": [],
+      "testBaseline": "/private/tmp/willyou-m12-p002-software-004/inputs.json",
+      "next": "remaining S2 navigation/recovery and affected native core regression; no new build without production changes",
+      "package": {
+        "path": "/private/tmp/willyou-m12-s2-package-002/mac-arm64/WillYou.app",
+        "asarSha256": "0d24992f125eaf86baf84d88d40e01b0f278baa3f0da05d7e94d17b09b650bc8"
+      },
+      "externalDrivers": [
+        {
+          "path": "scripts/browser/s2-packaged-ui.mjs",
+          "sha256": "684dacd8ae41039cdac1835215e65d188b4e61c3740f71bd6ff73c08d5d27294"
+        },
+        {
+          "path": "scripts/browser/adjudicate-s2-workspace.mjs",
+          "sha256": "49b7d131d33ccc270977606f57d38d304dfac6d8877efa1cb8620ced774dc598"
+        },
+        {
+          "path": "scripts/lib/electron-harness.mjs",
+          "sha256": "1a1f1ec56674175e6aa15bad7a7ff0660415bad59b595c3d41d8e6aaee55cfd3"
+        },
+        {
+          "path": "scripts/lib/app-focus-guard.mjs",
+          "sha256": "728a91425d6dde125d391c4bef771a050bcee7433b9d2296142db6230d9ef9d6"
+        }
+      ],
+      "defect": "S2-M9-HIDDEN-SCROLL closed"
+    }
+  ],
+  "next": "S2界面、导航与独立持久化；对应层级测试及真实App验收",
+  "countAuthority": "验收/测试用例.md；本记录不另维护通过率"
+}

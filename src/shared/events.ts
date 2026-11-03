@@ -7,12 +7,15 @@ import type { FileCloseRequest, FileSearchProgress, FileWatchUpdate } from './fi
 import type { HtmlPreviewState } from './file-html';
 import type { WorkspaceUpdate } from './file-workspace';
 import type {ApplicationId} from './application-connections';
+import type {BrowserShortcut} from './browser-workspace';
 
 // main → renderer
 export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:data');
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 export const tasksChangedEvent = defineEvent<void>('tasks:changed');
+export const browserChangedEvent=defineEvent<{taskId:string}>('browser:changed');
+export const browserShortcutEvent=defineEvent<{taskId:string;action:BrowserShortcut}>('browser:shortcut');
 export interface ApplicationHealthChange {kind:'health';appId:ApplicationId;connectionId:string}
 export const applicationCleanupProgressEvent = defineEvent<ApplicationCleanupProgress>('applications:cleanup-progress');
 export const applicationsChangedEvent = defineEvent<ApplicationHealthChange|undefined>('applications:changed');

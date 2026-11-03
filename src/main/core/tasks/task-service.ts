@@ -537,7 +537,7 @@ export class TaskService {
           ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME', this.adapter(profile.runner).stateEnvVar] : []),
         ]);
         const args = this.adapter(profile.runner).launchArgs({
-          mode, sessionId, cwd, profileArgs: profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
+          mode, sessionId, cwd, profileArgs: launch?.profileArgs ?? profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
         });
         const executable = launch?.command ?? profile.command;
         const command = runtime?.wrap(executable, args) ?? { command: executable, args };

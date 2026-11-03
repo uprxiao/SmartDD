@@ -17,7 +17,7 @@ export async function waitForInitialAppFocus(app,record,{userData,timeoutMs=1800
   }catch(error){wait.status='not-focused';throw error;}
   finally{wait.finishedAt=new Date().toISOString();}
 }
-export function installAppFocusGuard(app,record,{enabled=true}={}) {
+export function installAppFocusGuard(app,record,{enabled=true,allowOwnedViews=false}={}) {
   if(!enabled)return;
   const cdp=app.cdp.bind(app);let yielded;
   record.focusGuard={enabled:true,appPid:app.processId,checkedInputs:0};record.focusGuards??=[];record.focusGuards.push(record.focusGuard);
@@ -25,7 +25,12 @@ export function installAppFocusGuard(app,record,{enabled=true}={}) {
     if(method.startsWith('Input.')||method==='Page.bringToFront'){
       if(yielded)throw yielded;
       const state=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState,title:document.title})');
-      if(!state?.focused||state.visibility!=='visible'){
+      if(allowOwnedViews&&!state?.focused&&state?.visibility==='visible'){
+        // A WebContentsView takes document focus while its same-process native
+        // window stays focused. An external App still makes this check false.
+        state.ownedWindowFocused=await app.mainEvaluate("(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused())})()");
+      }
+      if(!(state?.focused||state?.ownedWindowFocused)||state.visibility!=='visible'){
         yielded=Object.assign(new Error('This isolated App lost focus; yield the M10 UI batch for the other test.'),{code:'APP_FOCUS_YIELDED'});
         Object.assign(record.focusGuard,{yieldedAt:new Date().toISOString(),blockedMethod:method,state});throw yielded;
       }

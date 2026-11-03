@@ -19,6 +19,6 @@ export class BrowserParkWindow {
     const window=await this.ensure(); window.contentView.addChildView(view);
     view.setBounds({x:0,y:0,width:Math.max(1,rect.width),height:Math.max(1,rect.height)});
   }
-  remove(view: WebContentsView): void { if(this.window&&!this.window.isDestroyed())this.window.contentView.removeChildView(view); }
+  remove(view: WebContentsView): void { if(this.window&&!this.window.isDestroyed()&&this.window.contentView.children.includes(view))this.window.contentView.removeChildView(view); }
   dispose(): void { if(this.window&&!this.window.isDestroyed())this.window.destroy();this.window=undefined; }
 }

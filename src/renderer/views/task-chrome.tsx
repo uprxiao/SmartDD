@@ -1,5 +1,6 @@
 import { runnerDescription } from '@shared/ai-profiles';
 import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
+import {openNewBrowserTab} from '@renderer/features/browser/store';
 // Task details and runtime bar adapted from Yoda (Apache-2.0).
 // The single window title follows the approved Codex reference; the sidebar switches sessions.
 import { Ellipsis, Folder, FolderOpen, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert, X } from 'lucide-react';
@@ -56,6 +57,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
       <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
     </div>
     <div className="task-window-actions app-no-drag">
+      {task.projectId&&<button type="button" className="m9-file-entry" data-testid="task-new-browser" title="新建标签页（⇧⌘B）" onClick={()=>openNewBrowserTab(task.id)}><SquarePlus size={16}/>新建标签页</button>}
       <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/>应用</button>
       <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button>
       <DropdownMenu>

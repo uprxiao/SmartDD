@@ -7,6 +7,7 @@ import type { DeleteOptions, ProjectService } from './project-service';
 export interface ProjectControllerHooks {
   /** Live tasks in the project; deleting it would drop their records while their CLIs keep running. */
   runningTasks?: (projectId: string) => number;
+  deleted?: (projectId:string)=>void;
 }
 
 export function createProjectControllers(svc: ProjectService, hooks: ProjectControllerHooks = {}) {
@@ -26,7 +27,7 @@ export function createProjectControllers(svc: ProjectService, hooks: ProjectCont
       delete: (id: string, opts: DeleteOptions) => {
         const n = hooks.runningTasks?.(id) ?? 0;
         if (n > 0) throw new Error(`项目下有 ${n} 个任务正在运行，请先结束`);
-        return svc.deleteProject(id, opts);
+        const result=svc.deleteProject(id, opts);hooks.deleted?.(id);return result;
       },
     }),
     projectDirs: createRPCController({

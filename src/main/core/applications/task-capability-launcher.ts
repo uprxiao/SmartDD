@@ -27,7 +27,7 @@ import { ApplicationAdapterRegistry } from './application-adapter-registry';
 import { ApplicationToolService } from './tool-service';
 import { PrivateApplicationBroker } from './private-broker';
 import {ApplicationCliGateway} from './cli-gateway';
-import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
+import {codexProfileArgsForCli,type CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {applicationSkillDelivery,applicationSkillProjectionName} from './application-skill-template';
 import {applicationSkillSnapshotView} from './application-skill-view';
 import {selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
@@ -338,8 +338,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(unavailable)await this.runs.restrictToNative(run.runId,{reason:'managed_capabilities_unavailable',issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED'});const configPaths:string[]=[];let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;let args:string[]=[];
       let plan:AgentLoadPlan|undefined;
       let cliEnvironment:Readonly<Record<string,string>>|undefined;
+      let cliProfileArgs:string[]|undefined;
       if(request){const planned=this.runs.bridgePreparation(run.runId).plan,policy=this.planningCliPolicies.get(input.taskId);if(planned?.allowed.some(c=>c.entry==='cli')){if(!this.cli||!policy?.available)throw new ApplicationError('ENTRY_NOT_ACTIVE','本次CLI入口不再就绪');if(!request.applicationSkillDelivery)request.applicationSkillDelivery={planHash:planned.planHash,skills:sources.flatMap(source=>'appId'in source&&source.appId&&source.skillId?[{appId:source.appId,skillId:source.skillId,nativeName:source.nativeName,path:source.path,sourceHash:source.sourceHash}]:[])};request.cliSandbox={endpoint:this.cli.endpoint,kind:policy.kind,parent:policy.parent,networkProxy:policy.networkProxy,enableNetwork:policy.enableNetwork,existingNames:policy.existingNames,source:policy.source,digest:policy.digest};cliEnvironment=this.cli.issue(run).environment;runtime.secretValues.push(cliEnvironment.WILLYOU_RUN_TOKEN);}const mcp=request.mcp.find(m=>m.kind==='applications');if(mcp){bridge=await this.broker.prepare(run,mcp.serverName);mcp.args[2]=bridge.bootstrapPath;}plan=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(mcp){this.registerBridgeRecovery(run,mcp.serverName,snapshot.adapterBinding.hash,request.cliVersion);}}
       else if(legacyRequest)plan=legacyPlan();
+      if(cliEnvironment){const policy=this.planningCliPolicies.get(input.taskId);if(!policy?.available)throw new ApplicationError('ENTRY_NOT_ACTIVE','本次CLI权限证据已失效');cliProfileArgs=codexProfileArgsForCli(input.profile.args,policy);}
       if(plan){args=plan.args;const root=dirname(runtime.snapshot.manifestPath);for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}}
 
       try{await this.applications.sessionDiagnostics.prepared({schema:2,capabilities:nativeCapabilityPreparation(snapshot,{applications:request&&!unavailable?(applicationScope??snapshot.packages.map(p=>p.appId)):[],standardPaths:runtime.snapshot.skills.filter(s=>s.enabled).map(s=>s.path),mcpNames:runtime.snapshot.mcp.map(m=>m.name),facets,issue:unavailable,applicationIssue:applicationRuntimeIssue,projectMcpEnabled:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)}),runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:unavailable?'unavailable':'prepared',issueCode:unavailable??null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Missing display evidence never grants capability or blocks ordinary Agent launch. */}
@@ -347,17 +349,17 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(!unavailable&&native)try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing and must not stop the ordinary Agent. */}
       let effectiveApplications=!unavailable;
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native?.command,
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,profileArgs:cliProfileArgs,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native?.command,
         assertBeforeFork:()=>{if(effectiveApplications){assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);if(deliveryProof)this.claudeDelivery.assertRun(run.runId,deliveryProof);if(request?.catalogExclusions){const checked=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(canonicalJson(checked.args)!==canonicalJson(args))throw new ApplicationError('RESOURCE_STATE_CHANGED','原生加载参数在启动前已变化');}}},
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
-          if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
+          if(unavailable){runtime.snapshot.selfCheck?.issues.push(reason);launch.args=[];launch.profileArgs=undefined;launch.env={};launch.initialInput=undefined;phase='native-only';return launch;}
           phase='restricting';
           this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
           await this.runs.restrictToNative(run.runId);effectiveApplications=false;
           runtime.release();runtime=this.unavailableRuntime(input,current,run.runId,'AGENT_ADAPTER_UNSUPPORTED');
           runtime.snapshot.selfCheck?.issues.push(reason);entry.runtime=runtime;
-          launch.runtime=runtime;launch.args=[];launch.env={};launch.initialInput=undefined;
+          launch.runtime=runtime;launch.args=[];launch.profileArgs=undefined;launch.env={};launch.initialInput=undefined;
           // The registry recorded the narrowing atomically; initial preparation remains immutable.
           phase='native-only';return launch;
         },

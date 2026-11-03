@@ -51,6 +51,7 @@ function pathToFileUrl(path) {
 /** Address-bar submission (R01.1). Returns { status:'navigate', url } or { status:'invalid', message }. */
 export function resolveAddress(raw, engine = 'bing') {
   const trimmed = String(raw ?? '').trim();
+  if (/[\u0000-\u001f\u007f]/.test(trimmed)) return { status: 'invalid', message: '请输入有效的 http(s) 或 localhost 地址' };
   if (!trimmed || trimmed === 'about:blank' || trimmed === BLANK_URL) return { status: 'navigate', url: BLANK_URL };
   if (LOCAL_ADDRESS.test(trimmed)) return { status: 'navigate', url: new URL('http://' + trimmed).toString() };
   if (UNIX_PATH.test(trimmed) || WINDOWS_PATH.test(trimmed)) return { status: 'navigate', url: pathToFileUrl(trimmed) };
@@ -61,8 +62,10 @@ export function resolveAddress(raw, engine = 'bing') {
     if (['http:', 'https:', 'file:'].includes(parsed.protocol)) return { status: 'navigate', url: parsed.toString() };
     return { status: 'invalid', message: '请输入有效的 http(s) 或 localhost 地址' };
   } catch {
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return { status: 'invalid', message: '请输入有效的 http(s) 或 localhost 地址' };
     try {
       const withScheme = new URL('https://' + trimmed);
+      if (withScheme.hostname.toLowerCase().replace(/\.$/, '').endsWith('.localhost')) withScheme.protocol = 'http:';
       if (!looksLikeSearchQuery(trimmed)) return { status: 'navigate', url: withScheme.toString() };
     } catch {
       // not a URL even with https://

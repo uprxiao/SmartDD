@@ -9,6 +9,9 @@ const liveViews = new WeakMap<object, { editor: EditorView; mode: string }>();
 const focusTransfers = new WeakMap<object, { mode: string; focused: boolean }>();
 /** Keep a document anchor, not unmeasured pixel offsets, across view recreation. */
 function captureEditorScroll(owner: object, editor: EditorView, mode: string): void {
+  // An inactive browser tab hides the file pane before a task switch unmounts
+  // it. Hidden DOM reports zero geometry; retain the last visible snapshot.
+  if(editor.dom.closest('[hidden]'))return;
   let modes = positions.get(owner);
   if (!modes) { modes = new Map(); positions.set(owner, modes); }
   const effect = editor.scrollSnapshot();

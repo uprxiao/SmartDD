@@ -1,0 +1,90 @@
+
+> smartdd@0.1.1 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/codex-effective-sandbox.test.ts src/main/core/applications/__tests__/task-capability-launcher.test.ts src/main/core/tasks/task-capabilities.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (273 tests | 3 failed) 865589ms
+     × replaces only the proved legacy selector at the actual task fork: "--sandbox" 2739ms
+     × replaces only the proved legacy selector at the actual task fork: "--sandbox=read-only" 2079ms
+     × replaces only the proved legacy selector at the actual task fork: "-sread-only" 2202ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > replaces only the proved legacy selector at the actual task fork: "--sandbox"
+AssertionError: expected [ …(2) ] to deeply equal [ '--ask-for-approval', 'never' ]
+
+- Expected
++ Received
+
+  [
+-   "--ask-for-approval",
+-   "never",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-icwYtO/capabilities/runtime/bb0394afc1e7ddef13298f633acb497d1154ba8e320df2c7deaa7f63c725da29/launch.py",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-icwYtO/capabilities/runs/3373dd45-d849-4dc0-aed2-fe384d3bcd2d/aa4fb629-0179-455b-a1cc-d96911a0ea5d/0eccc8bf-0930-43e5-8b00-bbee3ad140ef/manifest.json",
+  ]
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:137:35
+    135|   const running=await create(),launch=ptys.launches[0];
+    136|   expect(launch.args).not.toContain('--sandbox');expect(launch.args).n…
+    137|   expect(launch.args!.slice(0,2)).toEqual(['--ask-for-approval','never…
+       |                                   ^
+    138|   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.c…
+    139|   expect(profiles.get(codexId).args).toEqual(args);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > replaces only the proved legacy selector at the actual task fork: "--sandbox=read-only"
+AssertionError: expected [ …(2) ] to deeply equal [ '--ask-for-approval', 'never' ]
+
+- Expected
++ Received
+
+  [
+-   "--ask-for-approval",
+-   "never",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-u37Wpm/capabilities/runtime/bb0394afc1e7ddef13298f633acb497d1154ba8e320df2c7deaa7f63c725da29/launch.py",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-u37Wpm/capabilities/runs/fd543168-45c1-4cf4-bf2b-363f4a68fd1b/f012b527-1258-4a3d-9fed-d45e1c7177ed/d13ff0c1-606d-4a59-9c49-952cd866c63b/manifest.json",
+  ]
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:137:35
+    135|   const running=await create(),launch=ptys.launches[0];
+    136|   expect(launch.args).not.toContain('--sandbox');expect(launch.args).n…
+    137|   expect(launch.args!.slice(0,2)).toEqual(['--ask-for-approval','never…
+       |                                   ^
+    138|   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.c…
+    139|   expect(profiles.get(codexId).args).toEqual(args);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > replaces only the proved legacy selector at the actual task fork: "-sread-only"
+AssertionError: expected [ …(2) ] to deeply equal [ '--ask-for-approval', 'never' ]
+
+- Expected
++ Received
+
+  [
+-   "--ask-for-approval",
+-   "never",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-tZX5HI/capabilities/runtime/bb0394afc1e7ddef13298f633acb497d1154ba8e320df2c7deaa7f63c725da29/launch.py",
++   "/private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/willyou-m10-launch-tZX5HI/capabilities/runs/425bd0c5-738b-46d9-9183-d10ef187188a/f70a3271-0c9a-4eb6-9e9f-f7fa7acc0b91/179f53fd-f080-40b7-8437-535391a3ca48/manifest.json",
+  ]
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:137:35
+    135|   const running=await create(),launch=ptys.launches[0];
+    136|   expect(launch.args).not.toContain('--sandbox');expect(launch.args).n…
+    137|   expect(launch.args!.slice(0,2)).toEqual(['--ask-for-approval','never…
+       |                                   ^
+    138|   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.c…
+    139|   expect(profiles.get(codexId).args).toEqual(args);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 320 passed (323)
+   Start at  23:50:47
+   Duration  893.19s (transform 795ms, setup 0ms, import 1.33s, tests 891.64s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.
