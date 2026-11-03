@@ -1,0 +1,83 @@
+{
+  "boundary": "pure deterministic schedules, not implementation/runtime tests",
+  "ambiguousOrigin": {
+    "hostOnlyHistory": {
+      "actions": [
+        "host starts remove(k)",
+        "host removes k",
+        "changed event emitted",
+        "host Promise<void> resolves"
+      ],
+      "observedEvent": {
+        "cookie": {
+          "name": "session",
+          "domain": "qa.test",
+          "path": "/",
+          "value": "old-login"
+        },
+        "cause": "explicit",
+        "removed": true
+      },
+      "hostPending": true,
+      "pageConflict": false
+    },
+    "pageFirstHistory": {
+      "actions": [
+        "host starts remove(k)",
+        "page deletes k first",
+        "changed event emitted",
+        "host remove(k) finds absent k, Promise<void> resolves"
+      ],
+      "observedEvent": {
+        "cookie": {
+          "name": "session",
+          "domain": "qa.test",
+          "path": "/",
+          "value": "old-login"
+        },
+        "cause": "explicit",
+        "removed": true
+      },
+      "hostPending": true,
+      "pageConflict": true
+    },
+    "eventsAndLocalPendingFlagDistinguishSource": false
+  },
+  "tailReplay": {
+    "trace": [
+      "page deletes k; eventMap[k]=delete",
+      "replayer reads eventMap[k]=delete",
+      "page logs in k=new-login; eventMap[k]=new-login",
+      "replayer applies previously-read delete",
+      "replayer declares completion without a generation/drain barrier"
+    ],
+    "lastPageResult": "new-login",
+    "finalCookie": null,
+    "respectsLastPageWrite": false,
+    "scope": "counterexample to a single replay pass; a proper drain/fencing protocol could fix it but is unspecified"
+  },
+  "progressSelection": {
+    "initialDocumentChars": 9000,
+    "selectedChars": 1000,
+    "confirmedSourceChars": 2000,
+    "inFlightSourceChars": 2000,
+    "completedInFlightSourceChars": 333,
+    "actualDocumentChars": 10333,
+    "claimedDocumentRange": [
+      2000,
+      4000
+    ],
+    "actualInsideClaimedRange": false
+  },
+  "crashHistoryAmbiguity": {
+    "persistedInputsInBothHistories": [
+      "journal contains old-login and imported-login",
+      "current cookie absent"
+    ],
+    "historyA": "host clears cookie and process dies before new write",
+    "historyB": "host writes imported cookie, page logs out, process dies before in-memory page event log is durably saved",
+    "desiredRecoveryA": "restore old-login",
+    "desiredRecoveryB": "keep absent",
+    "persistedJournalHasPageEventHistory": false
+  }
+}

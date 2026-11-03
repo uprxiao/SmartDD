@@ -1,0 +1,386 @@
+{
+  "at": "2026-11-03T07:52:00.320Z",
+  "boundary": "E4 experiment: local Electron 42 host (window shown off-screen, not the transparent park window) + agent-browser 0.27.3, loopback synthetic page, no WillYou gateway",
+  "steps": [
+    {
+      "label": "tab list",
+      "command": [
+        "tab",
+        "list"
+      ],
+      "ms": 111,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "WillYou E4 host",
+            "type": "page",
+            "url": "data:text/html,<title>WillYou E4 host</title>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t2",
+            "title": "E4 旧引用页",
+            "type": "page",
+            "url": "http://127.0.0.1:9371/stale.html"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "switch",
+      "command": [
+        "tab",
+        "t2"
+      ],
+      "ms": 6,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t2",
+        "title": "E4 旧引用页",
+        "url": "http://127.0.0.1:9371/stale.html"
+      },
+      "error": null
+    },
+    {
+      "label": "snapshot 1",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 14,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "http://127.0.0.1:9371/stale.html",
+        "refs": {
+          "e1": {
+            "name": "E4 旧引用页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Counter",
+            "role": "button"
+          },
+          "e3": {
+            "name": "long text",
+            "role": "textbox"
+          },
+          "e4": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e5": {
+            "name": "Original only",
+            "role": "button"
+          }
+        },
+        "snapshot": "- heading \"E4 旧引用页\" [level=1, ref=e1]\n- button \"Action\" [ref=e4]\n- button \"Original only\" [ref=e5]\n- button \"Counter\" [ref=e2]\n- paragraph\n  - StaticText \"count=\"\n  - StaticText \"0\"\n- textbox \"long text\" [ref=e3]"
+      },
+      "error": null
+    },
+    {
+      "label": "click stale ref after same-name replacement",
+      "command": [
+        "click",
+        "@e4"
+      ],
+      "ms": 16,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e4"
+      },
+      "error": null
+    },
+    {
+      "label": "snapshot 2",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "http://127.0.0.1:9371/stale.html",
+        "refs": {
+          "e1": {
+            "name": "E4 旧引用页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Counter",
+            "role": "button"
+          },
+          "e3": {
+            "name": "long text",
+            "role": "textbox"
+          },
+          "e4": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e5": {
+            "name": "Original only",
+            "role": "button"
+          }
+        },
+        "snapshot": "- heading \"E4 旧引用页\" [level=1, ref=e1]\n- button \"Action\" [ref=e4]\n- button \"Original only\" [ref=e5]\n- button \"Counter\" [ref=e2]\n- paragraph\n  - StaticText \"count=\"\n  - StaticText \"0\"\n- textbox \"long text\" [ref=e3]"
+      },
+      "error": null
+    },
+    {
+      "label": "click stale ref after a same-name node is inserted before it",
+      "command": [
+        "click",
+        "@e4"
+      ],
+      "ms": 13,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e4"
+      },
+      "error": null
+    },
+    {
+      "label": "click stale ref after replacement with a different name",
+      "command": [
+        "click",
+        "@e5"
+      ],
+      "ms": 5,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Could not locate element with role=button name=Original only"
+    },
+    {
+      "label": "wait --fn that clicks and returns true",
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"counter\").click();return true})()"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "result": true
+      },
+      "error": null
+    },
+    {
+      "label": "wait --fn that clicks and returns false, timeout 300ms",
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"counter\").click();return false})()",
+        "--timeout",
+        "300"
+      ],
+      "ms": 312,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Wait timed out after 300ms"
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "focused": "#long"
+      },
+      "error": null
+    },
+    {
+      "label": "keyboard type 4096",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(4096 chars)"
+      ],
+      "ms": 711,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij…(4108 chars)",
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "focused": "#long"
+      },
+      "error": null
+    },
+    {
+      "label": "keyboard type 16384",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(16384 chars)"
+      ],
+      "ms": 5554,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij…(16396 chars)",
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "focused": "#long"
+      },
+      "error": null
+    },
+    {
+      "label": "keyboard inserttext 65536",
+      "command": [
+        "keyboard",
+        "inserttext",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(65536 chars)"
+      ],
+      "ms": 10,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "inserted": true
+      },
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "focused": "#long"
+      },
+      "error": null
+    },
+    {
+      "label": "keyboard type 65536",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(65536 chars)"
+      ],
+      "ms": 62315,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Failed to send: Broken pipe (os error 32) (after 5 retries - daemon may be busy or unresponsive)"
+    }
+  ],
+  "findings": {},
+  "raw": {
+    "sameName": {
+      "ref": "@e4",
+      "ok": true,
+      "error": null,
+      "hits": [
+        "replacement"
+      ]
+    },
+    "insertedBefore": {
+      "ref": "@e4",
+      "ok": true,
+      "error": null,
+      "hits": [
+        "replacement"
+      ]
+    },
+    "otherName": {
+      "ref": "@e5",
+      "ok": false,
+      "error": "Could not locate element with role=button name=Original only",
+      "hits": []
+    },
+    "waitFn": {
+      "before": 0,
+      "afterTrue": 2,
+      "afterFalse": 6,
+      "w1": {
+        "ok": true,
+        "error": null
+      },
+      "w2": {
+        "ok": false,
+        "error": "Wait timed out after 300ms"
+      }
+    },
+    "typed": {
+      "type 4096": {
+        "chars": 4096,
+        "ok": true,
+        "ms": 711,
+        "error": null,
+        "valueLength": 4096
+      },
+      "type 16384": {
+        "chars": 16384,
+        "ok": true,
+        "ms": 5554,
+        "error": null,
+        "valueLength": 16384
+      },
+      "inserttext 65536": {
+        "chars": 65536,
+        "ok": true,
+        "ms": 10,
+        "error": null,
+        "valueLength": 65536
+      },
+      "type 65536": {
+        "chars": 65536,
+        "ok": false,
+        "ms": 62315,
+        "error": "Failed to send: Broken pipe (os error 32) (after 5 retries - daemon may be busy or unresponsive)",
+        "valueLength": 0
+      }
+    }
+  },
+  "verdicts": {
+    "D01_sameNameStaleRefClicksReplacement": true,
+    "D01_insertedBeforeChangesTarget": [
+      "replacement"
+    ],
+    "D01_otherNameIsReportedStale": false,
+    "D02_waitFnHasSideEffects": true,
+    "D02_waitFnRepeats": true,
+    "D03_typeMsPerChar4096": 0.17,
+    "D03_type65536Complete": false,
+    "D03_inserttext65536Complete": true
+  }
+}

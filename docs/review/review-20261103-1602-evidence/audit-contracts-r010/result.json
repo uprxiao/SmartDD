@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-03T08:01:58.205723+00:00",
+  "scope": "R0.10 frozen static contract audit",
+  "findings": [
+    {
+      "id": "C010-01",
+      "priority": "medium",
+      "title": "Cookie conflict-preserving recovery still has compare/write TOCTOU",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:194",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:198",
+        "docs/里程碑/M12_浏览器自动化/需求.md:360",
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:129"
+      ],
+      "detail": "完整变更集和加密修复了旧问题；但当前先比较当前cookie再异步恢复，页面写入不加锁。比较成功后页面登出，再恢复旧登录Cookie会覆盖登出；序列模型已留证。需要明确可实现的CAS/暂停全部该profile写入或冲突阻塞协议。T081目前只测恢复前已改写，不测比较与恢复之间的改写。",
+      "boundary": "design counterexample; no production importer exists"
+    },
+    {
+      "id": "C010-02",
+      "priority": "medium",
+      "title": "type progress promises exact page length despite ack-only chunk accounting",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:133",
+        "docs/里程碑/M12_浏览器自动化/需求.md:251",
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:99"
+      ],
+      "detail": "方案每块2000字完成后才写已输入数；helper若在块中被杀，页面可已写部分而没有该块ack。回执只能给已确认字数下界和未确认块范围，无法承诺T060的回执字数与实际严格相等。应记录confirmedChars/inFlightChars范围；不同文档、contenteditable、页面事件并发编辑时不能仅get value补成精确计数。",
+      "boundary": "design counterexample with deterministic progress model"
+    },
+    {
+      "id": "C010-03",
+      "priority": "medium",
+      "title": "Current PRD正文 still states rejected 64KB type batching",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/需求.md:249",
+        "docs/里程碑/M12_浏览器自动化/需求.md:251",
+        "docs/里程碑/M12_浏览器自动化/需求.md:265",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:133"
+      ],
+      "detail": "R0.10后补段规定16384总长/2000块，R04.2现行命令条目仍写64KB分块，R03.9主段也仍写64KB；该数值已经被E4判为不可行。历史需放历史记录，当前命令说明同步2000块。",
+      "boundary": "text contradiction, not new runtime finding"
+    },
+    {
+      "id": "C010-04",
+      "priority": "low",
+      "title": "Clarify pause semantics of write wait fn and multi-chunk type, but not a proven contradiction",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:296",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:297",
+        "docs/里程碑/M12_浏览器自动化/需求.md:391"
+      ],
+      "detail": "合理现行解释是当前外层type整条执行完，内部块不算新命令；`wait`指只读wait，wait fn作为写命令执行完当前整条。应明确枚举并补S1暂停false轮询/长type场景，避免实现按名称前缀把wait fn中断。现稿没有足以确认的直接冲突，不应把它列为高/中。",
+      "boundary": "clarification only"
+    },
+    {
+      "id": "C010-05",
+      "priority": "low",
+      "title": "operation get availability during pause is a product choice, not a proved broken promise",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:263",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:275",
+        "docs/里程碑/M12_浏览器自动化/需求.md:391"
+      ],
+      "detail": "通用目标解析会让暂停任务的operation get也BROWSER_PAUSED；R07.6原本要求新浏览器命令全拒，因此不能判定为违约。可选择给回执查询豁免或明确先恢复再查；UI活动记录仍可用。",
+      "boundary": "clarification only"
+    }
+  ],
+  "previousIssueClosure": {
+    "waitFnObserve": "设计已拆写能力，observe拒绝，旧漏洞不重开",
+    "preflight": "明确使用applicationPreflightFailure，旧unknown退出码问题在设计层闭环",
+    "receiptRestart": "重启后新运行not-found与UI历史查看，旧矛盾闭环",
+    "schemaMigration": "新增表/索引/恢复/7天清理已补，旧矛盾闭环",
+    "cookieJournal": "完整变更集合、原本不存在删除、safeStorage加密0600已补；剩新CAS竞态",
+    "counts": "82/21read/61write与T093一致",
+    "generatorClaim": "已明确Python镜像非原生验证，并检查用例编号存在"
+  },
+  "s1Readiness": "可以开展隔离S1可行性验证；Cookie并发补偿与type进度需先明确可实现合同，不能把补强文字当端到端已验证。AX映射竞态与跨页引用别名已转audit_evidence，未在此重复归证。",
+  "runtimeTestsExecuted": false
+}

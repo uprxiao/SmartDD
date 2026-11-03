@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-03T08:38:05.797487+00:00",
+  "reviewed": "R1.1",
+  "findings": [
+    {
+      "id": "R11-E01",
+      "priority": "high",
+      "oldFinding": "F01",
+      "title": "一次性DOM属性仍可被克隆到替换节点，E4c不足以证明节点身份绑定",
+      "refs": [
+        "需求.md:374",
+        "技研/技术方案.md:168-173",
+        "技研/实验/E4_旧引用与等待副作用与长输入/tag-binding.mjs:35-47",
+        "验收/测试用例.md:90"
+      ],
+      "detail": "Current text assumes a replacement has no data-willyou-ref. A same-name replacement made by original.cloneNode(true) inherits that attribute, so marker selector can target a different backend node. This directly preserves original never-click-replacement failure class. E4c tested replaceSameName() constructing untagged replacement and proves only that case. Snapshot T1/T2 matching also remains sampling rather than atomic reference provenance: transient A→B→A is not excluded.",
+      "boundary": "Static design/DOM contract finding; native replay belongs to coordinator. No UI/native run by this agent.",
+      "recommendation": "Add clone-with-marker negative control to existing T051 and E4c family; use actual persistent node identity or verified atomic equivalent, not transferable DOM text as identity. Keep fallback correctness explicitly gated rather than claiming complete proof."
+    },
+    {
+      "id": "R11-E02",
+      "priority": "medium",
+      "oldFinding": "F09",
+      "title": "恢复失败原型只在单个入口禁导入，模拟Agent及工具栏入口仍绕过且摘要缺冲突数",
+      "refs": [
+        "需求.md:535-537",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:126-127,236,240,282",
+        "prototypes/m6-codex/src/BrowserPanels.jsx:127,175-179",
+        "prototypes/m6-codex/src/browser-prototype-model.mjs:381-385"
+      ],
+      "detail": "Profiles row import is disabled when attention true, but toolbar import opens ImportDialog for same profile without checking, and onImported calls recordImport unconditionally. agentCommand similarly calls agentCommandStart with no attention check despite banner saying commands return BROWSER_UNAVAILABLE. Pure model call matching component flow produces needsAttention=true, storedConflicts=1, simulated outcome=started. Success import summary still renders only total/imported/skipped/Google/partition counts, no conflict count.",
+      "boundary": "Confirmed source/control-flow and pure model mismatch in synthetic prototype, not a production browser defect or real cookie import.",
+      "recommendation": "Apply attention gate centrally to both import entry/target acceptance and simulated Agent flow; add conflict count display and corresponding prototype checks. Retain newly added retry/clear/artifact cleanup as fixed."
+    }
+  ],
+  "evidence": [
+    "e4c-evidence-check.json",
+    "recovery-model-probe.json"
+  ],
+  "scope": "Frozen static and pure model only. Preserve contractual closures without asserting execution verification; no new broader requirements."
+}

@@ -1,0 +1,455 @@
+{
+  "at": "2026-11-03T07:39:57.933Z",
+  "boundary": "Independent local Electron experiment; synthetic pages only; no WillYou gateway; no daily app/profile; transparent no-focus parking window",
+  "steps": [
+    {
+      "command": [
+        "tab",
+        "list"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "DeepReview Host",
+            "type": "page",
+            "url": "data:text/html,<title>DeepReview Host</title>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t2",
+            "title": "DeepReview Park",
+            "type": "page",
+            "url": "data:text/html,<title>DeepReview Park</title>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t3",
+            "title": "DeepReview Page 1",
+            "type": "page",
+            "url": "http://127.0.0.1:64863/"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t4",
+            "title": "DeepReview Page 2",
+            "type": "page",
+            "url": "http://127.0.0.1:64863/two"
+          }
+        ]
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"tab\",\"list\"],\"error\":null,\"result\":{\"tabs\":[{\"active\":true,\"label\":null,\"tabId\":\"t1\",\"title\":\"DeepReview Host\",\"type\":\"page\",\"url\":\"data:text/html,<title>DeepReview Host</title>\"},{\"active\":false,\"label\":null,\"tabId\":\"t2\",\"title\":\"DeepReview Park\",\"type\":\"page\",\"url\":\"data:text/html,<title>DeepReview Park</title>\"},{\"active\":false,\"label\":null,\"tabId\":\"t3\",\"title\":\"DeepReview Page 1\",\"type\":\"page\",\"url\":\"http://127.0.0.1:64863/\"},{\"active\":false,\"label\":null,\"tabId\":\"t4\",\"title\":\"DeepReview Page 2\",\"type\":\"page\",\"url\":\"http://127.0.0.1:64863/two\"}]},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 113
+    },
+    {
+      "command": [
+        "tab",
+        "t3"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t3",
+        "title": "DeepReview Page 1",
+        "url": "http://127.0.0.1:64863/"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"tab\",\"t3\"],\"error\":null,\"result\":{\"label\":null,\"tabId\":\"t3\",\"title\":\"DeepReview Page 1\",\"url\":\"http://127.0.0.1:64863/\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 8
+    },
+    {
+      "command": [
+        "snapshot"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "http://127.0.0.1:64863/",
+        "refs": {
+          "e1": {
+            "name": "DeepReview Page 1",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Count",
+            "role": "button"
+          },
+          "e3": {
+            "name": "MainInput",
+            "role": "textbox"
+          },
+          "e4": {
+            "name": "",
+            "role": "Iframe"
+          },
+          "e5": {
+            "name": "openInput",
+            "role": "textbox"
+          },
+          "e6": {
+            "name": "closedInput",
+            "role": "textbox"
+          },
+          "e7": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e8": {
+            "name": "CrossSiteInput",
+            "role": "textbox"
+          },
+          "e9": {
+            "name": "CrossSiteButton",
+            "role": "button"
+          }
+        },
+        "snapshot": "- heading \"DeepReview Page 1\" [level=1, ref=e1]\n- button \"Count\" [ref=e2]\n- status\n  - StaticText \"0\"\n- textbox \"MainInput\" [ref=e3]\n- textbox \"openInput\" [ref=e5]\n- textbox \"closedInput\" [ref=e6]\n- status\n- Iframe [ref=e4]\n  - generic\n    - textbox \"CrossSiteInput\" [ref=e8]\n    - button \"CrossSiteButton\" [ref=e9]\n- status\n- button \"Action\" [ref=e7]\n- status\n  - StaticText \"none\""
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"snapshot\"],\"error\":null,\"result\":{\"origin\":\"http://127.0.0.1:64863/\",\"refs\":{\"e1\":{\"name\":\"DeepReview Page 1\",\"role\":\"heading\"},\"e2\":{\"name\":\"Count\",\"role\":\"button\"},\"e3\":{\"name\":\"MainInput\",\"role\":\"textbox\"},\"e4\":{\"name\":\"\",\"role\":\"Iframe\"},\"e5\":{\"name\":\"openInput\",\"role\":\"textbox\"},\"e6\":{\"name\":\"closedInput\",\"role\":\"textbox\"},\"e7\":{\"name\":\"Action\",\"role\":\"button\"},\"e8\":{\"name\":\"CrossSiteInput\",\"role\":\"textbox\"},\"e9\":{\"name\":\"CrossSiteButton\",\"role\":\"button\"}},\"snapshot\":\"- heading \\\"DeepReview Page 1\\\" [level=1, ref=e1]\\n- button \\\"Count\\\" [ref=e2]\\n- status\\n  - StaticText \\\"0\\\"\\n- textbox \\\"MainInput\\\" [ref=e3]\\n- textbox \\\"openInput\\\" [ref=e5]\\n- textbox \\\"closedInput\\\" [ref=e6]\\n- status\\n- Iframe [ref=e4]\\n  - generic\\n    - textbox \\\"CrossSiteInput\\\" [ref=e8]\\n    - button \\\"CrossSiteButton\\\" [ref=e9]\\n- status\\n- button \\\"Action\\\" [ref=e7]\\n- status\\n  - StaticText \\\"none\\\"\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 13
+    },
+    {
+      "command": [
+        "fill",
+        "@e8",
+        "VERIFY-cross"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e8"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"fill\",\"@e8\",\"VERIFY-cross\"],\"error\":null,\"result\":{\"filled\":\"@e8\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 7
+    },
+    {
+      "command": [
+        "fill",
+        "@e6",
+        "VERIFY-closed"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e6"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"fill\",\"@e6\",\"VERIFY-closed\"],\"error\":null,\"result\":{\"filled\":\"@e6\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 7
+    },
+    {
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e2"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"click\",\"@e2\"],\"error\":null,\"result\":{\"clicked\":\"@e2\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 5009
+    },
+    {
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e2"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"click\",\"@e2\"],\"error\":null,\"result\":{\"clicked\":\"@e2\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 5012
+    },
+    {
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"count\").click();return true})()"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "result": true
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"wait\",\"--fn\",\"(()=>{document.getElementById(\\\"count\\\").click();return true})()\"],\"error\":null,\"result\":{\"result\":true},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 7
+    },
+    {
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"count\").click();return false})()",
+        "--timeout",
+        "300"
+      ],
+      "exit": 1,
+      "signal": null,
+      "ok": false,
+      "error": "Wait timed out after 300ms",
+      "stdout": "[{\"command\":[\"wait\",\"--fn\",\"(()=>{document.getElementById(\\\"count\\\").click();return false})()\",\"--timeout\",\"300\"],\"error\":\"Wait timed out after 300ms\",\"result\":null,\"success\":false}]\n",
+      "stderr": "",
+      "ms": 312
+    },
+    {
+      "command": [
+        "screenshot",
+        "/private/tmp/m12-deep-review-20261103T073535Z/native-review/attempt-002/page1.png"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "path": "/private/tmp/m12-deep-review-20261103T073535Z/native-review/attempt-002/page1.png"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"screenshot\",\"/private/tmp/m12-deep-review-20261103T073535Z/native-review/attempt-002/page1.png\"],\"error\":null,\"result\":{\"path\":\"/private/tmp/m12-deep-review-20261103T073535Z/native-review/attempt-002/page1.png\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 54
+    },
+    {
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e2"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"click\",\"@e2\"],\"error\":null,\"result\":{\"clicked\":\"@e2\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 5012
+    },
+    {
+      "command": [
+        "snapshot"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "http://127.0.0.1:64863/",
+        "refs": {
+          "e1": {
+            "name": "DeepReview Page 1",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Count",
+            "role": "button"
+          },
+          "e3": {
+            "name": "MainInput",
+            "role": "textbox"
+          },
+          "e4": {
+            "name": "",
+            "role": "Iframe"
+          },
+          "e5": {
+            "name": "openInput",
+            "role": "textbox"
+          },
+          "e6": {
+            "name": "closedInput",
+            "role": "textbox"
+          },
+          "e7": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e8": {
+            "name": "CrossSiteInput",
+            "role": "textbox"
+          },
+          "e9": {
+            "name": "CrossSiteButton",
+            "role": "button"
+          }
+        },
+        "snapshot": "- heading \"DeepReview Page 1\" [level=1, ref=e1]\n- button \"Count\" [ref=e2]\n- status\n  - StaticText \"7\"\n- textbox \"MainInput\" [ref=e3]\n- textbox \"openInput\" [ref=e5]\n- textbox \"closedInput\" [ref=e6]: VERIFY-closed\n  - StaticText \"VERIFY-closed\"\n- status\n  - StaticText \"closed:VERIFY-closed\"\n- Iframe [ref=e4]\n  - generic\n    - textbox \"CrossSiteInput\" [ref=e8]: VERIFY-cross\n      - StaticText \"VERIFY-cross\"\n    - button \"CrossSiteButton\" [ref=e9]\n- status\n  - StaticText \"frame:VERIFY-cross\"\n- button \"Action\" [ref=e7]\n- status\n  - StaticText \"none\""
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"snapshot\"],\"error\":null,\"result\":{\"origin\":\"http://127.0.0.1:64863/\",\"refs\":{\"e1\":{\"name\":\"DeepReview Page 1\",\"role\":\"heading\"},\"e2\":{\"name\":\"Count\",\"role\":\"button\"},\"e3\":{\"name\":\"MainInput\",\"role\":\"textbox\"},\"e4\":{\"name\":\"\",\"role\":\"Iframe\"},\"e5\":{\"name\":\"openInput\",\"role\":\"textbox\"},\"e6\":{\"name\":\"closedInput\",\"role\":\"textbox\"},\"e7\":{\"name\":\"Action\",\"role\":\"button\"},\"e8\":{\"name\":\"CrossSiteInput\",\"role\":\"textbox\"},\"e9\":{\"name\":\"CrossSiteButton\",\"role\":\"button\"}},\"snapshot\":\"- heading \\\"DeepReview Page 1\\\" [level=1, ref=e1]\\n- button \\\"Count\\\" [ref=e2]\\n- status\\n  - StaticText \\\"7\\\"\\n- textbox \\\"MainInput\\\" [ref=e3]\\n- textbox \\\"openInput\\\" [ref=e5]\\n- textbox \\\"closedInput\\\" [ref=e6]: VERIFY-closed\\n  - StaticText \\\"VERIFY-closed\\\"\\n- status\\n  - StaticText \\\"closed:VERIFY-closed\\\"\\n- Iframe [ref=e4]\\n  - generic\\n    - textbox \\\"CrossSiteInput\\\" [ref=e8]: VERIFY-cross\\n      - StaticText \\\"VERIFY-cross\\\"\\n    - button \\\"CrossSiteButton\\\" [ref=e9]\\n- status\\n  - StaticText \\\"frame:VERIFY-cross\\\"\\n- button \\\"Action\\\" [ref=e7]\\n- status\\n  - StaticText \\\"none\\\"\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 8
+    },
+    {
+      "command": [
+        "click",
+        "@e7"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e7"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"click\",\"@e7\"],\"error\":null,\"result\":{\"clicked\":\"@e7\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 5011
+    },
+    {
+      "command": [
+        "tab",
+        "t3"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t3",
+        "title": "DeepReview Page 1",
+        "url": "http://127.0.0.1:64863/"
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"tab\",\"t3\"],\"error\":null,\"result\":{\"label\":null,\"tabId\":\"t3\",\"title\":\"DeepReview Page 1\",\"url\":\"http://127.0.0.1:64863/\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 12
+    },
+    {
+      "command": [
+        "snapshot"
+      ],
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "http://127.0.0.1:64863/",
+        "refs": {
+          "e1": {
+            "name": "DeepReview Page 1",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Count",
+            "role": "button"
+          },
+          "e3": {
+            "name": "MainInput",
+            "role": "textbox"
+          },
+          "e4": {
+            "name": "",
+            "role": "Iframe"
+          },
+          "e5": {
+            "name": "openInput",
+            "role": "textbox"
+          },
+          "e6": {
+            "name": "closedInput",
+            "role": "textbox"
+          },
+          "e7": {
+            "name": "Action",
+            "role": "button"
+          }
+        },
+        "snapshot": "- heading \"DeepReview Page 1\" [level=1, ref=e1]\n- button \"Count\" [ref=e2]\n- status\n  - StaticText \"7\"\n- textbox \"MainInput\" [ref=e3]\n- textbox \"openInput\" [ref=e5]\n- textbox \"closedInput\" [ref=e6]: VERIFY-closed\n  - StaticText \"VERIFY-closed\"\n- status\n  - StaticText \"closed:VERIFY-closed\"\n- Iframe [ref=e4]\n- status\n  - StaticText \"frame:VERIFY-cross\"\n- button \"Action\" [ref=e7]\n- status\n  - StaticText \"replacement\""
+      },
+      "error": null,
+      "stdout": "[{\"command\":[\"snapshot\"],\"error\":null,\"result\":{\"origin\":\"http://127.0.0.1:64863/\",\"refs\":{\"e1\":{\"name\":\"DeepReview Page 1\",\"role\":\"heading\"},\"e2\":{\"name\":\"Count\",\"role\":\"button\"},\"e3\":{\"name\":\"MainInput\",\"role\":\"textbox\"},\"e4\":{\"name\":\"\",\"role\":\"Iframe\"},\"e5\":{\"name\":\"openInput\",\"role\":\"textbox\"},\"e6\":{\"name\":\"closedInput\",\"role\":\"textbox\"},\"e7\":{\"name\":\"Action\",\"role\":\"button\"}},\"snapshot\":\"- heading \\\"DeepReview Page 1\\\" [level=1, ref=e1]\\n- button \\\"Count\\\" [ref=e2]\\n- status\\n  - StaticText \\\"7\\\"\\n- textbox \\\"MainInput\\\" [ref=e3]\\n- textbox \\\"openInput\\\" [ref=e5]\\n- textbox \\\"closedInput\\\" [ref=e6]: VERIFY-closed\\n  - StaticText \\\"VERIFY-closed\\\"\\n- status\\n  - StaticText \\\"closed:VERIFY-closed\\\"\\n- Iframe [ref=e4]\\n- status\\n  - StaticText \\\"frame:VERIFY-cross\\\"\\n- button \\\"Action\\\" [ref=e7]\\n- status\\n  - StaticText \\\"replacement\\\"\"},\"success\":true}]\n",
+      "stderr": "",
+      "ms": 9
+    }
+  ],
+  "hostPid": 12832,
+  "ready": {
+    "ready": true,
+    "port": 64863,
+    "ids": [
+      3,
+      4
+    ],
+    "electron": "42.11.14",
+    "chromium": "148.0.7778.280"
+  },
+  "cdpPort": 64862,
+  "targets": [
+    {
+      "id": "59DA6F0F863F4EAD897CA42EE66C942C",
+      "type": "page",
+      "title": "DeepReview Page 2",
+      "url": "http://127.0.0.1:64863/two"
+    },
+    {
+      "id": "B653199B5644ED4B4F8B263382968D66",
+      "type": "iframe",
+      "title": "http://localhost:64863/inner",
+      "url": "http://localhost:64863/inner"
+    },
+    {
+      "id": "074921D20318EC2ACDC1EABEC19DED7D",
+      "type": "page",
+      "title": "DeepReview Page 1",
+      "url": "http://127.0.0.1:64863/"
+    },
+    {
+      "id": "3BA4F91C23CB7C5E484F941709822E11",
+      "type": "iframe",
+      "title": "http://localhost:64863/inner",
+      "url": "http://localhost:64863/inner"
+    },
+    {
+      "id": "DB28556BFCA14F77804E046F1F937C74",
+      "type": "page",
+      "title": "DeepReview Park",
+      "url": "data:text/html,<title>DeepReview Park</title>"
+    },
+    {
+      "id": "DACA24D97C5D7E9E600CD43DB093DE4C",
+      "type": "page",
+      "title": "DeepReview Host",
+      "url": "data:text/html,<title>DeepReview Host</title>"
+    }
+  ],
+  "refs": {
+    "cross": "e8",
+    "closed": "e6",
+    "count": "e2",
+    "action": "e7"
+  },
+  "crossReadBack": "frame:VERIFY-cross",
+  "closedReadBack": "closed:VERIFY-closed",
+  "twoViewsClickMs": 5009,
+  "oneViewClickMs": 5012,
+  "waitFnCount": 2,
+  "waitFalseCount": 6,
+  "afterMoveCount": 7,
+  "staleEffect": "replacement",
+  "close": {
+    "code": 0,
+    "stdout": "✓ Browser closed\n",
+    "stderr": ""
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "hostStderr": "\nDevTools listening on ws://127.0.0.1:64862/devtools/browser/84f2d2e1-6dcd-477d-8130-9157f703902b\n",
+  "endedAt": "2026-11-03T07:40:19.330Z"
+}

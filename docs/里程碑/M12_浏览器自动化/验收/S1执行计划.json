@@ -1,0 +1,179 @@
+{
+  "schema": 1,
+  "goal": "实现 M12 S1 并验证基础技术链路可行性",
+  "authorization": "用户本轮明确要求先完成 S1 并验证可行；不进入 S2-S6",
+  "branch": "feature/0.1.1",
+  "requirements": "R1.2",
+  "createdAt": "2026-11-03T09:21:41.514478+00:00",
+  "authority": "测试用例.md为唯一正式用例账；本文件只记录分组、原判据和调度，不维护第二份实际结果或通过率",
+  "baseline": {
+    "commit": "19a5663f6da7352d9e402e36d24fb973f2d9e590",
+    "workingTree": "含既有未提交文档、原型与D01-D03修复，保留",
+    "requirementSha256": "b2f53733c30a99171760beedb35f7f92d0eb2e8f6c1975673ee4f9e6da4dbf62",
+    "initialRequirementSha256": "f31387718912b878e1cfa7fbc6c99b5264d0b0c5e31069a4438becd320ccc452",
+    "implementationCorrection": "R1.2 S1实现勘误：原对象填写、三树核对/OOPIF初始化/预选CDP路径；历史快照已保留，正式判据不变"
+  },
+  "completion": [
+    "S1生产代码实现并接入M11受信模块",
+    "全部S1门槛通过相关单元/集成及明定真实Agent读取验证",
+    "保留红测、夹具/环境失败、原始输出与独立判定",
+    "门槛失败则修正方案与实现，不减少范围换通过",
+    "阶段入口/执行记录/用例账同步，并报告可行性、限制、遗留"
+  ],
+  "groups": [
+    {
+      "id": "S1-G001",
+      "name": "受信模块与宿主回执",
+      "cases": [
+        {
+          "id": "M12-T035",
+          "association": "R02.7、review R01、review2 D04",
+          "layers": "I",
+          "preconditions": "测试站点、点击计数接口、可控的关闭与暂停；真实构建的原生 `willyou-app`",
+          "steps": "经真实原生 CLI 逐个触发 R02.7 表中的 10 个错误码；其中暂停、旧引用（同名替换）、`exec` 白名单拒绝、`type` 超长这四种在发出动作前失败；另在写命令提交后关闭标签一次",
+          "expected": "每个错误码以大写 `BROWSER_*` 原样出现在 CLI 的 JSON 输出里（不是 `INVALID_RESPONSE`）；发出动作前失败的为 `effectState: not-started`、退出码 2，点击计数为零；写命令提交后关闭标签为 `BROWSER_TAB_CLOSED`、`effectState: unknown`、退出码 5；Skill 中写有每个码的处理"
+        },
+        {
+          "id": "M12-T037",
+          "association": "R02.9、R06.2、review R04、review2 D07",
+          "layers": "I",
+          "preconditions": "延时页；一个提交表单后服务端延迟响应的写命令",
+          "steps": "在 `wait` 期间向 CLI 进程发 SIGTERM；在写命令已提交后断开 CLI，记录 CLI 输出；在同一终端会话里用输出的 `requestId` 执行 `operation get`；之后重启 App，由新运行再用这个 `requestId` 查询，并打开界面活动记录",
+          "expected": "`wait` 被取消，宿主内的等待随之结束；写命令断连时 CLI 退出码 5，输出含 `requestId`；同一运行内 `operation get` 返回 `unknown` 或最终状态；宿主没有自动重发（站点只收到一次提交）；重启后新运行查询返回 `not-found`；界面活动记录仍显示这次操作及其状态"
+        },
+        {
+          "id": "M12-T045",
+          "association": "K11、O6",
+          "layers": "I＋R",
+          "preconditions": "超大页（快照超过 1MB）；R 层先确认 Codex 沙箱能读 `<userData>/browser/artifacts/`（技术方案 §6）",
+          "steps": "执行 `snapshot`、`console`、`network`",
+          "expected": "序列化超过 512KB 时转存文件，返回路径、字节数、SHA-256 与前 4KB 预览，不返回 `TOO_LARGE`；文件内容完整；未超限的仍内联返回；R 层 Codex 能读取该文件"
+        }
+      ],
+      "status": "T035/T037/T045全部要求层级已通过，证据及独立判定已归档",
+      "owner": "Codex /root",
+      "resources": "准备与轻量单元不占UI；Electron/原生/焦点测试由协调者独占",
+      "next": "实现后冻结基线，再预检并执行",
+      "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
+    },
+    {
+      "id": "S1-G002",
+      "name": "每页代理与页面生命周期",
+      "cases": [
+        {
+          "id": "M12-T038",
+          "association": "R02.10",
+          "layers": "I",
+          "preconditions": "两个标签各打开延时页",
+          "steps": "同一页面并发发起 3 条命令；两个页面各发 1 条",
+          "expected": "同一页面的命令按到达顺序串行执行（站点日志顺序一致）；不同页面的命令并行，总耗时接近单条耗时"
+        },
+        {
+          "id": "M12-T055",
+          "association": "R03.5",
+          "layers": "I",
+          "preconditions": "高度为视口 4 倍的长页",
+          "steps": "`full-screenshot`",
+          "expected": "返回文件的高度覆盖整页；返回字段同 T054"
+        },
+        {
+          "id": "M12-T059",
+          "association": "R03.9、review3 F08",
+          "layers": "I",
+          "preconditions": "测试站点；可让命令持续超时（故障注入）；可结束该页的 agent-browser 进程",
+          "steps": "A：同一页面连续 3 次超时后执行普通命令。B：执行 `snapshot` 后结束该页的 agent-browser 进程，再执行 `click` 旧引用与 `snapshot`",
+          "expected": "A：第 3 次超时后会话被重建，之后的普通命令成功，其他页面不受影响。B：宿主发现进程退出后自动重建会话；页面内容与地址不变；旧引用返回 `BROWSER_STALE_REF`；新 `snapshot` 正常"
+        },
+        {
+          "id": "M12-T107",
+          "association": "R07.5、R0.6 停放窗口、review2",
+          "layers": "I＋A",
+          "preconditions": "T1 有网页标签，Agent 已连接并正在使用；点击计数接口",
+          "steps": "Agent 先在前台执行 3 次点击；切换到 T2（页面移进停放窗口）；在后台执行 `click`、`screenshot`、`snapshot` 各 10 次；再切回 T1 执行 3 次点击",
+          "expected": "前台、后台、切回后的每次点击都实际生效（计数逐次加一）；后台 `click` 中位耗时低于 1 秒（review2 在透明停放窗口观察到约 5 秒，必须在 S1 定位）；`screenshot` 不卡住；切回后页面状态和尺寸不变；记录每次耗时"
+        },
+        {
+          "id": "M12-T112",
+          "association": "R07.5、review R02",
+          "layers": "I",
+          "preconditions": "停放中的页面及其 CDP 代理",
+          "steps": "读取代理的 `/json/list`；直接向代理发送 `Target.createTarget`、`Target.attachToTarget`（其他目标 ID）、`Target.setDiscoverTargets`、`Browser.close`",
+          "expected": "`/json/list` 只有本页；上述方法全部返回 CDP 错误，WillYou 界面、停放窗口与其他页面不受影响"
+        }
+      ],
+      "status": "S1要求的I门槛已按固定补丁版复验；T107的A层仍按S6安排",
+      "owner": "Codex /root",
+      "resources": "准备与轻量单元不占UI；Electron/原生/焦点测试由协调者独占",
+      "next": "实现后冻结基线，再预检并执行",
+      "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
+    },
+    {
+      "id": "S1-G003",
+      "name": "节点引用与动作身份",
+      "cases": [
+        {
+          "id": "M12-T050",
+          "association": "R03.1、R03.2",
+          "layers": "I",
+          "preconditions": "表单页",
+          "steps": "执行 `snapshot`",
+          "expected": "返回 `browserPageId`、`snapshot`、`refs[]`（每项 `ref`、`role`、`name`）、`url`、`title`；`ref` 是宿主分配的 `@<页面短码>s<代际>e<N>` 形式，树文本中出现的引用与 `refs[]` 一致；可操作元素都有引用"
+        },
+        {
+          "id": "M12-T051",
+          "association": "R03.2、review2 D01、review3 F01／F02、review4 G01",
+          "layers": "I",
+          "preconditions": "E4 旧引用页；点击计数接口记录被点元素 ID；两个标签 A、B 打开同一页面；含 iframe 的页面；页面自带一个更早注册的窗口捕获监听器；宿主测试门闩（可在指定步骤暂停并改页面）",
+          "steps": "① 门闩一：快照的两次读树之间把按钮换成同名新按钮，以及 A→B→A 瞬时替换；② 门闩二：动作前核对通过、守卫安装后，把按钮换成**新建的**同名按钮、换成 `cloneNode` 复制出来的按钮（带同一 `data-willyou-ref`）、对输入框做同样的克隆替换后执行 `fill`；③ 快照后替换、插入同名节点、列表重排、导航后用旧引用；④ 同页再次 `snapshot` 后用上一代引用；⑤ A、B 各 `snapshot`，用 A 的引用加 `--page B`；⑥ iframe 与封闭 Shadow DOM 内元素被替换后用旧引用",
+          "expected": "①绝不把旧快照引用绑定到新节点，A→B→A 的实际表现记入结果；②③④⑤⑥都返回 `BROWSER_STALE_REF`、`effectState: not-started`，点击计数为零，克隆输入框的值不变，即使 agent-browser 报告成功也以守卫记录为准；页面更早注册的窗口捕获监听器是否先于守卫收到事件，如实记录；同名新按钮或克隆在任何情况下都不被点中"
+        },
+        {
+          "id": "M12-T052",
+          "association": "R03.2",
+          "layers": "I",
+          "preconditions": "固定版本 agent-browser",
+          "steps": "运行合同测试：制造引用失效，读取 agent-browser 原始错误文字",
+          "expected": "原始错误文字能被 `unknown ref`／`ref not found`／`element not found: @e` 匹配，宿主返回 `BROWSER_STALE_REF`；升级 agent-browser 必须重跑本条"
+        },
+        {
+          "id": "M12-T053",
+          "association": "R03.3、review3 F08",
+          "layers": "I",
+          "preconditions": "跨站 iframe 页（主页面 `127.0.0.1`，iframe 来自 `localhost`）、封闭 Shadow DOM 页；页面自身用事件回显输入值",
+          "steps": "`snapshot`；对 iframe 和封闭 Shadow DOM 内的输入框 `fill`、按钮 `click`；读取每页 CDP 代理的目标列表",
+          "expected": "iframe 是独立的 CDP 目标或会话；内部元素列进快照并带引用；页面自身回显的值与填写一致，点击效果可见；若走后备路径（R03.2），在实际结果中注明"
+        }
+      ],
+      "status": "引用/跨站/封闭根I门槛按固定补丁版完整复验",
+      "owner": "Codex /root",
+      "resources": "准备与轻量单元不占UI；Electron/原生/焦点测试由协调者独占",
+      "next": "实现后冻结基线，再预检并执行",
+      "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
+    },
+    {
+      "id": "S1-G004",
+      "name": "输入进度与恢复",
+      "cases": [
+        {
+          "id": "M12-T060",
+          "association": "R03.9、review2 D03、review3 F03、review4 G03",
+          "layers": "U＋I",
+          "preconditions": "空文本框；已有 9000 字并选中其中 1000 字的文本框；`maxlength=3000` 的文本框；宿主执行器单元测试夹具；可在指定块的指定位置中断 agent-browser 会话",
+          "steps": "I 层：空框 `type` 16384 字、16385 字；空框 `inserttext` 64KB（含中文）；空框在第 2 块边界中断一次、在第 2 块中间（第 333 字）中断一次；已有内容加选区的框，中途中断一次；`maxlength` 框输入 4000 字。U 层：直接调用宿主执行器写入 16MB＋1 字节的剪贴板文本",
+          "expected": "16384 字按 2000 字一块完成且逐字一致；16385 字在前置检查被拒（`INVALID_INPUT`，提示改用 `inserttext`）；`inserttext` 64KB 逐字一致。中断时回执只描述源文本：块边界为 `confirmedChars`＝2000、无 `inFlight`；块中间为 `confirmedChars`＝2000、`inFlight`＝{2000, 2000}；`observed` 的长度与哈希等于页面读取时的实际值（空框夹具中落在 2000–4000，已有内容的框为 9000－1000＋已输入，不做区间推断）；`maxlength` 框的 `observed` 为 3000；都为 `unknown`，宿主不重发；执行器对超过 16MB 返回明确错误"
+        }
+      ],
+      "status": "T060 U＋I全部原判据通过，含执行器字节上限及真实中断，无自动重发",
+      "owner": "Codex /root",
+      "resources": "准备与轻量单元不占UI；Electron/原生/焦点测试由协调者独占",
+      "next": "实现后冻结基线，再预检并执行",
+      "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
+    }
+  ],
+  "updatedAt": "2026-11-03T15:04:02.863186+00:00",
+  "status": "S1门槛完成；后续批次未开始",
+  "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
+  "statusBeforePause": "开发中（用户恢复）",
+  "pauseHandoff": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
+  "next": "S1结果已归账；后续批次由用户决定，先处理开放M11显式sandbox参数兼容缺陷"
+}

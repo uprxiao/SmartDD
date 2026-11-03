@@ -1,0 +1,248 @@
+[
+  {
+    "id": "browser.tab.list",
+    "command": [
+      "browser",
+      "tab",
+      "list"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "show-profile": "boolean"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.tab.create",
+    "command": [
+      "browser",
+      "tab",
+      "create"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "url": "text",
+      "profile": "text"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.nav.goto",
+    "command": [
+      "browser",
+      "goto"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "url": "text"
+    },
+    "required": [
+      "url"
+    ]
+  },
+  {
+    "id": "browser.nav.snapshot",
+    "command": [
+      "browser",
+      "snapshot"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.interact.click",
+    "command": [
+      "browser",
+      "click"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "element": "text"
+    },
+    "required": [
+      "element"
+    ]
+  },
+  {
+    "id": "browser.interact.fill",
+    "command": [
+      "browser",
+      "fill"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "element": "text",
+      "value": "text"
+    },
+    "required": [
+      "element",
+      "value"
+    ]
+  },
+  {
+    "id": "browser.interact.type",
+    "command": [
+      "browser",
+      "type"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "input": "text"
+    },
+    "required": [
+      "input"
+    ]
+  },
+  {
+    "id": "browser.interact.inserttext",
+    "command": [
+      "browser",
+      "inserttext"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "text": "text"
+    },
+    "required": [
+      "text"
+    ]
+  },
+  {
+    "id": "browser.nav.full-screenshot",
+    "command": [
+      "browser",
+      "full-screenshot"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "format": "format"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.nav.screenshot",
+    "command": [
+      "browser",
+      "screenshot"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "format": "format"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.nav.wait",
+    "command": [
+      "browser",
+      "wait"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "selector": "text",
+      "text": "text",
+      "url": "text",
+      "load": "load",
+      "state": "state",
+      "timeout": "timeout"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.operation.get",
+    "command": [
+      "browser",
+      "operation",
+      "get"
+    ],
+    "semantics": "read",
+    "fields": {
+      "request": "text"
+    },
+    "required": [
+      "request"
+    ]
+  },
+  {
+    "id": "browser.interact.exec",
+    "command": [
+      "browser",
+      "exec"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "command": "text"
+    },
+    "required": [
+      "command"
+    ]
+  },
+  {
+    "id": "browser.interact.eval",
+    "command": [
+      "browser",
+      "eval"
+    ],
+    "semantics": "write",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "expression": "text"
+    },
+    "required": [
+      "expression"
+    ]
+  },
+  {
+    "id": "browser.nav.console",
+    "command": [
+      "browser",
+      "console"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "limit": "limit"
+    },
+    "required": []
+  },
+  {
+    "id": "browser.nav.network",
+    "command": [
+      "browser",
+      "network"
+    ],
+    "semantics": "read",
+    "fields": {
+      "task": "text",
+      "page": "text",
+      "limit": "limit"
+    },
+    "required": []
+  }
+]

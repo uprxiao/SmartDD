@@ -49,10 +49,18 @@ describe('M11 independent CLI endpoint: authentication always precedes business'
   const c=await client(),listed=await c.send(request({method:'capabilities/list',call:undefined}));expect(listed.status).toBe('ok');expect(JSON.stringify(listed)).not.toContain(issued.environment.WILLYOU_RUN_TOKEN);
   await c.send(request({token:'f'.repeat(64)}));expect(JSON.stringify(f.sqlite.prepare('SELECT * FROM capability_broker_denials').all())).not.toContain(issued.environment.WILLYOU_RUN_TOKEN);expect(count()).toEqual({n:0});
  });
+ it('keeps an active run usable past the token TTL (M12-D01) and lets it lapse once the run is no longer active',async()=>{
+  const c=await client();
+  time+=30001;expect(await c.send(request())).toMatchObject({status:'ok'});
+  time+=10*30000;expect(await c.send(request())).toMatchObject({status:'ok'});
+  vi.spyOn(f.runs,'assertActive').mockImplementation(()=>{throw new Error('run ended');});
+  time+=30001;expect(await c.send(request())).toMatchObject({status:'error',error:{code:'TOKEN_EXPIRED'}});
+  vi.mocked(f.runs.assertActive).mockRestore();expect(await c.send(request())).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+ });
  it.each(['missing-token','expired','unknown-peer','wrong-executable','tree-outsider','pid-reuse','revoked','wrong-entry'] as const)('rejects %s without invoking business or reading a secret',async mode=>{
   const secrets=vi.spyOn(SecretsStore.prototype,'get'),execute=vi.spyOn(f.applications.data,'execute');let body=request(),code='AUTH_REQUIRED';
   if(mode==='missing-token'){body=request({token:'f'.repeat(64)});}
-  if(mode==='expired'){time+=30001;code='TOKEN_EXPIRED';}
+  if(mode==='expired'){vi.spyOn(f.runs,'assertActive').mockImplementation(()=>{throw new Error('run no longer active');});time+=30001;code='TOKEN_EXPIRED';}
   if(mode==='unknown-peer'){identity=null;code='PEER_UNVERIFIABLE';}
   if(mode==='wrong-executable'){identity!.peer.executable+='.substituted';code='EXECUTABLE_MISMATCH';}
   if(mode==='tree-outsider'){identity!.ancestors=identity!.ancestors.filter(p=>p.pid!==921001);code='PEER_MISMATCH';}

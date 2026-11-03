@@ -1,0 +1,111 @@
+{
+  "at": "2026-11-03T08:16:29.036202+00:00",
+  "scope": "R1 vs frozen R0.10: R05-R08 + D/O/P/C coverage and related test/technical rules",
+  "findings": [
+    {
+      "id": "R1-C01",
+      "priority": "medium",
+      "title": "Cookie replacement granularity silently resolves an old ambiguity without a change record",
+      "old": [
+        "历史/需求_R0.10_20261103.md:304",
+        "历史/需求_R0.10_20261103.md:360"
+      ],
+      "new": [
+        "需求.md:3",
+        "需求.md:448",
+        "需求.md:524"
+      ],
+      "relatedTests": [
+        "验收/测试用例.md:128"
+      ],
+      "detail": "旧R05.4写只替换导入内容出现的域名，R1变成只替换出现的Cookie。目标同域名有A/B、来源只有A时，整域替换和按项合并给出不同结果。旧稿R06.4完整变更集也按写入项描述，说明旧基线本身有歧义；R1选了一种口径，却未在合并表声明决策或事实更正依据，不能无条件声称只改写法。T080只测其他站点不变，无法区分同域旧Cookie保留行为。",
+      "suggestion": "明确原设计是整域替换还是Cookie键合并；若按Orca事实纠正，引用固定源码并追加更正记录。补目标同域独有Cookie的验收。",
+      "boundary": "semantic/document ambiguity, not observed importer regression"
+    },
+    {
+      "id": "R1-C02",
+      "priority": "low",
+      "title": "Profile cloning no longer explicitly guarantees copied login state",
+      "old": [
+        "历史/需求_R0.10_20261103.md:297"
+      ],
+      "new": [
+        "需求.md:436",
+        "需求.md:483"
+      ],
+      "relatedTests": [
+        "验收/测试用例.md:123"
+      ],
+      "detail": "旧稿明确clone复制profile含登录态；R1只列命令名与新所有者。技研只约定clone结果归调用任务，T075也不验证复制后已登录。保留命令名称不等于保存完整行为。",
+      "suggestion": "补clone复制范围（至少登录态）和克隆后隔离关系；用已登录源profile验证克隆可复用而后续登录变更不反写源。"
+    },
+    {
+      "id": "R1-C03",
+      "priority": "low",
+      "title": "Non-focus navigation wording loses new-tab activation constraint",
+      "old": [
+        "历史/需求_R0.10_20261103.md:402"
+      ],
+      "new": [
+        "需求.md:576"
+      ],
+      "relatedTests": [
+        "验收/测试用例.md:167"
+      ],
+      "detail": "旧R0.6明示tab create默认不激活新标签，R1只说不把用户界面切走；后者没有明确本任务active tab是否更新。T115仍要求新标签不被激活。",
+      "suggestion": "在R07.8恢复tab create默认不修改本任务当前标签的具体规则，区分页面目标与用户视图焦点。"
+    },
+    {
+      "id": "R1-C04",
+      "priority": "low",
+      "title": "Unattended login-failure outcome and unresolved Google identity decision are omitted",
+      "old": [
+        "历史/需求_R0.10_20261103.md:308",
+        "历史/需求_R0.10_20261103.md:432"
+      ],
+      "new": [
+        "需求.md:607",
+        "需求.md:609",
+        "需求.md:645"
+      ],
+      "detail": "R08.4保留只能用Bug密码重登，却没有原来无密码时失败并报告原因；旧Google clean身份是否沿用Firefox UA/Passkey边界“待技研”未在R1遗留清单保留。将未知段落删掉不是已经形成结论。",
+      "suggestion": "补无人值守缺凭据时的终止与报告；Google登录特定策略明确已决定来源或保留为待验证限制。"
+    },
+    {
+      "id": "R1-C05",
+      "priority": "low",
+      "title": "Decision index overstates provenance and completeness",
+      "old": [
+        "历史/需求_R0.10_20261103.md:444",
+        "历史/需求_R0.10_20261103.md:482",
+        "历史/需求_R0.10_20261103.md:484",
+        "历史/需求_R0.10_20261103.md:485"
+      ],
+      "new": [
+        "需求.md:96",
+        "需求.md:114",
+        "需求.md:696",
+        "需求.md:698"
+      ],
+      "detail": "O5原为按建议默认且评审可改，R1索引统一称决定且记录为2026-11-02；C8/C10/C11未列入索引，但末尾声称每项在§4索引都有对应。C10/C11业务规则实际已保留，C8为已解决历史依赖，不能因此报业务缺失。",
+      "suggestion": "保留O5默认建议的来源状态（或引用后续确认）；索引补C8已解决、C10/C11对应位置，或收窄“每项均在索引”的声明。"
+    }
+  ],
+  "summary": {
+    "completeIds": 74,
+    "coverageCounts": {
+      "preserved": 66,
+      "changed": 8,
+      "missing": 0
+    },
+    "notNewFindings": [
+      "R0.10已存在的Cookie恢复比较/写回竞态和type进度边界仍保留，不作为R1合并新增问题重复开项。",
+      "D1-D8/O1-O17/P1-P4/C1-C13总体决定边界保留，没有发现整组需求被移出阶段。",
+      "O16自定义字段名未知已在§8:654保留，不属于被伪定稿的未知。",
+      "O13已有项目不自动开启在旧技术方案已明确，不把R1补到正文判为新需求。"
+    ],
+    "overall": "R1显著改善可读性；不能以术语集合/编号齐全证明行为完全保真。至少Cookie替换粒度需补决策或更正来源，clone登录态及active-tab细节应补回，之后再确认“仅改写法、不改决定”。"
+  },
+  "runtimeTestsExecuted": false,
+  "coverage": "requirement-coverage.json"
+}

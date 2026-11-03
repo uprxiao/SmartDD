@@ -1,0 +1,107 @@
+{
+  "schema": "m12-r010-evidence-review-v1",
+  "at": "2026-11-03T08:01:46.216125+00:00",
+  "baseline": "/private/tmp/m12-r010-review-20261103T075857Z",
+  "findings": [
+    {
+      "id": "EVR01",
+      "priority": "high",
+      "category": "requirement-design-mismatch",
+      "title": "Reference identity comparison is not atomically bound to helper snapshot or action",
+      "evidence": [
+        "技研/技术方案.md:155",
+        "需求.md:233",
+        "技研/E4_旧引用等待副作用长输入_20261103.md:28",
+        "技研/实验/E4_旧引用与等待副作用与长输入/ax-identity.mjs:17-40",
+        "验收/测试用例.md:90"
+      ],
+      "detail": "Two separate races remain. First: helper completes snapshot with old element A, page swaps same-name B before host AX read, then the host records B backend as if it belonged to old ref. Second: host pre-action AX comparison passes A, page swaps B before helper semantically re-resolves role/name/nth, then helper clicks B. E4b has no helper and only proves backendID changes under serial replacement; it does not prove either handoff. Requirement promises replacement never clicked, whereas stated protocol can permit it.",
+      "verificationBoundary": "Static timing/interleaving proof from documented sequence; no native/UI rerun and no claim that production implementation exists.",
+      "recommendation": "Add two deterministic S1 latch red tests (snapshot→AX binding and comparison→helper action). Obtain element identity from the same snapshot resolution and execute against already bound node identity, or otherwise prove atomic equivalent; repeated preflight semantic lookup alone is insufficient."
+    },
+    {
+      "id": "EVR02",
+      "priority": "medium",
+      "category": "design-test-mismatch",
+      "title": "Chunk-completion progress cannot equal actual page characters during interrupted chunk",
+      "evidence": [
+        "技研/技术方案.md:133",
+        "技研/技术方案.md:151",
+        "需求.md:251",
+        "验收/测试用例.md:99",
+        "技研/实验/E4_旧引用与等待副作用与长输入/run.mjs:78-85"
+      ],
+      "detail": "Design persists count only after each 2000-character chunk finishes, yet T060 requires exact agreement with actual page length on mid-command interruption. Example: chunk1 confirmed2000; chunk2 types333 then helper dies. Receipt confirmed2000 while page2333. No readback or unknown-tail representation is defined. E4 tests unchunked4096/16384/65536 and does not test proposed2000 chunk recovery.",
+      "verificationBoundary": "Contract inconsistency and illustrative schedule, not an executed product failure.",
+      "recommendation": "Separate confirmedChars/unknownTail from observedChars. Only claim exact observed progress after reliable target readback; otherwise return bounded uncertainty and prohibit full resend. Place fault latch inside a chunk rather than at its completion boundary."
+    },
+    {
+      "id": "EVR03",
+      "priority": "low",
+      "category": "acceptance-mapping-gap",
+      "title": "Some new S1 mandatory checks still have no concrete case criteria",
+      "evidence": [
+        "技研/技术方案.md:324",
+        "验收/测试用例.md:92",
+        "验收/测试用例.md:98",
+        "验收/测试用例.md:159-164"
+      ],
+      "detail": "S1 now mandates cross-site OOPIF and helper-killed automatic reconnection. The case document has no explicit OOPIF/cross-site/automatic-reconnect case wording; T053 still says ordinary same/cross-origin fixtures and E3 already proved it, and T059 only resets after three timeouts. T107 properly adds already-connected park→reattach and effect counters, so do not reopen that fix.",
+      "recommendation": "Add OOPIF child-target/process prerequisite and per-frame readback to T053, plus helper death→same page reconnect outcome/timeout/no duplicates to existing lifecycle cases; link them from S1."
+    },
+    {
+      "id": "EVR04",
+      "priority": "high",
+      "category": "wire-contract-ambiguity",
+      "title": "Cross-page stale-ref rejection cannot distinguish identical native reference strings",
+      "evidence": [
+        "需求.md:229",
+        "技研/技术方案.md:155",
+        "验收/测试用例.md:90",
+        "cross-page-ref-counterexample.json"
+      ],
+      "detail": "Each page has an independent helper/ref map, while external arguments carry only --page B and @e4. If A and B snapshots each emit @e4, misusing A reference on B and legitimately using B reference produce byte-identical requests. Per-page backendID maps select B in both cases; server cannot infer which snapshot supplied the string. T051 specifically requires A ref plus pageB to be stale, which the protocol cannot guarantee.",
+      "recommendation": "Return host-unique public references containing page/snapshot generation or globally assigned IDs, bind them to underlying helper ref plus backend identity, validate provenance, and translate only after validation. Add colliding-ref A/B negative and positive controls.",
+      "verificationBoundary": "Contract counterexample, not an actual native/UI replay."
+    }
+  ],
+  "verified": [
+    {
+      "item": "E4 primary evidence integrity",
+      "status": "verified",
+      "detail": "Four recorded source hashes all match frozen sources."
+    },
+    {
+      "item": "E4 same-name stale reference counterexample",
+      "status": "supported",
+      "detail": "Raw sameName @e4 success with hits replacement; wrong-name raw error matches new added phrase."
+    },
+    {
+      "item": "E4 wait fn mutates repeatedly",
+      "status": "supported",
+      "detail": "Raw counter0→2→6 with success then timeout; write split is evidence-based."
+    },
+    {
+      "item": "E4 long input limits motivation",
+      "status": "supported-with-boundary",
+      "detail": "4096/16384 lengths complete,65536 type fails62315ms; inserttext65536 length complete10ms. Does not prove chunk-recovery implementation."
+    },
+    {
+      "item": "82commands/21read/61write and121cases",
+      "status": "independently-static-checked",
+      "detail": "83rows minus open-url=82;21read61write;121unique authoritative case IDs; mapping references all exist."
+    },
+    {
+      "item": "Previous nonexistent-case falsepositive",
+      "status": "closed-by-independent-negative-control",
+      "detail": "With frozen generator unchanged, synthetic table-reconstructed upstream passes; private mutation snapshot→T999 now exits1 with unknown-case assertion. This only verifies generator control flow, not original Orca-source extraction."
+    }
+  ],
+  "rawProbe": "probe-results.json",
+  "resources": {
+    "native": false,
+    "ui": false,
+    "listeners": []
+  },
+  "scope": "Read-only frozen documents and evidence; only private Python probes. No production or acceptance ledger edits."
+}

@@ -1,0 +1,386 @@
+{
+  "at": "2026-11-03T01:23:07.939Z",
+  "boundary": "E1 experiment: local Electron 42 host + bundled agent-browser 0.27.3, synthetic page, no network, no WillYou gateway",
+  "electronPort": 9350,
+  "steps": [
+    {
+      "label": "tab list (first attach)",
+      "command": [
+        "tab",
+        "list"
+      ],
+      "ms": 109,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "WillYou E1 host",
+            "type": "page",
+            "url": "data:text/html,<title>WillYou E1 host</title><p>host ui</p>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t2",
+            "title": "E1 登录页",
+            "type": "page",
+            "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html"
+          }
+        ]
+      },
+      "error": null,
+      "stdoutBytes": 533
+    },
+    {
+      "label": "switch to page tab",
+      "command": [
+        "tab",
+        "t2"
+      ],
+      "ms": 7,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t2",
+        "title": "E1 登录页",
+        "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html"
+      },
+      "error": null,
+      "stdoutBytes": 341
+    },
+    {
+      "label": "snapshot",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 6,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    },
+    {
+      "label": "fill",
+      "command": [
+        "fill",
+        "@e3",
+        "alice"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e3"
+      },
+      "error": null,
+      "stdoutBytes": 91
+    },
+    {
+      "label": "click",
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "ms": 5011,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e2"
+      },
+      "error": null,
+      "stdoutBytes": 85
+    },
+    {
+      "label": "click again (same page, fresh state)",
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "ms": 5018,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e2"
+      },
+      "error": null,
+      "stdoutBytes": 85
+    },
+    {
+      "label": "get text",
+      "command": [
+        "get",
+        "text",
+        "#out"
+      ],
+      "ms": 9,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "text": "已登录：alice"
+      },
+      "error": null,
+      "stdoutBytes": 329
+    },
+    {
+      "label": "screenshot to file",
+      "command": [
+        "screenshot",
+        "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/06f2ded6-315e-415d-b627-aa9e454b9e7c/scratchpad/e1-out-VIEW_OFFSCREEN/e1-screenshot.png"
+      ],
+      "ms": 30003,
+      "exit": 0,
+      "ok": false,
+      "data": null,
+      "error": "Command failed: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/06f2ded6-315e-415d-b627-aa9e454b9e7c/scratchpad/ab-pkg/package/bin/agent-browser-darwin-arm64 --session e1 --cdp 9350 batch --json\n",
+      "stdoutBytes": 0
+    },
+    {
+      "label": "eval title",
+      "command": [
+        "eval",
+        "document.title"
+      ],
+      "ms": 8,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "result": "E1 登录页"
+      },
+      "error": null,
+      "stdoutBytes": 332
+    },
+    {
+      "label": "reload",
+      "command": [
+        "reload"
+      ],
+      "ms": 10,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html"
+      },
+      "error": null,
+      "stdoutBytes": 296
+    },
+    {
+      "label": "stale ref click after reload",
+      "command": [
+        "click",
+        "@e2"
+      ],
+      "ms": 4,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Unknown ref: e2",
+      "stdoutBytes": 86
+    },
+    {
+      "label": "warm snapshot 1",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    },
+    {
+      "label": "warm snapshot 2",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    },
+    {
+      "label": "warm snapshot 3",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    },
+    {
+      "label": "warm snapshot 4",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    },
+    {
+      "label": "warm snapshot 5",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E6%B5%8F%E8%A7%88%E5%99%A8%E8%87%AA%E5%8A%A8%E5%8C%96/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/E1_agent-browser%E9%A9%B1%E5%8A%A8Electron/page.html",
+        "refs": {
+          "e1": {
+            "name": "E1 登录页",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "登录",
+            "role": "button"
+          },
+          "e3": {
+            "name": "用户名 ",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"E1 登录页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"用户名 \"\n  - textbox \"用户名 \" [ref=e3]\n- button \"登录\" [ref=e2]\n- paragraph\n  - StaticText \"未登录\""
+      },
+      "error": null,
+      "stdoutBytes": 607
+    }
+  ],
+  "errors": [],
+  "ids": {
+    "host": 1,
+    "page": 2,
+    "visible": true
+  },
+  "targets": [
+    {
+      "type": "page",
+      "title": "E1 登录页",
+      "url": "file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M12_%E"
+    },
+    {
+      "type": "page",
+      "title": "WillYou E1 host",
+      "url": "data:text/html,<title>WillYou E1 host</title><p>host ui</p>"
+    }
+  ],
+  "pageTab": "t2",
+  "refs": {
+    "textbox": "@e3",
+    "button": "@e2"
+  },
+  "screenshotBytes": 0,
+  "latency": {
+    "firstAttachMs": 109,
+    "warmSnapshotMs": [
+      5,
+      5,
+      5,
+      5,
+      5
+    ],
+    "warmMedianMs": 5
+  },
+  "closeExit": 0
+}

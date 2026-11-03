@@ -1,0 +1,324 @@
+{
+  "at": "2026-11-03T07:51:14.901Z",
+  "boundary": "E4 experiment: local Electron 42 host (window shown off-screen, not the transparent park window) + agent-browser 0.27.3, loopback synthetic page, no WillYou gateway",
+  "steps": [
+    {
+      "label": "tab list",
+      "command": [
+        "tab",
+        "list"
+      ],
+      "ms": 135,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "WillYou E4 host",
+            "type": "page",
+            "url": "data:text/html,<title>WillYou E4 host</title>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t2",
+            "title": "E4 旧引用页",
+            "type": "page",
+            "url": "http://127.0.0.1:9371/stale.html"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "switch",
+      "command": [
+        "tab",
+        "t1"
+      ],
+      "ms": 6,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t1",
+        "title": "WillYou E4 host",
+        "url": "data:text/html,<title>WillYou E4 host</title>"
+      },
+      "error": null
+    },
+    {
+      "label": "snapshot 1",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 20,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "data:text/html,<title>WillYou E4 host</title>",
+        "refs": {},
+        "snapshot": "(empty page)"
+      },
+      "error": null
+    },
+    {
+      "label": "click stale ref after same-name replacement",
+      "command": [
+        "click",
+        null
+      ],
+      "ms": 3,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]"
+    },
+    {
+      "label": "snapshot 2",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "origin": "data:text/html,<title>WillYou E4 host</title>",
+        "refs": {},
+        "snapshot": "(empty page)"
+      },
+      "error": null
+    },
+    {
+      "label": "click stale ref after a same-name node is inserted before it",
+      "command": [
+        "click",
+        null
+      ],
+      "ms": 3,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]"
+    },
+    {
+      "label": "click stale ref after replacement with a different name",
+      "command": [
+        "click",
+        null
+      ],
+      "ms": 3,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]"
+    },
+    {
+      "label": "wait --fn that clicks and returns true",
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"counter\").click();return true})()"
+      ],
+      "ms": 20002,
+      "exit": 0,
+      "ok": false,
+      "data": null,
+      "error": "Command failed: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/06f2ded6-315e-415d-b627-aa9e454b9e7c/scratchpad/ab3/package/bin/agent-browser-darwin-arm64 --session e4 --cdp 9370 batch --json\n"
+    },
+    {
+      "label": "wait --fn that clicks and returns false, timeout 300ms",
+      "command": [
+        "wait",
+        "--fn",
+        "(()=>{document.getElementById(\"counter\").click();return false})()",
+        "--timeout",
+        "300"
+      ],
+      "ms": 315,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Wait timed out after 300ms"
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 4,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "keyboard type 4096",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(4096 chars)"
+      ],
+      "ms": 329,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij…(4108 chars)",
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 5,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "keyboard type 16384",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(16384 chars)"
+      ],
+      "ms": 1256,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij…(16396 chars)",
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 4,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "keyboard inserttext 65536",
+      "command": [
+        "keyboard",
+        "inserttext",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(65536 chars)"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "inserted": true
+      },
+      "error": null
+    },
+    {
+      "label": "focus",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 5,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "keyboard type 65536",
+      "command": [
+        "keyboard",
+        "type",
+        "abcdefghijabcdefghijabcdefghijabcdefghij…(65536 chars)"
+      ],
+      "ms": 4925,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij…(65548 chars)",
+      "error": null
+    }
+  ],
+  "findings": {},
+  "raw": {
+    "sameName": {
+      "ref": null,
+      "ok": false,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]",
+      "hits": []
+    },
+    "insertedBefore": {
+      "ref": null,
+      "ok": false,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]",
+      "hits": []
+    },
+    "otherName": {
+      "ref": null,
+      "ok": false,
+      "error": "Invalid JSON input: invalid type: null, expected a string at line 1 column 14. Expected an array of string arrays, e.g. [[\"open\", \"https://example.com\"], [\"snapshot\"]]",
+      "hits": []
+    },
+    "waitFn": {
+      "before": 0,
+      "afterTrue": 0,
+      "afterFalse": 0,
+      "w1": {
+        "ok": false,
+        "error": "Command failed: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/06f2ded6-315e-415d-b627-aa9e454b9e7c/scratchpad/ab3/package/bin/agent-browser-darwin-arm64 --session e4 --cdp 9370 batch --json\n"
+      },
+      "w2": {
+        "ok": false,
+        "error": "Wait timed out after 300ms"
+      }
+    },
+    "typed": {
+      "type 4096": {
+        "chars": 4096,
+        "ok": true,
+        "ms": 329,
+        "error": null,
+        "valueLength": 0
+      },
+      "type 16384": {
+        "chars": 16384,
+        "ok": true,
+        "ms": 1256,
+        "error": null,
+        "valueLength": 0
+      },
+      "inserttext 65536": {
+        "chars": 65536,
+        "ok": true,
+        "ms": 5,
+        "error": null,
+        "valueLength": 0
+      },
+      "type 65536": {
+        "chars": 65536,
+        "ok": true,
+        "ms": 4925,
+        "error": null,
+        "valueLength": 0
+      }
+    }
+  },
+  "verdicts": {
+    "D01_sameNameStaleRefClicksReplacement": false,
+    "D01_insertedBeforeChangesTarget": [],
+    "D01_otherNameIsReportedStale": false,
+    "D02_waitFnHasSideEffects": false,
+    "D02_waitFnRepeats": false,
+    "D03_typeMsPerChar4096": 0.08,
+    "D03_type65536Complete": false,
+    "D03_inserttext65536Complete": false
+  }
+}

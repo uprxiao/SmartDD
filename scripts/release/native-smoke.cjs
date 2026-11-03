@@ -14,6 +14,14 @@ for (const file of ['out/main/index.js', 'out/preload/index.js', 'out/renderer/i
   assert(fs.existsSync(path.join(asar, file)), `Missing packaged resource: ${file}`);
 }
 if (process.platform === 'darwin') {
+  const browserRoot = path.join(resources, 'agent-browser');
+  const browserSource = JSON.parse(fs.readFileSync(path.join(browserRoot, 'SOURCE.json'), 'utf8'));
+  const browserBinary = browserSource.files.find(file => file.arch === expectedArch);
+  assert(browserBinary, 'Packaged fixed browser helper architecture');
+  const browserPath = path.join(browserRoot, browserBinary.path);
+  assert.equal(require('node:crypto').createHash('sha256').update(fs.readFileSync(browserPath)).digest('hex'), browserBinary.sha256, 'Packaged helper retains verified build bytes after signing');
+  assert(!fs.existsSync(path.join(asar, 'out/agent-browser-build')), 'Cargo build/cache excluded');
+  assert(!fs.existsSync(path.join(asar, 'out/agent-browser')), 'Helper outside ASAR only');
   const helper = path.join(resources, 'native/smartdd-voice');
   assert(fs.existsSync(helper), 'Packaged voice key bridge');
   const { execFileSync, spawnSync } = require('node:child_process');

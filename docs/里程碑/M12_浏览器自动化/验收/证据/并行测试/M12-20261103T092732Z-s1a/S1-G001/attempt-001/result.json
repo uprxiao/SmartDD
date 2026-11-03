@@ -1,0 +1,26 @@
+{
+  "layer": "software U/I, not formal case completion",
+  "testFiles": [
+    "core.test.ts",
+    "cdp-proxy.test.ts",
+    "migrations.test.ts"
+  ],
+  "total": 41,
+  "passed": 37,
+  "failed": 4,
+  "failures": [
+    {
+      "classification": "test-maintenance",
+      "case": "migration schema list",
+      "actual": "browser_operations now present but expected table list missing entry",
+      "action": "Add new table to expected schema; no production behavior changed to make test pass"
+    },
+    {
+      "classification": "environment",
+      "case": "three CDP proxy loopback tests",
+      "actual": "listen EPERM 127.0.0.1",
+      "action": "Rerun authorized local socket tests outside sandbox"
+    }
+  ],
+  "baseline": "current working tree before schema expected-list fix; no product complete claim"
+}

@@ -35,7 +35,7 @@ export const applicationManifestV2Schema = z.object({
   schema: z.literal('smartdd-app-package-v2'),
   appId: fields.appId, version: fields.version, displayName: fields.displayName, description: fields.description,
   hostApi: fields.hostApi, dataApi: fields.dataApi, runtime: fields.runtime,
-  connectionContracts: fields.connectionContracts,
+  connectionContracts: z.array(fields.connectionContracts.element),
   module: z.object({ id: name, contractMajor: api }).strict(),
   entry: z.enum(['mcp', 'cli']), mixedEntries: z.literal(true).optional(),
   connectionSlots: z.array(z.object({ slot: name, required: z.boolean() }).strict()).max(32),

@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>E4 旧引用页</title>
+<h1>E4 旧引用页</h1>
+<div id="slot"><button id="original">Action</button></div>
+<div id="slot2"><button id="other-original">Original only</button></div>
+<button id="counter" onclick="window.__count=(window.__count||0)+1;document.getElementById('countOut').textContent=String(window.__count)">Counter</button>
+<p>count=<span id="countOut">0</span></p>
+<textarea id="long" aria-label="long text" style="width:400px;height:60px"></textarea>
+<script>
+  window.__hits = [];
+  document.addEventListener('click', e => { if (e.target.id && e.target.id !== 'counter') window.__hits.push(e.target.id); }, true);
+  window.replaceSameName = () => { document.getElementById('slot').innerHTML = '<button id="replacement">Action</button>'; };
+  window.replaceOtherName = () => { document.getElementById('slot2').innerHTML = '<button id="other-replacement">Different name</button>'; };
+  window.insertBefore = () => { const b = document.createElement('button'); b.id = 'inserted'; b.textContent = 'Action'; document.getElementById('slot').prepend(b); };
+</script>
+<input id="field" aria-label="Field input" value="">
+<script>
+  window.cloneReplace = id => { const o = document.getElementById(id); const c = o.cloneNode(true); c.id = id + '-clone'; o.replaceWith(c); };
+  window.startCookieWriter = () => { window.__cw = 0; window.__cwTimer = setInterval(() => { window.__cw++; document.cookie = 'cw=' + window.__cw + '; path=/'; }, 10); };
+</script>

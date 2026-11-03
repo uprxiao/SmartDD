@@ -1,0 +1,139 @@
+{
+  "group": "review-evidence",
+  "at": "2026-11-03T07:39:12.733351+00:00",
+  "baseline": "/private/tmp/m12-deep-review-20261103T073535Z",
+  "resources": {
+    "ui": false,
+    "native": false,
+    "backgroundProcesses": false
+  },
+  "findings": [
+    {
+      "id": "EV01",
+      "priority": "medium",
+      "type": "claim-evidence-mismatch",
+      "title": "E1 did not migrate an already connected agent-browser session",
+      "claim": "D6 §3.3: page state and helper session survived moving views between windows",
+      "evidence": [
+        "技研/D6_agent-browser核实与E1实验_20261103.md:69",
+        "技研/实验/E1_agent-browser驱动Electron/main.cjs:15-26",
+        "技研/实验/E1_agent-browser驱动Electron/run.mjs:44-51"
+      ],
+      "detail": "Host parks the view before E1_READY; runner first connects after READY. No active CDP/helper session exists at migration, and no move-back occurs. Only pre-park single-page performance is proven.",
+      "suggestion": "Retain successful parked-page result but remove existing-session survival claim until attach→interact→park→interact→reattach→interact is measured."
+    },
+    {
+      "id": "EV02",
+      "priority": "medium",
+      "type": "coverage-overstatement",
+      "title": "E3 cross-origin fixture does not exercise cross-site OOPIF, and iframe fill readback check is nonspecific",
+      "evidence": [
+        "技研/E3_待核实事实_20261103.md:12",
+        "技研/实验/E3_快照覆盖与命令行为/main.cjs:25-32",
+        "技研/实验/E3_快照覆盖与命令行为/pages/frames.html:6-7",
+        "技研/实验/E3_快照覆盖与命令行为/run.mjs:62-75"
+      ],
+      "detail": "Main page and iframe both use http://127.0.0.1 with different ports: cross-origin, same-site. Chromium site isolation ignores port. OOPIF Target.attachToTarget / session routing remains unproved. readBackViaSnapshot only checks E3值 exists anywhere, which is guaranteed by other inputs and cannot prove iframe value. The research document acknowledges no direct iframe value readback, so this is an overbroad conclusion rather than fabricated records.",
+      "primarySource": "https://www.chromium.org/Home/chromium-security/site-isolation/",
+      "suggestion": "Add different-site controlled fixtures, assert actual child targets/process separation, and use unique per-input values plus child-side readback."
+    },
+    {
+      "id": "EV03",
+      "priority": "medium",
+      "type": "validated-false-positive",
+      "title": "Command coverage generator accepts a nonexistent test ID",
+      "evidence": [
+        "技研/命令映射/gen_command_map.py:147-183",
+        "技研/命令映射/gen_command_map.py:214-218",
+        "audit-evidence/mutated-coverage.log",
+        "audit-evidence/命令用例对照.generated.md:9"
+      ],
+      "detail": "Generator only checks each command has a nonempty hardcoded COVERAGE entry and number of keys. It never reads 测试用例.md or checks test IDs/layers/criteria. Private copy changed snapshot mapping to nonexistent T999; generator exited 0 and output M12-T999. Source fixture reconstructed from frozen mapping table solely for generator behavior probe; not an independent Orca-source verification.",
+      "suggestion": "Check IDs against authoritative case parser and required I layer and explicit command mapping; add nonexistent ID negative control."
+    },
+    {
+      "id": "EV04",
+      "priority": "medium",
+      "type": "unsupported-performance-inference",
+      "title": "21KB Chinese type sample cannot establish 64KiB chunks finish within 90 seconds",
+      "evidence": [
+        "技研/E3_待核实事实_20261103.md:16",
+        "技研/实验/E3_快照覆盖与命令行为/run.mjs:125-132",
+        "技研/实验/E3_快照覆盖与命令行为/结果/result.json findings.type"
+      ],
+      "detail": "Only 9000 characters / 21000 UTF8 bytes were measured: 14269ms. Document extrapolates 64KB≈40s by bytes, though typing is per character. At that observed per-character rate 65536 ASCII characters project to ~104s. This is not an actual 64KiB failure, but the stated 90-second guarantee is not supported.",
+      "suggestion": "Measure ASCII/CJK/emoji exact readback at 64KiB and >64KiB through intended executor under 90s budget before claiming guarantee."
+    },
+    {
+      "id": "EV05",
+      "priority": "low",
+      "type": "verification-gap",
+      "title": "Experimental runners record results but do not assert expected outcomes or await cleanup completion",
+      "evidence": [
+        "技研/实验/E1_agent-browser驱动Electron/run.mjs:39-74",
+        "技研/实验/E3_快照覆盖与命令行为/run.mjs:25-37,134-141",
+        "技研/实验/E2_网关耗时与大结果/gateway-measure.test.ts:42-53"
+      ],
+      "detail": "E1/E3 catch and record errors and can exit 0 with failed steps; E2 size test never asserts expected exit/result/error. Current raw results do support the documented observations, but rerunning successfully at process/test level cannot establish behavior. host.kill() is not awaited nor PID descendants recorded by runners; separate manual cleanup claims are not independently reconstructible from artifacts.",
+      "suggestion": "Add semantic expected assertions and explicit expected negative outcomes, failed exit status, and scoped cleanup receipts."
+    },
+    {
+      "id": "EV06",
+      "priority": "low",
+      "type": "baseline-boundary",
+      "title": "E2 was measured against gateway/CLI sources different from current R0.9 frozen source",
+      "evidence": [
+        "技研/实验/E2_网关耗时与大结果/结果/source-sha256.txt",
+        "audit-evidence/hash-check.json"
+      ],
+      "detail": "E2 test/config/fixture hashes match, but cli-gateway.ts and cli.mm hashes changed (consistent with D01/D02). Preserve original historical performance/cap observations; cannot call them current-baseline independent verification without affected-scope assessment or rerun."
+    }
+  ],
+  "verifiedClaims": [
+    {
+      "claim": "E1 parked one page responds quickly, while hidden/offscreen view delays click or screenshot",
+      "status": "supported-by-original-raw-results",
+      "detail": "Park click 13/8ms screenshot47ms; visible click8/16ms screenshot40ms; hidden view screenshot30s timeout. Source manifest matches. No runtime rerun performed by this agent."
+    },
+    {
+      "claim": "E2 historic gateway median249ms and >1MiB TOO_LARGE",
+      "status": "supported-by-original-raw-results",
+      "detail": "20 call samples summary exists; 318629B and927929B succeeded,1237229B returned code2 TOO_LARGE. Source drift boundary recorded separately."
+    },
+    {
+      "claim": "E3 ordinary iframe/closed-open Shadow snapshot refs and actions",
+      "status": "supported-with-boundaries",
+      "detail": "All expected ref names recorded, same-origin and shadow inputs independently read back, four button effects visible. OOPIF and cross-frame value boundary EV02."
+    },
+    {
+      "claim": "E3 default network route passes requests; --abort blocks; clipboard is system",
+      "status": "supported-by-original-raw-results",
+      "detail": "Page server response, hit count1 and request200; abort Failed to fetch; clipboard read matches marker/write matches pbpaste/restored flagtrue."
+    },
+    {
+      "claim": "E3 21KB keyboard type exact",
+      "status": "supported-by-original-raw-results",
+      "detail": "9000chars/21000B,14269ms,exact true."
+    },
+    {
+      "claim": "R08/R09 model repairs",
+      "status": "independently-retested",
+      "detail": "Frozen 28 model tests pass; profile ID restored and visits timestamp-ordered. Browser UI not independently driven by this agent."
+    },
+    {
+      "claim": "Recoverable prototype snapshot",
+      "status": "independently-integrity-checked",
+      "detail": "All11 manifest entries match; tar10 files match frozen prototype bytes. Snapshot overlays committed baseline rather than containing entire project/dependencies."
+    }
+  ],
+  "probeCommands": [
+    "node --test prototypes/m6-codex/tests/browser-prototype-model.test.mjs prototypes/m6-codex/tests/browser-prototype-batch2.test.mjs prototypes/m6-codex/tests/browser-prototype-launcher.test.mjs",
+    "python3 -I audit-evidence/gen-mutated-coverage.py audit-evidence/orca-synthetic audit-evidence/mutated-coverage.generated.md"
+  ],
+  "testSummary": {
+    "prototypeModelPassed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "nativeOrUiReruns": 0
+  }
+}

@@ -1,3 +1,5 @@
+import {BrowserService} from './core/browser/service';
+import {existsSync,readFileSync} from 'node:fs';
 import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification } from 'electron';
@@ -189,7 +191,13 @@ async function main(): Promise<void> {
   let managedTasks:ManagedTaskCapabilities|undefined;
   try {
     if(agentSupport){
-      applications=new ApplicationService(agentSupport.store,{distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
+      const browserRoot=app.isPackaged?join(process.resourcesPath,'agent-browser'):join(app.getAppPath(),'out/agent-browser');
+      let browser:BrowserService|undefined;
+      if(process.platform==='darwin'&&existsSync(join(browserRoot,'SOURCE.json'))){
+        const source=JSON.parse(readFileSync(join(browserRoot,'SOURCE.json'),'utf8')),binary=source.files.find((file:{arch:string})=>file.arch===process.arch);
+        if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,window:getMainWindow});
+      }
+      applications=new ApplicationService(agentSupport.store,{browser,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
       await applications.recover();
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),stopPty:id=>ptys.kill(id)});

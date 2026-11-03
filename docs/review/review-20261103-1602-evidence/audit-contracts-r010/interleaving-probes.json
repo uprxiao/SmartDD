@@ -1,0 +1,25 @@
+{
+  "boundary": "pure deterministic model of documented read/then-write and acknowledged chunk accounting; no browser/native code executed",
+  "cookieRollbackSchedule": [
+    {
+      "step": "recovery reads current",
+      "value": "imported"
+    },
+    {
+      "step": "page logs out between compare and restore",
+      "value": null
+    },
+    {
+      "step": "recovery writes backed-up value after successful earlier compare",
+      "value": "old-login"
+    }
+  ],
+  "typeProgressCounterexample": {
+    "chunkSize": 2000,
+    "completedChunks": 3,
+    "confirmedChars": 6000,
+    "charsWrittenInCurrentUnacknowledgedChunk": 731,
+    "actualPageChars": 6731,
+    "receiptMatchesActual": false
+  }
+}

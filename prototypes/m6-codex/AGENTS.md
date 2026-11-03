@@ -1,3 +1,14 @@
+# M12 浏览器自动化原型 — 2026-11-03
+
+- 依据 `../../docs/里程碑/M12_浏览器自动化/需求.md` R0.4；范围与进度见同目录 `原型/原型说明与变更.md`。用户确认 15 项分两批、先按 M9 风格；不是生产开发授权。
+- 入口 `?preview=m12`。独立模块 `BrowserWorkspace.jsx`、`BrowserPanels.jsx`、`browser-prototype-model.mjs`、`browser.css`；`FileWorkspace.jsx` 只能通过可选属性（`webTabs`、`webActiveId`、`onWebSelect`、`onWebClose`、`onWebNew`、`webView`）接入，不传时 M9 行为必须不变，改动后跑 `npm run test:m9`。
+- 只用合成页面与合成数据，不发网络请求，不读取真实浏览器 Cookie、钥匙串或本机文件内容；Agent 行为只能由标明“演示 · 合成”的控件模拟，不能写成真实 Agent 结果。localStorage 仅 `willyou-m12-prototype-v1`，只存每个任务的网页地址与当前标签序号。
+- 网页标签只属于任务：项目视图不显示网页标签；任务没有所属项目时（`App.jsx` 的 `webAllowed`）不传网页标签、网页视图与“新建网页标签”（R0.5 U1／U2）。
+- R0.7（2026-11-03）：任务标题栏“新建标签页（⇧⌘B）”直接打开右侧面板并新建网页标签；新标签页为启动页（“工具”只有“文件”，“推荐”为本项目最近访问的网站，`recentSites`）。终端、侧边聊天、新建页面属 Codex 独有，不做。逐像素复刻放到正式开发后。
+- 网页标签按任务隔离（D8），登录态 profile 按项目（O10）；网页标签视觉沿用 M9 已按 Codex 复刻的 `fw-tab`／`fw-toolbar`，没有 Codex 浏览器参考截图，不得宣称与 Codex 浏览器一致（D8、§9 C9）。地址栏规则与 Orca `normalizeBrowserNavigationUrl` 保持一致，修改需同步模型单测。
+- Agent 只显示活动标记（标签点＋页面发光叠加层），不做动画光标（O15）；暂停时新命令返回 `browser_paused`、只读等待立即结束、写命令执行完当前一条（R07.6）。
+- 证书有问题（拦截或按例外访问）的页面不得显示为安全连接；证书例外、站点权限、Cookie 导入只能由用户在界面完成，界面须写明 Agent 无法代为放行。⌘F／⌘L 只在焦点位于网页区域或页面正文时响应，不抢终端与文件区快捷键。登录态元数据存 `willyou-m12-prototype-profiles-v1`，只含名称、站点与选择，不含 Cookie 或密码。
+
 # M10 R1.6 当前原型约定 — 2026-10-19
 
 - 当前已确认规则以需求§12.1–12.20为准，优先于下方R1.5历史描述；本轮已补主流程、邮件单一来源／发件账号及可操作故障状态，依据新增需求§12.21；实际验证与未覆盖项见README顶部，不把原型当后台验收。

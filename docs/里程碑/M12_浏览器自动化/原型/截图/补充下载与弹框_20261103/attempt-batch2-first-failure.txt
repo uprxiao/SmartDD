@@ -1,0 +1,5 @@
+2026-11-03 第二批回归第一次运行（R0.8 改动后、加入“点外面收起”之前）在 B08 失败：
+failedStage 后的错误：Error: eval: Error: no visible unoccluded .bw-site-card h2 (1 candidates) last hit SPAN
+已通过的检查：B05、B06、B07。原因：新的下载列表浮在网页上方，挡住了驱动下一步要点的订单标题中心点。
+处理：产品增加“点击下载列表以外任何位置即收起”；驱动在点页面前用真实点击“收起下载列表”（drive-batch2-regression.mjs，只加这一步）。重跑 9 项通过。
+原始 result.json 在重跑前被覆盖，未保留；此文本据当时的命令输出记录。
