@@ -1,0 +1,1 @@
+S4-FIND-SESSION：真实App007中页面文本确有5个订单、查找输入亦为订单，原生调用findInPage收到findNext:false，返回requestId但没有任何found-in-page结果，UI一直无结果。Electron42本地d.ts FindInPageOptions及官方https://www.electronjs.org/docs/latest/api/web-contents#contentsfindinpagetext-options要求初次true、后续false；实现把UI next直接透传，方向传反。原观察钩子未更改返回，已恢复；这是独立于先前键盘驱动的产品红，保留原始返回/截图。生产修复为findNext:!next，待新包原A用例复验，不变更预期。

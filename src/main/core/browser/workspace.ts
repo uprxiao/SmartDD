@@ -143,7 +143,8 @@ export class BrowserWorkspace {
   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
     this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.contents;
     if(!text){wc.stopFindInPage('clearSelection');this.finds.delete(id);this.changed(taskId);return;}
-    const requestId=wc.findInPage(text,{forward,findNext:next});this.finds.set(id,{requestId,active:0,total:0});
+    // Electron's flag starts a new session when true, continues it when false.
+    const requestId=wc.findInPage(text,{forward,findNext:!next});this.finds.set(id,{requestId,active:0,total:0});
   }
   async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
     const changing=this.profileChanges.get(id);if(changing)await changing;
