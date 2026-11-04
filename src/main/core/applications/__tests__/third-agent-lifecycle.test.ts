@@ -44,7 +44,7 @@ it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 regist
   };
   const runners = new RunnerAdapterRegistry([...builtinRunnerAdapters.list(),runner]);
   class ScriptedDelivery implements CapabilityDeliveryAdapter {
-    readonly id='scripted-test';readonly runnerId='scripted-test';readonly discovery='shared-home' as const;
+    readonly id='scripted-test';readonly runnerId='scripted-test';readonly discovery='shared-home' as const;readonly library={readsSharedAgentSkills:true,resumable:true,skillsReloadInSession:true,mcpReloadInSession:false};
     constructor(private readonly lifecycle:RunnerAdapter){}
     skillProjection(context:SkillProjectionContext){return join(context.home,'.agents/skills');}
     entryDelivery(entry:'mcp'|'cli'){return entry==='mcp';}

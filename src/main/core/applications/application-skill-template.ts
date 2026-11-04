@@ -1,6 +1,7 @@
+import {parseDocument} from 'yaml';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
-import {applicationCapabilityViews,type ApplicationPackageManifest} from '@shared/application-capabilities';
+import {applicationCapabilityViews,type ApplicationCapability,type ApplicationPackageManifest} from '@shared/application-capabilities';
 import {renderSkillTemplate,selectCapabilityEntry,type SkillRenderParameters} from './run-plan';
 import {applicationNativeSkillName} from '@shared/application-session';
 import {canonicalJson,digest} from './manifest';
@@ -40,3 +41,29 @@ export function renderApplicationSkill(bytes:Buffer,manifest:ApplicationPackageM
   if(!delivery)throw new ApplicationError('INVALID_PACKAGE','模板Skill缺少受信交付参数');
   return renderSkillTemplate(bytes,applicationSkillParameters(manifest,delivery)).bytes;
 }
+
+const describeBinding=(binding:ApplicationCapability['binding']|NonNullable<ApplicationCapability['binding']['fallback']>):string=>'mcp'in binding&&binding.mcp?`MCP 工具 ${binding.mcp.tool}`:'cli'in binding&&binding.cli?`willyou-app ${binding.cli.command.join(' ')}`:'';
+/** Every declared capability with its primary entry and, for reads, the declared fallback; the host authorizes each call. */
+export function libraryEntrypoints(capabilities:readonly ApplicationCapability[]):SkillRenderParameters['entrypoints']{
+  return capabilities.map(capability=>{
+    const primary=describeBinding(capability.binding),fallback=capability.semantics==='read'&&capability.binding.fallback?describeBinding(capability.binding.fallback):'';
+    return{capabilityId:capability.id,entry:capability.binding.cli?'cli':'mcp',invocation:fallback?`${primary}；本会话没有该${capability.binding.cli?'命令':'工具'}时改用 ${fallback}`:primary};
+  });
+}
+const WILLYOU_ONLY='（仅在 WillYou 任务中使用）';
+/** Library copies are visible to agents outside WillYou too; the description says where they work. */
+export function libraryFrontMatter(input:Buffer,name:string):Buffer{
+  const text=input.toString('utf8');if(!Buffer.from(text,'utf8').equals(input))throw new ApplicationError('INVALID_PACKAGE','Skill入口必须为完整UTF-8文本');
+  const front=/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);if(!front)throw new ApplicationError('INVALID_PACKAGE','Skill入口缺少元数据');
+  const doc=parseDocument(front[1],{uniqueKeys:true,logLevel:'silent'}),description=doc.get('description');
+  if(doc.errors.length||typeof doc.get('name')!=='string'||typeof description!=='string')throw new ApplicationError('INVALID_PACKAGE','Skill元数据无效');
+  doc.set('name',name);if(!description.endsWith(WILLYOU_ONLY))doc.set('description',description+WILLYOU_ONLY);
+  return Buffer.from('---\n'+doc.toString()+'---\n'+text.slice(front[0].length),'utf8');
+}
+/** The single library rendering of a package skill: all declared capabilities, no per-run parameters. */
+export function renderLibrarySkill(bytes:Buffer,manifest:ApplicationPackageManifest,skillId:string,name:string):Buffer{
+  const template=manifest.schema==='smartdd-app-package-v2'&&manifest.skills.find(s=>s.id===skillId)?.template;
+  const content=template?renderSkillTemplate(bytes,{appId:manifest.appId,entrypoints:libraryEntrypoints(applicationCapabilityViews(manifest))}).bytes:bytes;
+  return libraryFrontMatter(content,name);
+}
+
