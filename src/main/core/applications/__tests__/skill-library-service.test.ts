@@ -35,6 +35,12 @@ describe('M11 R16 Skill library delivery',()=>{
   const result=library.sync();expect(result.removed.length).toBeGreaterThan(0);
   expect(ours(shared())).toEqual([]);expect(ours(claude())).toEqual([]);
  });
+ it('delivers bundled standard Skills as willyou-<skill> for every session',()=>{
+  const withStandard=new SkillLibraryService(f.store,f.applications.builtin,{home:f.home,targets:()=>builtinCapabilityDeliveryAdapters.libraryTargets(),added:()=>false,standardSkills:()=>[{skillId:'remote-password-ssh',files:{'SKILL.md':Buffer.from('---\nname: remote-password-ssh\ndescription: SSH helper\n---\nbody\n'),'scripts/run.sh':Buffer.from('echo\n')}}]});
+  expect(withStandard.sync().written).toEqual(['willyou-remote-password-ssh']);
+  const text=readFileSync(join(shared(),'willyou-remote-password-ssh','SKILL.md'),'utf8');expect(text).toContain('name: willyou-remote-password-ssh');expect(text).toContain('SSH helper（仅在 WillYou 任务中使用）');
+  expect(readFileSync(join(shared(),'willyou-remote-password-ssh','scripts/run.sh'),'utf8')).toBe('echo\n');expect(lstatSync(join(claude(),'willyou-remote-password-ssh')).isSymbolicLink()).toBe(true);
+ });
  it('leaves a same-named user directory untouched and reports the conflict',()=>{
   const name=library.skills()[0].name,user=join(shared(),name);mkdirSync(user,{recursive:true});writeFileSync(join(user,'SKILL.md'),'user owned\n');
   const result=library.sync();

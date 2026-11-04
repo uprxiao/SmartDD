@@ -74,10 +74,11 @@ describe('M11 immutable, transport-independent application run plans',()=>{
   expect(()=>renderSkillTemplate(Buffer.from('{{WILLYOU_RUN_TOKEN}}'),{appId:'zentao',entrypoints:[]})).toThrow(expect.objectContaining({code:'INVALID_PACKAGE'}));
   expect(()=>renderSkillTemplate(Buffer.from([255]),{appId:'zentao',entrypoints:[]})).toThrow(expect.objectContaining({code:'INVALID_PACKAGE'}));
  });
- it('supports a pure CLI schema-3 snapshot while preserving the schema-2 parser and rejecting an added bridge',()=>{
+ // R1.0 R17 (2026-11-04): every managed run mounts the application bridge, so a pure CLI schema-3 snapshot may carry it.
+ it('supports a pure CLI schema-3 snapshot with the always-mounted bridge while preserving the schema-2 parser',()=>{
   const original=capabilitySessionSnapshotSchema.parse(f.snapshot),cli={...original,schema:3,adapterBinding:{...original.adapterBinding,nativeToolNames:{}},packages:original.packages.map(p=>({...p,entry:'cli',capabilityContractMajors:{'zentao.object.get':1},toolContractMajors:{}})),mcp:original.mcp.filter(m=>m.kind!=='applications')};
   expect(capabilitySessionSnapshotV3Schema.safeParse(cli).success).toBe(true);expect(capabilitySessionSnapshotSchema.safeParse(cli).success).toBe(false);
-  expect(capabilitySessionSnapshotV3Schema.safeParse({...cli,mcp:original.mcp}).success).toBe(false);
+  expect(capabilitySessionSnapshotV3Schema.safeParse({...cli,mcp:original.mcp}).success).toBe(true);
   expect(capabilitySessionSnapshotV3Schema.safeParse({...cli,packages:cli.packages.map(p=>({...p,capabilityContractMajors:{'other.object.get':1}}))}).success).toBe(false);
   expect(capabilitySessionSnapshotSchema.parse(f.snapshot)).toEqual(original);
  });

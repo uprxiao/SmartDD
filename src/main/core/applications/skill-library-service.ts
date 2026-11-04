@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {ApplicationError} from '@shared/applications';
 import {libraryName,syncAgentSkillLibrary,type AgentSkillTarget,type LibrarySkill,type LibrarySyncResult} from './agent-skill-library';
-import {renderLibrarySkill} from './application-skill-template';
+import {libraryFrontMatter,renderLibrarySkill} from './application-skill-template';
 import type {BuiltinPackageRegistry} from './builtin-package-registry';
 import {digest} from './manifest';
 import {builtinApplicationModules} from './modules';
@@ -15,7 +15,9 @@ import type {ResourceStore} from './resource-store';
  */
 export class SkillLibraryService {
   private last:LibrarySyncResult|null=null;
-  constructor(private readonly store:ResourceStore,private readonly builtin:Pick<BuiltinPackageRegistry,'packages'>,private readonly options:{home:string;targets:()=>readonly AgentSkillTarget[];added:(appId:string)=>boolean;modules?:Pick<typeof builtinApplicationModules,'appIds'>}){}
+  constructor(private readonly store:ResourceStore,private readonly builtin:Pick<BuiltinPackageRegistry,'packages'>,private readonly options:{home:string;targets:()=>readonly AgentSkillTarget[];added:(appId:string)=>boolean;
+    /** Active bundled standard Skills (2026-11-04: in the library for every session, no per-project switch). */
+    standardSkills?:()=>readonly {skillId:string;files:Readonly<Record<string,Buffer>>}[];modules?:Pick<typeof builtinApplicationModules,'appIds'>}){}
 
   skills():LibrarySkill[]{
     const result:LibrarySkill[]=[];
@@ -34,6 +36,11 @@ export class SkillLibraryService {
         if(!files['SKILL.md'])throw new ApplicationError('INVALID_PACKAGE','应用Skill缺少入口');
         result.push({name,files,executables});
       }
+    }
+    for(const standard of this.options.standardSkills?.()??[]){
+      const name=libraryName(undefined,standard.skillId),files={...standard.files};
+      if(!files['SKILL.md'])throw new ApplicationError('INVALID_PACKAGE','标准Skill缺少入口');
+      files['SKILL.md']=libraryFrontMatter(files['SKILL.md'],name);result.push({name,files,executables:new Set()});
     }
     return result;
   }

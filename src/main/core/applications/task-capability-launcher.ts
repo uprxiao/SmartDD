@@ -64,6 +64,8 @@ export interface TaskCapabilityLauncherOptions {
   pollMs?:number;
   /** R16: HOME whose `.agents/skills` (and each Agent's link directory) holds the single WillYou Skill library. Omitted: no library delivery. */
   skillLibraryHome?:string;
+  /** Tests of the pre-R1.0 catalog path, which still serves sessions created before R1.0 until S4 migrates them. New tasks otherwise use the library. */
+  catalogForNewTasks?:boolean;
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
@@ -109,7 +111,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.legacyMigration=new LegacySessionMigration(store,this.sessions,undefined,home=>this.catalog(home));
     this.projector=new SessionCapabilityProjector(store,this.sessions,support.adapters.deliveryAdapters);
     this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
-    if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;}});
+    if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;},standardSkills:()=>(store.sqlite.prepare('SELECT skill_id AS skillId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;hash:string}[]).map(s=>({skillId:s.skillId,files:Object.fromEntries(Object.entries(support.legacy.verify(store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([path,text])=>[path,Buffer.from(text,'utf8')]))}))});
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId,appIds)=>{
       const selected={...selectSessionApplications(snapshot,appIds??snapshot.packages.map(p=>p.appId)),standardSkills:[]};
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
@@ -163,7 +165,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private requiresMcp(snapshot:CapabilitySessionSnapshot,scope?:readonly string[]){return snapshot.packages.filter(p=>scope===undefined||scope.includes(p.appId)).some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return builtinApplicationModules.capabilityViews(manifest).filter(c=>p.allowedOperations.includes(c.permission)).some(c=>selectCapabilityEntry(c,this.cliAvailability(snapshot.taskId)).entry==='mcp');});}
   private async configureCli(input:TaskLaunchInput,native:NativeLaunchContext|undefined,snapshot?:CapabilitySessionSnapshot){
     if(!native||!this.cliReady||!this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).entryDelivery('cli'))return;
-    const selected=snapshot?.packages??this.selectedApps(input.projectId),needs=selected.some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return manifest.schema==='smartdd-app-package-v2'&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);});if(!needs)return;
+    const libraryDelivery=!!snapshot&&this.support.adapters.get(snapshot.adapterBinding.hash).metadata.skillDelivery==='library';
+    const selected=snapshot?.packages??this.selectedApps(input.projectId),needs=libraryDelivery||selected.some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return manifest.schema==='smartdd-app-package-v2'&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);});if(!needs)return;
     const adapter=snapshot?this.support.adapters.get(snapshot.adapterBinding.hash):this.currentAdapter(this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,native.version);if(!adapter)return;const metadata='metadata'in adapter?adapter.metadata:this.support.adapters.get(adapter.hash).metadata;if(metadata.cliEntry!=='supported')return;
     // §15.4: CLI is delivered only for a version whose declared levels include L0.cli; undeclared versions fail closed.
     if(!this.support.adapters.effective(adapter.hash,native.version).levels.includes('L0.cli'))return;
@@ -184,7 +187,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(snapshot.projectId) as ProjectCapabilitySetting[];
     const actual=(store.sqlite.prepare('SELECT skill_id AS skillId,id AS versionId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;versionId:string;hash:string}[]).filter(row=>projectCapabilityEnabled(settings,snapshot.projectId,row.skillId));
     const expected=snapshot.standardSkills.map(s=>({skillId:s.skillId,versionId:s.versionId,hash:s.hash})).sort((a,b)=>a.skillId.localeCompare(b.skillId));
-    if(canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间标准Skill选择已变化');
+    if(this.support.adapters.get(snapshot.adapterBinding.hash).metadata.skillDelivery!=='library'&&canonicalJson(actual)!==canonicalJson(expected))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间标准Skill选择已变化');
     const bindings=this.bindings(snapshot.projectId,snapshot.packages.map(p=>p.appId));
     for(const app of snapshot.packages){const current=bindings.filter(b=>b.appId===app.appId&&b.connectionId).map(b=>({bindingId:`${snapshot.projectId}:${app.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!}));if(canonicalJson(current)!==canonicalJson(app.bindings))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目连接选择已变化');}
     const context=projectCapabilityEnabled(settings,snapshot.projectId,MCP_CAPABILITY);
@@ -223,6 +226,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
     try{const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner);native=await(this.options.inspectNative??delivery.inspectNative).call(delivery,input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     if(native)this.planningAgents.set(input.taskId,native);
+    // R1.0: sessions bound to a library-delivery adapter never touch the shared discovery catalog.
+    const library=native?await this.libraryLaunch(input,native):undefined;
+    if(library)return this.prepareLibrary(input,native!,library);
     let runtimeCheck:Promise<boolean>|undefined,applicationRuntimeIssue:'HOST_INCOMPATIBLE'|undefined;
     const applicationRuntimeReady=async(snapshot:CapabilitySessionSnapshot)=>{
       if(!native||snapshot.legacyBinding||!snapshot.packages.length||!this.requiresMcp(snapshot))return true;
@@ -369,6 +375,88 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           phase='native-only';return launch;
         },
         beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effectiveApplications)assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);phase='arming';await hold?.activate();if(!nativeOnly)await bridge?.bridge.arm();await run.cli.arm();},spawned:async pid=>{await run.cli.attach(pid??0);if(!unavailable&&native)this.skillObservations.start(input.taskId,run.runId,run.signal);},initialInput:unavailable?undefined:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;if(!unavailable&&native)this.skillObservations.start(input.taskId,run.runId,run.signal);}};
+      return launch;
+    }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
+  }
+  /** The library adapter that serves this launch: a resumed library session, or a new task on a declared Agent version. */
+  private async libraryLaunch(input:TaskLaunchInput,native:NativeLaunchContext):Promise<{adapterHash:string;current?:StoredCapabilitySession}|undefined>{
+    const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id;
+    if(input.previous?.sessionCapabilities){
+      const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)return undefined;
+      const recorded=this.support.store.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {snapshot_json:string}|undefined;
+      let hash:string|undefined;try{hash=JSON.parse(recorded?.snapshot_json??'null')?.adapterBinding?.hash;}catch{return undefined;}
+      if(!hash)return undefined;try{if(this.support.adapters.get(hash).metadata.skillDelivery!=='library')return undefined;}catch{return undefined;}
+      const current=await this.sessions.get(input.taskId);
+      if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原会话身份不符');
+      if(current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
+      await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
+      return{adapterHash:hash,current};
+    }
+    if(!input.newTask||this.options.catalogForNewTasks)return undefined;
+    // Every version of the Agent uses the library; prefer the adapter that declares this version.
+    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.skillDelivery==='library');
+    const adapter=candidates.find(a=>a.cliVersions.includes(native.version))??candidates[0];
+    return adapter?{adapterHash:adapter.hash}:undefined;
+  }
+  /** Pinned bridge runtime shared by every registered application package. */
+  private applicationRuntimeHash():string|null{
+    for(const appId of builtinApplicationModules.appIds()){const active=this.applications.builtin.packages.active(appId);if(active)return this.applications.builtin.retainedMetadata(active.packageHash).manifest.runtime.hash;}
+    return null;
+  }
+  /** Audit record of the session; what it may call is decided per call (R17), and Skills come from the library (R16). */
+  private createLibrarySnapshot(input:TaskLaunchInput,native:NativeLaunchContext,adapterHash:string):CapabilitySessionSnapshot{
+    const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,adapter=this.support.adapters.get(adapterHash).metadata;
+    const apps=this.selectedApps(input.projectId),bindings=this.bindings(input.projectId,apps.map(a=>a.appId)),packages=apps.map(a=>this.authorization.packageSelection(input.projectId,a.packageHash,bindings,[]));
+    const runtimeHash=packages[0]?.runtimeHash??this.applicationRuntimeHash(),appMcp=applicationMcpServerName(digest(input.taskId));
+    if(new Set(packages.map(p=>p.runtimeHash)).size>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
+    const mcp:CapabilitySessionSnapshot['mcp']=runtimeHash?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash}]:[];
+    if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
+    return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:'library',packages,standardSkills:[],mcp,provenance:'created'};
+  }
+  private async prepareLibrary(input:TaskLaunchInput,native:NativeLaunchContext,selected:{adapterHash:string;current?:StoredCapabilitySession}):Promise<TaskCapabilityLaunch>{
+    let current=selected.current;
+    if(!current){
+      current=await this.sessions.create(this.createLibrarySnapshot(input,native,selected.adapterHash),input.home);
+      await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
+    }
+    const snapshot=current.snapshot,stored=current;
+    await this.configureCli(input,native,snapshot);
+    if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported'){const catalog=this.catalog(input.home);return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED',catalog);}
+    const bridgeReady=!snapshot.mcp.some(m=>m.kind==='applications')||await(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
+    const run=await this.runs.reserve({taskId:input.taskId,snapshotHash:stored.pointer.snapshotHash,bindings:[]}),entry:ActiveLaunch={run};this.active.set(run.runId,entry);
+    try{
+      const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
+      const projectMcp=snapshot.mcp.find(m=>m.kind==='legacy-project-context'),mcpName=projectMcp&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY)?projectMcp.serverName:null;
+      await run.prepare();
+      const runtime=this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills:[],projections:{}}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=stored.pointer;
+      if(!bridgeReady)runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,'HOST_INCOMPATIBLE'])],at:Date.now()};
+      const planned=this.runs.bridgePreparation(run.runId).plan;if(!planned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本次运行身份记录缺失');
+      const mcp=snapshot.mcp.filter(m=>m.kind==='applications'?bridgeReady:m.serverName===mcpName).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}));
+      const policy=this.planningCliPolicies.get(input.taskId);let cliEnvironment:Readonly<Record<string,string>>|undefined,cliSandbox:NonNullable<import('@shared/agent-adapters').LibraryLoadRequest['cliSandbox']>|undefined;
+      if(planned.grades.cli&&this.cli&&policy?.available){cliSandbox={endpoint:this.cli.endpoint,kind:policy.kind,parent:policy.parent,networkProxy:policy.networkProxy,enableNetwork:policy.enableNetwork,existingNames:policy.existingNames,source:policy.source,digest:policy.digest};cliEnvironment=this.cli.issue(run).environment;runtime.secretValues.push(cliEnvironment.WILLYOU_RUN_TOKEN);}
+      const bridgeEntry=mcp.find(m=>m.kind==='applications');let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;
+      if(bridgeEntry){bridge=await this.broker.prepare(run,bridgeEntry.serverName);bridgeEntry.args[2]=bridge.bootstrapPath;}
+      const plan=this.support.adapters.planLibrary(snapshot.adapterBinding.hash,{snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:input.home},inventory:native.inventory,planHash:planned.planHash,...(cliSandbox?{cliSandbox}:{}),mcp});
+      if(bridgeEntry)this.registerBridgeRecovery(run,bridgeEntry.serverName,snapshot.adapterBinding.hash,native.version);
+      const configPaths:string[]=[],root=dirname(runtime.snapshot.manifestPath);
+      for(const[name,text]of Object.entries(plan.files)){mkdirSync(root,{recursive:true,mode:0o700});writeFileSync(join(root,name),text,{flag:'wx',mode:0o600});configPaths.push(join(root,name));}
+      try{await this.applications.sessionDiagnostics.prepared({schema:2,capabilities:nativeCapabilityPreparation(snapshot,{applications:snapshot.packages.map(p=>p.appId),standardPaths:[],mcpNames:runtime.snapshot.mcp.map(m=>m.name),...(bridgeReady?{}:{applicationIssue:'HOST_INCOMPATIBLE'}),projectMcpEnabled:this.capabilities.enabled(input.projectId,MCP_CAPABILITY)}),runId:run.runId,selectionHash:stored.selectionHash,cliVersion:native.version,adapterHash:snapshot.adapterBinding.hash,state:'prepared',issueCode:null,manifestPath:runtime.snapshot.manifestPath,configPaths,preparedAt:new Date().toISOString()});}catch{/* Display evidence never grants capability or blocks the Agent. */}
+      if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
+      try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing. */}
+      let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared',effective=true,prepared=runtime;
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan.args,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native.command,
+        assertBeforeFork:()=>{},
+        nativeOnly:async reason=>{
+          if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
+          phase='restricting';this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
+          await this.runs.restrictToNative(run.runId);effective=false;prepared.release();prepared=this.unavailableRuntime(input,stored,run.runId,'AGENT_ADAPTER_UNSUPPORTED');
+          prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
+        },
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';if(!nativeOnly&&effective)await bridge?.bridge.arm();await run.cli.arm();},
+        spawned:async pid=>{await run.cli.attach(pid??0);if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);},
+        initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),
+        cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),
+        bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});prepared.snapshot.sessionCapabilities=bound.pointer;if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);}};
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }

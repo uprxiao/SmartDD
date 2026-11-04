@@ -72,6 +72,8 @@ export class AgentAdapterRegistry {
     const meta=this.get(hash).metadata;
     if(!meta.platforms.includes(`${process.platform}-${process.arch}` as 'darwin-arm64'))return 'unsupported';
     if(meta.cliVersions.includes(cliVersion))return 'declared';
+    // R1.0 (2026-11-04): library delivery works on every version of the Agent; only declared versions get the CLI sandbox.
+    if(meta.skillDelivery==='library'&&/^\d+\.\d+\.\d+$/.test(cliVersion))return 'best-effort';
     return meta.projectionFormatVersion===1&&/^\d+\.\d+\.\d+$/.test(cliVersion)&&this.deliveryAdapters.get(meta.agentId).bestEffortMcp===true?'best-effort':'unsupported';
   }
   recovery(hash:string,cliVersion:string):{capability:AgentAdapterMetadata['bridgeRecovery'];evidence?:string;replace?:(request:NativeBridgeReplacement)=>Promise<void>} {

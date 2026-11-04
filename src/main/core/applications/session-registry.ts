@@ -78,7 +78,7 @@ export class CapabilitySessionRegistry {
         const capabilities=Object.fromEntries(builtinApplicationModules.capabilityViews(manifest).map(c=>[c.id,c.contractMajor]));
         if(selected.entry!==(manifest.schema==='smartdd-app-package-v2'?manifest.entry:'mcp')||canonicalJson(selected.capabilityContractMajors)!==canonicalJson(capabilities))throw new ApplicationError('SNAPSHOT_CORRUPT','原应用的能力契约或入口与固定声明不同');
       }
-      if (p.appId !== manifest.appId || p.version !== manifest.version || p.runtimeHash !== manifest.runtime.hash || p.dataApi !== manifest.dataApi || canonicalJson(p.hostApi) !== canonicalJson(manifest.hostApi) || canonicalJson(p.toolContractMajors) !== canonicalJson(contracts) || p.allowedOperations.some(op => !manifest.permissions.includes(op)) || p.skills.length !== manifest.skills.length) throw new ApplicationError('SNAPSHOT_CORRUPT','快照的应用版本、工具或动作与原包不同');
+      if (p.appId !== manifest.appId || p.version !== manifest.version || p.runtimeHash !== manifest.runtime.hash || p.dataApi !== manifest.dataApi || canonicalJson(p.hostApi) !== canonicalJson(manifest.hostApi) || canonicalJson(p.toolContractMajors) !== canonicalJson(contracts) || p.allowedOperations.some(op => !manifest.permissions.includes(op)) || p.skills.length !== manifest.skills.length && !(snapshot.schema === 3 && p.skills.length === 0)) throw new ApplicationError('SNAPSHOT_CORRUPT','快照的应用版本、工具或动作与原包不同');
       for (const skill of p.skills) {
         const source = manifest.skills.find(s => s.id === skill.skillId);
         if (!source || source.path !== skill.sourceRelativePath || applicationSkillContentHash(manifest,source.path) !== skill.contentHash) throw new ApplicationError('SNAPSHOT_CORRUPT','固定Skill完整目录摘要与原包不一致');

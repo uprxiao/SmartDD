@@ -77,7 +77,7 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async({task})=>{
- cliPolicyAvailable=true;const withCli=task.suite?.name==='M11 S5 CLI delivery through the production task entry';
+ cliPolicyAvailable=true;const withCli=['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
@@ -85,7 +85,7 @@ beforeEach(async({task})=>{
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
- applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31001},{pid:31001,startedAt:'darwin-proc-v1:300:31001',ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,catalogForNewTasks:task.suite?.name!=='M11 R1.0 library launch through the production task entry',...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
 afterEach(async()=>{
  const failures:unknown[]=[];
@@ -169,6 +169,56 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   const before=applications.selections.projectSettings(projectId,'mail');await applications.selections.select({projectId,appId:'mail',enabled:false,expectedRevision:before.revision,connections:{foxmail:null,smtp:null}});
   expect(await request(token)).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});const disabled=applications.selections.projectSettings(projectId,'mail');await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:disabled.revision,connections:{foxmail:null,smtp:null}});
   expect(await request(token)).toMatchObject({status:'ok'});expect(ptys.live.size).toBe(1);expect(sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:2});
+ });
+});
+
+describe('M11 R1.0 library launch through the production task entry',()=>{
+ beforeEach(async()=>{
+  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
+  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
+  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});
+  await installCliFixturePackage(support.store,join(root,'cli-distribution'));await applications.selections.setAdded('mail',true,0);
+ });
+ const call=(token:string)=>new Promise<BridgeResponse>((ok,fail)=>{
+  const socket=connect(managed.cli!.endpoint),timer=setTimeout(()=>{socket.destroy();fail(Error('Private R1.0 host deadline'));},5000);let text='';
+  socket.on('error',error=>{clearTimeout(timer);fail(error);});socket.on('data',chunk=>{text+=String(chunk);if(text.includes('\n')){clearTimeout(timer);socket.end();ok(JSON.parse(text.slice(0,text.indexOf('\n'))));}});
+  socket.on('connect',()=>socket.write(JSON.stringify({schema:'willyou-cli-v1',id:randomUUID(),token,method:'capabilities/call',call:{operation:'mail.draft.list',contractMajor:2,connectionId:null,arguments:{}}})+'\n'));
+ });
+ const managedSkills=()=>existsSync(join(home,'.agents/skills'))?readdirSync(join(home,'.agents/skills')).filter(n=>n.startsWith('smartdd-')):[];
+ it('T41: a task started before the project enables an application uses it in the same run once enabled',async()=>{
+  const running=await create(),launch=ptys.launches[0],saved=(await managed.sessions.get(running.task.id)).snapshot;
+  expect(saved.schema).toBe(3);expect(saved.adapterBinding.version).toBe('1.4.0');expect(saved.packages).toEqual([]);expect(saved.standardSkills).toEqual([]);
+  expect(saved.mcp.map(m=>m.kind)).toContain('applications');
+  const argv=launch.args!.join(' ');expect(argv).not.toContain('skills.config');expect(argv).toContain('permissions.wy_cli_');expect(argv).toMatch(/mcp_servers\.[A-Za-z0-9_-]+\.command=/);expect(managedSkills()).toEqual([]);
+  const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(token).toMatch(/^[a-f0-9]{64}$/);
+  expect(await call(token)).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  expect(await call(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',operation:{origin:'cli'}}});
+  tasks.kill(running.task.id);await vi.waitFor(()=>expect(ptys.live.size).toBe(0));expect(await call(token)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+ });
+ it('serves an unverified Codex version from the library with MCP only, never the CLI sandbox',async()=>{
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.170.0";; *) exit 70;; esac\n',{mode:0o700});
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const running=await create(),launch=ptys.launches[0],saved=(await managed.sessions.get(running.task.id)).snapshot,plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;
+  expect(saved.adapterBinding.version).toBe('1.4.0');expect(plan.grades.cli).toBe(false);expect(plan.allowed).toMatchObject([{capabilityId:'mail.draft.list',entry:'mcp'}]);
+  const argv=launch.args!.join(' ');expect(argv).not.toContain('wy_cli_');expect(argv).not.toContain('skills.config');expect(argv).toMatch(/mcp_servers\.[A-Za-z0-9_-]+\.command=/);
+  expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(managedSkills()).toEqual([]);
+ });
+ it('serves Claude Code 2.1.303 from the library with an MCP config and no per-task plugin directory',async()=>{
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const running=await create(claudeId),launch=ptys.launches[0],saved=(await managed.sessions.get(running.task.id)).snapshot;
+  expect(saved.runner).toBe('claude-code');expect(saved.adapterBinding.version).toBe('1.2.0');
+  expect(launch.args).toContain('--mcp-config');expect(launch.args).not.toContain('--plugin-dir');expect(existsSync(join(root,'sessions',running.task.id,'claude/plugin'))).toBe(false);
+  expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');
+ });
+ it('records the enabled application without per-run Skill copies and resumes on the same library path',async()=>{
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const first=await create(),saved=(await managed.sessions.get(first.task.id)).snapshot;
+  expect(saved.adapterBinding.version).toBe('1.4.0');expect(saved.packages.map(p=>({appId:p.appId,skills:p.skills}))).toEqual([{appId:'mail',skills:[]}]);expect(managedSkills()).toEqual([]);
+  const nativeId=await stopForSwitchFixture(first,'codex'),resumed=await tasks.open({taskId:first.task.id}),launch=ptys.launches.at(-1)!;
+  expect(resumed.task.nativeSessionId).toBe(nativeId);expect(launch.args).toContain('resume');expect(launch.args!.join(' ')).not.toContain('skills.config');
+  expect(await call(launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!)).toMatchObject({status:'ok'});expect(managedSkills()).toEqual([]);
  });
 });
 
@@ -612,7 +662,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const frame={processId:9,routingId:1},sender={sender:{id:101,mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
   const access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:id=>tasks.activePty(id),alive:id=>real.has(id),write:(id,data)=>real.writeControlled(id,data),resize:()=>{},killTask:()=>{}});
   applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),terminal:{access,bracketedPaste:id=>real.bracketedPaste(id),write:(id,data)=>real.writeControlled(id,data)},requireSender:e=>access.requireSender(e),mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
-  managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+  managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{catalogForNewTasks:true,helper:resolve('out/native/willyou-process-identity'),stopPty:id=>real.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
   try{
@@ -694,7 +744,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now(),stateRoot=join(home,'.codex'),sessionDir=codexDayDirectory(stateRoot,stamp);mkdirSync(sessionDir,{recursive:true});const config=join(stateRoot,'config.toml'),configText='model="preserved-user-model"\n';writeFileSync(config,configText);writeFileSync(join(sessionDir,'rollout-fixture-'+nativeId+'.jsonl'),JSON.stringify({type:'session_meta',payload:{id:nativeId,cwd,timestamp:new Date(stamp).toISOString(),originator:'codex_cli_rs'}})+'\n');
   db.insert(schema.tasks).values({id,projectId,cwd,aiProfileId:profile.id,runner:'codex',nativeSessionId:nativeId,title:'isolated native-only actual process',runtimeSnapshot:null,configVersion:0,stateRoot,createdAt:stamp,updatedAt:stamp}).run();
   tasks=new TaskService({db,ptys:real,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
-  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:task=>tasks.activePty(task),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:resolve('out/native/willyou-process-identity'),stopPty:pty=>real.kill(pty),pollMs:20});tasks.attachManagedCapabilities(managed);
+  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:task=>tasks.activePty(task),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{catalogForNewTasks:true,helper:resolve('out/native/willyou-process-identity'),stopPty:pty=>real.kill(pty),pollMs:20});tasks.attachManagedCapabilities(managed);
   const oldShell=process.env.SHELL;process.env.SHELL='/bin/sh';let transcript='';real.on('data',(_id,data)=>{transcript+=data;});
   try{
    const opened=await tasks.open({taskId:id});await vi.waitFor(()=>expect(existsSync(report),transcript).toBe(true),{timeout:10000});const observed=JSON.parse(readFileSync(report,'utf8')) as {pid:number;argv:string[];home:string;stateRoot:string;cwd:string},runId=opened.task.runtimeSnapshot!.runId;

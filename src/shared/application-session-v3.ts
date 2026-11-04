@@ -5,6 +5,8 @@ const fields=capabilitySessionSnapshotSchema.shape;
 export const capabilitySessionSnapshotV3Schema=z.object({
   ...fields,schema:z.literal(3),
   packages:z.array(fields.packages.element.extend({
+    // R1.0 R16: library sessions keep application Skills in the shared library, not in the snapshot.
+    skills:z.array(fields.packages.element.shape.skills.element).max(64),
     entry:z.enum(['mcp','cli']),
     capabilityContractMajors:z.record(z.string().regex(/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/),z.number().int().positive()),
   }).strict()).max(32),
@@ -18,7 +20,7 @@ export const capabilitySessionSnapshotV3Schema=z.object({
   if(new Set(snapshot.mcp.map(m=>m.serverName)).size!==snapshot.mcp.length||new Set(snapshot.mcp.map(m=>m.kind)).size!==snapshot.mcp.length)fail('MCP名称或桥类别重复');
   const requiringMcp=snapshot.packages.filter(p=>Object.keys(p.toolContractMajors).length>0),bridge=snapshot.mcp.find(m=>m.kind==='applications');
   if(requiringMcp.length&&(!bridge||requiringMcp.some(p=>p.runtimeHash!==bridge.runtimeHash)))fail('MCP能力须有对应的固定业务桥');
-  if(!requiringMcp.length&&bridge)fail('纯CLI应用不能自动增加MCP桥');
+  // R1.0 R17: every managed run mounts the application bridge, even before an MCP application is enabled.
   for(const p of snapshot.packages){
     if(new Set(p.skills.map(s=>s.skillId)).size!==p.skills.length||new Set(p.allowedOperations).size!==p.allowedOperations.length||p.hostApi.min>p.hostApi.max)fail('应用Skill、动作或宿主范围无效');
     if(Object.keys(p.capabilityContractMajors).length>256||Object.keys(p.capabilityContractMajors).some(id=>!id.startsWith(p.appId+'.')))fail('能力标识不属于本应用');
