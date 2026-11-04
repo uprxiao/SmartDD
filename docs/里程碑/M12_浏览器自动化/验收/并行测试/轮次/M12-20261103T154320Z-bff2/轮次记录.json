@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T11:32:03.732088+00:00",
+  "updatedAt": "2026-11-04T11:37:51.098667+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -23,12 +23,7 @@
   "currentGroup": "M12-P050",
   "resources": {
     "build": null,
-    "nativeUi": {
-      "owner": "/root/s2_t004_test",
-      "group": "M12-P052",
-      "attempt": "attempt-002",
-      "status": "App014 final driver ready and full preflight passed; actual native/UI lease assigned"
-    }
+    "nativeUi": null
   },
   "groups": [
     {
@@ -2225,9 +2220,7 @@
       "layers": [
         "A"
       ],
-      "resources": [
-        "nativeUi"
-      ],
+      "resources": [],
       "criteria": [
         "original T106 three real CLI commands/activity markers during and19s/21s after lastfinish, no animated cursor",
         "T114 UI stop pending wait, page kept, marker clears <=20s, cross-task grants invalidated",
@@ -2237,10 +2230,10 @@
         "P049011 software; P050003 native audit/exec; P051 App013 exact packaged source"
       ],
       "remaining": [
-        "correct terminal/native-session UI precondition; original T106 no CLI executed",
-        "T114/T115 not executed"
+        "original T114 stop/grant invalidation remains",
+        "original T115 moved to separate P056; not claimed by this group"
       ],
-      "status": "App014 attempt002 final source/dependency/driver preflight green; execute original T106 A now",
+      "status": "original T106 complete A, coordinator PNG/source/judge verified and accounted; original001 fixture red retained",
       "baseline": "/private/tmp/willyou-m12-p055-build-001/production-inputs.json",
       "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
       "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
@@ -2255,9 +2248,15 @@
           "attempt": "attempt-001",
           "manifestSha256": "dae4fd5abf70ea5e1ad021194e32e97342e210f32ab92a11c00c5503f0e8faf6",
           "outcome": "zero CLI, fixture precondition failure, not original case execution"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "051145a409b6d07eaf6a220a139082bed66c57ba56dcad1979e361c8e580b2c1",
+          "outcome": "7/7 originalT106 A green; normalcleanup"
         }
       ],
-      "next": "final014 source/dependency preflight then exclusive original T106 A"
+      "next": "final014 source/dependency preflight then exclusive original T106 A",
+      "cleanup": "normalexit0;11 exact PIDs,4ports,helper/runtime Unix files absent"
     },
     {
       "id": "M12-P053",
@@ -2401,13 +2400,40 @@
           "manifestSha256": "e13b0bf6fbe7a25938131219e5ffa91f32e50c1adedcd59f582c13b7daddf150"
         }
       ]
+    },
+    {
+      "id": "M12-P056",
+      "owner": "/root/s2_t004_test",
+      "privateRoot": "/private/tmp/willyou-m12-p056-focus-app-001",
+      "originalCases": [
+        "M12-T115"
+      ],
+      "layers": [
+        "A"
+      ],
+      "resources": [],
+      "status": "preparing only; no App/UI/native lease",
+      "baseline": "/private/tmp/willyou-m12-p055-build-001/production-inputs.json",
+      "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
+      "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+      "criteria": [
+        "user actually viewsT2 while T1 synthetic managed Agent true nativeCLI tab create/switch/focus true",
+        "create leaves new T1 user tab inactive and no user task switch; ordinary switch no user task switch",
+        "explicit focus true switches actual user task and target right workspace; preserve native page/form states"
+      ],
+      "validPriorEvidence": [
+        "P052002 actual terminal binding and exact App014/source usable; no repeatT106 needed"
+      ],
+      "remaining": [
+        "freeze/preflight private originalT115 driver then lease/run/judge/cleanup"
+      ]
     }
   ],
-  "next": "P052 App014 original T106 A with corrected trueUI PTY binding; next grant/pause/stop/focus and T099 full I/A; continue remaining original S4/R/S6",
+  "next": "P056 originalT115 focus/background A; real cross-task grants/pause/stop and full audit I/A/R, remaining S4 and S6",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "1be3456706513da72694ace3875f2a12bd57bc1b",
-  "checkpointNote": "7b2e08b1 audit/history/exec verified local checkpoint; P054 self-close correction uncommitted but frozen/pinned in P055 App014. No push/release.",
-  "currentSourceCommit": "7b2e08b186ac7b36408bfda97a9258466111e1b2",
+  "checkpointNote": "Current production close fix committed12dd0351; App014 source/package exact identity P055, no push or Release.",
+  "currentSourceCommit": "12dd0351",
   "baselineAmendments": [
     {
       "at": "2026-11-04T02:22:07.169680+00:00",

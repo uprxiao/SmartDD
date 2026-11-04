@@ -1,0 +1,1280 @@
+{
+  "at": "2026-11-04T11:36:46.659278+00:00",
+  "group": "M12-P052",
+  "attempt": 2,
+  "cases": [
+    {
+      "id": "M12-T106",
+      "layer": "A",
+      "status": "passed",
+      "originalComplete": true,
+      "independentJudge": {
+        "at": "2026-11-04T11:34:00.605Z",
+        "group": "M12-P052",
+        "case": "M12-T106",
+        "layer": "A actualpackagedAppUI, syntheticmanagedAgentnotR",
+        "status": "passed-complete-T106-A",
+        "passed": true,
+        "counts": {
+          "total": 7,
+          "passed": 7,
+          "failed": 0
+        },
+        "checks": [
+          {
+            "id": "real-App-UI-preconditions",
+            "expected": "App014 pinnedhash, actualUI creates/navigates tab andtypesRUN into realPTY after healthysetupreload/freshguard",
+            "actual": {
+              "status": "executed-unjudged",
+              "asar": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+              "actions": [
+                {
+                  "atMs": 1793791969341,
+                  "stage": "UI-create-browser",
+                  "kind": "click",
+                  "selector": "[data-testid=\"sidebar-task\"][data-task-id=\"c91af5c3-5617-4510-a6c3-0326ebfaddcf\"]",
+                  "point": {
+                    "x": 171.5,
+                    "y": 303
+                  }
+                },
+                {
+                  "atMs": 1793791969401,
+                  "stage": "UI-bind-existing-terminal",
+                  "kind": "click",
+                  "selector": "[data-testid=task-resume]",
+                  "point": {
+                    "x": 855,
+                    "y": 184
+                  }
+                },
+                {
+                  "atMs": 1793791969814,
+                  "stage": "UI-create-browser",
+                  "kind": "click",
+                  "selector": "[data-testid=task-new-browser]",
+                  "point": {
+                    "x": 1102.5,
+                    "y": 22
+                  }
+                },
+                {
+                  "atMs": 1793791969861,
+                  "stage": "UI-create-browser",
+                  "kind": "click",
+                  "selector": "[aria-label=\"网页地址\"]",
+                  "point": {
+                    "x": 1126.86328125,
+                    "y": 62
+                  }
+                },
+                {
+                  "stage": "UI-create-browser",
+                  "kind": "field",
+                  "selector": "[aria-label=\"网页地址\"]",
+                  "value": "http://127.0.0.1:65189/activity"
+                },
+                {
+                  "atMs": 1793791970057,
+                  "stage": "UI-trigger-real-CLI",
+                  "kind": "click",
+                  "selector": ".xterm-screen",
+                  "point": {
+                    "x": 519,
+                    "y": 449.5
+                  }
+                },
+                {
+                  "stage": "UI-trigger-real-CLI",
+                  "kind": "terminal-input",
+                  "text": "RUN P052"
+                }
+              ],
+              "setup": {
+                "beforeOrigin": 1793791961301.4,
+                "afterOrigin": 1793791964857.1,
+                "navigationWaits": []
+              },
+              "focus": [
+                {
+                  "enabled": true,
+                  "appPid": 37433,
+                  "checkedInputs": 28,
+                  "installedAfterSetupReload": true
+                }
+              ]
+            },
+            "status": "passed"
+          },
+          {
+            "id": "three-real-successful-CLI-commands",
+            "expected": "Actualmanagedroot forks exactlythree sequentialnativeCLIeval, each returnsfixedstep thennormalrootexit",
+            "actual": {
+              "starts": [
+                {
+                  "kind": "cli-start",
+                  "index": 1,
+                  "pid": 37644,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:1}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791970066
+                },
+                {
+                  "kind": "cli-start",
+                  "index": 2,
+                  "pid": 37686,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:2}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791974007
+                },
+                {
+                  "kind": "cli-start",
+                  "index": 3,
+                  "pid": 37884,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:3}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791977966
+                }
+              ],
+              "results": [
+                {
+                  "kind": "cli-result",
+                  "index": 1,
+                  "pid": 37644,
+                  "code": 0,
+                  "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"value\":\"{\\\"fixture\\\":\\\"P052\\\",\\\"step\\\":1}\",\"origin\":\"http:\\/\\/127.0.0.1:65189\\/activity\"},\"resources\":[],\"operation\":{\"id\":\"aefaed12-0360-4f60-bb36-84b275fa4e6e\",\"requestId\":\"695fdf1f-3541-4961-8d4f-8466866c6ff3\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+                  "stderr": "",
+                  "atMs": 1793791974005
+                },
+                {
+                  "kind": "cli-result",
+                  "index": 2,
+                  "pid": 37686,
+                  "code": 0,
+                  "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"value\":\"{\\\"fixture\\\":\\\"P052\\\",\\\"step\\\":2}\",\"origin\":\"http:\\/\\/127.0.0.1:65189\\/activity\"},\"resources\":[],\"operation\":{\"id\":\"ee1b3c38-8819-416a-b2e9-ea680c529f9a\",\"requestId\":\"702cf830-00e1-4257-b4d2-0bfef568ccba\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+                  "stderr": "",
+                  "atMs": 1793791977964
+                },
+                {
+                  "kind": "cli-result",
+                  "index": 3,
+                  "pid": 37884,
+                  "code": 0,
+                  "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"value\":\"{\\\"fixture\\\":\\\"P052\\\",\\\"step\\\":3}\",\"origin\":\"http:\\/\\/127.0.0.1:65189\\/activity\"},\"resources\":[],\"operation\":{\"id\":\"8187e4c4-9583-4f69-817d-986058825196\",\"requestId\":\"8cf4da8d-d00b-4a37-acf3-0aa640b8035a\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+                  "stderr": "",
+                  "atMs": 1793791982266
+                }
+              ],
+              "afterTask": {
+                "id": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                "projectName": "[A] P052 isolated activity",
+                "dirId": "837b5007-1d8e-436c-a89c-6419f5000b90",
+                "cwd": "/private/tmp/willyou-m12-p052-s5-app-002/runtime-001/project",
+                "aiProfileId": "76051bff-c953-4e26-8408-d5e6365f7230",
+                "aiProfileName": "P052 synthetic0.166 protocol/actualPTY",
+                "aiProfileColor": null,
+                "runner": "codex",
+                "nativeSessionId": null,
+                "title": "[A] P052 activity",
+                "firstMessage": "P052 synthetic terminal fixture, awaiting actualUI trigger",
+                "injectedEnvNames": [
+                  "CODEX_HOME",
+                  "HOME",
+                  "P052_ROOT",
+                  "PATH",
+                  "PROJECT_DB_CONFIG",
+                  "REMOTE_SERVERS_CONFIG",
+                  "SMARTDD_CONFIG_VERSION",
+                  "SMARTDD_PROJECT_CONTEXT",
+                  "SMARTDD_PROJECT_ID",
+                  "SMARTDD_RESOURCE_AUDIT",
+                  "WILLYOU_ENDPOINT",
+                  "WILLYOU_RUN_TOKEN"
+                ],
+                "runtimeSnapshot": {
+                  "runId": "98170d44-86e4-4bdc-8425-c0fa619af4d2",
+                  "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                  "configVersion": 1,
+                  "configHash": "6401fb88ce9b8ec90adf04f92d994c7c53c2718e5499341def706c8f895a6ba9",
+                  "manifestPath": "/private/tmp/willyou-m12-p052-s5-app-002/runtime-001/userdata/capabilities/runs/ffa28fa7-eac3-4915-992b-5e7cd77e8891/c91af5c3-5617-4510-a6c3-0326ebfaddcf/98170d44-86e4-4bdc-8425-c0fa619af4d2/manifest.json",
+                  "auditPath": "/private/tmp/willyou-m12-p052-s5-app-002/runtime-001/userdata/capabilities/resource-audit/ffa28fa7-eac3-4915-992b-5e7cd77e8891/c91af5c3-5617-4510-a6c3-0326ebfaddcf.jsonl",
+                  "skills": [
+                    {
+                      "skillId": "project-db-diagnostics",
+                      "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+                      "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
+                      "version": "1.0.0",
+                      "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+                      "path": "/private/tmp/willyou-m12-p052-s5-app-002/runtime-001/home/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+                      "loaded": "unverified",
+                      "enabled": true
+                    },
+                    {
+                      "skillId": "remote-password-ssh",
+                      "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+                      "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
+                      "version": "1.0.0",
+                      "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+                      "path": "/private/tmp/willyou-m12-p052-s5-app-002/runtime-001/home/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+                      "loaded": "unverified",
+                      "enabled": true
+                    }
+                  ],
+                  "mcp": [
+                    {
+                      "name": "smartdd_project_528fa4191776",
+                      "loaded": "unverified"
+                    }
+                  ],
+                  "selfCheck": {
+                    "status": "passed",
+                    "issues": [],
+                    "at": 1793791964368
+                  },
+                  "sessionCapabilities": {
+                    "schema": 3,
+                    "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                    "snapshotHash": "6a8dd9fd1764d2e8b6621670d63fa69bbb6420e7f28b315772182dd3156b7727"
+                  }
+                },
+                "configVersion": 1,
+                "projectConfigVersion": 1,
+                "archivedAt": null,
+                "createdAt": 1793791962570,
+                "updatedAt": 1793791964325,
+                "lastLaunchedAt": 1793791964287,
+                "ptyId": null,
+                "recovery": "not-started",
+                "recoveryReason": "还没有发过消息，Codex 未生成会话；打开时会新开一个"
+              }
+            },
+            "status": "passed"
+          },
+          {
+            "id": "all-three-inflight-active-markers",
+            "expected": "During each actualCLI: trueagentRunning, visible tabdot andaccentpageborder, noanimatedbrowsercursor",
+            "actual": [
+              {
+                "index": 1,
+                "start": {
+                  "kind": "cli-start",
+                  "index": 1,
+                  "pid": 37644,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:1}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791970066
+                },
+                "observation": {
+                  "atMs": 1793791970971,
+                  "workspace": {
+                    "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                    "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                    "tabs": [
+                      {
+                        "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "favicon": null,
+                        "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                        "loading": false,
+                        "canGoBack": true,
+                        "canGoForward": false,
+                        "failure": null,
+                        "agentActive": true,
+                        "agentRunning": true,
+                        "importState": "ready",
+                        "certificate": null
+                      }
+                    ],
+                    "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                    "recent": [
+                      {
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "host": "127.0.0.1:65189",
+                        "visitedAt": 1793791969992
+                      }
+                    ],
+                    "notice": null,
+                    "external": null,
+                    "find": {
+                      "active": 0,
+                      "total": 0
+                    },
+                    "paused": false,
+                    "permission": null,
+                    "downloads": [],
+                    "auth": null,
+                    "authCancelled": null
+                  },
+                  "visual": {
+                    "atMs": 1793791970973,
+                    "dot": true,
+                    "dotStyle": {
+                      "background": "rgb(51, 133, 255)",
+                      "animation": "none",
+                      "width": 6
+                    },
+                    "pageClass": "bw-page bw-agent-glow",
+                    "border": {
+                      "color": "rgb(51, 133, 255)",
+                      "width": "2px",
+                      "animation": "none"
+                    },
+                    "pseudo": {
+                      "animation": "none",
+                      "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                    },
+                    "banner": "Agent 正在操作此页面",
+                    "animations": [],
+                    "cursorNodes": [],
+                    "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                  },
+                  "native": {
+                    "animations": 0,
+                    "cursorNodes": 0,
+                    "unsaved": "unchanged",
+                    "url": "http://127.0.0.1:65189/activity"
+                  }
+                },
+                "screenshot": {
+                  "path": "command-1-active.png",
+                  "startedAtMs": 1793791970974,
+                  "finishedAtMs": 1793791971023,
+                  "observation": {
+                    "atMs": 1793791970971,
+                    "workspace": {
+                      "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                      "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                      "tabs": [
+                        {
+                          "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "favicon": null,
+                          "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                          "loading": false,
+                          "canGoBack": true,
+                          "canGoForward": false,
+                          "failure": null,
+                          "agentActive": true,
+                          "agentRunning": true,
+                          "importState": "ready",
+                          "certificate": null
+                        }
+                      ],
+                      "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                      "recent": [
+                        {
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "host": "127.0.0.1:65189",
+                          "visitedAt": 1793791969992
+                        }
+                      ],
+                      "notice": null,
+                      "external": null,
+                      "find": {
+                        "active": 0,
+                        "total": 0
+                      },
+                      "paused": false,
+                      "permission": null,
+                      "downloads": [],
+                      "auth": null,
+                      "authCancelled": null
+                    },
+                    "visual": {
+                      "atMs": 1793791970973,
+                      "dot": true,
+                      "dotStyle": {
+                        "background": "rgb(51, 133, 255)",
+                        "animation": "none",
+                        "width": 6
+                      },
+                      "pageClass": "bw-page bw-agent-glow",
+                      "border": {
+                        "color": "rgb(51, 133, 255)",
+                        "width": "2px",
+                        "animation": "none"
+                      },
+                      "pseudo": {
+                        "animation": "none",
+                        "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                      },
+                      "banner": "Agent 正在操作此页面",
+                      "animations": [],
+                      "cursorNodes": [],
+                      "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                    },
+                    "native": {
+                      "animations": 0,
+                      "cursorNodes": 0,
+                      "unsaved": "unchanged",
+                      "url": "http://127.0.0.1:65189/activity"
+                    }
+                  }
+                }
+              },
+              {
+                "index": 2,
+                "start": {
+                  "kind": "cli-start",
+                  "index": 2,
+                  "pid": 37686,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:2}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791974007
+                },
+                "observation": {
+                  "atMs": 1793791974642,
+                  "workspace": {
+                    "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                    "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                    "tabs": [
+                      {
+                        "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "favicon": null,
+                        "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                        "loading": false,
+                        "canGoBack": true,
+                        "canGoForward": false,
+                        "failure": null,
+                        "agentActive": true,
+                        "agentRunning": true,
+                        "importState": "ready",
+                        "certificate": null
+                      }
+                    ],
+                    "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                    "recent": [
+                      {
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "host": "127.0.0.1:65189",
+                        "visitedAt": 1793791969992
+                      }
+                    ],
+                    "notice": null,
+                    "external": null,
+                    "find": {
+                      "active": 0,
+                      "total": 0
+                    },
+                    "paused": false,
+                    "permission": null,
+                    "downloads": [],
+                    "auth": null,
+                    "authCancelled": null
+                  },
+                  "visual": {
+                    "atMs": 1793791974879,
+                    "dot": true,
+                    "dotStyle": {
+                      "background": "rgb(51, 133, 255)",
+                      "animation": "none",
+                      "width": 6
+                    },
+                    "pageClass": "bw-page bw-agent-glow",
+                    "border": {
+                      "color": "rgb(51, 133, 255)",
+                      "width": "2px",
+                      "animation": "none"
+                    },
+                    "pseudo": {
+                      "animation": "none",
+                      "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                    },
+                    "banner": "Agent 正在操作此页面",
+                    "animations": [],
+                    "cursorNodes": [],
+                    "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                  },
+                  "native": {
+                    "animations": 0,
+                    "cursorNodes": 0,
+                    "unsaved": "unchanged",
+                    "url": "http://127.0.0.1:65189/activity"
+                  }
+                },
+                "screenshot": {
+                  "path": "command-2-active.png",
+                  "startedAtMs": 1793791974880,
+                  "finishedAtMs": 1793791974946,
+                  "observation": {
+                    "atMs": 1793791974642,
+                    "workspace": {
+                      "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                      "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                      "tabs": [
+                        {
+                          "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "favicon": null,
+                          "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                          "loading": false,
+                          "canGoBack": true,
+                          "canGoForward": false,
+                          "failure": null,
+                          "agentActive": true,
+                          "agentRunning": true,
+                          "importState": "ready",
+                          "certificate": null
+                        }
+                      ],
+                      "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                      "recent": [
+                        {
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "host": "127.0.0.1:65189",
+                          "visitedAt": 1793791969992
+                        }
+                      ],
+                      "notice": null,
+                      "external": null,
+                      "find": {
+                        "active": 0,
+                        "total": 0
+                      },
+                      "paused": false,
+                      "permission": null,
+                      "downloads": [],
+                      "auth": null,
+                      "authCancelled": null
+                    },
+                    "visual": {
+                      "atMs": 1793791974879,
+                      "dot": true,
+                      "dotStyle": {
+                        "background": "rgb(51, 133, 255)",
+                        "animation": "none",
+                        "width": 6
+                      },
+                      "pageClass": "bw-page bw-agent-glow",
+                      "border": {
+                        "color": "rgb(51, 133, 255)",
+                        "width": "2px",
+                        "animation": "none"
+                      },
+                      "pseudo": {
+                        "animation": "none",
+                        "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                      },
+                      "banner": "Agent 正在操作此页面",
+                      "animations": [],
+                      "cursorNodes": [],
+                      "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                    },
+                    "native": {
+                      "animations": 0,
+                      "cursorNodes": 0,
+                      "unsaved": "unchanged",
+                      "url": "http://127.0.0.1:65189/activity"
+                    }
+                  }
+                }
+              },
+              {
+                "index": 3,
+                "start": {
+                  "kind": "cli-start",
+                  "index": 3,
+                  "pid": 37884,
+                  "args": [
+                    "browser",
+                    "eval",
+                    "--expression",
+                    "new Promise(resolve=>setTimeout(()=>resolve({fixture:\"P052\",step:3}),3000))",
+                    "--page",
+                    "cab40a10-7a1b-4c76-a574-0dc8e85b9788"
+                  ],
+                  "atMs": 1793791977966
+                },
+                "observation": {
+                  "atMs": 1793791979257,
+                  "workspace": {
+                    "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                    "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                    "tabs": [
+                      {
+                        "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "favicon": null,
+                        "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                        "loading": false,
+                        "canGoBack": true,
+                        "canGoForward": false,
+                        "failure": null,
+                        "agentActive": true,
+                        "agentRunning": true,
+                        "importState": "ready",
+                        "certificate": null
+                      }
+                    ],
+                    "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                    "recent": [
+                      {
+                        "url": "http://127.0.0.1:65189/activity",
+                        "title": "[A] P052 activity fixture",
+                        "host": "127.0.0.1:65189",
+                        "visitedAt": 1793791969992
+                      }
+                    ],
+                    "notice": null,
+                    "external": null,
+                    "find": {
+                      "active": 0,
+                      "total": 0
+                    },
+                    "paused": false,
+                    "permission": null,
+                    "downloads": [],
+                    "auth": null,
+                    "authCancelled": null
+                  },
+                  "visual": {
+                    "atMs": 1793791979258,
+                    "dot": true,
+                    "dotStyle": {
+                      "background": "rgb(51, 133, 255)",
+                      "animation": "none",
+                      "width": 6
+                    },
+                    "pageClass": "bw-page bw-agent-glow",
+                    "border": {
+                      "color": "rgb(51, 133, 255)",
+                      "width": "2px",
+                      "animation": "none"
+                    },
+                    "pseudo": {
+                      "animation": "none",
+                      "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                    },
+                    "banner": "Agent 正在操作此页面",
+                    "animations": [],
+                    "cursorNodes": [],
+                    "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                  },
+                  "native": {
+                    "animations": 0,
+                    "cursorNodes": 0,
+                    "unsaved": "unchanged",
+                    "url": "http://127.0.0.1:65189/activity"
+                  }
+                },
+                "screenshot": {
+                  "path": "command-3-active.png",
+                  "startedAtMs": 1793791979259,
+                  "finishedAtMs": 1793791979325,
+                  "observation": {
+                    "atMs": 1793791979257,
+                    "workspace": {
+                      "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                      "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                      "tabs": [
+                        {
+                          "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "favicon": null,
+                          "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                          "loading": false,
+                          "canGoBack": true,
+                          "canGoForward": false,
+                          "failure": null,
+                          "agentActive": true,
+                          "agentRunning": true,
+                          "importState": "ready",
+                          "certificate": null
+                        }
+                      ],
+                      "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                      "recent": [
+                        {
+                          "url": "http://127.0.0.1:65189/activity",
+                          "title": "[A] P052 activity fixture",
+                          "host": "127.0.0.1:65189",
+                          "visitedAt": 1793791969992
+                        }
+                      ],
+                      "notice": null,
+                      "external": null,
+                      "find": {
+                        "active": 0,
+                        "total": 0
+                      },
+                      "paused": false,
+                      "permission": null,
+                      "downloads": [],
+                      "auth": null,
+                      "authCancelled": null
+                    },
+                    "visual": {
+                      "atMs": 1793791979258,
+                      "dot": true,
+                      "dotStyle": {
+                        "background": "rgb(51, 133, 255)",
+                        "animation": "none",
+                        "width": 6
+                      },
+                      "pageClass": "bw-page bw-agent-glow",
+                      "border": {
+                        "color": "rgb(51, 133, 255)",
+                        "width": "2px",
+                        "animation": "none"
+                      },
+                      "pseudo": {
+                        "animation": "none",
+                        "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                      },
+                      "banner": "Agent 正在操作此页面",
+                      "animations": [],
+                      "cursorNodes": [],
+                      "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                    },
+                    "native": {
+                      "animations": 0,
+                      "cursorNodes": 0,
+                      "unsaved": "unchanged",
+                      "url": "http://127.0.0.1:65189/activity"
+                    }
+                  }
+                }
+              }
+            ],
+            "status": "passed"
+          },
+          {
+            "id": "last-command-19s-marker-retained",
+            "expected": "19s screenshot has tabdot/pageborder, no in-flightcommand oranimatedbrowsercursor",
+            "actual": {
+              "path": "after-19s.png",
+              "startedAtMs": 1793792001272,
+              "finishedAtMs": 1793792001368,
+              "observation": {
+                "atMs": 1793792001267,
+                "workspace": {
+                  "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                  "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                  "tabs": [
+                    {
+                      "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                      "url": "http://127.0.0.1:65189/activity",
+                      "title": "[A] P052 activity fixture",
+                      "favicon": null,
+                      "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                      "loading": false,
+                      "canGoBack": true,
+                      "canGoForward": false,
+                      "failure": null,
+                      "agentActive": true,
+                      "agentRunning": false,
+                      "importState": "ready",
+                      "certificate": null
+                    }
+                  ],
+                  "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                  "recent": [
+                    {
+                      "url": "http://127.0.0.1:65189/activity",
+                      "title": "[A] P052 activity fixture",
+                      "host": "127.0.0.1:65189",
+                      "visitedAt": 1793791969992
+                    }
+                  ],
+                  "notice": null,
+                  "external": null,
+                  "find": {
+                    "active": 0,
+                    "total": 0
+                  },
+                  "paused": false,
+                  "permission": null,
+                  "downloads": [],
+                  "auth": null,
+                  "authCancelled": null
+                },
+                "visual": {
+                  "atMs": 1793792001269,
+                  "dot": true,
+                  "dotStyle": {
+                    "background": "rgb(51, 133, 255)",
+                    "animation": "none",
+                    "width": 6
+                  },
+                  "pageClass": "bw-page bw-agent-glow",
+                  "border": {
+                    "color": "rgb(51, 133, 255)",
+                    "width": "2px",
+                    "animation": "none"
+                  },
+                  "pseudo": {
+                    "animation": "none",
+                    "shadow": "rgb(51, 133, 255) 0px 0px 0px 2px inset, color(srgb 0.2 0.521569 1 / 0.35) 0px 0px 22px 0px inset"
+                  },
+                  "banner": "Agent 最近操作过此页面 · 最后一条命令结束约 20 秒后清除标记",
+                  "animations": [],
+                  "cursorNodes": [],
+                  "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                },
+                "native": {
+                  "animations": 0,
+                  "cursorNodes": 0,
+                  "unsaved": "unchanged",
+                  "url": "http://127.0.0.1:65189/activity"
+                }
+              },
+              "relativeToLastCLI": {
+                "observedMs": 19003,
+                "screenshotStartMs": 19006,
+                "screenshotEndMs": 19102
+              }
+            },
+            "status": "passed"
+          },
+          {
+            "id": "last-command-21s-marker-cleared",
+            "expected": "21s screenshot clears tabdot/pageborder, samepageformurl retained,noanimatedcursor",
+            "actual": {
+              "path": "after-21s.png",
+              "startedAtMs": 1793792003271,
+              "finishedAtMs": 1793792003359,
+              "observation": {
+                "atMs": 1793792003267,
+                "workspace": {
+                  "taskId": "c91af5c3-5617-4510-a6c3-0326ebfaddcf",
+                  "projectId": "ffa28fa7-eac3-4915-992b-5e7cd77e8891",
+                  "tabs": [
+                    {
+                      "id": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                      "url": "http://127.0.0.1:65189/activity",
+                      "title": "[A] P052 activity fixture",
+                      "favicon": null,
+                      "profileId": "project-a6d6bf6aacca29feacd44ed9",
+                      "loading": false,
+                      "canGoBack": true,
+                      "canGoForward": false,
+                      "failure": null,
+                      "agentActive": false,
+                      "agentRunning": false,
+                      "importState": "ready",
+                      "certificate": null
+                    }
+                  ],
+                  "activeId": "cab40a10-7a1b-4c76-a574-0dc8e85b9788",
+                  "recent": [
+                    {
+                      "url": "http://127.0.0.1:65189/activity",
+                      "title": "[A] P052 activity fixture",
+                      "host": "127.0.0.1:65189",
+                      "visitedAt": 1793791969992
+                    }
+                  ],
+                  "notice": null,
+                  "external": null,
+                  "find": {
+                    "active": 0,
+                    "total": 0
+                  },
+                  "paused": false,
+                  "permission": null,
+                  "downloads": [],
+                  "auth": null,
+                  "authCancelled": null
+                },
+                "visual": {
+                  "atMs": 1793792003269,
+                  "dot": false,
+                  "dotStyle": null,
+                  "pageClass": "bw-page",
+                  "border": {
+                    "color": "rgba(0, 0, 0, 0)",
+                    "width": "2px",
+                    "animation": "none"
+                  },
+                  "pseudo": {
+                    "animation": "none",
+                    "shadow": "none"
+                  },
+                  "banner": null,
+                  "animations": [],
+                  "cursorNodes": [],
+                  "selectedTask": "c91af5c3-5617-4510-a6c3-0326ebfaddcf"
+                },
+                "native": {
+                  "animations": 0,
+                  "cursorNodes": 0,
+                  "unsaved": "unchanged",
+                  "url": "http://127.0.0.1:65189/activity"
+                }
+              },
+              "relativeToLastCLI": {
+                "observedMs": 21003,
+                "screenshotStartMs": 21005,
+                "screenshotEndMs": 21093
+              }
+            },
+            "status": "passed"
+          },
+          {
+            "id": "five-actual-screenshots",
+            "expected": "Threeinflightplus19s/21s actualAppPNGfiles withtimings",
+            "actual": [
+              {
+                "path": "command-1-active.png",
+                "bytes": 126062,
+                "sha256": "15eddecdc420067514bda938d02a3f780ae813733de21b04cf3173f0d7370005",
+                "png": true,
+                "width": 2800,
+                "height": 1800
+              },
+              {
+                "path": "command-2-active.png",
+                "bytes": 240527,
+                "sha256": "58769fd326d4bd1106e8649d1e9fc99915e9a88e0f3f1e9b33b92be2ccd3678c",
+                "png": true,
+                "width": 2800,
+                "height": 1800
+              },
+              {
+                "path": "command-3-active.png",
+                "bytes": 356728,
+                "sha256": "10369954177fee75fe41087757e8e313dc127faa0f38c46d80ff155cbd5e7243",
+                "png": true,
+                "width": 2800,
+                "height": 1800
+              },
+              {
+                "path": "after-19s.png",
+                "bytes": 503285,
+                "sha256": "b4bc592ac8d875e16eb30b72111bc97dbb7738d5e44f731a8e90396ac72da04a",
+                "png": true,
+                "width": 2800,
+                "height": 1800
+              },
+              {
+                "path": "after-21s.png",
+                "bytes": 472743,
+                "sha256": "0585f88ba38c02dc97825d3cda669b3fbaa08bc91729cdd1aa8ac0f484c49a9a",
+                "png": true,
+                "width": 2800,
+                "height": 1800
+              }
+            ],
+            "status": "passed"
+          },
+          {
+            "id": "normal-cleanup-request",
+            "expected": "Ownedtaskended andAppnormalexit, noforcedclose orfocusrearm",
+            "actual": {
+              "exit": {
+                "pid": 37433,
+                "code": 0,
+                "signal": null
+              },
+              "serverClosed": true
+            },
+            "status": "passed"
+          }
+        ],
+        "remaining": {
+          "T114": "notexecuted: livewaitstop+cross-taskgrantinvalidation contract remains",
+          "T115": "notexecuted: threebackgroundtab/focustrue task-switch contract remains"
+        },
+        "boundary": "NoT114/T115claim; noactualR/modelorOSsandboxverification. Source/packagehashandexternalprocess/socketcleanuprecordedseparately."
+      },
+      "actualCLI": 3,
+      "capture19": {
+        "observedMs": 19003,
+        "screenshotStartMs": 19006,
+        "screenshotEndMs": 19102
+      },
+      "capture21": {
+        "observedMs": 21003,
+        "screenshotStartMs": 21005,
+        "screenshotEndMs": 21093
+      }
+    },
+    {
+      "id": "M12-T114",
+      "status": "not-executed",
+      "scope": "Fullwaitstop/pagepreservation/grantrevocationremain"
+    },
+    {
+      "id": "M12-T115",
+      "status": "not-executed",
+      "scope": "Backgroundcreate/switch/focustruecontractremain,nextgroupassignedbycoordinator"
+    }
+  ],
+  "terminalAttachment": {
+    "action": "realUI-existing-task-start",
+    "beforePTY": "dbdb9c6f-4145-4cd8-83b3-f362633073e0",
+    "afterPTY": "dbdb9c6f-4145-4cd8-83b3-f362633073e0",
+    "beforePID": 37525,
+    "afterPID": 37525,
+    "beforeRun": "98170d44-86e4-4bdc-8425-c0fa619af4d2",
+    "afterRun": "98170d44-86e4-4bdc-8425-c0fa619af4d2",
+    "terminalOutput": ""
+  },
+  "resourceCleanup": {
+    "at": "2026-11-04T11:34:08.171Z",
+    "group": "M12-P052",
+    "processes": [
+      {
+        "pid": 37431,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37433,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37435,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37436,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37488,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37525,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37644,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37686,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37884,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37635,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      },
+      {
+        "pid": 37636,
+        "ps": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "tcp": {
+          "status": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        "absent": true
+      }
+    ],
+    "ports": [
+      {
+        "port": 65189,
+        "status": 1,
+        "stdout": "",
+        "stderr": "",
+        "closed": true
+      },
+      {
+        "port": 65197,
+        "status": 1,
+        "stdout": "",
+        "stderr": "",
+        "closed": true
+      },
+      {
+        "port": 65190,
+        "status": 1,
+        "stdout": "",
+        "stderr": "",
+        "closed": true
+      },
+      {
+        "port": 65359,
+        "status": 1,
+        "stdout": "",
+        "stderr": "",
+        "closed": true
+      }
+    ],
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "remainingUnixGateway": [],
+    "allUnixGatewayGone": true,
+    "helperDirectory": "/private/tmp/wy-ab-3a887527f0d433c949ed7a96",
+    "remainingHelperFiles": [],
+    "allHelperFilesGone": true,
+    "normalExit": {
+      "pid": 37433,
+      "code": 0,
+      "signal": null
+    },
+    "willQuit": {
+      "event": "will-quit",
+      "atMs": 1793792003667,
+      "pid": 37433
+    },
+    "serverClosed": true,
+    "forcedClose": false,
+    "boundary": "Externalpreciseprocess/socketcleanup; noafterexitWCcallbacksclaimed"
+  },
+  "finalInputs": {
+    "at": "2026-11-04T11:35:37.023207+00:00",
+    "productionInputs": 3451,
+    "allSourceShaAndModeMatched": true,
+    "sourceMismatches": [],
+    "privateDependencies": 151,
+    "allDependencyHashesMatched": true,
+    "dependencyMismatches": [],
+    "allFixedPackageResourceShaAndModeMatched": true,
+    "packageMismatches": []
+  },
+  "captureBoundary": "ActualApphostchromedot/border/bannercheckedbyrawDOMandoriginalPNGs. NativeWebContentsViewcontentpixelsblankinhostcapture; nativeURL/form/animationreadonlyproofseparate. Noentirepagepixelclaimornativeblankbugclaim.",
+  "originalRawAndJudgeUnmodified": true,
+  "oldAttempt": "00148filemanifestdae4fd5...retained,fixturepreconditionnotexecutednotdiscarded",
+  "boundary": "Synthetic0.166health/version/requirementsprotocol+PythoncallernotrealR/OSsandbox; actualTaskServicePTY/M11/kernelpeer/nativeCLI/App014UI. NoUIRPC/storewritesforacceptedoperations; clipboarduntouched."
+}

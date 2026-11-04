@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-04T11:31:19.445053+00:00",
+  "updatedAt": "2026-11-04T11:37:51.098667+00:00",
   "status": "S1门槛完成；S2-S6总目标active，前置缺陷定位",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P052 App014 A final preflight",
+    "currentGroup": "M12-P056 preparing originalT115 A",
     "groups": [
       {
         "id": "M12-P001",
@@ -1411,7 +1411,7 @@
       {
         "id": "M12-P052",
         "owner": "/root/s2_t004_test",
-        "privateRoot": "/private/tmp/willyou-m12-p052-s5-app-001",
+        "privateRoot": "/private/tmp/willyou-m12-p052-s5-app-002",
         "originalCases": [
           "M12-T106",
           "M12-T114",
@@ -1430,16 +1430,16 @@
           "P049011 software; P050003 native audit/exec; P051 App013 exact packaged source"
         ],
         "remaining": [
-          "correct terminal/native-session UI precondition; original T106 no CLI executed",
-          "T114/T115 not executed"
+          "original T114 stop/grant invalidation remains",
+          "original T115 moved to separate P056; not claimed by this group"
         ],
-        "status": "attempt001 driver precondition failed before CLI, archived; new002 true UI bind existing PTY prepared, pinning App014",
-        "baseline": "/private/tmp/willyou-m12-p051-build-001/production-inputs.json",
+        "status": "original T106 complete A, coordinator PNG/source/judge verified and accounted; original001 fixture red retained",
+        "baseline": "/private/tmp/willyou-m12-p055-build-001/production-inputs.json",
         "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
         "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
-        "preflightSha256": "9df8a0806444e3f2a4b5fd2b08962b5268f7ef7b8212a0474f665355f2efa97b",
-        "driverSha256": "aa92330d4a40c881a4ae9054352ff03fb0400c4818f05f5bc8e0b33dcf86a3e0",
-        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p052-s5-app-001/cache node /private/tmp/willyou-m12-p052-s5-app-001/run.mjs --execute",
+        "preflightSha256": "4ab9e7bbedc59581aeeee92b9c1725ac607195720e41b803f056bdb6c50cca2d",
+        "driverSha256": "09e8951ef3191dc986ce9a4f6ae9e9a1156541cd531d53c90aa86cb7991bd241",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p052-s5-app-002/cache node /private/tmp/willyou-m12-p052-s5-app-002/run.mjs --execute",
         "pids": [],
         "sessions": [],
         "ports": [],
@@ -1448,9 +1448,15 @@
             "attempt": "attempt-001",
             "manifestSha256": "dae4fd5abf70ea5e1ad021194e32e97342e210f32ab92a11c00c5503f0e8faf6",
             "outcome": "zero CLI, fixture precondition failure, not original case execution"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "051145a409b6d07eaf6a220a139082bed66c57ba56dcad1979e361c8e580b2c1",
+            "outcome": "7/7 originalT106 A green; normalcleanup"
           }
         ],
-        "next": "final014 source/dependency preflight then exclusive original T106 A"
+        "next": "final014 source/dependency preflight then exclusive original T106 A",
+        "cleanup": "normalexit0;11 exact PIDs,4ports,helper/runtime Unix files absent"
       },
       {
         "id": "M12-P053",
@@ -1594,6 +1600,33 @@
             "manifestSha256": "e13b0bf6fbe7a25938131219e5ffa91f32e50c1adedcd59f582c13b7daddf150"
           }
         ]
+      },
+      {
+        "id": "M12-P056",
+        "owner": "/root/s2_t004_test",
+        "privateRoot": "/private/tmp/willyou-m12-p056-focus-app-001",
+        "originalCases": [
+          "M12-T115"
+        ],
+        "layers": [
+          "A"
+        ],
+        "resources": [],
+        "status": "preparing only; no App/UI/native lease",
+        "baseline": "/private/tmp/willyou-m12-p055-build-001/production-inputs.json",
+        "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
+        "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+        "criteria": [
+          "user actually viewsT2 while T1 synthetic managed Agent true nativeCLI tab create/switch/focus true",
+          "create leaves new T1 user tab inactive and no user task switch; ordinary switch no user task switch",
+          "explicit focus true switches actual user task and target right workspace; preserve native page/form states"
+        ],
+        "validPriorEvidence": [
+          "P052002 actual terminal binding and exact App014/source usable; no repeatT106 needed"
+        ],
+        "remaining": [
+          "freeze/preflight private originalT115 driver then lease/run/judge/cleanup"
+        ]
       }
     ],
     "autonomy": {
@@ -1626,7 +1659,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T11:31:19.445053+00:00",
+    "updatedAt": "2026-11-04T11:37:51.098667+00:00",
     "independentNext": [
       "App013 P052 original activity/stop/focus A, exact source/package pinned",
       "Actual M11/nativeCLI grant/pause cases and full T099 I/A composition",
@@ -1660,6 +1693,6 @@
         "independentWork": "native environment I and remaining S4 development continue"
       }
     ],
-    "currentSourceCheckpoint": "7b2e08b1 plus frozen P054 close fix, App014 source identity P055"
+    "currentSourceCheckpoint": "12dd0351, exact App014 P055"
   }
 }
