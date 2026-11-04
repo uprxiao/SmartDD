@@ -1,0 +1,49 @@
+{
+  "arm": "untrusted-baseline",
+  "tag": "initial-deny",
+  "url": "https://m12-cert.test:49622/doc?arm=untrusted-baseline&tag=initial-deny",
+  "wcId": 1,
+  "startedAt": "2026-11-04T01:36:32.575Z",
+  "eventsStart": 0,
+  "requestsStart": 0,
+  "outcome": "blocked-or-failed",
+  "error": {
+    "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:49622/doc?arm=untrusted-baseline&tag=initial-deny'",
+    "code": "ERR_CERT_AUTHORITY_INVALID",
+    "errno": -202
+  },
+  "currentUrl": "https://m12-cert.test:49622/doc?arm=untrusted-baseline&tag=initial-deny",
+  "finishedAt": "2026-11-04T01:36:32.690Z",
+  "events": [
+    {
+      "at": "2026-11-04T01:36:32.649Z",
+      "kind": "server-tlsClientError",
+      "error": "1116692547616:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+    },
+    {
+      "at": "2026-11-04T01:36:32.650Z",
+      "arm": "untrusted-baseline",
+      "stage": "initial-deny",
+      "kind": "certificate-error",
+      "url": "https://m12-cert.test:49622/doc?arm=untrusted-baseline&tag=initial-deny",
+      "error": "net::ERR_CERT_AUTHORITY_INVALID",
+      "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+      "pinMatched": true,
+      "isMainFrame": true,
+      "trusted": false,
+      "wcId": 1
+    },
+    {
+      "at": "2026-11-04T01:36:32.688Z",
+      "arm": "untrusted-baseline",
+      "stage": "initial-deny",
+      "kind": "did-fail-load",
+      "code": -202,
+      "description": "ERR_CERT_AUTHORITY_INVALID",
+      "url": "https://m12-cert.test:49622/doc?arm=untrusted-baseline&tag=initial-deny",
+      "isMainFrame": true
+    }
+  ],
+  "exactServerRequests": [],
+  "allRequestsAfterStart": []
+}

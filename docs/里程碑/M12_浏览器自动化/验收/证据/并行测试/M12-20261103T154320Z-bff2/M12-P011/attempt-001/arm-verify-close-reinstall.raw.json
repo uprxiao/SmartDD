@@ -1,0 +1,284 @@
+{
+  "id": "verify-close-reinstall",
+  "mechanism": "verify",
+  "revoke": [
+    "close",
+    "reinstall"
+  ],
+  "mode": "verify",
+  "partition": "persist:p011-verify-close-reinstall-b2c57364-8d9d-4cd4-970f-fa0fd1c5ad5f",
+  "allowed": false,
+  "accepted": true,
+  "installations": 2,
+  "stage": "revoked-next-navigation",
+  "windows": [
+    {
+      "id": 8,
+      "wcId": 8,
+      "label": "navigation"
+    },
+    {
+      "id": 9,
+      "wcId": 9,
+      "label": "state-readback"
+    }
+  ],
+  "operations": [
+    {
+      "at": "2026-11-04T01:36:33.291Z",
+      "operation": "dynamic allow-set removal",
+      "allowed": false
+    },
+    {
+      "at": "2026-11-04T01:36:33.291Z",
+      "operation": "closeAllConnections resolved"
+    },
+    {
+      "at": "2026-11-04T01:36:33.291Z",
+      "operation": "setCertificateVerifyProc new callback installed"
+    }
+  ],
+  "navigations": [
+    {
+      "arm": "verify-close-reinstall",
+      "tag": "allow-seed",
+      "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-seed&seed=1",
+      "wcId": 8,
+      "startedAt": "2026-11-04T01:36:33.191Z",
+      "eventsStart": 15,
+      "requestsStart": 9,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-seed&seed=1",
+        "local": "p011-verify-close-reinstall",
+        "document": {
+          "arm": "verify-close-reinstall",
+          "tag": "allow-seed",
+          "seed": true,
+          "marker": "p011-verify-close-reinstall"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.240Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.199Z",
+          "arm": "verify-close-reinstall",
+          "stage": "allow-seed",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-seed&seed=1",
+          "resourceType": "mainFrame",
+          "wcId": 8,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        },
+        {
+          "at": "2026-11-04T01:36:33.202Z",
+          "arm": "verify-close-reinstall",
+          "stage": "allow-seed",
+          "kind": "verifyProc",
+          "generation": 1,
+          "hostname": "m12-cert.test",
+          "verificationResult": "net::ERR_CERT_AUTHORITY_INVALID",
+          "errorCode": -202,
+          "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+          "pinMatched": true,
+          "trusted": true
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.202Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "verify-close-reinstall",
+          "tag": "allow-seed",
+          "connectionId": 5,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.202Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "verify-close-reinstall",
+          "tag": "allow-seed",
+          "connectionId": 5,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "verify-close-reinstall",
+      "tag": "allow-state-view",
+      "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+      "wcId": 9,
+      "startedAt": "2026-11-04T01:36:33.240Z",
+      "eventsStart": 17,
+      "requestsStart": 10,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+        "local": "p011-verify-close-reinstall",
+        "document": {
+          "arm": "verify-close-reinstall",
+          "tag": "allow-state-view",
+          "seed": false,
+          "marker": "p011-verify-close-reinstall"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.290Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.243Z",
+          "arm": "verify-close-reinstall",
+          "stage": "allow-state-view",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+          "resourceType": "mainFrame",
+          "wcId": 9,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.244Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-verify-close-reinstall",
+          "arm": "verify-close-reinstall",
+          "tag": "allow-state-view",
+          "connectionId": 5,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.244Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-verify-close-reinstall",
+          "arm": "verify-close-reinstall",
+          "tag": "allow-state-view",
+          "connectionId": 5,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "verify-close-reinstall",
+      "tag": "revoked-next-navigation",
+      "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=revoked-next-navigation",
+      "wcId": 8,
+      "startedAt": "2026-11-04T01:36:33.291Z",
+      "eventsStart": 18,
+      "requestsStart": 11,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=revoked-next-navigation",
+        "local": "p011-verify-close-reinstall",
+        "document": {
+          "arm": "verify-close-reinstall",
+          "tag": "revoked-next-navigation",
+          "seed": false,
+          "marker": "p011-verify-close-reinstall"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.297Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.293Z",
+          "arm": "verify-close-reinstall",
+          "stage": "revoked-next-navigation",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=revoked-next-navigation",
+          "resourceType": "mainFrame",
+          "wcId": 8,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.294Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=revoked-next-navigation",
+          "method": "GET",
+          "cookie": "p011_marker=p011-verify-close-reinstall",
+          "arm": "verify-close-reinstall",
+          "tag": "revoked-next-navigation",
+          "connectionId": 6,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.294Z",
+          "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=revoked-next-navigation",
+          "method": "GET",
+          "cookie": "p011_marker=p011-verify-close-reinstall",
+          "arm": "verify-close-reinstall",
+          "tag": "revoked-next-navigation",
+          "connectionId": 6,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    }
+  ],
+  "proxyFixture": "direct only in this private Session",
+  "marker": "p011-verify-close-reinstall",
+  "before": {
+    "at": "2026-11-04T01:36:33.291Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+      "local": "p011-verify-close-reinstall"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-verify-close-reinstall",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-verify-close-reinstall-b2c57364-8d9d-4cd4-970f-fa0fd1c5ad5f"
+  },
+  "after": {
+    "at": "2026-11-04T01:36:33.298Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=verify-close-reinstall&tag=allow-state-view",
+      "local": "p011-verify-close-reinstall"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-verify-close-reinstall",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-verify-close-reinstall-b2c57364-8d9d-4cd4-970f-fa0fd1c5ad5f"
+  },
+  "status": "executed"
+}

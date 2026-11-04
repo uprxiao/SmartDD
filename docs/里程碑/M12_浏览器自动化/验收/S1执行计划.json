@@ -512,7 +512,7 @@
       {
         "id": "M12-P010",
         "owner": "/root",
-        "status": "U/typecheck passed; packaged A pending",
+        "status": "T021 A complete; scoped dialog terminal input product fix U passed, new package A pending",
         "cases": [
           "M12-T021",
           "M12-T022",
@@ -543,7 +543,32 @@
             "accounted": true
           }
         ],
-        "next": "one new unified package then native UI preflight"
+        "next": "new package after terminal keyboard fix; settings-only continues missing segment, no repeat T021"
+      },
+      {
+        "id": "M12-P011",
+        "name": "S4证书撤销即时拦截技术I前置",
+        "owner": "/root/s2_t004_test",
+        "status": "native resource granted; awaiting actual process receipt",
+        "privateRoot": "/private/tmp/willyou-m12-p011-executor-001",
+        "layers": [
+          "technical I only"
+        ],
+        "relatedCaseIds": [
+          "M12-T012"
+        ],
+        "criteriaSource": "R01.5/T012; technical API precondition only, never substitute actual A",
+        "criteria": [
+          "untrusted baseline denied",
+          "six isolated API arms allow then revoke, block subsequent request and retain Cookie/localStorage",
+          "restore hooks, delete TLS key, close only owned resources"
+        ],
+        "baseline": "/private/tmp/willyou-m12-p011-executor-001/static-preflight.json",
+        "baselineSha256": "e0fa76350505e2e0ddee5edf700faf948d76c8f8f6308169bcf405c2f30ee49f",
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        }
       }
     ],
     "autonomy": {
@@ -576,7 +601,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T00:50:35.750345+00:00",
-    "independentNext": "P005 T036 timed waits on frozen I source; coordinator fixes S3 close deadlock and prepares remaining tests without native/build contention"
+    "updatedAt": "2026-11-04T01:35:47.886770+00:00",
+    "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit"
   }
 }

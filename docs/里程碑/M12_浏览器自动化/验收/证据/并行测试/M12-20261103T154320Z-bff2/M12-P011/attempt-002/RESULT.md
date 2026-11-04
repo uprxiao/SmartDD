@@ -1,0 +1,3 @@
+# P011协调者复核
+
+完整交付64文件SHA已逐项核对；实际默认不信任拒绝。verifyProc的4种撤销变体均放行（每臂原回调只有一次，重新安装未再调用），事件回调单用时warm仍放行而关闭连接后fresh阻断；gate+event两次均ERR_BLOCKED_BY_CLIENT且服务器零请求。六组Cookie与LS保持。独立ps/lsof核20PID/HTTPS49622全退出、私钥不存在。原始失败和对比完整留存。仅技术前置，不计T012 A完成。

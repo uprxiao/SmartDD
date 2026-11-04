@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3';
 import {ApplicationError} from '@shared/applications';
 import {shell} from 'electron';
 import {BROWSER_BLANK_URL,describeBrowserLoadFailure,normalizeBrowserNavigationUrl,type BrowserSearchEngine} from '@shared/browser-navigation';
-import {browserWorkspaceSchema,type BrowserWorkspaceState,type BrowserTabState,type SavedBrowserWorkspace,type BrowserShortcut} from '@shared/browser-workspace';
+import {browserWorkspaceSchema,type BrowserWorkspaceState,type BrowserTabState,type SavedBrowserWorkspace,type BrowserShortcut,type BrowserCertificateState} from '@shared/browser-workspace';
 import {BrowserPageRegistry,browserProjectProfile,type BrowserPage} from './page-registry';
 import {BrowserError} from './errors';
 import {browserFavicon} from './favicon';
@@ -29,7 +29,7 @@ export class BrowserWorkspace {
   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
   private readonly overlays=new Set<string>();
   private reconciling?:Promise<void>;
-  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
       else if(!this.shuttingDown){
@@ -63,7 +63,11 @@ export class BrowserWorkspace {
     let recent:BrowserWorkspaceState['recent']=[];
     if(row)try{const values:unknown=JSON.parse(row.value);if(Array.isArray(values))recent=values.filter((r):r is BrowserWorkspaceState['recent'][number]=>!!r&&typeof r==='object'&&typeof r.url==='string'&&typeof r.title==='string'&&typeof r.host==='string'&&typeof r.visitedAt==='number').slice(0,8);}catch{/* A bad recent list must not destroy valid tabs. */}
     const found=state.activeId?this.finds.get(state.activeId):undefined;
-    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle())})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0}};
+    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0}};
+  }
+  certificateFailed(page:BrowserPage,url:string,error:string):void{
+    if(page.closed||this.shuttingDown)return;
+    const runtime=this.runtime.get(page.id)??idle();runtime.loading=false;runtime.failure=describeBrowserLoadFailure(-202,error,url);this.runtime.set(page.id,runtime);this.cancelRecovery(page.id);this.changed(page.taskId);
   }
   create(taskId:string):BrowserWorkspaceState{
     const state=this.load(taskId),id=randomUUID();state.tabs.push({id,url:BROWSER_BLANK_URL,title:'新标签页',favicon:null,profileId:browserProjectProfile(this.project(taskId))});state.activeId=id;this.save(taskId);return this.snapshot(taskId);
@@ -220,7 +224,7 @@ export class BrowserWorkspace {
     wc.on('did-navigate',()=>{faviconGeneration++;const tab=state.tabs.find(t=>t.id===page.id);if(tab)tab.favicon=null;committed();});wc.on('did-navigate-in-page',(_event,_url,main)=>{if(main)committed();});
     wc.on('page-title-updated',(_event,title)=>{const tab=state.tabs.find(t=>t.id===page.id);if(tab){tab.title=title;this.save(page.taskId);const current=this.snapshot(page.taskId),recent=browserRecentTitle(current.recent,wc.getURL(),title);if(recent!==current.recent)this.saveRecent(current.projectId,recent);}});
     wc.on('page-favicon-updated',(_event,urls)=>{const generation=++faviconGeneration,url=urls.find(url=>/^https?:/.test(url));const tab=state.tabs.find(t=>t.id===page.id);if(!tab)return;if(!url){tab.favicon=null;this.save(page.taskId);return;}void browserFavicon(wc.session,url,page.abort.signal).then(icon=>{if(!page.closed&&!this.shuttingDown&&generation===faviconGeneration&&state.tabs.includes(tab)){tab.favicon=icon;this.save(page.taskId);}});});
-    wc.on('did-fail-load',(_event,code,description,url,main)=>{if(!main||code===-3||page.closed)return;runtime.loading=false;runtime.failure=describeBrowserLoadFailure(code,description,url);this.changed(page.taskId);this.scheduleRecovery(page);});
+    wc.on('did-fail-load',(_event,code,description,url,main)=>{if(!main||code===-3||page.closed)return;runtime.loading=false;const certificate=this.options.certificate?.(page.id,url);runtime.failure=describeBrowserLoadFailure(certificate?.challengeId?-202:code,certificate?.challengeId?certificate.error:description,url);this.changed(page.taskId);this.scheduleRecovery(page);});
     let gesture=0,burstAt=0,burst=0;
     wc.on('before-mouse-event',(_event,input)=>{if(input.type==='mouseDown')gesture=Date.now();});
     wc.on('before-input-event',(event,input)=>{

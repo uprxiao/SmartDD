@@ -203,8 +203,9 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
     document.addEventListener('visibilitychange', visibility);
     const send = (data: string) => events.emit(ptyInputEvent, { taskId, ptyId, data });
     term.attachCustomKeyEventHandler((e) => {
-      // A dialog over the terminal keeps its keys.
-      if (document.querySelector('[role="dialog"]')) return false;
+      // Browser dialogs cover only the workspace beside the terminal. Keep
+      // keys with a dialog only when that dialog owns the input event.
+      if (e.target instanceof Element && e.target.closest('[role="dialog"]')) return false;
       const action = terminalKeyAction(e, term.hasSelection());
       if (!action) return true;
       e.preventDefault();

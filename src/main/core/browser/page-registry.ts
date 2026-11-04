@@ -28,7 +28,7 @@ export class BrowserPageRegistry {
   private readonly closing=new Map<string,Promise<void>>();
   private readonly navigationRequests=new WeakMap<BrowserPage,object>();
   private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
-  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles}){}
+  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;configure?:(page:BrowserPage)=>void}){}
   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
   list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
@@ -69,6 +69,7 @@ export class BrowserPageRegistry {
     view.webContents.on('will-navigate',denyUnsafeNavigation);
     view.webContents.on('will-redirect',(event,url)=>{if(url.startsWith('file:'))event.preventDefault();else denyUnsafeNavigation(event,url);});
     try {
+      this.options.configure?.(page);
       await this.park.park(view,page.rect);
       await view.webContents.loadURL('about:blank');
       await proxy.start();await references.initialize();
@@ -102,6 +103,7 @@ export class BrowserPageRegistry {
     contents.on('destroyed',()=>{if(this.pages.has(id))void this.close(page.taskId,id);});
     void(async()=>{
       try{
+        this.options.configure?.(page);
         if(asTab)await this.park.park(view,page.rect);
         await proxy.start();await references.initialize();
         if(contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');

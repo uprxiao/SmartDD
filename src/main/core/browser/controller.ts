@@ -30,5 +30,8 @@ export function createBrowserController(service:BrowserService|undefined,trusted
       if(v.searchEngine!==undefined)s.settings.setSearchEngine(v.searchEngine);if(v.identity!==undefined)s.settings.setIdentity(v.identity);return s.preferences(v.taskId);
     },
     clearArtifacts:(event,input:{taskId:string;confirmed:true})=>{const s=host(event),v=browserTaskInput.extend({confirmed:z.literal(true)}).strict().parse(input);return s.clearArtifacts(v.taskId);},
+    continueCertificate:(event,input:{taskId:string;tabId:string;challengeId:string})=>{const s=host(event),v=browserTabInput.extend({challengeId:z.string().uuid()}).strict().parse(input);return s.continueCertificate(v.taskId,v.tabId,v.challengeId);},
+    profileSiteStates:(event,input:{taskId:string})=>host(event).profileSiteStates(browserTaskInput.parse(input).taskId),
+    revokeCertificate:(event,input:{taskId:string;profileId:string;host:string})=>{const s=host(event),v=browserTaskInput.extend({profileId:z.string(),host:z.string()}).strict().parse(input);s.revokeCertificate(v.taskId,v.profileId,v.host);return s.profileSiteStates(v.taskId);},
   });
 }

@@ -1,17 +1,17 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T01:19:18.441074+00:00",
+  "updatedAt": "2026-11-04T01:50:14.025492+00:00",
   "status": "S3-development; S2 contract decisions/system/S4 dependencies pending",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P009",
-      "privateRoot": "/private/tmp/willyou-m12-p009-executor-001",
-      "baseline": "/private/tmp/willyou-m12-p009-baseline-001",
-      "status": "P009 complete; idle and all resources released"
+      "group": "M12-P012",
+      "privateRoot": "/private/tmp/willyou-m12-p011-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p012-baseline-002",
+      "status": "P012 preparing actual production component I, no resource allocation"
     }
   ],
   "branch": "feature/0.1.1",
@@ -473,7 +473,7 @@
     {
       "id": "M12-P010",
       "owner": "/root",
-      "status": "S4-FIND-SESSION product red fixed in source; package008 pending",
+      "status": "T021 complete; terminal scoped-dialog product fix A passed, subsequent settings deferred by focus loss",
       "cases": [
         "M12-T021",
         "M12-T022",
@@ -489,7 +489,7 @@
         "T026 other dialogs/narrow drag",
         "T089 native CLI/restart"
       ],
-      "privateRoot": "/private/tmp/willyou-m12-p004-software-001",
+      "privateRoot": "/private/tmp/willyou-m12-s2-s4-settings-005",
       "baseline": "inputs037/source037",
       "criteriaSource": "测试用例.md original T021/T022/T026/T089; A actions must use actual packaged UI",
       "criteria": [
@@ -528,38 +528,83 @@
           "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-005",
           "manifestSha256": "f963c1352699ab8f3fc73bf58e3c09e3950745272b5e96aec709646ed5765d6d",
           "accounted": true
+        },
+        {
+          "attempt": "attempt-007",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-007",
+          "manifestSha256": "0aa14de51b329b85860fc4b3c44e4a095787af08cd8336fa7d7dc53035712ce3",
+          "accounted": true
+        },
+        {
+          "attempt": "attempt-009",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009",
+          "manifestSha256": "1b33a6282d67622d5d580804ddeb0540b9df7b19e6ac3f6d61828e9217a39036",
+          "accounted": true
         }
       ],
-      "next": "new unified package for native flag fix; same original T021 criteria",
-      "packageRoot": "/private/tmp/willyou-m12-s2-package-007",
-      "productionInputs": "/private/tmp/willyou-m12-p010-build-001/production-inputs.json",
-      "sourceCommit": "fa9fcbfa9248c10f57bfb7b367739c9dc4e24c46",
+      "next": "same original T021 A and settings UI subset",
+      "packageRoot": "/private/tmp/willyou-m12-s2-package-009",
+      "productionInputs": "/private/tmp/willyou-m12-p010-build-002/production-inputs.json",
+      "sourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd",
       "package": {
-        "path": "/private/tmp/willyou-m12-s2-package-007/mac-arm64/WillYou.app",
-        "at": "2026-11-04T00:55:17.155642+00:00",
-        "sourceCommit": "fa9fcbfa9248c10f57bfb7b367739c9dc4e24c46",
-        "productionInputsUnchanged": true,
-        "asarSha256": "7ed674a98b1408f930c249e7af1a34055f14854ac1381db00202652805357dbc",
-        "helperVersion": "0.27.3-willyou.4",
+        "at": "2026-11-04T01:39:56.980242+00:00",
+        "sourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd",
+        "asarSha256": "a1b5724740a5053e53bc9d03b581152dd399f89a56b7ce4154cdad1e3d97aae9",
         "helperSha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
-        "helperPatch": "eb00b4c21c649a625bbbd522ca7d3dfe09f3f273ce2380a270de005da14c4706",
-        "native": {
-          "willyou-app": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
-          "willyou-process-identity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
-        },
-        "arch": "arm64"
+        "helperVersion": "0.27.3-willyou.4",
+        "productionInputsUnchanged": true,
+        "arch": "arm64",
+        "implementationChanges": [
+          "src/renderer/views/task-view.tsx terminal dialog keyboard ownership"
+        ],
+        "externalDriverMode": "settings-only, T021 previous valid A reused"
       },
       "externalDriver": {
         "path": "scripts/browser/s2-packaged-ui.mjs",
-        "sha256": "27beb1af092a8daef13f3ed5aee088441e8ce5c33a9191bd0e5ba18ad2b3c1db",
+        "sha256": "163f6f03bce43e610fc942504521f3f4a1521ab2551870d557fc43499d838659",
         "mode": "settings-find",
-        "preflight": "node syntax;31 literal CDP expressions;generated receiver Python AST"
+        "preflight": "node syntax + literal CDP compile + focus guard 2/2"
       }
+    },
+    {
+      "id": "M12-P011",
+      "name": "S4证书撤销即时拦截技术I前置",
+      "owner": "/root/s2_t004_test",
+      "status": "technical I complete; all evidence verified and archived; no T012 A claim",
+      "privateRoot": "/private/tmp/willyou-m12-p011-executor-001",
+      "layers": [
+        "technical I only"
+      ],
+      "relatedCaseIds": [
+        "M12-T012"
+      ],
+      "criteriaSource": "R01.5/T012; technical API precondition only, never substitute actual A",
+      "criteria": [
+        "untrusted baseline denied",
+        "six isolated API arms allow then revoke, block subsequent request and retain Cookie/localStorage",
+        "restore hooks, delete TLS key, close only owned resources"
+      ],
+      "baseline": "/private/tmp/willyou-m12-p011-executor-001/static-preflight.json",
+      "baselineSha256": "e0fa76350505e2e0ddee5edf700faf948d76c8f8f6308169bcf405c2f30ee49f",
+      "resources": {
+        "nativeUi": "granted",
+        "build": "not allocated"
+      },
+      "pids": [],
+      "ports": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P011/attempt-001",
+          "manifestSha256": "5475eb44d7bad9d12e94e939442819e0ca02159e6dbeb4319edc94a9abfd32ff",
+          "accounted": true
+        }
+      ]
     }
   ],
-  "next": "unified package007 and S4 settings/find A preflight",
+  "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "fa9fcbfa9248c10f57bfb7b367739c9dc4e24c46",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "fa9fcbfa9248c10f57bfb7b367739c9dc4e24c46"
+  "currentSourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd"
 }

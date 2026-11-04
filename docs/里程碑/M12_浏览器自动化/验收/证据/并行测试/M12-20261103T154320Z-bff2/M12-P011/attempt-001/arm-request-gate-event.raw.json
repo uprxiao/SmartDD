@@ -1,0 +1,329 @@
+{
+  "id": "request-gate-event",
+  "mechanism": "gate-event",
+  "revoke": [],
+  "freshAfter": true,
+  "mode": "event",
+  "partition": "persist:p011-request-gate-event-304b42c5-a281-45ff-8fb0-aaaa94d26f33",
+  "allowed": false,
+  "accepted": true,
+  "installations": 0,
+  "stage": "revoked-after-close",
+  "windows": [
+    {
+      "id": 12,
+      "wcId": 12,
+      "label": "navigation"
+    },
+    {
+      "id": 13,
+      "wcId": 13,
+      "label": "state-readback"
+    }
+  ],
+  "operations": [
+    {
+      "at": "2026-11-04T01:36:33.613Z",
+      "operation": "dynamic allow-set removal",
+      "allowed": false
+    },
+    {
+      "at": "2026-11-04T01:36:33.656Z",
+      "operation": "closeAllConnections for independent fresh-connection observation"
+    }
+  ],
+  "navigations": [
+    {
+      "arm": "request-gate-event",
+      "tag": "allow-seed",
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+      "wcId": 12,
+      "startedAt": "2026-11-04T01:36:33.514Z",
+      "eventsStart": 28,
+      "requestsStart": 15,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+        "local": "p011-request-gate-event",
+        "document": {
+          "arm": "request-gate-event",
+          "tag": "allow-seed",
+          "seed": true,
+          "marker": "p011-request-gate-event"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.563Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.523Z",
+          "arm": "request-gate-event",
+          "stage": "allow-seed",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+          "resourceType": "mainFrame",
+          "wcId": 12,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        },
+        {
+          "at": "2026-11-04T01:36:33.526Z",
+          "kind": "server-tlsClientError",
+          "error": "1116692547616:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+        },
+        {
+          "at": "2026-11-04T01:36:33.526Z",
+          "arm": "request-gate-event",
+          "stage": "allow-seed",
+          "kind": "certificate-error",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID",
+          "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+          "pinMatched": true,
+          "isMainFrame": true,
+          "trusted": true,
+          "wcId": 12
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.527Z",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "request-gate-event",
+          "tag": "allow-seed",
+          "connectionId": 8,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.527Z",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "request-gate-event",
+          "tag": "allow-seed",
+          "connectionId": 8,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "request-gate-event",
+      "tag": "allow-state-view",
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+      "wcId": 13,
+      "startedAt": "2026-11-04T01:36:33.563Z",
+      "eventsStart": 31,
+      "requestsStart": 16,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+        "local": "p011-request-gate-event",
+        "document": {
+          "arm": "request-gate-event",
+          "tag": "allow-state-view",
+          "seed": false,
+          "marker": "p011-request-gate-event"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.612Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.565Z",
+          "arm": "request-gate-event",
+          "stage": "allow-state-view",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+          "resourceType": "mainFrame",
+          "wcId": 13,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.565Z",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-request-gate-event",
+          "arm": "request-gate-event",
+          "tag": "allow-state-view",
+          "connectionId": 8,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.565Z",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-request-gate-event",
+          "arm": "request-gate-event",
+          "tag": "allow-state-view",
+          "connectionId": 8,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "request-gate-event",
+      "tag": "revoked-next-navigation",
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-next-navigation",
+      "wcId": 12,
+      "startedAt": "2026-11-04T01:36:33.613Z",
+      "eventsStart": 32,
+      "requestsStart": 17,
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-next-navigation'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "currentUrl": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-next-navigation",
+      "finishedAt": "2026-11-04T01:36:33.655Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.614Z",
+          "arm": "request-gate-event",
+          "stage": "revoked-next-navigation",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-next-navigation",
+          "resourceType": "mainFrame",
+          "wcId": 12,
+          "own": true,
+          "guardBlocked": true,
+          "blocked": true
+        },
+        {
+          "at": "2026-11-04T01:36:33.653Z",
+          "arm": "request-gate-event",
+          "stage": "revoked-next-navigation",
+          "kind": "did-fail-load",
+          "code": -20,
+          "description": "ERR_BLOCKED_BY_CLIENT",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-next-navigation",
+          "isMainFrame": true
+        }
+      ],
+      "exactServerRequests": [],
+      "allRequestsAfterStart": []
+    },
+    {
+      "arm": "request-gate-event",
+      "tag": "revoked-after-close",
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-after-close",
+      "wcId": 12,
+      "startedAt": "2026-11-04T01:36:33.656Z",
+      "eventsStart": 34,
+      "requestsStart": 17,
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-after-close'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "currentUrl": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-after-close",
+      "finishedAt": "2026-11-04T01:36:33.661Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.657Z",
+          "arm": "request-gate-event",
+          "stage": "revoked-after-close",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-after-close",
+          "resourceType": "mainFrame",
+          "wcId": 12,
+          "own": true,
+          "guardBlocked": true,
+          "blocked": true
+        },
+        {
+          "at": "2026-11-04T01:36:33.661Z",
+          "arm": "request-gate-event",
+          "stage": "revoked-after-close",
+          "kind": "did-fail-load",
+          "code": -20,
+          "description": "ERR_BLOCKED_BY_CLIENT",
+          "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=revoked-after-close",
+          "isMainFrame": true
+        }
+      ],
+      "exactServerRequests": [],
+      "allRequestsAfterStart": []
+    }
+  ],
+  "proxyFixture": "direct only in this private Session",
+  "marker": "p011-request-gate-event",
+  "before": {
+    "at": "2026-11-04T01:36:33.613Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+      "local": "p011-request-gate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-request-gate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-request-gate-event-304b42c5-a281-45ff-8fb0-aaaa94d26f33"
+  },
+  "after": {
+    "at": "2026-11-04T01:36:33.656Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+      "local": "p011-request-gate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-request-gate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-request-gate-event-304b42c5-a281-45ff-8fb0-aaaa94d26f33"
+  },
+  "afterFresh": {
+    "at": "2026-11-04T01:36:33.662Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=request-gate-event&tag=allow-state-view",
+      "local": "p011-request-gate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-request-gate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-request-gate-event-304b42c5-a281-45ff-8fb0-aaaa94d26f33"
+  },
+  "status": "executed"
+}
