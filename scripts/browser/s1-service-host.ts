@@ -228,6 +228,14 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     let value:unknown;
     if (message.command === 'cli') value = await launchCli(message.args!,message.inputBase64===undefined?message.input:Buffer.from(message.inputBase64,'base64')).done;
     else if(message.command==='s3-server-requests')value={requests:s3Requests};
+    else if(message.command==='s3-geolocation-state-fixture'){
+      const page=browser.pages.get(taskId,message.pageId);
+      value={pageId:page.id,prompt:browser.permissions.snapshot(taskId,page.id),page:await page.proxy.send('Runtime.evaluate',{expression:'({visibility:document.visibilityState,focused:document.hasFocus(),geo:window.p020Geo??null})',returnByValue:true}),boundary:'I read-only observation of exact target page, independent of current UI selection'};
+    }
+    else if(message.command==='s3-present-page-fixture'){
+      const page=browser.pages.get(taskId,message.pageId);await browser.pages.placement(taskId,page.id,{x:0,y:0,width:1000,height:700});
+      value={pageId:page.id,boundary:'I native display precondition on this isolated inactive host only; no UI acceptance, focus request, permission override or Agent command'};
+    }
     else if(message.command==='s3-geolocation-permission-fixture'){
       const page=browser.pages.get(taskId,message.pageId),prompt=browser.permissions.snapshot(taskId,page.id);
       if(!prompt||prompt.permissions.length!==1||prompt.permissions[0]!=='geolocation')throw Error('No owned geolocation prompt');

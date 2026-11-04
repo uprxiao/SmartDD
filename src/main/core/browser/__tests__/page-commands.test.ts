@@ -2,6 +2,13 @@ import {describe,expect,it} from 'vitest';
 import {browserPageArguments} from '../page-commands';
 
 describe('browser page command input boundary',()=>{
+  it('expresses media motion as the fixed native parser bare marker, including clearing the previous reduction',()=>{
+    expect(browserPageArguments('set media',{'color-scheme':'dark','reduced-motion':'reduce'})).toEqual(['set','media','dark','reduced-motion']);
+    expect(browserPageArguments('set media',{'color-scheme':'light','reduced-motion':'no-preference'})).toEqual(['set','media','light']);
+    expect(browserPageArguments('set media',{'reduced-motion':'reduce'})).toEqual(['set','media','reduced-motion']);
+    expect(browserPageArguments('set media',{})).toEqual(['set','media']);
+    expect(()=>browserPageArguments('set media',{'reduced-motion':'invalid'})).toThrow('reduced-motion');
+  });
   it('keeps option-looking text, quoting and shell syntax inside one input value',()=>{
     const source='--cdp ws://foreign $(touch forbidden); "quoted"\nsecond line';
     expect(browserPageArguments('find',{locator:'text',value:source,action:'fill',text:false})).toEqual(['find','text',source,'fill','false']);

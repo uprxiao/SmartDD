@@ -43,7 +43,11 @@ export function browserPageArguments(command:string,args:Record<string,unknown>)
   }
   if(command==='wait fn')return['wait','--fn',text(args.fn),'--timeout',String(args.timeout??25000)];
   if(command==='set device')return['set','device',text(args.name)];
-  if(command==='set media')return['set','media',...(args['color-scheme']===undefined?[]:[text(args['color-scheme'])]),...(args['reduced-motion']===undefined?[]:['--reduced-motion',text(args['reduced-motion'])])];
+  // Fixed native parser expects a bare marker, not an option/value pair.
+  if(command==='set media'){
+    if(args['reduced-motion']!==undefined&&args['reduced-motion']!=='reduce'&&args['reduced-motion']!=='no-preference')throw new ApplicationError('INVALID_INPUT','reduced-motion须为reduce或no-preference');
+    return['set','media',...(args['color-scheme']===undefined?[]:[text(args['color-scheme'])]),...(args['reduced-motion']==='reduce'?['reduced-motion']:[])];
+  }
   if(command==='clipboard read')return['clipboard','read'];
   if(command==='clipboard write')return['clipboard','write',text(args.text)];
   if(command==='dialog accept')return['dialog','accept',...(args.text===undefined?[]:[text(args.text)])];

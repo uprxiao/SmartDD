@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T03:40:35.733214+00:00",
+  "updatedAt": "2026-11-04T03:58:04.174285+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -11,7 +11,7 @@
       "group": "M12-P020",
       "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
       "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
-      "status": "dispatched; waiting actual process receipt"
+      "status": "P020 delivered, no resource lease"
     }
   ],
   "branch": "feature/0.1.1",
@@ -22,12 +22,7 @@
   "plan": "../../../S1执行计划.json#continuation",
   "currentGroup": "M12-P020",
   "resources": {
-    "nativeUi": {
-      "owner": "/root/s2_t004_test",
-      "group": "M12-P020",
-      "assignedAt": "2026-11-04T03:40:35.733214+00:00",
-      "boundary": "isolated Electron I, no shared focus/real hardware/system clipboard"
-    },
+    "nativeUi": null,
     "build": null
   },
   "groups": [
@@ -899,7 +894,7 @@
     {
       "id": "M12-P020",
       "owner": "/root/s2_t004_test",
-      "status": "dispatched; actual T086 I",
+      "status": "original T086 complete I, independently joined and accounted; resources released",
       "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
       "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
       "baselineSha256": "8f9ef6159e0c74219abd73f232380259ca20a1ab6500cb6fed7933b0fc1d051c",
@@ -918,17 +913,53 @@
       "resources": [
         "nativeUi"
       ],
-      "pids": [],
-      "ports": [],
-      "sessions": [],
-      "next": "real commands, native/HTTP page assertions, cleanup, raw then independent verdict; no A/R/system claims"
+      "pids": [
+        57473
+      ],
+      "ports": [
+        50364
+      ],
+      "sessions": [
+        28998
+      ],
+      "next": "real commands, native/HTTP page assertions, cleanup, raw then independent verdict; no A/R/system claims",
+      "hostSha256": "e21b219bae8e87b6c525515196ecbc45b720276dd9e91327b30918f4f64862ed",
+      "driverSha256": "5ec668f549b1a6db0ac2edd71c16b4d5433e6e1996dfe0d9d210c2f878876099",
+      "currentAttempt": "attempt-002",
+      "fixSupplement": {
+        "path": "/private/tmp/willyou-m12-p020-fix-supplement-001/supplement.json",
+        "sha256": "f561ffc1faf0c6656c6e4236cac2f04a003c1165a07af7afaae3b7634b3c9850"
+      },
+      "remaining": [],
+      "reuse": [
+        "desktop/mobile viewport original expected metrics, standalone corrected scrollbar classifier",
+        "device/offline/headers green same command branches/helper bytes"
+      ],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "9ead3826b29a5fc2cc00764de34478fbd6b99b3f4601d3956e27960f3c2c4f44"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "73d61efe0b5697f6ffd408044b2e04fc0bbf2830de1c1600b7a057ba94f67a37"
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "433abaeea5668c46dc193cbacdd34379c04839a8588c4a0d5eedfd628bd33ac1"
+        },
+        {
+          "attempt": "attempt-004",
+          "manifestSha256": "402ec5efb82dd47115e6087d24ff68f921f8fd74a744bc76eed4999e45e62edb"
+        }
+      ]
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "c791e72225c045c1df71b06ad84b51c7ff096b0d",
+  "currentSourceCommit": "4318364e245a87b3330eabfe76627a26a50d9a0b",
   "baselineAmendments": [
     {
       "at": "2026-11-04T02:22:07.169680+00:00",

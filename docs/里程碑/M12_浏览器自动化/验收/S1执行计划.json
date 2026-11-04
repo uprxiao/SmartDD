@@ -761,7 +761,7 @@
         "id": "M12-P020",
         "owner": "/root/s2_t004_test",
         "name": "原T086环境模拟完整I",
-        "status": "dispatched",
+        "status": "original T086 complete I, accounted",
         "relatedCaseIds": [
           "M12-T086"
         ],
@@ -823,8 +823,12 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T03:40:35.733214+00:00",
-    "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit",
+    "updatedAt": "2026-11-04T03:58:04.174285+00:00",
+    "independentNext": [
+      "S4 full profile management/clone and Cookie import/recovery implementation",
+      "new unified packaged App for completed certificate/permission/auth/download UI and pending settings acceptance",
+      "S5 grants/pause/audit/Skill/SOP after underlying contracts ready; system/user items remain deferred"
+    ],
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -840,6 +844,17 @@
         "decision": "普通下载进系统目录；显式--path可指定任意路径；保留O7",
         "confirmedAt": "2026-11-04T02:22:07.168124+00:00",
         "requirementRevision": "R1.3"
+      },
+      {
+        "id": "M12-PROJECT-DELETION-CONTRACT",
+        "relatedCaseIds": [
+          "M12-T004"
+        ],
+        "conflict": "M12原用例要求被删项目任务仍可查看文件区；当前ProjectService级联删除任务",
+        "status": "asked user asynchronously; awaiting explicit business decision",
+        "question": "删除项目保留任务变成无项目任务，或保留现有级联删除任务并显式调整用例",
+        "boundary": "no dependent change until response; original product red and requirement remain",
+        "independentWork": "native environment I and remaining S4 development continue"
       }
     ]
   }
