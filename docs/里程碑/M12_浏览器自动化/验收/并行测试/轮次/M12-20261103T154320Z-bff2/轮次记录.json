@@ -1,17 +1,17 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T03:29:21.170645+00:00",
+  "updatedAt": "2026-11-04T03:40:35.733214+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P018",
-      "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
-      "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
-      "status": "dispatched; awaiting actual process receipt"
+      "group": "M12-P020",
+      "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
+      "status": "dispatched; waiting actual process receipt"
     }
   ],
   "branch": "feature/0.1.1",
@@ -20,13 +20,13 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "M12-P018",
+  "currentGroup": "M12-P020",
   "resources": {
     "nativeUi": {
       "owner": "/root/s2_t004_test",
-      "group": "M12-P018",
-      "assignedAt": "2026-11-04T03:23:07.308536+00:00",
-      "boundary": "isolated native Electron I only; no shared desktop focus, no packaged App or system clipboard/hardware"
+      "group": "M12-P020",
+      "assignedAt": "2026-11-04T03:40:35.733214+00:00",
+      "boundary": "isolated Electron I, no shared focus/real hardware/system clipboard"
     },
     "build": null
   },
@@ -802,8 +802,8 @@
     {
       "id": "M12-P018",
       "owner": "/root/s2_t004_test",
-      "status": "ready; native lease assigned for complete T087 I and auth wait/cancel supplements",
-      "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
+      "status": "original T087 complete I, independently verified and accounted; resources released",
+      "privateRoot": "/private/tmp/willyou-m12-p018-executor-001/attempt-002",
       "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
       "baselineSha256": "0de4e3c643de8b2dab26e26b0526dfe9a447cb525f40bafd7621aeef7a6a2109",
       "cases": [
@@ -828,15 +828,42 @@
       "resources": [
         "nativeUi"
       ],
-      "pids": [],
-      "ports": [],
-      "sessions": [],
+      "pids": [
+        54696
+      ],
+      "ports": [
+        63016
+      ],
+      "sessions": [
+        12594
+      ],
       "next": "executor reports actual process receipts and final cleanup; coordinator exclusively accounts ledger",
       "artifactSupplement": {
         "path": "/private/tmp/willyou-m12-p018-artifact-supplement-001/artifact-supplement.json",
         "sha256": "1ff4508a3c61fcde7844846718fa00c041ec60698fbe246752d1cf70e22fa9fa",
         "purpose": "reuse exact built runtime helper provenance required by actual fixture, replacing static build recipe at the same relative output name; no production code or binary change"
-      }
+      },
+      "currentAttempt": "attempt-002",
+      "hostSha256": "024e82124250cf4df7d8dc07d481feccadc9172737709df13909a93169ea44fd",
+      "modeSupplement": {
+        "path": "/private/tmp/willyou-m12-p018-mode-supplement-001/executable-modes.json",
+        "sha256": "df7fff8067c806769cf55703942a92d9e3dfb4e32c9510f48179fd1c2a06f2a6"
+      },
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "85c3ef94f3d04c5d744a86529ac2a87098b39990312e6708ca1f3af07ec9bb69"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "1d7a21fa85b7e00a8a71c6628658819028694756dae657f13860e4f8bc51864c"
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "bad62819c3d9e93ecc3dab1bcd7a98cef31b569ac4bec4fbc4f3dc8d4e50c040",
+          "coordinator": true
+        }
+      ]
     },
     {
       "id": "M12-P017",
@@ -855,13 +882,53 @@
       ],
       "resources": [],
       "next": "P018 actual T087 I; A and complete T116 remain separate"
+    },
+    {
+      "id": "M12-P019",
+      "owner": "/root",
+      "status": "journal software component verified, not integrated",
+      "resources": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "1dd2b8cf6a772745e1e300102e6aa459af08e34782d1d8608af65b9ea6187cdf"
+        }
+      ],
+      "next": "source detection/decryption, real Cookie mutation/recovery coordinator and startup/UI flow; no formal case pass"
+    },
+    {
+      "id": "M12-P020",
+      "owner": "/root/s2_t004_test",
+      "status": "dispatched; actual T086 I",
+      "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
+      "baselineSha256": "8f9ef6159e0c74219abd73f232380259ca20a1ab6500cb6fed7933b0fc1d051c",
+      "cases": [
+        {
+          "id": "M12-T086",
+          "layer": "I",
+          "criteria": [
+            "viewport including mobile and scale matches real page echo",
+            "geolocation returns configured coordinates after actual permission handler I user precondition",
+            "set device actual viewport/mobile/UA, set headers actual HTTP echo, set media actual matchMedia",
+            "offline on blocks actual fetch and navigator state; off restores real network"
+          ]
+        }
+      ],
+      "resources": [
+        "nativeUi"
+      ],
+      "pids": [],
+      "ports": [],
+      "sessions": [],
+      "next": "real commands, native/HTTP page assertions, cleanup, raw then independent verdict; no A/R/system claims"
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "8426f625ab471680d0da9d98e04807fc5058c8af",
+  "currentSourceCommit": "c791e72225c045c1df71b06ad84b51c7ff096b0d",
   "baselineAmendments": [
     {
       "at": "2026-11-04T02:22:07.169680+00:00",

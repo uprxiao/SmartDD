@@ -1,0 +1,2046 @@
+{
+  "group": "M12-P018",
+  "case": "M12-T087",
+  "scope": "Full real CLI Basic authentication I; pending/timeout/cancel/close technical supplements, not T016 A or full T116",
+  "startedAt": "2026-11-04T03:35:43.752Z",
+  "driverPid": 54694,
+  "steps": [
+    {
+      "id": 1,
+      "args": [
+        "browser",
+        "tab",
+        "create"
+      ],
+      "ms": 1213,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"url\":\"about:blank\",\"pageId\":\"77085e58-fc68-45b6-a89d-5064c9683eae\"},\"resources\":[],\"operation\":{\"id\":\"47f9381f-2fd0-4239-9247-14c259236371\",\"requestId\":\"350eac8d-bf8f-449c-8f45-3bd3ac1e0914\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "url": "about:blank",
+          "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae"
+        },
+        "resources": [],
+        "operation": {
+          "id": "47f9381f-2fd0-4239-9247-14c259236371",
+          "requestId": "350eac8d-bf8f-449c-8f45-3bd3ac1e0914",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      }
+    },
+    {
+      "id": 2,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ],
+      "ms": 885,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"configured\":true}},\"resources\":[],\"operation\":{\"id\":\"638203c1-95c6-4e10-8e6e-05fbc2ac1faf\",\"requestId\":\"2799fdf0-b52b-4800-9162-42060b47e4b5\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-credentials\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "configured": true
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "638203c1-95c6-4e10-8e6e-05fbc2ac1faf",
+          "requestId": "2799fdf0-b52b-4800-9162-42060b47e4b5",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.set-credentials"
+      }
+    },
+    {
+      "id": 3,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ],
+      "ms": 901,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"026d25b9-b16f-4d5d-8dea-75307c156bb1\",\"requestId\":\"efdc9295-298b-4592-82fe-ef6d270fd723\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "navigated": true
+        },
+        "resources": [],
+        "operation": {
+          "id": "026d25b9-b16f-4d5d-8dea-75307c156bb1",
+          "requestId": "efdc9295-298b-4592-82fe-ef6d270fd723",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.goto"
+      }
+    },
+    {
+      "id": 4,
+      "args": [
+        "browser",
+        "eval",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--expression",
+        "({title:document.title,text:document.body.innerText,url:location.href,node:typeof require,process:typeof process})"
+      ],
+      "ms": 927,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"node\\\":\\\"undefined\\\",\\\"process\\\":\\\"undefined\\\",\\\"text\\\":\\\"认证成功\\\",\\\"title\\\":\\\"[I] HTTP Basic success\\\",\\\"url\\\":\\\"http:\\/\\/127.0.0.1:63016\\/s4-auth\\\"}\",\"origin\":\"http:\\/\\/127.0.0.1:63016\\/s4-auth\"},\"resources\":[],\"operation\":{\"id\":\"ad9926a1-1524-4028-b87e-11d989013e41\",\"requestId\":\"7579e0be-dcf4-4686-88ba-ffba263aa805\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"node\":\"undefined\",\"process\":\"undefined\",\"text\":\"认证成功\",\"title\":\"[I] HTTP Basic success\",\"url\":\"http://127.0.0.1:63016/s4-auth\"}",
+          "origin": "http://127.0.0.1:63016/s4-auth"
+        },
+        "resources": [],
+        "operation": {
+          "id": "ad9926a1-1524-4028-b87e-11d989013e41",
+          "requestId": "7579e0be-dcf4-4686-88ba-ffba263aa805",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 5,
+      "args": [
+        "browser",
+        "tab",
+        "profile",
+        "create",
+        "--label",
+        "P018 pending isolated"
+      ],
+      "ms": 893,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"profile\":{\"id\":\"533ce910-2184-4bcb-8177-09578d4f1293\",\"scope\":\"isolated\",\"partition\":\"persist:wy-browser-533ce910-2184-4bcb-8177-09578d4f1293\",\"label\":\"P018 pending isolated\",\"owner\":{\"kind\":\"task\",\"id\":\"8e79de40-5e71-44fc-927e-4816cbec8704\"},\"source\":null}}},\"resources\":[],\"operation\":{\"id\":\"83a0f8ff-a7e6-4cb4-8dff-8d10f9138b2c\",\"requestId\":\"fdf4f216-3d1a-4030-bd87-e87772b3a589\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.profile.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "profile": {
+              "id": "533ce910-2184-4bcb-8177-09578d4f1293",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-533ce910-2184-4bcb-8177-09578d4f1293",
+              "label": "P018 pending isolated",
+              "owner": {
+                "kind": "task",
+                "id": "8e79de40-5e71-44fc-927e-4816cbec8704"
+              },
+              "source": null
+            }
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "83a0f8ff-a7e6-4cb4-8dff-8d10f9138b2c",
+          "requestId": "fdf4f216-3d1a-4030-bd87-e87772b3a589",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.profile.create"
+      }
+    },
+    {
+      "id": 6,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--profile",
+        "533ce910-2184-4bcb-8177-09578d4f1293"
+      ],
+      "ms": 955,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"url\":\"about:blank\",\"pageId\":\"15dce0d0-7768-413d-9ba7-6e693f7832e7\"},\"resources\":[],\"operation\":{\"id\":\"bfee6889-c7e3-47c3-82f8-e01f49018c0e\",\"requestId\":\"53e68051-9331-4a37-8ba0-1a6d5a956c34\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "url": "about:blank",
+          "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7"
+        },
+        "resources": [],
+        "operation": {
+          "id": "bfee6889-c7e3-47c3-82f8-e01f49018c0e",
+          "requestId": "53e68051-9331-4a37-8ba0-1a6d5a956c34",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      }
+    },
+    {
+      "id": 7,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ],
+      "ms": 846,
+      "raw": {
+        "code": 2,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"RESOURCE_BUSY\",\"layer\":\"provider\",\"message\":\"页面正在等待用户处理基本认证，Agent不能代答当前提示\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"d1af47ed-0b34-4af0-b154-cae38eef96ae\",\"requestId\":\"2b08642f-b97b-4804-b842-1fc07fa9fb71\"}\n",
+        "stderr": "willyou-app: RESOURCE_BUSY\n",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "error": {
+          "effectState": "not-started",
+          "code": "RESOURCE_BUSY",
+          "layer": "provider",
+          "message": "页面正在等待用户处理基本认证，Agent不能代答当前提示",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "d1af47ed-0b34-4af0-b154-cae38eef96ae",
+        "requestId": "2b08642f-b97b-4804-b842-1fc07fa9fb71"
+      }
+    },
+    {
+      "id": 8,
+      "args": [
+        "browser",
+        "wait",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--text",
+        "认证成功",
+        "--timeout",
+        "300"
+      ],
+      "ms": 6194,
+      "raw": {
+        "code": 2,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 5300ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"d90e2d68-37bd-4f3b-a0eb-cd00cf0f16e9\",\"requestId\":\"72f093e6-9f71-48c2-a2a1-1a2248501ccd\"}\n",
+        "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "error": {
+          "effectState": "read-only",
+          "code": "BROWSER_TIMEOUT",
+          "layer": "provider",
+          "message": "浏览器命令等待 5300ms 后超时",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "d90e2d68-37bd-4f3b-a0eb-cd00cf0f16e9",
+        "requestId": "72f093e6-9f71-48c2-a2a1-1a2248501ccd"
+      }
+    },
+    {
+      "id": 9,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ],
+      "ms": 90901,
+      "raw": {
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 90000ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"641c4fae-2922-407b-bd1e-8441bf15c28e\",\"requestId\":\"7569cece-b68d-4863-85ca-1241c05cc64d\"}\n",
+        "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_TIMEOUT",
+          "layer": "provider",
+          "message": "浏览器命令等待 90000ms 后超时",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "641c4fae-2922-407b-bd1e-8441bf15c28e",
+        "requestId": "7569cece-b68d-4863-85ca-1241c05cc64d"
+      }
+    },
+    {
+      "id": 10,
+      "args": [
+        "browser",
+        "eval",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--expression",
+        "({title:document.title,text:document.body.innerText,url:location.href})"
+      ],
+      "ms": 893,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"text\\\":\\\"需要认证\\\",\\\"title\\\":\\\"[I] HTTP 401\\\",\\\"url\\\":\\\"http:\\/\\/127.0.0.1:63016\\/s4-auth\\\"}\",\"origin\":\"http:\\/\\/127.0.0.1:63016\\/s4-auth\"},\"resources\":[],\"operation\":{\"id\":\"395b20fd-c300-4006-950d-005c36069f8a\",\"requestId\":\"3b62b543-3d0e-41b5-8ec3-513d3fe317b0\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"text\":\"需要认证\",\"title\":\"[I] HTTP 401\",\"url\":\"http://127.0.0.1:63016/s4-auth\"}",
+          "origin": "http://127.0.0.1:63016/s4-auth"
+        },
+        "resources": [],
+        "operation": {
+          "id": "395b20fd-c300-4006-950d-005c36069f8a",
+          "requestId": "3b62b543-3d0e-41b5-8ec3-513d3fe317b0",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 11,
+      "args": [
+        "browser",
+        "tab",
+        "profile",
+        "create",
+        "--label",
+        "P018 closing isolated"
+      ],
+      "ms": 859,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"profile\":{\"id\":\"5b6c9388-7b8b-4117-9da3-bbdbde06513d\",\"scope\":\"isolated\",\"partition\":\"persist:wy-browser-5b6c9388-7b8b-4117-9da3-bbdbde06513d\",\"label\":\"P018 closing isolated\",\"owner\":{\"kind\":\"task\",\"id\":\"8e79de40-5e71-44fc-927e-4816cbec8704\"},\"source\":null}}},\"resources\":[],\"operation\":{\"id\":\"afce7210-d3c8-476f-90e1-89ef129fd2f3\",\"requestId\":\"06aa6a44-c137-4c42-a0f2-65c6bb984a19\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.profile.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "profile": {
+              "id": "5b6c9388-7b8b-4117-9da3-bbdbde06513d",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-5b6c9388-7b8b-4117-9da3-bbdbde06513d",
+              "label": "P018 closing isolated",
+              "owner": {
+                "kind": "task",
+                "id": "8e79de40-5e71-44fc-927e-4816cbec8704"
+              },
+              "source": null
+            }
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "afce7210-d3c8-476f-90e1-89ef129fd2f3",
+          "requestId": "06aa6a44-c137-4c42-a0f2-65c6bb984a19",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.profile.create"
+      }
+    },
+    {
+      "id": 12,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--profile",
+        "5b6c9388-7b8b-4117-9da3-bbdbde06513d"
+      ],
+      "ms": 908,
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"url\":\"about:blank\",\"pageId\":\"a9eedc34-c27e-4707-b22b-1ecaae0dc17f\"},\"resources\":[],\"operation\":{\"id\":\"280c631b-ac9f-4f99-b891-1cd2a0b197b6\",\"requestId\":\"3bfa53fd-59c2-4ab4-b5a1-4f08f7fea44c\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "url": "about:blank",
+          "pageId": "a9eedc34-c27e-4707-b22b-1ecaae0dc17f"
+        },
+        "resources": [],
+        "operation": {
+          "id": "280c631b-ac9f-4f99-b891-1cd2a0b197b6",
+          "requestId": "3bfa53fd-59c2-4ab4-b5a1-4f08f7fea44c",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      }
+    },
+    {
+      "id": 13,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ],
+      "ms": 862,
+      "raw": {
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"065b3e93-60ff-4747-a748-5a94f33553f8\",\"requestId\":\"d0308ade-7d71-42e9-867c-97b0c033ff5d\"}\n",
+        "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+        "timedOut": false
+      },
+      "secretScan": {
+        "stdout": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        },
+        "stderr": {
+          "passwordPresent": false,
+          "basicEncodingPresent": false
+        }
+      },
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_TAB_CLOSED",
+          "layer": "provider",
+          "message": "执行中网页已关闭，操作结果未知",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "065b3e93-60ff-4747-a748-5a94f33553f8",
+        "requestId": "d0308ade-7d71-42e9-867c-97b0c033ff5d"
+      }
+    }
+  ],
+  "segments": [
+    {
+      "name": "T087-native-stdin-basic-authentication",
+      "startedAt": "2026-11-04T03:35:45.806Z",
+      "page": {
+        "url": "about:blank",
+        "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae"
+      },
+      "before": {
+        "requests": [],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "about:blank",
+            "prompt": null,
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "credentials": {
+        "id": 2,
+        "args": [
+          "browser",
+          "set",
+          "credentials",
+          "--page",
+          "77085e58-fc68-45b6-a89d-5064c9683eae",
+          "--user",
+          "qa",
+          "--stdin",
+          "pass"
+        ],
+        "ms": 885,
+        "raw": {
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"configured\":true}},\"resources\":[],\"operation\":{\"id\":\"638203c1-95c6-4e10-8e6e-05fbc2ac1faf\",\"requestId\":\"2799fdf0-b52b-4800-9162-42060b47e4b5\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-credentials\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "configured": true
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "638203c1-95c6-4e10-8e6e-05fbc2ac1faf",
+            "requestId": "2799fdf0-b52b-4800-9162-42060b47e4b5",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.env.set-credentials"
+        }
+      },
+      "goto": {
+        "id": 3,
+        "args": [
+          "browser",
+          "goto",
+          "--page",
+          "77085e58-fc68-45b6-a89d-5064c9683eae",
+          "--url",
+          "http://127.0.0.1:63016/s4-auth"
+        ],
+        "ms": 901,
+        "raw": {
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"026d25b9-b16f-4d5d-8dea-75307c156bb1\",\"requestId\":\"efdc9295-298b-4592-82fe-ef6d270fd723\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+            "connections": []
+          },
+          "data": {
+            "navigated": true
+          },
+          "resources": [],
+          "operation": {
+            "id": "026d25b9-b16f-4d5d-8dea-75307c156bb1",
+            "requestId": "efdc9295-298b-4592-82fe-ef6d270fd723",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.nav.goto"
+        }
+      },
+      "pageState": {
+        "node": "undefined",
+        "process": "undefined",
+        "text": "认证成功",
+        "title": "[I] HTTP Basic success",
+        "url": "http://127.0.0.1:63016/s4-auth"
+      },
+      "after": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "status": "executed",
+      "finishedAt": "2026-11-04T03:35:49.738Z"
+    },
+    {
+      "name": "supplement-pending-prompt-budget-and-cancel",
+      "startedAt": "2026-11-04T03:35:49.821Z",
+      "profile": {
+        "id": "533ce910-2184-4bcb-8177-09578d4f1293",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-533ce910-2184-4bcb-8177-09578d4f1293",
+        "label": "P018 pending isolated",
+        "owner": {
+          "kind": "task",
+          "id": "8e79de40-5e71-44fc-927e-4816cbec8704"
+        },
+        "source": null
+      },
+      "page": {
+        "url": "about:blank",
+        "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7"
+      },
+      "navigationJob": {
+        "pid": 54765,
+        "args": [
+          "browser",
+          "goto",
+          "--page",
+          "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+          "--url",
+          "http://127.0.0.1:63016/s4-auth"
+        ],
+        "startedAt": "2026-11-04T03:35:51.670Z"
+      },
+      "firstPrompt": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "about:blank",
+            "prompt": {
+              "id": "ab010835-6c89-4ab7-b708-7a9a08a69e2b",
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "profileId": "533ce910-2184-4bcb-8177-09578d4f1293",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016",
+              "realm": "M12 synthetic only",
+              "proxy": false
+            },
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "attemptedCredentials": {
+        "id": 7,
+        "args": [
+          "browser",
+          "set",
+          "credentials",
+          "--page",
+          "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+          "--user",
+          "qa",
+          "--stdin",
+          "pass"
+        ],
+        "ms": 846,
+        "raw": {
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"RESOURCE_BUSY\",\"layer\":\"provider\",\"message\":\"页面正在等待用户处理基本认证，Agent不能代答当前提示\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"d1af47ed-0b34-4af0-b154-cae38eef96ae\",\"requestId\":\"2b08642f-b97b-4804-b842-1fc07fa9fb71\"}\n",
+          "stderr": "willyou-app: RESOURCE_BUSY\n",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "error": {
+            "effectState": "not-started",
+            "code": "RESOURCE_BUSY",
+            "layer": "provider",
+            "message": "页面正在等待用户处理基本认证，Agent不能代答当前提示",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "d1af47ed-0b34-4af0-b154-cae38eef96ae",
+          "requestId": "2b08642f-b97b-4804-b842-1fc07fa9fb71"
+        }
+      },
+      "afterBusy": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "about:blank",
+            "prompt": {
+              "id": "ab010835-6c89-4ab7-b708-7a9a08a69e2b",
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "profileId": "533ce910-2184-4bcb-8177-09578d4f1293",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016",
+              "realm": "M12 synthetic only",
+              "proxy": false
+            },
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "wait": {
+        "id": 8,
+        "args": [
+          "browser",
+          "wait",
+          "--page",
+          "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+          "--text",
+          "认证成功",
+          "--timeout",
+          "300"
+        ],
+        "ms": 6194,
+        "raw": {
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 5300ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"d90e2d68-37bd-4f3b-a0eb-cd00cf0f16e9\",\"requestId\":\"72f093e6-9f71-48c2-a2a1-1a2248501ccd\"}\n",
+          "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "error": {
+            "effectState": "read-only",
+            "code": "BROWSER_TIMEOUT",
+            "layer": "provider",
+            "message": "浏览器命令等待 5300ms 后超时",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "d90e2d68-37bd-4f3b-a0eb-cd00cf0f16e9",
+          "requestId": "72f093e6-9f71-48c2-a2a1-1a2248501ccd"
+        }
+      },
+      "afterWait": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "about:blank",
+            "prompt": {
+              "id": "ab010835-6c89-4ab7-b708-7a9a08a69e2b",
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "profileId": "533ce910-2184-4bcb-8177-09578d4f1293",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016",
+              "realm": "M12 synthetic only",
+              "proxy": false
+            },
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "goto": {
+        "id": 9,
+        "args": [
+          "browser",
+          "goto",
+          "--page",
+          "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+          "--url",
+          "http://127.0.0.1:63016/s4-auth"
+        ],
+        "ms": 90901,
+        "raw": {
+          "code": 5,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 90000ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"641c4fae-2922-407b-bd1e-8441bf15c28e\",\"requestId\":\"7569cece-b68d-4863-85ca-1241c05cc64d\"}\n",
+          "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_TIMEOUT",
+            "layer": "provider",
+            "message": "浏览器命令等待 90000ms 后超时",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          },
+          "operationId": "641c4fae-2922-407b-bd1e-8441bf15c28e",
+          "requestId": "7569cece-b68d-4863-85ca-1241c05cc64d"
+        }
+      },
+      "afterBudget": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "about:blank",
+            "prompt": {
+              "id": "ab010835-6c89-4ab7-b708-7a9a08a69e2b",
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "profileId": "533ce910-2184-4bcb-8177-09578d4f1293",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016",
+              "realm": "M12 synthetic only",
+              "proxy": false
+            },
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "cancel": {
+        "cancelled": true,
+        "boundary": "I user-response precondition; not a UI acceptance action"
+      },
+      "afterCancel": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "about:blank",
+            "prompt": null,
+            "cancelled": {
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016"
+            }
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "pageAfterCancel": {
+        "text": "需要认证",
+        "title": "[I] HTTP 401",
+        "url": "http://127.0.0.1:63016/s4-auth"
+      },
+      "status": "executed",
+      "finishedAt": "2026-11-04T03:37:23.470Z"
+    },
+    {
+      "name": "supplement-close-another-pending-page",
+      "startedAt": "2026-11-04T03:37:23.553Z",
+      "profile": {
+        "id": "5b6c9388-7b8b-4117-9da3-bbdbde06513d",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-5b6c9388-7b8b-4117-9da3-bbdbde06513d",
+        "label": "P018 closing isolated",
+        "owner": {
+          "kind": "task",
+          "id": "8e79de40-5e71-44fc-927e-4816cbec8704"
+        },
+        "source": null
+      },
+      "page": {
+        "url": "about:blank",
+        "pageId": "a9eedc34-c27e-4707-b22b-1ecaae0dc17f"
+      },
+      "navigationJob": {
+        "pid": 55159,
+        "args": [
+          "browser",
+          "goto",
+          "--page",
+          "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+          "--url",
+          "http://127.0.0.1:63016/s4-auth"
+        ]
+      },
+      "pending": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": {
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016"
+            }
+          },
+          {
+            "pageId": "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+            "url": "about:blank",
+            "prompt": {
+              "id": "84bf923f-d837-4bf5-a347-9194806d02a0",
+              "pageId": "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+              "profileId": "5b6c9388-7b8b-4117-9da3-bbdbde06513d",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016",
+              "realm": "M12 synthetic only",
+              "proxy": false
+            },
+            "cancelled": null
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "close": {
+        "closed": "a9eedc34-c27e-4707-b22b-1ecaae0dc17f"
+      },
+      "closeMs": 33,
+      "goto": {
+        "id": 13,
+        "args": [
+          "browser",
+          "goto",
+          "--page",
+          "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+          "--url",
+          "http://127.0.0.1:63016/s4-auth"
+        ],
+        "ms": 862,
+        "raw": {
+          "code": 5,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"065b3e93-60ff-4747-a748-5a94f33553f8\",\"requestId\":\"d0308ade-7d71-42e9-867c-97b0c033ff5d\"}\n",
+          "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+          "timedOut": false
+        },
+        "secretScan": {
+          "stdout": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          },
+          "stderr": {
+            "passwordPresent": false,
+            "basicEncodingPresent": false
+          }
+        },
+        "parsed": {
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_TAB_CLOSED",
+            "layer": "provider",
+            "message": "执行中网页已关闭，操作结果未知",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          },
+          "operationId": "065b3e93-60ff-4747-a748-5a94f33553f8",
+          "requestId": "d0308ade-7d71-42e9-867c-97b0c033ff5d"
+        }
+      },
+      "after": {
+        "requests": [
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": true,
+            "accepted": true
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          },
+          {
+            "path": "/s4-auth",
+            "authorizationPresent": false,
+            "accepted": false
+          }
+        ],
+        "pages": [
+          {
+            "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": null
+          },
+          {
+            "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+            "url": "http://127.0.0.1:63016/s4-auth",
+            "prompt": null,
+            "cancelled": {
+              "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+              "url": "http://127.0.0.1:63016/s4-auth",
+              "host": "127.0.0.1:63016"
+            }
+          }
+        ],
+        "passwordInDatabase": false,
+        "encodedPasswordInDatabase": false
+      },
+      "boundary": "Real frozen BrowserPageRegistry.close invoked as synthetic user-close I precondition, not App UI A or Agent auth approval",
+      "status": "executed",
+      "finishedAt": "2026-11-04T03:37:26.185Z"
+    }
+  ],
+  "processMessages": [
+    {
+      "kind": "native-cli",
+      "pid": 54717,
+      "args": [
+        "browser",
+        "tab",
+        "create"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54724,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54737,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54742,
+      "args": [
+        "browser",
+        "eval",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--expression",
+        "({title:document.title,text:document.body.innerText,url:location.href,node:typeof require,process:typeof process})"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54749,
+      "args": [
+        "browser",
+        "tab",
+        "profile",
+        "create",
+        "--label",
+        "P018 pending isolated"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54761,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--profile",
+        "533ce910-2184-4bcb-8177-09578d4f1293"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54765,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54771,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 54775,
+      "args": [
+        "browser",
+        "wait",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--text",
+        "认证成功",
+        "--timeout",
+        "300"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 55131,
+      "args": [
+        "browser",
+        "eval",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--expression",
+        "({title:document.title,text:document.body.innerText,url:location.href})"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 55144,
+      "args": [
+        "browser",
+        "tab",
+        "profile",
+        "create",
+        "--label",
+        "P018 closing isolated"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 55148,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--profile",
+        "5b6c9388-7b8b-4117-9da3-bbdbde06513d"
+      ]
+    },
+    {
+      "kind": "native-cli",
+      "pid": 55159,
+      "args": [
+        "browser",
+        "goto",
+        "--page",
+        "a9eedc34-c27e-4707-b22b-1ecaae0dc17f",
+        "--url",
+        "http://127.0.0.1:63016/s4-auth"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "at": "2026-11-04T03:35:45.803Z",
+      "processes": [
+        {
+          "pid": 54696,
+          "ppid": 54694,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 54697,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54698,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54707,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 54696 liubu   54u  IPv4 0x39c260dda58f9a6a      0t0  TCP 127.0.0.1:63016 (LISTEN)\nElectron 54696 liubu   55u  IPv6 0xac3935b888e0324a      0t0  TCP [::1]:63016 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T03:35:49.820Z",
+      "processes": [
+        {
+          "pid": 54696,
+          "ppid": 54694,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 54697,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54698,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54707,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54722,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54723,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 54696 liubu   54u  IPv4 0x39c260dda58f9a6a      0t0  TCP 127.0.0.1:63016 (LISTEN)\nElectron 54696 liubu   55u  IPv6 0xac3935b888e0324a      0t0  TCP [::1]:63016 (LISTEN)\nElectron 54696 liubu   80u  IPv4 0x6dbe109fa2291f3e      0t0  TCP 127.0.0.1:63032 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T03:37:23.552Z",
+      "processes": [
+        {
+          "pid": 54696,
+          "ppid": 54694,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 54697,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54698,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54707,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54722,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54723,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54764,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 54696 liubu   54u  IPv4 0x39c260dda58f9a6a      0t0  TCP 127.0.0.1:63016 (LISTEN)\nElectron 54696 liubu   55u  IPv6 0xac3935b888e0324a      0t0  TCP [::1]:63016 (LISTEN)\nElectron 54696 liubu   80u  IPv4 0x6dbe109fa2291f3e      0t0  TCP 127.0.0.1:63032 (LISTEN)\nElectron 54696 liubu  105u  IPv4 0xea980c2bfa62874f      0t0  TCP 127.0.0.1:63076 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T03:37:26.266Z",
+      "processes": [
+        {
+          "pid": 54696,
+          "ppid": 54694,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 54697,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54698,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 54707,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54722,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54723,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 54764,
+          "ppid": 54696,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 54696 liubu   54u  IPv4 0x39c260dda58f9a6a      0t0  TCP 127.0.0.1:63016 (LISTEN)\nElectron 54696 liubu   55u  IPv6 0xac3935b888e0324a      0t0  TCP [::1]:63016 (LISTEN)\nElectron 54696 liubu   80u  IPv4 0x6dbe109fa2291f3e      0t0  TCP 127.0.0.1:63032 (LISTEN)\nElectron 54696 liubu  105u  IPv4 0xea980c2bfa62874f      0t0  TCP 127.0.0.1:63076 (LISTEN)\n"
+    }
+  ],
+  "sensitiveOutputSignals": [
+    {
+      "step": 1,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 2,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 3,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 4,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 5,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 6,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 7,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 8,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 9,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 10,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 11,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 12,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    },
+    {
+      "step": 13,
+      "stdout": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "stderr": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      }
+    }
+  ],
+  "hostPid": 54696,
+  "ready": {
+    "ready": true,
+    "pid": 54696,
+    "taskId": "8e79de40-5e71-44fc-927e-4816cbec8704",
+    "runId": "8d252515-4323-4641-b287-05cb9ceb330a",
+    "taskCwd": "/private/tmp/willyou-m12-p018-executor-001/attempt-002/runtime-001/tmp/willyou-m10-agent-7ZCWBy/project",
+    "downloadsDirectory": "/private/tmp/willyou-m12-p018-executor-001/attempt-002/downloads-fixture",
+    "url": "http://127.0.0.1:63016/",
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    },
+    "boundary": "I: real BrowserService/M11 module/CLI/gateway/SQLite/kernel peers; controlled Electron process as run root; synthetic page; not packaged App or real Agent"
+  },
+  "stage": "complete",
+  "inputLatches": [
+    {
+      "at": "2026-11-04T03:35:47.025Z",
+      "pid": 54724,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ],
+      "actualPs": "54724 54696 /private/tmp/willyou-m12-p018-executor-001/attempt-002/resources/native/willyou-app browser set credentials --page 77085e58-fc68-45b6-a89d-5064c9683eae --user qa --stdin pass\n",
+      "secretScan": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "kind": "Private test stdin delivery latch: actual native CLI waits for input, ps is checked before private IPC supplies random password; no business/permission override"
+    },
+    {
+      "at": "2026-11-04T03:35:52.546Z",
+      "pid": 54771,
+      "args": [
+        "browser",
+        "set",
+        "credentials",
+        "--page",
+        "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "--user",
+        "qa",
+        "--stdin",
+        "pass"
+      ],
+      "actualPs": "54771 54696 /private/tmp/willyou-m12-p018-executor-001/attempt-002/resources/native/willyou-app browser set credentials --page 15dce0d0-7768-413d-9ba7-6e693f7832e7 --user qa --stdin pass\n",
+      "secretScan": {
+        "passwordPresent": false,
+        "basicEncodingPresent": false
+      },
+      "kind": "Private test stdin delivery latch: actual native CLI waits for input, ps is checked before private IPC supplies random password; no business/permission override"
+    }
+  ],
+  "finalObservation": {
+    "requests": [
+      {
+        "path": "/s4-auth",
+        "authorizationPresent": false,
+        "accepted": false
+      },
+      {
+        "path": "/s4-auth",
+        "authorizationPresent": true,
+        "accepted": true
+      },
+      {
+        "path": "/s4-auth",
+        "authorizationPresent": false,
+        "accepted": false
+      },
+      {
+        "path": "/s4-auth",
+        "authorizationPresent": false,
+        "accepted": false
+      }
+    ],
+    "pages": [
+      {
+        "pageId": "77085e58-fc68-45b6-a89d-5064c9683eae",
+        "url": "http://127.0.0.1:63016/s4-auth",
+        "prompt": null,
+        "cancelled": null
+      },
+      {
+        "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+        "url": "http://127.0.0.1:63016/s4-auth",
+        "prompt": null,
+        "cancelled": {
+          "pageId": "15dce0d0-7768-413d-9ba7-6e693f7832e7",
+          "url": "http://127.0.0.1:63016/s4-auth",
+          "host": "127.0.0.1:63016"
+        }
+      }
+    ],
+    "passwordInDatabase": false,
+    "encodedPasswordInDatabase": false
+  }
+}

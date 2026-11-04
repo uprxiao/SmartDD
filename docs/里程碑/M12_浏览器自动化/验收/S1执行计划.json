@@ -193,7 +193,7 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P010",
+    "currentGroup": "M12-P020",
     "groups": [
       {
         "id": "M12-P001",
@@ -725,7 +725,7 @@
           "I"
         ],
         "owner": "/root/s2_t004_test",
-        "status": "dispatched",
+        "status": "original T087 complete I, accounted",
         "requirements": "R1.3",
         "technicalDesign": "V1.2",
         "criteria": [
@@ -756,6 +756,41 @@
           "native resource lease clear"
         ],
         "next": "real HTTP auth and secret/argv/log checks; extra pending auth rejection, timeout and explicit cancel remain I supplements"
+      },
+      {
+        "id": "M12-P020",
+        "owner": "/root/s2_t004_test",
+        "name": "原T086环境模拟完整I",
+        "status": "dispatched",
+        "relatedCaseIds": [
+          "M12-T086"
+        ],
+        "layers": [
+          "I"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
+        "baselineSha256": "8f9ef6159e0c74219abd73f232380259ca20a1ab6500cb6fed7933b0fc1d051c",
+        "criteria": [
+          {
+            "id": "M12-T086",
+            "layer": "I",
+            "criteria": [
+              "viewport including mobile and scale matches real page echo",
+              "geolocation returns configured coordinates after actual permission handler I user precondition",
+              "set device actual viewport/mobile/UA, set headers actual HTTP echo, set media actual matchMedia",
+              "offline on blocks actual fetch and navigator state; off restores real network"
+            ]
+          }
+        ],
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        },
+        "remaining": [
+          "actual native commands and real echo/network",
+          "final raw/judge/cleanup/manifest"
+        ]
       }
     ],
     "autonomy": {
@@ -788,7 +823,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T03:23:07.308536+00:00",
+    "updatedAt": "2026-11-04T03:40:35.733214+00:00",
     "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit",
     "pendingDecisions": [
       {

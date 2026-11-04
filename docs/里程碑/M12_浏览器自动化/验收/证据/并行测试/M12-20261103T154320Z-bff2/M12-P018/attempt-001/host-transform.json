@@ -1,0 +1,12 @@
+{
+  "purpose": "Passive native CLI PID/args metadata plus explicit private stdin delivery latch; hold actual CLI before input to observe real ps args, then release only via private IPC. Existing calls default holdStdin=false; permissions/business results/retry unchanged",
+  "beforeSha256": "a17ef7fe3557220c2ab790d25306cf749e7737f751cff8b7555f94ccc5967932",
+  "afterSha256": "9782795a9497dba101ef23e29ed55465d791b19ffca3c566ed5182a134671188",
+  "marker": "if(!child.pid)throw Error('Private native CLI did not launch');",
+  "testOnlyChanges": [
+    "p018Process passive spawn metadata",
+    "launchCli third holdStdin boolean, default false",
+    "p018-cli-stdin-begin uses actual launchCli held pipe",
+    "p018-cli-stdin-release ends only matching own job stdin"
+  ]
+}

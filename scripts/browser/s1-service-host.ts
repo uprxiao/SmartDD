@@ -113,7 +113,7 @@ const respond = (request:IncomingMessage,response:ServerResponse) => {
   }
   if(url.pathname.startsWith('/s3-')){
     s3Requests.push({path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers});
-    const finish=()=>{response.setHeader('content-type','text/html; charset=utf-8');response.end(url.pathname==='/s3-transfer'?s3FixtureHtml.replace('<button id="bottom">','<a id="transfer-download" href="/s3-transfer-file">Download outside project</a><button id="bottom">'):s3FixtureHtml);};
+    const finish=()=>{response.setHeader('content-type','text/html; charset=utf-8');response.end(url.pathname==='/s3-transfer'?s3FixtureHtml.replace('<button id="bottom">','<a id="transfer-download" href="/s3-transfer-file">Download outside project</a><button id="bottom">'):url.pathname==='/s3-environment'?s3FixtureHtml.replace('<meta charset="utf-8">','<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'):s3FixtureHtml);};
     if(url.pathname==='/s3-delayed-page')setTimeout(finish,1600);else finish();return;
   }
   if(url.pathname==='/s2-file-script'){response.setHeader('content-type','text/html');response.end('<title>S2 blocked file script</title><script>location.href="file:///etc/hosts"</script>');return;}
@@ -228,6 +228,11 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     let value:unknown;
     if (message.command === 'cli') value = await launchCli(message.args!,message.inputBase64===undefined?message.input:Buffer.from(message.inputBase64,'base64')).done;
     else if(message.command==='s3-server-requests')value={requests:s3Requests};
+    else if(message.command==='s3-geolocation-permission-fixture'){
+      const page=browser.pages.get(taskId,message.pageId),prompt=browser.permissions.snapshot(taskId,page.id);
+      if(!prompt||prompt.permissions.length!==1||prompt.permissions[0]!=='geolocation')throw Error('No owned geolocation prompt');
+      browser.respondPermission(taskId,prompt.id,true);value={resolved:true,prompt,boundary:'Explicit I user-decision precondition through actual permission handler; not Agent authorization or App UI acceptance'};
+    }
     else if(message.command==='s4-auth-precondition')value={user:'qa',password:s4AuthPassword,boundary:'Private I fixture data: do not persist this IPC response; pass the password only via native CLI stdin'};
     else if(message.command==='s4-auth-observe'){
       const pages=browser.pages.list(taskId),sqliteBytes=fixture.sqlite.serialize();
