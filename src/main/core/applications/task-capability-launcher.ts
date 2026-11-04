@@ -195,7 +195,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   /** Only new selections use the currently distributed adapter for their exact
    * native version. Retained snapshots always keep their original binding. */
   private currentAdapter(runner:string,cliVersion:string|undefined){
-    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.projectionFormatVersion===1).sort((a,b)=>{
+    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.projectionFormatVersion===1&&this.support.adapters.get(a.hash).metadata.skillDelivery!=='library').sort((a,b)=>{
       const left=a.version.split('.').map(Number),right=b.version.split('.').map(Number);return right[0]-left[0]||right[1]-left[1]||right[2]-left[2];
     });
     // Unknown versions retain the original unavailable/native-only path;

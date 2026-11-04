@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { basename, dirname, join, relative } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import {BRIDGE_LIMITS} from '@shared/application-bridge';
-import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
+import { agentAdapterMetadataSchema, agentLoadRequestSchema, agentLoadPlanSchema,legacyAgentLoadRequestSchema,libraryLoadRequestSchema, type LibraryLoadRequest, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import { effectiveLevels, type EffectiveLevels } from './agent-levels';
@@ -33,9 +33,12 @@ const within = (root: string,path: string): boolean => { const r = relative(root
  * Host transport policy also applies to retained adapters without changing
  * their immutable bytes or the session's fixed package/adapter selection. */
 function codexOutputBudget(plan:AgentLoadPlan,input:AgentLoadRequest):AgentLoadPlan{
-  if(plan.agentId!=='codex'||!['0.162.1','0.166.0'].includes(input.cliVersion))return plan;
-  const bridge=input.mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
-  const names=[...new Set(input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>Object.keys(p.toolContractMajors)))].sort();
+  return codexToolBudget(plan,input.cliVersion,input.mcp,input.snapshot.packages.filter(p=>input.applicationScope===undefined||input.applicationScope.includes(p.appId)).flatMap(p=>Object.keys(p.toolContractMajors)));
+}
+function codexToolBudget(plan:AgentLoadPlan,cliVersion:string,mcp:AgentLoadRequest['mcp'],declared:readonly string[]):AgentLoadPlan{
+  if(plan.agentId!=='codex'||!['0.162.1','0.166.0'].includes(cliVersion))return plan;
+  const bridge=mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
+  const names=[...new Set(declared)].sort();
   if(!names.length)return plan;
   const tools=names.map(name=>JSON.stringify(name)+'={output_token_limit='+BRIDGE_LIMITS.responseBytes+'}').join(',');
   return agentLoadPlanSchema.parse({...plan,args:[...plan.args,'-c','mcp_servers.'+bridge.serverName+'.tools={'+tools+'}']});
@@ -156,6 +159,15 @@ export class AgentAdapterRegistry {
       }
       for (const s of allSkills) if (!catalog.entries.some(e => e.path === s.path && e.sourceHash === s.hash && e.nativeName === s.name && e.storeId === this.store.storeId)) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原选Skill未在完整目录中按相同身份登记');
     }
+    this.assertBridges(snapshot,input);
+    const nativeTools = Object.entries(snapshot.adapterBinding.nativeToolNames).filter(([name])=>!snapshot.packages.some(p=>Object.hasOwn(p.toolContractMajors,name))||applications.some(p=>Object.hasOwn(p.toolContractMajors,name))).map(([,name])=>name);
+    for (const item of input.inventory) {
+      const own = item.ownerStoreId === this.store.storeId && item.contentHash && ((item.kind === 'skill' && allSkills.some(s => s.path === item.path && s.hash === item.contentHash)) || (item.kind === 'plugin' && item.path === input.pluginRoot && item.contentHash === input.pluginHash));
+      if (own) continue;
+      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
+    }
+  }
+  private assertBridges(snapshot:CapabilitySessionSnapshot,input:Pick<AgentLoadRequest,'mcp'|'currentExecutable'|'runId'>):void{
     if (new Set(input.mcp.map(m => m.kind)).size !== input.mcp.length || new Set(input.mcp.map(m => m.serverName)).size !== input.mcp.length) throw new ApplicationError('INVALID_INPUT','本次工具桥重复');
     for (const mcp of input.mcp) {
       const expected = snapshot.mcp.find(m => m.kind === mcp.kind);
@@ -168,18 +180,35 @@ export class AgentAdapterRegistry {
         if (Object.keys(mcp.env).length || mcp.command !== 'python3' || mcp.args.length !== 2 || mcp.args[0] !== join(this.store.root,runtime.relativePath,'context_mcp.py') || mcp.args[1] !== join(this.store.root,'runs',snapshot.projectId,snapshot.taskId,input.runId,'context.json')) throw new ApplicationError('HOST_INCOMPATIBLE','旧上下文桥必须沿用原资源及本次上下文，配置不含秘密');
       }
     }
-    const nativeTools = Object.entries(snapshot.adapterBinding.nativeToolNames).filter(([name])=>!snapshot.packages.some(p=>Object.hasOwn(p.toolContractMajors,name))||applications.some(p=>Object.hasOwn(p.toolContractMajors,name))).map(([,name])=>name);
-    for (const item of input.inventory) {
-      const own = item.ownerStoreId === this.store.storeId && item.contentHash && ((item.kind === 'skill' && allSkills.some(s => s.path === item.path && s.hash === item.contentHash)) || (item.kind === 'plugin' && item.path === input.pluginRoot && item.contentHash === input.pluginHash));
-      if (own) continue;
-      if ((item.kind === 'plugin' && snapshot.runner === 'claude-code' && allSkills.length>0 && input.pluginRoot && item.name === 'smartdd-session') || (item.kind === 'skill' && allSkills.some(s => item.name === s.name || item.name === 'smartdd-session:' + s.name)) || (item.kind === 'mcp' && input.mcp.some(m => m.serverName === item.name)) || (item.kind === 'native-tool' && nativeTools.includes(item.name))) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户能力与原固定受管名称冲突，保留用户配置且不自动改名');
-    }
   }
   plan(hash:string,value:AgentLoadRequest):AgentLoadPlan{return this.planChecked(hash,value);}
+  /** M11 R1.0: Skills are already in the shared library; this plans only the bridges and CLI permission profile. */
+  planLibrary(hash:string,value:LibraryLoadRequest):AgentLoadPlan{
+    const parsed=libraryLoadRequestSchema.safeParse(value);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','Agent加载计划包含未允许字段或格式错误');
+    const input=parsed.data,installed=this.verify(hash),meta=installed.metadata,snapshot=input.snapshot;
+    if(meta.skillDelivery!=='library')throw new ApplicationError('HOST_INCOMPATIBLE','此适配器不按统一Skill库交付');
+    if(snapshot.runner!==meta.agentId||snapshot.adapterBinding.hash!==installed.hash||snapshot.adapterBinding.id!==meta.agentId||snapshot.adapterBinding.version!==meta.version)throw new ApplicationError('SNAPSHOT_CORRUPT','固定适配器与原快照不一致');
+    const support=this.versionSupport(installed.hash,input.cliVersion);
+    if(support==='unsupported')throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','此Agent／平台版本尚未验证所需加载机制，保留Agent原功能');
+    if(support==='best-effort'&&input.cliSandbox)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','未声明版本不能注入CLI端点或沙箱放宽');
+    if(input.native.runner!==snapshot.runner||input.native.stateRoot!==snapshot.native.stateRoot||input.native.cwd!==snapshot.native.cwd||input.native.sessionId!==snapshot.native.sessionId)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','加载时的原生身份或目录已改变');
+    const runPlan=readApplicationRunPlan(this.store,input.runId,input.planHash);
+    if(runPlan.taskId!==snapshot.taskId||runPlan.projectId!==snapshot.projectId)throw new ApplicationError('SCOPE_DENIED','运行计划不属于本任务');
+    if(input.cliSandbox&&(meta.cliEntry!=='supported'||!runPlan.grades.cli||input.cliSandbox.digest!==runPlan.sandbox.digest||input.cliSandbox.source!==runPlan.sandbox.source))throw new ApplicationError('SCOPE_DENIED','沙箱交付不等于本次运行策略');
+    this.assertBridges(snapshot,input);
+    for(const item of input.inventory)if(item.kind==='mcp'&&input.mcp.some(m=>m.serverName===item.name)&&item.ownerStoreId!==this.store.storeId)throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户MCP名称与受管工具桥冲突，保留用户配置且不自动改名');
+    try{
+      const module=loader(join(this.store.root,installed.resource.relativePath,meta.entry)) as {api:number;agentId:string;version:string;prepare(input:unknown):unknown};
+      if(module.api!==1||module.agentId!==meta.agentId||module.version!==meta.version||typeof module.prepare!=='function')throw new Error();
+      const plan=agentLoadPlanSchema.parse(module.prepare({...input,mcpConfigPath:join(this.store.root,'runs',snapshot.projectId,snapshot.taskId,input.runId,'mcp.json')}));
+      if(plan.agentId!==snapshot.runner||plan.bridgeRecovery!==meta.bridgeRecovery)throw new Error();
+      return codexToolBudget(plan,input.cliVersion,input.mcp,snapshot.packages.flatMap(p=>Object.keys(p.toolContractMajors)));
+    }catch{throw new ApplicationError('HOST_INCOMPATIBLE','Agent适配器无法安全生成本次加载参数');}
+  }
   planNativeGuard(hash:string,value:AgentLoadRequest,proof:NativeGuardDiscoveryProof):AgentLoadPlan{return this.planChecked(hash,value,proof);}
   private planChecked(hash:string,value:AgentLoadRequest,proof?:NativeGuardDiscoveryProof):AgentLoadPlan {
     const parsed = agentLoadRequestSchema.safeParse(value); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','Agent加载计划包含未允许字段或格式错误');
-    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');const omitted=proof?nativeGuardPlanOmissions(this.store,proof,input):undefined;this.preflight(installed,input,omitted);
+    const input = parsed.data, installed = this.verify(hash);if(installed.metadata.projectionFormatVersion!==1)throw new ApplicationError('HOST_INCOMPATIBLE','旧格式适配器须从原M4来源生成计划');if(installed.metadata.skillDelivery==='library')throw new ApplicationError('HOST_INCOMPATIBLE','统一Skill库适配器只按库交付生成计划');const omitted=proof?nativeGuardPlanOmissions(this.store,proof,input):undefined;this.preflight(installed,input,omitted);
     try {
       const module = loader(join(this.store.root,installed.resource.relativePath,installed.metadata.entry)) as { api: number;agentId: string;version: string;prepare(input: unknown): unknown };
       if (module.api !== 1 || module.agentId !== installed.metadata.agentId || module.version !== installed.metadata.version || typeof module.prepare !== 'function') throw new Error();

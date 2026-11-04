@@ -12,6 +12,8 @@ export const agentAdapterMetadataSchema = z.object({ schema: z.literal('willyou-
   configReload:bridgeRecoveryCapabilitySchema.optional(),recoveryRequiresAgentRestart:z.boolean().optional(),recoveryEntry:z.literal('replaceBridge').optional(),
   recoveryEvidence:z.array(z.object({cliVersion:z.string().regex(/^\d+\.\d+\.\d+$/),baseline:z.string().min(1).max(256)}).strict()).max(32).optional(),
   cliEntry:bridgeRecoveryCapabilitySchema.optional(),
+  // M11 R1.0 R16: Skills come from the shared library; the planner receives no catalog, plugin root or Skill delivery.
+  skillDelivery:z.literal('library').optional(),
   // M11-R15 §15.4: per CLI version declared levels. L2/L3 only with published fixtures and negative cases.
   levels:z.record(z.string().regex(/^\d+\.\d+\.\d+$/),z.array(agentLevelSchema).min(1).max(8)).optional(),
 }).strict().superRefine((value,ctx)=>{
@@ -42,3 +44,11 @@ export const legacyAgentLoadRequestSchema=z.object({
  native:agentLoadRequestSchema.shape.native,catalog:agentLoadRequestSchema.shape.catalog,userSkillConfig:agentLoadRequestSchema.shape.userSkillConfig,inventory:agentLoadRequestSchema.shape.inventory,
 }).strict();
 export type LegacyAgentLoadRequest=z.infer<typeof legacyAgentLoadRequestSchema>;
+
+/** M11 R1.0: library-delivered launch. Identity, bridges and the CLI permission profile only; authorization is per call (R17). */
+export const libraryLoadRequestSchema = z.object({
+  snapshot: capabilitySessionSnapshotSchema,runId: z.uuid(),cliVersion: z.string().max(128),currentExecutable: absolute,
+  native: agentLoadRequestSchema.shape.native,inventory: agentLoadRequestSchema.shape.inventory,
+  planHash: hash,cliSandbox: agentLoadRequestSchema.shape.cliSandbox,mcp: agentLoadRequestSchema.shape.mcp,
+}).strict();
+export type LibraryLoadRequest = z.infer<typeof libraryLoadRequestSchema>;
