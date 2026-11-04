@@ -15,6 +15,7 @@ import { withResourceLock } from './resource-lock';
 import type { CapabilitySessionRegistry, StoredCapabilitySession } from './session-registry';
 import type { ProcessIdentity, ProcessIdentityReader, ProcessState } from './process-identity';
 import type {ApplicationRunPlan} from '@shared/application-run-plan';
+import type {ApplicationEntry} from '@shared/application-capabilities';
 import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan,assertRunPlanSnapshotSource} from './run-plan';
 
 const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
@@ -30,7 +31,9 @@ export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'b
 interface NativeGuard { staticRoots?:readonly NativeStaticRoot[];kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:string;snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;discovery?:NativeGuardDiscoverySelection;verify:(discovery?:NativeGuardDiscoveryProof)=>Promise<void>}
 interface OwnedRun { planHash?:string;delivery?:ClaudeRunDelivery;scope?:ApplicationRunScope;scopeProjectionIds?:readonly string[];guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
-export interface RunContext { plan?:ApplicationRunPlan;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
+export interface RunContext { plan?:ApplicationRunPlan;
+  /** R17: set by the current-authorization view; names the project page to enable an application that owns this operation. */
+  unavailableApplication?(operation:string,entry:ApplicationEntry):ApplicationError|null;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal;applicationScope?:readonly string[];excludedApplications?:readonly ApplicationScopeExclusion[] }
 export interface RunRegistryDeps {
   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
   assertCurrent(snapshot: CapabilitySessionSnapshot,bindings: readonly RunBindingRevision[]): void;
@@ -39,6 +42,8 @@ export interface RunRegistryDeps {
   processes: ProcessIdentityReader;
   /** Host-only composition. No caller or model argument can supply a plan. */
   createPlan?(snapshot:CapabilitySessionSnapshot,snapshotHash:string,runId:string,appIds?:readonly string[]):ApplicationRunPlan;
+  /** R17: per-call view of the project's current applications; the launch plan keeps only run identity and entry availability. */
+  currentAuthorization?(context:RunContext):RunContext;
   revocationTimeoutMs?: number;
 }
 export interface OwnedRunProcess {
@@ -389,7 +394,8 @@ export class CapabilityRunRegistry {
     const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
     const bindings = this.current(row,session); this.checkProtection(row,owned);
-    return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+    const context:RunContext = { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };
+    return this.deps.currentAuthorization?this.deps.currentAuthorization(context):context;
   }
   bridgePreparation(runId: string): RunContext {
     const { row,owned,session,plan } = this.mine(runId);

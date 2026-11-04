@@ -27,6 +27,7 @@ import { ApplicationAdapterRegistry } from './application-adapter-registry';
 import { ApplicationToolService } from './tool-service';
 import { PrivateApplicationBroker } from './private-broker';
 import {ApplicationCliGateway} from './cli-gateway';
+import {CurrentApplicationAuthorization} from './current-authorization';
 import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {applicationSkillDelivery,applicationSkillProjectionName} from './application-skill-template';
 import {applicationSkillSnapshotView} from './application-skill-view';
@@ -71,6 +72,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly projector:SessionCapabilityProjector;
   readonly legacyMigration:LegacySessionMigration;
   readonly runs:CapabilityRunRegistry;
+  private readonly authorization:CurrentApplicationAuthorization;
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
   readonly bridgeRecovery=new BridgeSupervisor();
@@ -102,7 +104,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }});
     this.legacyMigration=new LegacySessionMigration(store,this.sessions,undefined,home=>this.catalog(home));
     this.projector=new SessionCapabilityProjector(store,this.sessions,support.adapters.deliveryAdapters);
-    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,createPlan:(snapshot,snapshotHash,runId,appIds)=>{
+    this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
+    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId,appIds)=>{
       const selected={...selectSessionApplications(snapshot,appIds??snapshot.packages.map(p=>p.appId)),standardSkills:[]};
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
       const projected=selected.packages.length?this.skillSources(selected):[];
@@ -116,7 +119,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.claudeDelivery=new ClaudeDeliveryCoordinator(store,this.sessions,this.projector,this.processes,this.runs.instanceId);
     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
     this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
-    if(options.cliPath)try{this.cli=new ApplicationCliGateway(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli'}),options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:{path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))},authorizationStamp:context=>this.cliAuthorizationStamp(context)});}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
+    if(options.cliPath)try{this.cli=new ApplicationCliGateway(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli'}),options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:{path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))}});}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
     applications.sessionDiagnostics.attach({deliveryAdapters:support.adapters.deliveryAdapters,channelConnected:id=>this.broker.hasAuthenticated(id),recoveryIssue:id=>{const server=this.recoveryServices.get(id);const result=server?this.bridgeRecovery.inspect(id,server)?.result:undefined;return result&&result.code!=='CONNECTED'?result.code:null;},verify:(resource,snapshot,home)=>{
       if(resource.kind==='agent-adapter')support.adapters.verifyReference(resource,snapshot);
       else if(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery'].includes(resource.kind))this.projector.verify(resource,snapshot);
@@ -156,16 +159,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(!inspect)return;
     this.planningCliPolicies.set(input.taskId,await inspect.call(delivery,input,native));
   }
-  private cliAuthorizationStamp(context:import('./run-registry').RunContext):string{
-    const apps=[...new Set(context.plan?.allowed.filter(c=>c.entry==='cli').map(c=>c.appId)??[])];return digest(canonicalJson(apps.map(name=>{const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)throw new ApplicationError('SCOPE_DENIED','CLI应用不在当前注册表');const policy=this.applications.selections.policyStamp(context.run.projectId,appId),bindings=builtinApplicationModules.module(appId).providers.map(provider=>{const slot=this.applications.connections.registry.provider(provider.id).id,binding=this.applications.selections.connectionSlot(context.run.projectId,appId,slot),connection=binding.connectionId?this.applications.connections.get(binding.connectionId):null;return{slot,...binding,connection:connection?{id:connection.id,identityRevision:connection.identityRevision,policyRevision:connection.policyRevision,enabled:connection.enabled,authorization:connection.authorization}:null};});return{appId,policy,bindings};})));
-  }
+
   private catalog(home:string):DiscoveryCatalog{const key=canonicalFuturePath(home);let value=this.catalogs.get(key);if(!value){value=new DiscoveryCatalog(this.support.store,key,this.processes,{instanceId:this.runs.instanceId,deliveryAdapters:this.support.adapters.deliveryAdapters});this.catalogs.set(key,value);}return value;}
-  private bindings(projectId:string,appIds:readonly string[]):RunBindingRevision[]{
-    return appIds.flatMap(appId=>{const registered=builtinApplicationModules.appIds().find(id=>id===appId);if(!registered)throw new ApplicationError('CONFIG_INCOMPATIBLE','应用未在当前构建注册');const slots=builtinApplicationModules.module(registered).slots;return slots.map(slot=>{
-      const row=this.support.store.sqlite.prepare('SELECT b.connection_id,b.identity_revision,r.revision FROM application_binding_slot_revisions r LEFT JOIN application_project_bindings b ON b.project_id=r.project_id AND b.app_id=r.app_id AND b.slot=r.slot WHERE r.project_id=? AND r.app_id=? AND r.slot=?').get(projectId,appId,slot) as {connection_id:string|null;identity_revision:number|null;revision:number}|undefined;
-      if(!row)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','项目连接槽修订缺失');return{appId,slot,connectionId:row.connection_id,identityRevision:row.identity_revision,bindingRevision:row.revision};
-    });});
-  }
+  private bindings(projectId:string,appIds:readonly string[]):RunBindingRevision[]{return this.authorization.bindings(projectId,appIds);}
+
   /** SQL-only recheck under C. Selection is checked once; later calls use current business policy. */
   private assertInitialSelection(snapshot:CapabilitySessionSnapshot):void{
     const planned=this.initialApplicationScopes.get(snapshot.taskId);if(planned&&planned.selectionHash!==selectionHash(snapshot))throw new ApplicationError('RESOURCE_STATE_CHANGED','本轮应用范围与原固定选择不同');
@@ -181,10 +178,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const context=projectCapabilityEnabled(settings,snapshot.projectId,MCP_CAPABILITY);
     if(context!==snapshot.mcp.some(m=>m.kind==='legacy-project-context'))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目上下文选择已变化');
   }
-  private selectedApps(projectId:string):{appId:string;packageHash:string}[]{
-    const rows=this.support.store.sqlite.prepare('SELECT s.app_id AS appId FROM application_project_settings s JOIN application_catalog_state c ON c.app_id=s.app_id WHERE s.project_id=? AND s.enabled=1 AND c.added=1 AND c.enabled=1 ORDER BY s.app_id').all(projectId) as {appId:string}[];
-    return rows.map(({appId})=>{const active=this.applications.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
-  }
+  private selectedApps(projectId:string):{appId:string;packageHash:string}[]{return this.authorization.selectedApps(projectId);}
+
   /** Only new selections use the currently distributed adapter for their exact
    * native version. Retained snapshots always keep their original binding. */
   private currentAdapter(runner:string,cliVersion:string|undefined){

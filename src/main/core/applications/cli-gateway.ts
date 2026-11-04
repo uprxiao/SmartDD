@@ -11,7 +11,7 @@ import type {ApplicationToolService} from './tool-service';
 import type {UnixPeerIdentityReader} from './unix-peer-identity';
 import {requirePlanEntry} from './run-plan';
 
-interface Binding {runId:string;planHash:string;authorizationStamp:string|null;expiresAt:number;timer:ReturnType<typeof setTimeout>;dispose():void}
+interface Binding {runId:string;expiresAt:number;timer:ReturnType<typeof setTimeout>;dispose():void}
 interface Peer {socket:Socket;buffer:Buffer;controllers:Map<string,{runId:string;abort:AbortController}>;inFlight:number;authenticatedRun?:string}
 const rejected=(id:string,error:unknown):BridgeResponse=>({schema:1,id,status:'error',error:{code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:error instanceof ApplicationError?error.message:'本次应用调用未完成',layer:'auth',retryable:false,attemptCount:0,retryExhausted:false,effectState:'not-started',nextAction:'核对本次运行与应用状态；不要自动重发写操作'}});
 
@@ -25,7 +25,7 @@ export class ApplicationCliGateway {
   private readonly tokens=new Map<string,Binding>();
   private readonly peers=new Set<Peer>();
   private readonly pending=new Set<Promise<void>>();
-  constructor(private readonly runs:CapabilityRunRegistry,private readonly tools:ApplicationToolService,private readonly identities:UnixPeerIdentityReader,private readonly options:{executable:{path:string;sha256:string};now?:()=>number;tokenTtlMs?:number;authorizationStamp?:(context:RunContext)=>string}){
+  constructor(private readonly runs:CapabilityRunRegistry,private readonly tools:ApplicationToolService,private readonly identities:UnixPeerIdentityReader,private readonly options:{executable:{path:string;sha256:string};now?:()=>number;tokenTtlMs?:number}){
     if(!isAbsolute(options.executable.path)||!/^[a-f0-9]{64}$/.test(options.executable.sha256))throw new ApplicationError('INVALID_INPUT','受管CLI资源身份无效');
     if(tools.invocationEntry!=='cli')throw new ApplicationError('HOST_INCOMPATIBLE','独立CLI端点只能连接CLI能力执行入口');
   }
@@ -46,20 +46,18 @@ export class ApplicationCliGateway {
   }
   issue(run:OwnedCapabilityRun):{environment:Readonly<{WILLYOU_RUN_TOKEN:string;WILLYOU_ENDPOINT:string}>;expiresAt:number;revoke():void}{
     const endpoint=this.endpoint,context=this.runs.bridgePreparation(run.runId);this.executable();
-    if(context.snapshot.schema!==3||!context.plan?.grades.cli||!context.plan.allowed.some(c=>c.entry==='cli'))throw new ApplicationError('ENTRY_NOT_ACTIVE','本次运行没有生效的CLI能力');
-    const authorizationStamp=this.options.authorizationStamp?.(context)??null;
+    // R17: issued whenever the Agent can reach the CLI, even with no application enabled yet; what it may call is decided per call.
+    if(context.snapshot.schema!==3||!context.plan?.grades.cli)throw new ApplicationError('ENTRY_NOT_ACTIVE','本次运行的Agent没有可用的CLI入口');
     const token=randomBytes(32).toString('hex'),hash=digest(token),expiresAt=this.clock()+Math.min(12*60*60*1000,Math.max(1,this.options.tokenTtlMs??30*60*1000));
     const revoke=()=>{const binding=this.tokens.get(hash);if(!binding)return;this.tokens.delete(hash);clearTimeout(binding.timer);binding.dispose();for(const peer of this.peers)for(const work of peer.controllers.values())if(work.runId===run.runId)work.abort.abort();};
     const timer=setTimeout(revoke,Math.max(1,expiresAt-this.clock()));timer.unref();run.signal.addEventListener('abort',revoke,{once:true});
-    this.tokens.set(hash,{runId:run.runId,planHash:context.plan.planHash,authorizationStamp,expiresAt,timer,dispose:()=>run.signal.removeEventListener('abort',revoke)});
+    this.tokens.set(hash,{runId:run.runId,expiresAt,timer,dispose:()=>run.signal.removeEventListener('abort',revoke)});
     if(run.signal.aborted)revoke();
     return{environment:Object.freeze({WILLYOU_RUN_TOKEN:token,WILLYOU_ENDPOINT:endpoint}),expiresAt,revoke};
   }
   private current(binding:Binding):RunContext{
     if(this.closed||binding.expiresAt<=this.clock())throw new ApplicationError('TOKEN_EXPIRED','本次CLI身份已失效');
-    const context=this.runs.assertActive(binding.runId);
-    if(context.plan?.planHash!==binding.planHash)throw new ApplicationError('SCOPE_DENIED','CLI身份不能替换固定运行计划');
-    return context;
+    return this.runs.assertActive(binding.runId);
   }
   private async authenticate(peer:Peer,request:ApplicationCliRequest):Promise<RunContext>{
     // Budget/schema, token, kernel identity, executable, exact ancestor birth, entry, then business scope.
@@ -71,9 +69,8 @@ export class ApplicationCliGateway {
     const run=this.runs.get(binding.runId);
     if(!run.pid||!run.processStartedAt||!identity.ancestors.some(p=>p.pid===run.pid&&p.startedAt===run.processStartedAt))throw new ApplicationError('PEER_MISMATCH','CLI对端不属于本次受管进程树');
     const context=this.current(binding);
-    if(!context.plan?.grades.cli||!context.plan.allowed.some(c=>c.entry==='cli'))throw new ApplicationError('ENTRY_NOT_ACTIVE','CLI不是本次生效入口');
-    if(request.method==='capabilities/call')requirePlanEntry(context.plan,request.call.operation,request.call.contractMajor,'cli');
-    if(this.options.authorizationStamp){let current:string|undefined;try{current=this.options.authorizationStamp(context);}catch{/* A removed/disabled binding is an authorization change. */}if(current!==binding.authorizationStamp){this.revokeRun(binding.runId);throw new ApplicationError('SCOPE_DENIED','本次CLI绑定授权已变化，请启动合法的新运行');}}
+    if(!context.plan?.grades.cli)throw new ApplicationError('ENTRY_NOT_ACTIVE','CLI不是本次生效入口');
+    if(request.method==='capabilities/call'){const operation=request.call.operation;if(!context.plan.allowed.some(c=>c.capabilityId===operation)){const disabled=context.unavailableApplication?.(operation,'cli');if(disabled)throw disabled;}requirePlanEntry(context.plan,operation,request.call.contractMajor,'cli');}
     peer.authenticatedRun=binding.runId;return context;
   }
   private accept(socket:Socket):void{
@@ -102,7 +99,7 @@ export class ApplicationCliGateway {
       const parsed=cliRequestSchema.safeParse(value);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','CLI协议或请求字段无效');
       const request=parsed.data;id=request.id;method=request.method==='capabilities/list'?'cli-list':request.method==='capabilities/call'?'cli-call':'cli-cancel';
       const context=await this.authenticate(peer,request);
-      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan!.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')!.cliCommand})),unavailable:result.unavailable}};}
+      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan?.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')?.cliCommand})),unavailable:result.unavailable}};}
       if(request.method==='cancel'){const work=peer.controllers.get(request.targetId);if(work?.runId===context.run.runId)work.abort.abort();return{schema:1,id,status:'ok',value:{cancelled:!!work}};}
       if(peer.controllers.has(id))throw new ApplicationError('REQUEST_CONFLICT','本连接正在执行同编号调用');
       const abort=new AbortController();peer.controllers.set(id,{runId:context.run.runId,abort});

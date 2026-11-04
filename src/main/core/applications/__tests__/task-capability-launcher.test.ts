@@ -163,11 +163,12 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   t25Unknown();const resumed=await tasks.open({taskId:first.task.id}),value={...await t25Capture(resumed),launch:ptys.launches.at(-1)!},after=await managed.sessions.get(first.task.id),service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),response=await service.call(value.runtime.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v2',contractMajor:2,connectionId:null,arguments:{}});
   expect(value.runtime.runId).not.toBe(firstRun);expect(resumed.task.nativeSessionId).toBe(nativeId);expect(after.pointer).toEqual(fixed.pointer);expect(after.snapshot).toEqual(fixed.snapshot);expect(after.snapshot.agentAtCreation.version).toBe('0.166.0');expect(value.plan.cliVersion).toBe('99.0.0');expect(value.plan.applications[0]).toMatchObject({effectiveEntry:'mcp',fallback:true});expect(response).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',operation:{origin:'mcp'},data:{items:[]}}});expect(value.launch.args).toContain('resume');expect(value.launch.args).toContain(nativeId);expect(value.launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(value.launch.args.join(' ')).not.toContain('wy_cli_');expect(value.effective.nativeSendEvidence).toBe(false);expect(value.effective.levels).not.toContain('L2');expect(value.effective.levels).not.toContain('L3');
  },20000);
- it('permanently rejects the old token after project authorization changes even if the selection is restored',async()=>{
+ // R1.0 R17 (2026-11-04) replaces "old token permanently revoked on authorization change": the token proves identity only.
+ it('follows the current project setting with the same token: disabled is refused with guidance, re-enabled works again',async()=>{
   await create();const token=ptys.launches[0].env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(await request(token)).toMatchObject({status:'ok'});
   const before=applications.selections.projectSettings(projectId,'mail');await applications.selections.select({projectId,appId:'mail',enabled:false,expectedRevision:before.revision,connections:{foxmail:null,smtp:null}});
-  expect(await request(token)).toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});const disabled=applications.selections.projectSettings(projectId,'mail');await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:disabled.revision,connections:{foxmail:null,smtp:null}});
-  expect(await request(token)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});expect(ptys.live.size).toBe(1);expect(sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:1});
+  expect(await request(token)).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});const disabled=applications.selections.projectSettings(projectId,'mail');await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:disabled.revision,connections:{foxmail:null,smtp:null}});
+  expect(await request(token)).toMatchObject({status:'ok'});expect(ptys.live.size).toBe(1);expect(sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:2});
  });
 });
 
@@ -219,7 +220,7 @@ describe('M11 S4 data-only Mail v2 through the production task composition',()=>
   expect(applications.builtin.packages.get(old.packageHash).manifest).toEqual(old.manifest);
  });
  it('creates a schema-3 task with a fixed plan and renders the exact delivered Skill bytes',async()=>{
-  const application=await installV2();await selectMail();const running=await create(),saved=await managed.sessions.get(running.task.id),scope=managed.runs.assertActive(running.task.runtimeSnapshot!.runId);
+  const application=await installV2();await selectMail();const running=await create(),saved=await managed.sessions.get(running.task.id),scope=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId);
   expect(saved.snapshot.schema).toBe(3);expect(saved.snapshot.adapterBinding.version).toBe('1.3.0');expect(scope.plan?.allowed).toHaveLength(14);expect(scope.plan?.allowed.every(c=>c.entry==='mcp'&&c.contractMajor===2)).toBe(true);
   const skill=saved.snapshot.packages[0].skills[0],bytes=readFileSync(skill.projectionPath),render=scope.plan!.skills.find(s=>s.nativeName===skill.nativeName)!;
   expect(bytes.toString()).toContain('smartdd_mail_draft_create_v2');expect(bytes.toString()).not.toContain('{{WILLYOU_');expect(bytes.toString()).not.toContain('willyou-app');
