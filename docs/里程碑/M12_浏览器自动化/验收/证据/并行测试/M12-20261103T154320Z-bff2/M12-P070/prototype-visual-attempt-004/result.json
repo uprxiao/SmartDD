@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-04T16:52:14.830237+00:00",
+  "group": "M12-P070-P",
+  "attempt": "004",
+  "layer": "P main built prototype only; private component not reached",
+  "status": "product-P-failure-partial",
+  "formalCaseIncrement": 0,
+  "criteria": {
+    "mainPassed": [
+      "P-M04-prompt-default",
+      "P-M05-empty-not-undefined",
+      "P-M06-unicode-and-cancel"
+    ],
+    "mainNotCompleteOrFailed": 7,
+    "componentExecuted": false,
+    "infrastructurePassed": 1
+  },
+  "passedSubsegments": [
+    "Minimal actual Enter trusted keydown→keypress charCode13→submit, exact default response",
+    "R01.11 newtab startup and close back",
+    "light alert confirm and no cancel",
+    "light confirm cancel/accept",
+    "light prompt default selected/focused/Enter",
+    "empty string distinct from undefined",
+    "Chinese/emoji/quotes/backslash exact",
+    "prompt explicit cancel and Escape",
+    "error shows and preserves text, actions re-enabled"
+  ],
+  "defect": {
+    "classification": "prototype-focus-not-restored-after-response-failure",
+    "trigger": "Real click submit -> busy disables focused submit button -> synthetic callback rejects -> actions re-enabled -> immediate real Escape",
+    "actual": "activeElement is BODY before Escape; trusted Escape keydown/up target BODY; dialog remains because Dialog onKeyDown only receives events from within dialog. Entered value and error stay present.",
+    "evidence": [
+      "raw.json",
+      "focus-failure-extract.json",
+      "P-main-05-light-error.png",
+      "P-failure.png"
+    ],
+    "scope": "Demonstrated in unchanged built P only. No packaged App/native dialog claim."
+  },
+  "driverCorrectionConfirmed": "003 Enter missing CR was a driver error;004 actual trusted keypress+submit and same default semantics prove correction, no click bypass.",
+  "remaining": [
+    "Dark alert/confirm/prompt/error",
+    "Main compact viewport",
+    "Private real component long-message/compact/busy4",
+    "Post-error Escape after actual product fix"
+  ],
+  "cleanup": "cleanup.json"
+}

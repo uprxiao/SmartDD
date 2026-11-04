@@ -5,7 +5,7 @@
  [[package]]
  name = "agent-browser"
 -version = "0.27.3"
-+version = "0.27.3-willyou.4"
++version = "0.27.3-willyou.6"
  dependencies = [
   "aes-gcm",
   "async-trait",
@@ -15,7 +15,7 @@
  [package]
  name = "agent-browser"
 -version = "0.27.3"
-+version = "0.27.3-willyou.4"
++version = "0.27.3-willyou.6"
  edition = "2021"
  description = "Fast browser automation CLI for AI agents"
  license = "Apache-2.0"
@@ -35,7 +35,7 @@
                  while i < rest.len() {
                      match rest[i] {
                          "--exact" => {
-@@ -2286,9 +2292,11 @@
+@@ -2286,9 +2292,13 @@
                      }
                      Ok(cmd)
                  }
@@ -44,13 +44,15 @@
 -                ),
 +                "text" => {
 +                    let mut cmd = json!({ "id": id, "action": "getbytext", "text": value, "subaction": subaction, "exact": exact });
-+                    if let Some(v) = fill_value { cmd["value"] = json!(v); }
++                    if let Some(v) = fill_value {
++                        cmd["value"] = json!(v);
++                    }
 +                    Ok(cmd)
-+                },
++                }
                  "label" => {
                      let mut cmd = json!({ "id": id, "action": "getbylabel", "label": value, "subaction": subaction, "exact": exact });
                      if let Some(v) = fill_value {
-@@ -2306,9 +2314,11 @@
+@@ -2306,9 +2316,13 @@
                  "alt" => Ok(
                      json!({ "id": id, "action": "getbyalttext", "text": value, "subaction": subaction, "exact": exact }),
                  ),
@@ -59,31 +61,166 @@
 -                ),
 +                "title" => {
 +                    let mut cmd = json!({ "id": id, "action": "getbytitle", "text": value, "subaction": subaction, "exact": exact });
-+                    if let Some(v) = fill_value { cmd["value"] = json!(v); }
++                    if let Some(v) = fill_value {
++                        cmd["value"] = json!(v);
++                    }
 +                    Ok(cmd)
-+                },
++                }
                  "testid" => {
                      let mut cmd = json!({ "id": id, "action": "getbytestid", "testId": value, "subaction": subaction });
                      if let Some(v) = fill_value {
-@@ -4299,6 +4309,18 @@
-         assert_eq!(cmd["value"], "hello");
+@@ -2369,6 +2383,16 @@
+ 
+ fn parse_mouse(rest: &[&str], id: &str) -> Result<Value, ParseError> {
+     const VALID: &[&str] = &["move", "down", "up", "wheel"];
++    let finite_number = |value: &str, usage| {
++        value
++            .parse::<f64>()
++            .ok()
++            .filter(|value| value.is_finite())
++            .ok_or_else(|| ParseError::InvalidValue {
++                message: format!("mouse input requires finite numbers, got: {}", value),
++                usage,
++            })
++    };
+ 
+     match rest.first().copied() {
+         Some("move") => {
+@@ -2380,32 +2404,31 @@
+                 context: "mouse move".to_string(),
+                 usage: "mouse move <x> <y>",
+             })?;
+-            let x = x_str
+-                .parse::<i32>()
+-                .map_err(|_| ParseError::MissingArguments {
+-                    context: "mouse move".to_string(),
+-                    usage: "mouse move <x> <y>",
+-                })?;
+-            let y = y_str
+-                .parse::<i32>()
+-                .map_err(|_| ParseError::MissingArguments {
+-                    context: "mouse move".to_string(),
+-                    usage: "mouse move <x> <y>",
+-                })?;
++            let x = finite_number(x_str, "mouse move <x> <y>")?;
++            let y = finite_number(y_str, "mouse move <x> <y>")?;
+             Ok(json!({ "id": id, "action": "mousemove", "x": x, "y": y }))
+         }
+         Some("down") => {
+             Ok(json!({ "id": id, "action": "mousedown", "button": rest.get(1).unwrap_or(&"left") }))
+         }
+         Some("up") => {
+-            Ok(json!({ "id": id, "action": "mouseup", "button": rest.get(1).unwrap_or(&"left") }))
++            let mut cmd = json!({ "id": id, "action": "mouseup" });
++            if let Some(button) = rest.get(1) {
++                cmd["button"] = json!(button);
++            }
++            Ok(cmd)
+         }
+         Some("wheel") => {
+             let dy = rest
+                 .get(1)
+-                .and_then(|s| s.parse::<i32>().ok())
+-                .unwrap_or(100);
+-            let dx = rest.get(2).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
++                .map(|value| finite_number(value, "mouse wheel [dy] [dx]"))
++                .transpose()?
++                .unwrap_or(100.0);
++            let dx = rest
++                .get(2)
++                .map(|value| finite_number(value, "mouse wheel [dy] [dx]"))
++                .transpose()?
++                .unwrap_or(0.0);
+             Ok(json!({ "id": id, "action": "wheel", "deltaX": dx, "deltaY": dy }))
+         }
+         Some(sub) => Err(ParseError::UnknownSubcommand {
+@@ -4201,8 +4224,44 @@
+     fn test_mouse_wheel() {
+         let cmd = parse_command(&args("mouse wheel 100 50"), &default_flags()).unwrap();
+         assert_eq!(cmd["action"], "wheel");
+-        assert_eq!(cmd["deltaY"], 100);
+-        assert_eq!(cmd["deltaX"], 50);
++        assert_eq!(cmd["deltaY"].as_f64(), Some(100.0));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(50.0));
++    }
++
++    #[test]
++    fn test_m12_mouse_numbers_preserve_finite_fractional_values() {
++        let cmd = parse_command(&args("mouse move 122.04296875 -0.5"), &default_flags()).unwrap();
++        assert_eq!(cmd["x"].as_f64(), Some(122.04296875));
++        assert_eq!(cmd["y"].as_f64(), Some(-0.5));
++        let cmd = parse_command(&args("mouse wheel -0.25 1.5"), &default_flags()).unwrap();
++        assert_eq!(cmd["deltaY"].as_f64(), Some(-0.25));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(1.5));
++        let cmd = parse_command(&args("mouse wheel"), &default_flags()).unwrap();
++        assert_eq!(cmd["deltaY"].as_f64(), Some(100.0));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(0.0));
++    }
++
++    #[test]
++    fn test_m12_mouse_up_preserves_an_omitted_button() {
++        let cmd = parse_command(&args("mouse up"), &default_flags()).unwrap();
++        assert!(cmd.get("button").is_none());
++        let cmd = parse_command(&args("mouse up right"), &default_flags()).unwrap();
++        assert_eq!(cmd["button"], "right");
++    }
++
++    #[test]
++    fn test_m12_mouse_numbers_reject_invalid_or_nonfinite_values() {
++        for input in ["NaN", "inf", "-inf", "1e999", "12pixels"] {
++            for command in [
++                format!("mouse move {} 0", input),
++                format!("mouse wheel {}", input),
++            ] {
++                assert!(matches!(
++                    parse_command(&args(&command), &default_flags()),
++                    Err(ParseError::InvalidValue { .. })
++                ));
++            }
++        }
      }
  
+     #[test]
+@@ -4297,6 +4356,39 @@
+         assert_eq!(cmd["name"], "username");
+         assert_eq!(cmd["exact"], true);
+         assert_eq!(cmd["value"], "hello");
++    }
++
 +    #[test]
 +    fn test_willyou_semantic_find_keeps_literal_payload() {
-+        for locator in ["role", "text", "label", "placeholder", "title", "testid", "first", "last"] {
++        for locator in [
++            "role",
++            "text",
++            "label",
++            "placeholder",
++            "title",
++            "testid",
++            "first",
++            "last",
++        ] {
 +            for payload in ["--name", "--exact", "", "quoted \"value\"\n中文"] {
-+                let input: Vec<String> = ["find", locator, "target", "fill", payload, "--name", "Actual name", "--exact"].iter().map(|value| value.to_string()).collect();
++                let input: Vec<String> = [
++                    "find",
++                    locator,
++                    "target",
++                    "fill",
++                    payload,
++                    "--name",
++                    "Actual name",
++                    "--exact",
++                ]
++                .iter()
++                .map(|value| value.to_string())
++                .collect();
 +                let cmd = parse_command(&input, &default_flags()).unwrap();
 +                assert_eq!(cmd["value"], payload, "locator {locator}");
 +                assert_eq!(cmd["subaction"], "fill");
 +            }
 +        }
-+    }
-+
-     // === Download Tests ===
+     }
  
-     #[test]
+     // === Download Tests ===
 --- a/cli/src/connection.rs
 +++ b/cli/src/connection.rs
 @@ -776,35 +776,10 @@
@@ -166,29 +303,301 @@
  fn run_batch(
 --- a/cli/src/native/actions.rs
 +++ b/cli/src/native/actions.rs
-@@ -5819,6 +5819,21 @@
+@@ -155,15 +155,41 @@
+     pub session_id: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Default)]
++#[derive(Debug, Clone, Copy, PartialEq)]
++pub struct LastMouseClick {
++    button_mask: i32,
++    x: f64,
++    y: f64,
++    at: std::time::Instant,
++    count: i32,
++}
++
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct MouseState {
+     pub x: f64,
+     pub y: f64,
+     pub buttons: i32,
++    pub active_button_mask: i32,
++    pub click_count: i32,
++    pub last_click: Option<LastMouseClick>,
++}
++
++impl Default for MouseState {
++    fn default() -> Self {
++        Self {
++            x: 0.0,
++            y: 0.0,
++            buttons: 0,
++            active_button_mask: 0,
++            click_count: 1,
++            last_click: None,
++        }
++    }
+ }
+ 
+ #[derive(Default)]
+ struct DrainedEvents {
++    pending_pointer_releases: Vec<super::interaction::PendingRelease>,
+     pending_acks: Vec<i64>,
+     new_targets: Vec<TargetCreatedEvent>,
+     changed_targets: Vec<TargetInfoChangedEvent>,
+@@ -340,6 +366,7 @@
+ 
+     fn reset_input_state(&mut self) {
+         self.mouse_state = MouseState::default();
++        self.pending_pointer_release = None;
+     }
+ 
+     /// Create state with an optional stream client slot and server instance
+@@ -597,6 +624,17 @@
+     }
+ 
+     async fn apply_drained_events(&mut self, drained: DrainedEvents) {
++        // Complete an already dispatched synthetic click after its own dialog
++        // closes, including a real user or host reply. This is not a retry.
++        for release in drained.pending_pointer_releases {
++            if let Some(ref browser) = self.browser {
++                if let Err(error) =
++                    interaction::dispatch_pending_release(&browser.client, &release).await
++                {
++                    eprintln!("[agent-browser] deferred mouse release failed: {}", error);
++                }
++            }
++        }
+         // ACK screencast frames
+         if !drained.pending_acks.is_empty() {
+             if let Some(ref browser) = self.browser {
+@@ -707,6 +745,7 @@
+         };
+ 
+         let mut pending_acks: Vec<i64> = Vec::new();
++        let mut pending_pointer_releases: Vec<interaction::PendingRelease> = Vec::new();
+         let mut new_targets: Vec<TargetCreatedEvent> = Vec::new();
+         let mut new_target_ids: HashSet<String> = HashSet::new();
+         let mut changed_targets: Vec<TargetInfoChangedEvent> = Vec::new();
+@@ -797,11 +836,55 @@
+                             if let Some(sid) =
+                                 event.params.get("sessionId").and_then(|v| v.as_str())
+                             {
++                                if self
++                                    .pending_pointer_release
++                                    .as_ref()
++                                    .is_some_and(|release| {
++                                        release.session_id == sid
++                                            || release.dialog_session_id.as_deref() == Some(sid)
++                                    })
++                                {
++                                    self.pending_pointer_release = None;
++                                }
++                                pending_pointer_releases.retain(|release| {
++                                    release.session_id != sid
++                                        && release.dialog_session_id.as_deref() != Some(sid)
++                                });
+                                 detached_iframe_sessions.push(sid.to_string());
+                             }
+                             continue;
+                         }
+                         _ => {}
++                    }
++
++                    if matches!(
++                        event.method.as_str(),
++                        "Page.frameNavigated" | "Page.frameDetached"
++                    ) {
++                        let frame_id = if event.method == "Page.frameNavigated" {
++                            event
++                                .params
++                                .get("frame")
++                                .and_then(|frame| frame.get("id"))
++                                .and_then(|id| id.as_str())
++                        } else {
++                            event.params.get("frameId").and_then(|id| id.as_str())
++                        };
++                        if let Some(frame_id) = frame_id {
++                            if self
++                                .pending_pointer_release
++                                .as_ref()
++                                .is_some_and(|release| {
++                                    release
++                                        .matches_dialog(event.session_id.as_deref(), Some(frame_id))
++                                })
++                            {
++                                self.pending_pointer_release = None;
++                            }
++                            pending_pointer_releases.retain(|release| {
++                                !release.matches_dialog(event.session_id.as_deref(), Some(frame_id))
++                            });
++                        }
+                     }
+ 
+                     let session_matches = if let Some(ref browser) = self.browser {
+@@ -820,7 +903,18 @@
+                             .as_ref()
+                             .is_some_and(|sid| self.iframe_sessions.values().any(|v| v == sid));
+ 
+-                    if !session_matches && !iframe_network_event {
++                    let pending_click_dialog_closed = event.method == "Page.javascriptDialogClosed"
++                        && self
++                            .pending_pointer_release
++                            .as_ref()
++                            .is_some_and(|release| {
++                                release.matches_dialog(
++                                    event.session_id.as_deref(),
++                                    event.params.get("frameId").and_then(|value| value.as_str()),
++                                )
++                            });
++
++                    if !session_matches && !iframe_network_event && !pending_click_dialog_closed {
+                         continue;
+                     }
+ 
+@@ -1119,7 +1213,17 @@
+                             }
+                         }
+                         "Page.javascriptDialogClosed" => {
+-                            self.pending_dialog = None;
++                            if self
++                                .pending_dialog
++                                .as_ref()
++                                .is_some_and(|dialog| dialog.session_id == event.session_id)
++                            {
++                                self.pending_dialog = None;
++                            }
++                            if pending_click_dialog_closed {
++                                pending_pointer_releases
++                                    .extend(self.pending_pointer_release.take());
++                            }
+                         }
+                         // Fetch.requestPaused is handled by the background
+                         // fetch_handler_task — no need to collect here.
+@@ -1139,6 +1243,7 @@
+         }
+ 
+         DrainedEvents {
++            pending_pointer_releases,
+             pending_acks,
+             new_targets,
+             changed_targets,
+@@ -5288,29 +5393,42 @@
+     }
+ }
+ 
++fn build_wheel_event_params(cmd: &Value, mouse: &MouseState) -> DispatchMouseEventParams {
++    DispatchMouseEventParams {
++        event_type: "mouseWheel".into(),
++        x: cmd
++            .get("x")
++            .and_then(|value| value.as_f64())
++            .unwrap_or(mouse.x),
++        y: cmd
++            .get("y")
++            .and_then(|value| value.as_f64())
++            .unwrap_or(mouse.y),
++        button: None,
++        buttons: Some(mouse.buttons),
++        click_count: None,
++        delta_x: Some(
++            cmd.get("deltaX")
++                .and_then(|value| value.as_f64())
++                .unwrap_or(0.0),
++        ),
++        delta_y: Some(
++            cmd.get("deltaY")
++                .and_then(|value| value.as_f64())
++                .unwrap_or(0.0),
++        ),
++        modifiers: None,
++    }
++}
++
+ async fn handle_wheel(cmd: &Value, state: &DaemonState) -> Result<Value, String> {
+-    let mgr = state.browser.as_ref().ok_or("Browser not launched")?;
+-    let session_id = mgr.active_session_id()?.to_string();
+-    let x = cmd.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0);
+-    let y = cmd.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0);
+-    let delta_x = cmd.get("deltaX").and_then(|v| v.as_f64()).unwrap_or(0.0);
+-    let delta_y = cmd.get("deltaY").and_then(|v| v.as_f64()).unwrap_or(0.0);
+-
+-    mgr.client
+-        .send_command(
+-            "Input.dispatchMouseEvent",
+-            Some(json!({
+-                "type": "mouseWheel",
+-                "x": x,
+-                "y": y,
+-                "deltaX": delta_x,
+-                "deltaY": delta_y,
+-            })),
+-            Some(&session_id),
+-        )
+-        .await?;
+-
+-    Ok(json!({ "scrolled": true, "deltaX": delta_x, "deltaY": delta_y }))
++    let params = build_wheel_event_params(cmd, &state.mouse_state);
++    let opened = dispatch_owned_mouse(state, &params).await?;
++    let mut result = json!({ "scrolled": true, "deltaX": params.delta_x.unwrap_or(0.0), "deltaY": params.delta_y.unwrap_or(0.0) });
++    if opened {
++        result["dialogOpened"] = json!(true);
++    }
++    Ok(result)
+ }
+ 
+ async fn handle_device(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
+@@ -5819,6 +5937,48 @@
      let session_id = mgr.active_session_id()?.to_string();
  
      match subaction {
 +        // WillYou S3: every semantic locator exposes the documented seven
 +        // actions through the same implementation (including nth/first/last).
 +        "type" => {
-+            let value = cmd.get("value").and_then(|v| v.as_str()).ok_or("Missing 'value' for type subaction")?;
-+            interaction::type_text(&mgr.client, &session_id, &state.ref_map, selector, value, false, None, &state.iframe_sessions).await?;
++            let value = cmd
++                .get("value")
++                .and_then(|v| v.as_str())
++                .ok_or("Missing 'value' for type subaction")?;
++            interaction::type_text(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                value,
++                false,
++                None,
++                &state.iframe_sessions,
++            )
++            .await?;
 +            Ok(json!({ "typed": selector }))
 +        }
 +        "focus" => {
-+            interaction::focus(&mgr.client, &session_id, &state.ref_map, selector, &state.iframe_sessions).await?;
++            interaction::focus(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                &state.iframe_sessions,
++            )
++            .await?;
 +            Ok(json!({ "focused": selector }))
 +        }
 +        "uncheck" => {
-+            interaction::uncheck(&mgr.client, &session_id, &state.ref_map, selector, &state.iframe_sessions).await?;
++            interaction::uncheck(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                &state.iframe_sessions,
++            )
++            .await?;
 +            Ok(json!({ "unchecked": selector }))
 +        }
          "click" => {
              let result = interaction::click(
                  &mgr.client,
-@@ -5913,13 +5928,12 @@
+@@ -5913,13 +6073,12 @@
          .map(|n| {
              if exact {
                  format!(
@@ -204,7 +613,7 @@
                      n = serde_json::to_string(n).unwrap_or_default()
                  )
              }
-@@ -5928,7 +5942,24 @@
+@@ -5928,7 +6087,24 @@
  
      let js = format!(
          r#"(() => {{
@@ -230,7 +639,7 @@
              for (const el of els) {{
                  if ({name_match}) {{
                      el.setAttribute('data-agent-browser-located', 'true');
-@@ -5937,7 +5968,7 @@
+@@ -5937,7 +6113,7 @@
              }}
              return false;
          }})()"#,
@@ -239,14 +648,15 @@
          name_match = name_match,
      );
  
-@@ -5983,6 +6014,20 @@
+@@ -5983,6 +6159,22 @@
      result
  }
  
 +// Literal values must stay JavaScript data, never be interpolated inside a
 +// quoted CSS selector. Apostrophes/quotes/Unicode are ordinary attribute text.
 +fn literal_attribute_query(selector: &str, attribute: &str, value: &str) -> String {
-+    format!(r#"(() => {{
++    format!(
++        r#"(() => {{
 +        const el = Array.from(document.querySelectorAll({selector}))
 +            .find(el => el.getAttribute({attribute}) === {value});
 +        if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
@@ -254,13 +664,14 @@
 +    }})()"#,
 +        selector = serde_json::to_string(selector).unwrap_or_default(),
 +        attribute = serde_json::to_string(attribute).unwrap_or_default(),
-+        value = serde_json::to_string(value).unwrap_or_default())
++        value = serde_json::to_string(value).unwrap_or_default()
++    )
 +}
 +
  async fn handle_semantic_locator(
      cmd: &Value,
      state: &mut DaemonState,
-@@ -5999,12 +6044,12 @@
+@@ -5999,12 +6191,12 @@
  
      let match_fn = if exact {
          format!(
@@ -275,7 +686,7 @@
              serde_json::to_string(value).unwrap_or_default()
          )
      };
-@@ -6042,45 +6087,27 @@
+@@ -6042,45 +6234,31 @@
              }})()"#,
              )
          }
@@ -286,7 +697,11 @@
 -                return false;
 -            }})()"#,
 -            val = serde_json::to_string(value).unwrap_or_default(),
--        ),
++        "placeholder" => literal_attribute_query(
++            "input[placeholder],textarea[placeholder]",
++            "placeholder",
++            value,
+         ),
 -        "alttext" => format!(
 -            r#"(() => {{
 -                const el = document.querySelector('img[alt={val}], [alt={val}]');
@@ -311,7 +726,6 @@
 -            }})()"#,
 -            val = serde_json::to_string(value).unwrap_or_default(),
 -        ),
-+        "placeholder" => literal_attribute_query("input[placeholder],textarea[placeholder]", "placeholder", value),
 +        "alttext" => literal_attribute_query("[alt]", "alt", value),
 +        "title" => literal_attribute_query("[title]", "title", value),
 +        "testid" => literal_attribute_query("[data-testid]", "data-testid", value),
@@ -337,6 +751,512 @@
                              el.setAttribute('data-agent-browser-located', 'true');
                              return true;
                          }}
+@@ -8130,6 +8308,30 @@
+     }
+ }
+ 
++fn track_mouse_click(state: &mut MouseState, button_mask: i32, at: std::time::Instant) -> i32 {
++    let repeated = state.last_click.is_some_and(|last| {
++        last.button_mask == button_mask
++            && (last.x - state.x).abs() <= 2.0
++            && (last.y - state.y).abs() <= 2.0
++            && at.saturating_duration_since(last.at) <= std::time::Duration::from_millis(500)
++    });
++    let count = if repeated {
++        state
++            .last_click
++            .map_or(1, |last| if last.count >= 3 { 1 } else { last.count + 1 })
++    } else {
++        1
++    };
++    state.last_click = Some(LastMouseClick {
++        button_mask,
++        x: state.x,
++        y: state.y,
++        at,
++        count,
++    });
++    count
++}
++
+ #[allow(clippy::too_many_arguments)]
+ fn build_mouse_event_params(
+     mouse_state: &mut MouseState,
+@@ -8148,17 +8350,46 @@
+     mouse_state.x = x;
+     mouse_state.y = y;
+ 
++    let held = primary_button_from_mask(mouse_state.active_button_mask);
++    let event_button = button.unwrap_or(match event_type {
++        "mousePressed" => "left",
++        "mouseReleased" if held == "none" => "left",
++        _ => held,
++    });
++    let mut event_click_count = click_count;
+     let mut next_buttons = buttons.unwrap_or(mouse_state.buttons);
+     if buttons.is_none() {
+         match event_type {
+             "mousePressed" => {
+-                next_buttons |= mouse_button_mask(button.unwrap_or("left"));
++                next_buttons |= mouse_button_mask(event_button);
+             }
+             "mouseReleased" => {
+-                next_buttons &= !mouse_button_mask(button.unwrap_or("left"));
++                next_buttons &= !mouse_button_mask(event_button);
+             }
+             _ => {}
+         }
++    }
++    match event_type {
++        "mousePressed" => {
++            let mask = mouse_button_mask(event_button);
++            mouse_state.active_button_mask = mask;
++            let tracked = track_mouse_click(mouse_state, mask, std::time::Instant::now());
++            mouse_state.click_count = click_count.unwrap_or(tracked);
++            if let Some(ref mut last) = mouse_state.last_click {
++                last.count = mouse_state.click_count;
++            }
++            event_click_count = Some(mouse_state.click_count);
++        }
++        "mouseReleased" => {
++            mouse_state.active_button_mask =
++                mouse_button_mask(primary_button_from_mask(next_buttons));
++            event_click_count = Some(click_count.unwrap_or(mouse_state.click_count));
++        }
++        _ if buttons.is_some() => {
++            mouse_state.active_button_mask =
++                mouse_button_mask(primary_button_from_mask(next_buttons));
++        }
++        _ => {}
+     }
+     mouse_state.buttons = next_buttons;
+ 
+@@ -8166,28 +8397,38 @@
+         event_type: event_type.to_string(),
+         x,
+         y,
+-        button: Some(
+-            button
+-                .unwrap_or(primary_button_from_mask(next_buttons))
+-                .to_string(),
+-        ),
++        button: Some(event_button.to_string()),
+         buttons: Some(next_buttons),
+-        click_count,
++        click_count: event_click_count,
+         delta_x,
+         delta_y,
+         modifiers,
+     }
+ }
+ 
++async fn dispatch_owned_mouse(
++    state: &DaemonState,
++    params: &DispatchMouseEventParams,
++) -> Result<bool, String> {
++    let manager = state.browser.as_ref().ok_or("Browser not launched")?;
++    let session_id = manager.active_session_id()?;
++    let mut sessions = vec![session_id];
++    sessions.extend(state.iframe_sessions.values().map(String::as_str));
++    Ok(
++        interaction::dispatch_mouse_or_dialog(&manager.client, session_id, &sessions, params)
++            .await?
++            .is_some(),
++    )
++}
++
+ async fn handle_input_mouse(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
+-    let mgr = state.browser.as_ref().ok_or("Browser not launched")?;
+-    let session_id = mgr.active_session_id()?.to_string();
+     let event_type = cmd
+         .get("type")
+         .and_then(|v| v.as_str())
+         .unwrap_or("mouseMoved");
++    let mut next_mouse = state.mouse_state;
+     let params = build_mouse_event_params(
+-        &mut state.mouse_state,
++        &mut next_mouse,
+         event_type,
+         cmd.get("x").and_then(|v| v.as_f64()),
+         cmd.get("y").and_then(|v| v.as_f64()),
+@@ -8205,10 +8446,13 @@
+             .map(|v| v as i32),
+     );
+ 
+-    mgr.client
+-        .send_command_typed::<_, Value>("Input.dispatchMouseEvent", &params, Some(&session_id))
+-        .await?;
+-    Ok(json!({ "dispatched": event_type }))
++    let opened = dispatch_owned_mouse(state, &params).await?;
++    state.mouse_state = next_mouse;
++    let mut result = json!({ "dispatched": event_type });
++    if opened {
++        result["dialogOpened"] = json!(true);
++    }
++    Ok(result)
+ }
+ 
+ async fn handle_input_keyboard(cmd: &Value, state: &DaemonState) -> Result<Value, String> {
+@@ -8308,12 +8552,11 @@
+ }
+ 
+ async fn handle_mousemove(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
+-    let mgr = state.browser.as_ref().ok_or("Browser not launched")?;
+-    let session_id = mgr.active_session_id()?.to_string();
+     let x = cmd.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0);
+     let y = cmd.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0);
++    let mut next_mouse = state.mouse_state;
+     let params = build_mouse_event_params(
+-        &mut state.mouse_state,
++        &mut next_mouse,
+         "mouseMoved",
+         Some(x),
+         Some(y),
+@@ -8325,56 +8568,63 @@
+         None,
+     );
+ 
+-    mgr.client
+-        .send_command_typed::<_, Value>("Input.dispatchMouseEvent", &params, Some(&session_id))
+-        .await?;
+-    Ok(json!({ "moved": true }))
++    let opened = dispatch_owned_mouse(state, &params).await?;
++    state.mouse_state = next_mouse;
++    let mut result = json!({ "moved": true });
++    if opened {
++        result["dialogOpened"] = json!(true);
++    }
++    Ok(result)
+ }
+ 
+ async fn handle_mousedown(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
+-    let mgr = state.browser.as_ref().ok_or("Browser not launched")?;
+-    let session_id = mgr.active_session_id()?.to_string();
+     let button = cmd.get("button").and_then(|v| v.as_str()).unwrap_or("left");
++    let mut next_mouse = state.mouse_state;
+     let params = build_mouse_event_params(
+-        &mut state.mouse_state,
++        &mut next_mouse,
+         "mousePressed",
+         None,
+         None,
+         Some(button),
+         None,
+-        Some(1),
++        None,
+         None,
+         None,
+         None,
+     );
+ 
+-    mgr.client
+-        .send_command_typed::<_, Value>("Input.dispatchMouseEvent", &params, Some(&session_id))
+-        .await?;
+-    Ok(json!({ "pressed": true }))
++    let opened = dispatch_owned_mouse(state, &params).await?;
++    state.mouse_state = next_mouse;
++    let mut result = json!({ "pressed": true });
++    if opened {
++        result["dialogOpened"] = json!(true);
++    }
++    Ok(result)
+ }
+ 
+ async fn handle_mouseup(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {
+-    let mgr = state.browser.as_ref().ok_or("Browser not launched")?;
+-    let session_id = mgr.active_session_id()?.to_string();
+-    let button = cmd.get("button").and_then(|v| v.as_str()).unwrap_or("left");
++    let button = cmd.get("button").and_then(|v| v.as_str());
++    let mut next_mouse = state.mouse_state;
+     let params = build_mouse_event_params(
+-        &mut state.mouse_state,
++        &mut next_mouse,
+         "mouseReleased",
+         None,
+         None,
+-        Some(button),
++        button,
+         None,
+-        Some(1),
++        None,
+         None,
+         None,
+         None,
+     );
+ 
+-    mgr.client
+-        .send_command_typed::<_, Value>("Input.dispatchMouseEvent", &params, Some(&session_id))
+-        .await?;
+-    Ok(json!({ "released": true }))
++    let opened = dispatch_owned_mouse(state, &params).await?;
++    state.mouse_state = next_mouse;
++    let mut result = json!({ "released": true });
++    if opened {
++        result["dialogOpened"] = json!(true);
++    }
++    Ok(result)
+ }
+ 
+ // ---------------------------------------------------------------------------
+@@ -8715,6 +8965,258 @@
+         assert_eq!(state.mouse_state.x, 0.0);
+         assert_eq!(state.mouse_state.y, 0.0);
+         assert_eq!(state.mouse_state.buttons, 0);
++    }
++
++    #[test]
++    fn test_m12_wheel_and_default_up_use_the_tracked_pointer() {
++        let mut mouse = MouseState::default();
++        build_mouse_event_params(
++            &mut mouse,
++            "mouseMoved",
++            Some(122.04296875),
++            Some(64.0),
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        build_mouse_event_params(
++            &mut mouse,
++            "mousePressed",
++            None,
++            None,
++            Some("right"),
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        let wheel = build_wheel_event_params(&json!({"deltaX":-2.5,"deltaY":1.25}), &mouse);
++        assert_eq!(wheel.x, 122.04296875);
++        assert_eq!(wheel.y, 64.0);
++        assert_eq!(wheel.buttons, Some(2));
++        assert_eq!(wheel.delta_x, Some(-2.5));
++        assert_eq!(wheel.delta_y, Some(1.25));
++        let up = build_mouse_event_params(
++            &mut mouse,
++            "mouseReleased",
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        assert_eq!(up.button.as_deref(), Some("right"));
++        assert_eq!(up.buttons, Some(0));
++    }
++
++    #[test]
++    fn test_m12_default_up_keeps_the_remaining_chorded_button() {
++        let mut mouse = MouseState::default();
++        build_mouse_event_params(
++            &mut mouse,
++            "mousePressed",
++            None,
++            None,
++            Some("left"),
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        build_mouse_event_params(
++            &mut mouse,
++            "mousePressed",
++            None,
++            None,
++            Some("right"),
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        let up = build_mouse_event_params(
++            &mut mouse,
++            "mouseReleased",
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        assert_eq!(up.button.as_deref(), Some("right"));
++        assert_eq!(up.buttons, Some(1));
++        let up = build_mouse_event_params(
++            &mut mouse,
++            "mouseReleased",
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++            None,
++        );
++        assert_eq!(up.button.as_deref(), Some("left"));
++        assert_eq!(up.buttons, Some(0));
++    }
++
++    #[test]
++    fn test_m12_click_count_matches_the_fixed_reference_window_and_slop() {
++        let mut mouse = MouseState::default();
++        let now = std::time::Instant::now();
++        for (index, expected) in [1, 2, 3, 1].into_iter().enumerate() {
++            assert_eq!(
++                track_mouse_click(
++                    &mut mouse,
++                    1,
++                    now + std::time::Duration::from_millis(index as u64 * 100)
++                ),
++                expected
++            );
++        }
++        mouse.x = 10.0;
++        assert_eq!(
++            track_mouse_click(&mut mouse, 1, now + std::time::Duration::from_millis(350)),
++            1
++        );
++        assert_eq!(
++            track_mouse_click(&mut mouse, 2, now + std::time::Duration::from_millis(400)),
++            1
++        );
++        assert_eq!(
++            track_mouse_click(&mut mouse, 2, now + std::time::Duration::from_millis(901)),
++            1
++        );
++    }
++
++    #[tokio::test]
++    async fn test_m12_failed_pointer_dispatch_keeps_the_last_acknowledged_state() {
++        let mut state = DaemonState::new();
++        state.mouse_state.x = 122.04296875;
++        state.mouse_state.y = 64.0;
++        state.mouse_state.buttons = 2;
++        state.mouse_state.active_button_mask = 2;
++        track_mouse_click(&mut state.mouse_state, 2, std::time::Instant::now());
++        let before = state.mouse_state;
++
++        // No browser is available: no input can have been dispatched. Each
++        // handler must leave coordinates, held buttons and click history intact.
++        assert!(handle_mousemove(&json!({"x":350.5,"y":250.25}), &mut state)
++            .await
++            .is_err());
++        assert_eq!(state.mouse_state, before);
++        assert!(handle_mousedown(&json!({"button":"left"}), &mut state)
++            .await
++            .is_err());
++        assert_eq!(state.mouse_state, before);
++        assert!(handle_mouseup(&json!({}), &mut state).await.is_err());
++        assert_eq!(state.mouse_state, before);
++        assert!(handle_input_mouse(
++            &json!({"type":"mousePressed","x":500,"y":450,"button":"middle"}),
++            &mut state
++        )
++        .await
++        .is_err());
++        assert_eq!(state.mouse_state, before);
++    }
++
++    fn m12_pending_click() -> interaction::PendingRelease {
++        interaction::PendingRelease {
++            session_id: "input-session".into(),
++            dialog_session_id: Some("dialog-session".into()),
++            dialog_frame_id: Some("dialog-frame".into()),
++            x: 122.04296875,
++            y: 64.0,
++            button: "left".into(),
++            click_count: 2,
++        }
++    }
++
++    fn m12_dialog_closed(session: &str, frame: &str) -> CdpEvent {
++        CdpEvent {
++            method: "Page.javascriptDialogClosed".into(),
++            params: json!({"frameId": frame, "result": true}),
++            session_id: Some(session.into()),
++        }
++    }
++
++    #[test]
++    fn test_m12_external_dialog_close_completes_only_its_pending_click_once() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.pending_pointer_release = Some(m12_pending_click());
++        sender
++            .send(m12_dialog_closed("other-session", "dialog-frame"))
++            .unwrap();
++        sender
++            .send(m12_dialog_closed("dialog-session", "other-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert!(state.pending_pointer_release.is_some());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        let drained = state.drain_cdp_events();
++        assert_eq!(drained.pending_pointer_releases.len(), 1);
++        let release = &drained.pending_pointer_releases[0];
++        assert_eq!(release.session_id, "input-session");
++        assert_eq!(release.x, 122.04296875);
++        assert_eq!(release.click_count, 2);
++        assert!(state.pending_pointer_release.is_none());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++    }
++
++    #[test]
++    fn test_m12_dialog_close_does_not_release_an_explicit_mouse_down() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.mouse_state.buttons = 1;
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert_eq!(state.mouse_state.buttons, 1);
++    }
++
++    #[test]
++    fn test_m12_frame_navigation_discards_an_old_deferred_release() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.pending_pointer_release = Some(m12_pending_click());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        sender
++            .send(CdpEvent {
++                method: "Page.frameNavigated".into(),
++                params: json!({"frame":{"id":"dialog-frame"}}),
++                session_id: Some("dialog-session".into()),
++            })
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert!(state.pending_pointer_release.is_none());
++        state.pending_pointer_release = Some(m12_pending_click());
++        state.reset_input_state();
++        assert!(state.pending_pointer_release.is_none());
+     }
+ 
+     #[test]
 --- a/cli/src/native/browser.rs
 +++ b/cli/src/native/browser.rs
 @@ -432,7 +432,7 @@
@@ -373,7 +1293,27 @@
  
 --- a/cli/src/native/interaction.rs
 +++ b/cli/src/native/interaction.rs
-@@ -143,15 +143,26 @@
+@@ -20,9 +20,19 @@
+ 
+ pub struct PendingRelease {
+     pub session_id: String,
++    pub dialog_session_id: Option<String>,
++    pub dialog_frame_id: Option<String>,
+     pub x: f64,
+     pub y: f64,
+     pub button: String,
++    pub click_count: i32,
++}
++
++impl PendingRelease {
++    pub fn matches_dialog(&self, session_id: Option<&str>, frame_id: Option<&str>) -> bool {
++        self.dialog_session_id.as_deref() == session_id
++            && self.dialog_frame_id.as_deref() == frame_id
++    }
+ }
+ 
+ pub async fn click(
+@@ -143,15 +153,26 @@
          )
          .await?;
  
@@ -405,13 +1345,129 @@
                  }"#
                  .to_string(),
                  object_id: Some(object_id),
-@@ -162,6 +173,9 @@
+@@ -162,6 +183,14 @@
              Some(&effective_session_id),
          )
          .await?;
-+    if selected.get("result").and_then(|value| value.get("value")).and_then(|value| value.as_bool()) != Some(true) {
++    if selected
++        .get("result")
++        .and_then(|value| value.get("value"))
++        .and_then(|value| value.as_bool())
++        != Some(true)
++    {
 +        return Err("Element is not an editable focused text target".to_string());
 +    }
  
      // Insert text (keyboard input dispatched at page level, use parent session_id)
      client
+@@ -935,17 +964,17 @@
+ }
+ 
+ /// Dispatches one mouse event and waits for the browser to ack it, but
+-/// returns Ok(true) if a JavaScript dialog opens first. A synchronous dialog
++/// returns its session/frame identity if a JavaScript dialog opens first. A synchronous dialog
+ /// (confirm/prompt/alert in the event handler) blocks the renderer's main
+ /// thread, so the input ack cannot arrive until the dialog is resolved;
+ /// without this the command hangs until the client read timeout and the agent
+ /// never sees the pending-dialog warning.
+-async fn dispatch_mouse_or_dialog(
++pub(crate) async fn dispatch_mouse_or_dialog(
+     client: &CdpClient,
+     session_id: &str,
+     accept_sessions: &[&str],
+     params: &DispatchMouseEventParams,
+-) -> Result<bool, String> {
++) -> Result<Option<(Option<String>, Option<String>)>, String> {
+     use tokio::sync::broadcast::error::RecvError;
+ 
+     // Subscribe before sending so the dialog event cannot slip past us.
+@@ -957,7 +986,7 @@
+         tokio::select! {
+             res = &mut send => {
+                 res?;
+-                return Ok(false);
++                return Ok(None);
+             }
+             event = events.recv() => {
+                 match event {
+@@ -971,7 +1000,10 @@
+                             None => true,
+                         };
+                         if ours {
+-                            return Ok(true);
++                            return Ok(Some((
++                                e.session_id,
++                                e.params.get("frameId").and_then(|v| v.as_str()).map(str::to_owned),
++                            )));
+                         }
+                         continue;
+                     }
+@@ -979,7 +1011,7 @@
+                     Err(RecvError::Lagged(_)) => continue,
+                     Err(RecvError::Closed) => {
+                         (&mut send).await?;
+-                        return Ok(false);
++                        return Ok(None);
+                     }
+                 }
+             }
+@@ -1014,6 +1046,7 @@
+         },
+     )
+     .await?
++    .is_some()
+     {
+         // No button was pressed yet, nothing to release.
+         return Ok(ClickResult {
+@@ -1029,7 +1062,7 @@
+     };
+ 
+     // Press
+-    if dispatch_mouse_or_dialog(
++    let dialog = dispatch_mouse_or_dialog(
+         client,
+         session_id,
+         accept_sessions,
+@@ -1045,8 +1078,8 @@
+             modifiers: None,
+         },
+     )
+-    .await?
+-    {
++    .await?;
++    if let Some((dialog_session_id, dialog_frame_id)) = dialog {
+         // Dialog opened from the mousedown handler: the button is held and the
+         // release will never arrive on its own. Hand the caller what it needs
+         // to release once the dialog is resolved.
+@@ -1054,9 +1087,12 @@
+             dialog_opened: true,
+             pending_release: Some(PendingRelease {
+                 session_id: session_id.to_string(),
++                dialog_session_id,
++                dialog_frame_id,
+                 x,
+                 y,
+                 button: button.to_string(),
++                click_count,
+             }),
+         });
+     }
+@@ -1079,7 +1115,8 @@
+             modifiers: None,
+         },
+     )
+-    .await?;
++    .await?
++    .is_some();
+     Ok(ClickResult {
+         dialog_opened,
+         pending_release: None,
+@@ -1101,7 +1138,7 @@
+                 y: release.y,
+                 button: Some(release.button.clone()),
+                 buttons: Some(0),
+-                click_count: Some(1),
++                click_count: Some(release.click_count),
+                 delta_x: None,
+                 delta_y: None,
+                 modifiers: None,

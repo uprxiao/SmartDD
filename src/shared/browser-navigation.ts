@@ -32,8 +32,8 @@ export function normalizeBrowserNavigationUrl(raw:string,engine?:BrowserSearchEn
     if(match?.[1].includes('.')){
       const parsed=new URL('https://'+input),host=parsed.hostname.toLowerCase().replace(/\.$/,'');
       if(!dns(host))return null;
-      if(host.endsWith('.localhost'))parsed.protocol='http:';
-      return parsed.href;
+      // Reparse the original authority: HTTPS parsing already removes :443.
+      return host.endsWith('.localhost')?new URL('http://'+input).href:parsed.href;
     }
     try{
       const parsed=new URL(input);
@@ -44,8 +44,7 @@ export function normalizeBrowserNavigationUrl(raw:string,engine?:BrowserSearchEn
         const parsed=new URL('https://'+input);
         const prose=/\s/.test(input)||!input.includes('.')&&!input.includes(':');
         if(engine===undefined||!prose){
-          if(parsed.hostname.toLowerCase().replace(/\.$/,'').endsWith('.localhost'))parsed.protocol='http:';
-          return parsed.href;
+          return parsed.hostname.toLowerCase().replace(/\.$/,'').endsWith('.localhost')?new URL('http://'+input).href:parsed.href;
         }
       }catch{/* Search fallback below. */}
       return engine===undefined?null:SEARCH_ENGINES[engine].url+encodeURIComponent(input);

@@ -8,6 +8,7 @@ export function BrowserJavascriptDialogView({dialog,onRespond}:{dialog:BrowserJa
   const title=dialog.kind==='prompt'?'网页输入':dialog.kind==='confirm'?'网页确认':'网页提示';
   let source=dialog.url;try{const url=new URL(source);source=url.origin==='null'?url.href:url.origin;}catch{/* Display plain text without interpreting it. */}
   useEffect(()=>{if(dialog.kind==='prompt'){input.current?.focus();input.current?.select();}else confirm.current?.focus();},[dialog.id,dialog.kind]);
+  useEffect(()=>{if(error&&!busy)(dialog.kind==='prompt'?input.current:confirm.current)?.focus();},[error,busy,dialog.kind]);
   const respond=async(accept:boolean)=>{if(busy)return;setBusy(true);setError('');try{await onRespond(accept,accept&&dialog.kind==='prompt'?value:undefined);}catch(error){setError(error instanceof Error?error.message:String(error));}finally{setBusy(false);}};
   return <div className="bw-scrim"><div role="dialog" aria-modal="true" aria-label={title} data-browser-panel="javascript-dialog" className="bw-dialog" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();event.preventDefault();if(!busy)void respond(false);}}}>
     <div className="bw-dialog-head"><div><h2>{title}</h2><p>{source}</p></div><button type="button" className="fw-icon" aria-label="关闭网页对话框" disabled={busy} onClick={()=>void respond(false)}><X size={16}/></button></div>

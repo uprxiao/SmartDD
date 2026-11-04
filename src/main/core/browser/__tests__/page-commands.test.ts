@@ -2,6 +2,11 @@ import {describe,expect,it} from 'vitest';
 import {browserPageArguments} from '../page-commands';
 
 describe('browser page command input boundary',()=>{
+  it('preserves an omitted release button so the native pointer releases its held button',()=>{
+    expect(browserPageArguments('mouse down',{})).toEqual(['mouse','down','left']);
+    expect(browserPageArguments('mouse up',{})).toEqual(['mouse','up']);
+    expect(browserPageArguments('mouse up',{button:'right'})).toEqual(['mouse','up','right']);
+  });
   it('expresses media motion as the fixed native parser bare marker, including clearing the previous reduction',()=>{
     expect(browserPageArguments('set media',{'color-scheme':'dark','reduced-motion':'reduce'})).toEqual(['set','media','dark','reduced-motion']);
     expect(browserPageArguments('set media',{'color-scheme':'light','reduced-motion':'no-preference'})).toEqual(['set','media','light']);

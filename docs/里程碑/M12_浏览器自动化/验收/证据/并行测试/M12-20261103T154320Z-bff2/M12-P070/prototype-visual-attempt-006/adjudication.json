@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-04T17:17:30.153Z",
+  "group": "M12-P070-P006-C02-tail",
+  "layer": "P private component only",
+  "status": "failed-or-partial",
+  "total": 4,
+  "passed": 3,
+  "checks": [
+    {
+      "id": "C02-tail01-error-focus-preserved",
+      "expected": "Both actual error occurrences restore input focus, keep exact entered value, actual error and enabled controls",
+      "status": "passed"
+    },
+    {
+      "id": "C02-tail02-real-scroll-visible-error",
+      "expected": "Actual body wheel in both themes reveals complete error in scroll viewport/pane, center unobstructed, input value preserved",
+      "status": "failed-or-partial",
+      "error": "AssertionError [ERR_ASSERTION]: Actual wheel changed the outer scroll position"
+    },
+    {
+      "id": "C02-tail03-real-cancel-and-isolation",
+      "expected": "Real cancel after visible error closes; no main or other component replay; no runtime errors",
+      "status": "passed"
+    },
+    {
+      "id": "C02-tail04-normal-cleanup",
+      "expected": "Actual browser exits0/null, no fallback, static server closed and no cleanup error",
+      "status": "passed"
+    }
+  ],
+  "formalCaseIncrement": 0,
+  "mergeBoundary": "Only missing C02 compact actual wheel/error visibility. P005 main and other component criteria reused by original frozen hash; no real App/CLI/AgentR/full R01.11 or exact Codex visual claim."
+}

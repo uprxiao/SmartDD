@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-04T16:49:27.891240+00:00",
+  "attempt": "003",
+  "status": "partial-stopped-prompt-enter",
+  "classification": "driver-key-text-missing-pending-confirmation",
+  "mainCriteriaPassed": 0,
+  "componentPassed": 0,
+  "formalCaseIncrement": 0,
+  "observedSubsegments": [
+    "main existing entry",
+    "new tab launcher and close",
+    "light alert accept",
+    "light confirm cancel/accept",
+    "prompt default focused and selected"
+  ],
+  "failure": "Prompt Enter produced no submit; key helper lacked CDP Enter text and unmodifiedText carriage return. Primary Playwright RawKeyboardImpl forwards text to both fields and keyboard layout maps Enter to carriage return. Correct full event and retain passive key/submit trace before classifying product behavior.",
+  "sourceLinks": [
+    "https://raw.githubusercontent.com/microsoft/playwright/main/packages/playwright-core/src/server/chromium/crInput.ts",
+    "https://raw.githubusercontent.com/microsoft/playwright/main/packages/playwright-core/src/server/usKeyboardLayout.ts"
+  ],
+  "normalBrowserExit": {
+    "code": 0,
+    "signal": null
+  },
+  "cleanup": "cleanup.json"
+}

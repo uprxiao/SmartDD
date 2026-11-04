@@ -22,6 +22,7 @@ export function JavascriptDialog({ dialog, onRespond }) {
   const [value, setValue] = useState(dialog.defaultValue), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const input = useRef(null), confirm = useRef(null);
   useEffect(() => { if (dialog.kind === 'prompt') { input.current?.focus(); input.current?.select(); } else confirm.current?.focus(); }, [dialog.id, dialog.kind]);
+  useEffect(() => { if (error && !busy) (dialog.kind === 'prompt' ? input.current : confirm.current)?.focus(); }, [error, busy, dialog.kind]);
   const respond = async accept => { if (busy) return; setBusy(true); setError(''); try { await onRespond(accept, accept && dialog.kind === 'prompt' ? value : undefined); } catch (failure) { setError(failure.message); } finally { setBusy(false); } };
   const title = dialog.kind === 'prompt' ? '网页输入' : dialog.kind === 'confirm' ? '网页确认' : '网页提示';
   return <PanelDialog title={title} subtitle="https://example.test · 演示合成页面" dismissOnBackdrop={false} closeDisabled={busy} onClose={() => respond(false)} footer={<>

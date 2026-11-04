@@ -29,7 +29,8 @@ export function browserPageArguments(command:string,args:Record<string,unknown>)
   if(command==='keypress')return['press',text(args.key)];
   if(command==='scroll')return['scroll',text(args.direction),String(args.amount??500)];
   if(command==='mouse move')return['mouse','move',String(finite(args.x)),String(finite(args.y))];
-  if(command==='mouse down'||command==='mouse up')return['mouse',command.split(' ')[1],text(args.button??'left')];
+  if(command==='mouse down')return['mouse','down',text(args.button??'left')];
+  if(command==='mouse up')return['mouse','up',...(args.button===undefined?[]:[text(args.button)])];
   if(command==='mouse wheel')return['mouse','wheel',String(finite(args.dy)),String(finite(args.dx??0))];
   if(command==='find'){
     const locator=text(args.locator),value=text(args.value),action=text(args.action),payload=args.text===undefined?[]:[text(args.text)];

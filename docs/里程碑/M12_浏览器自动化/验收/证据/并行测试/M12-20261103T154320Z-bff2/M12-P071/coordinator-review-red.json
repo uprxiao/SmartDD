@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-04T18:40:26.195544+00:00",
+  "status": "product-failed",
+  "case": "M12-T005",
+  "layer": "U only",
+  "originalExactExamples": "15passed, insufficient for full class/port contract",
+  "actual": {
+    "total": 57,
+    "passed": 55,
+    "failed": 2,
+    "exitCode": 1,
+    "signal": null
+  },
+  "rootCause": "Parsing https:// first canonicalizes explicit443 away, then switching protocol to http cannot recover it",
+  "failureExamples": [
+    "app.localhost:443",
+    "APP.LOCALHOST.:443/docs"
+  ],
+  "actualCode": "src/shared/browser-navigation.ts hostport and fallback local protocol conversion",
+  "formalIncrement": 0,
+  "next": "Preserve original input when choosing local http scheme; same57assertions reverify on new immutable source; preserve original red",
+  "cleanup": "producer exact38345/38346 absent; coordinator independent check next"
+}

@@ -1,0 +1,276 @@
+{
+  "at": "2026-11-04T18:44:25.526Z",
+  "type": "Independent originalcontract adjudication only; no actualNative replay or originaljudge editing",
+  "originalJudge": {
+    "path": "result.json",
+    "sha256": "6b57cd9a220e39d6bbdb974910e976fd1a529dc7c7f13d9602e64285d58a3903",
+    "counts": {
+      "total": 8,
+      "passed": 7,
+      "failed": 1,
+      "notExecuted": 0
+    },
+    "status": "failed-or-partial",
+    "keptUnchanged": true
+  },
+  "contract": {
+    "case": "M12-T062",
+    "layer": "I",
+    "requirements": "R04.1/P1 fixedOrca behavior",
+    "source": "contract-source/authoritative-tests.md",
+    "sha256": "7cd58046f0650e9fb7ad47225b5d53276854bd069fb5fbaa0bad9e292d71cc7c",
+    "exactOriginalRow": "| M12-T062 | R04.1 | I | 坐标画布页 | `mouse move`、`mouse down`／`up`（左、右、中键）、`mouse wheel` | 页面记录到的坐标、按键、滚动量与参数一致 | 原I的move、三显式按钮和delta证据保留；补核发现旧judge仅验wheel增量，未验目标/held mask。按已确认P1执行沿用Orca，wheel应继承tracked坐标/按钮；固定参考及.5实际均已核：move(122.04296875,64)后wheel仍(0,0)，现重开为部分通过。另显式down触发prompt实际已投递却CLI unknown，已登记待修复复验；不改原步骤/预期、不抹旧通过。 | 部分通过 | [原I](证据/并行测试/M12-20261103T154320Z-bff2/M12-P004/attempt-008/adjudication.json)；[当前真实输入及复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P070/native-pointer5-attempt-001/coordinator-review.json)；[固定参考/覆盖核对](证据/并行测试/M12-20261103T154320Z-bff2/M12-P070/mouse-contract-001/docs/review/review-20261105-0154.md) |",
+    "required": "mouse move; left/right/middle down/up; wheel; actual coordinates/buttons/deltas. Wheel target/held tracked state consistent fixedOrca."
+  },
+  "reference": [
+    {
+      "path": "contract-source/cdp-pointer-input.ts",
+      "sha256": "4e5b892b601ce9965f484826435f83128ed9cd587f64aca4af6682ceebcdfefd",
+      "fixedCommit": "bd9455b61655b9e76504349a6c8571f74f14954f"
+    },
+    {
+      "path": "contract-source/agent-browser-bridge-pointer-commands.ts",
+      "sha256": "de6dca40c0aee90d9ac58287c1c5448d9db7d2fee8efe3de24de43b38ba3bac3",
+      "fixedCommit": "bd9455b61655b9e76504349a6c8571f74f14954f"
+    }
+  ],
+  "checks": [
+    {
+      "id": "left-explicit",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract"
+    },
+    {
+      "id": "right-explicit",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract"
+    },
+    {
+      "id": "middle-explicit",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract"
+    },
+    {
+      "id": "wheel-left-fractional",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract",
+      "actualWheel": {
+        "event": {
+          "button": 0,
+          "buttons": 0,
+          "caseId": "p0706-wheel-left-fractional",
+          "clientX": 141,
+          "clientY": 241,
+          "deltaX": -2.5,
+          "deltaY": 120.25,
+          "detail": 0,
+          "target": "left-content",
+          "timeOrigin": 1793817556700.5,
+          "timeStamp": 39433.20000000298,
+          "trusted": true,
+          "type": "wheel",
+          "zone": "left-zone"
+        },
+        "before": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 20,
+            "y": 160
+          },
+          "scrollLeft": 100,
+          "scrollTop": 200
+        },
+        "after": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 20,
+            "y": 160
+          },
+          "scrollLeft": 97.5,
+          "scrollTop": 320.5
+        },
+        "requestedDelta": {
+          "x": -2.5,
+          "y": 120.25
+        },
+        "actualScrollDelta": {
+          "x": -2.5,
+          "y": 120.5
+        },
+        "predeclaredRange": "floor/ceil CSSpixel coordinate; actual fractionalscroll not rewritten"
+      }
+    },
+    {
+      "id": "wheel-right-reverse",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract",
+      "actualWheel": {
+        "event": {
+          "button": 0,
+          "buttons": 0,
+          "caseId": "p0706-wheel-right-reverse",
+          "clientX": 421,
+          "clientY": 241,
+          "deltaX": 1.25,
+          "deltaY": -90.5,
+          "detail": 0,
+          "target": "right-content",
+          "timeOrigin": 1793817556700.5,
+          "timeStamp": 47094.20000000298,
+          "trusted": true,
+          "type": "wheel",
+          "zone": "right-zone"
+        },
+        "before": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 300,
+            "y": 160
+          },
+          "scrollLeft": 100,
+          "scrollTop": 200
+        },
+        "after": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 300,
+            "y": 160
+          },
+          "scrollLeft": 101.5,
+          "scrollTop": 109.5
+        },
+        "requestedDelta": {
+          "x": 1.25,
+          "y": -90.5
+        },
+        "actualScrollDelta": {
+          "x": 1.5,
+          "y": -90.5
+        },
+        "predeclaredRange": "floor/ceil CSSpixel coordinate; actual fractionalscroll not rewritten"
+      }
+    },
+    {
+      "id": "right-held-wheel-omitted-up",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract",
+      "actualWheel": {
+        "event": {
+          "button": 0,
+          "buttons": 2,
+          "caseId": "p0706-right-held-wheel-omitted-up",
+          "clientX": 421,
+          "clientY": 241,
+          "deltaX": 0,
+          "deltaY": 40,
+          "detail": 0,
+          "target": "right-content",
+          "timeOrigin": 1793817556700.5,
+          "timeStamp": 56399.59999999404,
+          "trusted": true,
+          "type": "wheel",
+          "zone": "right-zone"
+        },
+        "before": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 300,
+            "y": 160
+          },
+          "scrollLeft": 101.5,
+          "scrollTop": 109.5
+        },
+        "after": {
+          "rect": {
+            "height": 162,
+            "width": 242,
+            "x": 300,
+            "y": 160
+          },
+          "scrollLeft": 101.5,
+          "scrollTop": 149.5
+        },
+        "requestedDelta": {
+          "x": 0,
+          "y": 40
+        },
+        "actualScrollDelta": {
+          "x": 0,
+          "y": 40
+        },
+        "predeclaredRange": "floor/ceil CSSpixel coordinate; actual fractionalscroll not rewritten"
+      }
+    },
+    {
+      "id": "left-right-chord-omitted-up",
+      "status": "passed",
+      "scope": "OriginalT062 coordinates/button/scroll effect plus fixedOrca target/held/release contract",
+      "actualPhases": [
+        {
+          "phase": "down-left",
+          "type": "mousedown",
+          "button": 0,
+          "buttons": 1,
+          "clientX": 280,
+          "clientY": 425,
+          "detail": 1,
+          "timeStamp": 64854.29999999702
+        },
+        {
+          "phase": "down-right",
+          "type": "mousedown",
+          "button": 2,
+          "buttons": 3,
+          "clientX": 280,
+          "clientY": 425,
+          "detail": 1,
+          "timeStamp": 66512.79999999702
+        },
+        {
+          "phase": "up-omitted-right",
+          "type": "mouseup",
+          "button": 2,
+          "buttons": 1,
+          "clientX": 280,
+          "clientY": 425,
+          "detail": 1,
+          "timeStamp": 68198.79999999702
+        },
+        {
+          "phase": "up-omitted-left",
+          "type": "mouseup",
+          "button": 0,
+          "buttons": 0,
+          "clientX": 280,
+          "clientY": 425,
+          "detail": 0,
+          "timeStamp": 69888.70000000298
+        }
+      ]
+    }
+  ],
+  "originalT062Recommendation": "OriginalT062 fullI criteria met; coordinatorfinaldecision/ledger only",
+  "explicitModal": {
+    "status": "passed",
+    "scope": "Olddownunknown repaired: trueCLI completed before answer, actualSQLattempt1, noautorelease, explicitup; not a repeat of originalT068sixbasic"
+  },
+  "extraDetailFinding": {
+    "keptOriginalFailedCheck": "left-right-chord-omitted-up",
+    "originalAdditionalExpectation": "Each chordmousedown/mouseup DOM detail must equal1",
+    "actual": "left-down1,right-down1,right-up1,left-up0; final native buttons0, correct buttonandcoords, allCLIcompleted/attempt1",
+    "classification": "Supplementary expectation is not in originalT062; not by itself evidence of a productiondefect",
+    "fixedReference": "Orca sets CDP clickCount from state for press/release. It does not assert that every DOM chordmouseup.detail must equal1. Raw DOM detail and wire clickCount are separately identified.",
+    "notClaimed": "No unmodifiedOrca Native chord replay was run; cause of DOMdetail0 is not empirically attributed here. No claim allChromium chord behavior universally identical."
+  },
+  "formalIncrement": 0,
+  "noNativeReplay": true,
+  "all84ActualReceipts": {
+    "status": "passed",
+    "records": 84
+  }
+}

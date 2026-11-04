@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-04T16:40:12.210554+00:00",
+  "updatedAt": "2026-11-04T18:57:26.180228+00:00",
   "status": "S1门槛完成；S2-S6总目标active，前置缺陷定位",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,221 +193,149 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "P070 originalT068 credited; prototype P and supplementary Native003 preparing, no UI/build lease",
+    "currentGroup": "M12-P073",
     "groups": [
       {
         "id": "M12-P001",
-        "name": "M11显式sandbox参数接入修复与复验",
         "owner": "/root",
-        "status": "complete; explicit workspace/readonly and named workspace A/R verified",
-        "defect": "S1-M11-CLI-SANDBOX",
-        "criteriaSource": "../技研/技术方案.md#112-先修-m11-接入兼容缺陷",
-        "originalRed": "证据/并行测试/M12-20261103T092732Z-s1a/S1-G001/attempt-019/",
-        "layers": [
-          "U",
-          "I",
-          "A",
-          "R"
+        "status": "complete",
+        "privateRoot": "/private/tmp/willyou-m12-s1-p001-named-001",
+        "pids": [],
+        "sessions": [],
+        "ports": [],
+        "testBaseline": "frozenInputs，私有cache已在测试启动前设置；typecheck已通过，回归仍在执行",
+        "frozenInputs": [
+          {
+            "path": "src/main/core/applications/codex-effective-sandbox.ts",
+            "sha256": "149f73d1761171359ed4358a8240ef1a8e2badc26c0fe51b0fb0693cbbcfd01f"
+          },
+          {
+            "path": "src/main/core/applications/task-capability-launcher.ts",
+            "sha256": "c27799a4f265ad76ce2afe53ee90ea200da58a1e6c7b2a8c227ac3d68fbbd76b"
+          },
+          {
+            "path": "src/main/core/tasks/capability-lifecycle.ts",
+            "sha256": "1ddd44d6fc0967d58aac180a87d307c7d1e73e804b34993e9f329311281b2f43"
+          },
+          {
+            "path": "src/main/core/tasks/task-service.ts",
+            "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+          },
+          {
+            "path": "src/main/core/applications/__tests__/codex-effective-sandbox.test.ts",
+            "sha256": "36357f957ff23a7d5e14ffef60a1576668c305dd2c6d71008b7f6bb0d8920e50"
+          },
+          {
+            "path": "src/main/core/applications/__tests__/task-capability-launcher.test.ts",
+            "sha256": "1983512019396687f2844ed729a04c7ad1788e942fa2419be472df69beb577c9"
+          }
         ],
-        "relatedCaseIds": [
-          "M12-T030",
-          "M12-T032",
-          "M12-T035",
-          "M12-T037",
-          "M12-T045"
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-001",
+            "manifestSha256": "4f814e1e005f341afecb05f4ff88a5a22c11fb623509aaa6f860af6dcc76f430",
+            "accounted": "执行记录待同步；正式用例不更新"
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-002",
+            "manifestSha256": "3a62c4743b2aad4f7f09e3bc6adc92baf01c304a44b009315e9a029fc7e6aa90",
+            "accounted": "no formal case updates"
+          },
+          {
+            "attempt": "attempt-003",
+            "path": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-003",
+            "status": "fixture-failed before App spawn; preserved"
+          },
+          {
+            "attempt": "attempt-004",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-004",
+            "manifestSha256": "3a24062615355142821f6bf862e5cbbc99ac55d8e9f6acf23891c10bc420b1fe",
+            "accounted": "software and policy supplement only; no new formal case pass"
+          },
+          {
+            "attempt": "attempt-005",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P001/attempt-005",
+            "manifestSha256": "0f8399150ad0f0e093d9e62b798b64841fa2f8a321731eb0e6db742e42a51327",
+            "accounted": "no formal case updates"
+          }
         ],
-        "coverageNote": "原用例仅作受影响回归关联，本组另核对原失败配置；关联不代表整条已执行或通过，开跑前补齐具体判据、命令与冻结输入",
-        "resources": {
-          "implementation": "released",
-          "build": "released",
-          "nativeUi": "released"
+        "package": {
+          "at": "2026-11-03T16:08:12.009802+00:00",
+          "executable": "/private/tmp/willyou-m12-s1-p001-package-001/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+          "asarSha256": "485ce66a1c10681e8369db19c1f0da4006db26e807431264d3d9bbfb7da89ce9",
+          "helperSha256": "e0e8999229c58be38b80f91e5f35250b7f3edbe2884065ec85a87069dccd88ea",
+          "sourceInputs": "/private/tmp/willyou-m12-p001-software-001/build-inputs-current.json"
         },
-        "next": "closed; continue S2"
+        "externalDriver": {
+          "path": "scripts/browser/s1-packaged-agent.mjs",
+          "sha256": "0b4cb470e8d36edcc22f02161614d7a49c11bd884e27afa28f5a7cb3a0bd1489",
+          "preflight": "node syntax, 11 CDP literals, generated Python AST passed; App file existence checked before fixture creation"
+        },
+        "next": "M12-P002"
       },
       {
         "id": "M12-P002",
-        "name": "S2界面与导航",
         "owner": "/root",
-        "status": "S2 implemented; available A/I/U batches executed; T004 delegated, S4/settings/native-system dependencies retained",
-        "dependsOn": [
-          "M12-P001"
-        ],
-        "criteriaSource": "../技研/技术方案.md#113-批次范围与用例导航",
-        "caseCriteria": [
+        "status": "available popup A branches passed on package006; other S2 dependencies/pending cases remain",
+        "privateRoot": "/private/tmp/willyou-m12-s2-native-regression-logs",
+        "pids": [],
+        "sessions": [],
+        "ports": [],
+        "testBaseline": "/private/tmp/willyou-m12-p002-software-008/inputs.json",
+        "next": "S4 profile deletion branch; native/system tests and T005 rule decision",
+        "package": {
+          "path": "/private/tmp/willyou-m12-s2-package-006/mac-arm64/WillYou.app",
+          "asarSha256": "4043070facf4051d7a70fcb1475136db434cc8bcb1ffc46cae065528870d69d4"
+        },
+        "externalDrivers": [
           {
-            "caseId": "M12-T001",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+            "path": "scripts/browser/s2-packaged-ui.mjs",
+            "sha256": "684dacd8ae41039cdac1835215e65d188b4e61c3740f71bd6ff73c08d5d27294"
           },
           {
-            "caseId": "M12-T002",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+            "path": "scripts/browser/adjudicate-s2-workspace.mjs",
+            "sha256": "49b7d131d33ccc270977606f57d38d304dfac6d8877efa1cb8620ced774dc598"
           },
           {
-            "caseId": "M12-T003",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+            "path": "scripts/lib/electron-harness.mjs",
+            "sha256": "1a1f1ec56674175e6aa15bad7a7ff0660415bad59b595c3d41d8e6aaee55cfd3"
           },
           {
-            "caseId": "M12-T004",
-            "layers": "A＋R",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T005",
-            "layers": "U",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T006",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T007",
-            "layers": "I＋A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T008",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T009",
-            "layers": "A＋S",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T010",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T011",
-            "layers": "U＋A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T013",
-            "layers": "A＋I",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T014",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T018",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T019",
-            "layers": "I＋A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T020",
-            "layers": "A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T023",
-            "layers": "I",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T024",
-            "layers": "A＋S",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
-          },
-          {
-            "caseId": "M12-T025",
-            "layers": "U＋A",
-            "originalCriteria": "测试用例.md 中同号用例全部前置、操作与预期；本组不改验收合同",
-            "validOldEvidence": "none counted for this group",
-            "remaining": "全部原要求层级",
-            "next": "先实现、补有价值U/I，然后统一打包真实UI验收；S层用原生工具补验，需本人部分独立后置"
+            "path": "scripts/lib/app-focus-guard.mjs",
+            "sha256": "728a91425d6dde125d391c4bef771a050bcee7433b9d2296142db6230d9ef9d6"
           }
         ],
-        "crossBatchCases": [
+        "defect": "popup defects fixed and available I/A matrices passed; T013 partial",
+        "regressionInputs": [
           {
-            "caseId": "M12-T107",
-            "scope": "仅在新UI就绪后补A层；S1 I层是否复用需核对变更与哈希"
+            "path": "scripts/browser/s1-service-host.ts",
+            "sha256": "d53a029e8216597dbd96aa39029c467f15c31343408a2c5e3d7cc7e066c19844"
+          },
+          {
+            "path": "scripts/browser/s1-lifecycle-probe.mjs",
+            "sha256": "9a65993bcbc77773fded1599997fee5551a4918adb2fc251635d7ad300dd6c6e"
+          },
+          {
+            "path": "scripts/browser/adjudicate-s1-lifecycle.mjs",
+            "sha256": "5a5d5f31b8904a72d565ac16b48d2684d55b303cce7f09635adb717034ffbf59"
+          },
+          {
+            "path": "scripts/browser/s1-error-probe.mjs",
+            "sha256": "8413748f73a6f31d439e786d228eb633317f66485853fa8ffc9ef551ba75eb9d"
+          },
+          {
+            "path": "scripts/browser/adjudicate-s1-errors.mjs",
+            "sha256": "76a3324245d0ee06daa80e486d17f44a7394228ca7147f16eedb83a1c9403bce"
           }
         ],
-        "resources": {
-          "implementation": "coordinator only",
-          "build": "not allocated",
-          "nativeUi": "not allocated"
-        }
+        "implementationCommit": "a2beb41744c4ec2d0b4f0bc2ff3328c7c132af1a"
       },
       {
         "id": "M12-P003",
-        "name": "S2 no-project/deleted-project T004",
         "owner": "/root/s2_t004_test",
-        "status": "ready; resource lease granted, not yet counted as executed",
-        "dependsOn": [
-          "M12-P002 package006"
-        ],
-        "criteriaSource": "测试用例.md#M12-T004",
+        "status": "delivered and accounted; acceptance-contract-conflict",
         "cases": [
           "M12-T004"
         ],
@@ -415,12 +343,15 @@
           "A",
           "R"
         ],
-        "resources": [
-          "nativeUi",
-          "nativePTY"
-        ],
+        "privateRoot": "/private/tmp/willyou-m12-t004-executor-001",
         "baseline": "/private/tmp/willyou-m12-p003-baseline-001/baseline.json",
-        "privateRoot": "/private/tmp/willyou-m12-t004-executor-001"
+        "resources": [],
+        "pids": [],
+        "ports": [],
+        "next": "user decision; no business retry until rule resolved",
+        "delivery": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P003/attempt-001",
+        "manifestSha256": "be6153e8215f7f67d5ab8f0a1eecf38910795a00b81923140fe938782ddd0a73",
+        "cleanup": "verified all owned PIDs and nine ports absent"
       },
       {
         "id": "M12-P007",
@@ -434,21 +365,66 @@
           "I"
         ],
         "owner": "/root/s2_t004_test",
-        "status": "complete, current helper .4 T065/T052 verified and accounted",
+        "status": "T065 and T052 .4 complete, verified and accounted",
         "baseline": "/private/tmp/willyou-m12-p007-baseline-001/baseline.json",
         "supplement": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-nth.json",
         "supplementSha256": "25c3cf2b08c5007bf1d6b0718cf4662a376a9df4c43abccea828da7aaf5f6c3a",
-        "privateRoot": "/private/tmp/willyou-m12-t065-executor-001",
+        "privateRoot": "/private/tmp/willyou-m12-t065-executor-001/attempt-004",
         "pids": [],
         "ports": [],
         "next": "released",
         "criteriaSource": "测试用例.md T065 and 技研/E3_待核实事实_20261103.md",
         "criteria": "10 locators and 7 actions, all semantically valid combinations, iframe and nth focus known limitations; independent actual page event/state verification; no retry of unknown writes",
         "applicability": "64 effective combinations, six nonsensical element/action pairs explicitly excluded (four alt/img mutations and two placeholder/text-input checkbox actions); this does not omit a valid requirement",
-        "resources": {
-          "nativeUi": "released",
-          "build": "released"
-        }
+        "delivery": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-001",
+        "manifestSha256": "75c16a1802866dad171228d82fa4165dadd74dcaa1fcf7815f20f394ca113e05",
+        "supplement2": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-helper2.json",
+        "supplement2Sha256": "7432e9ce5e4e66ba553eb6818224ca79565a86beee266c1e5bc6dff440c608a9",
+        "regressionSupplement": [
+          "M12-T052 after helper version update"
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-002",
+            "manifestSha256": "95936dc80253536bd65218d0755a8db9bd0a0c0f62f9221677697196467c22af",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-003",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-003",
+            "manifestSha256": "25f96610a9c707a11ebbdc452b431f307a1d25a0405261202bbdcbde4e105e06",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-004",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-004",
+            "manifestSha256": "8a555855e71bf03e85159d95a65d20d8f34b1387942b391c9a025133355d9d2a",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-005",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-005",
+            "manifestSha256": "c4531e0bc3e3310a86015b7f29caf7ae41b285a8955376ff5d3cc35af542ccf4",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-006",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-006",
+            "manifestSha256": "725408e4410f7d313b8b5cdf0f042678ed3658428415bcb97479c4b6db5f2db2",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-007",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P007/attempt-007",
+            "manifestSha256": "058bbcfca9923de92b040f359d9a650d8599118dd5a4fbd2e1706f804d1dfff2",
+            "accounted": true
+          }
+        ],
+        "supplement3": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-helper3.json",
+        "supplement3Sha256": "be27d46f37662c488c9863bc1ad526938839e3b460e9820dde645166f2da1b8c",
+        "supplement4": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-helper4.json",
+        "supplement4Sha256": "ac2b3b53d44985a50139fc405649fbfd4b01c5bd7a25754d5395acbabb066696"
       },
       {
         "id": "M12-P008",
@@ -467,24 +443,34 @@
         "layers": [
           "I"
         ],
-        "status": "Cookie/isolation complete I; lifecycle subset complete I; clone and A/UI remain",
-        "privateRoot": "/private/tmp/willyou-m12-s1-s4-profile-001",
-        "baseline": "/private/tmp/willyou-m12-p004-software-001/inputs-027.json",
+        "status": "attempt002 native lifecycle subset passed/verified; all owned resources released",
+        "privateRoot": "/private/tmp/willyou-m12-s1-s4-profile-002",
+        "baseline": "/private/tmp/willyou-m12-p004-software-001/inputs-032.json",
         "criteriaSource": "测试用例.md original T078/T084 plus unchanged T057 navigation step",
         "criteria": [
-          "two actual persistent profiles: B sees none of A Cookie/localStorage; identical cache URL causes a fresh request in B, while second A access is cached",
-          "cookie set domain/path/secure/httpOnly/sameSite/expires matches CDP read; real HTTPS request includes cookie, named deletion removes it but preserves independent sentinel; subsequent request does not include deleted cookie"
+          "same browserPageId across session switches; old refs refused; original isolated and project Cookie/localStorage restored independently",
+          "delete returns all live/dormant/reopen bindings to project profile before clearing old data; project profile/foreign IDs refused"
         ],
         "fixtureBoundary": "private synthetic HTTPS certificate only, exact fingerprint/127.0.0.1 session verification setup, restore during cleanup; does not count certificate permission UI cases",
         "pids": [],
         "ports": [],
-        "next": "finish clone and full UI/restart/system layers"
+        "next": "clone plus packaged UI/restart/project cleanup verification pending",
+        "delivery": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P008/attempt-001",
+        "manifestSha256": "a55b4100f02cb9f48f1cdd74f9f72f7f36d1ce8fe172f1ff891da05d8b87feec",
+        "deliveries": [
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P008/attempt-002",
+            "manifestSha256": "fe4c80520460a5acdd575c246169e8762c87a6670411f4a7653ad7ffe953855e",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P009",
         "name": "S4任务/项目生命周期清理I子层",
         "owner": "/root/s2_t004_test",
-        "status": "I cleanup complete after two product fixes; A/restart/actual run-ending remain",
+        "status": "same19 I checks green, verified/archived; original A remains",
         "layers": [
           "I"
         ],
@@ -503,16 +489,47 @@
           }
         ],
         "baseline": "/private/tmp/willyou-m12-p009-baseline-001",
-        "supplementSha256": "f78a31154865e0b7c88dcf09f4d4b0a25803d03beace2606e2a045663f865294",
+        "supplementSha256": "7ada079a7c3667653895318016c4fd4bbde25f9df0bcf67d2284d66aceeb438d",
         "resources": {
-          "nativeUi": "released"
+          "nativeUi": "not granted"
         },
-        "next": "released"
+        "next": "released",
+        "privateRoot": "/private/tmp/willyou-m12-p009-executor-001/attempt-003",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p009-executor-001/cache node /private/tmp/willyou-m12-p009-executor-001/p009.mjs --execute",
+        "pids": [],
+        "ports": [],
+        "supplement": "/private/tmp/willyou-m12-p009-fix-baseline-001/baseline-supplement-s4-cleanup-fix.json",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P009/attempt-001",
+            "manifestSha256": "fa9341d57908f479d2df6ff7d73fb15c8ca4684dbbbf3e46d99cc6984d00d85e",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P009/attempt-002",
+            "manifestSha256": "169be6ed0dba284ca50db21cc334f3d796ac318bee94c59c789ab6c10ffcf13f",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-003",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P009/attempt-003",
+            "manifestSha256": "42a56789077ccbe187e0af9b48439c1ac5674df31559f449f7eea5ce9ae0789f",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-004",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P009/attempt-004",
+            "manifestSha256": "d3f68b3366ebef454a08afb823257d00d71091735c668c04ba267b92ec621565",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P010",
         "owner": "/root",
-        "status": "T021 A complete; scoped dialog terminal input product fix U passed, new package A pending",
+        "status": "T021 complete; terminal scoped-dialog product fix A passed, subsequent settings deferred by focus loss",
         "cases": [
           "M12-T021",
           "M12-T022",
@@ -528,7 +545,7 @@
           "T026 other dialogs/narrow drag",
           "T089 native CLI/restart"
         ],
-        "privateRoot": "/private/tmp/willyou-m12-p004-software-001",
+        "privateRoot": "/private/tmp/willyou-m12-s2-s4-settings-005",
         "baseline": "inputs037/source037",
         "criteriaSource": "测试用例.md original T021/T022/T026/T089; A actions must use actual packaged UI",
         "criteria": [
@@ -541,15 +558,75 @@
             "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-001",
             "manifestSha256": "ee3415370a4f28bbf6e40e00f3ccfcf5241fea125d7f46ee36347cd92ed5b189",
             "accounted": true
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-002",
+            "manifestSha256": "c2eafd99c869cf6fbd6f782a88d284bc83d12e3f552082e1a979a26fb47f5d4a",
+            "accounted": true,
+            "classification": "driver route diagnostic / no whole case pass"
+          },
+          {
+            "attempt": "attempt-003",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-003",
+            "manifestSha256": "01511c24bd74d4829d44408f39105478a721ee7921f5fdaff82a50ec6884c8bf",
+            "accounted": true,
+            "classification": "driver route diagnostic / no whole case pass"
+          },
+          {
+            "attempt": "attempt-004",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-004",
+            "manifestSha256": "13ff8e84f5ff8822f99df0e3b31a90ce0ec467c0a3bf553ff499a1dbfe09d67d",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-005",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-005",
+            "manifestSha256": "f963c1352699ab8f3fc73bf58e3c09e3950745272b5e96aec709646ed5765d6d",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-007",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-007",
+            "manifestSha256": "0aa14de51b329b85860fc4b3c44e4a095787af08cd8336fa7d7dc53035712ce3",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-009",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009",
+            "manifestSha256": "1b33a6282d67622d5d580804ddeb0540b9df7b19e6ac3f6d61828e9217a39036",
+            "accounted": true
           }
         ],
-        "next": "new package after terminal keyboard fix; settings-only continues missing segment, no repeat T021"
+        "next": "same original T021 A and settings UI subset",
+        "packageRoot": "/private/tmp/willyou-m12-s2-package-009",
+        "productionInputs": "/private/tmp/willyou-m12-p010-build-002/production-inputs.json",
+        "sourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd",
+        "package": {
+          "at": "2026-11-04T01:39:56.980242+00:00",
+          "sourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd",
+          "asarSha256": "a1b5724740a5053e53bc9d03b581152dd399f89a56b7ce4154cdad1e3d97aae9",
+          "helperSha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+          "helperVersion": "0.27.3-willyou.4",
+          "productionInputsUnchanged": true,
+          "arch": "arm64",
+          "implementationChanges": [
+            "src/renderer/views/task-view.tsx terminal dialog keyboard ownership"
+          ],
+          "externalDriverMode": "settings-only, T021 previous valid A reused"
+        },
+        "externalDriver": {
+          "path": "scripts/browser/s2-packaged-ui.mjs",
+          "sha256": "163f6f03bce43e610fc942504521f3f4a1521ab2551870d557fc43499d838659",
+          "mode": "settings-find",
+          "preflight": "node syntax + literal CDP compile + focus guard 2/2"
+        }
       },
       {
         "id": "M12-P011",
         "name": "S4证书撤销即时拦截技术I前置",
         "owner": "/root/s2_t004_test",
-        "status": "native resource granted; awaiting actual process receipt",
+        "status": "technical I complete; all evidence verified and archived; no T012 A claim",
         "privateRoot": "/private/tmp/willyou-m12-p011-executor-001",
         "layers": [
           "technical I only"
@@ -568,12 +645,22 @@
         "resources": {
           "nativeUi": "granted",
           "build": "not allocated"
-        }
+        },
+        "pids": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P011/attempt-001",
+            "manifestSha256": "5475eb44d7bad9d12e94e939442819e0ca02159e6dbeb4319edc94a9abfd32ff",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P012",
         "owner": "/root/s2_t004_test",
-        "status": "native resource granted; awaiting actual process receipt",
+        "status": "actual component I passed and archived; original T012 A pending",
         "name": "actual production certificate/network policy component I",
         "privateRoot": "/private/tmp/willyou-m12-p012-executor-001",
         "baseline": "/private/tmp/willyou-m12-p012-baseline-002/baseline.json",
@@ -594,7 +681,23 @@
         "resources": {
           "nativeUi": "granted",
           "build": "not allocated"
-        }
+        },
+        "pids": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P012/attempt-001",
+            "manifestSha256": "a943d9b4202604ea6a56b96bb7a255589068b1640e7ec7733d27a8703ad54090",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P012/attempt-002",
+            "manifestSha256": "78f5f0f35d33b01070890fab37256f5de6897fb2512a7f552f317e57daad61ad",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P013",
@@ -632,7 +735,7 @@
         "id": "M12-P014",
         "name": "actual native permission API component I",
         "owner": "/root/s2_t004_test",
-        "status": "native resource granted; awaiting actual process receipt",
+        "status": "technical I passed and archived; original T017 A pending",
         "privateRoot": "/private/tmp/willyou-m12-p014-executor-001",
         "baseline": "/private/tmp/willyou-m12-p014-permissions-baseline-001/baseline.json",
         "baselineSha256": "658cad198c5518f7698c7d19778505079850f8ccb2baea571c8247330a6f5f8c",
@@ -652,7 +755,23 @@
         "resources": {
           "nativeUi": "granted",
           "build": "not allocated"
-        }
+        },
+        "pids": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P014/attempt-001",
+            "manifestSha256": "7939750fac79349770b240a0a7f4ec6578aea2807e15f09aa5cf8b988006e04f",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P014/attempt-002",
+            "manifestSha256": "badbb43c5a3020b9311d1eb39aed840a718f1dc435cf16800477a3c09d4c406d",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P015",
@@ -688,7 +807,7 @@
         "id": "M12-P016",
         "owner": "/root/s2_t004_test",
         "name": "原T067完整真实CLI上传/下载I",
-        "status": "original T067 complete I, accounted",
+        "status": "original T067 full I passed and accounted; targeted supplements separate",
         "privateRoot": "/private/tmp/willyou-m12-p016-executor-001",
         "baseline": "/private/tmp/willyou-m12-p016-baseline-002/baseline.json",
         "baselineSha256": "be888bbda80023d9d7c333886e96fea91ec20a8cdb136107c69344bfc96b143e",
@@ -713,22 +832,32 @@
         "resources": {
           "nativeUi": "granted",
           "build": "not allocated"
-        }
+        },
+        "pids": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P016/attempt-001",
+            "manifestSha256": "d3bb3d5ff22f35390781a1101dbdd17d1f0decf91e0565a6a861b4e24a2a5761",
+            "accounted": true
+          },
+          {
+            "attempt": "attempt-002",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P016/attempt-002",
+            "manifestSha256": "aa0c3990ebc9fcfd8650de42e416fa195e2548f04ac0dee0bda8cb3121244d2c",
+            "accounted": true
+          }
+        ]
       },
       {
         "id": "M12-P018",
-        "phase": "S4",
-        "cases": [
-          "M12-T087"
-        ],
-        "layers": [
-          "I"
-        ],
         "owner": "/root/s2_t004_test",
-        "status": "original T087 complete I, accounted",
-        "requirements": "R1.3",
-        "technicalDesign": "V1.2",
-        "criteria": [
+        "status": "original T087 complete I, independently verified and accounted; resources released",
+        "privateRoot": "/private/tmp/willyou-m12-p018-executor-001/attempt-002",
+        "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
+        "baselineSha256": "0de4e3c643de8b2dab26e26b0526dfe9a447cb525f40bafd7621aeef7a6a2109",
+        "cases": [
           {
             "id": "M12-T087",
             "layer": "I",
@@ -747,31 +876,54 @@
             "layer": "auth branch supplement only; original three prompt/Skill criteria remain"
           }
         ],
-        "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
-        "baselineSha256": "0de4e3c643de8b2dab26e26b0526dfe9a447cb525f40bafd7621aeef7a6a2109",
-        "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
-        "dependencies": [
-          "P017 software 34 checks and typecheck passed",
-          "actual native CLI/.4/M11 inputs frozen",
-          "native resource lease clear"
+        "resources": [
+          "nativeUi"
         ],
-        "next": "real HTTP auth and secret/argv/log checks; extra pending auth rejection, timeout and explicit cancel remain I supplements"
+        "pids": [
+          54696
+        ],
+        "ports": [
+          63016
+        ],
+        "sessions": [
+          12594
+        ],
+        "next": "executor reports actual process receipts and final cleanup; coordinator exclusively accounts ledger",
+        "artifactSupplement": {
+          "path": "/private/tmp/willyou-m12-p018-artifact-supplement-001/artifact-supplement.json",
+          "sha256": "1ff4508a3c61fcde7844846718fa00c041ec60698fbe246752d1cf70e22fa9fa",
+          "purpose": "reuse exact built runtime helper provenance required by actual fixture, replacing static build recipe at the same relative output name; no production code or binary change"
+        },
+        "currentAttempt": "attempt-002",
+        "hostSha256": "024e82124250cf4df7d8dc07d481feccadc9172737709df13909a93169ea44fd",
+        "modeSupplement": {
+          "path": "/private/tmp/willyou-m12-p018-mode-supplement-001/executable-modes.json",
+          "sha256": "df7fff8067c806769cf55703942a92d9e3dfb4e32c9510f48179fd1c2a06f2a6"
+        },
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "85c3ef94f3d04c5d744a86529ac2a87098b39990312e6708ca1f3af07ec9bb69"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "1d7a21fa85b7e00a8a71c6628658819028694756dae657f13860e4f8bc51864c"
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "bad62819c3d9e93ecc3dab1bcd7a98cef31b569ac4bec4fbc4f3dc8d4e50c040",
+            "coordinator": true
+          }
+        ]
       },
       {
         "id": "M12-P020",
         "owner": "/root/s2_t004_test",
-        "name": "原T086环境模拟完整I",
-        "status": "original T086 complete I, accounted",
-        "relatedCaseIds": [
-          "M12-T086"
-        ],
-        "layers": [
-          "I"
-        ],
+        "status": "original T086 complete I, independently joined and accounted; resources released",
         "privateRoot": "/private/tmp/willyou-m12-p020-executor-001",
         "baseline": "/private/tmp/willyou-m12-p020-baseline-001",
         "baselineSha256": "8f9ef6159e0c74219abd73f232380259ca20a1ab6500cb6fed7933b0fc1d051c",
-        "criteria": [
+        "cases": [
           {
             "id": "M12-T086",
             "layer": "I",
@@ -783,33 +935,62 @@
             ]
           }
         ],
-        "resources": {
-          "nativeUi": "granted",
-          "build": "not allocated"
+        "resources": [
+          "nativeUi"
+        ],
+        "pids": [
+          57473
+        ],
+        "ports": [
+          50364
+        ],
+        "sessions": [
+          28998
+        ],
+        "next": "real commands, native/HTTP page assertions, cleanup, raw then independent verdict; no A/R/system claims",
+        "hostSha256": "e21b219bae8e87b6c525515196ecbc45b720276dd9e91327b30918f4f64862ed",
+        "driverSha256": "5ec668f549b1a6db0ac2edd71c16b4d5433e6e1996dfe0d9d210c2f878876099",
+        "currentAttempt": "attempt-002",
+        "fixSupplement": {
+          "path": "/private/tmp/willyou-m12-p020-fix-supplement-001/supplement.json",
+          "sha256": "f561ffc1faf0c6656c6e4236cac2f04a003c1165a07af7afaae3b7634b3c9850"
         },
-        "remaining": [
-          "actual native commands and real echo/network",
-          "final raw/judge/cleanup/manifest"
+        "remaining": [],
+        "reuse": [
+          "desktop/mobile viewport original expected metrics, standalone corrected scrollbar classifier",
+          "device/offline/headers green same command branches/helper bytes"
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "9ead3826b29a5fc2cc00764de34478fbd6b99b3f4601d3956e27960f3c2c4f44"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "73d61efe0b5697f6ffd408044b2e04fc0bbf2830de1c1600b7a057ba94f67a37"
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "433abaeea5668c46dc193cbacdd34379c04839a8588c4a0d5eedfd628bd33ac1"
+          },
+          {
+            "attempt": "attempt-004",
+            "manifestSha256": "402ec5efb82dd47115e6087d24ff68f921f8fd74a744bc76eed4999e45e62edb"
+          }
         ]
       },
       {
         "id": "M12-P022",
         "owner": "/root/s2_t004_test",
-        "name": "原T016基本认证完整App A",
-        "status": "deferred before UI input: native window focus unavailable; T016/T026 unexecuted, resources released",
-        "relatedCaseIds": [
-          "M12-T016",
-          "M12-T026"
-        ],
-        "layers": [
-          "A; T026 subset only"
-        ],
+        "status": "deferred native/system focus before business; T016/T026 not executed, resources independently released",
         "privateRoot": "/private/tmp/willyou-m12-p022-executor-001",
         "baseline": "/private/tmp/willyou-m12-p021-build-001/source",
+        "sourceManifest": "/private/tmp/willyou-m12-p021-build-001/production-inputs.json",
         "sourceManifestSha256": "44247dcc82197e2cdfe37494597c402245a277f80657ad9ccb20d822c8baa1bb",
+        "packageManifest": "/private/tmp/willyou-m12-p021-build-001/package.json",
         "package": "/private/tmp/willyou-m12-s2-package-010/mac-arm64/WillYou.app",
         "asarSha256": "c31b4f706c5ea9a7ba89ab44f47a9ae2935d34543a0c0a6d6438e399a70bd25e",
-        "criteria": [
+        "cases": [
           {
             "id": "M12-T016",
             "layer": "A",
@@ -827,303 +1008,947 @@
             ]
           }
         ],
-        "resources": {
-          "nativeUi": "granted",
-          "build": "not allocated"
-        }
+        "resources": [
+          "nativeUi"
+        ],
+        "pids": [
+          79629
+        ],
+        "sessions": [
+          74469
+        ],
+        "ports": [
+          59556,
+          59561,
+          59557
+        ],
+        "next": "actual packaged UI driver, focus guard, save raw and independently adjudicate; no RPC/evaluate to submit/cancel/authenticate",
+        "preflightSha256": "37841fa2256da7597435e08f1916d882ae9fdfabe04fbd6a39eb76660b79e8ff",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "948f72084376c21c97c95ea6ac48962978988b282666acd0a46376f89430bde6"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "19e47f7df73bc7d9625a0ad6af27dce70c9e51f3bcfcd126052e808a191b83d9"
+          }
+        ]
       },
       {
         "id": "M12-P021",
         "owner": "/root",
-        "name": "统一App010构建与原生检查",
-        "status": "build complete; UI use deferred separately",
-        "relatedCaseIds": [],
-        "boundary": "engineering sublayers only; original case counts unchanged",
-        "next": "see actual round resource/inputs and execution records"
+        "status": "unified App010 build/native smoke complete; no case count",
+        "privateRoot": "/private/tmp/willyou-m12-p021-build-001",
+        "sourceCommit": "bfd7d6542288955d69d0f3dadea80be67a2a09dc",
+        "sourceManifestSha256": "44247dcc82197e2cdfe37494597c402245a277f80657ad9ccb20d822c8baa1bb",
+        "sourceFiles": 2769,
+        "resources": [
+          "build",
+          "nativeUi"
+        ],
+        "output": "/private/tmp/willyou-m12-s2-package-010",
+        "cases": [
+          "M12-T012",
+          "M12-T015",
+          "M12-T016",
+          "M12-T017",
+          "M12-T022",
+          "M12-T026"
+        ],
+        "boundary": "one current arm64 preview package; final platform/signing/S6 acceptance remains separate",
+        "next": "native smoke and package hash, then actual UI groups with focus guard; build existence never case pass",
+        "package": {
+          "at": "2026-11-04T04:03:03.240578+00:00",
+          "app": "/private/tmp/willyou-m12-s2-package-010/mac-arm64/WillYou.app",
+          "executable": "/private/tmp/willyou-m12-s2-package-010/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+          "platform": "darwin",
+          "arch": "arm64",
+          "version": "0.1.1",
+          "buildExitCode": 0,
+          "sourceManifestSha256": "44247dcc82197e2cdfe37494597c402245a277f80657ad9ccb20d822c8baa1bb",
+          "unchangedProductionInputs": 2769,
+          "hashes": {
+            "asar": "c31b4f706c5ea9a7ba89ab44f47a9ae2935d34543a0c0a6d6438e399a70bd25e",
+            "helper": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+            "helperSource": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+            "nativeCli": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+            "processIdentity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
+          },
+          "nativeSmoke": {
+            "sqlite": "passed",
+            "pty": "passed",
+            "voiceBridge": "passed",
+            "fileBroker": "passed",
+            "officeRenderer": "passed",
+            "fileWatcher": "passed"
+          },
+          "boundary": "arm64 ad-hoc preview; unsigned distribution/notarization/final S6/x64 remain unverified"
+        },
+        "sessions": [
+          8963
+        ]
       },
       {
         "id": "M12-P023",
         "owner": "/root",
-        "name": "Cookie来源读取/解密软件实现",
-        "status": "software passed; no formal case pass",
-        "relatedCaseIds": [
-          "M12-T080",
-          "M12-T081"
+        "status": "software components verified; native/lifecycle/UI integration pending",
+        "resources": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P023/attempt-001",
+            "manifestSha256": "b477e10a1756d4d28b17848157f30c73f3e61fa912c2b765d7c53a88294cf7b0"
+          }
         ],
-        "boundary": "engineering sublayers only; original case counts unchanged",
-        "next": "see actual round resource/inputs and execution records"
+        "next": "P025 native cookie adapter protocol verification, then transaction/page lifecycle/startup and UI integration; no formal case pass"
       },
       {
         "id": "M12-P024",
         "owner": "/root",
-        "name": "Cookie替换计划/Native适配软件实现",
-        "status": "30 software checks/typecheck passed; actual protocol in P025",
-        "relatedCaseIds": [
-          "M12-T080",
-          "M12-T081"
+        "status": "software components verified; native/lifecycle/UI integration pending",
+        "resources": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P024/attempt-001",
+            "manifestSha256": "9659c451efe577f1ee013f0e5dffdb7f80a859af23b11168d94e45fd5fcd4663"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "a2c765f38146086edbe906bfd7350f9b1476345be4ec94f996ab6e0ed30c8a9b",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P024/attempt-002",
+            "files": 12
+          }
         ],
-        "boundary": "engineering sublayers only; original case counts unchanged",
-        "next": "see actual round resource/inputs and execution records"
+        "next": "P025 native cookie adapter protocol verification, then transaction/page lifecycle/startup and UI integration; no formal case pass"
       },
       {
         "id": "M12-P025",
         "owner": "/root/s2_t004_test",
-        "name": "Cookie import transaction/page lifecycle staged validation",
         "status": "component I 11/11 verified; resources independently released; no formal case increment",
+        "privateRoot": "/private/tmp/willyou-m12-p025-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p025-baseline-001",
+        "baselineSha256": "78b695bba278daefcc130903ca12c75a4f71fe13a35a37da071c887108529f7a",
+        "layers": [
+          "technical native I component; no full original case pass"
+        ],
         "relatedCaseIds": [
           "M12-T080",
           "M12-T081"
         ],
-        "boundary": "engineering sublayers only; original case counts unchanged",
-        "next": "transaction recovery actual native I after fresh frozen inputs",
-        "originalCases": [
-          "M12-T080",
-          "M12-T081"
+        "criteria": [
+          "actual Chromium Cookie roundtrip attributes and readable CHIPS keys",
+          "Session A/B isolation and before/after full domain plan X/Y/W without affecting other site",
+          "two-phase clear then restore full prestate including absent-before entries and partition variants",
+          "private blank view only, no visible window/user focus or Keychain/source data; cleanup all native resources"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "next": "transaction recovery actual native I after fresh frozen inputs",
+        "preflightSha256": "e7d6f6732fcba09123a936ae0841ced2a021746a07d7980776ca736f57ea3ac1",
+        "hostSha256": "d70ea1951cb552c310a3e5659c7e685ecca6a15a0c28bfbc8071499af530f1c0",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "40036a16f9d69e6fca626715e18a8573c9d285a013f2005b01a9f035ce75f318"
+          }
+        ],
+        "pids": [
+          87341,
+          87338,
+          87343,
+          87344,
+          87346,
+          87349
+        ],
+        "ports": []
       },
       {
         "id": "M12-P027",
-        "name": "Cookie import transaction/page lifecycle staged validation",
         "owner": "/root/s2_t004_test",
         "status": "12/12 native transaction component verified; independently cleaned and released",
-        "originalCases": [
+        "privateRoot": "/private/tmp/willyou-m12-p027-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p027-baseline-001",
+        "baselineSha256": "476fafd8a561fdc50ca6b9fc84a2d97868553cc00c3fe46431cdd1abca88720d",
+        "hostSha256": "4fab536708d6e709119653e0883def3216a9344db74051f1abbff1ca3de44345",
+        "preflightSha256": "4fe4193600a1c707a61a1211f76ca8b6f2ca8abb6199c2e116933a97fd1519a8",
+        "relatedCaseIds": [
           "M12-T080",
           "M12-T081"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "P029 actual service/page-pause integration after fresh frozen preparation"
+        "layers": [
+          "native transaction component I only"
+        ],
+        "criteria": [
+          "actual X/Y to X/W, preserve Z/attributes/CHIPS",
+          "lost write acknowledgement then full rollback",
+          "prepared partial process exit17 then fresh process recovery before website loads",
+          "committed recovery cleanup only, zero native replay",
+          "same-profile concurrency refusal; prohibited/no window/no real browser/no Keychain; all process phases cleaned"
+        ],
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p027-executor-001/cache node /private/tmp/willyou-m12-p027-executor-001/run.mjs --execute",
+        "next": "P029 actual service/page-pause integration after fresh frozen preparation",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "d6a40610785d15e05de2357d15dae37b2eb4c6ca8be458e99feaa8820fc93fe5"
+          }
+        ],
+        "pids": [
+          92824,
+          92827,
+          92828,
+          92829,
+          92831,
+          92836,
+          92842,
+          92851,
+          92853,
+          92854,
+          92856,
+          92861,
+          92862,
+          92863,
+          92865,
+          92871,
+          92874,
+          92875,
+          92877,
+          92883,
+          92884,
+          92885,
+          92887
+        ],
+        "ports": []
       },
       {
         "id": "M12-P026",
-        "name": "Cookie import transaction/page lifecycle staged validation",
         "owner": "/root",
-        "status": "software verified; original full case still pending",
-        "originalCases": [
+        "resources": [],
+        "relatedCaseIds": [
           "M12-T080",
           "M12-T081"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "P029 actual service lifecycle, then packaged UI/full original cases"
+        "status": "software verified; original full case still pending",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "a6787cee042d4d1752fff4c42c33bcb8cb53945c1d894e6e5483db7f1fc99e55",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P026/attempt-001",
+            "files": 16
+          }
+        ]
       },
       {
         "id": "M12-P028",
-        "name": "Cookie import transaction/page lifecycle staged validation",
         "owner": "/root",
-        "status": "software verified; original full case still pending",
-        "originalCases": [
+        "resources": [],
+        "relatedCaseIds": [
           "M12-T080",
           "M12-T081"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "P029 actual service lifecycle, then packaged UI/full original cases"
+        "status": "218 unique software criteria jointly verified; original full I/A still pending",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "26bb12439c7abc7c04395240e418d3cabee78a01b67d19b3f7665afe765a3826",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P028/attempt-001",
+            "files": 292
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "6d0be4939b134018f927ae6dae17c20b1813f4c065e0b82e1d28608ed4c3291b"
+          }
+        ]
       },
       {
         "id": "M12-P029",
-        "name": "Cookie import transaction/page lifecycle staged validation",
         "owner": "/root/s2_t004_test",
         "status": "business subset joint checks complete; independently cleared/released; executor only archiving, explicit final callback observation limit retained",
-        "originalCases": [
+        "privateRoot": "/private/tmp/willyou-m12-p029-executor-001/attempt-002",
+        "baseline": "/private/tmp/willyou-m12-p029-baseline-001",
+        "baselineSha256": "3b350071538d6bf6fcabb08e1600f9654cd126e5ebda500d4cb6c989375cc4c7",
+        "relatedCaseIds": [
           "M12-T080",
           "M12-T081"
         ],
-        "criteriaSource": "测试用例.md，全部原判据和层级保持；工程子层不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "retain 18 green; correct get/what:title catalog call on one new page, independent raw/judge/cleanup"
+        "layers": [
+          "actual service/native page lifecycle I subset; no A/M11/system pass"
+        ],
+        "criteria": [
+          "two actual tabs and native-opener popup unload before writes; 10ms JS writer stops",
+          "profile network cancelled, service commands BROWSER_UNAVAILABLE, delete RESOURCE_BUSY",
+          "reload same native identities at original URLs; persistent URL/title/favicon not polluted",
+          "synthetic source/cipher only, independent private sessions, non-activating windows, all resources cleaned"
+        ],
+        "resources": [
+          "nativeUi"
+        ],
+        "next": "retain 18 green; correct get/what:title catalog call on one new page, independent raw/judge/cleanup",
+        "supplements": [
+          {
+            "path": "/private/tmp/willyou-m12-p029-policy-supplement-001",
+            "manifestSha256": "f5936caec7f0aaa9631b99947d21457520943d5608b59a6797b75d292e5afad5"
+          },
+          {
+            "path": "/private/tmp/willyou-m12-p029-schema-supplement-001",
+            "manifestSha256": "9681feb939353c079d4f4e1bc5b2a90282ec8696f1e71882be3ccb0267bd366f"
+          }
+        ],
+        "preflightSha256": "e673ff12e8895361b8050fa6c41182dd9b430a005e5a20a2c158e7aedd494d9a",
+        "hostSha256": "992fb8e88654ae5c6fedd6fab8cf5b62a5349ede443937036423a520a714bdba",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p029-executor-001/cache node /private/tmp/willyou-m12-p029-executor-001/run.mjs --execute",
+        "pids": [
+          98874,
+          98876,
+          98877,
+          98878,
+          98880,
+          98881,
+          98885,
+          98886,
+          98887,
+          98892
+        ],
+        "ports": [
+          64795,
+          64796,
+          64799,
+          64800
+        ],
+        "sessions": [
+          26048
+        ],
+        "priorAttempts": [
+          {
+            "path": "/private/tmp/willyou-m12-p029-executor-001",
+            "manifestSha256": "6d83e0837222a50addd78b1ade2c8966cf9f05f7c8800c6d0c3dc17f0b97e5ee",
+            "classification": "private SQL fixture 16 placeholders/15columns; no BrowserService constructed; 4 PIDs absent before next attempt"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "24be93a416d015119df980e35fad9d9339dc7a69ad3d91dc2503503e7514e833",
+            "status": "18 valid checks; retained original command syntax miss/judge correction"
+          }
+        ],
+        "latestPrivateRoot": "/private/tmp/willyou-m12-p029-executor-001/attempt-003",
+        "latestPids": [
+          250,
+          252,
+          253,
+          254,
+          256,
+          257,
+          262
+        ],
+        "latestPorts": [
+          49483,
+          49484
+        ],
+        "latestSession": null,
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "6d83e0837222a50addd78b1ade2c8966cf9f05f7c8800c6d0c3dc17f0b97e5ee",
+            "files": 88
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "24be93a416d015119df980e35fad9d9339dc7a69ad3d91dc2503503e7514e833",
+            "files": 21
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "039575ffb2130f033b2f96ee71db57ec4cf82511cd6ca364dd30ed2bc4caf8ef",
+            "files": 84
+          }
+        ]
       },
       {
         "id": "M12-P030",
         "owner": "/root",
+        "resources": [],
         "status": "UI import audit software/SQLite write path verified; history UI/native still pending",
-        "originalCases": [
+        "relatedCaseIds": [
           "M12-T081",
           "M12-T099"
         ],
-        "criteriaSource": "测试用例.md，全部原判据和层级保持；工程子层不计整条",
-        "executionRecord": "执行与缺陷记录.md",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "25aff44c5e7698e8be0b6ee74683068393e8791ad30352428a2c81e69207a03f"
+          }
+        ],
         "next": "S5 activity read integration and packaged/native verification"
       },
       {
         "id": "M12-P031",
         "owner": "/root",
+        "resources": [],
         "status": "product red retained; recovery error-state fix verified in software",
-        "originalCases": [
+        "relatedCaseIds": [
           "M12-T081"
         ],
-        "criteriaSource": "测试用例.md，全部原判据和层级保持；工程子层不计整条",
-        "executionRecord": "执行与缺陷记录.md",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "075e40691cc2a059a5f93c420a7670d2c8309524a3eba2ee61943f16ad2c75a3"
+          }
+        ],
         "next": "new package includes fix; full I/A recovery case still pending"
       },
       {
         "id": "M12-P032",
         "owner": "/root",
         "status": "App011 build/native smoke successful; 2835 source hashes+modes unchanged; build resources released",
-        "originalCases": [],
-        "criteriaSource": "测试用例.md，全部原判据和层级保持；工程子层不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "one mac arm64 preview build App011 including new import/audit/recovery fix, then package smoke/hash; no release"
+        "privateRoot": "/private/tmp/willyou-m12-p032-build-001",
+        "sourceCommit": "d37a504249a9d4507bf5de7694b5dcd1230f9a69",
+        "sourceManifestSha256": "a98f5200397a3ff848d67e3c01037c3f60ed19eff74f7a3534151312c622f255",
+        "resources": [
+          "build",
+          "nativeUi"
+        ],
+        "next": "one mac arm64 preview build App011 including new import/audit/recovery fix, then package smoke/hash; no release",
+        "package": "/private/tmp/willyou-m12-s2-package-011/mac-arm64/WillYou.app",
+        "asarSha256": "09570b48860d6a13f6623fc95794f81a75e973fe1f01db17b9f6cd129d0fe4ca",
+        "nativeSmoke": "sqlite/pty/voiceBridge/fileBroker/officeRenderer/fileWatcher passed",
+        "sessions": [
+          32049
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "6899f1b195ee021abec4adf2d9a3e3e8d6fed0b00a34fc916a473b105b21251e"
+          }
+        ]
       },
       {
         "id": "M12-P033",
         "owner": "/root/s2_t004_test",
         "status": "original T016 A complete and formally accounted; T026 subset not executed/fixture; resources independently released",
-        "originalCases": [
+        "privateRoot": "/private/tmp/willyou-m12-p033-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p032-build-001/source",
+        "sourceCommit": "d37a504249a9d4507bf5de7694b5dcd1230f9a69",
+        "sourceManifestSha256": "a98f5200397a3ff848d67e3c01037c3f60ed19eff74f7a3534151312c622f255",
+        "package": "/private/tmp/willyou-m12-s2-package-011/mac-arm64/WillYou.app",
+        "asarSha256": "09570b48860d6a13f6623fc95794f81a75e973fe1f01db17b9f6cd129d0fe4ca",
+        "originalCaseIds": [
           "M12-T016"
         ],
-        "criteriaSource": "测试用例.md，全部原判据和层级保持；工程子层不计整条",
-        "executionRecord": "执行与缺陷记录.md",
-        "next": "static driver preflight, request user focus availability only when ready, then native lease"
+        "layers": [
+          "A"
+        ],
+        "criteria": [
+          "real UI initial Basic prompt/no auto submit",
+          "real cancel displays401; explicit UI retry and correct user/password succeeds",
+          "normal restart same private userData keeps no credentials, fresh empty prompt",
+          "private window manual first native+DOM focus then fresh guard per instance, no steal/rearm; exact resource cleanup"
+        ],
+        "next": "independent S4 profile clone development; T026 terminal precondition remains separately pending",
+        "resources": [
+          "nativeUi"
+        ],
+        "preflightSha256": "11cc96226480956437d9e2f2961b2c2fe67051097a3318180187d8f35b086567",
+        "driverSha256": "bf52e89d530f2097e9bd35e9f8e7874705d6cd633fcf8363a201600c33de9984",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p033-executor-001/cache node /private/tmp/willyou-m12-p033-executor-001/run.mjs --execute",
+        "userAvailability": {
+          "at": "2026-11-04T05:41:59.669470+00:00",
+          "answer": "现在可以，打开测试窗口",
+          "scope": "two manual first-focus actions, no programmatic focus steal"
+        },
+        "pids": [
+          29090,
+          29096,
+          29110,
+          29111,
+          29193,
+          29264,
+          31769,
+          31770,
+          31801,
+          31803,
+          31804,
+          31813,
+          31831,
+          31839,
+          31840,
+          31843
+        ],
+        "sessions": [
+          74313
+        ],
+        "ports": [
+          54176,
+          54182,
+          54177,
+          54393,
+          54409,
+          54407,
+          54418
+        ],
+        "focusSignal": "/private/tmp/willyou-m12-p033-executor-001/focus-request-round1.json",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "1bb1573693b9d811005661c6998eee094d1979530f8fedba0a3eadee928b2b70"
+          }
+        ]
       },
       {
         "id": "M12-P034",
-        "name": "完整原生分区快照软件",
         "owner": "/root",
-        "status": "software component verified",
-        "next": "P035 native red retained, P037 correction",
-        "originalCases": [
-          "M12-T075"
-        ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "resources": [],
+        "status": "software component validation only",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "51a96cc8064ced8ffbe375b9ef0a32adf60db6f101e33d37bc503bbbd46e5ef3",
+            "files": 5
+          }
+        ]
       },
       {
         "id": "M12-P035",
-        "name": "完整分区原生复制原红",
         "owner": "/root/s2_t004_test",
-        "status": "session Cookie loss red retained, independent cleanup released",
-        "next": "P037 correction",
-        "originalCases": [
+        "status": "session Cookie copy red retained, other storage green; exact11PID/60869 cleared and lease released",
+        "privateRoot": "/private/tmp/willyou-m12-p035-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p035-baseline-001",
+        "baselineSha256": "25bd11826a43496695c61e36d4207de4edd4241cf9744cf2f17975d25576c4db",
+        "preflightSha256": "39770e74c7ba79b418c50278d350e39cc9e9fd0b6bae36defe0466577d25fc5c",
+        "hostSha256": "adf681957813d67a26f53f8ee74e112ae58defd1f3cb5f62ab6644eddb362c6c",
+        "relatedCaseIds": [
           "M12-T075"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "layers": [
+          "full native partition snapshot component I, no CLI or original full case claim"
+        ],
+        "criteria": [
+          "active A full Cookie including session/localStorage/IDB/CacheStorage/HTTP cache copy to B before creating B native session",
+          "source native WC/form/URL unchanged, B mutation isolation",
+          "three real source cookie flush mutations yield busy and no target",
+          "new process inactive A to C and B reopen data verification",
+          "prohibited zero windows/unmounted views; synthetic keychain flag; one private HTTP; exact cleanup"
+        ],
+        "resources": [
+          "nativeUi"
+        ],
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p035-executor-001/cache node /private/tmp/willyou-m12-p035-executor-001/run.mjs --execute",
+        "next": "actual raw then independent judgment, retain any data-loss red; no overlay unless root new source",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "7dd1e28652adc2fd429e9dcd3fc0a41b8f476144dfac092706960991bbb75000",
+            "files": 32
+          }
+        ]
       },
       {
         "id": "M12-P036",
-        "name": "完整克隆/意图/归属软件",
         "owner": "/root",
-        "status": "28 U and typecheck passed; source supplement archived",
-        "next": "P039 full original CLI I",
-        "originalCases": [
-          "M12-T075"
-        ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "resources": [],
+        "status": "software component validation only",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "c37bebbd6087d6f2fc48442d898c811cdf384562b367b0e13de486a61a82f16f",
+            "files": 8
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "93e0d74d3b5dcdd18b50e52c9f098df203f95ac123cdadc9ec58c75eb99e54f0",
+            "files": 9
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "30e389443967e903c1cf0cf6fee5cf062854b4398ff762fd6fec6af5a0ff9aa8",
+            "files": 4
+          },
+          {
+            "attempt": "attempt-004",
+            "manifestSha256": "620a2e25146151393d2e45cd2c96dad884339b65ba67fbdca8cd4b53b79dd758",
+            "files": 14
+          }
+        ]
       },
       {
         "id": "M12-P037",
-        "name": "完整Native Cookie叠加修复",
         "owner": "/root/s2_t004_test",
-        "status": "13 native business criteria green; interim fixture error retained; independently cleared",
-        "next": "P039 full original CLI I",
-        "originalCases": [
+        "status": "13 native business predicates passed; interim fixture error retained; exact8PIDs/54154 independently absent and released",
+        "privateRoot": "/private/tmp/willyou-m12-p037-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p037-baseline-001",
+        "baselineSha256": "65fef65556b8acb59f6b1243a6cee5214ff98c899b62220c0882b17e38848eb0",
+        "preflightSha256": "634909a4dafbee9b4601deba0859525360d8bb002c7c7112eeb5616322be3367",
+        "hostSha256": "046cae6d7c318e457ca1f23142ec1175854ae7fc31beadb28f8a0193a315e1bb",
+        "relatedCaseIds": [
           "M12-T075"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "layers": [
+          "corrected native data-copy component I, no full clone command/UI"
+        ],
+        "criteria": [
+          "production cloneBrowserSessionData, full source Cookie snapshot + full files + Native restoration and verification",
+          "7 Cookies include session/persistent/CHIPS and full attributes, no manual overlay",
+          "five native stores and source form/URL/WC, target/source isolation",
+          "14 independent predicates, short step cleanup with actual quit event; preserve P035 red"
+        ],
+        "resources": [
+          "nativeUi"
+        ],
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p037-executor-001/cache node /private/tmp/willyou-m12-p037-executor-001/run.mjs --execute",
+        "pids": [
+          65642,
+          65645,
+          65650,
+          65651,
+          65654,
+          65659,
+          65676,
+          65677
+        ],
+        "ports": [
+          54154
+        ],
+        "next": "archive component evidence; full T075 CLI verification P039",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "c4cf09d3ccd006ad20b7e817c9bfc89b4a9b4cf0a536612f2f5c6359d1fcb6b1",
+            "files": 40
+          }
+        ]
       },
       {
         "id": "M12-P038",
-        "name": "完整Service克隆路由软件",
         "owner": "/root",
-        "status": "18 U/typecheck green; native substituted",
-        "next": "P039 real CLI/native",
-        "originalCases": [
-          "M12-T075"
-        ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "resources": [],
+        "status": "software component validation only",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "d6c0f899af93f8fd4757aeadc2d13db0ca98ef17a88c4a99308c556531c4868a",
+            "files": 6
+          }
+        ]
       },
       {
         "id": "M12-P039",
-        "name": "原T075真实CLI与归属完整I",
         "owner": "/root/s2_t004_test",
-        "status": "original T075 complete I formally accounted; exact resource cleanup released",
-        "next": "other original cases; no repeated full clone matrix",
+        "status": "original T075 complete I formally accounted; exact cleanup independently verified and released",
+        "privateRoot": "/private/tmp/willyou-m12-p039-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p041-build-001/source",
+        "sourceCommit": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af",
+        "sourceManifestSha256": "655abb9970e460ea64f424a6b9f5b9d3203d30412c11128c95509fda352166ab",
+        "preflightSha256": "ec42e9118c77ca449b2b48eb0c4f59177c5d583981c2e2115b9006da3a9c1bef",
+        "hostSha256": "a9d515f1e88fc9b2bf034decd2f7f353c13b780304cef8f82f6d9dc04951d1b0",
+        "driverSha256": "d2b667d848f8e6cce63a6ac91d86ec2d7fa695cb3c8a008a47a7b13237c23cdb",
         "originalCases": [
           "M12-T075"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "layers": [
+          "I"
+        ],
+        "resources": [
+          "nativeUi"
+        ],
+        "criteria": [
+          "full original T075 sequence and caller-owned clone containing login",
+          "clone logout leaves source login; all12profile scope/negative boundaries/list visibility",
+          "real M11+nativeCLI/root ProcessIdentity and actual fork+exit; exact cleanup"
+        ],
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p039-executor-001/cache node /private/tmp/willyou-m12-p039-executor-001/run.mjs --execute",
+        "next": "S4 remaining original I/A; no replay of complete matrix",
+        "pids": [
+          11565,
+          11567,
+          11611,
+          11822,
+          11903,
+          11911,
+          11936
+        ],
+        "ports": [
+          58165
+        ],
+        "sessions": [
+          84558
+        ],
+        "runId": "f8cf167e-88d8-4f82-b234-3885fb980014",
+        "current": "setup actual nativeCLI tabcreate/goto/storage/eval; no business replay",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "files": 302,
+            "manifestSha256": "227de44697e9864729041990064e41e6ffda5da03d10e9cb0de2f2f8554d0a7f"
+          },
+          {
+            "attempt": "attempt-002",
+            "files": 2,
+            "manifestSha256": "43c57e8afa402f075918ed0c700dd04c4ff8f2105429dd998227ad2addcbea9a"
+          }
+        ]
       },
       {
         "id": "M12-P040",
-        "name": "B12可信管理UI软件",
         "owner": "/root",
-        "status": "15 U/typecheck green; initial command error retained",
-        "next": "new unified package/UI A, no formal case increment",
-        "originalCases": [
+        "resources": [],
+        "status": "15 U/typecheck green; initial command preflight error retained; no full case increment",
+        "relatedCaseIds": [
           "M12-T075",
           "M12-T079"
         ],
-        "criteriaSource": "测试用例.md；保留全部原判据与层级，不以组件替代整条",
-        "executionRecord": "执行与缺陷记录.md"
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "3a56aa0ac0e8b71ded67065c92fcdf79ccc44baac5b3cdf68f7436728010cd50",
+            "files": 112
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "dd95a9d04771ce4ed54bf3b09a1db0d75cd792734174278bcdb80a54512448a1",
+            "files": 111
+          }
+        ]
       },
       {
         "id": "M12-P041",
         "owner": "/root",
-        "status": "App012 success/native smoke; original environment failure retained; resources released",
-        "next": "App012 UI acceptance",
-        "originalCases": []
+        "status": "App012 success/native smoke green; restricted signature environment failure retained; source2844 unchanged; resources independently released",
+        "privateRoot": "/private/tmp/willyou-m12-p041-build-001",
+        "sourceCommit": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af",
+        "sourceManifestSha256": "655abb9970e460ea64f424a6b9f5b9d3203d30412c11128c95509fda352166ab",
+        "resources": [
+          "build",
+          "nativeUi"
+        ],
+        "next": "P039 native then App012 full UI acceptance",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "94455656aaf22e5b11b4218b4d9d080fb960a35c2bd55d1c2243715190bd049f",
+            "files": 3
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "06d0f01774ffe928cf1bd22b708d41c7af267c9311a53394f59c73f02d9813d1",
+            "files": 4
+          }
+        ],
+        "package": "/private/tmp/willyou-m12-s2-package-012/mac-arm64/WillYou.app",
+        "asarSha256": "f616452ba16688b91c167a7e901f7a2fb9de95cead786f0e1a709bfede8da10c"
       },
       {
         "id": "M12-P042",
         "owner": "/root",
         "status": "original T093 complete U formally accounted",
-        "next": "other original cases",
+        "resources": [],
         "originalCases": [
           "M12-T093"
-        ]
+        ],
+        "criteria": [
+          "exact82/21read/61write and no external-write",
+          "all read safe-read, all write never/operation-receipt",
+          "operation get read; wait excludes fn; wait fn/access request write",
+          "complete actual bundle vs generated contracts vs generated mapping identity/policy agreement"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-p042-t093-contract-001",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "1903a80d413d4fefb329022c6a5167aae5c1cbaf39c2f9712015f78dabb4c8a4",
+            "files": 13
+          }
+        ],
+        "next": "other original cases; no duplicate increment"
       },
       {
         "id": "M12-P043",
         "owner": "/root",
-        "status": "original T076 complete A; B12 supplement only, independent resources released",
-        "next": "P039 and remaining UI",
+        "status": "original T076 A complete and formally accounted; B12 independent UI supplement; resources independently released",
+        "privateRoot": "/private/tmp/willyou-m12-p043-profile-app-001",
+        "sourceCommit": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af",
+        "packageASAR": "f616452ba16688b91c167a7e901f7a2fb9de95cead786f0e1a709bfede8da10c",
+        "preflightSha256": "87d8975b443c081dcc7ab3465763810de090fe8679fda402e681f2019a409afb",
         "originalCases": [
           "M12-T076"
         ],
+        "layers": [
+          "A"
+        ],
+        "criteria": [
+          "T1 actual UI loginqa",
+          "T2 sameproject actual UI navigation loggedqa",
+          "P2/T3 actual UI navigation not loggedin"
+        ],
         "supplements": [
-          "T077 UI outcome only; not whole CLI step"
+          "B12 create/use new independentqa2; T1 stillqa; not T077I/T079whole claim"
+        ],
+        "userAvailability": {
+          "at": "2026-11-04T07:24:54.242914+00:00",
+          "answer": "现在方便，打开测试窗口",
+          "scope": "one initial manual focus, autonomous actual UI input afterwards"
+        },
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p043-profile-app-001/cache node /private/tmp/willyou-m12-p043-profile-app-001/run.mjs --execute",
+        "resources": [
+          "nativeUi"
+        ],
+        "next": "P039 realCLI; full T077I/T079 and other App012 UI remain",
+        "pids": [
+          6015,
+          6016,
+          6031,
+          6032,
+          6077,
+          6107,
+          6144,
+          6185,
+          6444,
+          6452,
+          6488,
+          6513
+        ],
+        "ports": [
+          53379,
+          53387,
+          53380,
+          53568,
+          53571,
+          53576
+        ],
+        "session": 11158,
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "files": 26,
+            "manifestSha256": "b7d0dcab4002e1bbde05eed54592857b621dd411dec806f252df7af9baed2005"
+          }
         ]
       },
       {
         "id": "M12-P044",
         "owner": "/root",
-        "status": "9 authorization U/typecheck green, component only",
-        "originalCases": [
+        "resources": [],
+        "status": "9 unique authorization component U/typecheck passed; not wired to actual M11/CLI/UI, no original case increment",
+        "relatedCaseIds": [
           "M12-T095",
           "M12-T096"
         ],
-        "next": "actual M11 run vs command signals, caller/targetTask and profile ownership, IPC/UI/audit integration; original full tests",
-        "boundary": "No full case pass; App012 excludes this component"
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "3bcb1a289e4b5f25b3d1314b782c3dc6fa9aa9e1dd264803cdc4bdd2620a6263",
+            "files": 12
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "c6b89b54d93c90f40758bfaffb671a341f61d04b8ceee988cfd72c30373d49bb",
+            "files": 12
+          }
+        ],
+        "next": "bind real run lifetime, separate caller from targetTask in CLI/profile checks, trusted IPC/global dialog and source audit; then original I/A/R"
       },
       {
         "id": "M12-P045",
         "owner": "/root/s2_t004_test",
-        "status": "original T082 complete I formally accounted; exact cleanup released",
+        "privateRoot": "/private/tmp/willyou-m12-p045-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p041-build-001/source",
+        "sourceCommit": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af",
+        "status": "original T082 complete I formally accounted; independently cleared and released",
+        "resources": [
+          "nativeUi"
+        ],
         "originalCases": [
           "M12-T082"
         ],
-        "criteriaSource": "测试用例.md原并发合同，保留全部判据；第二次实际码不改成预设码",
-        "validPriorEvidence": "P039 actual M11 composition, P041 full source closure; not a result reuse",
-        "next": "S5 real integration and other original I/A"
+        "layers": [
+          "I"
+        ],
+        "criteria": [
+          "same-profile concurrent two imports, second rejected or queued and no concurrent writes",
+          "final actual native Cookie state matches single import including source replacements/removals and unaffected domains",
+          "real BrowserService/Sources/sqlite decode/NativeStore/transactions; Keychain/cipher synthetic fixture explicitly bounded",
+          "real M11/nativeCLI readback only, no Agent import entry; exact normal shutdown/PID/port/socket cleanup"
+        ],
+        "validPriorEvidence": [
+          "P039 verified complete real M11/nativeCLI composition and P041 frozen sources/dependencies; do not replay clone matrix",
+          "P029 actual service/page lifecycle only supporting subset, not original T082 result"
+        ],
+        "remaining": [
+          "actual concurrency business execution and independent readback/judgment"
+        ],
+        "decision": "preserve actual BROWSER_UNAVAILABLE second rejection if returned by assertImportable; original test permits rejection and no expected code changed",
+        "next": "other original cases, no repeat of concurrency business",
+        "preflightSha256": "1dc281ea3997a42db341e0980011820b55f1f949f139269af0e96b6535b37e40",
+        "hostSha256": "1c33e915bf31b1ea74870de3b0a29daa02a1ae04593d7652f397289b3e7224ec",
+        "driverSha256": "4558c8e3df7475e8ef5caa23589a26caeb773d1c8643e587ba6e3506a5da217f",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p045-executor-001/cache node /private/tmp/willyou-m12-p045-executor-001/run.mjs --execute",
+        "pids": [
+          22395,
+          22397,
+          22400,
+          22401,
+          22452,
+          22469,
+          22599,
+          22557,
+          22558,
+          22724,
+          22731,
+          22744,
+          22753,
+          22778,
+          22786,
+          22802
+        ],
+        "ports": [
+          54221,
+          54238
+        ],
+        "sessions": [
+          39091
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "files": 303,
+            "manifestSha256": "382f641dc93f1e365bb4a2005029d50d4cf8c3d98a85a0b67d2507c87219baf4"
+          },
+          {
+            "attempt": "attempt-002",
+            "files": 2,
+            "manifestSha256": "f999aec9a1e5039f59ad1b4c62509abeba091218d1a80c7ebad851719a7d0270"
+          }
+        ]
       },
       {
         "id": "M12-P046",
         "owner": "/root",
-        "status": "T040 complete U formally accounted; SOP software only",
+        "resources": [],
+        "status": "original T040 complete U formally accounted; SOP source/software only, T126 I/R pending",
         "originalCases": [
           "M12-T040"
         ],
         "relatedCaseIds": [
           "M12-T126"
         ],
-        "next": "new package and actual two-project I/R for SOP after S5 integration"
+        "privateRoot": "/private/tmp/willyou-m12-p046-skill-software-003",
+        "sourcePackageHash": "2518cc6ca58b81c3e04073ba6b7c719e16210faaf4f7f30520ad797636126ee8",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "d2e22d4f3a4b42c1e666fc61a58843767c6aa03bc7b77b7f7843686ab327dee7",
+            "files": 180
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "a699fbc53037d5975be8daca0743eb46530bdbdce9375c5ebffd8e67cf070973",
+            "files": 10
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "8bdcb480389daf6a0e5470f00bc1ac960f333cd2281cdd8d6fb3185b7f51ed93",
+            "files": 189
+          }
+        ],
+        "next": "finish S5 actual grant/pause/activity/audit integration then unified new package and original I/A/R; App012 retains old Skill"
       },
       {
         "id": "M12-P047",
@@ -2221,16 +3046,17 @@
         "id": "M12-P070",
         "owner": "/root",
         "testExecutor": "/root/s2_t004_test",
-        "privateRoot": "/private/tmp/willyou-m12-p070-dialog-software-006",
-        "nativeTestPreparationRoot": "/private/tmp/willyou-m12-p070-js-dialog-native-001",
+        "privateRoot": "/private/tmp/willyou-m12-p070-helper-006-build-002",
+        "nativeTestPreparationRoot": "/private/tmp/willyou-m12-p070-js-dialog-native-002",
         "originalCases": [
-          "M12-T068"
+          "M12-T068",
+          "M12-T062"
         ],
         "layers": [
-          "preload software/security then original realNativeCLI I"
+          "focusedsoftware, fixedupstreamsourcecontract, actualheadlessprototypeP, realNativeCLI I; packagedA/R/S still separate"
         ],
         "resources": [],
-        "status": "OriginalT068 I full6 accepted and credited; supplementary Native003 and P states still pending",
+        "status": "T068 original6 I and T062 full I accepted; focusedUI/P repaired; .6b realpointer regression closed, remaining frame/lifecycle split P073",
         "baselineManifestSha256": "b6080b20c357f0d2e8a02a66d19aa876f2d6bfe44befb4b366094f493285171c",
         "deliveries": [
           {
@@ -2252,15 +3078,226 @@
             "attempt": "native-attempt-002",
             "manifestSha256": "fb6cf35667ecde52360c4252122be854c70c8360c9051fa8b0de5ec3a7bb7bf9",
             "outcome": "originalT068I all6 accepted/root independent raw+cleanup+318hashes; uniqueincrement1"
+          },
+          {
+            "attempt": "prototype-visual-attempt-001",
+            "manifestSha256": "e0ae5940edd6664e287c5719b4f7076522314ac9d6b77b55e0dc88073dd7cc3d",
+            "outcome": "environment listenEPERM; no business"
+          },
+          {
+            "attempt": "prototype-visual-attempt-002",
+            "manifestSha256": "99cdc69e5c3b16086c2b6ee93d12258c687b07755d6dcddd5d955165f57b0599",
+            "outcome": "driver serialization beforebusiness"
+          },
+          {
+            "attempt": "prototype-visual-attempt-003",
+            "manifestSha256": "4bc3e2dcfd9b581ed560e7b901b3df63d88ebeb2e7f159ff6878c84868996245",
+            "outcome": "partial UI; incompleteEnter driver"
+          },
+          {
+            "attempt": "prototype-visual-attempt-004",
+            "manifestSha256": "ba2c709063d4a9e9dc9661216c8729c4f17cf5ec041380837fec4ad23a79ae2a",
+            "outcome": "actual focus/Escape product P red"
+          },
+          {
+            "attempt": "native-attempt-003-a",
+            "manifestSha256": "c6c6bd6a7909912f02afc5bb1a97ac2e2049615ab84f27f42a193c12078eed47",
+            "outcome": "1green2actualcompatfail8unexecuted; independent32PID2TCP/Helper/Unix cleanup; formal0"
+          },
+          {
+            "attempt": "software-attempt-007a",
+            "manifestSha256": "a167edfb6a558555a3bc2469d7a197569e6a9938a6f9cf114aefd465b8c067f7",
+            "outcome": "fixture precondition failure, not product verdict"
+          },
+          {
+            "attempt": "software-attempt-007b",
+            "manifestSha256": "bacb0c5636d2d7abbc0f3ac353ad79278ad3fc3b802dc653fb7953ed9d9eb6ae",
+            "outcome": "corrected fixture true3 focus failures, oldproduction retained"
+          },
+          {
+            "attempt": "software-attempt-008",
+            "manifestSha256": "6d140d5eeeada34b8504750c30972b0930bf6b8f1144811c49fc6ddcff633a68",
+            "outcome": "14softwaregreen/webtypesgreen, focus repaired"
+          },
+          {
+            "attempt": "prototype-build-attempt-002",
+            "manifestSha256": "d186fc4c055adaae8ea5e93e744b2347bc00e83019bb8a4015355cf65c1a0534",
+            "outcome": "repairedprototype buildgreen, old329models validunchanged"
+          },
+          {
+            "attempt": "helper-build-attempt-005",
+            "manifestSha256": "5c9e80ec7b69ae54518f327299dfac29179db794f3a07f1e261b02797ba77954",
+            "outcome": "official .5buildgreen/Rust6green; actual downstream red separate"
+          },
+          {
+            "attempt": "native-compat-attempt-001",
+            "manifestSha256": "ae3c43cdca8082492bb1c9071d6360b282f8ce77dc070c8685cb3f94cb915a3d",
+            "outcome": "8actual checks, originaljudge7/1; omittedtext-default extra expectation unsupported, contract verdict retained"
+          },
+          {
+            "attempt": "compat-default-contract-001",
+            "manifestSha256": "68162f3349439c45028c86d4a2538fe6c628ade2779da47a6dd4cf02addab5f3",
+            "outcome": "fixedOrca/default contract fullsource audit; no production behavior change"
+          },
+          {
+            "attempt": "native-pointer5-attempt-001",
+            "manifestSha256": "e8bc7391aef9614719fbf6c535a4d1bb8d1a25727556360ccb237e8bade01968",
+            "outcome": "actual5/6; synthetic release and decimal fixed; explicitdown acktimeout productred; wheelorigin coverage gap"
+          },
+          {
+            "attempt": "mouse-contract-001",
+            "manifestSha256": "a8c1cd6bc27a27a1696cc8bee5e8c29493108045462b7b6b9dfa3c930c3ed0dc",
+            "outcome": "fixedOrca and oldT062 raw wheel target/held/defaultup coverage review"
+          },
+          {
+            "attempt": "prototype-visual-attempt-005",
+            "manifestSha256": "42d1dd86f3f587bba98931663c2b25341beeccd3a581ae8d133ec6a3a48f0e3e",
+            "outcome": "main10+component3 accepted; original overconstraints preserved"
+          },
+          {
+            "attempt": "prototype-visual-attempt-006",
+            "manifestSha256": "44cf0cc7f90809a50b898aa3cdb7103a895b23c45ab46fef185b93f05f0598e7",
+            "outcome": "remaining component scrollerror visibility fullP closure; corrected maxscroll adjudication; formal0"
+          },
+          {
+            "attempt": "helper-build-attempt-006a",
+            "manifestSha256": "f17c0f234f8ff598f9a3490379c9ca1840a210bdddd72400ec1ab5adf48dbe5d",
+            "outcome": "candidate6a build0, static failure-state gap caught before Native; originalbinary preserved"
+          },
+          {
+            "attempt": "mouse-fix-review-001",
+            "manifestSha256": "34fda19465b376098c9db1a1df5ef672be8f673dd5187811d38c3380aa89088c",
+            "outcome": "static6normal/modal consistency; oldfailed-dispatch state gap found and fixed in6b"
+          },
+          {
+            "attempt": "helper-build-attempt-006b",
+            "manifestSha256": "c5bdc97b505a9f1f5c19feab5005b7c4a3c038c77794e9dedd018c1e7d412126",
+            "outcome": "officialarm64build0; Rust13unique+hostadapter7+node types green; actualNative next separate"
+          },
+          {
+            "attempt": "native-pointer6-attempt-001",
+            "manifestSha256": "6fc7e591c9fb9e21595a7024536bacfd74cb38567b143fb3f42daa98cd5f6cd1",
+            "deliveryManifestSha256": "d086001a47b1ffe5f1944c7c10eabd8c0830597da56583b1d977cff6a699f750",
+            "outcome": "696verified, prepin277duplicate omittedpublic; originaljudge7/1 preserved, originalT062contract fullaccepted, SQL84unique/attempt1, root120PID2TCP/helper/unix clean; T062restored1"
           }
         ],
         "remaining": [
-          "actual pointer-release/followup input, exec compatibility/no-pending, earlyHTML/popup/frame and lifecycle boundaries",
-          "actual new prototype P states then unified package and remaining affected A",
-          "new package PIN then originalT111 full30minutes"
+          "new unified package and affectedA/R/S after P073 supplementaryNative boundary gate; T111 original30min finalpackage"
         ],
+        "nativePreflightSha256": "0cad1cc017dedcda46ec12b9a84161d394c261ebe485b6ae922abb3746aa3e75",
+        "nativeDriverSha256": "a226c54c8453698c7acb299694a031b2d67380da1f43441da137daad8a2185e0",
+        "sessions": [],
+        "pids": [],
+        "ports": [],
         "prototypePreparationRoot": "/private/tmp/willyou-m12-p070-prototype-visual-001",
-        "prototypeExecutor": "/root/t108_app"
+        "prototypeExecutor": "/root/t108_app",
+        "focusFixManifestSha256": "64abb448600453141a8d0c85ee371eef18b5db971620abfb1612d3f4c4d414d1",
+        "candidateSourceManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+        "candidateHelperSha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+        "candidateSourceRoot": "/private/tmp/willyou-m12-p070-source-011"
+      },
+      {
+        "id": "M12-P071",
+        "owner": "/root",
+        "testExecutor": "/root/t108_app",
+        "originalCases": [
+          "M12-T005"
+        ],
+        "layers": [
+          "U - normalizedURL function only"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-t005-url-u-002",
+        "baselineManifestSha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+        "status": "OriginalT005 completeU accepted/rootcredited after same57 green and public38/nodeweb typechecks",
+        "resources": [],
+        "pids": [],
+        "sessions": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "c82b2263860728b35d73c0ebb92626c224eaf467d2608f451cf353887d507ead",
+            "outcome": "55/57 productred; exact15green insufficient fullclass; originalassertions retained; producer+root exact2PID absent; formal0"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "da768c70b0edba64a7fcc767968470fa1a887e7ace876983eedfcb0cc6a54fcc",
+            "outcome": "57/57 unchanged contract; fixedport actualrepaired; root input+exact2PIDchecked; uniquecredit1"
+          },
+          {
+            "attempt": "software-attempt-001",
+            "manifestSha256": "98ee8b8c98ae4149378892cde9b232592dc796748d0e4069f7557427b26cd944",
+            "outcome": "publicnavigation38green; node62843/web57150types exit0; no newpackage/native; formal0"
+          }
+        ],
+        "remaining": []
+      },
+      {
+        "id": "M12-P072",
+        "owner": "/root",
+        "testExecutor": "/root/t108_app",
+        "originalCases": [
+          "M12-T142"
+        ],
+        "layers": [
+          "U source/license/provenance only"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-t142-source-notice-u-001",
+        "baselineManifestSha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+        "status": "Complete originalU12/12, root independent twooriginaltar/GitLICENSE/actualbinary checks; formallycredited1",
+        "resources": [],
+        "remaining": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "bcc5c39ea457fd509cc15f5c395f64e21074b1f4b78c0c3e5ba63f8d9c8907c0",
+            "outcome": "12/12,36files, source/hash/fulllicense verified; exact2PIDabsent; no x64/packageclaim; uniquecredit1"
+          }
+        ]
+      },
+      {
+        "id": "M12-P073",
+        "owner": "/root",
+        "testExecutor": "/root/s2_t004_test",
+        "originalCases": [
+          "M12-T068"
+        ],
+        "requirements": [
+          "R04.6",
+          "R03",
+          "R02.10"
+        ],
+        "layers": [
+          "Supplementary realNativeCLI I command/input/frame lifecycle boundary; originalT068six notrerun"
+        ],
+        "status": "static preparation only; earlyHTML coldtabcreate + srcdoc/crosssite/shadow hostspecial mousedown dialogs; no Native lease",
+        "baselineManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+        "resources": [],
+        "remaining": [
+          "freeze isolateddriver/fixtures/PIN and boundedcleanup preflight",
+          "coordinator transferNative only after executableprepared; preserveactualred/no retry/no outofbandanswer"
+        ]
+      },
+      {
+        "id": "M12-P074",
+        "owner": "/root",
+        "testExecutor": "/root/t108_app",
+        "originalCases": [
+          "M12-T033",
+          "M12-T034",
+          "M12-T094",
+          "M12-T044"
+        ],
+        "layers": [
+          "Original complete realNativeCLI I viaM11/Service"
+        ],
+        "status": "static preparation only; JSON/page targeting/disconnectreceipt/performance50snapshot50click; no Native lease",
+        "baselineManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+        "resources": [],
+        "remaining": [
+          "originalcriteria/preflight/privatecache/receiptgate preparation",
+          "waitP073boundaryresult, immutablefinalsource and coordinatorNative transfer; no earlylaunch"
+        ]
       }
     ],
     "autonomy": {
@@ -2293,8 +3330,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T16:40:12.210554+00:00",
-    "independentNext": "prototype P state preflight while Native002 prepares; P069 final30min waits new unified prompt package; P067 desktop tail deferred",
+    "updatedAt": "2026-11-04T18:57:26.180228+00:00",
+    "independentNext": "P073 supplementary frame/earlyHTML/hostspecial input actualboundary then P074 completeCLI groups; new unifiedpackage and finalA/R/S/performance remain",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",

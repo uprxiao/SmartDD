@@ -1,0 +1,83 @@
+{
+  "at": "2026-11-04T18:39:10.582041+00:00",
+  "case": "M12-T005",
+  "layer": "U",
+  "status": "failed",
+  "classification": "product-port-loss",
+  "executed": 57,
+  "passed": 55,
+  "failed": 2,
+  "exactOriginalExamples": {
+    "total": 15,
+    "passed": 15
+  },
+  "failures": [
+    {
+      "id": "P05",
+      "input": "app.localhost:443",
+      "expected": "http://app.localhost:443/",
+      "engine": "bing",
+      "category": "fixedOrcaNamedPortCase",
+      "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+      "actual": "http://app.localhost/",
+      "reference": "http://app.localhost:443/"
+    },
+    {
+      "id": "P12",
+      "input": "APP.LOCALHOST.:443/docs",
+      "expected": "http://app.localhost.:443/docs",
+      "engine": "bing",
+      "category": "fixedOrcaNamedPortCase",
+      "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+      "actual": "http://app.localhost./docs",
+      "reference": "http://app.localhost.:443/docs"
+    }
+  ],
+  "referenceDifferences": [
+    {
+      "id": "E01",
+      "input": "",
+      "contract": "about:blank",
+      "reference": "data:text/html,",
+      "classification": "ExplicitM12newtabmarker"
+    },
+    {
+      "id": "E02",
+      "input": "about:blank",
+      "contract": "about:blank",
+      "reference": "data:text/html,",
+      "classification": "ExplicitM12newtabmarker"
+    },
+    {
+      "id": "E07",
+      "input": "a.localhost",
+      "contract": "http://a.localhost/",
+      "reference": "https://a.localhost/",
+      "classification": "ExplicitR01.1localhostHTTP"
+    },
+    {
+      "id": "E15",
+      "input": "http://[bad",
+      "contract": null,
+      "reference": "https://http//[bad",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    },
+    {
+      "id": "R13",
+      "input": "127.999.0.1",
+      "contract": null,
+      "reference": "https://www.bing.com/search?q=127.999.0.1",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    },
+    {
+      "id": "R14",
+      "input": "bad\u0000input",
+      "contract": null,
+      "reference": "https://www.bing.com/search?q=bad%00input",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    }
+  ],
+  "source": "source011 e02341d6c0af664fb74961c1c629bece2a95eb7d85f6b6642c58b14f7fd62549",
+  "formalCaseIncrement": 0,
+  "boundary": "Pure normalization function and fixed reference comparisons only; no App navigation/renderer invalidmessage/settings persistence/URLloading/filesystemaccess claimed."
+}

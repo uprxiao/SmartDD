@@ -1,32 +1,32 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T16:40:12.210554+00:00",
-  "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
+  "updatedAt": "2026-11-04T18:57:26.180228+00:00",
+  "status": "S4/S5 acceptance closure with S2/S3 pointer/dialog fixes; originalT062 partial reopened",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P070",
-      "privateRoot": "/private/tmp/willyou-m12-p070-js-dialog-native-001",
-      "status": "P070 Native6 lease launchpending"
+      "group": "M12-P073",
+      "privateRoot": "/private/tmp/willyou-m12-p070-js-dialog-native-005-pointer6-001",
+      "status": "staticpreparation, noNativelease"
     },
     {
       "agent": "/root/t108_app",
       "role": "test executor",
-      "group": "M12-P069",
+      "group": "M12-P074",
       "privateRoot": "/private/tmp/willyou-m12-p069-parked-resource-001",
-      "status": "P069 static preparation only, no Native lease"
+      "status": "staticpreparation, noNativelease"
     }
   ],
   "branch": "feature/0.1.1",
   "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
-  "sourceState": "uncommitted P070 host/session/native/CDP lifecycle/scoped UI candidate atop9367900, frozen0043678; prototype2files updated after004, prototype compile green; Native not yet executed",
+  "sourceState": "source0133678 frozen; current code includes helper6b pointer/dialog fix, source012navigation repair and008UI/P focus repair; App017 unchanged",
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "P070 originalT068 credited; prototype P and supplementary Native003 preparing, no UI/build lease",
+  "currentGroup": "M12-P073",
   "resources": {
     "build": null,
     "nativeUi": null
@@ -3027,16 +3027,17 @@
       "id": "M12-P070",
       "owner": "/root",
       "testExecutor": "/root/s2_t004_test",
-      "privateRoot": "/private/tmp/willyou-m12-p070-dialog-software-006",
+      "privateRoot": "/private/tmp/willyou-m12-p070-helper-006-build-002",
       "nativeTestPreparationRoot": "/private/tmp/willyou-m12-p070-js-dialog-native-002",
       "originalCases": [
-        "M12-T068"
+        "M12-T068",
+        "M12-T062"
       ],
       "layers": [
-        "preload software/security then original realNativeCLI I"
+        "focusedsoftware, fixedupstreamsourcecontract, actualheadlessprototypeP, realNativeCLI I; packagedA/R/S still separate"
       ],
       "resources": [],
-      "status": "OriginalT068 I full6 accepted and credited; supplementary Native003 and P states still pending",
+      "status": "T068 original6 I and T062 full I accepted; focusedUI/P repaired; .6b realpointer regression closed, remaining frame/lifecycle split P073",
       "baselineManifestSha256": "b6080b20c357f0d2e8a02a66d19aa876f2d6bfe44befb4b366094f493285171c",
       "deliveries": [
         {
@@ -3058,23 +3059,229 @@
           "attempt": "native-attempt-002",
           "manifestSha256": "fb6cf35667ecde52360c4252122be854c70c8360c9051fa8b0de5ec3a7bb7bf9",
           "outcome": "originalT068I all6 accepted/root independent raw+cleanup+318hashes; uniqueincrement1"
+        },
+        {
+          "attempt": "prototype-visual-attempt-001",
+          "manifestSha256": "e0ae5940edd6664e287c5719b4f7076522314ac9d6b77b55e0dc88073dd7cc3d",
+          "outcome": "environment listenEPERM; no business"
+        },
+        {
+          "attempt": "prototype-visual-attempt-002",
+          "manifestSha256": "99cdc69e5c3b16086c2b6ee93d12258c687b07755d6dcddd5d955165f57b0599",
+          "outcome": "driver serialization beforebusiness"
+        },
+        {
+          "attempt": "prototype-visual-attempt-003",
+          "manifestSha256": "4bc3e2dcfd9b581ed560e7b901b3df63d88ebeb2e7f159ff6878c84868996245",
+          "outcome": "partial UI; incompleteEnter driver"
+        },
+        {
+          "attempt": "prototype-visual-attempt-004",
+          "manifestSha256": "ba2c709063d4a9e9dc9661216c8729c4f17cf5ec041380837fec4ad23a79ae2a",
+          "outcome": "actual focus/Escape product P red"
+        },
+        {
+          "attempt": "native-attempt-003-a",
+          "manifestSha256": "c6c6bd6a7909912f02afc5bb1a97ac2e2049615ab84f27f42a193c12078eed47",
+          "outcome": "1green2actualcompatfail8unexecuted; independent32PID2TCP/Helper/Unix cleanup; formal0"
+        },
+        {
+          "attempt": "software-attempt-007a",
+          "manifestSha256": "a167edfb6a558555a3bc2469d7a197569e6a9938a6f9cf114aefd465b8c067f7",
+          "outcome": "fixture precondition failure, not product verdict"
+        },
+        {
+          "attempt": "software-attempt-007b",
+          "manifestSha256": "bacb0c5636d2d7abbc0f3ac353ad79278ad3fc3b802dc653fb7953ed9d9eb6ae",
+          "outcome": "corrected fixture true3 focus failures, oldproduction retained"
+        },
+        {
+          "attempt": "software-attempt-008",
+          "manifestSha256": "6d140d5eeeada34b8504750c30972b0930bf6b8f1144811c49fc6ddcff633a68",
+          "outcome": "14softwaregreen/webtypesgreen, focus repaired"
+        },
+        {
+          "attempt": "prototype-build-attempt-002",
+          "manifestSha256": "d186fc4c055adaae8ea5e93e744b2347bc00e83019bb8a4015355cf65c1a0534",
+          "outcome": "repairedprototype buildgreen, old329models validunchanged"
+        },
+        {
+          "attempt": "helper-build-attempt-005",
+          "manifestSha256": "5c9e80ec7b69ae54518f327299dfac29179db794f3a07f1e261b02797ba77954",
+          "outcome": "official .5buildgreen/Rust6green; actual downstream red separate"
+        },
+        {
+          "attempt": "native-compat-attempt-001",
+          "manifestSha256": "ae3c43cdca8082492bb1c9071d6360b282f8ce77dc070c8685cb3f94cb915a3d",
+          "outcome": "8actual checks, originaljudge7/1; omittedtext-default extra expectation unsupported, contract verdict retained"
+        },
+        {
+          "attempt": "compat-default-contract-001",
+          "manifestSha256": "68162f3349439c45028c86d4a2538fe6c628ade2779da47a6dd4cf02addab5f3",
+          "outcome": "fixedOrca/default contract fullsource audit; no production behavior change"
+        },
+        {
+          "attempt": "native-pointer5-attempt-001",
+          "manifestSha256": "e8bc7391aef9614719fbf6c535a4d1bb8d1a25727556360ccb237e8bade01968",
+          "outcome": "actual5/6; synthetic release and decimal fixed; explicitdown acktimeout productred; wheelorigin coverage gap"
+        },
+        {
+          "attempt": "mouse-contract-001",
+          "manifestSha256": "a8c1cd6bc27a27a1696cc8bee5e8c29493108045462b7b6b9dfa3c930c3ed0dc",
+          "outcome": "fixedOrca and oldT062 raw wheel target/held/defaultup coverage review"
+        },
+        {
+          "attempt": "prototype-visual-attempt-005",
+          "manifestSha256": "42d1dd86f3f587bba98931663c2b25341beeccd3a581ae8d133ec6a3a48f0e3e",
+          "outcome": "main10+component3 accepted; original overconstraints preserved"
+        },
+        {
+          "attempt": "prototype-visual-attempt-006",
+          "manifestSha256": "44cf0cc7f90809a50b898aa3cdb7103a895b23c45ab46fef185b93f05f0598e7",
+          "outcome": "remaining component scrollerror visibility fullP closure; corrected maxscroll adjudication; formal0"
+        },
+        {
+          "attempt": "helper-build-attempt-006a",
+          "manifestSha256": "f17c0f234f8ff598f9a3490379c9ca1840a210bdddd72400ec1ab5adf48dbe5d",
+          "outcome": "candidate6a build0, static failure-state gap caught before Native; originalbinary preserved"
+        },
+        {
+          "attempt": "mouse-fix-review-001",
+          "manifestSha256": "34fda19465b376098c9db1a1df5ef672be8f673dd5187811d38c3380aa89088c",
+          "outcome": "static6normal/modal consistency; oldfailed-dispatch state gap found and fixed in6b"
+        },
+        {
+          "attempt": "helper-build-attempt-006b",
+          "manifestSha256": "c5bdc97b505a9f1f5c19feab5005b7c4a3c038c77794e9dedd018c1e7d412126",
+          "outcome": "officialarm64build0; Rust13unique+hostadapter7+node types green; actualNative next separate"
+        },
+        {
+          "attempt": "native-pointer6-attempt-001",
+          "manifestSha256": "6fc7e591c9fb9e21595a7024536bacfd74cb38567b143fb3f42daa98cd5f6cd1",
+          "deliveryManifestSha256": "d086001a47b1ffe5f1944c7c10eabd8c0830597da56583b1d977cff6a699f750",
+          "outcome": "696verified, prepin277duplicate omittedpublic; originaljudge7/1 preserved, originalT062contract fullaccepted, SQL84unique/attempt1, root120PID2TCP/helper/unix clean; T062restored1"
         }
       ],
       "remaining": [
-        "actual pointer-release/followup input, exec compatibility/no-pending, earlyHTML/popup/frame and lifecycle boundaries",
-        "actual new prototype P states then unified package and remaining affected A",
-        "new package PIN then originalT111 full30minutes"
+        "new unified package and affectedA/R/S after P073 supplementaryNative boundary gate; T111 original30min finalpackage"
       ],
-      "nativePreflightSha256": "2ae96b5a0cff053a3223c59ed57c2b2a941c4d6b55fd0e42d74db2d0faac4a3c",
+      "nativePreflightSha256": "0cad1cc017dedcda46ec12b9a84161d394c261ebe485b6ae922abb3746aa3e75",
       "nativeDriverSha256": "a226c54c8453698c7acb299694a031b2d67380da1f43441da137daad8a2185e0",
       "sessions": [],
       "pids": [],
       "ports": [],
       "prototypePreparationRoot": "/private/tmp/willyou-m12-p070-prototype-visual-001",
-      "prototypeExecutor": "/root/t108_app"
+      "prototypeExecutor": "/root/t108_app",
+      "focusFixManifestSha256": "64abb448600453141a8d0c85ee371eef18b5db971620abfb1612d3f4c4d414d1",
+      "candidateSourceManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+      "candidateHelperSha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+      "candidateSourceRoot": "/private/tmp/willyou-m12-p070-source-011"
+    },
+    {
+      "id": "M12-P071",
+      "owner": "/root",
+      "testExecutor": "/root/t108_app",
+      "originalCases": [
+        "M12-T005"
+      ],
+      "layers": [
+        "U - normalizedURL function only"
+      ],
+      "privateRoot": "/private/tmp/willyou-m12-t005-url-u-002",
+      "baselineManifestSha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+      "status": "OriginalT005 completeU accepted/rootcredited after same57 green and public38/nodeweb typechecks",
+      "resources": [],
+      "pids": [],
+      "sessions": [],
+      "ports": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "c82b2263860728b35d73c0ebb92626c224eaf467d2608f451cf353887d507ead",
+          "outcome": "55/57 productred; exact15green insufficient fullclass; originalassertions retained; producer+root exact2PID absent; formal0"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "da768c70b0edba64a7fcc767968470fa1a887e7ace876983eedfcb0cc6a54fcc",
+          "outcome": "57/57 unchanged contract; fixedport actualrepaired; root input+exact2PIDchecked; uniquecredit1"
+        },
+        {
+          "attempt": "software-attempt-001",
+          "manifestSha256": "98ee8b8c98ae4149378892cde9b232592dc796748d0e4069f7557427b26cd944",
+          "outcome": "publicnavigation38green; node62843/web57150types exit0; no newpackage/native; formal0"
+        }
+      ],
+      "remaining": []
+    },
+    {
+      "id": "M12-P072",
+      "owner": "/root",
+      "testExecutor": "/root/t108_app",
+      "originalCases": [
+        "M12-T142"
+      ],
+      "layers": [
+        "U source/license/provenance only"
+      ],
+      "privateRoot": "/private/tmp/willyou-m12-t142-source-notice-u-001",
+      "baselineManifestSha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+      "status": "Complete originalU12/12, root independent twooriginaltar/GitLICENSE/actualbinary checks; formallycredited1",
+      "resources": [],
+      "remaining": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "bcc5c39ea457fd509cc15f5c395f64e21074b1f4b78c0c3e5ba63f8d9c8907c0",
+          "outcome": "12/12,36files, source/hash/fulllicense verified; exact2PIDabsent; no x64/packageclaim; uniquecredit1"
+        }
+      ]
+    },
+    {
+      "id": "M12-P073",
+      "owner": "/root",
+      "testExecutor": "/root/s2_t004_test",
+      "originalCases": [
+        "M12-T068"
+      ],
+      "requirements": [
+        "R04.6",
+        "R03",
+        "R02.10"
+      ],
+      "layers": [
+        "Supplementary realNativeCLI I command/input/frame lifecycle boundary; originalT068six notrerun"
+      ],
+      "status": "static preparation only; earlyHTML coldtabcreate + srcdoc/crosssite/shadow hostspecial mousedown dialogs; no Native lease",
+      "baselineManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+      "resources": [],
+      "remaining": [
+        "freeze isolateddriver/fixtures/PIN and boundedcleanup preflight",
+        "coordinator transferNative only after executableprepared; preserveactualred/no retry/no outofbandanswer"
+      ]
+    },
+    {
+      "id": "M12-P074",
+      "owner": "/root",
+      "testExecutor": "/root/t108_app",
+      "originalCases": [
+        "M12-T033",
+        "M12-T034",
+        "M12-T094",
+        "M12-T044"
+      ],
+      "layers": [
+        "Original complete realNativeCLI I viaM11/Service"
+      ],
+      "status": "static preparation only; JSON/page targeting/disconnectreceipt/performance50snapshot50click; no Native lease",
+      "baselineManifestSha256": "d59037250874963c78dd7344504be602baaa01e59822cffda85cfeb6488b0b4f",
+      "resources": [],
+      "remaining": [
+        "originalcriteria/preflight/privatecache/receiptgate preparation",
+        "waitP073boundaryresult, immutablefinalsource and coordinatorNative transfer; no earlylaunch"
+      ]
     }
   ],
-  "next": "S5 T096 cross-project authorization A/I, then full grants/pause/stop/history; independent S4/known S3 prompt defect and S6 continue",
+  "next": "P073 supplementary frame/earlyHTML/hostspecial input actualboundary then P074 completeCLI groups; new unifiedpackage and finalA/R/S/performance remain",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "c372b7980532ab157ad1e33085d8cd5cd24f1acb",
   "checkpointNote": "c372 saves full guarded dialog host/UI/cold CLI replies, original T068 I credited and all red/green evidence; source006 production unchanged. App017 excludes new dialog code. Next P states, Native003A pointer/exec then3B frame/lifecycle; final new package/performance pending. No focus guard replay or automatic desktop restart.",
