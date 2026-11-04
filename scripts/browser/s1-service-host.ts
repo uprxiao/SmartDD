@@ -1,8 +1,8 @@
 // I-level composition. Real service/module/CLI/gateway/SQLite/kernel peers; controlled run root and synthetic website.
 import { app, BrowserWindow, session } from 'electron';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join, resolve, dirname } from 'node:path';
 import { spawn } from 'node:child_process';
 import { randomUUID,X509Certificate } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
@@ -84,6 +84,11 @@ const s4TrustedSessions=new Set<Electron.Session>(),s4TrustEvents:{hostname:stri
 let s4CacheRequests=0;
 const respond = (request:IncomingMessage,response:ServerResponse) => {
   const url=new URL(request.url??'/','http://127.0.0.1');
+  if(url.pathname==='/s3-transfer-file'){
+    const payload=Buffer.from('M12 transfer fixture\n订单,190.00\n','utf8');
+    s3Requests.push({path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers});
+    response.setHeader('content-type','text/csv; charset=utf-8');response.setHeader('content-length',payload.length);response.setHeader('content-disposition',"attachment; filename*=UTF-8''"+encodeURIComponent('订单导出.csv'));response.end(payload);return;
+  }
   if(url.pathname==='/s4-api/cache'){
     const record={path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers};s3Requests.push(record);
     response.setHeader('content-type','application/json');response.setHeader('cache-control','public,max-age=3600,immutable');response.end(JSON.stringify({received:true,cacheRequestNumber:++s4CacheRequests,...record}));return;
@@ -97,7 +102,7 @@ const respond = (request:IncomingMessage,response:ServerResponse) => {
   }
   if(url.pathname.startsWith('/s3-')){
     s3Requests.push({path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers});
-    const finish=()=>{response.setHeader('content-type','text/html; charset=utf-8');response.end(s3FixtureHtml);};
+    const finish=()=>{response.setHeader('content-type','text/html; charset=utf-8');response.end(url.pathname==='/s3-transfer'?s3FixtureHtml.replace('<button id="bottom">','<a id="transfer-download" href="/s3-transfer-file">Download outside project</a><button id="bottom">'):s3FixtureHtml);};
     if(url.pathname==='/s3-delayed-page')setTimeout(finish,1600);else finish();return;
   }
   if(url.pathname==='/s2-file-script'){response.setHeader('content-type','text/html');response.end('<title>S2 blocked file script</title><script>location.href="file:///etc/hosts"</script>');return;}
@@ -151,6 +156,8 @@ const respond = (request:IncomingMessage,response:ServerResponse) => {
 const server=createServer(respond),ipv6Server=createServer(respond);
 app.whenReady().then(async () => {
   const resources = process.env.M12_RESOURCE_ROOT!;
+  const privateDownloads=process.env.M12_DOWNLOAD_FIXTURE_ROOT;
+  if(privateDownloads){if(!privateDownloads.startsWith('/private/tmp/willyou-m12-')||resolve(privateDownloads)!==resolve(dirname(resources),'downloads-fixture'))throw Error('Exact owned download fixture directory required');mkdirSync(privateDownloads,{recursive:true});app.setPath('downloads',privateDownloads);}
   const source = new CapabilityBundleSource(join(resources,'capability-bundles'));
   fixture = await agentFixture();
   const processes = new MacProcessIdentityReader(join(resources,'native/willyou-process-identity'));
@@ -161,7 +168,7 @@ app.whenReady().then(async () => {
   browser = new BrowserService({userData:app.getPath('userData'),sqlite:fixture.sqlite,helper:{executable:join(resources,'agent-browser',process.arch,'agent-browser'),sha256:helperFile.sha256,processes},window:()=>host,taskProject:id => {
     const row = fixture.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string}|undefined;
     return row?.project_id ?? null;
-  }});
+  },taskDirectory:id=>(fixture.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null});
   browser.pages.observe(event=>{if(event.type==='created')event.page.contents.on('destroyed',()=>popupDestroyedEvents.push({pageId:event.page.id,at:Date.now()}));else retiredHelperCleanups.push({pageId:event.page.id,cleanup:event.page.helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true}});});
   const createPage=browser.pages.create.bind(browser.pages);
   browser.pages.create=async(task,project,savedId,profileId)=>{
@@ -202,7 +209,7 @@ app.whenReady().then(async () => {
   await gateway.start(); environment = {...gateway.issue(run).environment};
   await new Promise<void>(ok=>server.listen(0,'127.0.0.1',ok)); const address=server.address(); if (!address || typeof address==='string') throw Error('Fixture HTTP bind');
   await new Promise<void>((ok,no)=>{ipv6Server.once('error',no);ipv6Server.listen({port:address.port,host:'::1',ipv6Only:true},()=>{ipv6Server.off('error',no);ok();});});
-  process.send?.({ready:true,pid:process.pid,taskId,runId:run.runId,url:`http://127.0.0.1:${address.port}/`,versions:process.versions,boundary:'I: real BrowserService/M11 module/CLI/gateway/SQLite/kernel peers; controlled Electron process as run root; synthetic page; not packaged App or real Agent'});
+  process.send?.({ready:true,pid:process.pid,taskId,runId:run.runId,taskCwd:fixture.cwd,downloadsDirectory:app.getPath('downloads'),url:`http://127.0.0.1:${address.port}/`,versions:process.versions,boundary:'I: real BrowserService/M11 module/CLI/gateway/SQLite/kernel peers; controlled Electron process as run root; synthetic page; not packaged App or real Agent'});
 }).catch(error=>{process.send?.({fatal:String(error.stack??error)});app.exit(1);});
 
 process.on('message',async (message:{id:number;command:string;args?:string[];input?:string;inputBase64?:string;paused?:boolean;expression?:string;opacity?:number;ignoreMouse?:boolean;focusEmulation?:boolean;pageId?:string;mode?:string;ref?:string;kind?:string;point?:string;threshold?:number;selection?:[number,number];pid?:number}) => {

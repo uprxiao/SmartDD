@@ -1,0 +1,264 @@
+{
+  "name": "revoke-and-navigation-cancel",
+  "startedAt": "2026-11-04T02:25:34.801Z",
+  "savedBefore": {
+    "memoryA": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": [
+        {
+          "origin": "http://127.0.0.1:52239",
+          "permission": "geolocation",
+          "decision": "allow",
+          "updatedAt": 1793759134753
+        }
+      ]
+    },
+    "memoryB": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": [
+        {
+          "origin": "http://127.0.0.1:52239",
+          "permission": "geolocation",
+          "decision": "deny",
+          "updatedAt": 1793759134801
+        }
+      ]
+    },
+    "persisted": [
+      {
+        "key": "browserProfileState.v1:profile-A",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134753}]}",
+        "updated_at": 1793759134754
+      },
+      {
+        "key": "browserProfileState.v1:profile-B",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+        "updated_at": 1793759134801
+      }
+    ],
+    "nativePending": [
+      {
+        "taskId": "task-A",
+        "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+        "prompt": null
+      },
+      {
+        "taskId": "task-B",
+        "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+        "prompt": null
+      }
+    ]
+  },
+  "beforeRevokeDocument": {
+    "requests": [
+      {
+        "id": "reload",
+        "at": 1793759134763,
+        "origin": "http://127.0.0.1:52239"
+      }
+    ],
+    "results": [
+      {
+        "id": "reload",
+        "ok": true,
+        "origin": "http://127.0.0.1:52239",
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "accuracy": 10
+      }
+    ],
+    "queries": [
+      {
+        "id": "after-reload",
+        "origin": "http://127.0.0.1:52239",
+        "state": "granted"
+      }
+    ],
+    "messages": [],
+    "info": {
+      "origin": "http://127.0.0.1:52239",
+      "href": "http://127.0.0.1:52239/main?reload=1",
+      "isSecureContext": true,
+      "policy": true,
+      "nodeRequire": "undefined",
+      "nodeProcess": "undefined"
+    }
+  },
+  "afterRevoke": {
+    "memoryA": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": []
+    },
+    "memoryB": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": [
+        {
+          "origin": "http://127.0.0.1:52239",
+          "permission": "geolocation",
+          "decision": "deny",
+          "updatedAt": 1793759134801
+        }
+      ]
+    },
+    "persisted": [
+      {
+        "key": "browserProfileState.v1:profile-A",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+        "updated_at": 1793759134802
+      },
+      {
+        "key": "browserProfileState.v1:profile-B",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+        "updated_at": 1793759134801
+      }
+    ],
+    "nativePending": [
+      {
+        "taskId": "task-A",
+        "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+        "prompt": null
+      },
+      {
+        "taskId": "task-B",
+        "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+        "prompt": null
+      }
+    ]
+  },
+  "request": {
+    "started": true,
+    "id": "after-revoke",
+    "info": {
+      "origin": "http://127.0.0.1:52239",
+      "href": "http://127.0.0.1:52239/main?reload=1",
+      "isSecureContext": true,
+      "policy": true,
+      "nodeRequire": "undefined",
+      "nodeProcess": "undefined"
+    }
+  },
+  "pending": {
+    "id": "533a0bd9-930c-4b22-8acc-d0bff3b76b0d",
+    "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+    "profileId": "profile-A",
+    "origin": "http://127.0.0.1:52239",
+    "permissions": [
+      "geolocation"
+    ]
+  },
+  "navigation": {
+    "requests": [],
+    "results": [],
+    "queries": [],
+    "messages": [],
+    "info": {
+      "origin": "http://127.0.0.1:52239",
+      "href": "http://127.0.0.1:52239/main?after-navigation=1",
+      "isSecureContext": true,
+      "policy": true,
+      "nodeRequire": "undefined",
+      "nodeProcess": "undefined"
+    }
+  },
+  "cancelled": {
+    "pendingAfter": null,
+    "oldResponse": {
+      "rejected": true,
+      "code": "RESOURCE_STATE_CHANGED",
+      "message": "站点权限提示已失效"
+    },
+    "savedDecision": null,
+    "saved": {
+      "memoryA": {
+        "schemaVersion": 1,
+        "certificates": [],
+        "permissions": []
+      },
+      "memoryB": {
+        "schemaVersion": 1,
+        "certificates": [],
+        "permissions": [
+          {
+            "origin": "http://127.0.0.1:52239",
+            "permission": "geolocation",
+            "decision": "deny",
+            "updatedAt": 1793759134801
+          }
+        ]
+      },
+      "persisted": [
+        {
+          "key": "browserProfileState.v1:profile-A",
+          "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+          "updated_at": 1793759134802
+        },
+        {
+          "key": "browserProfileState.v1:profile-B",
+          "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+          "updated_at": 1793759134801
+        }
+      ],
+      "nativePending": [
+        {
+          "taskId": "task-A",
+          "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+          "prompt": null
+        },
+        {
+          "taskId": "task-B",
+          "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+          "prompt": null
+        }
+      ]
+    }
+  },
+  "status": "executed",
+  "savedAfter": {
+    "memoryA": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": []
+    },
+    "memoryB": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": [
+        {
+          "origin": "http://127.0.0.1:52239",
+          "permission": "geolocation",
+          "decision": "deny",
+          "updatedAt": 1793759134801
+        }
+      ]
+    },
+    "persisted": [
+      {
+        "key": "browserProfileState.v1:profile-A",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+        "updated_at": 1793759134802
+      },
+      {
+        "key": "browserProfileState.v1:profile-B",
+        "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+        "updated_at": 1793759134801
+      }
+    ],
+    "nativePending": [
+      {
+        "taskId": "task-A",
+        "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+        "prompt": null
+      },
+      {
+        "taskId": "task-B",
+        "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+        "prompt": null
+      }
+    ]
+  },
+  "finishedAt": "2026-11-04T02:25:34.806Z"
+}

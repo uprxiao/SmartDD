@@ -1,24 +1,24 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T02:04:58.796692+00:00",
+  "updatedAt": "2026-11-04T02:41:25.161710+00:00",
   "status": "S3-development; S2 contract decisions/system/S4 dependencies pending",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P012",
-      "privateRoot": "/private/tmp/willyou-m12-p012-executor-001",
-      "baseline": "/private/tmp/willyou-m12-p012-baseline-002",
-      "status": "P012 delivered, all resources released"
+      "group": "M12-P016",
+      "privateRoot": "/private/tmp/willyou-m12-p016-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p016-baseline-002",
+      "status": "preparing full T067 I; no native allocation"
     }
   ],
   "branch": "feature/0.1.1",
   "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
   "sourceState": "S3/S4 implementation and staged verification; frozen source manifests define each tested baseline",
-  "requirements": "R1.2",
-  "technicalDesign": "V1.1 §11",
+  "requirements": "R1.3",
+  "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
   "currentGroup": "M12-P010",
   "resources": {
@@ -674,11 +674,96 @@
         "nativeUi": "not allocated",
         "build": "not allocated"
       }
+    },
+    {
+      "id": "M12-P014",
+      "name": "actual native permission API component I",
+      "owner": "/root/s2_t004_test",
+      "status": "technical I passed and archived; original T017 A pending",
+      "privateRoot": "/private/tmp/willyou-m12-p014-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p014-permissions-baseline-001/baseline.json",
+      "baselineSha256": "658cad198c5518f7698c7d19778505079850f8ccb2baea571c8247330a6f5f8c",
+      "preflightSha256": "2334f501bdaa1f6227025b86195b2a5bc30d4f32f1efe2d777b25ceafe9bd5bf",
+      "relatedCaseIds": [
+        "M12-T017"
+      ],
+      "layers": [
+        "technical I component only; not App A"
+      ],
+      "criteria": [
+        "real first geo request pending, explicit I precondition respond, actual geo/query, reload reuse",
+        "same live document revoke must prompt, navigation cancels",
+        "profile isolation, cross-origin iframe decision at child origin",
+        "close/crash cancels old native callbacks; cleanup only owned profiles/ports/debuggers"
+      ],
+      "resources": {
+        "nativeUi": "granted",
+        "build": "not allocated"
+      },
+      "pids": [],
+      "ports": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P014/attempt-001",
+          "manifestSha256": "7939750fac79349770b240a0a7f4ec6578aea2807e15f09aa5cf8b988006e04f",
+          "accounted": true
+        },
+        {
+          "attempt": "attempt-002",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P014/attempt-002",
+          "manifestSha256": "badbb43c5a3020b9311d1eb39aed840a718f1dc435cf16800477a3c09d4c406d",
+          "accounted": true
+        }
+      ]
+    },
+    {
+      "id": "M12-P015",
+      "owner": "/root",
+      "name": "下载Session/RPC/浮层与显式路径开发",
+      "status": "software checks passed; full original T067 I and T015 U+A pending",
+      "relatedCaseIds": [
+        "M12-T015",
+        "M12-T067"
+      ],
+      "layers": [
+        "U only"
+      ],
+      "baseline": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/attempt-001/004/inputs.json",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/attempt-001",
+          "manifestSha256": "735302d9724f3f64b438396b36d95eb0e28fd9e50039e5c26ed27dd8371f549f",
+          "accounted": true
+        }
+      ],
+      "remaining": [
+        "actual native CLI upload/download to project-external paths",
+        "actual packaged ordinary system Downloads/UI/timing/cancel/open/reveal/remove"
+      ],
+      "resources": {
+        "nativeUi": "not allocated",
+        "build": "not allocated"
+      }
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "97c738c1cf54991cac0f5882c3158a402b62cab6",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "97c738c1cf54991cac0f5882c3158a402b62cab6"
+  "currentSourceCommit": "97c738c1cf54991cac0f5882c3158a402b62cab6",
+  "baselineAmendments": [
+    {
+      "at": "2026-11-04T02:22:07.169680+00:00",
+      "from": "R1.2/V1.1",
+      "to": "R1.3/V1.2",
+      "decision": "user confirmed ordinary Downloads, explicit --path override",
+      "affectedCases": [
+        "M12-T015",
+        "M12-T067"
+      ],
+      "evidenceReuse": "Other original criteria/source unaffected; existing case results remain under original frozen baselines"
+    }
+  ]
 }

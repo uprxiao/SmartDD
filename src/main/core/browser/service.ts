@@ -7,7 +7,7 @@ import { BrowserError, staleReference } from './errors';
 import type Database from 'better-sqlite3';
 import { app, nativeImage, session, type BrowserWindow } from 'electron';
 import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-browser';
-import { join } from 'node:path';
+import { join,resolve,isAbsolute } from 'node:path';
 import { browserExecArguments } from './exec-policy';
 import type { BrowserProgress } from './input-progress';
 import {BrowserWorkspace} from './workspace';
@@ -27,6 +27,7 @@ import {BrowserSiteStates} from './site-state';
 import {BrowserNetworkPolicy} from './network-policy';
 import type {BrowserCertificateState} from '@shared/browser-workspace';
 import {BrowserPermissions} from './permissions';
+import {BrowserDownloads} from './downloads';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -48,6 +49,7 @@ export class BrowserService {
   readonly siteStates:BrowserSiteStates;
   readonly networkPolicy:BrowserNetworkPolicy;
   readonly permissions:BrowserPermissions;
+  readonly downloads:BrowserDownloads;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
@@ -57,11 +59,12 @@ export class BrowserService {
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
   private reconciling?:Promise<void>;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
     this.profiles=new BrowserProfiles(options);
     this.siteStates=new BrowserSiteStates(options.sqlite,id=>this.profiles.all().some(profile=>profile.id===id));
     this.permissions=new BrowserPermissions({states:this.siteStates,available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
+    this.downloads=new BrowserDownloads({directory:()=>app.getPath('downloads'),available:(id,taskId)=>{this.profiles.assertAvailable(id);return!!options.taskProject(taskId)&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.networkPolicy=new BrowserNetworkPolicy({trusted:(id,host)=>this.siteStates.trusted(id,host),failed:(contents,failure)=>{
       const page=this.pages.all().find(page=>page.contents===contents);if(!page)return;
       this.certificateFailures.set(page.id,{...failure,challengeId:randomUUID()});this.workspace.certificateFailed(page,failure.url,failure.error);
@@ -69,11 +72,12 @@ export class BrowserService {
     this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,configure:page=>{
       this.networkPolicy.install(page.contents,page.profileId);
       this.permissions.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
+      this.downloads.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
     }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
@@ -103,7 +107,7 @@ export class BrowserService {
       this.admit(scope,args);
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
       if(command==='tab profile clone'){this.profiles.require(scope,text(args.profile));throw new ApplicationError('CAPABILITY_UNAVAILABLE','登录态完整克隆尚在开发');}
-      if(command==='access request'||command==='set credentials'||command==='download')throw new ApplicationError('CAPABILITY_UNAVAILABLE','此命令依赖尚在开发的下载或授权服务');
+      if(command==='access request'||command==='set credentials')throw new ApplicationError('CAPABILITY_UNAVAILABLE','此命令依赖尚在开发的认证或授权服务');
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
       if(command==='identity get'){const value=this.settings.snapshot();return{result:{mode:value.identity,pendingMode:value.pendingIdentity,restartRequired:value.pendingIdentity!==null}};}
       if(command==='identity set'){
@@ -163,6 +167,12 @@ export class BrowserService {
       if(navigation===null)throw new ApplicationError('INVALID_INPUT','导航地址或协议无效');
       if(command==='type'&&Array.from(text(args.input)).length>16384)throw new ApplicationError('INVALID_INPUT','type 最多16384字符；长文本请改用 inserttext');
       if(command==='wait'&&(args.fn!==undefined||args.timeout!==undefined&&(!Number.isInteger(args.timeout)||Number(args.timeout)<1||Number(args.timeout)>90000)))throw new ApplicationError('INVALID_INPUT','wait 不接受脚本，timeout须为1到90000毫秒');
+      let downloadPath:string|undefined;
+      if(command==='download'){
+        const path=text(args.path);if(!path||path.includes('\0'))throw new ApplicationError('INVALID_INPUT','下载路径不能为空或含空字符');
+        const cwd=this.options.taskDirectory?.(scope.taskId);if(!isAbsolute(path)&&!cwd)throw new BrowserError('BROWSER_UNAVAILABLE','任务工作目录尚未就绪');
+        downloadPath=isAbsolute(path)?resolve(path):resolve(cwd!,path);
+      }
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
       if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile));
       if(command!=='tab create')page=await this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page));
@@ -201,6 +211,19 @@ export class BrowserService {
           if(command==='intercept list')return{result:this.recordings.get(target)!.list()};
           await target.helper.ensureSession();
           if(signal.aborted)throw signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
+          if(command==='download'){
+            const armed=await target.references.arm(text(args.selector));let pending:ReturnType<BrowserDownloads['expect']>|undefined,error:unknown;
+            try{
+              pending=this.downloads.expect(target.contents,downloadPath!,signal);
+              const dispatchDownload=()=>{pending!.start();send();},actionOptions={signal,dispatched:dispatchDownload,notStarted:()=>{if(!pending?.claimed())dispatched=false;}};
+              if(armed.hostClick)await armed.click(actionOptions);else await target.helper.command(['click',armed.selector],{signal,dispatched:dispatchDownload});
+            }catch(e){error=e;}
+            try{
+              const guard=await armed.finish();if(guard.blocked.length||!guard.connected){if(!guard.accepted.length)dispatched=pending?.claimed()??false;throw staleReference();}
+              if(error)throw error;if(!guard.accepted.includes('click'))throw new BrowserError('BROWSER_ERROR','未确认下载点击事件送达；结果未知，请核对页面，不要重发');
+              const downloaded=await pending!.result;return{result:{path:downloaded.path,name:downloaded.name,bytes:downloaded.receivedBytes,downloadId:downloaded.id}};
+            }catch(error){pending?.cancel(error);throw error;}
+          }
           if(command==='goto'){
             const url=navigation!;
             send();await this.pages.navigate(target,url);return{navigated:true};
@@ -387,6 +410,7 @@ export class BrowserService {
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
   }
   respondPermission(taskId:string,id:string,allow:boolean):void{this.workspace.snapshot(taskId);this.permissions.respond(taskId,id,allow);}
+  async downloadAction(taskId:string,id:string,action:'cancel'|'open'|'reveal'|'remove'):Promise<void>{this.workspace.snapshot(taskId);await this.downloads.action(taskId,id,action);}
   revokePermission(taskId:string,profileId:string,origin:string,permission:string):void{
     const {projectId}=this.workspace.snapshot(taskId);this.profiles.require({taskId,projectId},profileId,'control');this.profiles.assertAvailable(profileId);this.siteStates.revokePermission(profileId,origin,permission);
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
@@ -417,5 +441,5 @@ export class BrowserService {
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
     })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();await this.pages.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
+  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
 }

@@ -1,0 +1,1375 @@
+{
+  "at": "2026-11-04T02:26:03.064Z",
+  "group": "M12-P014",
+  "scope": "Actual BrowserPermissions/BrowserSiteStates technical I only, not T017 App A or OS grant",
+  "status": "passed-component-subset",
+  "checks": [
+    {
+      "id": "pinned-native-runtime-and-real-origins",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "parent": "http://127.0.0.1:52239",
+        "child": "http://127.0.0.1:52240",
+        "sameHostDifferentPort": true,
+        "crossOrigin": true,
+        "crossSiteClaim": false,
+        "delegationHeader": "geolocation=(self \"http://127.0.0.1:52240\")",
+        "iframeAllow": "geolocation *"
+      }
+    },
+    {
+      "id": "secure-non-node-page-and-pending-before-approval",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "request": {
+          "started": true,
+          "id": "initial",
+          "info": {
+            "origin": "http://127.0.0.1:52239",
+            "href": "http://127.0.0.1:52239/main",
+            "isSecureContext": true,
+            "policy": true,
+            "nodeRequire": "undefined",
+            "nodeProcess": "undefined"
+          }
+        },
+        "pending": {
+          "id": "638c8320-70fd-4484-9a76-855b255d422f",
+          "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+          "profileId": "profile-A",
+          "origin": "http://127.0.0.1:52239",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "beforeResponse": {
+          "requests": [
+            {
+              "id": "initial",
+              "at": 1793759134752,
+              "origin": "http://127.0.0.1:52239"
+            }
+          ],
+          "results": [],
+          "queries": [
+            {
+              "id": "initial-query",
+              "origin": "http://127.0.0.1:52239",
+              "state": "denied"
+            }
+          ],
+          "messages": [],
+          "info": {
+            "origin": "http://127.0.0.1:52239",
+            "href": "http://127.0.0.1:52239/main",
+            "isSecureContext": true,
+            "policy": true,
+            "nodeRequire": "undefined",
+            "nodeProcess": "undefined"
+          }
+        }
+      }
+    },
+    {
+      "id": "actual-respond-ui-precondition-persists-allow",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "boundary": "Real production respond called as synthetic trusted UI precondition, not App A",
+        "response": {
+          "at": "2026-11-04T02:25:34.755Z",
+          "prompt": {
+            "id": "638c8320-70fd-4484-9a76-855b255d422f",
+            "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+            "profileId": "profile-A",
+            "origin": "http://127.0.0.1:52239",
+            "permissions": [
+              "geolocation"
+            ]
+          },
+          "allow": true,
+          "boundary": "Synthetic trusted-UI response using actual production method; not App/user A approval",
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52239",
+                  "permission": "geolocation",
+                  "decision": "allow",
+                  "updatedAt": 1793759134753
+                }
+              ]
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134753}]}",
+                "updated_at": 1793759134754
+              }
+            ],
+            "nativePending": [
+              {
+                "taskId": "task-A",
+                "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+                "prompt": null
+              },
+              {
+                "taskId": "task-B",
+                "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+                "prompt": null
+              }
+            ]
+          }
+        },
+        "query": {
+          "id": "after-allow",
+          "origin": "http://127.0.0.1:52239",
+          "state": "granted"
+        }
+      }
+    },
+    {
+      "id": "first-real-geo-callback-synthetic-coordinates",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "id": "initial",
+        "ok": true,
+        "origin": "http://127.0.0.1:52239",
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "accuracy": 10
+      }
+    },
+    {
+      "id": "reload-no-new-prompt-and-native-query-granted",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "query": {
+          "id": "after-reload",
+          "origin": "http://127.0.0.1:52239",
+          "state": "granted"
+        },
+        "pending": null,
+        "changedBefore": 2,
+        "changedAfter": 2
+      }
+    },
+    {
+      "id": "reloaded-real-geo-callback-synthetic-coordinates",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "id": "reload",
+        "ok": true,
+        "origin": "http://127.0.0.1:52239",
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "accuracy": 10
+      }
+    },
+    {
+      "id": "profile-B-does-not-inherit-A-choice",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "pending": {
+          "id": "80d67b5b-b1dc-465b-b3b3-32e66fdea291",
+          "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+          "profileId": "profile-B",
+          "origin": "http://127.0.0.1:52239",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "geo": {
+          "id": "isolated",
+          "ok": false,
+          "origin": "http://127.0.0.1:52239",
+          "code": 1,
+          "message": "User denied Geolocation"
+        },
+        "savedA": "allow",
+        "savedB": "deny",
+        "query": {
+          "id": "after-deny",
+          "origin": "http://127.0.0.1:52239",
+          "state": "denied"
+        }
+      }
+    },
+    {
+      "id": "same-document-revocation-reprompts",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "beforeDocument": {
+          "requests": [
+            {
+              "id": "reload",
+              "at": 1793759134763,
+              "origin": "http://127.0.0.1:52239"
+            }
+          ],
+          "results": [
+            {
+              "id": "reload",
+              "ok": true,
+              "origin": "http://127.0.0.1:52239",
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          ],
+          "queries": [
+            {
+              "id": "after-reload",
+              "origin": "http://127.0.0.1:52239",
+              "state": "granted"
+            }
+          ],
+          "messages": [],
+          "info": {
+            "origin": "http://127.0.0.1:52239",
+            "href": "http://127.0.0.1:52239/main?reload=1",
+            "isSecureContext": true,
+            "policy": true,
+            "nodeRequire": "undefined",
+            "nodeProcess": "undefined"
+          }
+        },
+        "afterRevoke": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+              "updated_at": 1793759134802
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            }
+          ]
+        },
+        "pending": {
+          "id": "533a0bd9-930c-4b22-8acc-d0bff3b76b0d",
+          "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+          "profileId": "profile-A",
+          "origin": "http://127.0.0.1:52239",
+          "permissions": [
+            "geolocation"
+          ]
+        }
+      }
+    },
+    {
+      "id": "navigation-cancels-old-native-request",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "pendingAfter": null,
+        "oldResponse": {
+          "rejected": true,
+          "code": "RESOURCE_STATE_CHANGED",
+          "message": "站点权限提示已失效"
+        },
+        "savedDecision": null,
+        "saved": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+              "updated_at": 1793759134802
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cross-origin-iframe-delegation-precondition",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "childReady": {
+          "origin": "http://127.0.0.1:52240",
+          "data": {
+            "kind": "child-ready",
+            "info": {
+              "origin": "http://127.0.0.1:52240",
+              "href": "http://127.0.0.1:52240/child",
+              "isSecureContext": true,
+              "policy": true,
+              "nodeRequire": "undefined",
+              "nodeProcess": "undefined"
+            }
+          }
+        },
+        "origins": {
+          "parent": "http://127.0.0.1:52239",
+          "child": "http://127.0.0.1:52240",
+          "sameHostDifferentPort": true,
+          "crossOrigin": true,
+          "crossSiteClaim": false,
+          "delegationHeader": "geolocation=(self \"http://127.0.0.1:52240\")",
+          "iframeAllow": "geolocation *"
+        }
+      }
+    },
+    {
+      "id": "iframe-prompt-and-saved-choice-use-child-origin",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "pending": {
+          "id": "04d3196e-9745-4b9f-a924-196cb1908358",
+          "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+          "profileId": "profile-A",
+          "origin": "http://127.0.0.1:52240",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "response": {
+          "at": "2026-11-04T02:25:34.853Z",
+          "prompt": {
+            "id": "04d3196e-9745-4b9f-a924-196cb1908358",
+            "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+            "profileId": "profile-A",
+            "origin": "http://127.0.0.1:52240",
+            "permissions": [
+              "geolocation"
+            ]
+          },
+          "allow": true,
+          "boundary": "Synthetic trusted-UI response using actual production method; not App/user A approval",
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52240",
+                  "permission": "geolocation",
+                  "decision": "allow",
+                  "updatedAt": 1793759134852
+                }
+              ]
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52239",
+                  "permission": "geolocation",
+                  "decision": "deny",
+                  "updatedAt": 1793759134801
+                }
+              ]
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+                "updated_at": 1793759134852
+              },
+              {
+                "key": "browserProfileState.v1:profile-B",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+                "updated_at": 1793759134801
+              }
+            ],
+            "nativePending": [
+              {
+                "taskId": "task-A",
+                "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+                "prompt": null
+              },
+              {
+                "taskId": "task-B",
+                "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+                "prompt": null
+              }
+            ]
+          }
+        },
+        "childQuery": {
+          "kind": "geo-query",
+          "id": "iframe-query",
+          "origin": "http://127.0.0.1:52240",
+          "state": "granted"
+        },
+        "parentQuery": {
+          "id": "parent-after-child-allow",
+          "origin": "http://127.0.0.1:52239",
+          "state": "denied"
+        },
+        "childChoice": "allow",
+        "parentChoice": null
+      }
+    },
+    {
+      "id": "iframe-real-geo-callback-synthetic-coordinates",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "kind": "geo-result",
+        "id": "iframe",
+        "ok": true,
+        "origin": "http://127.0.0.1:52240",
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "accuracy": 10
+      }
+    },
+    {
+      "id": "close-cancels-old-native-request",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "name": "close-cancels-pending",
+        "startedAt": "2026-11-04T02:25:34.925Z",
+        "savedBefore": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52240",
+                "permission": "geolocation",
+                "decision": "allow",
+                "updatedAt": 1793759134852
+              }
+            ]
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+              "updated_at": 1793759134852
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            }
+          ]
+        },
+        "owner": {
+          "taskId": "task-A",
+          "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+          "wcId": 3,
+          "windowId": 3,
+          "rendererPid": 33228
+        },
+        "request": {
+          "started": true,
+          "id": "close",
+          "info": {
+            "origin": "http://127.0.0.1:52239",
+            "href": "http://127.0.0.1:52239/main",
+            "isSecureContext": true,
+            "policy": true,
+            "nodeRequire": "undefined",
+            "nodeProcess": "undefined"
+          }
+        },
+        "pending": {
+          "id": "2179d554-38fe-409f-9f26-ee4ed56172d7",
+          "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+          "profileId": "profile-A",
+          "origin": "http://127.0.0.1:52239",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "windowDestroyed": true,
+        "cancelled": {
+          "pendingAfter": null,
+          "oldResponse": {
+            "rejected": true,
+            "code": "RESOURCE_STATE_CHANGED",
+            "message": "站点权限提示已失效"
+          },
+          "savedDecision": null,
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52240",
+                  "permission": "geolocation",
+                  "decision": "allow",
+                  "updatedAt": 1793759134852
+                }
+              ]
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52239",
+                  "permission": "geolocation",
+                  "decision": "deny",
+                  "updatedAt": 1793759134801
+                }
+              ]
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+                "updated_at": 1793759134925
+              },
+              {
+                "key": "browserProfileState.v1:profile-B",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+                "updated_at": 1793759134801
+              }
+            ],
+            "nativePending": [
+              {
+                "taskId": "task-A",
+                "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+                "prompt": null
+              },
+              {
+                "taskId": "task-B",
+                "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+                "prompt": null
+              },
+              {
+                "taskId": "task-A",
+                "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+                "prompt": null
+              }
+            ]
+          }
+        },
+        "status": "executed",
+        "savedAfter": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52240",
+                "permission": "geolocation",
+                "decision": "allow",
+                "updatedAt": 1793759134852
+              }
+            ]
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+              "updated_at": 1793759134925
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            },
+            {
+              "taskId": "task-A",
+              "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+              "prompt": null
+            }
+          ]
+        },
+        "finishedAt": "2026-11-04T02:25:35.018Z"
+      }
+    },
+    {
+      "id": "actual-renderer-crash-cancels-old-native-request",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "name": "renderer-crash-cancels-pending",
+        "startedAt": "2026-11-04T02:25:35.018Z",
+        "savedBefore": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52240",
+                "permission": "geolocation",
+                "decision": "allow",
+                "updatedAt": 1793759134852
+              }
+            ]
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+              "updated_at": 1793759134925
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            },
+            {
+              "taskId": "task-A",
+              "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+              "prompt": null
+            }
+          ]
+        },
+        "owner": {
+          "taskId": "task-A",
+          "pageId": "95c02030-6eb1-440d-bef4-545c700e0eee",
+          "wcId": 4,
+          "windowId": 4,
+          "rendererPid": 33233
+        },
+        "request": {
+          "started": true,
+          "id": "crash",
+          "info": {
+            "origin": "http://127.0.0.1:52239",
+            "href": "http://127.0.0.1:52239/main",
+            "isSecureContext": true,
+            "policy": true,
+            "nodeRequire": "undefined",
+            "nodeProcess": "undefined"
+          }
+        },
+        "pending": {
+          "id": "204daa5b-16d3-49ad-a224-c1d8338b560b",
+          "pageId": "95c02030-6eb1-440d-bef4-545c700e0eee",
+          "profileId": "profile-A",
+          "origin": "http://127.0.0.1:52239",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "faultInjection": {
+          "method": "webContents.forcefullyCrashRenderer",
+          "onlyOwnedContents": true,
+          "at": "2026-11-04T02:25:35.074Z"
+        },
+        "gone": {
+          "at": "2026-11-04T02:25:35.079Z",
+          "kind": "render-process-gone",
+          "wcId": 4,
+          "details": {
+            "reason": "killed",
+            "exitCode": 2
+          },
+          "pending": null
+        },
+        "cancelled": {
+          "pendingAfter": null,
+          "oldResponse": {
+            "rejected": true,
+            "code": "RESOURCE_STATE_CHANGED",
+            "message": "站点权限提示已失效"
+          },
+          "savedDecision": null,
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52240",
+                  "permission": "geolocation",
+                  "decision": "allow",
+                  "updatedAt": 1793759134852
+                }
+              ]
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": [
+                {
+                  "origin": "http://127.0.0.1:52239",
+                  "permission": "geolocation",
+                  "decision": "deny",
+                  "updatedAt": 1793759134801
+                }
+              ]
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+                "updated_at": 1793759135018
+              },
+              {
+                "key": "browserProfileState.v1:profile-B",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+                "updated_at": 1793759134801
+              }
+            ],
+            "nativePending": [
+              {
+                "taskId": "task-A",
+                "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+                "prompt": null
+              },
+              {
+                "taskId": "task-B",
+                "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+                "prompt": null
+              },
+              {
+                "taskId": "task-A",
+                "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+                "prompt": null
+              },
+              {
+                "taskId": "task-A",
+                "pageId": "95c02030-6eb1-440d-bef4-545c700e0eee",
+                "prompt": null
+              }
+            ]
+          }
+        },
+        "status": "executed",
+        "savedAfter": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52240",
+                "permission": "geolocation",
+                "decision": "allow",
+                "updatedAt": 1793759134852
+              }
+            ]
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": [
+              {
+                "origin": "http://127.0.0.1:52239",
+                "permission": "geolocation",
+                "decision": "deny",
+                "updatedAt": 1793759134801
+              }
+            ]
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52240\",\"permission\":\"geolocation\",\"decision\":\"allow\",\"updatedAt\":1793759134852}]}",
+              "updated_at": 1793759135018
+            },
+            {
+              "key": "browserProfileState.v1:profile-B",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[{\"origin\":\"http://127.0.0.1:52239\",\"permission\":\"geolocation\",\"decision\":\"deny\",\"updatedAt\":1793759134801}]}",
+              "updated_at": 1793759134801
+            }
+          ],
+          "nativePending": [
+            {
+              "taskId": "task-A",
+              "pageId": "3bf2e7d5-3ce4-4e02-ac80-94032279b3a9",
+              "prompt": null
+            },
+            {
+              "taskId": "task-B",
+              "pageId": "122fec62-2e23-470b-b794-66eb2f591ff5",
+              "prompt": null
+            },
+            {
+              "taskId": "task-A",
+              "pageId": "980f47d8-6cdd-434b-9019-b4dbaded6746",
+              "prompt": null
+            },
+            {
+              "taskId": "task-A",
+              "pageId": "95c02030-6eb1-440d-bef4-545c700e0eee",
+              "prompt": null
+            }
+          ]
+        },
+        "finishedAt": "2026-11-04T02:25:35.111Z"
+      }
+    },
+    {
+      "id": "all-location-data-is-explicit-cdp-fixture",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "fixture": {
+          "method": "Emulation.setGeolocationOverride",
+          "latitude": 1.2345,
+          "longitude": 2.3456,
+          "accuracy": 10,
+          "meaning": "Synthetic coordinates only, no permission grant or OS privacy bypass"
+        },
+        "commands": [
+          {
+            "at": "2026-11-04T02:25:34.661Z",
+            "wcId": 1,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:34.747Z",
+            "wcId": 2,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:34.763Z",
+            "wcId": 1,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:34.806Z",
+            "wcId": 1,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:34.815Z",
+            "wcId": 1,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:34.979Z",
+            "wcId": 3,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          },
+          {
+            "at": "2026-11-04T02:25:35.072Z",
+            "wcId": 4,
+            "method": "Emulation.setGeolocationOverride",
+            "params": {
+              "latitude": 1.2345,
+              "longitude": 2.3456,
+              "accuracy": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "server-requests-private-only",
+      "status": "passed",
+      "failureClass": null,
+      "actual": [
+        {
+          "at": "2026-11-04T02:25:34.628Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.737Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.758Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main?reload=1",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.803Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main?after-navigation=1",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.808Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/frame",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.812Z",
+          "origin": "http://127.0.0.1:52240",
+          "url": "http://127.0.0.1:52240/child",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:34.935Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main",
+          "remoteAddress": "127.0.0.1"
+        },
+        {
+          "at": "2026-11-04T02:25:35.031Z",
+          "origin": "http://127.0.0.1:52239",
+          "url": "http://127.0.0.1:52239/main",
+          "remoteAddress": "127.0.0.1"
+        }
+      ]
+    },
+    {
+      "id": "cleanup",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "driver": {
+          "knownPids": [
+            33202,
+            33206,
+            33210,
+            33211,
+            33216,
+            33218,
+            33228,
+            33233
+          ],
+          "ports": {
+            "parent": 52239,
+            "child": 52240
+          },
+          "noTlsPrivateKeysGenerated": true
+        },
+        "host": {
+          "productionMaps": {
+            "pending": 0,
+            "owners": 0,
+            "detach": 0,
+            "sessions": 0
+          },
+          "listeners": [
+            {
+              "windowId": 1,
+              "wcId": 1,
+              "navigation": 0,
+              "gone": 1,
+              "destroyed": 1,
+              "baseline": {
+                "navigation": 0,
+                "gone": 1,
+                "destroyed": 1
+              }
+            },
+            {
+              "windowId": 2,
+              "wcId": 2,
+              "navigation": 0,
+              "gone": 1,
+              "destroyed": 1,
+              "baseline": {
+                "navigation": 0,
+                "gone": 1,
+                "destroyed": 1
+              }
+            },
+            {
+              "windowId": 4,
+              "wcId": 4,
+              "navigation": 0,
+              "gone": 1,
+              "destroyed": 1,
+              "baseline": {
+                "navigation": 0,
+                "gone": 1,
+                "destroyed": 1
+              }
+            }
+          ],
+          "overrides": [
+            {
+              "wcId": 1,
+              "cleared": true,
+              "detached": true
+            },
+            {
+              "wcId": 2,
+              "cleared": true,
+              "detached": true
+            },
+            {
+              "wcId": 4,
+              "cleared": true,
+              "detached": true
+            }
+          ],
+          "windows": [
+            {
+              "id": 1,
+              "destroyed": true
+            },
+            {
+              "id": 2,
+              "destroyed": true
+            },
+            {
+              "id": 3,
+              "destroyed": true
+            },
+            {
+              "id": 4,
+              "destroyed": true
+            }
+          ],
+          "servers": [
+            {
+              "closed": true
+            },
+            {
+              "closed": true
+            }
+          ],
+          "sqliteClosed": true
+        },
+        "processes": {
+          "at": "2026-11-04T02:25:57.802Z",
+          "processes": [
+            {
+              "pid": 33202,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33206,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33210,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33211,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33216,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33218,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33228,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 33233,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            }
+          ],
+          "ports": [
+            {
+              "port": 52239,
+              "status": 1,
+              "stdout": "",
+              "stderr": "",
+              "closed": true
+            },
+            {
+              "port": 52240,
+              "status": 1,
+              "stdout": "",
+              "stderr": "",
+              "closed": true
+            }
+          ],
+          "allAbsent": true,
+          "allPortsClosed": true,
+          "noTlsPrivateKeysGenerated": true
+        }
+      }
+    },
+    {
+      "id": "frozen-inputs-unchanged",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "files": 6,
+        "privateDependencyFiles": 93,
+        "hostSha256": "d7d24df44030963860cf3ba43659610f3bf27fd4c5e83efd1ec6250b47dbd9d7"
+      }
+    }
+  ],
+  "segments": [
+    {
+      "name": "main-allow-reload",
+      "status": "executed"
+    },
+    {
+      "name": "profile-isolation",
+      "status": "executed"
+    },
+    {
+      "name": "revoke-and-navigation-cancel",
+      "status": "executed"
+    },
+    {
+      "name": "iframe-requester-origin",
+      "status": "executed"
+    },
+    {
+      "name": "close-cancels-pending",
+      "status": "executed"
+    },
+    {
+      "name": "renderer-crash-cancels-pending",
+      "status": "executed"
+    }
+  ],
+  "boundary": "No Browser.grantPermissions, no replacement permission handler, no real device/external site. Native coordinate override supplies synthetic location only. UI response is I precondition, not user approval A."
+}

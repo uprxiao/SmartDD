@@ -189,8 +189,8 @@
     "status": "active",
     "branch": "feature/0.1.1",
     "sourceCommit": "312bc576321dbd35884e7a3a5cea4cd7c5cd4885",
-    "requirements": "R1.2",
-    "technicalDesign": "V1.1 §11",
+    "requirements": "R1.3",
+    "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
     "currentGroup": "M12-P010",
@@ -627,6 +627,62 @@
           "nativeUi": "not allocated",
           "build": "not allocated"
         }
+      },
+      {
+        "id": "M12-P014",
+        "name": "actual native permission API component I",
+        "owner": "/root/s2_t004_test",
+        "status": "native resource granted; awaiting actual process receipt",
+        "privateRoot": "/private/tmp/willyou-m12-p014-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p014-permissions-baseline-001/baseline.json",
+        "baselineSha256": "658cad198c5518f7698c7d19778505079850f8ccb2baea571c8247330a6f5f8c",
+        "preflightSha256": "2334f501bdaa1f6227025b86195b2a5bc30d4f32f1efe2d777b25ceafe9bd5bf",
+        "relatedCaseIds": [
+          "M12-T017"
+        ],
+        "layers": [
+          "technical I component only; not App A"
+        ],
+        "criteria": [
+          "real first geo request pending, explicit I precondition respond, actual geo/query, reload reuse",
+          "same live document revoke must prompt, navigation cancels",
+          "profile isolation, cross-origin iframe decision at child origin",
+          "close/crash cancels old native callbacks; cleanup only owned profiles/ports/debuggers"
+        ],
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        }
+      },
+      {
+        "id": "M12-P015",
+        "owner": "/root",
+        "name": "下载Session/RPC/浮层与显式路径开发",
+        "status": "software checks passed; full original T067 I and T015 U+A pending",
+        "relatedCaseIds": [
+          "M12-T015",
+          "M12-T067"
+        ],
+        "layers": [
+          "U only"
+        ],
+        "baseline": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/attempt-001/004/inputs.json",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/attempt-001",
+            "manifestSha256": "735302d9724f3f64b438396b36d95eb0e28fd9e50039e5c26ed27dd8371f549f",
+            "accounted": true
+          }
+        ],
+        "remaining": [
+          "actual native CLI upload/download to project-external paths",
+          "actual packaged ordinary system Downloads/UI/timing/cancel/open/reveal/remove"
+        ],
+        "resources": {
+          "nativeUi": "not allocated",
+          "build": "not allocated"
+        }
       }
     ],
     "autonomy": {
@@ -659,7 +715,24 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T02:03:21.084190+00:00",
-    "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit"
+    "updatedAt": "2026-11-04T02:41:25.161710+00:00",
+    "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit",
+    "pendingDecisions": [
+      {
+        "id": "M12-DOWNLOAD-PATH-CONTRACT",
+        "requirements": [
+          "R01.7",
+          "R04.5",
+          "O7"
+        ],
+        "conflict": "R01.7 Agent触发也保存系统Downloads；R04.5/O7专用download --path路径不限制并明确允许任意路径",
+        "question": "普通下载默认系统目录而专用--path覆盖，还是所有下载只进系统目录？",
+        "status": "resolved by explicit user response",
+        "independentWork": "普通will-download系统目录/文件名/浮层与权限等继续；专用CLI路径行为不作默认决定，不因时间经过当作同意",
+        "decision": "普通下载进系统目录；显式--path可指定任意路径；保留O7",
+        "confirmedAt": "2026-11-04T02:22:07.168124+00:00",
+        "requirementRevision": "R1.3"
+      }
+    ]
   }
 }
