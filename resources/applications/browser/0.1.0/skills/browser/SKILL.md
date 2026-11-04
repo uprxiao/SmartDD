@@ -14,6 +14,8 @@ description: 经宿主CLI操作本任务内置浏览器，保留页面引用与�
 页面引用是宿主返回的不透明字符串（例如 @k1s3e2），原样传给 element；不要推算、跨页使用或改成原生 @e2。
 收到 BROWSER_STALE_REF 时重新 snapshot。BROWSER_PAUSED 时停止重试并告知用户。
 写命令失败或断连且结果 unknown 时，保留 requestId，用 operation get 查询同一运行的回执，先观察页面，不自动重发。
+`click`或`exec click`返回`dialogOpened: true`时，只能确认已打开网页JS对话框，原点击仍可能在收尾。保留本次返回的`operation.requestId`，按任务意图用正常`dialog accept`／`dialog dismiss`处理该页对话框，或等待用户处理；随后用`operation get --request <原requestId>`确认原点击。弹框未处理时不发新的点击或snapshot，不重发原动作，也不换定位器再点。
+对话框答复返回`inputContinuation: blocked`／`unknown`时，答复本身已处理，原点击仍是旧引用／结果未知；查询原点击回执，按其错误指引恢复后重新观察。不能把答复成功或M11传输成功当成原点击已完成。
 异步变化使用 `wait` 的具体条件，不用固定暂停代替完成条件。默认25秒，`--timeout`最大90000毫秒，可组合selector、text、url、load与hidden/visible状态。
 `wait` 是观察命令，不接受 `--fn`。脚本等待单独用写命令 `wait fn --fn …`，脚本可能反复修改页面；任意脚本也可用写命令 `eval`。两者失败未知时都不自动重发，只有观察授权时不能使用。
 自定义输入框先 `focus`，再 `inserttext`。`type`最多16384字符，长文本用`inserttext`；按回执确认源文本进度，再另行核对页面实际值，不据进度推算页面内容。

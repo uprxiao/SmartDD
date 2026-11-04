@@ -6,6 +6,7 @@ import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {BrowserService,type BrowserScope} from '../service';
 import {BrowserPageQueue} from '../queue';
+import {BrowserDeferredReferenceGuards,type BrowserReferenceDeferral} from '../deferred-reference';
 import type {BrowserPage} from '../page-registry';
 import type {BrowserProfileClones} from '../profile-clones';
 import {isApplicationPreflightFailure} from '../../applications/capability-preflight';
@@ -22,12 +23,50 @@ function fixture(){
   const scope=(taskId='T1',runId='R1'):BrowserScope=>{let run=runs.get(runId);if(!run){run=new AbortController();runs.set(runId,run);}return{taskId,projectId:projects.get(taskId)!,runId,requestId:randomUUID(),operationId:randomUUID(),runSignal:run.signal,signal:new AbortController().signal,assertActive:()=>{}};};
   const grant=async(mode:'observe'|'control'='control',caller=scope(),target='T2',chosen?:'observe'|'control')=>{const result=service.execute(caller,'access request',{task:target,mode});const request=service.access.snapshot().requests.at(-1)!;service.respondAccess(request.id,true,chosen);await result;return request.id;};
   const page=(taskId='T2',profileId=service.profiles.ensureProject('P1').id)=>{
-    const fake={id:randomUUID(),taskId,projectId:'P1',profileId,kind:'tab',closed:false,abort:new AbortController(),queue:new BrowserPageQueue(),helper:{ensureSession:vi.fn(async()=>{})},contents:{getURL:()=> 'https://fixture.example/',getTitle:()=> 'Fixture',printToPDF:vi.fn(async()=>Buffer.from('%PDF-test'))}} as unknown as BrowserPage;
+    const fake={id:randomUUID(),taskId,projectId:'P1',profileId,kind:'tab',closed:false,abort:new AbortController(),queue:new BrowserPageQueue(),helper:{ensureSession:vi.fn(async()=>{}),close:vi.fn(async()=>{})},proxy:{waitForInputCompletion:vi.fn(async()=>{})},contents:{getURL:()=> 'https://fixture.example/',getTitle:()=> 'Fixture',printToPDF:vi.fn(async()=>Buffer.from('%PDF-test'))}} as unknown as BrowserPage;
     vi.spyOn(service.workspace,'target').mockResolvedValue(fake);vi.spyOn(service.pages,'all').mockReturnValue([fake]);vi.spyOn(service.pages,'list').mockImplementation(id=>id===fake.taskId?[fake]:[]);return fake;
   };
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it.each(['click','exec'] as const)('keeps a %s reference armed through the dialog and finishes it under the original page queue',async command=>{
+    const f=fixture(),page=f.page('T1'),guards=new BrowserDeferredReferenceGuards(),nativeFinish=vi.fn(async()=>({connected:true,blocked:[],accepted:['mousedown','mouseup','click']})),inspect=vi.fn(async()=>({connected:true,blocked:[],accepted:['mousedown','mouseup','click']}));
+    const armed={selector:'[held-node]',hostClick:false,finish:vi.fn(async(_preserve:boolean,deferred:BrowserReferenceDeferral|undefined)=>{
+      if(!deferred)throw Error('JavaScript finish would block while prompt is open');
+      return guards.defer({...deferred,id:'exact-old-node',inspect,finish:nativeFinish});
+    })};
+    const references={arm:vi.fn(async()=>armed),get hasOpenDialog(){return guards.dialogOpen;},get hasDeferredGuards(){return guards.pending;},settleDeferredGuards:()=>guards.settle(),assertDeferredGuardsReady:()=>guards.assertReady()};
+    Object.assign(page,{references});page.helper.command=vi.fn(async()=>{guards.opening('original-dialog');return{clicked:true,dialogOpened:true};});
+    const scope=f.scope();const result=await f.service.execute(scope,command,command==='click'?{element:'@held'}:{command:'click @held'});
+    expect(result).toMatchObject({dialogOpened:true});expect(inspect).not.toHaveBeenCalled();expect(nativeFinish).not.toHaveBeenCalled();
+    expect(f.service.operations.receipt('R1',scope.requestId)).toMatchObject({state:'unknown',effectState:'unknown'});
+    expect(f.service.operations.get('R1','audit:'+scope.requestId)).toMatchObject({state:'running',effect_state:'unknown'});expect(f.service.automation.activity(page.id).running).toBe(true);
+    await expect(f.service.execute(f.scope(),'snapshot',{})).rejects.toThrow('先处理');
+    vi.spyOn(f.service.javascriptDialogs,'respondFromAgent').mockImplementation(async(_task,_page,_accept,_text,dispatched)=>{dispatched();guards.closed('original-dialog');return{handled:true};});
+    await expect(f.service.execute(f.scope(),'dialog accept',{text:'accepted'})).resolves.toEqual({result:{handled:true}});
+    expect(nativeFinish).toHaveBeenCalledOnce();expect(guards.pending).toBe(false);expect(page.helper.command).toHaveBeenCalledOnce();expect(f.service.operations.receipt('R1',scope.requestId)).toMatchObject({state:'succeeded',effectState:'completed'});expect(f.service.operations.get('R1','audit:'+scope.requestId)).toMatchObject({state:'succeeded',effect_state:'completed'});expect(f.service.automation.activity(page.id).running).toBe(false);
+  });
+  it('retains a replaced-node failure in the original click receipt while answering the real dialog successfully',async()=>{
+    const f=fixture(),page=f.page('T1'),guards=new BrowserDeferredReferenceGuards(),state={connected:false,blocked:['mouseup','click'],accepted:['mousedown']};
+    const armed={selector:'[held-old-node]',hostClick:false,finish:vi.fn(async(_preserve:boolean,deferred:BrowserReferenceDeferral|undefined)=>{expect(deferred).toBeDefined();return guards.defer({...deferred,id:'old',inspect:async()=>state,finish:async()=>state});})};
+    Object.assign(page,{references:{arm:async()=>armed,get hasOpenDialog(){return guards.dialogOpen;},get hasDeferredGuards(){return guards.pending;},settleDeferredGuards:()=>guards.settle(),assertDeferredGuardsReady:()=>guards.assertReady()}});
+    page.helper.command=vi.fn(async()=>{guards.opening('dialog');return{clicked:true,dialogOpened:true};});const original=f.scope();await f.service.execute(original,'click',{element:'@old'});
+    vi.spyOn(f.service.javascriptDialogs,'respondFromAgent').mockImplementation(async(_task,_page,_accept,_text,dispatched)=>{dispatched();guards.closed('dialog');return{handled:true};});
+    await expect(f.service.execute(f.scope(),'dialog accept',{})).resolves.toEqual({result:{handled:true,inputContinuation:'blocked'}});
+    expect(f.service.operations.receipt('R1',original.requestId)).toMatchObject({state:'unknown',effectState:'unknown',errorCode:'BROWSER_STALE_REF'});
+    expect(page.helper.command).toHaveBeenCalledOnce();expect(guards.pending).toBe(false);
+  });
+  it('stops an owned deferred kernel release before replacing the document',async()=>{
+    const f=fixture(),page=f.page('T1'),order:string[]=[];Object.assign(page,{references:{hasDeferredGuards:true,invalidate:(discard:boolean)=>{expect(discard).toBe(true);order.push('discard');}}});
+    page.helper.close=vi.fn(async()=>{order.push('stop-kernel');});vi.spyOn(f.service.pages,'navigate').mockImplementation(async()=>{order.push('navigate');});
+    await f.service.execute(f.scope(),'goto',{url:'https://fixture.example/new'});expect(order).toEqual(['stop-kernel','discard','navigate']);expect(page.helper.close).toHaveBeenCalledOnce();
+  });
+  it('settles the retained guard for a trusted user dialog reply too',async()=>{
+    const f=fixture(),page=f.page('T1'),settle=vi.fn(async()=>({pending:false,blocked:false}));
+    Object.assign(page,{references:{hasDeferredGuards:true,settleDeferredGuards:settle}});
+    vi.spyOn(f.service.javascriptDialogs,'snapshot').mockReturnValue({id:'dialog',pageId:page.id,profileId:page.profileId,kind:'prompt',url:'https://fixture.example/',message:'Question',defaultValue:'value'});
+    vi.spyOn(f.service.javascriptDialogs,'respond').mockResolvedValue();await f.service.respondJavascriptDialog('T1','dialog',true,'accepted');expect(settle).toHaveBeenCalledOnce();
+  });
   it('routes dedicated and compatibility dialog answers through the owned host without starting a cold Helper',async()=>{
     const f=fixture(),page=f.page('T1'),helperCommand=vi.fn(async()=>({})),reply=vi.spyOn(f.service.javascriptDialogs,'respondFromAgent').mockImplementation(async(_task,_page,_accept,_text,dispatched)=>{dispatched();return{handled:true as const};});
     page.helper.command=helperCommand;

@@ -1,0 +1,10 @@
+--- 013/src/main/core/browser/audit.ts
++++ 015/src/main/core/browser/audit.ts
+@@ -63,6 +63,7 @@
+       page:(pageId:string)=>{if(!record.replay)this.operations.page(scope.runId,key,pageId);},
+       grant:(grant:NonNullable<BrowserCommandAudit['authorization']>,targetTaskId=summary.targetTaskId)=>{summary={...summary,authorization:{...grant},authorizations:[...summary.authorizations.filter(item=>item.grantId!==grant.grantId),{...grant,targetTaskId}]};save('running',read?'read-only':'not-started');},
+       passwordFill:(value:boolean)=>{summary={...summary,passwordFill:value};save('running','not-started');},
++      pending:(value:unknown)=>{summary={...summary,result:browserAuditValue(command,value,'result')};save('running','unknown');},
+       success:(value:unknown)=>{summary={...summary,result:browserAuditValue(command,value,'result')};save('succeeded',read?'read-only':'completed');},
+       failure:(error:unknown,dispatched:boolean)=>save(dispatched&&!read?'unknown':'failed',read?'read-only':dispatched?'unknown':'not-started',error instanceof ApplicationError?error.code:'BROWSER_ERROR'),
+     };

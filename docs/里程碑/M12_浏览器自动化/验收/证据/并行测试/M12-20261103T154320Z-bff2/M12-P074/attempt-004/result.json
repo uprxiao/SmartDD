@@ -1,0 +1,86 @@
+{
+  "at": "2026-11-04T20:34:13.306821+00:00",
+  "group": "M12-P074",
+  "attempt": "004",
+  "layer": "Actual Native/M11/CLI I only; notA/modelR",
+  "status": "original-T044-I-source015-regression-green-candidate",
+  "formalCaseIncrement": 0,
+  "caseResults": {
+    "M12-T044": "passed"
+  },
+  "sourceManifestSha256": "beb858ca46df4dd12246969c0c435f54234afcb0cc52ad323188b55558460f5b",
+  "sourceRoot": "/private/tmp/willyou-m12-p073-source-015/source",
+  "reason": "Source015 nativeInput promise tracking and ref guard lifecycle changes affect click; complete original T044100-call affected regression. Not a new unique case or a continuation repeat. T033/T034/T094 not executed by this attempt.",
+  "performance": {
+    "snapshot": {
+      "count": 50,
+      "medianMs": 818.423396,
+      "p90Ms": 854.90875,
+      "minMs": 790.697709,
+      "maxMs": 1477.651709,
+      "driverRoundTripMedianMs": 821.7527709999999,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    },
+    "click": {
+      "count": 50,
+      "medianMs": 819.3183750000001,
+      "p90Ms": 846.855541,
+      "minMs": 793.952792,
+      "maxMs": 991.755958,
+      "driverRoundTripMedianMs": 822.8120630000001,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    }
+  },
+  "maximumSamplesUnmodified": {
+    "snapshot": {
+      "index": 19,
+      "label": "T044-snapshot-19",
+      "elapsedNs": 1477651709,
+      "startedMonotonicNs": 33432167916,
+      "finishedMonotonicNs": 34909819625,
+      "startedUTC": "2026-11-04T20:32:26.513885+00:00",
+      "finishedUTC": "2026-11-04T20:32:27.991539+00:00",
+      "driverRoundTripMs": 1479.645583
+    },
+    "click": {
+      "index": 27,
+      "label": "T044-click-27",
+      "elapsedNs": 991755958,
+      "startedMonotonicNs": 48400387833,
+      "finishedMonotonicNs": 49392143791,
+      "startedUTC": "2026-11-04T20:32:41.482071+00:00",
+      "finishedUTC": "2026-11-04T20:32:42.473830+00:00",
+      "driverRoundTripMs": 994.461833
+    }
+  },
+  "timingBoundary": "Actualmanagedcaller justbeforePopen throughcommunicate terminalexit includinglaunch/discovery/gateway/identity/helper/output; driverwholeIPCroundtrip retained separately. No costs deducted.",
+  "originalThreshold": "Median of each50calls <=1000ms; no max/p90 threshold invented. One snapshot max1477.652ms remains in original50, never dropped or subtracted.",
+  "actualSitePerfCount": 51,
+  "samples": "performance-samples.csv",
+  "raw": "raw.json",
+  "hostRaw": "host-initial.raw.json",
+  "adjudication": "adjudication.json",
+  "noFaultGateInstalled": true,
+  "cleanup": {
+    "path": "cleanup.json",
+    "exactPids": 215,
+    "ports": [
+      63975,
+      64024
+    ],
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "allHelperRuntimeFilesGone": true,
+    "allUnixGatewayGone": true,
+    "hostExit": {
+      "atMs": 1793824401048,
+      "code": 0,
+      "signal": null
+    },
+    "fallbackSignals": []
+  },
+  "startedAt": "2026-11-04T20:31:51.965Z",
+  "finishedAt": "2026-11-04T20:33:21.170Z",
+  "resourceLease": "Both003/004 Native/UI resources released; no self-owned running native/HTTP/CLI remained",
+  "priorEvidence": "P074002 original source013100calls preserved/accepted. This regression uses015 fixed source and original unchanged performance expectations."
+}

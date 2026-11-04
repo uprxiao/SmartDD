@@ -1,0 +1,116 @@
+{
+  "at": "2026-11-04T20:27:29.813Z",
+  "group": "M12-P074",
+  "attempt": "003",
+  "scope": "Pure-data private fault-target selection validation; no real gateway, socket, Native, SQL execution or product I pass claimed. Actual runtime uses this exact selector before socket.destroy.",
+  "sourceBasis": "/private/tmp/willyou-m12-p073-source-015/source",
+  "sourceFiles": [
+    {
+      "path": "native/applications/cli.mm",
+      "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861"
+    },
+    {
+      "path": "src/main/core/applications/cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef"
+    },
+    {
+      "path": "src/main/core/applications/tool-service.ts",
+      "sha256": "51286c5bf24bad0ca173cbc05357c5c7df4e95bb6156939fe378361d37bef91c"
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "sha256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f"
+    },
+    {
+      "path": "src/main/core/browser/audit.ts",
+      "sha256": "797dbbc2d0111854bc9e74218773a339d5294e040249dd1970cbf5e8fd32bc00"
+    }
+  ],
+  "sql": "SELECT b.*,i.operation_id AS invocation_id,i.tool_name AS invocation_tool,i.state AS invocation_state,i.attempt_count AS invocation_attempt_count FROM browser_operations b JOIN application_invocations i ON i.run_id=b.run_id AND i.request_id=b.request_id WHERE b.run_id=? AND b.page_id=? AND b.command='find' AND b.state='running' AND i.tool_name='browser.interact.find' AND i.state='running'",
+  "mapping": [
+    {
+      "source": "native/applications/cli.mm",
+      "lines": "69,71,16-21",
+      "fact": "capabilities/call has UUID call.id. No response after sent write: code5/unknown and failure(requestId=call.id); failure emits same requestId."
+    },
+    {
+      "source": "src/main/core/applications/cli-gateway.ts",
+      "lines": "109-116",
+      "fact": "id=request.id; peer.controllers.set(id,{runId,...}); tools.call(runId,id,...). No alias or regenerated wire id."
+    },
+    {
+      "source": "src/main/core/applications/tool-service.ts",
+      "lines": "102,157,171",
+      "fact": "requestId propagated unchanged to application_invocations.request_id and browser handler scope."
+    },
+    {
+      "source": "src/main/core/browser/service.ts",
+      "lines": "202-204,228",
+      "fact": "real browser_operations key uses scope.requestId; operation get queries original requestId within same run."
+    },
+    {
+      "source": "src/main/core/browser/audit.ts",
+      "lines": "58",
+      "fact": "separate audit:requestId row intentionally has no corresponding application_invocations request_id, excluded by real-id join."
+    }
+  ],
+  "checks": [
+    {
+      "name": "positive-real-wire-id-matches-real-request-id",
+      "status": "passed"
+    },
+    {
+      "name": "negative-no-real-row",
+      "status": "passed"
+    },
+    {
+      "name": "negative-unfiltered-audit-and-real-rows",
+      "status": "passed"
+    },
+    {
+      "name": "negative-audit-id-only",
+      "status": "passed"
+    },
+    {
+      "name": "negative-other-wire-id-only",
+      "status": "passed"
+    },
+    {
+      "name": "negative-controller-other-run",
+      "status": "passed"
+    },
+    {
+      "name": "negative-peer-authenticated-other-run",
+      "status": "passed"
+    },
+    {
+      "name": "negative-closed-socket",
+      "status": "passed"
+    },
+    {
+      "name": "negative-two-matching-peers",
+      "status": "passed"
+    },
+    {
+      "name": "negative-wrong-page-row",
+      "status": "passed"
+    },
+    {
+      "name": "negative-wrong-invocation-tool",
+      "status": "passed"
+    },
+    {
+      "name": "negative-replayed-attempt2",
+      "status": "passed"
+    },
+    {
+      "name": "pure-selector-does-not-destroy-sockets",
+      "status": "passed"
+    }
+  ],
+  "total": 13,
+  "passed": 13,
+  "nativeStarted": false,
+  "listenersStarted": false,
+  "requiresSource015Recertification": false
+}

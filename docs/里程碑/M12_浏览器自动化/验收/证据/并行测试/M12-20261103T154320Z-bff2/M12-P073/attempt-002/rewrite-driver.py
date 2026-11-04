@@ -1,0 +1,33 @@
+from pathlib import Path
+r=Path('/private/tmp/willyou-m12-p073-dialog-boundaries-native-002');p=r/'run.mjs';s=p.read_text();s=s.replace("group:'M12-P073A',case:'earlyinline-and-main-reference-modal'", "group:'M12-P073-002',case:'deferred-reference-modal-5boundaries'")
+start=s.index('const contract=JSON.parse(');end=s.index("r.after=await call({command:'dialog-state'});r.status=",start)
+new=r'''const contract=JSON.parse(await readFile(root+'/contract.json')),plans=contract.cases;assert.equal(plans.length,5);
+ function payload(step){return step.parsed.data.result??step.parsed.data}
+ async function snapshot(label,pageId){const step=await ok(label,['browser','snapshot','--page',pageId]),data=payload(step);assert(Array.isArray(data.refs),'Actualsnapshot refs missing');return{step,refs:data.refs}}
+ function choose(snap,name){const refs=snap.refs.filter(x=>x.role==='button'&&x.name===name&&x.available);assert.equal(refs.length,1,'Uniqueactualavailablehostref:'+name);return refs[0].ref}
+ async function opGet(row,phase){const step=await ok(phase+'-'+row.id,['browser','operation','get','--request',row.originalRequestId]);return{step,value:payload(step)}}
+ async function opening(row){return poll(async()=>{const state=await call({command:'dialog-state'});row.observations.push({at:Date.now(),pages:state.pages,pending:state.referenceCalls.filter(x=>!x.finishedAt&&!x.synchronousError).map(x=>({label:x.label,pageId:x.pageId,at:x.at,method:x.method}))});return state.dialogs.slice(row.beforeEventCount).find(x=>x.method==='Page.javascriptDialogOpening'&&x.params.message===row.message)},12000)}
+ for(const spec of plans){
+  r.stage='P073-002-'+spec.id;const before=await call({command:'dialog-state'}),row={id:'p073-002-'+spec.id,kind:spec.id,message:'P073 p073-002-'+spec.id,answerText:'accepted-'+spec.id+'-中文',beforeEventCount:before.dialogs.length,referenceCallStart:before.referenceCalls.length,observations:[],postOperationReads:[],startedAtMs:Date.now()};r.caseRows.push(row);await persist();
+  try{
+   const pathname=spec.id==='srcdoc-mousedown'?'/frame-parent':spec.id==='crosssite-oopif-mousedown'?'/frame-parent':spec.id==='shadow-mousedown'?'/shadow':spec.id==='main-clone-after-prompt'?'/clone':'/main';row.url=cfg.origin+pathname+'?case='+encodeURIComponent(row.id)+(spec.id==='srcdoc-mousedown'?'&kind=srcdoc':spec.id==='crosssite-oopif-mousedown'?'&kind=cross':'');
+   row.create=await ok('create-'+row.id,['browser','tab','create','--url',row.url]);row.pageId=payload(row.create).pageId;assert.equal(typeof row.pageId,'string');await poll(()=>fixture.ready(row.id),10000);
+   row.initialSnapshot=await snapshot('initialsnapshot-'+row.id,row.pageId);row.primaryRef=choose(row.initialSnapshot,row.id+' primary');row.pendingNextRef=choose(row.initialSnapshot,row.id+' next');row.referenceBefore=await call({command:'reference-read',pageId:row.pageId,ref:row.primaryRef});row.frameBefore=await call({command:'frame-state',pageId:row.pageId});
+   if(spec.id==='crosssite-oopif-mousedown'){
+    const childNative=row.frameBefore.nativeFrames.find(x=>x.url?.startsWith('http://localhost:')&&x.url.includes('case='+row.id));const candidates=row.frameBefore.trees.filter(x=>x.sessionId&&x.frameTree?.frame?.url?.startsWith('http://localhost:'));row.crossSiteProof={parentURL:row.url,parentSite:'http://127.0.0.1',expectedChildSite:'http://localhost',nativeMain:row.frameBefore.nativeMain,childNative,candidates,sessions:row.frameBefore.sessions,formed:Boolean(childNative&&childNative.processId!==row.frameBefore.nativeMain.processId&&candidates.some(x=>x.frameTree.frame.id===row.referenceBefore.node.frameId&&x.sessionId===row.referenceBefore.node.sessionId))};
+   }
+   const click=cli('primaryclick-'+row.id,['browser','click','--element',row.primaryRef,'--page',row.pageId]).then(value=>row.click=value,error=>row.clickTransportError=String(error));row.opening=await opening(row);await click;
+   row.originalRequestId=row.click?.parsed?.operation?.requestId??row.click?.parsed?.requestId;assert.equal(typeof row.originalRequestId,'string','OriginalrequestId must come from actualCLI stdout');row.beforeOperation=await opGet(row,'operation-before-answer');row.beforeSql=await call({command:'operation-sql-state',requestId:row.originalRequestId});
+   if(spec.id==='main-reference-mousedown'&&cfg.pendingInputNegative===true){row.pendingNewInput=await cli('pending-next-click-negative-'+row.id,['browser','click','--element',row.pendingNextRef,'--page',row.pageId]);row.afterRejectedOperation=await opGet(row,'operation-after-rejected-input');row.afterRejectedSql=await call({command:'operation-sql-state',requestId:row.originalRequestId})}
+   row.answer=await cli('answer-'+row.id,['browser','dialog','accept','--text',row.answerText,'--page',row.pageId]);
+   if(row.answer.raw.code===0){
+    row.closed=await poll(async()=>{const state=await call({command:'dialog-state'});return state.dialogs.slice(row.beforeEventCount).find(x=>x.pageId===row.pageId&&x.method==='Page.javascriptDialogClosed')},10000);row.siteResult=await poll(()=>fixture.results.find(x=>x.id===row.id),10000);
+    try{row.finalOperation=await poll(async()=>{const actual=await opGet(row,'operation-after-answer-'+row.postOperationReads.length);row.postOperationReads.push(actual);await persist();return actual.value.state==='succeeded'||actual.value.state==='failed'||actual.value.state==='unknown'&&actual.value.errorCode?actual:null},90000)}catch(error){row.operationObservationError=String(error)}
+    row.afterSql=await call({command:'operation-sql-state',requestId:row.originalRequestId});row.afterSnapshot=await snapshot('aftersnapshot-'+row.id,row.pageId);row.nextRef=choose(row.afterSnapshot,row.id+' next');row.afterDialog=await call({command:'reference-read',pageId:row.pageId,ref:row.nextRef});row.nextClick=await cli('nextclick-'+row.id,['browser','click','--element',row.nextRef,'--page',row.pageId]);row.afterNextSnapshot=await snapshot('afternextsnapshot-'+row.id,row.pageId);row.afterNext=await call({command:'reference-read',pageId:row.pageId,ref:choose(row.afterNextSnapshot,row.id+' next')});
+   }else row.businessIncomplete='ActualnormalCLIanswerfailed, neverforced';
+  }catch(error){row.error=String(error.stack??error);row.errorStage=r.stage}
+  row.afterState=await call({command:'dialog-state'});row.actualReferenceCalls=row.afterState.referenceCalls.slice(row.referenceCallStart);row.finishedAtMs=Date.now();await resources();await persist();
+ }
+ '''
+s=s[:start]+new+s[end:];s=s.replace("homes:{t1:runtime+'/home-t1',t2:runtime+'/home-t2'},projects:", "homes:{t1:runtime+'/home-t1',t2:runtime+'/home-t2'},pendingInputNegative:false,projects:")
+p.write_text(s)

@@ -1,0 +1,108 @@
+{
+  "group": "M12-P073-002",
+  "layer": "NativeI deferred-modal repair and frame/reference boundaries; noA/R/basic6repeat",
+  "requirements": {
+    "direct": [
+      "R04.6",
+      "R03 references/input",
+      "R02.10 samepagequeue"
+    ],
+    "background": "R01.12 regionalUI constraint only; no newearlyHTML/OOPIF/JSUI businessrequirement",
+    "lifecycle": "Native callback retained; exact actualCDP frame/session; navigation/framegone/close/profileunavailable/dispose invalidate priorresponse"
+  },
+  "cases": [
+    {
+      "id": "main-reference-mousedown",
+      "entry": "Topframe actualsnapshot hostref→normalCLI click --element @ref (notfind), real mousedownprompt",
+      "answer": "NormalactualCLI dialogaccept on samepage, noqueueexception",
+      "expected": [
+        "actualarmedhostClick=false",
+        "realHelper click result and exactoriginalfinish/disarmPromisein/out observedpassively",
+        "firstclickcompleted/effectonce afteranswer",
+        "differentnextinputonce"
+      ],
+      "boundary": "Maincontrol isolates serviceguardfinish layer from hostClickspecials; original5greenfind not rerun"
+    },
+    {
+      "id": "main-clone-after-prompt",
+      "entry": "NormalactualCLI click originalhostref, trueprompt returns then webpageitself synchronousreplaceWith same-nameclone; driver neverchangesDOM",
+      "expected": [
+        "normalactualCLIanswer succeeds",
+        "oldClick0/newClick0/down1",
+        "originalBrowserOp unknown/stale/effectunknown, notnotstarted; no successor misclick",
+        "all IDs actualinitialCLIrequest; actualSQLsameRun/attempt1"
+      ]
+    },
+    {
+      "id": "srcdoc-mousedown",
+      "entry": "ActualCLI tab create plainparent/srcdoc; actualsnapshotref normalclick onchildbutton mousedown prompt",
+      "answer": "ActualCLI dialogaccept --page parentpage",
+      "expected": [
+        "actualarmedreferencehostClick=true",
+        "sourcechildframeId/session preserved",
+        "originalactualclick completed/effectonce afteranswer",
+        "differentnextbutton snapshotrefclick succeedsonce"
+      ]
+    },
+    {
+      "id": "crosssite-oopif-mousedown",
+      "entry": "Sameport127.0.0.1 parent andlocalhost child, noextraChromiumflags/prefs; realNormalCLIclickchildsnapshotref",
+      "answer": "ActualCLI dialogaccept actualpageid",
+      "expected": [
+        "distinctactualsites/URLs",
+        "realiframeTarget/session/childframe, Nativechildprocess different",
+        "actualhostClick=true; opening/closed actualmatchingchildsession/frame",
+        "firstclickeffectonce and nextinputonce"
+      ],
+      "ifNoOopif": "classify missingactualOOPIF, neverclaimfromhostnames/ports alone"
+    },
+    {
+      "id": "shadow-mousedown",
+      "entry": "OpenShadowrootbutton actualsnapshotref→normalCLIclick; realmousedownprompt",
+      "answer": "ActualCLI dialogaccept explicittext",
+      "expected": [
+        "actualhostClick=true, shadowrootidentity",
+        "realmatchingpage/frame/session opening/closed",
+        "firstclickeffectonce then differentnextbuttonclick effectonce"
+      ]
+    }
+  ],
+  "bounds": {
+    "hostProxyCdpTimeoutMs": 10000,
+    "browserCommandBudgetMs": 90000,
+    "hostCliIPCDeadlineMs": 115000,
+    "openingWaitMs": 12000,
+    "cleanupStageWaitMs": [
+      1000,
+      5000,
+      10000,
+      20000,
+      30000,
+      45000
+    ]
+  },
+  "prohibitions": [
+    "noNativebeforelease",
+    "noPage.handle/testuserrespond answer",
+    "noqueueexception",
+    "no click/create write replay",
+    "no fake OOPIF viaflags/prefs",
+    "no default-preserve assumption",
+    "readonlyAPI not usedasinput",
+    "cleanupnotbusinesspass"
+  ],
+  "firstKnownRisk": "Original013 mainref finish unknown red preserved;015 candidate retains armedobject/deferredcompletion and pendingactivity, actualNative regression notyetexecuted",
+  "observations": [
+    "Passive arm/helper.command/disarm wrappers delegate identical this/args/originalPromise/result/error; ArmedRefobject/finishfunction not replaced; source015 deferredguard owns exact originaldisarm continuation.",
+    "Frame/native/CDP target/session read-only snapshots; no NativeframeToken/CDPframeId substitution"
+  ],
+  "deferredOperationContract": {
+    "identifier": "Originalclick realCLI parsed.operation.requestId, never a fabricated/old/history request",
+    "beforeReply": "ActualCLI browser operation get --request original returns unknown/effectunknown; actualSQL original+audit running/unknown and workspaceagentRunning true",
+    "afterReply": "Realoperationget boundedreads (notwrite retries) waits succeeded/completed onlyafteractualclick; cloneunknown/stale; preserveallfirstreadoutputs",
+    "layers": "M11RPCdialogOpened acknowledgement is not DOMeffectcompletion; outerSQLattempt1 and BrowserOperations/audit/activity examinedseparately",
+    "modalProbePolicy": "No modalRuntimeeval/Page.getFrameTree diagnostics; identity uses realalreadycapturedframeevents and pre-clickframe-read only",
+    "newInput": "Approved main minimalnegative: one trueCLI click using initialsnapshot nextRef whilemodal, no newmodal snapshot/eval; refuse/notstarted/no arm/Helperclick/hostInput/originalguard remainsunknown"
+  },
+  "status": "Final source015 actual62software/node0 gate ready for privatecompile; Nativelease pending"
+}

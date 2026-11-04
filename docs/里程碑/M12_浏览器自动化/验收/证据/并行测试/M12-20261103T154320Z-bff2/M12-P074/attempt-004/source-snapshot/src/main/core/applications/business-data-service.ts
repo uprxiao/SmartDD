@@ -1,0 +1,63 @@
+import { ApplicationError } from '@shared/applications';
+import type { ApplicationDataHost,ApplicationDataBinding } from './application-adapter-registry';
+import type { ApplicationExecutionContext } from './execution-context';
+import type { MailDraftDataService } from './draft-data-service';
+import type { MailSendDataService } from './mail-send-data-service';
+import type { MailReadDataService } from './mail-read-data-service';
+import type { ZentaoDataService } from './zentao-data-service';
+import type {ApplicationHostCatalog} from './host-application-registry';
+import type {ApplicationExecutionContexts} from './execution-context';
+import type {ApplicationModuleRegistry,TrustedApplicationModule,ApplicationProjectPolicy} from './modules/registry';
+import {ApplicationCapabilityExecution} from './capability-execution';
+import {BuiltinPackageRegistry} from './builtin-package-registry';
+type RegisteredData=ApplicationDataHost&{dispose?:()=>Promise<void>;connectionsChanged?:()=>Promise<void>;receiptOnly?:(context:ApplicationExecutionContext,method:string,input:unknown)=>boolean;projectPolicy?:ApplicationProjectPolicy;legacyData?:ApplicationDataHost;execute?:(context:ApplicationExecutionContext,method:string,input:unknown)=>Promise<unknown>};
+interface RegisteredHostData {registry:ApplicationHostCatalog;hosts:readonly {appId:string;data:RegisteredData}[];execution?:{contexts:ApplicationExecutionContexts;modules:ApplicationModuleRegistry<readonly TrustedApplicationModule[]>}}
+export class ApplicationBusinessDataService implements ApplicationDataHost {
+  private readonly builtinMail?:MailDraftDataService;
+  private readonly builtinZentao?:ZentaoDataService;
+  /** Compatibility accessors for retained internal M10 consumers. New callers use the generic dispatch below. */
+  get mail():MailDraftDataService{const service=this.builtinMail??this.hosts.get('mail')?.legacyData;if(!service||typeof Reflect.get(service,'execute')!=='function')throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置邮件Data API');return service as MailDraftDataService;}
+  get zentao():ZentaoDataService{const service=this.builtinZentao??this.hosts.get('zentao');if(!service||typeof Reflect.get(service,'assertStoredReference')!=='function')throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主未提供内置禅道Data API');return service as ZentaoDataService;}
+  readonly mailRead?:MailReadDataService;
+  readonly mailSend?:MailSendDataService;
+  readonly capabilities?:ApplicationCapabilityExecution;
+  private readonly contexts?:ApplicationExecutionContexts;
+  private readonly hosts=new Map<string,RegisteredData>();
+  policy(appId:string):ApplicationProjectPolicy|undefined{return this.hosts.get(appId)?.projectPolicy;}
+  receiptOnly(context:ApplicationExecutionContext,method:string,input:unknown):boolean{return this.hosts.get(context.appId)?.receiptOnly?.(context,method,input)??false;}
+  constructor(registration:RegisteredHostData);
+  constructor(mail:MailDraftDataService,zentao:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService);
+  constructor(first:MailDraftDataService|RegisteredHostData,zentao?:ZentaoDataService,mailRead?:MailReadDataService,mailSend?:MailSendDataService){
+    if('hosts' in first){
+      const ids=new Set(first.registry.appIds());
+      if(!Array.isArray(first.hosts)||!first.hosts.length||first.hosts.length>128)throw new ApplicationError('INVALID_INPUT','受信宿主Data API登记无效');
+      for(const host of first.hosts){if(!host||!ids.has(host.appId)||this.hosts.has(host.appId)||!host.data||typeof host.data.resolve!=='function')throw new ApplicationError('INVALID_INPUT','受信宿主Data API未登记或重复');this.hosts.set(host.appId,host.data);}
+      if(first.execution){this.contexts=first.execution.contexts;this.capabilities=new ApplicationCapabilityExecution(this.contexts,first.execution.modules,new BuiltinPackageRegistry(this.contexts.store,first.registry),this);}
+    }else{
+      if(!zentao)throw new ApplicationError('INVALID_INPUT','内置应用Data API未准备');
+      this.builtinMail=first;this.builtinZentao=zentao;this.mailRead=mailRead;this.mailSend=mailSend;
+      this.hosts.set('zentao',zentao);
+      const target=(method:string)=>mailSend&&method.startsWith('mail.send.')?mailSend:mailRead&&['mail.query','mail.read','mail.resource.read'].includes(method)?mailRead:first;
+      this.hosts.set('mail',{resolve:(version,method,binding)=>target(method).resolve(version,method,binding),execute:(context,method,input)=>target(method).execute(context,method,input)});
+    }
+  }
+  async dispose(){await Promise.all([...this.hosts.values()].map(host=>host.dispose?.()));}
+  async connectionsChanged(){await Promise.all([...this.hosts.values()].map(host=>host.connectionsChanged?.()));}
+  resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){
+    const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');
+    const handler=host.resolve(version,method,binding),execution=this.capabilities,contexts=this.contexts;
+    if(!execution||!contexts)return handler;
+    return{...handler,execute:(run,args,operation)=>{
+      handler.authorize(run,operation.connectionId);
+      const capability=execution.forMethod(binding,method,operation.contractMajor);
+      return contexts.withAgent(run,binding,operation,handler.semantics,context=>execution.execute(contexts.caller(context),capability.id,operation.contractMajor,args,operation.signal));
+    }} satisfies ReturnType<ApplicationDataHost['resolve']>;
+  }
+  resolveCapability(packageHash:string,toolName:string,contractMajor:number,entry:'mcp'|'cli'='mcp'){
+    if(!this.capabilities)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');
+    const route=this.capabilities.tool(packageHash,toolName,contractMajor,entry);return this.resolve(1,route.method,route.binding);
+  }
+  execute(context:ApplicationExecutionContext,method:string,input:unknown){
+    const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);
+  }
+}

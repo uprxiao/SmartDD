@@ -5,16 +5,17 @@ import { BrowserCdpProxy, type BrowserAXTree } from './cdp-proxy';
 import { BrowserHelper } from './agent-browser';
 import { BROWSER_GUARD_SOURCE, BROWSER_GUARD_WORLD } from './action-guard';
 import { staleReference, BrowserError } from './errors';
+import {BrowserDeferredReferenceGuards,type BrowserReferenceGuardState,type BrowserReferenceDeferral} from './deferred-reference';
 import { browserAXIdentityMatches, browserAXRoleKey, indexBrowserAXTrees, type BrowserNodeIdentity } from './ax-identity';
 
 type NodeRef = BrowserNodeIdentity;
-interface GuardState { blocked: string[]; accepted: string[]; connected: boolean }
+type GuardState = BrowserReferenceGuardState;
 interface ActionOptions { signal?: AbortSignal; dispatched?: () => void; notStarted?: () => void }
 interface ArmedReference {
   selector: string;
   node: NodeRef;
   hostClick: boolean;
-  click(options?: ActionOptions): Promise<{ clicked: string; path: 'cdp' }>;
+  click(options?: ActionOptions): Promise<{ clicked: string; path: 'cdp'; dialogOpened?:boolean }>;
   pointer(kind:'hover'|'dblclick',options?:ActionOptions):Promise<void>;
   scroll(options?:ActionOptions):Promise<void>;
   highlight(options?:ActionOptions):Promise<void>;
@@ -24,7 +25,7 @@ interface ArmedReference {
   focus(options?: ActionOptions): Promise<void>;
   upload(files: string[], options?: ActionOptions): Promise<void>;
   selectAll(options?: ActionOptions): Promise<void>;
-  finish(preserveGuard?: boolean): Promise<GuardState>;
+  finish(preserveGuard?: boolean,deferred?:BrowserReferenceDeferral): Promise<GuardState>;
 }
 interface FrameTree { frame: { id: string }; childFrames?: FrameTree[] }
 const helperSnapshotSchema = z.object({
@@ -34,10 +35,22 @@ export class BrowserReferences {
   private generation = 0;
   private refs = new Map<string, NodeRef>();
   private worlds = new Map<string, number>();
+  private readonly deferred=new BrowserDeferredReferenceGuards();
+  private readonly dialogKeys=new Map<string,string|undefined>();
+  get hasDeferredGuards(){return this.deferred.pending;}
+  get hasOpenDialog(){return this.deferred.dialogOpen;}
+  settleDeferredGuards(){return this.deferred.settle();}
+  assertDeferredGuardsReady(){return this.deferred.assertReady();}
   constructor(private readonly proxy: BrowserCdpProxy, private readonly pageShort: string) {
     proxy.initializeFrames(session => this.initialize(session));
     proxy.onEvent(event => {
-      if (event.method === 'Page.frameNavigated') this.invalidate();
+      if(event.method==='Page.javascriptDialogOpening'){
+        const key=JSON.stringify([event.sessionId??null,event.params.frameId??null]);
+        this.dialogKeys.set(key,event.sessionId);this.deferred.opening(key);
+      }else if(event.method==='Page.javascriptDialogClosed'){
+        for(const [key,sessionId]of this.dialogKeys)if(sessionId===event.sessionId&&(typeof event.params.frameId!=='string'||key===JSON.stringify([sessionId??null,event.params.frameId]))){this.dialogKeys.delete(key);this.deferred.closed(key);}
+      }
+      if (['Page.frameNavigated','Page.frameDetached','Target.detachedFromTarget','Runtime.executionContextsCleared'].includes(event.method)) this.invalidate(true);
       if (event.method === 'Runtime.executionContextCreated') {
         const context=event.params.context as {id:number;name:string;auxData?:{frameId?:string}};
         if(context?.name===BROWSER_GUARD_WORLD&&context.auxData?.frameId)this.worlds.set((event.sessionId??'')+'\0'+context.auxData.frameId,context.id);
@@ -46,7 +59,7 @@ export class BrowserReferences {
       if(event.method==='Runtime.executionContextDestroyed')for(const [key,id] of this.worlds)if(id===event.params.executionContextId&&key.startsWith((event.sessionId??'')+'\0'))this.worlds.delete(key);
     });
   }
-  invalidate(): void { this.generation++; this.refs.clear(); }
+  invalidate(discardDeferred=false): void { this.generation++; this.refs.clear();if(discardDeferred){this.dialogKeys.clear();this.deferred.discard();} }
   async initialize(sessionId?: string): Promise<void> {
     // Page scripts registered on an OOPIF session are inactive until its Page agent is enabled.
     // Do this while auto-attach still holds the new frame before any page script runs.
@@ -162,6 +175,7 @@ export class BrowserReferences {
       // Apply the locator attribute to the held object, never to a role/name re-resolution.
       if(locator)await this.proxy.send('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(value){this.setAttribute("data-willyou-ref",value)}',arguments:[{value:nonce}]},node.sessionId);
     } catch(error) { await this.disarm(node,contextId,objectId,false,locator).catch(()=>{}); throw error; }
+    let resumePointer:(()=>Promise<boolean>)|undefined;
     const pointer=async(kind:'click'|'hover'|'dblclick',options:ActionOptions={})=>{
       const check = () => { if (options.signal?.aborted) throw options.signal.reason ?? new BrowserError('BROWSER_ERROR', '点击已取消'); };
       const connected = async () => (await this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn', {
@@ -196,8 +210,38 @@ export class BrowserReferences {
       if(kind==='hover')await this.proxy.send('Input.dispatchMouseEvent',{type:'mouseMoved',x,y,button:'none',buttons:0},node.sessionId);
       else for(let count=1;count<=(kind==='dblclick'?2:1);count++){
         check();if(!await connected())throw staleReference();
-        await this.proxy.send('Input.dispatchMouseEvent', {type:'mousePressed',x,y,button:'left',buttons:1,clickCount:count}, node.sessionId);
-        await this.proxy.send('Input.dispatchMouseEvent', {type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:count}, node.sessionId);
+        if(kind==='click'){
+          let pressDispatched=false;
+          const pressed=await this.deferred.observe(()=>{pressDispatched=true;return this.proxy.send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',buttons:1,clickCount:count},node.sessionId);});
+          const releaseAfterDialog=()=>{
+            let released=false;
+            return async()=>{
+              if(released)return true;
+              // Resolve the retained object before releasing. A destroyed
+              // context must never redirect the release into a new document.
+              // A replaced or detached target cancels the remaining gesture;
+              // its successor never receives this owned release.
+              const retained=await this.deferred.observe(()=>this.proxy.send<{result:{value?:boolean}}>('Runtime.callFunctionOn',{objectId,functionDeclaration:'function(){return this.isConnected&&globalThis.__wyBrowserGuard.valid()}',returnByValue:true},node.sessionId));
+              if(!retained)return false;
+              if(retained.value.result.value!==true)return true; // Cancel the remaining gesture; never release into a replacement.
+              await this.deferred.observe(()=>{released=true;return this.proxy.send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:count},node.sessionId);});
+              return released;
+            };
+          };
+          if(!pressed){
+            if(pressDispatched)resumePointer=releaseAfterDialog();
+            return{clicked:ref,path:'cdp' as const,dialogOpened:true};
+          }
+          let releaseDispatched=false;
+          const released=await this.deferred.observe(()=>{releaseDispatched=true;return this.proxy.send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:count},node.sessionId);});
+          if(!released){
+            if(!releaseDispatched)resumePointer=releaseAfterDialog();
+            return{clicked:ref,path:'cdp' as const,dialogOpened:true};
+          }
+        }else{
+          await this.proxy.send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',buttons:1,clickCount:count},node.sessionId);
+          await this.proxy.send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:count},node.sessionId);
+        }
       }
       check();return {clicked:ref,path:'cdp' as const};
     };
@@ -309,7 +353,13 @@ export class BrowserReferences {
         }`,returnByValue:true,
       },node.sessionId);
       if(!result.result.value)throw new BrowserError('BROWSER_ERROR','目标不能选中文本或操作期间已替换');
-    },finish:(preserve=false)=>this.disarm(node,contextId,objectId,preserve,locator)};
+    },finish:(preserve=false,deferred)=>{
+      if(deferred)return Promise.resolve(this.deferred.defer({...deferred,id:objectId,resume:resumePointer,
+        inspect:async()=>{const result=await this.proxy.send<{result:{value:GuardState}}>('Runtime.evaluate',{expression:'globalThis.__wyBrowserGuard.state()',contextId,returnByValue:true},node.sessionId);return result.result.value;},
+        finish:()=>this.disarm(node,contextId,objectId,preserve,locator),
+      }));
+      return this.disarm(node,contextId,objectId,preserve,locator);
+    }};
   }
   private async disarm(node:NodeRef,contextId:number,objectId:string,preserve=false,locator=true):Promise<GuardState> {
     try {

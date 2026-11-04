@@ -1,0 +1,59 @@
+{
+  "source015ManifestSha256": "beb858ca46df4dd12246969c0c435f54234afcb0cc52ad323188b55558460f5b",
+  "checked": [
+    {
+      "path": "native/applications/cli.mm",
+      "oldSha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+      "newSha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+      "wholeFileUnchanged": true,
+      "requestIdMappingSnippetsUnchanged": [
+        "if(requestId)value[@\"requestId\"]=requestId;",
+        "@\"id\":NSUUID.UUID.UUIDString.lowercaseString",
+        "sent?call[@\"id\"]:nil"
+      ]
+    },
+    {
+      "path": "src/main/core/applications/cli-gateway.ts",
+      "oldSha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "newSha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "wholeFileUnchanged": true,
+      "requestIdMappingSnippetsUnchanged": [
+        "id=request.id;",
+        "peer.controllers.set(id,{runId:context.run.runId,abort})",
+        "this.tools.call(context.run.runId,id,request.call,abort.signal)"
+      ]
+    },
+    {
+      "path": "src/main/core/applications/tool-service.ts",
+      "oldSha256": "51286c5bf24bad0ca173cbc05357c5c7df4e95bb6156939fe378361d37bef91c",
+      "newSha256": "51286c5bf24bad0ca173cbc05357c5c7df4e95bb6156939fe378361d37bef91c",
+      "wholeFileUnchanged": true,
+      "requestIdMappingSnippetsUnchanged": [
+        "runId,requestId,hash,context.run.projectId",
+        "operationId: operationId!,requestId,attempt: attempts"
+      ]
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "oldSha256": "94a21b307d9550a52f48b9122c532934d2d8da6fb766f5bb49c9e75d35df8225",
+      "newSha256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f",
+      "wholeFileUnchanged": false,
+      "requestIdMappingSnippetsUnchanged": [
+        "this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command)",
+        "this.operations.receipt(scope.runId,text(args.request))"
+      ]
+    },
+    {
+      "path": "src/main/core/browser/audit.ts",
+      "oldSha256": "74e5f1169f73acfe3040714aea86cdb104bd4669427bc1a7717e3d1cbdcaf4bf",
+      "newSha256": "797dbbc2d0111854bc9e74218773a339d5294e040249dd1970cbf5e8fd32bc00",
+      "wholeFileUnchanged": false,
+      "requestIdMappingSnippetsUnchanged": [
+        "const key='audit:'+scope.requestId"
+      ]
+    }
+  ],
+  "sameWireRequestIdMapping": true,
+  "wholeFileDifferenceReview": "service.ts and audit.ts changed for deferred ref guard lifecycle/pending audit; identity keys remain same exact snippets. Full diffs retained. Native CLI, Gateway, ToolService exact bytes unchanged.",
+  "noNativeStarted": true
+}

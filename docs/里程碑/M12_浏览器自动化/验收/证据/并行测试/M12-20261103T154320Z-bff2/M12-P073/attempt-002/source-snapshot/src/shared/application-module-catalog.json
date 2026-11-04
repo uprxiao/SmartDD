@@ -1,0 +1,2363 @@
+{
+  "schema": "willyou-app-module-catalog-v1",
+  "applications": [
+    {
+      "appId": "zentao",
+      "slots": [
+        "zentao"
+      ],
+      "stopBeforeSwitch": true,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "zentao.object.list",
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_work_list_v1"
+        },
+        {
+          "id": "zentao.object.get",
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_object_get_v1"
+        },
+        {
+          "id": "zentao.resource.read",
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "zentao.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "zentao"
+            ],
+            "conditional": []
+          },
+          "legacyTool": "smartdd_zentao_resource_v1"
+        }
+      ],
+      "presentation": {
+        "displayName": "禅道",
+        "heading": "查看指派给我的 Bug 和研发需求",
+        "mark": "zigzag",
+        "projectNote": "每项目仅一个生效连接；停用或认证失败不会自动切换账号。",
+        "emptyConnectionSuffix": "",
+        "defaultProvider": "zentao",
+        "panel": "zentao-work",
+        "switchTitle": "切换项目禅道连接"
+      },
+      "providers": [
+        {
+          "id": "zentao",
+          "appId": "zentao",
+          "title": "禅道",
+          "diagnosticTitle": "禅道连接",
+          "initial": {
+            "kind": "zentao",
+            "baseUrl": "",
+            "username": "",
+            "authMode": "token"
+          },
+          "icon": "link",
+          "summaryFields": [
+            "username",
+            "baseUrl"
+          ],
+          "locationField": "baseUrl",
+          "project": {
+            "title": "禅道连接",
+            "unselectedNote": "查询时提示来源未配置，不自动选择其他连接。"
+          },
+          "groups": [
+            {
+              "key": "baseUrl",
+              "title": "服务地址",
+              "label": "禅道服务地址",
+              "type": "url",
+              "format": "http-base-url",
+              "required": true,
+              "immutable": true,
+              "placeholder": "https://zentao.example.com/",
+              "validation": "请填写不含凭据、查询参数或片段的 HTTP(S) 服务地址。"
+            },
+            {
+              "key": "username",
+              "title": "账号",
+              "label": "禅道账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "autoComplete": "off",
+              "validation": "请输入有效的用户名。"
+            },
+            {
+              "key": "authMode",
+              "title": "认证方式",
+              "label": "禅道认证方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "token",
+                  "label": "Token"
+                },
+                {
+                  "value": "password",
+                  "label": "密码"
+                }
+              ],
+              "validation": "不支持的禅道认证方式。"
+            }
+          ],
+          "secret": {
+            "title": "认证密码",
+            "conditionalTitle": {
+              "field": "authMode",
+              "value": "token",
+              "title": "Token"
+            },
+            "authModeValidation": "不支持的禅道认证方式。"
+          },
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "zentao"
+              },
+              "baseUrl": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "authMode": {
+                "type": "string",
+                "enum": [
+                  "token",
+                  "password"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "baseUrl",
+              "username",
+              "authMode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "appId": "mail",
+      "slots": [
+        "foxmail",
+        "smtp"
+      ],
+      "stopBeforeSwitch": false,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "mail.message.query",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_query_v1"
+        },
+        {
+          "id": "mail.message.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_read_v1"
+        },
+        {
+          "id": "mail.resource.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": [
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.read",
+          "legacyTool": "smartdd_mail_resource_read_v1"
+        },
+        {
+          "id": "mail.draft.list",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_list_v1"
+        },
+        {
+          "id": "mail.draft.get",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_get_v1"
+        },
+        {
+          "id": "mail.draft.create",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "smtp"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_create_v1"
+        },
+        {
+          "id": "mail.draft.update",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "smtp",
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_update_v1"
+        },
+        {
+          "id": "mail.draft.copy",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_draft_copy_v1"
+        },
+        {
+          "id": "mail.reply.create",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [
+              "foxmail"
+            ],
+            "conditional": [
+              "smtp"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_reply_create_v1"
+        },
+        {
+          "id": "mail.attachment.import",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "mail_draft_mutations",
+            "key": "operationId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": [
+              "foxmail"
+            ]
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_attach_import_v1"
+        },
+        {
+          "id": "mail.send.prepare",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "revision",
+            "object": "mail_drafts",
+            "key": "expectedRevision"
+          },
+          "slots": {
+            "required": [
+              "smtp"
+            ],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.send",
+          "legacyTool": "smartdd_mail_send_prepare_v1"
+        },
+        {
+          "id": "mail.send.execute",
+          "semantics": "external-write",
+          "retry": "never",
+          "protection": {
+            "kind": "business-intent",
+            "object": "mail_send_intent",
+            "key": "intentId"
+          },
+          "slots": {
+            "required": [
+              "smtp"
+            ],
+            "conditional": []
+          },
+          "approval": "host-observed-user-authorization",
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.send",
+          "legacyTool": "smartdd_mail_send_execute_v1"
+        },
+        {
+          "id": "mail.send.get",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_send_get_v1"
+        },
+        {
+          "id": "mail.send.cancel",
+          "semantics": "write",
+          "retry": "never",
+          "protection": {
+            "kind": "business-intent",
+            "object": "mail_send_intent",
+            "key": "intentId"
+          },
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "contractMajors": [
+            1,
+            2
+          ],
+          "permission": "mail.draft",
+          "legacyTool": "smartdd_mail_send_cancel_v1"
+        }
+      ],
+      "presentation": {
+        "projectPolicy": "sender-identity",
+        "displayName": "邮件",
+        "heading": "在项目 Agent 中查询、准备草稿与获准发送邮件",
+        "mark": "envelope",
+        "projectNote": "每项目至多选择一个本地读取来源和一个 SMTP 发件账号，两者分别配置、分别选用。",
+        "emptyConnectionSuffix": "或本地邮件来源",
+        "defaultProvider": "foxmail",
+        "panel": "mail-work",
+        "switchTitle": "切换项目邮件连接"
+      },
+      "providers": [
+        {
+          "id": "foxmail",
+          "appId": "mail",
+          "title": "Foxmail 本地读取",
+          "diagnosticTitle": "邮件来源",
+          "initial": {
+            "kind": "foxmail",
+            "sourcePath": "",
+            "account": "",
+            "queryDays": 30
+          },
+          "icon": "folder",
+          "summaryFields": [
+            "account",
+            "sourcePath"
+          ],
+          "locationField": "sourcePath",
+          "project": {
+            "title": "本地读取来源",
+            "unselectedNote": "查询时提示来源未配置，不自动选择其他连接。"
+          },
+          "groups": [
+            {
+              "key": "sourcePath",
+              "title": "Foxmail 本地来源",
+              "label": "Foxmail 本地来源",
+              "type": "directory",
+              "required": true,
+              "immutable": true,
+              "placeholder": "本机来源完整路径",
+              "note": "选择单个本机邮箱账号的来源目录或 messages.db；只读原文件，不触发收信。",
+              "validation": "请选择完整的本地来源路径。"
+            },
+            {
+              "key": "account",
+              "title": "邮箱账号",
+              "label": "Foxmail 邮箱账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "placeholder": "me@example.com",
+              "validation": "请明确填写这个本地来源的邮箱账号。"
+            },
+            {
+              "key": "queryDays",
+              "title": "默认查询天数",
+              "label": "邮件查询天数",
+              "type": "number",
+              "required": true,
+              "min": 1,
+              "max": 100,
+              "step": 1,
+              "note": "含当天，按本机时区计算；查询范围与缓存保留时间独立。",
+              "validation": "请输入1–100之间的整数天数。"
+            }
+          ],
+          "secret": null,
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "foxmail"
+              },
+              "sourcePath": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "account": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "queryDays": {
+                "default": 30,
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "kind",
+              "sourcePath",
+              "account",
+              "queryDays"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "smtp",
+          "appId": "mail",
+          "title": "SMTP 发件",
+          "diagnosticTitle": "发件账号",
+          "initial": {
+            "kind": "smtp",
+            "host": "",
+            "port": 465,
+            "username": "",
+            "fromAddress": "",
+            "authMode": "password",
+            "mode": "implicit-tls"
+          },
+          "intro": "通过独立 SMTP 服务器发送，在 WillYou 保留结果，不写入 Foxmail 已发送。",
+          "icon": "send",
+          "summaryFields": [
+            "fromAddress",
+            "host"
+          ],
+          "locationField": "host",
+          "project": {
+            "title": "SMTP 发件账号",
+            "unselectedTitle": "SMTP发件账号",
+            "unselectedNote": "仍可保存草稿；发送时需要有效发件账号。"
+          },
+          "supplemental": {
+            "title": "邮件发送",
+            "note": "待配置 · 与本地读取分别连接",
+            "action": "配置发件通道"
+          },
+          "groups": [
+            {
+              "row": [
+                {
+                  "key": "host",
+                  "title": "服务主机",
+                  "label": "SMTP 服务主机",
+                  "type": "text",
+                  "format": "host",
+                  "required": true,
+                  "immutable": true,
+                  "validation": "请填写邮件服务主机名。"
+                },
+                {
+                  "key": "port",
+                  "title": "端口",
+                  "label": "SMTP 端口",
+                  "type": "number",
+                  "required": true,
+                  "min": 1,
+                  "max": 65535,
+                  "validation": "端口必须为1–65535之间的整数。"
+                }
+              ]
+            },
+            {
+              "key": "mode",
+              "title": "连接方式",
+              "label": "SMTP 连接方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "implicit-tls",
+                  "label": "隐式 TLS"
+                },
+                {
+                  "value": "starttls",
+                  "label": "STARTTLS"
+                },
+                {
+                  "value": "plain",
+                  "label": "不加密（按服务配置）"
+                }
+              ],
+              "validation": "不支持的 SMTP 连接方式。"
+            },
+            {
+              "key": "username",
+              "title": "登录账号",
+              "label": "SMTP 登录账号",
+              "type": "text",
+              "required": true,
+              "immutable": true,
+              "autoComplete": "off",
+              "validation": "请输入有效的SMTP登录账号。"
+            },
+            {
+              "key": "fromAddress",
+              "title": "发件地址",
+              "label": "SMTP 发件地址",
+              "type": "email",
+              "required": true,
+              "immutable": true,
+              "validation": "请输入有效的发件地址。"
+            }
+          ],
+          "secret": {
+            "title": "认证密码",
+            "authModeValidation": "不支持的发件认证方式。"
+          },
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "smtp"
+              },
+              "host": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "fromAddress": {
+                "type": "string",
+                "maxLength": 512,
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "authMode": {
+                "type": "string",
+                "const": "password"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "plain",
+                  "starttls",
+                  "implicit-tls"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "host",
+              "port",
+              "username",
+              "fromAddress",
+              "authMode",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "appId": "sample-kv",
+      "slots": [
+        "sample-kv"
+      ],
+      "stopBeforeSwitch": false,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "sample-kv.entry.read",
+          "contractMajors": [
+            2
+          ],
+          "permission": "sample-kv.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [
+              "sample-kv"
+            ],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "sample-kv.entry.write",
+          "contractMajors": [
+            2
+          ],
+          "permission": "sample-kv.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [
+              "sample-kv"
+            ],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "revision",
+            "object": "sample_kv_entry",
+            "key": "expectedRevision"
+          },
+          "legacyTool": null
+        }
+      ],
+      "presentation": {
+        "displayName": "接入标准示例",
+        "heading": "受控 MCP／CLI 接入示例",
+        "mark": "link",
+        "projectNote": "仅使用合成凭据与本机样本数据，用于验证应用接入规范。",
+        "emptyConnectionSuffix": "",
+        "defaultProvider": "sample-kv",
+        "panel": null,
+        "switchTitle": "切换样本连接"
+      },
+      "providers": [
+        {
+          "id": "sample-kv",
+          "appId": "sample-kv",
+          "title": "本机样本连接",
+          "icon": "link",
+          "initial": {
+            "kind": "sample-kv",
+            "service": "local-reference",
+            "prefix": "demo:",
+            "transport": "mcp",
+            "authMode": "token"
+          },
+          "summaryFields": [
+            "service",
+            "transport"
+          ],
+          "locationField": "prefix",
+          "secret": {
+            "title": "合成 Token",
+            "authModeValidation": "样本仅接受 SYNTHETIC_ 开头的合成 Token。"
+          },
+          "project": {
+            "title": "样本连接",
+            "unselectedNote": "不自动选用连接。"
+          },
+          "groups": [
+            {
+              "key": "service",
+              "title": "样本服务",
+              "label": "样本服务",
+              "type": "text",
+              "required": true,
+              "validation": "使用小写字母、数字和短横线。"
+            },
+            {
+              "key": "prefix",
+              "title": "允许的键前缀",
+              "label": "允许的键前缀",
+              "type": "text",
+              "required": true,
+              "validation": "请填写可判定的非空键前缀。"
+            },
+            {
+              "key": "transport",
+              "title": "上游方式",
+              "label": "上游方式",
+              "type": "select",
+              "options": [
+                {
+                  "value": "mcp",
+                  "label": "MCP"
+                },
+                {
+                  "value": "cli",
+                  "label": "CLI"
+                }
+              ],
+              "validation": "请选择受控上游方式。"
+            }
+          ],
+          "configSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "sample-kv"
+              },
+              "service": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,47}$"
+              },
+              "prefix": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[A-Za-z0-9:_-]+$"
+              },
+              "transport": {
+                "type": "string",
+                "enum": [
+                  "mcp",
+                  "cli"
+                ]
+              },
+              "authMode": {
+                "type": "string",
+                "const": "token"
+              }
+            },
+            "required": [
+              "kind",
+              "service",
+              "prefix",
+              "transport",
+              "authMode"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "appId": "browser",
+      "slots": [],
+      "stopBeforeSwitch": false,
+      "contractMajors": [
+        1
+      ],
+      "capabilities": [
+        {
+          "id": "browser.identity.get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.identity.set",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.snapshot",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.screenshot",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.goto",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.back",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.reload",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.forward",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.eval",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.scroll",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.wait",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.pdf",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.full-screenshot",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.click",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.dblclick",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.fill",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.type",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.select",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.check",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.uncheck",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.focus",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.clear",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.select-all",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.keypress",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.hover",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.drag",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.upload",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.scrollintoview",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.is",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.inserttext",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.mouse-move",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.mouse-down",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.mouse-up",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.mouse-wheel",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.find",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.download",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.highlight",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.list",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.show",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.current",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.switch",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.create",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.tab.close",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.interact.exec",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.list",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.create",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.delete",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.set",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.show",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.use-default",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.profile.clone",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.cookie.get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.cookie.set",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.cookie.delete",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.capture.intercept-enable",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.capture.intercept-disable",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.capture.intercept-list",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.capture.start",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.capture.stop",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.console",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.network",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.viewport",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.geolocation",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.set-device",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.set-offline",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.set-headers",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.set-credentials",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.set-media",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.clipboard-read",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.clipboard-write",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.dialog-accept",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.env.dialog-dismiss",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.local-get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.local-set",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.local-clear",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.session-get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.session-set",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.storage.session-clear",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.nav.wait-fn",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.access.request",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.write",
+          "semantics": "write",
+          "retry": "never",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "protection": {
+            "kind": "operation-receipt",
+            "object": "browser_operation",
+            "key": "requestId"
+          },
+          "legacyTool": null
+        },
+        {
+          "id": "browser.operation.get",
+          "contractMajors": [
+            2
+          ],
+          "permission": "browser.read",
+          "semantics": "read",
+          "retry": "safe-read",
+          "slots": {
+            "required": [],
+            "conditional": []
+          },
+          "legacyTool": null
+        }
+      ],
+      "presentation": {
+        "displayName": "浏览器",
+        "heading": "项目任务内置浏览器",
+        "mark": "link",
+        "projectNote": "使用任务中的内置网页，无需配置外部账号连接。",
+        "emptyConnectionSuffix": "",
+        "defaultProvider": "",
+        "panel": null,
+        "switchTitle": "浏览器"
+      },
+      "providers": []
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "at": "2026-11-04T20:25:20.508690+00:00",
+  "status": "actualNative013-productred-confirmed",
+  "defect": "M12-S3-REF-DIALOG-FINISH",
+  "formalIncrement": 0,
+  "manifestSha256": "3706d6986c1a4eb1d56ac41c9ea4b5947f54ba93ddc229652e6559c7ec8ece2e",
+  "originalRawSha256": "49628dc9dda98bde5321e8b9dde470ea35511a22ac9e7133f15863ba5485f44a",
+  "scope": "Cold earlyHTML inlineprompt passed; mainframe real ref click mousedownprompt returnedunknown/exit5. srcdoc/crosssite/shadow notyetexecuted.",
+  "actual": {
+    "error": {
+      "label": "primaryclick-p073-main-reference-mousedown",
+      "actualCliCode": 5,
+      "actualOperationEnvelope": null,
+      "actualErrorMetadata": {
+        "effectState": "unknown",
+        "code": "BROWSER_TIMEOUT",
+        "layer": "provider",
+        "message": "CDP Runtime.evaluate 超时",
+        "retryable": false,
+        "attemptCount": 1,
+        "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+        "retryExhausted": false
+      },
+      "invocation": {
+        "operation_id": "14b00eb1-aa07-49ec-8f49-6a3d21ddbb46",
+        "run_id": "94188a4a-8f77-459e-a2de-55226f7f3b46",
+        "request_id": "9758d0a6-6b71-437e-bf40-53cafca891c4",
+        "state": "unknown",
+        "attempt_count": 1,
+        "effect_state": "unknown",
+        "error_code": "BROWSER_TIMEOUT"
+      },
+      "dataOperation": {
+        "operation_id": "14b00eb1-aa07-49ec-8f49-6a3d21ddbb46",
+        "run_id": "94188a4a-8f77-459e-a2de-55226f7f3b46",
+        "state": "unknown",
+        "attempt_count": 1,
+        "error_code": "BROWSER_TIMEOUT",
+        "action": "browser.interact.click"
+      },
+      "browserRecords": [
+        {
+          "run_id": "94188a4a-8f77-459e-a2de-55226f7f3b46",
+          "request_id": "9758d0a6-6b71-437e-bf40-53cafca891c4",
+          "command": "click",
+          "state": "unknown",
+          "effect_state": "unknown",
+          "error_code": "BROWSER_TIMEOUT",
+          "created_at": 1793820053307,
+          "updated_at": 1793820083337
+        },
+        {
+          "run_id": "94188a4a-8f77-459e-a2de-55226f7f3b46",
+          "request_id": "audit:9758d0a6-6b71-437e-bf40-53cafca891c4",
+          "command": "click",
+          "state": "unknown",
+          "effect_state": "unknown",
+          "error_code": "BROWSER_TIMEOUT",
+          "created_at": 1793820053304,
+          "updated_at": 1793820083345
+        }
+      ]
+    },
+    "armHostClick": false,
+    "helperReturned": {
+      "clicked": "[data-willyou-ref=\"51aeaa30baa1c8b933c09f9f166d76cc\"]",
+      "dialogOpened": true
+    },
+    "helperDurationMs": 10,
+    "queueDurationMs": 30029
+  },
+  "diagnosis": "Helper completed dispatch with realdialogOpened. Originalguard finish sent Runtime.evaluate while modal blocked JS, followed by cleanup requests and ~30s timeout; dialog answer queued on samepage could only proceed after timeout. Later realclick does not cancel originalunknown.",
+  "judgmentHistory": "Original0/2, read-only correction0/2 and frameidentity adjudication1/2 all preserved. Extra Page.getFrameTree during modal was a diagnostic timeout, not coldtabcreate latency. Already captured real frameNavigated proves identity; noNative replay.",
+  "cleanup": "Coordinator exact33PID/4TCP/helperRuntime/Unix checked absent; host0/null/signals[]; see attempt001/coordinator-cleanup.json",
+  "candidate": "software-attempt-008/source-inputs.json; pending realNative015; public source013 notyetmodified"
+}

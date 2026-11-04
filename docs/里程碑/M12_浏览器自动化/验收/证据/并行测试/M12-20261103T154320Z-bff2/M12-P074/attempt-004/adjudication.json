@@ -1,0 +1,45 @@
+{
+  "at": "2026-11-04T20:33:38.397Z",
+  "group": "M12-P074",
+  "layer": "Actual Native/M11/CLI I only; notA/modelR",
+  "checks": [
+    {
+      "id": "M12-T044",
+      "status": "passed"
+    },
+    {
+      "id": "cleanup-and-scope",
+      "status": "passed"
+    }
+  ],
+  "caseResults": {
+    "M12-T044": "passed"
+  },
+  "performance": {
+    "snapshot": {
+      "count": 50,
+      "medianMs": 818.423396,
+      "p90Ms": 854.90875,
+      "minMs": 790.697709,
+      "maxMs": 1477.651709,
+      "driverRoundTripMedianMs": 821.7527709999999,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    },
+    "click": {
+      "count": 50,
+      "medianMs": 819.3183750000001,
+      "p90Ms": 846.855541,
+      "minMs": 793.952792,
+      "maxMs": 991.755958,
+      "driverRoundTripMedianMs": 822.8120630000001,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    }
+  },
+  "performanceTimingBoundary": "Actualmanagedcaller justbeforePopen throughcommunicate terminalexit includinglaunch/discovery/gateway/identity/helper/output; driverwholeIPCroundtrip retained separately. No costs deducted.",
+  "status": "green-candidate-pending-independent-cleanup-root",
+  "formalCaseIncrement": 0,
+  "boundaries": [
+    "Source015 native input/ref guard changes affect click; actual100-call T044 regression, no repeated T033/T034/T094",
+    "No packagedApp/modelR or timingthresholdchange"
+  ]
+}

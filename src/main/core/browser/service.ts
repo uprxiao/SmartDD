@@ -172,10 +172,10 @@ export class BrowserService {
   async execute(scope:BrowserScope,command:string,args:Record<string,unknown>):Promise<unknown>{
     const timeout=args.timeout??25000,isWait=command==='wait'||command==='wait fn',budget=isWait&&typeof timeout==='number'&&Number.isInteger(timeout)&&timeout>=1&&timeout<=90000?timeout+5000:90000;
     const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget),signal=AbortSignal.any([scope.signal,...(scope.runSignal?[scope.runSignal]:[]),deadline.signal]);
-    const state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>}={dispatched:()=>false,activities:new Map<string,()=>void>()},effective={...scope,signal};
+    const state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>;pending?:()=>boolean}={dispatched:()=>false,activities:new Map<string,()=>void>()},effective={...scope,signal};
     try{
       scope.assertActive();if(this.options.taskProject(scope.taskId)===scope.projectId)state.audit=this.audit.start(scope,command,args,readCommands.has(command));
-      const result=await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);state.audit?.success(result);return result;
+      const result=await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);if(state.pending?.())state.audit?.pending(result);else state.audit?.success(result);return result;
     }
     catch(error){
       try{state.audit?.failure(error,state.dispatched());}catch{console.warn('[browser] command audit unavailable');}
@@ -188,10 +188,10 @@ export class BrowserService {
       }
       const reason=signal.reason??error,failure=reason instanceof ApplicationError?reason:new BrowserError('BROWSER_ERROR',reason instanceof Error?reason.message:String(reason));
       throw readCommands.has(command)||state.dispatched()?failure:applicationPreflightFailure(failure,scope.operationId);
-    }finally{clearTimeout(timer);for(const finish of state.activities.values())finish();}
+    }finally{clearTimeout(timer);if(!state.pending?.())for(const finish of state.activities.values())finish();}
   }
-  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>}):Promise<unknown>{
-    const read=readCommands.has(command);let taskId=scope.taskId,dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
+  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>;pending?:()=>boolean}):Promise<unknown>{
+    const read=readCommands.has(command);let taskId=scope.taskId,dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined,deferredClickFailed=false,deferredClickPending=false,deferredClickError:BrowserError|undefined;
     let waiting:{abort:AbortController;set:Set<AbortController>}|undefined;
     const mark=(id:string)=>{if(!state.activities.size)state.audit?.page(id);if(!state.activities.has(id))state.activities.set(id,this.automation.begin(scope.runId,taskId,id));};
     const recordGrant=(targetTaskId=taskId)=>{const grant=this.access.snapshot().grants.find(grant=>grant.runId===scope.runId&&grant.targetTaskId===targetTaskId);if(grant)state.audit?.grant({grantId:grant.id,mode:grant.mode,source:'user'},targetTaskId);};
@@ -202,6 +202,15 @@ export class BrowserService {
     const begin=(pageId:string|null)=>{if(pageId)state.audit?.page(pageId);const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command);if(!receipt.replay)receiptOwned=true;return receipt;};
     const send=()=>{dispatched=true;if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     const recordProgress=()=>{if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
+    const interruptedClick=(target:BrowserPage,value:unknown)=>target.references.hasOpenDialog||Boolean(value&&typeof value==='object'&&'dialogOpened'in value&&value.dialogOpened===true);
+    state.pending=()=>deferredClickPending;
+    const finishDeferredActivity=()=>{for(const finish of state.activities.values())finish();state.activities.clear();};
+    const deferredClickFailure=(reason:'stale'|'unknown'='stale')=>{deferredClickPending=false;deferredClickFailed=true;deferredClickError=reason==='stale'?staleReference():new BrowserError('BROWSER_ERROR','原点击收尾结果未知；请重新加载网页后观察，勿重发原点击');this.operations.update(scope.runId,scope.requestId,'unknown','unknown',{code:deferredClickError.code});state.audit?.failure(deferredClickError,true);finishDeferredActivity();};
+    const deferredClickCompleted=(value:unknown)=>()=>{deferredClickPending=false;this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:value});state.audit?.success(value);finishDeferredActivity();};
+    const referenceDeferral=(target:BrowserPage,value:unknown,click:boolean)=>click&&interruptedClick(target,value)?{
+      failed:deferredClickFailure,completed:deferredClickCompleted(value),signal:scope.runSignal??scope.signal,
+      cancel:async()=>{await target.helper.close();await target.proxy.waitForInputCompletion();},
+    }:undefined;
     try{
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
       taskId=this.admit(scope,args,read,command==='access request');
@@ -331,7 +340,16 @@ export class BrowserService {
             if(action!=='accept'&&action!=='dismiss'||execDialog&&(action==='dismiss'?execArgs!.length!==2:execArgs!.length<2||execArgs!.length>3))
               throw new ApplicationError('INVALID_INPUT','dialog只接受accept [text]或dismiss');
             const value=await this.javascriptDialogs.respondFromAgent(taskId,target.id,action==='accept',execDialog?execArgs![2]:args.text===undefined?undefined:text(args.text),send);
-            return execDialog?this.artifacts.result(scope.taskId,'exec',value):{result:value};
+            const settled=target.references?.hasDeferredGuards?await target.references.settleDeferredGuards():undefined;
+            const result=settled?.unknown?{...value,inputContinuation:'unknown'}:settled?.blocked?{...value,inputContinuation:'blocked'}:value;
+            return execDialog?this.artifacts.result(scope.taskId,'exec',result):{result};
+          }
+          if(target.references?.hasDeferredGuards){
+            if(['goto','back','forward','reload'].includes(command)){
+              // Discard the kernel's owned deferred release before a new
+              // document can appear. Reconnecting later never replays input.
+              await target.helper.close();target.references.invalidate(true);
+            }else await target.references.assertDeferredGuardsReady();
           }
           await target.helper.ensureSession();
           if(signal.aborted)throw signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
@@ -382,8 +400,12 @@ export class BrowserService {
                 else if(execArgs![0]==='click'&&refIndex===1&&armed.hostClick)value=await armed.click(actionOptions);
                 else value=await target.helper.command(native,{signal,dispatched:send});
               }catch(e){error=e;}
-              const guard=await armed.finish();if(guard.blocked.length||!guard.connected){if(!guard.accepted.length)dispatched=false;throw staleReference();}if(error)throw error;
-              if(execArgs![0]==='click'&&!guard.accepted.includes('click'))throw new BrowserError('BROWSER_ERROR','未确认点击事件送达页面；结果未知，请先核对页面，勿重发');
+              const guard=await armed.finish(false,referenceDeferral(target,value,execArgs![0]==='click'));
+              if(guard.pending)deferredClickPending=!deferredClickFailed;
+              if(!guard.pending&&(guard.blocked.length||!guard.connected)){if(!guard.accepted.length)dispatched=false;throw staleReference();}if(error)throw error;
+              if(execArgs![0]==='click'&&!guard.pending&&!guard.accepted.includes('click'))throw new BrowserError('BROWSER_ERROR','未确认点击事件送达页面；结果未知，请先核对页面，勿重发');
+              if(guard.pending&&!target.references.hasOpenDialog)await target.references.settleDeferredGuards();
+              if(deferredClickFailed)throw deferredClickError??staleReference();
               return this.artifacts.result(scope.taskId,'exec',value);
             }
             return this.artifacts.result(scope.taskId,'exec',await target.helper.command(execArgs!,{signal,dispatched:send}));
@@ -418,15 +440,18 @@ export class BrowserService {
               else if(armed.hostClick)value=await armed.click(actionOptions);
               else value=await target.helper.command(['click',armed.selector],{signal,dispatched:send});
             }catch(e){error=e;}
-            const guard=await armed.finish();
-            if(guard.blocked.length||!guard.connected){
+            const guard=await armed.finish(false,referenceDeferral(target,value,command==='click'));
+            if(guard.pending)deferredClickPending=!deferredClickFailed;
+            if(!guard.pending&&(guard.blocked.length||!guard.connected)){
               // An old ref replaced before any event is demonstrably not-started. Partial delivery remains unknown.
               if(!guard.accepted.length)dispatched=false;
               throw staleReference();
             }
             if(error)throw error;
-            if(command==='click'&&!guard.accepted.includes('click'))
+            if(command==='click'&&!guard.pending&&!guard.accepted.includes('click'))
               throw new BrowserError('BROWSER_ERROR','未确认点击事件送达页面；结果未知，请先核对页面，勿重发');
+            if(guard.pending&&!target.references.hasOpenDialog)await target.references.settleDeferredGuards();
+            if(deferredClickFailed)throw deferredClickError??staleReference();
             return value;
           }
           if(command==='type'||command==='inserttext'){
@@ -500,7 +525,7 @@ export class BrowserService {
           finally{clearTimeout(timer);}
         },scope.signal,scope.runId);
       }
-      if(!read)this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:result,progress});
+      if(!read)this.operations.update(scope.runId,scope.requestId,deferredClickFailed?'unknown':deferredClickPending?'running':'succeeded',deferredClickFailed||deferredClickPending?'unknown':'completed',{summary:result,progress});
       return result;
     }catch(error){
       let failure=error instanceof ApplicationError?error:new BrowserError('BROWSER_ERROR',error instanceof Error?error.message:String(error));
@@ -582,7 +607,12 @@ export class BrowserService {
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
   }
   respondPermission(taskId:string,id:string,allow:boolean):void{this.workspace.snapshot(taskId);this.permissions.respond(taskId,id,allow);}
-  async respondJavascriptDialog(taskId:string,id:string,accept:boolean,text?:string):Promise<void>{this.workspace.snapshot(taskId);await this.javascriptDialogs.respond(taskId,id,accept,text);}
+  async respondJavascriptDialog(taskId:string,id:string,accept:boolean,text?:string):Promise<void>{
+    this.workspace.snapshot(taskId);
+    const page=this.pages.list(taskId).find(value=>this.javascriptDialogs.snapshot(taskId,value.id)?.id===id);
+    await this.javascriptDialogs.respond(taskId,id,accept,text);
+    if(page?.references?.hasDeferredGuards)await page.references.settleDeferredGuards();
+  }
   respondAuthentication(taskId:string,id:string,credentials:{user:string;pass:string}|null):void{this.workspace.snapshot(taskId);this.authentication.respond(taskId,id,credentials);}
   async retryAuthentication(taskId:string,pageId:string):Promise<void>{
     this.workspace.snapshot(taskId);const page=this.pages.get(taskId,pageId),cancelled=this.authentication.cancelledForPage(taskId,pageId);

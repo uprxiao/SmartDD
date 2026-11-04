@@ -137,7 +137,7 @@ export class BrowserPageRegistry {
     if(navigationSignal.aborted)throw navigationSignal.reason??new BrowserError('BROWSER_TAB_CLOSED','网页已关闭');
     let normalized:string;
     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
-    const request={};this.navigationRequests.set(page,request);page.references.invalidate();page.hostNavigation=normalized;
+    const request={};this.navigationRequests.set(page,request);page.references.invalidate(true);page.hostNavigation=normalized;
     const navigation=(async()=>{try{await page.contents.loadURL(normalized);}finally{if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}}})();
     await awaitBrowserNavigation(navigation,navigationSignal);
   }
@@ -169,6 +169,7 @@ export class BrowserPageRegistry {
   private async closePage(page:BrowserPage,fromPageQueue=false):Promise<void>{
     const {taskId,id:pageId}=page;page.closed=true;page.queue.close();page.abort.abort(new BrowserError('BROWSER_TAB_CLOSED','网页已经关闭'));
     for(const child of this.list(taskId).filter(p=>p.kind==='popup'&&p.openerPageId===pageId))await this.close(taskId,child.id);
+    if(page.references)page.references.invalidate(true);
     await page.helper.close();
     // The CLI close is the current serialized item; it cannot wait for itself.
     // UI/dispose closes still wait for any active page work to finish.

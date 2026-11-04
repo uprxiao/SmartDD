@@ -1,0 +1,64 @@
+{
+  "group": "M12-P073-004",
+  "layer": "Crosssite-only NativeI; exactfourgreen unchangedscope reused, noA/R",
+  "requirements": {
+    "direct": [
+      "R04.6",
+      "R03 references/input",
+      "R02.10 samepagequeue"
+    ],
+    "background": "R01.12 regionalUI constraint only; no newearlyHTML/OOPIF/JSUI businessrequirement",
+    "lifecycle": "Native callback retained; exact actualCDP frame/session; navigation/framegone/close/profileunavailable/dispose invalidate priorresponse"
+  },
+  "cases": [
+    {
+      "id": "crosssite-oopif-mousedown",
+      "entry": "Sameport127.0.0.1 parent andlocalhost child, noextraChromiumflags/prefs; realNormalCLIclickchildsnapshotref",
+      "answer": "ActualCLI dialogaccept actualpageid",
+      "expected": [
+        "distinctactualsites/URLs",
+        "realiframeTarget/session/childframe, Nativechildprocess different",
+        "actualhostClick=true; opening/closed actualmatchingchildsession/frame",
+        "firstclickeffectonce and nextinputonce"
+      ],
+      "ifNoOopif": "classify missingactualOOPIF, neverclaimfromhostnames/ports alone"
+    }
+  ],
+  "bounds": {
+    "hostProxyCdpTimeoutMs": 10000,
+    "browserCommandBudgetMs": 90000,
+    "hostCliIPCDeadlineMs": 115000,
+    "openingWaitMs": 12000,
+    "cleanupStageWaitMs": [
+      1000,
+      5000,
+      10000,
+      20000,
+      30000,
+      45000
+    ]
+  },
+  "prohibitions": [
+    "noNativebeforelease",
+    "noPage.handle/testuserrespond answer",
+    "noqueueexception",
+    "no click/create write replay",
+    "no fake OOPIF viaflags/prefs",
+    "no default-preserve assumption",
+    "readonlyAPI not usedasinput",
+    "cleanupnotbusinesspass"
+  ],
+  "firstKnownRisk": "Actual015 childAX snapshot on parent session FrameNotfound; 016 candidate routing notyettested",
+  "observations": [
+    "Passive arm/helper.command/disarm wrappers delegate identical this/args/originalPromise/result/error; ArmedRefobject/finishfunction not replaced; source015 deferredguard owns exact originaldisarm continuation.",
+    "Frame/native/CDP target/session read-only snapshots; no NativeframeToken/CDPframeId substitution"
+  ],
+  "deferredOperationContract": {
+    "identifier": "Originalclick realCLI parsed.operation.requestId, never a fabricated/old/history request",
+    "beforeReply": "ActualCLI browser operation get --request original returns unknown/effectunknown; actualSQL original+audit running/unknown and workspaceagentRunning true",
+    "afterReply": "Realoperationget boundedreads (notwrite retries) waits succeeded/completed onlyafteractualclick; cloneunknown/stale; preserveallfirstreadoutputs",
+    "layers": "M11RPCdialogOpened acknowledgement is not DOMeffectcompletion; outerSQLattempt1 and BrowserOperations/audit/activity examinedseparately",
+    "modalProbePolicy": "No modalRuntimeeval/Page.getFrameTree diagnostics; identity uses realalreadycapturedframeevents and pre-clickframe-read only"
+  },
+  "status": "Source016 unchanged; corrected privatehostgenerator and semantic negativecontrol pending"
+}
