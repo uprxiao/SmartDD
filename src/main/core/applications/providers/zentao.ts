@@ -2,7 +2,7 @@
 import type { ConnectionConfig, VerifiedConnectionIdentity } from '@shared/application-connections';
 import { ApplicationError } from '@shared/applications';
 import { canonicalJson, digest } from '../manifest';
-import { requestBytes, requestJson, type HttpBytes } from './json-http';
+import { redirectLocation, requestBytes, requestJson, type HttpBytes } from './json-http';
 import {parseZentaoPresentation} from '@shared/zentao-presentation';
 import type {ZentaoPresentation} from '@shared/application-zentao';
 
@@ -62,7 +62,21 @@ export class ZentaoClient {
     for (const [key, value] of Object.entries(query ?? {})) url.searchParams.set(key, String(value));
     return requestJson(url, { signal, method: body === undefined ? 'GET' : 'POST', body, token: body === undefined ? this.token ?? undefined : undefined });
   }
+  /** A web page instead of API JSON means the base lacks the install path; the root's own redirect reveals it. */
+  private async addressMismatch(signal: AbortSignal): Promise<ApplicationError> {
+    const location = await redirectLocation(new URL('/', this.base), signal);
+    const target = location ? new URL(location, this.base) : null;
+    const segment = target?.origin === this.base.origin ? target.pathname.split('/')[1] : undefined;
+    const suggestion = segment && /^[A-Za-z0-9._-]{1,64}$/.test(segment) && !segment.includes('.') && !this.base.pathname.startsWith('/' + segment + '/') ? this.base.origin + '/' + segment + '/' : null;
+    return new ApplicationError('SERVICE_ADDRESS_MISMATCH', suggestion
+      ? `该地址返回的是网页而不是禅道接口，禅道可能安装在 ${suggestion}，请把服务地址改成它后重新测试`
+      : '该地址返回的是网页而不是禅道接口。请填写浏览器里禅道首页的地址，包含安装路径（如 /biz/、/zentao/）');
+  }
   async verify(signal: AbortSignal): Promise<VerifiedConnectionIdentity> {
+    try { return await this.verifyIdentity(signal); }
+    catch (error) { if (error instanceof ApplicationError && error.code === 'INVALID_RESPONSE' && !this.account) throw await this.addressMismatch(signal); throw error; }
+  }
+  private async verifyIdentity(signal: AbortSignal): Promise<VerifiedConnectionIdentity> {
     if (!this.secret) throw new ApplicationError('AUTH_REQUIRED', '禅道认证凭据未配置');
     if (!this.token && this.config.authMode === 'password') {
       const login = await this.api('v1', 'tokens', signal, undefined, { account: this.config.username, password: this.secret });

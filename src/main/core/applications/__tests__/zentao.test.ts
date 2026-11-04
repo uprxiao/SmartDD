@@ -16,6 +16,15 @@ afterEach(async () => { for (const s of sockets) s.destroy(); await new Promise<
 const client = (authMode: 'token' | 'password' = 'token') => new ZentaoClient({ kind: 'zentao', baseUrl: base, username: 'tester', authMode }, 'fixture-private-secret');
 
 describe('promoted ZenTao contract over a real local HTTP server', () => {
+  it('explains a base address that misses the ZenTao install path and suggests the redirected one', async () => {
+    const root = base.replace(/biz\/$/, '');
+    handle = (req, res) => { if (req.url === '/') { res.writeHead(302, { location: '/biz/user-login-L2Jpei8=.html' }); res.end(); } else { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!DOCTYPE html><title>用户登录 - 禅道</title>'); } };
+    const wrong = new ZentaoClient({ kind: 'zentao', baseUrl: root, username: 'tester', authMode: 'password' }, 'fixture-private-secret');
+    await expect(wrong.verify(new AbortController().signal)).rejects.toMatchObject({ code: 'SERVICE_ADDRESS_MISMATCH', message: expect.stringContaining(base) });
+    handle = (_req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<html></html>'); };
+    await expect(new ZentaoClient({ kind: 'zentao', baseUrl: root, username: 'tester', authMode: 'password' }, 'fixture-private-secret').verify(new AbortController().signal)).rejects.toMatchObject({ code: 'SERVICE_ADDRESS_MISMATCH', message: expect.stringContaining('/biz/') });
+    expect(paths.every(p => !p.includes('secret'))).toBe(true);
+  });
   it('reads current instance labels with modules and the same verified identity',async()=>{
     handle=(req,res)=>{expect(req.headers.token).toBe('fixture-private-secret');if(req.url==='/biz/api.php/v1/langs?modules=bug')json(res,{bug:{pri:'优先级',priList:['','P0','P1','P2'],severityList:{3:'较大'}}});else json(res,{},404);};
     const value=await client().presentation('bug',new AbortController().signal);

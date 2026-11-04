@@ -41,3 +41,14 @@ export async function requestJson(url:URL,options:HttpReadOptions):Promise<unkno
   try{return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(response.bytes),(_key,item:unknown)=>{if(typeof item==='number'&&(!Number.isFinite(item)||(Number.isInteger(item)&&!Number.isSafeInteger(item))))throw new Error();return item;});}
   catch{throw new ApplicationError('INVALID_RESPONSE','服务返回的JSON无效或包含无法保真的数字');}
 }
+/** Location of a 3xx answer to an unauthenticated GET, or null; the body is never read. */
+export function redirectLocation(url:URL,signal:AbortSignal):Promise<string|null>{
+  if(!['http:','https:'].includes(url.protocol)||url.username||url.password)return Promise.resolve(null);
+  return new Promise(resolve=>{
+    const request=(url.protocol==='https:'?httpsRequest:httpRequest)(url,{method:'GET',headers:{'User-Agent':'WillYou/Applications'},agent:false,signal},response=>{
+      const status=response.statusCode??0,location=response.headers.location;response.destroy();resolve(status>=300&&status<400&&typeof location==='string'?location:null);
+    });
+    request.setTimeout(5000,()=>request.destroy());request.on('error',()=>resolve(null));request.end();
+  });
+}
+

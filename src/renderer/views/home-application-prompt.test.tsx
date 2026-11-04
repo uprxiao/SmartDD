@@ -53,3 +53,19 @@ describe('home composer profile default',()=>{
   expect(await launchWith()).toBe('cc-work');
  });
 });
+describe('home composer Enter key',()=>{
+ const ready=async()=>{const input=await screen.findByTestId('home-input');fireEvent.change(input,{target:{value:'检查禅道'}});await waitFor(()=>expect(screen.getByTestId('home-launch')).toHaveProperty('disabled',false));return input;};
+ it('sends on Enter and on Cmd+Enter',async()=>{
+  m.create.mockResolvedValue(undefined);render(<HomeView/>);const input=await ready();
+  fireEvent.keyDown(input,{key:'Enter'});await waitFor(()=>expect(m.create).toHaveBeenCalledTimes(1));
+  fireEvent.change(input,{target:{value:'第二条'}});fireEvent.keyDown(input,{key:'Enter',metaKey:true});await waitFor(()=>expect(m.create).toHaveBeenCalledTimes(2));
+ });
+ it('keeps Shift+Enter and an input-method confirmation for editing',async()=>{
+  render(<HomeView/>);const input=await ready();
+  expect(fireEvent.keyDown(input,{key:'Enter',shiftKey:true})).toBe(true);
+  expect(fireEvent.keyDown(input,{key:'Enter',isComposing:true})).toBe(true);
+  expect(fireEvent.keyDown(input,{key:'Enter',keyCode:229})).toBe(true);
+  await new Promise(r=>setTimeout(r,50));expect(m.create).not.toHaveBeenCalled();
+ });
+});
+

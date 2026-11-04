@@ -29,6 +29,8 @@ interface CandidateRow {
 }
 type CandidateConfig<C extends HostedConfiguration>={id:string;name:string;config:C;expectedRevision:number};
 const safeVerificationError = (error: unknown): ApplicationError => {
+  // Built only from the configured origin and a validated path segment, never from response bodies.
+  if (error instanceof ApplicationError && error.code === 'SERVICE_ADDRESS_MISMATCH') return error;
   const code = error instanceof ApplicationError ? error.code : 'CONNECTION_UNAVAILABLE';
   const messages: Record<string, string> = { AUTH_REQUIRED: '请核对认证凭据和当前服务身份', AUTH_FAILED: '账号认证失败，请核对当前凭据', IDENTITY_CHANGE_REQUIRES_SELECTION: '测试识别到其他身份，请新建连接并显式选用', REVISION_CONFLICT: '连接已变更，请重新载入再测试', TIMEOUT: '连接测试超时', CANCELED: '连接测试已取消', CONFIG_PLAN_STALE: '测试结果已失效，请重新测试', SOURCE_UNAVAILABLE: '本地来源不可读或不存在，请检查目录与读取权限后重试', RESOURCE_BUSY: '本地来源正被其他程序占用或写入中，请稍后重试', UNSUPPORTED_FORMAT: '本地来源格式不受支持，请选择Foxmail账号目录或messages.db' };
   // A server, transport or verifier error can echo authentication bytes. Return controlled text only.
