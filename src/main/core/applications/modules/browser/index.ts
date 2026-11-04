@@ -27,10 +27,10 @@ class BrowserModuleData implements ApplicationModuleData {
           throw new ApplicationError('SCOPE_DENIED','本次运行未选用此浏览器能力');
       },
       execute:(run:RunContext,args:Record<string,unknown>,operation:ApplicationOperationContext)=>
-        this.services.contexts.withAgent(run,binding,operation,rule.semantics,context=>this.execute(context,method,args)),
+        this.services.contexts.withAgent(run,binding,operation,rule.semantics,context=>this.execute(context,method,args,run.signal)),
     };
   }
-  async execute(context:ApplicationExecutionContext,method:string,input:unknown):Promise<unknown>{
+  async execute(context:ApplicationExecutionContext,method:string,input:unknown,runSignal?:AbortSignal):Promise<unknown>{
     const rule=rules[method],command=commands.find(item=>item.id===method);
     if(!rule||!command)throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未登记');
     this.services.contexts.require(context,rule.permission);
@@ -42,7 +42,7 @@ class BrowserModuleData implements ApplicationModuleData {
     const service=this.services.retained.get('browser') as BrowserService|undefined;
     if(!service)throw new ApplicationError('BROWSER_UNAVAILABLE','浏览器主进程服务尚未就绪');
     return service.execute({projectId:context.projectId,taskId:context.taskId,runId:context.runId,requestId:caller.requestId,
-      operationId:context.operationId,signal:context.signal,assertActive:()=>this.services.contexts.require(context,rule.permission)},
+      operationId:context.operationId,signal:context.signal,runSignal,assertActive:()=>this.services.contexts.require(context,rule.permission)},
       command.command.slice(1).join(' '),input as Record<string,unknown>);
   }
 }

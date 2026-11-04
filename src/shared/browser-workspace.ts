@@ -10,9 +10,9 @@ export const browserWorkspaceSchema=z.object({version:z.literal(1),tabs:z.array(
 export type SavedBrowserTab=z.infer<typeof browserTabSchema>;
 export type SavedBrowserWorkspace=z.infer<typeof browserWorkspaceSchema>;
 export interface BrowserCertificateState {url:string;host:string;error:string;challengeId:string|null}
-export interface BrowserTabState extends SavedBrowserTab {loading:boolean;canGoBack:boolean;canGoForward:boolean;failure:BrowserLoadFailure|null;certificate?:BrowserCertificateState|null;importState?:'ready'|'importing'|'needs-attention'}
+export interface BrowserTabState extends SavedBrowserTab {loading:boolean;canGoBack:boolean;canGoForward:boolean;failure:BrowserLoadFailure|null;certificate?:BrowserCertificateState|null;importState?:'ready'|'importing'|'needs-attention';agentActive?:boolean;agentRunning?:boolean}
 export type BrowserShortcut='new'|'reopen'|'close'|'reload'|'hard-reload'|'back'|'forward'|'address'|'find'|'show';
-export interface BrowserWorkspaceState {taskId:string;projectId:string;tabs:BrowserTabState[];activeId:string|null;recent:{url:string;title:string;host:string;visitedAt:number}[];notice:string|null;external:{id:string;url:string}|null;find:{active:number;total:number};permission?:BrowserPermissionPrompt|null;downloads?:BrowserDownload[];auth?:BrowserAuthPrompt|null;authCancelled?:BrowserAuthCancelled|null}
+export interface BrowserWorkspaceState {taskId:string;projectId:string;tabs:BrowserTabState[];activeId:string|null;recent:{url:string;title:string;host:string;visitedAt:number}[];notice:string|null;external:{id:string;url:string}|null;find:{active:number;total:number};permission?:BrowserPermissionPrompt|null;downloads?:BrowserDownload[];auth?:BrowserAuthPrompt|null;authCancelled?:BrowserAuthCancelled|null;paused?:boolean}
 const id=z.string().uuid();
 export const browserTaskInput=z.object({taskId:id}).strict();
 export const browserTabInput=browserTaskInput.extend({tabId:id}).strict();

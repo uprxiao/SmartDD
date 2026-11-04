@@ -41,10 +41,13 @@ import type {SecretCipher} from '../../secrets';
 import {BrowserCookieImportAudit} from './cookie-import/audit';
 import {BrowserProfileClones} from './profile-clones';
 import {cloneBrowserSessionData} from './clone-session';
+import {BrowserAccess,type BrowserAccessAudit} from './access';
+import {BrowserAutomation} from './automation';
+import type {BrowserAccessMode} from '@shared/browser-access';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
-  projectId:string;taskId:string;runId:string;requestId:string;operationId:string;signal:AbortSignal;assertActive():void;
+  projectId:string;taskId:string;runId:string;requestId:string;operationId:string;signal:AbortSignal;runSignal?:AbortSignal;assertActive():void;
 }
 const readCommands=new Set(browserCommands.filter(command=>command.semantics==='read').map(command=>command.command.slice(1).join(' ')));
 const text=(value:unknown):string=>{
@@ -65,12 +68,13 @@ export class BrowserService {
   readonly downloads:BrowserDownloads;
   readonly authentication:BrowserAuthentication;
   readonly cookieSources:BrowserCookieSources;
+  readonly access:BrowserAccess;
+  readonly automation:BrowserAutomation;
   private readonly imports:BrowserImportCoordinator;
   private readonly importAudit:BrowserCookieImportAudit;
   private readonly clones:BrowserProfileClones;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
-  private readonly paused=new Set<string>();
   private readonly readWaits=new Map<string,Set<AbortController>>();
   private readonly userProfileRun='browser-ui-'+randomUUID();
   private closed=false;
@@ -78,9 +82,12 @@ export class BrowserService {
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
   private reconciling?:Promise<void>;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
+  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
+    this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.importAudit=new BrowserCookieImportAudit(this.operations);
+    this.access=new BrowserAccess({taskProject:options.taskProject,changed:options.accessChanged,audit:event=>this.auditAccess(event)});
+    this.automation=new BrowserAutomation({changed:options.changed,ended:runId=>this.access.endRun(runId)});
     this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
-    this.profiles=new BrowserProfiles(options);
+    this.profiles=new BrowserProfiles({...options,authorized:(caller,target,mode)=>!!caller.runId&&this.access.can(caller.runId,target,mode==='observe'?'read':'write')});
     this.siteStates=new BrowserSiteStates(options.sqlite,id=>this.profiles.all().some(profile=>profile.id===id));
     this.permissions=new BrowserPermissions({states:this.siteStates,available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.downloads=new BrowserDownloads({directory:()=>app.getPath('downloads'),available:(id,taskId)=>{this.profiles.assertAvailable(id);return!!options.taskProject(taskId)&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
@@ -98,9 +105,9 @@ export class BrowserService {
       this.authentication.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
-    }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.importAudit=new BrowserCookieImportAudit(this.operations);
+    }});
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,activity:id=>this.automation.activity(id),paused:id=>this.automation.paused(id),available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
@@ -128,51 +135,77 @@ export class BrowserService {
     });
   }
   pause(taskId:string,value:boolean):void{
+    this.automation.pause(taskId,value);
     if(value){
-      this.paused.add(taskId);
       for(const page of this.pages.list(taskId))page.queue.cancelQueued(new BrowserError('BROWSER_PAUSED','用户已暂停浏览器，排队操作已取消'));
       for(const wait of this.readWaits.get(taskId)??[])wait.abort(new BrowserError('BROWSER_PAUSED','用户已暂停浏览器'));
     }
-    else this.paused.delete(taskId);
   }
-  private admit(scope:BrowserScope,args:Record<string,unknown>):void{
+  private auditAccess(event:BrowserAccessAudit):void{
+    const request=event.request,key='access-'+request.id,summary={actor:'agent',requesterTaskId:request.requesterTaskId,targetTaskId:request.targetTaskId,requestedMode:request.requestedMode,mode:request.mode,grantId:request.id,requestId:request.requestId??null,decisionSource:event.source,result:event.result};
+    if(event.result==='revoked')for(const page of this.pages.all()){
+      const owner=this.profiles.known(page.profileId)?.owner;
+      if(page.taskId===request.targetTaskId||owner?.kind==='task'&&owner.id===request.targetTaskId)page.queue.cancelQueued(new ApplicationError('SCOPE_DENIED','本次运行的跨任务授权已失效'),request.runId);
+    }
+    this.operations.begin(request.runId,key,request.requesterTaskId,null,'access decision');
+    this.operations.update(request.runId,key,event.result==='requested'?'running':event.result==='denied'?'failed':'succeeded',event.result==='requested'?'unknown':event.result==='denied'?'not-started':'completed',{summary,code:event.result==='denied'?'SCOPE_DENIED':undefined});
+  }
+  private admit(scope:BrowserScope,args:Record<string,unknown>,read=false,request=false,runningWrite=false):string{
     scope.assertActive();
     if(this.closed)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');
-    if(this.options.taskProject(scope.taskId)!==scope.projectId||args.task!==undefined&&args.task!==scope.taskId)throw new ApplicationError('SCOPE_DENIED','当前运行没有这个任务的浏览器授权');
-    if(this.paused.has(scope.taskId))throw new BrowserError('BROWSER_PAUSED','用户已暂停浏览器');
+    if(this.options.taskProject(scope.taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','当前运行没有这个任务的浏览器授权');
     if(scope.signal.aborted)throw scope.signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
+    if(scope.runSignal){const binding={runId:scope.runId,taskId:scope.taskId,projectId:scope.projectId,signal:scope.runSignal};this.access.track(binding);this.automation.track(binding);}
+    const taskId=args.task===undefined?scope.taskId:text(args.task);
+    if(this.options.taskProject(taskId)!==scope.projectId||request&&taskId===scope.taskId)throw new ApplicationError('SCOPE_DENIED','只能访问本项目允许的浏览器任务');
+    if(request){if(!scope.runSignal)throw new ApplicationError('SCOPE_DENIED','跨任务授权需要宿主签发的完整运行生命周期');return taskId;}
+    if(taskId!==scope.taskId)this.access.require(scope.runId,taskId,read?'read':'write');
+    if(!runningWrite&&this.automation.paused(taskId))throw new BrowserError('BROWSER_PAUSED','用户已暂停浏览器');
+    this.automation.target(scope.runId,taskId);return taskId;
   }
   async execute(scope:BrowserScope,command:string,args:Record<string,unknown>):Promise<unknown>{
     const timeout=args.timeout??25000,isWait=command==='wait'||command==='wait fn',budget=isWait&&typeof timeout==='number'&&Number.isInteger(timeout)&&timeout>=1&&timeout<=90000?timeout+5000:90000;
-    const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget),signal=AbortSignal.any([scope.signal,deadline.signal]);
-    const state={dispatched:()=>false},effective={...scope,signal};
+    const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget),signal=AbortSignal.any([scope.signal,...(scope.runSignal?[scope.runSignal]:[]),deadline.signal]);
+    const state={dispatched:()=>false,activities:new Map<string,()=>void>()},effective={...scope,signal};
     try{return await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);}
     catch(error){
       if(!signal.aborted)throw error;
       const reason=signal.reason??error,failure=reason instanceof ApplicationError?reason:new BrowserError('BROWSER_ERROR',reason instanceof Error?reason.message:String(reason));
       throw readCommands.has(command)||state.dispatched()?failure:applicationPreflightFailure(failure,scope.operationId);
-    }finally{clearTimeout(timer);}
+    }finally{clearTimeout(timer);for(const finish of state.activities.values())finish();}
   }
-  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean}):Promise<unknown>{
-    const read=readCommands.has(command);let dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
+  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean;activities:Map<string,()=>void>}):Promise<unknown>{
+    const read=readCommands.has(command);let taskId=scope.taskId,dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
+    let waiting:{abort:AbortController;set:Set<AbortController>}|undefined;
+    const mark=(id:string)=>{if(!state.activities.has(id))state.activities.set(id,this.automation.begin(scope.runId,taskId,id));};
+    const admit=()=>this.admit(scope,args,read,false,dispatched&&!read);
+    const guardPage=()=>{if(page){this.profiles.require(scope,page.profileId,read?'observe':'control');this.profiles.assertAvailable(page.profileId);}};
     state.dispatched=()=>dispatched;
     const begin=(pageId:string|null)=>{const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command);if(!receipt.replay)receiptOwned=true;return receipt;};
     const send=()=>{dispatched=true;if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     const recordProgress=()=>{if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     try{
-      this.admit(scope,args);
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
+      taskId=this.admit(scope,args,read,command==='access request');
+      if(command==='access request'){
+        const mode=args.mode;if(mode!=='observe'&&mode!=='control')throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
+        const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};send();
+        try{const grant=await this.access.request({runId:scope.runId,taskId:scope.taskId,projectId:scope.projectId,signal:scope.runSignal!},taskId,mode,scope.signal,scope.requestId);this.automation.target(scope.runId,taskId);const result={grantId:grant.id,taskId,mode:grant.mode};this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:result});return{result};}
+        catch(error){if(error instanceof ApplicationError&&error.code==='SCOPE_DENIED')dispatched=false;throw error;}
+      }
+      if(command==='wait'){
+        const abort=new AbortController(),set=this.readWaits.get(taskId)??new Set<AbortController>();set.add(abort);this.readWaits.set(taskId,set);waiting={abort,set};scope={...scope,signal:AbortSignal.any([scope.signal,abort.signal])};
+      }
       if(command==='tab profile clone'){
-        const source=this.profiles.require(scope,text(args.profile));this.profiles.assertAvailable(source.id);
-        const contextPage=args.page===undefined?null:this.workspace.list(scope.taskId).find(tab=>tab.pageId===text(args.page))?.pageId;
+        const source=this.profiles.require(scope,text(args.profile),'control');this.profiles.assertAvailable(source.id);
+        const contextPage=args.page===undefined?null:this.workspace.list(taskId).find(tab=>tab.pageId===text(args.page))?.pageId;
         if(contextPage===undefined)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
         const receipt=begin(contextPage);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
-        const active=()=>{scope.assertActive();if(this.closed||scope.signal.aborted)throw scope.signal.reason??new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');if(this.options.taskProject(scope.taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','当前运行已不能访问原任务');};
+        const active=()=>{scope.assertActive();if(this.closed||scope.signal.aborted)throw scope.signal.reason??new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');if(this.options.taskProject(scope.taskId)!==scope.projectId||this.options.taskProject(taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','当前运行已不能访问原任务');this.profiles.require(scope,source.id,'control');};
         const profile=await this.clones.clone(scope,source.id,active,send,scope.signal);
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:{profileId:profile.id,sourceProfileId:source.id}});this.options.changed?.(scope.taskId);
         return{result:{profile,sourceProfileId:source.id}};
       }
-      if(command==='access request')throw new ApplicationError('CAPABILITY_UNAVAILABLE','跨任务授权服务尚在开发');
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
       if(command==='identity get'){const value=this.settings.snapshot();return{result:{mode:value.identity,pendingMode:value.pendingIdentity,restartRequired:value.pendingIdentity!==null}};}
       if(command==='identity set'){
@@ -187,34 +220,34 @@ export class BrowserService {
         const profile=this.profiles.create(scope,text(args.label),profileScope,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profile}};
       }
       if(command==='tab profile show'){
-        const tab=this.workspace.list(scope.taskId).find(tab=>tab.pageId===text(args.page));if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
+        const tab=this.workspace.list(taskId).find(tab=>tab.pageId===text(args.page));if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
         this.profiles.ensureProject(scope.projectId);const profile=this.profiles.require(scope,tab.profileId);return{result:{browserPageId:tab.pageId,profileId:profile.id,profileLabel:profile.label}};
       }
       if(command==='tab profile set'||command==='tab profile use-default'){
         if(command==='tab profile set'&&(args.page===undefined)===(args.task===undefined))throw new ApplicationError('INVALID_INPUT','set须指定page或task其中一个');
         const profile=command==='tab profile use-default'?this.profiles.ensureProject(scope.projectId):this.profiles.require(scope,text(args.profile),'control');
         this.profiles.assertAvailable(profile.id);
-        const tabs=this.workspace.list(scope.taskId),targets=args.page===undefined?tabs.filter(tab=>tab.kind==='tab'):tabs.filter(tab=>tab.pageId===text(args.page));
+        const tabs=this.workspace.list(taskId),targets=args.page===undefined?tabs.filter(tab=>tab.kind==='tab'):tabs.filter(tab=>tab.pageId===text(args.page));
         if(args.page!==undefined&&!targets.length)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
         if(targets.some(tab=>tab.kind==='popup'))throw new ApplicationError('INVALID_INPUT','子窗口沿用来源页面登录态，请切换来源网页标签');
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
-        for(const tab of targets){this.profiles.assertAvailable(tab.profileId);await this.workspace.setProfile(scope.taskId,tab.pageId,profile.id,()=>{this.admit(scope,args);this.profiles.assertAvailable(profile.id);},send,scope.signal);}
+        for(const tab of targets){mark(tab.pageId);this.profiles.assertAvailable(tab.profileId);await this.workspace.setProfile(taskId,tab.pageId,profile.id,()=>{admit();this.profiles.assertAvailable(profile.id);},send,scope.signal);}
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profileId:profile.id,pages:targets.map(tab=>tab.pageId)}};
       }
       if(command==='tab profile delete'){
         const profile=this.profiles.deletable(scope,text(args.profile));
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
-        await this.deleteProfileData(scope,profile,()=>this.admit(scope,args),send);
+        await this.deleteProfileData(scope,profile,admit,send);
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{deleted:profile.id}};
       }
-      if(command==='tab list')return{tabs:this.workspace.list(scope.taskId)};
+      if(command==='tab list')return{tabs:this.workspace.list(taskId)};
       if(command==='tab show'||command==='tab current'){
-        const tabs=this.workspace.list(scope.taskId),tab=command==='tab show'?tabs.find(tab=>tab.pageId===text(args.page)):tabs.find(tab=>tab.active);
+        const tabs=this.workspace.list(taskId),tab=command==='tab show'?tabs.find(tab=>tab.pageId===text(args.page)):tabs.find(tab=>tab.active);
         if(!tab)throw new BrowserError(command==='tab show'?'BROWSER_TAB_NOT_FOUND':'BROWSER_NO_TAB','没有可读取的网页标签');return{result:tab};
       }
       if((command==='tab switch'||command==='tab close')&&args.index!==undefined){
         if(args.page!==undefined||!Number.isInteger(args.index)||Number(args.index)<0)throw new ApplicationError('INVALID_INPUT','index与page只能指定一个，index必须是非负整数');
-        const target=this.workspace.list(scope.taskId)[Number(args.index)];if(!target)throw new BrowserError('BROWSER_TAB_NOT_FOUND','标签索引不存在');args={...args,page:target.pageId};
+        const target=this.workspace.list(taskId)[Number(args.index)];if(!target)throw new BrowserError('BROWSER_TAB_NOT_FOUND','标签索引不存在');args={...args,page:target.pageId};
       }
       if(command==='tab switch'&&args.page===undefined)throw new ApplicationError('INVALID_INPUT','切换标签需要index或page');
       const navigation=command==='goto'||command==='tab create'&&args.url!==undefined?normalizeBrowserNavigationUrl(text(args.url)):undefined;
@@ -228,9 +261,9 @@ export class BrowserService {
         downloadPath=isAbsolute(path)?resolve(path):resolve(cwd!,path);
       }
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
-      if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile));
-      if(command!=='tab create')page=await awaitBrowserNavigation(this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page)),scope.signal);
-      if(command==='set credentials'&&this.authentication.snapshot(scope.taskId,page!.id))throw new ApplicationError('RESOURCE_BUSY','页面正在等待用户处理基本认证，Agent不能代答当前提示');
+      if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile),'control');
+      if(command!=='tab create'){const known=this.workspace.list(taskId).find(tab=>args.page===undefined?tab.active:tab.pageId===text(args.page));if(known)mark(known.pageId);page=await awaitBrowserNavigation(this.workspace.target(taskId,args.page===undefined?undefined:text(args.page)),scope.signal);guardPage();mark(page.id);}
+      if(command==='set credentials'&&this.authentication.snapshot(taskId,page!.id))throw new ApplicationError('RESOURCE_BUSY','页面正在等待用户处理基本认证，Agent不能代答当前提示');
       if(!read){
         const receipt=begin(page?.id??null);
         if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
@@ -238,12 +271,12 @@ export class BrowserService {
       let result:unknown;
       if(command==='tab create'){
         const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT','新建网页标签等待90000ms后超时')),90000),signal=AbortSignal.any([scope.signal,deadline.signal]);
-        try{send();page=await awaitBrowserNavigation(this.pages.create(scope.taskId,scope.projectId,undefined,args.profile===undefined?undefined:text(args.profile)),signal);
+        try{send();page=await awaitBrowserNavigation(this.pages.create(taskId,scope.projectId,undefined,args.profile===undefined?undefined:text(args.profile)),signal);guardPage();mark(page.id);
           if(navigation!==undefined)await this.pages.navigate(page,navigation,signal);result={pageId:page.id,url:page.contents.getURL()};
         }finally{clearTimeout(timer);}
       }else{
         const target=page!;
-        result=await target.queue.run(()=>this.admit(scope,args),async()=>{
+        result=await target.queue.run(()=>{admit();guardPage();},async()=>{
           const deadline=new AbortController(),budget=command==='wait'||command==='wait fn'?Number(args.timeout??25000)+5000:90000;
           const timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget);
           const signal=AbortSignal.any([scope.signal,target.abort.signal,deadline.signal]);
@@ -252,9 +285,9 @@ export class BrowserService {
           this.profiles.assertAvailable(target.profileId);
           if(command.startsWith('cookie '))return executeBrowserCookie(target,command,args,send);
           if(command==='set credentials'){this.authentication.setCredentials(target.contents,text(args.user),text(args.pass),send);return{result:{configured:true}};}
-          if(command==='tab switch'){this.workspace.commandTarget(scope.taskId,target.id,args.focus===true);send();return{result:{pageId:target.id,url:target.contents.getURL()}};}
+          if(command==='tab switch'){this.workspace.commandTarget(taskId,target.id,args.focus===true);send();return{result:{pageId:target.id,url:target.contents.getURL()}};}
           if(command==='tab close'){
-            send();if(target.kind==='popup')await this.pages.close(scope.taskId,target.id,true);else await this.workspace.close(scope.taskId,target.id,true);
+            send();if(target.kind==='popup')await this.pages.close(taskId,target.id,true);else await this.workspace.close(taskId,target.id,true);
             return{result:{closed:target.id}};
           }
           if(command==='capture start')return{result:await this.recordings.get(target)!.start(send)};
@@ -398,18 +431,14 @@ export class BrowserService {
             }finally{if(focus.result.objectId)await target.proxy.send('Runtime.releaseObject',{objectId:focus.result.objectId}).catch(()=>{});}
           }
           if(command==='wait'){
-            const abort=new AbortController(),waits=this.readWaits.get(scope.taskId)??new Set<AbortController>();waits.add(abort);this.readWaits.set(scope.taskId,waits);
             const timeout=Number(args.timeout??25000),native=['wait'];
             if(args.selector!==undefined)native.push(text(args.selector));
             for(const key of ['text','url','load','state'] as const)if(args[key]!==undefined)native.push('--'+key,text(args[key]));
             native.push('--timeout',String(timeout));
-            const waitSignal=AbortSignal.any([signal,abort.signal]),count=['selector','text','url','load'].filter(key=>args[key]!==undefined).length;
-            try{
-              if(args.state!==undefined||count>1)return await this.conditions.get(target)!.run(args,waitSignal);
-              if(count===0){await target.helper.command(['wait',String(timeout)],{signal:waitSignal,timeout:timeout+5000});return{waited:true};}
-              await target.helper.command(native,{signal:waitSignal,timeout:timeout+5000});return{waited:true};
-            }
-            finally{waits.delete(abort);if(!waits.size)this.readWaits.delete(scope.taskId);}
+            const count=['selector','text','url','load'].filter(key=>args[key]!==undefined).length;
+            if(args.state!==undefined||count>1)return await this.conditions.get(target)!.run(args,signal);
+            if(count===0){await target.helper.command(['wait',String(timeout)],{signal,timeout:timeout+5000});return{waited:true};}
+            await target.helper.command(native,{signal,timeout:timeout+5000});return{waited:true};
           }
           if(command==='screenshot'||command==='full-screenshot'){
             const format=args.format==='jpeg'?'jpeg':'png';
@@ -431,7 +460,7 @@ export class BrowserService {
           };
           try{const value=await awaitBrowserNavigation(perform(),signal);if(signal.aborted&&command!=='tab close')throw signal.reason;return value;}
           finally{clearTimeout(timer);}
-        },scope.signal);
+        },scope.signal,scope.runId);
       }
       if(!read)this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:result,progress});
       return result;
@@ -440,18 +469,29 @@ export class BrowserService {
       if(page?.closed&&dispatched)failure=new BrowserError('BROWSER_TAB_CLOSED','执行中网页已关闭，操作结果未知');
       if(receiptOwned)this.operations.update(scope.runId,scope.requestId,dispatched?'unknown':'failed',dispatched?'unknown':'not-started',{progress,code:failure.code});
       throw dispatched||read?failure:applicationPreflightFailure(failure,scope.operationId);
-    }
+    }finally{if(waiting){waiting.set.delete(waiting.abort);if(!waiting.set.size)this.readWaits.delete(taskId);}}
   }
   private async clearProfile(profile:BrowserProfile):Promise<void>{
     await this.imports.discardAfterDelete(profile);
     this.siteStates.forget(profile.id);this.profiles.forget(profile.id);
   }
+  accessState(){
+    const state=this.access.snapshot(),describe=<T extends {requesterTaskId:string;targetTaskId:string;projectId:string}>(item:T)=>({...item,
+      requesterTitle:(this.options.sqlite.prepare('SELECT title FROM tasks WHERE id=?').get(item.requesterTaskId) as {title:string}|undefined)?.title??item.requesterTaskId,
+      targetTitle:(this.options.sqlite.prepare('SELECT title FROM tasks WHERE id=?').get(item.targetTaskId) as {title:string}|undefined)?.title??item.targetTaskId,
+      projectName:(this.options.sqlite.prepare('SELECT name FROM projects WHERE id=?').get(item.projectId) as {name:string}|undefined)?.name??item.projectId,
+    });
+    return{requests:state.requests.map(describe),grants:state.grants.map(describe)};
+  }
+  respondAccess(id:string,allow:boolean,mode?:BrowserAccessMode):void{this.access.respond(id,allow,mode);}
+  revokeAccess(id:string):void{this.access.revoke(id);}
+  pauseFromUi(taskId:string,paused:boolean){this.workspace.snapshot(taskId);this.pause(taskId,paused);return this.workspace.snapshot(taskId);}
   /** UI-only; never part of the browser command module. Bind approval to the
    * exact outstanding failed navigation so a stale click cannot trust a new host. */
   async continueCertificate(taskId:string,pageId:string,challengeId:string):Promise<void>{
     this.workspace.snapshot(taskId);const page=this.pages.get(taskId,pageId),failure=this.certificateFailures.get(pageId);
     if(!failure||failure.challengeId!==challengeId)throw new ApplicationError('RESOURCE_STATE_CHANGED','证书提示已失效，请重试当前页面');
-    this.profiles.require({taskId,projectId:page.projectId},page.profileId,'control');this.profiles.assertAvailable(page.profileId);
+    this.profiles.binding(taskId,page.projectId,page.profileId);this.profiles.assertAvailable(page.profileId);
     this.siteStates.trust(page.profileId,failure.host);this.certificateFailures.delete(pageId);
     if(page.kind==='popup')await this.pages.navigate(page,failure.url);else await this.workspace.navigate(taskId,pageId,failure.url);
   }
@@ -534,6 +574,7 @@ export class BrowserService {
         try{release=this.profiles.lock(profile.id,'清理');}catch(error){if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'){busy=true;continue;}throw error;}
         try{
           await this.pages.cancelProfileInitializations(profile.id);
+          await this.workspace.removeProfileBindings(profile.id,taskId=>this.profiles.ensureProject(this.options.taskProject(taskId)!).id,()=>{if(this.closed)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');},()=>{});
           for(const page of this.pages.all().filter(page=>page.profileId===profile.id))await this.pages.close(page.taskId,page.id);
           await this.clearProfile(profile);
         }finally{release();}
@@ -543,5 +584,5 @@ export class BrowserService {
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
     })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
+  async dispose():Promise<void>{this.closed=true;this.access.dispose();this.automation.dispose();clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
 }

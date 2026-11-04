@@ -11,4 +11,4 @@ export const browserProfilesSchema=z.object({schemaVersion:z.literal(1),profiles
   if(new Set(value.profiles.map(profile=>profile.id)).size!==value.profiles.length||new Set(value.profiles.filter(profile=>profile.scope==='project').map(profile=>profile.owner.id)).size!==value.profiles.filter(profile=>profile.scope==='project').length)context.addIssue({code:'custom',message:'登录态身份重复'});
 });
 export type BrowserProfile=z.infer<typeof browserProfileSchema>;
-export interface BrowserProfileCaller {projectId:string;taskId:string}
+export interface BrowserProfileCaller {projectId:string;taskId:string;runId?:string}

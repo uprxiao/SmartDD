@@ -56,7 +56,7 @@ export class BrowserPageRegistry {
     const id=savedId??randomUUID(),short='k'+randomUUID().replaceAll('-','');
     const defaultProfile=this.options.profiles?.ensureProject(projectId),profileId=requestedProfile??defaultProfile?.id??browserProjectProfile(projectId);
     if(requestedProfile&&requestedProfile!==browserProjectProfile(projectId)&&!this.options.profiles)throw new BrowserError('BROWSER_UNAVAILABLE','登录态注册表尚未就绪');
-    const profile=this.options.profiles?.require({taskId,projectId},profileId),partition=profile?.partition??'persist:wy-browser-'+profileId;
+    const profile=this.options.profiles?.binding(taskId,projectId,profileId),partition=profile?.partition??'persist:wy-browser-'+profileId;
     this.options.profiles?.assertAvailable(profileId);
     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
     const view=new WebContentsView({webPreferences:{partition,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});

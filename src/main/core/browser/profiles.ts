@@ -49,6 +49,13 @@ export class BrowserProfiles {
     const profile=this.profiles.get(id);
     if(!profile||!this.visible(caller,profile,mode))throw new ApplicationError('SCOPE_DENIED','当前运行无权访问该登录态');return profile;
   }
+  /** Native views restore only an already authorized workspace binding. Agent
+   * explicit profile selection is checked separately against the actual caller;
+   * a target task is not a substitute for that caller's run authority. */
+  binding(taskId:string,projectId:string,id:string):BrowserProfile{
+    const profile=this.profiles.get(id),ownerProject=profile?.owner.kind==='project'?profile.owner.id:profile?this.options.taskProject(profile.owner.id):null;
+    if(!profile||this.options.taskProject(taskId)!==projectId||ownerProject!==projectId)throw new ApplicationError('SCOPE_DENIED','页面登录态不属于当前项目');return profile;
+  }
   list(caller:BrowserProfileCaller):BrowserProfile[]{
     if(this.options.taskProject(caller.taskId)!==caller.projectId)throw new ApplicationError('SCOPE_DENIED','任务不属于当前项目');
     this.ensureProject(caller.projectId);return[...this.profiles.values()].filter(profile=>this.visible(caller,profile,'observe'));

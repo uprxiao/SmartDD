@@ -6,9 +6,12 @@ function fixture(){
   const sqlite=new Database(':memory:');sqlite.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at INTEGER NOT NULL)');
   const projects=new Map([['T1','P1'],['T2','P1'],['T3','P2']]),grants=new Set<string>();
   const options={sqlite,taskProject:(id:string)=>projects.get(id)??null,authorized:(_caller:typeof caller,task:string,mode:string)=>grants.has(task+':'+mode)||mode==='observe'&&grants.has(task+':control')};
-  return{sqlite,options,grants,profiles:new BrowserProfiles(options)};
+  return{sqlite,options,grants,projects,profiles:new BrowserProfiles(options)};
 }
 describe('browser profile ownership and durable metadata',()=>{
+  it('restores same-project native bindings without granting CLI visibility or crossing deleted/foreign owners',()=>{
+    const f=fixture();try{const other=f.profiles.create({taskId:'T2',projectId:'P1'},'Other'),foreign=f.profiles.ensureProject('P2');expect(f.profiles.binding('T1','P1',other.id)).toEqual(other);expect(()=>f.profiles.require(caller,other.id)).toThrow('无权');expect(()=>f.profiles.binding('T1','P1',foreign.id)).toThrow();expect(()=>f.profiles.binding('T1','P2',other.id)).toThrow();f.projects.delete('T2');expect(()=>f.profiles.binding('T1','P1',other.id)).toThrow();}finally{f.sqlite.close();}
+  });
   it('excludes concurrent partition mutations and releases availability only once',()=>{
     const f=fixture();try{const p=f.profiles.create(caller,'work'),release=f.profiles.lock(p.id,'导入');expect(()=>f.profiles.assertAvailable(p.id)).toThrow('正在导入');expect(()=>f.profiles.lock(p.id,'删除')).toThrow('正在导入');expect(f.profiles.require(caller,p.id)).toEqual(p);release();const next=f.profiles.lock(p.id,'删除');release();expect(()=>f.profiles.assertAvailable(p.id)).toThrow('正在删除');next();expect(()=>f.profiles.assertAvailable(p.id)).not.toThrow();}finally{f.sqlite.close();}
   });

@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T08:14:31.385765+00:00",
+  "updatedAt": "2026-11-04T08:58:39.673956+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -20,7 +20,7 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "S5 integration",
+  "currentGroup": "S5 activity audit and native I",
   "resources": {
     "build": null,
     "nativeUi": null
@@ -1924,9 +1924,92 @@
         }
       ],
       "next": "finish S5 actual grant/pause/activity/audit integration then unified new package and original I/A/R; App012 retains old Skill"
+    },
+    {
+      "id": "M12-P047",
+      "owner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-p047-s5-service-001",
+      "resources": [],
+      "relatedCaseIds": [
+        "M12-T095",
+        "M12-T096",
+        "M12-T106",
+        "M12-T113",
+        "M12-T114"
+      ],
+      "layers": [
+        "U"
+      ],
+      "criteria": [
+        "actual caller remains source across target routing, profile ownership, artifact paths",
+        "observe/control user choice, run lifetime and forged identity, same-project boundary",
+        "queued revoke selective by run; pause cancels queued/read wait but admitted write completes",
+        "transient page activity20s after last completion and pause cleared on run end",
+        "trusted IPC strict payload/main frame; native views substituted, actual I/A/R still required"
+      ],
+      "validPriorEvidence": [
+        "P044 pure grant core9U only"
+      ],
+      "remaining": [
+        "service composition U, actual native I, scoped UI and original A/R"
+      ],
+      "status": "63 software tests /9 suites and node+web typecheck passed; original I/A/R pending",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "d15a7caa22047c76244faaf6745501c53f7d795ece20a4b5db4c54882ba2d1c9"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "5063d49f525397cd574dbffae2c631e7ac74a1c0180ba91dc35fa4491d0446d5"
+        }
+      ]
+    },
+    {
+      "id": "M12-P048",
+      "owner": "/root",
+      "resources": [],
+      "privateRoot": "/private/tmp/willyou-m12-p048-s5-ui-001",
+      "relatedCaseIds": [
+        "M12-T095",
+        "M12-T096",
+        "M12-T106",
+        "M12-T113",
+        "M12-T114"
+      ],
+      "layers": [
+        "U"
+      ],
+      "criteria": [
+        "approved B11 user-adjusted mode / request denial / expiry / revoke / no auto-approval",
+        "global background request does not focus or switch task; scoped browser overlay parked before dialog",
+        "main pause/activity reflected in toolbar/banner/tab marker; trusted user can operate paused page",
+        "all affected browser U regression and dual typecheck"
+      ],
+      "validPriorEvidence": [
+        "P04763U actual service/queue/ACL software only"
+      ],
+      "remaining": [
+        "actual native I and full original A/R; audit activity history integration"
+      ],
+      "status": "294 unique U green including constant geometry; dual typecheck valid; native I/A/R and audit history pending",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "87d27773e60d0b8c2957df684fd8c8c5cedcef647c3025f5c22d4fa25ca74cba"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "48702f35398a6b3051b43f543607746f3e06662849abede24862a9ebd22286f6"
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "accf93893627c3fa9a3c12960bf3750e210fe7a66d39df7927e13c7a5adbb4ed"
+        }
+      ]
     }
   ],
-  "next": "S5 actual run/target-task/controller/dialog/audit integration; remaining S4 A and user/system conditions",
+  "next": "Integrate browser operation activity history/redaction, then actual M11/nativeCLI cross-task run/pause verification; build unified new package for full A/R",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",

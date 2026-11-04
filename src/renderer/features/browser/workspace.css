@@ -80,3 +80,13 @@
 .bw-warn-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}
 .bw-attention{margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}
 .bw-attention p{margin:4px 0 8px;color:var(--secondary)}
+.bw-agent{background:color-mix(in srgb,var(--accent) 8%,var(--bg));color:var(--text)}.bw-agent svg{color:var(--accent)}
+.bw-paused{background:#fdf4e3;color:#6b4500}:root[data-theme="dark"] .bw-paused{background:#3a2e17;color:#f0d29a}
+.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap}.bw-resume{color:var(--accent)}
+.bw-agent-glow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
+.bw-agent-dot{display:block;width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--accent)}
+.bw-access-floating{position:fixed;z-index:90;right:10px;top:52px;bottom:10px;width:min(52vw,660px);min-width:min(300px,50vw);pointer-events:none;border-radius:12px}.bw-access-floating>.bw-scrim{pointer-events:auto}
+.bw-radios{border:0;padding:0;margin:14px 0;display:grid;gap:10px;font-size:12px}.bw-radios legend{padding:0;margin-bottom:8px;color:var(--secondary)}.bw-radios label{display:flex;gap:8px;align-items:center}.bw-radios input{accent-color:var(--accent)}.bw-kv strong{overflow-wrap:anywhere}
+/* Native WebContentsView is inset inside this border; renderer pseudo-elements
+   alone would be occluded by the native child surface. */
+.bw-page{border:2px solid transparent}.bw-page.bw-agent-glow{border-color:var(--accent)}

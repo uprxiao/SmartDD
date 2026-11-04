@@ -9,7 +9,7 @@ export interface BrowserAccessAudit {
   request:Omit<BrowserAccessRequest,'expiresAt'>;result:'requested'|'allowed'|'denied'|'revoked';
   source:'agent'|'user'|'timeout'|'run-end'|'command-cancel'|'scope-changed'|'shutdown';at:number;
 }
-interface Pending {request:BrowserAccessRequest;finish:(allow:boolean,source:BrowserAccessAudit['source'])=>void}
+interface Pending {request:BrowserAccessRequest;finish:(allow:boolean,source:BrowserAccessAudit['source'],mode?:BrowserAccessMode)=>void}
 interface Tracked {binding:BrowserAccessRun;stop:()=>void;grants:Map<string,BrowserAccessGrant>}
 
 /** In-memory run grants. Reading this state never creates or renews authority. */
@@ -39,25 +39,26 @@ export class BrowserAccess {
     const grant=run.grants.get(targetTaskId);return!!grant&&(semantics==='read'||grant.mode==='control');
   }
   require(runId:string,targetTaskId:string,semantics:'read'|'write'):void{if(!this.can(runId,targetTaskId,semantics))throw new ApplicationError('SCOPE_DENIED','本次运行没有该任务的浏览器授权');}
-  request(binding:BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,signal:AbortSignal):Promise<BrowserAccessGrant>{
+  request(binding:BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,signal:AbortSignal,requestId?:string):Promise<BrowserAccessGrant>{
     this.track(binding);this.run(binding.runId);
     if(!['observe','control'].includes(mode))throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
     if(targetTaskId===binding.taskId||this.options.taskProject(targetTaskId)!==binding.projectId)throw new ApplicationError('SCOPE_DENIED','只能申请同项目其他任务的浏览器授权');
     if(signal.aborted)throw new ApplicationError('SCOPE_DENIED','授权申请已取消');
-    const request:BrowserAccessRequest={id:randomUUID(),runId:binding.runId,projectId:binding.projectId,requesterTaskId:binding.taskId,targetTaskId,mode,createdAt:Date.now(),expiresAt:Date.now()+60000};
+    const request:BrowserAccessRequest={id:randomUUID(),runId:binding.runId,projectId:binding.projectId,requesterTaskId:binding.taskId,targetTaskId,mode,requestedMode:mode,createdAt:Date.now(),expiresAt:Date.now()+60000,...(requestId?{requestId}:{})};
     if(!this.event(request,'requested','agent'))throw new ApplicationError('BROWSER_UNAVAILABLE','授权记录不可用，未发起申请');
     this.run(binding.runId);if(signal.aborted)throw new ApplicationError('SCOPE_DENIED','授权申请已取消');
     return new Promise((resolve,reject)=>{
       let settled=false;
-      const finish=(allow:boolean,source:BrowserAccessAudit['source'])=>{
+      const finish=(allow:boolean,source:BrowserAccessAudit['source'],selectedMode=mode)=>{
         if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',cancel);this.pending.delete(request.id);
         const valid=this.valid(binding)&&this.options.taskProject(targetTaskId)===binding.projectId&&this.runs.get(binding.runId)?.binding.signal===binding.signal;
         let granted:BrowserAccessGrant|undefined;
-        if(allow&&valid&&this.event(request,'allowed',source)){
+        const decision={...request,mode:selectedMode};
+        if(allow&&valid&&this.event(decision,'allowed',source)){
           const run=this.runs.get(binding.runId),current=()=>!!run&&this.runs.get(binding.runId)===run&&this.valid(binding)&&this.options.taskProject(targetTaskId)===binding.projectId;
           if(current()){
             const previous=run!.grants.get(targetTaskId);if(previous)this.event(previous,'revoked',source);
-            if(current()){const {expiresAt,...identity}=request;granted={...identity,grantedAt:Date.now()};run!.grants.set(targetTaskId,granted);}
+            if(current()){const {expiresAt,...identity}=decision;granted={...identity,grantedAt:Date.now()};run!.grants.set(targetTaskId,granted);}
           }
         }
         if(granted)resolve({...granted});
@@ -72,9 +73,10 @@ export class BrowserAccess {
     });
   }
   /** Called only by a trusted main-window controller. */
-  respond(id:string,allow:boolean):void{
+  respond(id:string,allow:boolean,mode?:BrowserAccessMode):void{
+    if(mode!==undefined&&!['observe','control'].includes(mode))throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
     const pending=this.pending.get(id);if(!pending)throw new ApplicationError('RESOURCE_STATE_CHANGED','授权申请已结束，请核对当前请求');
-    pending.finish(allow,'user');
+    pending.finish(allow,'user',mode);
   }
   revoke(id:string):void{
     for(const run of this.runs.values())for(const [target,grant]of run.grants)if(grant.id===id){run.grants.delete(target);this.event(grant,'revoked','user');this.changed();return;}
