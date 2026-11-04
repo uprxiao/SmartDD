@@ -492,6 +492,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
     }
     const snapshot=current.snapshot,stored=current;
+    // M10 rule kept in R1.0: while a stop-before-switch connection change is pending, no run of the project forks.
+    const gate=()=>assertNoPendingApplicationSwitch(this.support.store,{projectId:input.projectId,packages:this.selectedApps(input.projectId)});gate();
     await this.configureCli(input,native,snapshot);
     if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported')return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED',this.options.retainCatalogPath?this.catalog(input.home):undefined);
     const bridgeReady=!snapshot.mcp.some(m=>m.kind==='applications')||await(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
@@ -517,14 +519,14 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing. */}
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared',effective=true,prepared=runtime;
       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan.args,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native.command,
-        assertBeforeFork:()=>{},
+        assertBeforeFork:()=>{if(effective)gate();},
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
           phase='restricting';this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
           await this.runs.restrictToNative(run.runId);effective=false;prepared.release();prepared=this.unavailableRuntime(input,stored,run.runId,'AGENT_ADAPTER_UNSUPPORTED');
           prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
         },
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';phase='arming';if(!nativeOnly&&effective)await bridge?.bridge.arm();await run.cli.arm();},
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effective)gate();phase='arming';if(!nativeOnly&&effective)await bridge?.bridge.arm();await run.cli.arm();},
         spawned:async pid=>{await run.cli.attach(pid??0);if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);},
         initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),
         cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),
