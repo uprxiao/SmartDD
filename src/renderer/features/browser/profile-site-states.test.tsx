@@ -2,7 +2,7 @@
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {BrowserProfileSiteStates,type ProfileSiteStates} from './profile-site-states';
-const api=vi.hoisted(()=>({revokeCertificate:vi.fn(),recoverCookies:vi.fn(),clearCookies:vi.fn()}));vi.mock('@renderer/lib/ipc',()=>({rpc:{browser:api}}));
+const api=vi.hoisted(()=>({revokeCertificate:vi.fn(),recoverCookies:vi.fn(),clearCookies:vi.fn(),createProfile:vi.fn(),cloneProfile:vi.fn(),useProfile:vi.fn(),deleteProfile:vi.fn()}));vi.mock('@renderer/lib/ipc',()=>({rpc:{browser:api}}));
 const initial:ProfileSiteStates=[{importState:'ready',profile:{id:'project-p1',label:'项目登录态',scope:'project',owner:{kind:'project',id:'p1'},partition:'persist:wy-browser-project-p1',source:null},state:{schemaVersion:1,certificates:[{host:'outside.example.test',createdAt:1}],permissions:[]}}];
 beforeEach(()=>vi.resetAllMocks());afterEach(cleanup);
 it('retains a certificate record on host failure and removes it only after a successful scoped revocation',async()=>{
@@ -14,4 +14,16 @@ it('keeps import disabled while attention is outstanding, and enables it only af
 });
 it('requires a separate clear confirmation and keeps attention on host failure without automatic retry',async()=>{
   api.clearCookies.mockRejectedValueOnce(Error('clear interrupted'));render(<BrowserProfileSiteStates taskId="t1" currentProfile="project-p1" initial={[{...initial[0],importState:'needs-attention'}]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'清空登录态'}));expect(api.clearCookies).not.toHaveBeenCalled();expect(screen.getByText(/将清空此登录态的全部/)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'确认清空'}));await screen.findByText('clear interrupted');expect(api.clearCookies).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1',confirmed:true});expect((screen.getByRole('button',{name:'导入 Chrome／Edge 登录态'}) as HTMLButtonElement).disabled).toBe(true);
+});
+const copy:ProfileSiteStates[number]={...initial[0],profile:{...initial[0].profile,id:'copy',label:'项目登录态（副本）',scope:'isolated',owner:{kind:'task',id:'t1'}},state:{schemaVersion:1,certificates:[],permissions:[]}};
+it('selects a host-confirmed new profile without switching the current page, then switches only on explicit use',async()=>{
+  api.createProfile.mockResolvedValueOnce({records:[...initial,copy],result:copy.profile});api.useProfile.mockResolvedValueOnce({records:[...initial,copy],result:copy.profile});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" taskTitle="任务一" currentProfile="project-p1" initial={initial} onClose={()=>{}}/>);
+  fireEvent.click(screen.getByRole('button',{name:'为「任务一」新建独立登录态'}));await screen.findByText('已新建独立登录态');expect(api.createProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',label:'任务一 独立登录态'});expect(screen.getByRole('option',{name:/项目登录态（副本）/}).getAttribute('aria-selected')).toBe('true');expect(api.useProfile).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button',{name:'用于当前页面'}));await screen.findByText('已用于当前页面');expect(api.useProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',tabId:'page1',profileId:'copy'});
+});
+it('retains the selected source after clone failure and sends no retry or page switch',async()=>{
+  api.cloneProfile.mockRejectedValueOnce(Error('原登录态持续变化'));render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="project-p1" initial={initial} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'克隆'}));await screen.findByText('原登录态持续变化');expect(api.cloneProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1'});expect(api.useProfile).not.toHaveBeenCalled();expect(screen.getAllByRole('option')).toHaveLength(1);expect(screen.queryByRole('button',{name:'删除'})).toBeNull();
+});
+it('requires delete confirmation, preserves data on failure, and updates the list only after explicit successful retry',async()=>{
+  api.deleteProfile.mockRejectedValueOnce(Error('删除未确认')).mockResolvedValueOnce({records:initial,result:'copy'});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="copy" initial={[...initial,copy]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'删除'}));expect(api.deleteProfile).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('删除未确认');expect(screen.getByRole('option',{name:/项目登录态（副本）/})).toBeTruthy();expect(api.deleteProfile).toHaveBeenCalledTimes(1);fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('已删除登录态，使用它的页面改用项目登录态');expect(screen.getAllByRole('option')).toHaveLength(1);expect(api.deleteProfile).toHaveBeenLastCalledWith({taskId:'t1',profileId:'copy',confirmed:true});
 });

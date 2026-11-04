@@ -1,0 +1,1834 @@
+{
+  "group": "M12-P037",
+  "at": "2026-11-04T06:40:48.999Z",
+  "status": "passed-native-clone-entry-I-with-retained-fixture-check-error",
+  "counts": {
+    "businessPredicates": 13,
+    "businessPassed": 13,
+    "retainedInterimFixtureErrors": 1,
+    "actualFinalCleanupPassed": true
+  },
+  "checks": [
+    {
+      "id": "native-environment",
+      "expected": "ActualABI146/prohibited/mock explicit/zero windows+sandbox/noUI",
+      "status": "passed",
+      "actual": {
+        "precondition": {
+          "policy": "prohibited",
+          "beforeReady": true,
+          "mockKeychain": true,
+          "mockBoundary": "Synthetic Chromiummock keychain, not OSauth/safeStorage"
+        },
+        "source": {
+          "id": 1,
+          "prefs": {
+            "sandbox": true,
+            "contextIsolation": true,
+            "nodeIntegration": false
+          }
+        },
+        "target": {
+          "id": 5,
+          "prefs": {
+            "sandbox": true,
+            "contextIsolation": true,
+            "nodeIntegration": false
+          }
+        },
+        "events": [
+          {
+            "kind": "debugger-detached",
+            "id": 4,
+            "reason": "target closed"
+          },
+          {
+            "kind": "destroyed",
+            "id": 4
+          },
+          {
+            "kind": "debugger-detached",
+            "id": 3,
+            "reason": "target closed"
+          },
+          {
+            "kind": "destroyed",
+            "id": 3
+          },
+          {
+            "kind": "debugger-detached",
+            "id": 2,
+            "reason": "target closed"
+          },
+          {
+            "kind": "destroyed",
+            "id": 2
+          },
+          {
+            "kind": "debugger-detached",
+            "id": 6,
+            "reason": "target closed"
+          },
+          {
+            "kind": "destroyed",
+            "id": 6
+          },
+          {
+            "kind": "destroyed",
+            "id": 1
+          },
+          {
+            "kind": "destroyed",
+            "id": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "actual7cookie-seed",
+      "expected": "Source actualNativeStore snapshot retains7 intended cookies includingSession/CHIPS/allattributes",
+      "status": "passed",
+      "actual": {
+        "seed": [
+          {
+            "name": "p037-persistent",
+            "value": "cookie-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-session",
+            "value": "session-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "hostOnly": true,
+            "secure": false,
+            "httpOnly": false,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-host-attributes",
+            "value": "attrs-host-A",
+            "domain": "qa.example.test",
+            "path": "/account",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "p037-domain-attributes",
+            "value": "attrs-domain-A",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "hostOnly": false,
+            "secure": true,
+            "httpOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ],
+        "actualSource": [
+          {
+            "name": "p037-host-attributes",
+            "value": "attrs-host-A",
+            "domain": "qa.example.test",
+            "path": "/account",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "p037-persistent",
+            "value": "cookie-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-session",
+            "value": "session-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": false,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-domain-attributes",
+            "value": "attrs-domain-A",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": false,
+            "hostOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ]
+      }
+    },
+    {
+      "id": "factory-after-copy",
+      "expected": "Real targetfactory called once only after nativefiles copied; actualtargetpath matches distinctprofile",
+      "status": "passed",
+      "actual": {
+        "factory": {
+          "calls": 1,
+          "at": 1793774249992,
+          "directoryAlreadyExists": true,
+          "filesAlreadyCopied": [
+            "Cache",
+            "Code Cache",
+            "Cookies",
+            "Cookies-journal",
+            "DIPS",
+            "DIPS-wal",
+            "DawnGraphiteCache",
+            "DawnWebGPUCache",
+            "GPUCache",
+            "IndexedDB",
+            "Local Storage",
+            "Service Worker",
+            "Session Storage",
+            "Shared Dictionary",
+            "Trust Tokens",
+            "Trust Tokens-journal",
+            "WebStorage",
+            "blob_storage"
+          ],
+          "actualStoragePath": "/private/tmp/willyou-m12-p037-executor-001/runtime-001/userdata/Partitions/wy-browser-bedc32e1-778c-484c-9dea-2196f4fc88f7",
+          "sourceSessionDifferent": true
+        },
+        "clone": {
+          "directory": "/private/tmp/willyou-m12-p037-executor-001/runtime-001/userdata/Partitions/wy-browser-bedc32e1-778c-484c-9dea-2196f4fc88f7",
+          "files": 55,
+          "bytes": 1890443,
+          "cookies": 7
+        },
+        "source": "/private/tmp/willyou-m12-p037-executor-001/runtime-001/userdata/Partitions/wy-browser-dcffa1fc-8e1a-4df8-b546-7a6301da935e",
+        "target": "/private/tmp/willyou-m12-p037-executor-001/runtime-001/userdata/Partitions/wy-browser-bedc32e1-778c-484c-9dea-2196f4fc88f7"
+      }
+    },
+    {
+      "id": "production7cookies-exact",
+      "expected": "Actual productionentry restores all7 NativeCookie snapshots with session/CHIPS/fullattributes; no manualoverlay",
+      "status": "passed",
+      "actual": {
+        "source": [
+          {
+            "name": "p037-host-attributes",
+            "value": "attrs-host-A",
+            "domain": "qa.example.test",
+            "path": "/account",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "p037-persistent",
+            "value": "cookie-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-session",
+            "value": "session-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": false,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-domain-attributes",
+            "value": "attrs-domain-A",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": false,
+            "hostOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ],
+        "target": [
+          {
+            "name": "p037-host-attributes",
+            "value": "attrs-host-A",
+            "domain": "qa.example.test",
+            "path": "/account",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "p037-persistent",
+            "value": "cookie-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793777847,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-session",
+            "value": "session-A",
+            "domain": "127.0.0.1",
+            "path": "/",
+            "secure": false,
+            "httpOnly": false,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 54154
+          },
+          {
+            "name": "p037-domain-attributes",
+            "value": "attrs-domain-A",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": false,
+            "hostOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ],
+        "clone": {
+          "directory": "/private/tmp/willyou-m12-p037-executor-001/runtime-001/userdata/Partitions/wy-browser-bedc32e1-778c-484c-9dea-2196f4fc88f7",
+          "files": 55,
+          "bytes": 1890443,
+          "cookies": 7
+        }
+      }
+    },
+    {
+      "id": "session-cookie-original-red-fixed",
+      "expected": "Originalp035 sessionCookie contract now retained in freshB through productionentry",
+      "status": "passed",
+      "actual": [
+        {
+          "name": "p037-session",
+          "value": "session-A",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "secure": false,
+          "httpOnly": false,
+          "hostOnly": true,
+          "sameSite": "lax",
+          "expirationDate": null,
+          "partitionKey": null,
+          "priority": "Medium",
+          "sourceScheme": "NonSecure",
+          "sourcePort": 54154
+        }
+      ]
+    },
+    {
+      "id": "chips-full-partition-identities",
+      "expected": "3 same-name CHIPS variants retain top-a/top-b and ancestor true/false with fullproperties",
+      "status": "passed",
+      "actual": {
+        "source": [
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ],
+        "target": [
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-b-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793777847,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "p037-chips",
+            "value": "chips-top-a-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": null,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-local-copied",
+      "expected": "ActualnewB reads local",
+      "status": "passed",
+      "actual": {
+        "source": "local-A",
+        "target": "local-A"
+      }
+    },
+    {
+      "id": "native-idb-copied",
+      "expected": "ActualnewB reads idb",
+      "status": "passed",
+      "actual": {
+        "source": {
+          "exists": true,
+          "value": "idb-A"
+        },
+        "target": {
+          "exists": true,
+          "value": "idb-A"
+        }
+      }
+    },
+    {
+      "id": "native-cacheStorage-copied",
+      "expected": "ActualnewB reads cacheStorage",
+      "status": "passed",
+      "actual": {
+        "source": {
+          "exists": true,
+          "value": "cacheStorage-A"
+        },
+        "target": {
+          "exists": true,
+          "value": "cacheStorage-A"
+        }
+      }
+    },
+    {
+      "id": "http-cache-copied",
+      "expected": "Targetcache-only200 exactsource bytes without second HTTPcache request",
+      "status": "passed",
+      "actual": {
+        "source": {
+          "status": 200,
+          "text": "P037-http-cache-A\n"
+        },
+        "target": {
+          "status": 200,
+          "text": "P037-http-cache-A\n"
+        },
+        "requests": [
+          {
+            "id": 1,
+            "at": 1793774246970,
+            "method": "GET",
+            "path": "/profile",
+            "finished": true,
+            "closed": true
+          },
+          {
+            "id": 2,
+            "at": 1793774247551,
+            "method": "GET",
+            "path": "/p037-http-cache",
+            "finished": true,
+            "closed": true
+          },
+          {
+            "id": 3,
+            "at": 1793774250107,
+            "method": "GET",
+            "path": "/profile",
+            "finished": true,
+            "closed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "source-form-WC-stores-preserved",
+      "expected": "Newentry does not unload/change originalA page/form/data/cookies",
+      "status": "passed",
+      "actual": {
+        "before": {
+          "wcId": 1,
+          "url": "http://127.0.0.1:54154/profile",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-host-attributes",
+                "value": "attrs-host-A",
+                "domain": "qa.example.test",
+                "path": "/account",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-persistent",
+                "value": "cookie-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-session",
+                "value": "session-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": false,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-domain-attributes",
+                "value": "attrs-domain-A",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": false,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-b-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793777847,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            }
+          ],
+          "data": {
+            "url": "http://127.0.0.1:54154/profile",
+            "local": "local-A",
+            "idb": {
+              "exists": true,
+              "value": "idb-A"
+            },
+            "cacheStorage": {
+              "exists": true,
+              "value": "cacheStorage-A"
+            },
+            "httpCache": {
+              "status": 200,
+              "text": "P037-http-cache-A\n"
+            },
+            "form": "P037 unsaved source",
+            "documentIdentity": "P037-original-document"
+          },
+          "requests": [
+            {
+              "id": 1,
+              "at": 1793774246970,
+              "method": "GET",
+              "path": "/profile",
+              "finished": true,
+              "closed": true
+            },
+            {
+              "id": 2,
+              "at": 1793774247551,
+              "method": "GET",
+              "path": "/p037-http-cache",
+              "finished": true,
+              "closed": true
+            }
+          ]
+        },
+        "after": {
+          "aWcId": 1,
+          "aCookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-host-attributes",
+                "value": "attrs-host-A",
+                "domain": "qa.example.test",
+                "path": "/account",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-persistent",
+                "value": "cookie-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-session",
+                "value": "session-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": false,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-domain-attributes",
+                "value": "attrs-domain-A",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": false,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-b-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793777847,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            }
+          ],
+          "aData": {
+            "url": "http://127.0.0.1:54154/profile",
+            "local": "local-A",
+            "idb": {
+              "exists": true,
+              "value": "idb-A"
+            },
+            "cacheStorage": {
+              "exists": true,
+              "value": "cacheStorage-A"
+            },
+            "httpCache": {
+              "status": 200,
+              "text": "P037-http-cache-A\n"
+            },
+            "form": "P037 unsaved source",
+            "documentIdentity": "P037-original-document"
+          },
+          "bCookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-host-attributes",
+                "value": "attrs-host-A",
+                "domain": "qa.example.test",
+                "path": "/account",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-persistent",
+                "value": "cookie-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793777847,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-session",
+                "value": "session-A",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": false,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 54154
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-domain-attributes",
+                "value": "attrs-domain-A",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": false,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-b-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793777847,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "p037-chips",
+                "value": "chips-top-a-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": null,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            }
+          ],
+          "bData": {
+            "url": "http://127.0.0.1:54154/profile",
+            "local": "local-A",
+            "idb": {
+              "exists": true,
+              "value": "idb-A"
+            },
+            "cacheStorage": {
+              "exists": true,
+              "value": "cacheStorage-A"
+            },
+            "httpCache": {
+              "status": 200,
+              "text": "P037-http-cache-A\n"
+            },
+            "form": "",
+            "documentIdentity": null
+          },
+          "requests": [
+            {
+              "id": 1,
+              "at": 1793774246970,
+              "method": "GET",
+              "path": "/profile",
+              "finished": true,
+              "closed": true
+            },
+            {
+              "id": 2,
+              "at": 1793774247551,
+              "method": "GET",
+              "path": "/p037-http-cache",
+              "finished": true,
+              "closed": true
+            },
+            {
+              "id": 3,
+              "at": 1793774250107,
+              "method": "GET",
+              "path": "/profile",
+              "finished": true,
+              "closed": true
+            }
+          ],
+          "sourceDestroyed": false
+        }
+      }
+    },
+    {
+      "id": "target-modification-isolated",
+      "expected": "ActualtargetCookie+LS/IDB/CacheStorage and clearHTTPcache leave allsource data/cookies/form/WC intact",
+      "status": "passed",
+      "actual": {
+        "aWcId": 1,
+        "aCookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-host-attributes",
+              "value": "attrs-host-A",
+              "domain": "qa.example.test",
+              "path": "/account",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793777847,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-persistent",
+              "value": "cookie-A",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793777847,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 54154
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-session",
+              "value": "session-A",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 54154
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-domain-attributes",
+              "value": "attrs-domain-A",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": false,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-a-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-b-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793777847,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-a-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          }
+        ],
+        "aData": {
+          "url": "http://127.0.0.1:54154/profile",
+          "local": "local-A",
+          "idb": {
+            "exists": true,
+            "value": "idb-A"
+          },
+          "cacheStorage": {
+            "exists": true,
+            "value": "cacheStorage-A"
+          },
+          "httpCache": {
+            "status": 200,
+            "text": "P037-http-cache-A\n"
+          },
+          "form": "P037 unsaved source",
+          "documentIdentity": "P037-original-document"
+        },
+        "bCookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-host-attributes",
+              "value": "attrs-host-A",
+              "domain": "qa.example.test",
+              "path": "/account",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793777847,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-session",
+              "value": "session-A",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 54154
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-domain-attributes",
+              "value": "attrs-domain-A",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": false,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-a-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-b-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793777847,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-chips",
+              "value": "chips-top-a-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": null,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "p037-persistent",
+              "value": "cookie-B",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793777847,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 54154
+            }
+          }
+        ],
+        "bData": {
+          "url": "http://127.0.0.1:54154/profile",
+          "local": "local-B",
+          "idb": {
+            "exists": true,
+            "value": "idb-B"
+          },
+          "cacheStorage": {
+            "exists": true,
+            "value": "cacheStorage-B"
+          },
+          "httpCache": {
+            "error": "TypeError: Failed to fetch"
+          },
+          "form": "",
+          "documentIdentity": null
+        },
+        "requests": [
+          {
+            "id": 1,
+            "at": 1793774246970,
+            "method": "GET",
+            "path": "/profile",
+            "finished": true,
+            "closed": true
+          },
+          {
+            "id": 2,
+            "at": 1793774247551,
+            "method": "GET",
+            "path": "/p037-http-cache",
+            "finished": true,
+            "closed": true
+          },
+          {
+            "id": 3,
+            "at": 1793774250107,
+            "method": "GET",
+            "path": "/profile",
+            "finished": true,
+            "closed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "stage-cleaned",
+      "expected": "Callerbound stagingId leaves no stagingdirectory after success",
+      "status": "passed",
+      "actual": {
+        "stageLeft": []
+      }
+    },
+    {
+      "id": "bounded-native-cleanup-normalquit",
+      "expected": "Eachrecorded cleanup step fulfilled, allWC/debuggers/windows gone, realwillquit and normalexit no watchdog",
+      "status": "interim-fixture-check-error-final-cleanup-confirmed",
+      "actual": {
+        "steps": [
+          {
+            "name": "close-observer-store-0",
+            "startedAt": "2026-11-04T06:37:30.343Z",
+            "timeoutMs": 2500,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T06:37:30.348Z"
+          },
+          {
+            "name": "close-observer-store-1",
+            "startedAt": "2026-11-04T06:37:30.354Z",
+            "timeoutMs": 2500,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T06:37:30.354Z"
+          },
+          {
+            "name": "close-source-and-target-webpages",
+            "startedAt": "2026-11-04T06:37:30.364Z",
+            "timeoutMs": 2500,
+            "status": "rejected-or-timeout",
+            "error": {
+              "name": "TypeError",
+              "code": null,
+              "message": "Cannot read properties of undefined (reading 'isDestroyed')",
+              "stack": "TypeError: Cannot read properties of undefined (reading 'isDestroyed')\n    at /private/tmp/willyou-m12-p037-executor-001/build/host.cjs:8412:47\n    at Array.some (<anonymous>)\n    at /private/tmp/willyou-m12-p037-executor-001/build/host.cjs:8412:20\n    at async bounded (/private/tmp/willyou-m12-p037-executor-001/build/host.cjs:8329:5)\n    at async /private/tmp/willyou-m12-p037-executor-001/build/host.cjs:8409:5"
+            },
+            "finishedAt": "2026-11-04T06:37:30.388Z"
+          },
+          {
+            "name": "all-owned-WC-debugger-final",
+            "startedAt": "2026-11-04T06:37:30.392Z",
+            "timeoutMs": 2500,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T06:37:30.397Z"
+          }
+        ],
+        "after": {
+          "windows": [],
+          "contents": [
+            {
+              "id": 1,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 2,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 3,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 4,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 5,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 6,
+              "destroyed": true,
+              "debuggerAttached": false
+            }
+          ],
+          "allRemaining": []
+        },
+        "quit": {
+          "at": "2026-11-04T06:37:30.410Z",
+          "pid": 65645,
+          "event": "will-quit",
+          "normalQuitRequested": "app.quit",
+          "zeroWindows": true
+        },
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "explanation": "ActualView.webContents becomes undefined after its contents closes; privateview-based some() postcondition dereferenced it. This did not prevent the next cachedWebContents cleanup step from confirming all6 destroyed/detached. Realwill-quit, normalexit0 and independentPID/port absence all observed. Originalcheck error/raw preserved."
+      },
+      "failureClass": "private-post-close-view-getter"
+    }
+  ],
+  "originalCaseStatus": "ComponentI only; cloneCLI/UI/metadata publication/manager durableintent/restart/crash/opaque native cases notcounted",
+  "priorEvidence": "P035 wholeprofile nonCookie/inactive/busy results supporting only under source-reuse.json byte/scope boundary; currentcoupled7Cookie+5store matrix executed",
+  "judgment": "ActualNativeStore snapshots, unchanged source page state, copied opaque stores/server requests and realnormalquit, notdriverexit alone",
+  "resourceRelease": {
+    "released": true,
+    "actualFinalCleanupPassed": true,
+    "pids": [
+      65642,
+      65645,
+      65650,
+      65651,
+      65654,
+      65659,
+      65676,
+      65677
+    ],
+    "ports": [
+      54154
+    ],
+    "willQuit": {
+      "at": "2026-11-04T06:37:30.410Z",
+      "pid": 65645,
+      "event": "will-quit",
+      "normalQuitRequested": "app.quit",
+      "zeroWindows": true
+    },
+    "watchdog": null
+  },
+  "originalJudge": "adjudicate.mjs",
+  "originalResult": "result.original-judge.json",
+  "scope": "ActualproductioncloneBrowserSessionData defaultdependencies componentI only. OriginalP035 red retained. No cloneCLI/UI/metadata-publication/durablemanager/opaque-native/wrongSession-native or OSkeychain pass inferred.",
+  "noBusinessReplay": true
+}

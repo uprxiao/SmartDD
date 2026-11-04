@@ -7,7 +7,8 @@ import { BrowserError, staleReference } from './errors';
 import type Database from 'better-sqlite3';
 import { app, nativeImage, session, type BrowserWindow } from 'electron';
 import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-browser';
-import { join,resolve,isAbsolute } from 'node:path';
+import { join,resolve,isAbsolute,dirname } from 'node:path';
+import {realpath} from 'node:fs/promises';
 import { browserExecArguments } from './exec-policy';
 import type { BrowserProgress } from './input-progress';
 import {BrowserWorkspace} from './workspace';
@@ -19,7 +20,7 @@ import {BrowserConditionWait} from './wait';
 import {BrowserRecorder} from './recorder';
 import {BrowserProfiles} from './profiles';
 import {executeBrowserCookie} from './cookies';
-import type {BrowserProfile} from '@shared/browser-profiles';
+import type {BrowserProfile,BrowserProfileCaller} from '@shared/browser-profiles';
 import {BrowserSettings,browserUserAgent} from './settings';
 import {browserIdentitySchema} from '@shared/browser-settings';
 import {randomUUID} from 'node:crypto';
@@ -38,6 +39,8 @@ import {BrowserImportPagePause} from './cookie-import/page-pause';
 import {safeStorageCipher} from '../../safe-storage-cipher';
 import type {SecretCipher} from '../../secrets';
 import {BrowserCookieImportAudit} from './cookie-import/audit';
+import {BrowserProfileClones} from './profile-clones';
+import {cloneBrowserSessionData} from './clone-session';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -64,10 +67,12 @@ export class BrowserService {
   readonly cookieSources:BrowserCookieSources;
   private readonly imports:BrowserImportCoordinator;
   private readonly importAudit:BrowserCookieImportAudit;
+  private readonly clones:BrowserProfileClones;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
   private readonly readWaits=new Map<string,Set<AbortController>>();
+  private readonly userProfileRun='browser-ui-'+randomUUID();
   private closed=false;
   private readonly conditions=new WeakMap<BrowserPage,BrowserConditionWait>();
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
@@ -110,6 +115,17 @@ export class BrowserService {
       clear:async profile=>{const target=partition(profile);await target.closeAllConnections();await target.clearData();await target.clearAuthCache();await target.cookies.flushStore();this.siteStates.forget(profile.id);},
       changed:id=>{for(const page of this.pages.all().filter(page=>page.profileId===id))options.changed?.(page.taskId);},
     });
+    const partitionRoot=join(options.userData,'Partitions');
+    this.clones=new BrowserProfileClones({userData:options.userData,partitionRoot,profiles:this.profiles,sites:this.siteStates,
+      warning:()=>console.warn('[browser] unpublished clone cleanup pending'),
+      materialize:async(source,target,stagingId,admit,signal)=>{
+        const original=partition(source);
+        if(!original.storagePath||await realpath(dirname(original.storagePath))!==await realpath(partitionRoot))throw new ApplicationError('BROWSER_UNAVAILABLE','原生登录态不在预期分区目录，未开始复制');
+        return cloneBrowserSessionData({sourceProfile:source,targetProfile:target,sourceSession:original,targetSession:()=>partition(target),stagingId,admit,signal,
+          open:owner=>NativeBrowserCookieStore.open(owner,contents=>this.networkPolicy.install(contents,owner===original?source.id:target.id)),
+        });
+      },
+    });
   }
   pause(taskId:string,value:boolean):void{
     if(value){
@@ -146,7 +162,16 @@ export class BrowserService {
     try{
       this.admit(scope,args);
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
-      if(command==='tab profile clone'){this.profiles.require(scope,text(args.profile));throw new ApplicationError('CAPABILITY_UNAVAILABLE','登录态完整克隆尚在开发');}
+      if(command==='tab profile clone'){
+        const source=this.profiles.require(scope,text(args.profile));this.profiles.assertAvailable(source.id);
+        const contextPage=args.page===undefined?null:this.workspace.list(scope.taskId).find(tab=>tab.pageId===text(args.page))?.pageId;
+        if(contextPage===undefined)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
+        const receipt=begin(contextPage);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const active=()=>{scope.assertActive();if(this.closed||scope.signal.aborted)throw scope.signal.reason??new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');if(this.options.taskProject(scope.taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','当前运行已不能访问原任务');};
+        const profile=await this.clones.clone(scope,source.id,active,send,scope.signal);
+        this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:{profileId:profile.id,sourceProfileId:source.id}});this.options.changed?.(scope.taskId);
+        return{result:{profile,sourceProfileId:source.id}};
+      }
       if(command==='access request')throw new ApplicationError('CAPABILITY_UNAVAILABLE','跨任务授权服务尚在开发');
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
       if(command==='identity get'){const value=this.settings.snapshot();return{result:{mode:value.identity,pendingMode:value.pendingIdentity,restartRequired:value.pendingIdentity!==null}};}
@@ -179,19 +204,8 @@ export class BrowserService {
       if(command==='tab profile delete'){
         const profile=this.profiles.deletable(scope,text(args.profile));
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
-        const release=this.profiles.lock(profile.id,'删除');
-        try{
-          await this.pages.cancelProfileInitializations(profile.id);
-          await this.workspace.removeProfileBindings(profile.id,taskId=>this.profiles.ensureProject(this.options.taskProject(taskId)!).id,()=>this.admit(scope,args),send);
-          // Child windows close with their opener. An orphan task may still have
-          // a native view until reconciliation; close it before clearing data.
-          for(const remaining of this.pages.all().filter(page=>page.profileId===profile.id)){
-            if(remaining.kind!=='popup'&&this.options.taskProject(remaining.taskId))throw new ApplicationError('RESOURCE_BUSY','仍有网页使用此登录态');
-            send();await this.pages.close(remaining.taskId,remaining.id);
-          }
-          this.admit(scope,args);send();await this.clearProfile(profile);
-          this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{deleted:profile.id}};
-        }finally{release();}
+        await this.deleteProfileData(scope,profile,()=>this.admit(scope,args),send);
+        this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{deleted:profile.id}};
       }
       if(command==='tab list')return{tabs:this.workspace.list(scope.taskId)};
       if(command==='tab show'||command==='tab current'){
@@ -445,6 +459,38 @@ export class BrowserService {
     const {projectId}=this.workspace.snapshot(taskId);
     return this.profiles.list({taskId,projectId}).map(profile=>({profile,state:this.siteStates.snapshot(profile.id),importState:this.profiles.importState(profile.id)}));
   }
+  private async deleteProfileData(caller:BrowserProfileCaller,profile:BrowserProfile,admit:()=>void,send:()=>void):Promise<void>{
+    this.profiles.deletable(caller,profile.id);const release=this.profiles.lock(profile.id,'删除');
+    try{
+      await this.pages.cancelProfileInitializations(profile.id);
+      await this.workspace.removeProfileBindings(profile.id,taskId=>this.profiles.ensureProject(this.options.taskProject(taskId)!).id,admit,send);
+      for(const remaining of this.pages.all().filter(page=>page.profileId===profile.id)){
+        if(remaining.kind!=='popup'&&this.options.taskProject(remaining.taskId))throw new ApplicationError('RESOURCE_BUSY','仍有网页使用此登录态');
+        admit();send();await this.pages.close(remaining.taskId,remaining.id);
+      }
+      admit();send();await this.clearProfile(profile);
+    }finally{release();}
+  }
+  /** Trusted user actions remain available when Agent automation is paused.
+   * Recheck task ownership after every asynchronous boundary and retain an
+   * independent receipt; a failed/unknown mutation is never automatically replayed. */
+  private async userProfileChange<T>(taskId:string,action:string,profileId:string|null,work:(caller:BrowserProfileCaller,admit:()=>void,send:()=>void)=>Promise<T>){
+    const {projectId}=this.workspace.snapshot(taskId),caller={taskId,projectId},requestId=randomUUID();let dispatched=false;
+    const admit=()=>{if(this.closed)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');if(this.options.taskProject(taskId)!==projectId)throw new ApplicationError('SCOPE_DENIED','任务归属已变化');};
+    admit();const summary={actor:'user',action,profileId};this.operations.begin(this.userProfileRun,requestId,taskId,null,'ui profile '+action);
+    const send=()=>{dispatched=true;this.operations.update(this.userProfileRun,requestId,'running','unknown',{summary});};
+    try{const result=await work(caller,admit,send);this.operations.update(this.userProfileRun,requestId,'succeeded','completed',{summary});this.options.changed?.(taskId);return{result,records:this.profileSiteStates(taskId)};}
+    catch(error){this.operations.update(this.userProfileRun,requestId,dispatched?'unknown':'failed',dispatched?'unknown':'not-started',{summary,code:error instanceof ApplicationError?error.code:'BROWSER_ERROR'});throw error;}
+  }
+  createProfile(taskId:string,label:string){return this.userProfileChange(taskId,'create',null,async(caller,admit,send)=>{admit();return this.profiles.create(caller,label,'isolated',send);});}
+  cloneProfile(taskId:string,profileId:string){return this.userProfileChange(taskId,'clone',profileId,(caller,admit,send)=>this.clones.clone(caller,profileId,admit,send));}
+  useProfile(taskId:string,pageId:string,profileId:string){return this.userProfileChange(taskId,'set',profileId,async(caller,admit,send)=>{
+    const profile=this.profiles.require(caller,profileId,'control');this.profiles.assertAvailable(profile.id);
+    const tab=this.workspace.list(taskId).find(tab=>tab.pageId===pageId);if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
+    if(tab.kind==='popup')throw new ApplicationError('INVALID_INPUT','子窗口沿用来源页面登录态，请切换来源网页标签');
+    this.profiles.assertAvailable(tab.profileId);await this.workspace.setProfile(taskId,pageId,profile.id,()=>{admit();this.profiles.require(caller,profile.id,'control');this.profiles.assertAvailable(profile.id);},send);return profile;
+  });}
+  deleteProfile(taskId:string,profileId:string){return this.userProfileChange(taskId,'delete',profileId,async(caller,admit,send)=>{const profile=this.profiles.deletable(caller,profileId);await this.deleteProfileData(caller,profile,admit,send);return profile.id;});}
   private uiProfile(taskId:string,profileId:string):BrowserProfile{const {projectId}=this.workspace.snapshot(taskId);return this.profiles.require({taskId,projectId},profileId,'control');}
   async importCookieSources(taskId:string){this.workspace.snapshot(taskId);return this.cookieSources.discover();}
   async importCookies(taskId:string,profileId:string,sourceId:string){const profile=this.uiProfile(taskId,profileId);this.imports.assertImportable(profile.id);return this.importAudit.run(taskId,profile.id,'import',()=>this.imports.import(profile,sourceId));}
@@ -479,6 +525,7 @@ export class BrowserService {
     if(this.closed)return Promise.resolve();if(this.reconciling)return this.reconciling;
     this.reconciling=(async()=>{
       await this.imports.initialize();
+      await this.clones.initialize();
       await this.workspace.reconcile();let busy=false;
       for(const profile of this.profiles.all()){
         const exists=profile.owner.kind==='task'?this.options.taskProject(profile.owner.id)!==null:!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(profile.owner.id);

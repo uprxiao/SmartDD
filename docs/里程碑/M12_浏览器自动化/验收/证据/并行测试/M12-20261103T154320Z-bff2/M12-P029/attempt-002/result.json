@@ -1,0 +1,1085 @@
+{
+  "group": "M12-P029",
+  "at": "2026-11-04T05:25:48.857Z",
+  "status": "failed-or-partial",
+  "counts": {
+    "total": 19,
+    "passed": 18,
+    "failed": 1
+  },
+  "checks": [
+    {
+      "id": "actual-chain-ready",
+      "expected": "Actual BrowserService/coordinator/page-pause registered two tabs+native-opener popup; no UIA claim",
+      "status": "passed",
+      "actual": {
+        "completed": true,
+        "pages": [
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "kind": "tab",
+            "contentsId": 3,
+            "openerPageId": null
+          },
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "kind": "tab",
+            "contentsId": 5,
+            "openerPageId": null
+          },
+          {
+            "id": "37d7fd97-3cb3-4772-8976-93f148438897",
+            "kind": "popup",
+            "contentsId": 6,
+            "openerPageId": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no-activation-boundary",
+      "expected": "prohibited before ready, alpha0/nonfocus park; no focused native windows",
+      "status": "passed",
+      "actual": {
+        "policy": {
+          "requested": "prohibited",
+          "fulfilled": true,
+          "beforeReady": true
+        },
+        "initialWindows": 0,
+        "windows": [
+          {
+            "id": 2,
+            "title": "WillYou · 网页登录",
+            "focused": false,
+            "visible": false,
+            "focusable": true,
+            "opacity": 1
+          },
+          {
+            "id": 1,
+            "title": "WillYou browser background",
+            "focused": false,
+            "visible": true,
+            "focusable": false,
+            "opacity": 0
+          }
+        ],
+        "focusEvents": []
+      }
+    },
+    {
+      "id": "real-source-DI",
+      "expected": "Synthetic Chrome source decrypted through exactly one injected keyProvider; key-transfer erased",
+      "status": "passed",
+      "actual": {
+        "events": [
+          {
+            "kind": "synthetic-key-provider",
+            "family": "chrome"
+          }
+        ],
+        "keyTransfersErased": [
+          true
+        ],
+        "source": {
+          "browsers": [
+            {
+              "family": "chrome",
+              "label": "Google Chrome",
+              "installed": true,
+              "profiles": [
+                {
+                  "id": "4d5394077dbbcc1c4d7bf8f3ff888ff6dcfc0fa5f5f85a65f0f2bd346af66b71",
+                  "family": "chrome",
+                  "browserLabel": "Google Chrome",
+                  "profileName": "P029 synthetic Chrome",
+                  "profileDirectory": "Default",
+                  "hasCookies": true
+                }
+              ]
+            },
+            {
+              "family": "edge",
+              "label": "Microsoft Edge",
+              "installed": false,
+              "profiles": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "real-postset-latch",
+      "expected": "One actual W set success then held, released once",
+      "status": "passed",
+      "actual": {
+        "events": [
+          {
+            "kind": "latch-enter-after-real-set",
+            "cookie": {
+              "name": "W",
+              "value": "P029-new-W"
+            },
+            "at": 1793769925872
+          },
+          {
+            "kind": "latch-release",
+            "at": 1793769926060
+          }
+        ],
+        "W": {
+          "name": "W",
+          "value": "P029-new-W",
+          "domain": "127.0.0.1",
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "hostOnly": true,
+          "sameSite": "lax",
+          "expirationDate": null,
+          "partitionKey": null,
+          "priority": "Medium",
+          "sourceScheme": "NonSecure",
+          "sourcePort": 80
+        }
+      }
+    },
+    {
+      "id": "all-pages-unloaded",
+      "expected": "All three original registered WC/page identities about:blank, oldglobals absent, aborted/importPaused",
+      "status": "passed",
+      "actual": [
+        {
+          "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+          "contentsId": 3,
+          "kind": "tab",
+          "openerPageId": null,
+          "importPaused": true,
+          "abortAborted": true,
+          "url": "about:blank",
+          "blank": {
+            "url": "about:blank",
+            "title": "",
+            "hasOldState": false,
+            "body": ""
+          },
+          "debuggerAttached": true,
+          "helperCleanup": null
+        },
+        {
+          "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+          "contentsId": 5,
+          "kind": "tab",
+          "openerPageId": null,
+          "importPaused": true,
+          "abortAborted": true,
+          "url": "about:blank",
+          "blank": {
+            "url": "about:blank",
+            "title": "",
+            "hasOldState": false,
+            "body": ""
+          },
+          "debuggerAttached": true,
+          "helperCleanup": null
+        },
+        {
+          "id": "37d7fd97-3cb3-4772-8976-93f148438897",
+          "contentsId": 6,
+          "kind": "popup",
+          "openerPageId": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+          "importPaused": true,
+          "abortAborted": true,
+          "url": "about:blank",
+          "blank": {
+            "url": "about:blank",
+            "title": "",
+            "hasOldState": false,
+            "body": ""
+          },
+          "debuggerAttached": true,
+          "helperCleanup": null
+        }
+      ]
+    },
+    {
+      "id": "old-documents-stopped",
+      "expected": "10ms old page1 ticks stop while actual cookie state remains fixed",
+      "status": "passed",
+      "actual": {
+        "tickBefore": 11,
+        "observed": {
+          "start": 16,
+          "end": 16
+        },
+        "cookiesAtLatch": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P029-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P029-new-X",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P029-new-W",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "cookiesAfterObservation": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P029-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P029-new-X",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P029-new-W",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "pending-http-cancelled",
+      "expected": "Accepted original pending request closes without response delivery",
+      "status": "passed",
+      "actual": [
+        {
+          "id": 18,
+          "method": "GET",
+          "path": "/pending",
+          "query": {},
+          "at": 1793769925759,
+          "closed": true,
+          "completed": false,
+          "closedAt": 1793769925806,
+          "destroyed": true
+        }
+      ]
+    },
+    {
+      "id": "gate-active",
+      "expected": "Session A actual fetch blocked with zero HTTP, Session B fetch succeeds and reaches own server",
+      "status": "passed",
+      "actual": {
+        "fetchA": {
+          "status": "rejected",
+          "error": {
+            "name": "Error",
+            "code": null,
+            "message": "net::ERR_BLOCKED_BY_CLIENT",
+            "stack": "Error: net::ERR_BLOCKED_BY_CLIENT\n    at SimpleURLLoaderWrapper.<anonymous> (node:electron/js2c/browser_init:2:138962)\n    at SimpleURLLoaderWrapper.emit (node:events:509:28)"
+          }
+        },
+        "fetchB": {
+          "status": "fulfilled",
+          "text": "P029 fixture"
+        },
+        "requests": [
+          {
+            "id": 24,
+            "method": "GET",
+            "path": "/gate-probe",
+            "query": {
+              "session": "B"
+            },
+            "at": 1793769926056,
+            "closed": true,
+            "completed": true,
+            "closedAt": 1793769926056,
+            "destroyed": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "execute-prehelper-rejection",
+      "expected": "Actual service.execute get title rejects BROWSER_UNAVAILABLE and no ensureSession/command/helper launched",
+      "status": "failed",
+      "actual": {
+        "command": {
+          "command": "get title",
+          "args": {
+            "page": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809"
+          },
+          "scope": {
+            "taskId": "19d5db29-c745-4dee-9c3b-e41dcc738985",
+            "projectId": "2e456370-34bf-4adc-94d4-36722ba76d6c",
+            "runId": "32bbcf53-1cc6-437e-b1c2-b59b0a6a6ec9",
+            "requestId": "ce4c9ec0-4794-485c-b159-459550366dfc",
+            "operationId": "2baaa2dd-2afd-4684-85ab-395834e9ef1c"
+          },
+          "status": "rejected",
+          "error": {
+            "name": "ApplicationError",
+            "code": "CAPABILITY_UNAVAILABLE",
+            "message": "浏览器命令未登记",
+            "stack": "ApplicationError: 浏览器命令未登记\n    at applicationPreflightFailure (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:6260:57)\n    at BrowserService.executeScoped (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15760:45)\n    at BrowserService.execute (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15306:48)\n    at /private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:16172:40\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+          }
+        },
+        "helperCalls": [],
+        "cleanup": [
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "helper": null
+          },
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "helper": null
+          },
+          {
+            "id": "37d7fd97-3cb3-4772-8976-93f148438897",
+            "helper": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "profile-delete-busy",
+      "expected": "Actual service.execute profile delete fails RESOURCE_BUSY before effects",
+      "status": "passed",
+      "actual": {
+        "command": "tab profile delete",
+        "args": {
+          "profile": "976e6df6-681f-445d-8bfd-dbbf8bb687ef"
+        },
+        "scope": {
+          "taskId": "19d5db29-c745-4dee-9c3b-e41dcc738985",
+          "projectId": "2e456370-34bf-4adc-94d4-36722ba76d6c",
+          "runId": "3065f4e5-a442-4b1d-b861-b8067098ef08",
+          "requestId": "12cf46c0-dafb-4a41-88bd-83487f1fd98f",
+          "operationId": "be3efac7-46ef-44b5-8d92-2844da5ce201"
+        },
+        "status": "rejected",
+        "error": {
+          "name": "ApplicationError",
+          "code": "RESOURCE_BUSY",
+          "message": "登录态正在准备导入",
+          "stack": "ApplicationError: 登录态正在准备导入\n    at applicationPreflightFailure (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:6260:57)\n    at BrowserService.executeScoped (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15760:45)\n    at BrowserService.execute (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15306:48)\n    at /private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:16172:40\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+        }
+      }
+    },
+    {
+      "id": "placeholder-not-persisted",
+      "expected": "Persistent two tab URL/title/favicon triples unchanged during blank placeholder",
+      "status": "passed",
+      "actual": {
+        "before": [
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "url": "http://127.0.0.1:64795/two",
+            "title": "P029 two",
+            "favicon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+"
+          },
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "url": "http://127.0.0.1:64795/one",
+            "title": "P029 one",
+            "favicon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+"
+          }
+        ],
+        "during": [
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "url": "http://127.0.0.1:64795/two",
+            "title": "P029 two",
+            "favicon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+"
+          },
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "url": "http://127.0.0.1:64795/one",
+            "title": "P029 one",
+            "favicon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+"
+          }
+        ],
+        "persistedBefore": {
+          "key": "browserWorkspace.v1:19d5db29-c745-4dee-9c3b-e41dcc738985",
+          "value": "{\"version\":1,\"tabs\":[{\"id\":\"f3bef0e7-d0d7-4b88-ac01-134cc28ed809\",\"url\":\"http://127.0.0.1:64795/one\",\"title\":\"P029 one\",\"profileId\":\"976e6df6-681f-445d-8bfd-dbbf8bb687ef\",\"favicon\":\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+\"},{\"id\":\"979bfb9e-a230-4407-9263-f3b6c6aaca14\",\"url\":\"http://127.0.0.1:64795/two\",\"title\":\"P029 two\",\"profileId\":\"976e6df6-681f-445d-8bfd-dbbf8bb687ef\",\"favicon\":\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+\"}],\"activeId\":\"979bfb9e-a230-4407-9263-f3b6c6aaca14\",\"closed\":[]}"
+        },
+        "persistedDuring": {
+          "key": "browserWorkspace.v1:19d5db29-c745-4dee-9c3b-e41dcc738985",
+          "value": "{\"version\":1,\"tabs\":[{\"id\":\"f3bef0e7-d0d7-4b88-ac01-134cc28ed809\",\"url\":\"http://127.0.0.1:64795/one\",\"title\":\"P029 one\",\"profileId\":\"976e6df6-681f-445d-8bfd-dbbf8bb687ef\",\"favicon\":\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+\"},{\"id\":\"979bfb9e-a230-4407-9263-f3b6c6aaca14\",\"url\":\"http://127.0.0.1:64795/two\",\"title\":\"P029 two\",\"profileId\":\"976e6df6-681f-445d-8bfd-dbbf8bb687ef\",\"favicon\":\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTQ2YjYyIi8+PC9zdmc+\"}],\"activeId\":\"979bfb9e-a230-4407-9263-f3b6c6aaca14\",\"closed\":[]}"
+        }
+      }
+    },
+    {
+      "id": "reload-same-identities",
+      "expected": "Three original URLs reload new documents, same WC/page/opener bindings",
+      "status": "passed",
+      "actual": {
+        "before": [
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "contentsId": 3,
+            "kind": "tab",
+            "openerPageId": null,
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98886,
+            "proxyPort": 64796,
+            "native": {
+              "url": "http://127.0.0.1:64795/one",
+              "title": "P029 one",
+              "doc": "one-1",
+              "tick": 11,
+              "cookie": "liveTick=11",
+              "form": "",
+              "opener": false,
+              "openerURL": null,
+              "messages": [
+                {
+                  "from": "native-popup",
+                  "doc": "popup-11"
+                }
+              ]
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          },
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "contentsId": 5,
+            "kind": "tab",
+            "openerPageId": null,
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98887,
+            "proxyPort": 64799,
+            "native": {
+              "url": "http://127.0.0.1:64795/two",
+              "title": "P029 two",
+              "doc": "two-8",
+              "tick": 0,
+              "cookie": "liveTick=11",
+              "form": "P029 unsaved value",
+              "opener": false,
+              "openerURL": null,
+              "messages": []
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          },
+          {
+            "id": "37d7fd97-3cb3-4772-8976-93f148438897",
+            "contentsId": 6,
+            "kind": "popup",
+            "openerPageId": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98886,
+            "proxyPort": 64800,
+            "native": {
+              "url": "http://127.0.0.1:64795/popup",
+              "title": "P029 popup",
+              "doc": "popup-11",
+              "tick": 0,
+              "cookie": "liveTick=11",
+              "form": "",
+              "opener": true,
+              "openerURL": "http://127.0.0.1:64795/one",
+              "messages": []
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          }
+        ],
+        "after": [
+          {
+            "id": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "contentsId": 3,
+            "kind": "tab",
+            "openerPageId": null,
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98886,
+            "proxyPort": 64796,
+            "native": {
+              "url": "http://127.0.0.1:64795/one",
+              "title": "P029 one",
+              "doc": "one-25",
+              "tick": 0,
+              "cookie": "",
+              "form": "",
+              "opener": false,
+              "openerURL": null,
+              "messages": [
+                {
+                  "from": "native-popup",
+                  "doc": "popup-27"
+                }
+              ]
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          },
+          {
+            "id": "979bfb9e-a230-4407-9263-f3b6c6aaca14",
+            "contentsId": 5,
+            "kind": "tab",
+            "openerPageId": null,
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98887,
+            "proxyPort": 64799,
+            "native": {
+              "url": "http://127.0.0.1:64795/two",
+              "title": "P029 two",
+              "doc": "two-26",
+              "tick": 0,
+              "cookie": "",
+              "form": "",
+              "opener": false,
+              "openerURL": null,
+              "messages": []
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          },
+          {
+            "id": "37d7fd97-3cb3-4772-8976-93f148438897",
+            "contentsId": 6,
+            "kind": "popup",
+            "openerPageId": "f3bef0e7-d0d7-4b88-ac01-134cc28ed809",
+            "profileId": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+            "importPaused": false,
+            "abortAborted": false,
+            "rendererPid": 98886,
+            "proxyPort": 64800,
+            "native": {
+              "url": "http://127.0.0.1:64795/popup",
+              "title": "P029 popup",
+              "doc": "popup-27",
+              "tick": 0,
+              "cookie": "",
+              "form": "",
+              "opener": true,
+              "openerURL": "http://127.0.0.1:64795/one",
+              "messages": []
+            },
+            "debuggerAttached": true,
+            "helperCleanup": null
+          }
+        ],
+        "importResult": {
+          "domains": [
+            "127.0.0.1"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 1,
+          "reloadedPages": 3
+        }
+      }
+    },
+    {
+      "id": "native-opener-preserved",
+      "expected": "Popup retains real native window.opener and posts from new popup document to reloaded opener",
+      "status": "passed",
+      "actual": {
+        "popup": {
+          "url": "http://127.0.0.1:64795/popup",
+          "title": "P029 popup",
+          "doc": "popup-27",
+          "tick": 0,
+          "cookie": "",
+          "form": "",
+          "opener": true,
+          "openerURL": "http://127.0.0.1:64795/one",
+          "messages": []
+        },
+        "openerMessages": [
+          {
+            "from": "native-popup",
+            "doc": "popup-27"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsaved-old-form-unloaded",
+      "expected": "Precondition unsaved DOM value is discarded by required full URL reload",
+      "status": "passed",
+      "actual": {
+        "precondition": "P029 unsaved value",
+        "before": "P029 unsaved value",
+        "after": ""
+      }
+    },
+    {
+      "id": "import-cookie-effects",
+      "expected": "Actual source Xnew/Wnew, oldY removed, unrelated Z unchanged",
+      "status": "passed",
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P029-old-X",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P029-old-Y",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P029-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "liveTick",
+              "value": "11",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 64795
+            }
+          }
+        ],
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P029-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P029-new-X",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P029-new-W",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "session-B-isolation",
+      "expected": "Separate partition B native jar unchanged throughout A import",
+      "status": "passed",
+      "actual": {
+        "a": "persist:wy-browser-976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+        "b": "persist:wy-browser-5b3dfe4c-61b5-4711-b236-113d1930aff8",
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "B",
+              "value": "P029-isolated-B",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "during": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "B",
+              "value": "P029-isolated-B",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "B",
+              "value": "P029-isolated-B",
+              "domain": "127.0.0.1",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "import-ready-and-committed",
+      "expected": "Result reports 3 reloaded pages, ready state, committed source metadata, journal removed",
+      "status": "passed",
+      "actual": {
+        "result": {
+          "domains": [
+            "127.0.0.1"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 1,
+          "reloadedPages": 3
+        },
+        "state": "ready",
+        "metadata": {
+          "id": "976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-976e6df6-681f-445d-8bfd-dbbf8bb687ef",
+          "label": "P029 import A",
+          "owner": {
+            "kind": "task",
+            "id": "19d5db29-c745-4dee-9c3b-e41dcc738985"
+          },
+          "source": {
+            "family": "chrome",
+            "profile": "P029 synthetic Chrome",
+            "importedAt": 1793769926076
+          }
+        },
+        "journalExists": false
+      }
+    },
+    {
+      "id": "necessary-source-failure-closed",
+      "expected": "Unknown synthetic source rejected without target B mutation; ready restored",
+      "status": "passed",
+      "actual": {
+        "status": "rejected",
+        "error": {
+          "name": "BrowserCookieSourceError",
+          "code": null,
+          "message": "所选浏览器或profile已不存在，请重新选择",
+          "stack": "Error: 所选浏览器或profile已不存在，请重新选择\n    at BrowserCookieSources.prepare (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:14722:77)\n    at BrowserImportCoordinator.import (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15072:51)\n    at BrowserService.importCookies (/private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:15796:31)\n    at /private/tmp/willyou-m12-p029-executor-001/attempt-002/build/host.cjs:16200:21"
+        },
+        "before": {
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "B",
+                "value": "P029-isolated-B",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "requests": 28,
+          "profile": "ready"
+        },
+        "after": {
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "B",
+                "value": "P029-isolated-B",
+                "domain": "127.0.0.1",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "profile": "ready",
+          "requestCount": 28
+        }
+      }
+    },
+    {
+      "id": "host-resource-cleanup",
+      "expected": "Hooks restored, owned WC destroyed/debuggers detached, native windows/server gone",
+      "status": "passed",
+      "actual": {
+        "hooks": {
+          "set": true,
+          "ensure": true,
+          "command": true
+        },
+        "after": {
+          "windows": [],
+          "contents": [
+            {
+              "id": 1,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 2,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 3,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 5,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 6,
+              "destroyed": true,
+              "debuggerAttached": false
+            }
+          ],
+          "allRemaining": [
+            {
+              "id": 4,
+              "url": "data:text/html,<title>WillYou browser background</title>"
+            }
+          ],
+          "serverListening": false
+        }
+      }
+    }
+  ],
+  "originalCaseStatus": {
+    "T080": "not counted: no AppA/UI source permission",
+    "T081": "not counted: componentI only; allA and realKeychain/system steps absent"
+  },
+  "failureClassification": {
+    "kind": "actual expectation divergence, inspect criterion raw; do not infer pass from exit0",
+    "ids": [
+      "execute-prehelper-rejection"
+    ]
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "raw": "host.raw.json",
+  "scope": {
+    "cipher": "synthetic AES-256-GCM constructor DI; not OS safeStorage",
+    "source": "own synthetic Chrome v24 Cookies DB and keyProvider; no real Keychain/browser",
+    "native": "actual park window transparent/nonfocus showInactive; hidden real native-opener popup; no active focus or desktop input",
+    "latch": "single actual NativeBrowserCookieStore.set completes then pauses before returning, restored in finally",
+    "notCovered": [
+      "M11 real CLI",
+      "UI approval A",
+      "service-worker CookieStore residual",
+      "real Keychain"
+    ]
+  }
+}

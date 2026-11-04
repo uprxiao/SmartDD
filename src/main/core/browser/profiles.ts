@@ -16,6 +16,7 @@ export class BrowserProfiles {
   private readonly profiles=new Map<string,BrowserProfile>();
   private readonly busy=new Map<string,string>();
   private readonly unavailable=new Map<string,'importing'|'needs-attention'>();
+  private readonly copying=new Set<string>();
   constructor(private readonly options:{sqlite:Database.Database;taskProject:(taskId:string)=>string|null;authorized?:(caller:BrowserProfileCaller,targetTask:string,mode:AccessMode)=>boolean}){
     const row=options.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get(KEY) as {value:string}|undefined;
     if(row){
@@ -65,7 +66,7 @@ export class BrowserProfiles {
   all():BrowserProfile[]{return[...this.profiles.values()];}
   assertAvailable(id:string):void{
     if(this.unavailable.has(id))throw new ApplicationError('BROWSER_UNAVAILABLE',this.unavailable.get(id)==='importing'?'正在导入或恢复登录态':'登录态需要处理，请重试恢复或清空登录态');
-    if(this.busy.has(id))throw new ApplicationError('BROWSER_UNAVAILABLE','登录态正在'+this.busy.get(id)+'，请稍后重试');
+    if(this.busy.has(id)&&!this.copying.has(id))throw new ApplicationError('BROWSER_UNAVAILABLE','登录态正在'+this.busy.get(id)+'，请稍后重试');
   }
   importState(id:string):'ready'|'importing'|'needs-attention'{return this.unavailable.get(id)??'ready';}
   setImportState(id:string,state:'ready'|'importing'|'needs-attention'):void{if(state==='ready')this.unavailable.delete(id);else this.unavailable.set(id,state);}
@@ -75,6 +76,29 @@ export class BrowserProfiles {
     if(this.busy.has(id))throw new ApplicationError('RESOURCE_BUSY','登录态正在'+this.busy.get(id));
     this.busy.set(id,reason);let released=false;
     return()=>{if(!released){released=true;this.busy.delete(id);}};
+  }
+  /** A read-only snapshot excludes import/delete but keeps source documents,
+   * permission checks and ordinary page use alive. Snapshot validation detects
+   * concurrent storage changes rather than unloading the source's forms. */
+  lockForCopy(id:string):()=>void{
+    this.assertAvailable(id);const release=this.lock(id,'复制');this.copying.add(id);let released=false;
+    return()=>{if(released)return;released=true;this.copying.delete(id);release();};
+  }
+  /** The candidate stays invisible until its native data is durable. Optional
+   * host callbacks publish inherited site decisions in the same SQLite commit;
+   * rollback only invalidates their in-memory cache. No caller-supplied policy. */
+  prepareClone(caller:BrowserProfileCaller,sourceId:string){
+    const source=this.require(caller,sourceId);this.assertAvailable(sourceId);
+    const id=randomUUID();let label=source.label;while(label.length>116)label=Array.from(label).slice(0,-1).join('');
+    const profile=browserProfileSchema.parse({id,partition:'persist:wy-browser-'+id,scope:'isolated',label:label+'（副本）',owner:{kind:'task',id:caller.taskId},source:source.source});
+    let published=false;
+    return{profile,publish:(dispatched:()=>void=()=>{},inherit:()=>void=()=>{},invalidate:()=>void=()=>{}):BrowserProfile=>{
+      this.require(caller,sourceId);
+      if(published||this.profiles.has(id))throw new ApplicationError('RESOURCE_STATE_CHANGED','克隆登录态已经提交');
+      try{
+        this.options.sqlite.transaction(()=>{this.profiles.set(id,profile);this.persist(dispatched);inherit();})();published=true;return profile;
+      }catch(error){this.profiles.delete(id);invalidate();throw error;}
+    }};
   }
   setSource(id:string,source:BrowserProfile['source']):void{
     const previous=this.profiles.get(id);if(!previous)throw new ApplicationError('SCOPE_DENIED','登录态不存在');

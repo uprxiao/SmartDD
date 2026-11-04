@@ -1,0 +1,376 @@
+{
+  "group": "M12-P029",
+  "attempt": "003-minimal-missing-execute",
+  "at": "2026-11-04T05:31:24.894Z",
+  "status": "passed-component-I-union-with-observation-limit",
+  "union": {
+    "originalPredicates": 19,
+    "all19Satisfied": true,
+    "reused18": [
+      {
+        "id": "actual-chain-ready",
+        "status": "passed"
+      },
+      {
+        "id": "no-activation-boundary",
+        "status": "passed"
+      },
+      {
+        "id": "real-source-DI",
+        "status": "passed"
+      },
+      {
+        "id": "real-postset-latch",
+        "status": "passed"
+      },
+      {
+        "id": "all-pages-unloaded",
+        "status": "passed"
+      },
+      {
+        "id": "old-documents-stopped",
+        "status": "passed"
+      },
+      {
+        "id": "pending-http-cancelled",
+        "status": "passed"
+      },
+      {
+        "id": "gate-active",
+        "status": "passed"
+      },
+      {
+        "id": "profile-delete-busy",
+        "status": "passed"
+      },
+      {
+        "id": "placeholder-not-persisted",
+        "status": "passed"
+      },
+      {
+        "id": "reload-same-identities",
+        "status": "passed"
+      },
+      {
+        "id": "native-opener-preserved",
+        "status": "passed"
+      },
+      {
+        "id": "unsaved-old-form-unloaded",
+        "status": "passed"
+      },
+      {
+        "id": "import-cookie-effects",
+        "status": "passed"
+      },
+      {
+        "id": "session-B-isolation",
+        "status": "passed"
+      },
+      {
+        "id": "import-ready-and-committed",
+        "status": "passed"
+      },
+      {
+        "id": "necessary-source-failure-closed",
+        "status": "passed"
+      },
+      {
+        "id": "host-resource-cleanup",
+        "status": "passed"
+      }
+    ],
+    "priorEvidence": {
+      "path": "../attempt-002/result.json",
+      "manifestSha256": "24be93a416d015119df980e35fad9d9339dc7a69ad3d91dc2503503e7514e833"
+    },
+    "completedPredicate": "execute-prehelper-rejection",
+    "actualMissingPredicateChecks": [
+      {
+        "id": "valid-real-command",
+        "expected": "Catalog registered get+what:title reaches actual service during real postsetlatch and rejects BROWSER_UNAVAILABLE",
+        "status": "passed",
+        "actual": {
+          "during": {
+            "url": "about:blank",
+            "pageId": "54cc0625-f33f-46c4-8e11-36e84e0d0f64",
+            "contentsId": 1,
+            "importPaused": true,
+            "profileState": "importing",
+            "command": "get",
+            "args": {
+              "what": "title",
+              "page": "54cc0625-f33f-46c4-8e11-36e84e0d0f64"
+            },
+            "helperCallsBefore": 0,
+            "status": "rejected",
+            "error": {
+              "name": "ApplicationError",
+              "code": "BROWSER_UNAVAILABLE",
+              "message": "正在导入或恢复登录态",
+              "stack": "ApplicationError: 正在导入或恢复登录态\n    at BrowserProfiles.assertAvailable (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:7509:42)\n    at Object.available (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:15235:110)\n    at BrowserWorkspace.ensure (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:8245:31)\n    at BrowserWorkspace.target (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:8264:29)\n    at BrowserService.executeScoped (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:15438:90)\n    at BrowserService.execute (/private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:15306:48)\n    at /private/tmp/willyou-m12-p029-executor-001/attempt-003/build/host.cjs:16052:40"
+            },
+            "helperDiagnostic": {
+              "initialized": false,
+              "hasActive": false,
+              "hasDaemon": false,
+              "cleanup": null,
+              "session": "wy-kec4f5412391e4ed5b1792bb8f377431a",
+              "socketDirectory": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa",
+              "sockets": [
+                {
+                  "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.pid",
+                  "exists": false
+                },
+                {
+                  "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.sock",
+                  "exists": false
+                },
+                {
+                  "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.stream",
+                  "exists": false
+                }
+              ]
+            },
+            "helperCallsAfter": 0,
+            "nativeMetrics": [
+              {
+                "pid": 252,
+                "type": "Browser"
+              },
+              {
+                "pid": 253,
+                "type": "GPU"
+              },
+              {
+                "pid": 254,
+                "type": "Utility"
+              },
+              {
+                "pid": 257,
+                "type": "Tab"
+              },
+              {
+                "pid": 256,
+                "type": "Tab"
+              },
+              {
+                "pid": 262,
+                "type": "Tab"
+              }
+            ]
+          },
+          "events": [
+            {
+              "kind": "latch-after-real-W-set"
+            },
+            {
+              "kind": "debugger-detach",
+              "id": 3,
+              "reason": "target closed"
+            },
+            {
+              "kind": "contents-destroyed",
+              "id": 3
+            }
+          ],
+          "completed": true
+        }
+      },
+      {
+        "id": "no-helper-launch",
+        "expected": "Actual passive ensureSession/command0, no initialized/active/daemon/socket and ownedps has nohelper",
+        "status": "passed",
+        "actual": {
+          "diagnostic": {
+            "initialized": false,
+            "hasActive": false,
+            "hasDaemon": false,
+            "cleanup": null,
+            "session": "wy-kec4f5412391e4ed5b1792bb8f377431a",
+            "socketDirectory": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa",
+            "sockets": [
+              {
+                "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.pid",
+                "exists": false
+              },
+              {
+                "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.sock",
+                "exists": false
+              },
+              {
+                "path": "/private/tmp/wy-ab-294a46cdd0fb36913c23c3aa/wy-kec4f5412391e4ed5b1792bb8f377431a.stream",
+                "exists": false
+              }
+            ]
+          },
+          "helperCalls": [],
+          "ownedProcesses": [
+            {
+              "at": "2026-11-04T05:29:21.217Z",
+              "processes": [
+                {
+                  "pid": 252,
+                  "ppid": 250,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+                },
+                {
+                  "pid": 253,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 254,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 256,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+                },
+                {
+                  "pid": 257,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+                }
+              ],
+              "listeners": "COMMAND  PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 252 liubu   31u  IPv4 0x99d7f48cd407511a      0t0  TCP 127.0.0.1:49483 (LISTEN)\nElectron 252 liubu   71u  IPv4 0xb40473ed709c1b95      0t0  TCP 127.0.0.1:49484 (LISTEN)\n"
+            },
+            {
+              "at": "2026-11-04T05:29:21.329Z",
+              "processes": [
+                {
+                  "pid": 252,
+                  "ppid": 250,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+                },
+                {
+                  "pid": 253,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 254,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 256,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+                },
+                {
+                  "pid": 257,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+                }
+              ],
+              "listeners": "COMMAND  PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 252 liubu   31u  IPv4 0x99d7f48cd407511a      0t0  TCP 127.0.0.1:49483 (LISTEN)\nElectron 252 liubu   71u  IPv4 0xb40473ed709c1b95      0t0  TCP 127.0.0.1:49484 (LISTEN)\n"
+            },
+            {
+              "at": "2026-11-04T05:29:21.389Z",
+              "processes": [
+                {
+                  "pid": 252,
+                  "ppid": 250,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+                },
+                {
+                  "pid": 253,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 254,
+                  "ppid": 252,
+                  "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+                },
+                {
+                  "pid": 256,
+                  "ppid": 252,
+                  "comm": "(Electron Helper )"
+                },
+                {
+                  "pid": 257,
+                  "ppid": 252,
+                  "comm": "(Electron Helper )"
+                },
+                {
+                  "pid": 262,
+                  "ppid": 252,
+                  "comm": "(Electron Helper )"
+                }
+              ],
+              "listeners": ""
+            }
+          ]
+        }
+      }
+    ],
+    "frozenProduction": {
+      "inputs": 1526,
+      "allHashesUnchanged": true
+    }
+  },
+  "resourceRelease": {
+    "at": "2026-11-04T05:31:24.895Z",
+    "released": true,
+    "actualProcessPortSocketClear": true,
+    "evidence": "cleanup.json",
+    "boundary": "Electron quit after last native window destruction before async final snapshot save; explicit final WC/debugger snapshot absent. Exact App and all descendants absent plus sockets/listeners gone proves no remaining live owned resources; no claim explicit last close callback observed"
+  },
+  "retainedInstrumentationLimit": {
+    "originalResult": "result.original-judge.json",
+    "originalJudge": "adjudicate-original.mjs",
+    "missing": "Final live WC/debugger closed callback snapshot was not saved after last park window destruction caused Electron automatic exit. No claim explicit finalclose callback was observed.",
+    "actualFacts": {
+      "hostRawStage": "cleanup",
+      "completed": true,
+      "importResult": {
+        "domains": [
+          "127.0.0.1"
+        ],
+        "totalCookies": 1,
+        "importedCookies": 1,
+        "skippedCookies": 0,
+        "googleCookiesSkipped": 0,
+        "partitionSkippedCookies": 0,
+        "preservedTargetCookies": 0,
+        "reloadedPages": 1
+      },
+      "hooksRestored": {
+        "set": true,
+        "ensure": true,
+        "command": true
+      },
+      "exactOwnedPidsAbsent": true,
+      "allNumericPortsClosed": true,
+      "helperSocketsAbsent": true
+    },
+    "effectOnBusiness": "Both new business predicates have complete saved actual raw output before exit; prior direct WC/debugger cleanup criterion remains valid from attempt002 unchanged service baseline. External PID/port/socket checks establish no remaining owned native resources; no business replay."
+  },
+  "corrections": [
+    {
+      "attempt": "001",
+      "classification": "own SQLfixture precondition",
+      "actual": "15 columns/16 placeholders failed before BrowserService construction; original88file manifest retained"
+    },
+    {
+      "attempt": "002",
+      "classification": "internalcommand invocation fixture gap and checker assumption",
+      "actual": "get title not registered; correct get+what:title tested in003. Uninitialized helper closeOwned returns without cleanup record, zero lifecycle calls and initialized/daemon/socket/ownedtree now directly checked."
+    }
+  ],
+  "originalCaseStatus": {
+    "T080": "not counted; no AppA/system source selection",
+    "T081": "not counted; no AppA/realKeychain/importapproval"
+  },
+  "unverified": [
+    "postfreeze coordinator failure-while-reading-pending recovery branch",
+    "service-worker CookieStore residual risk",
+    "realChrome/Edge/keychain/OS cipher",
+    "packagedAppUIA/M11CLI"
+  ],
+  "independentJudgment": "Based on saved native effects/stdout/error fields and external owned-resource checks, not driver exit0."
+}
