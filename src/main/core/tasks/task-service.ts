@@ -134,6 +134,11 @@ export class TaskService {
   private adapter(runner: ResolvedProfile['runner']) { return this.runnerAdapters.get(runner); }
 
   /** Startup-only composition: no live or preparing task can switch registries. */
+  /** Null unless the task is running and resuming would let its Agent see a changed application. */
+  resumeAdvice(id: string): import('@shared/tasks').TaskResumeAdvice | null {
+    if (!this.running.has(id)) return null;
+    try { return this.d.managedCapabilities?.resumeAdvice?.(id) ?? null; } catch { return null; }
+  }
   attachManagedCapabilities(launcher: TaskCapabilityLauncher): void {
     if (this.closed || this.running.size || this.launching.size || this.opening.size || this.managed.size || this.d.managedCapabilities && this.d.managedCapabilities !== launcher) throw new Error('任务运行时已经固定，不能替换');
     this.d.managedCapabilities = launcher;

@@ -166,7 +166,7 @@ describe('actual production application forms with explicit RPC fixtures',()=>{
   fireEvent.click(screen.getByRole('button',{name:'添加连接'}));fill();fireEvent.click(screen.getByRole('button',{name:'测试连接'}));await screen.findByText('身份验证通过，可保存连接');fireEvent.click(screen.getByRole('button',{name:'保存连接'}));
   await screen.findByText('Fixture list refresh failed');expect(screen.queryByRole('dialog')).toBeNull();expect(m.saveConnection).toHaveBeenCalledTimes(1);expect(connections.filter(c=>c.id===saved.id)).toEqual([saved]);
   failRefresh=false;fireEvent.click(screen.getByRole('button',{name:'重试'}));await screen.findByRole('button',{name:'管理Saved once'});
-  const notice=screen.getByText(/还需要在项目中选用/);expect(notice.textContent).toContain('新建任务');fireEvent.click(screen.getByRole('button',{name:'去项目中选用'}));expect(navigation.applicationPage).toBe('projects');
+  const notice=screen.getByText(/还需要在项目中选用/);expect(notice.textContent).toContain('选用后即可在任务中使用');fireEvent.click(screen.getByRole('button',{name:'去项目中选用'}));expect(navigation.applicationPage).toBe('projects');
   expect(m.saveConnection).toHaveBeenCalledTimes(1);expect(m.testConnection).toHaveBeenCalledTimes(1);expect(m.discardConnectionTest).not.toHaveBeenCalled();expect(connections.filter(c=>c.id===saved.id)).toEqual([saved]);
  });
  it('separately replaces one reading slot and clears the sender without changing the other slot',async()=>{

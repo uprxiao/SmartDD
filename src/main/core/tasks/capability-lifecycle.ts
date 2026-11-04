@@ -34,4 +34,5 @@ export interface TaskCapabilityLauncher {
   }): Promise<TaskCapabilityLaunch>;
   tombstone(taskId: string): Promise<void>;
   activeTaskIds?(projectId: string): ReadonlySet<string>;
+  resumeAdvice?(taskId: string): import('@shared/tasks').TaskResumeAdvice | null;
 }

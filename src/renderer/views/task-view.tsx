@@ -26,6 +26,7 @@ import { cssVar } from '@renderer/utils/cssVars';
 import { cn } from '@renderer/utils/utils';
 import { InjectionFailure } from './capabilities';
 import { ArchivedTaskNotice } from './task-archive';
+import { ResumeAdviceNotice } from './resume-advice';
 import { FILE_TERMINAL_DRAG_TYPE, currentFileTerminal, dropFileToTerminal, registerFileTerminal } from '@renderer/features/files/terminal-context/store';
 
 function xtermTheme() {
@@ -51,6 +52,7 @@ export const TaskView = observer(function TaskView() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       {task?.runtimeSnapshot?.selfCheck.status === 'failed' && <InjectionFailure snapshot={task.runtimeSnapshot} />}
+      {task && <ResumeAdviceNotice task={task} />}
       <div data-testid="task-area" className="relative min-h-0 flex-1 bg-(--xterm-bg)">
         {terminals.map(([taskId, ptyId]) => (
           <TaskTerminal key={ptyId} taskId={taskId} ptyId={ptyId} readOnly={tasksStore.byId.get(taskId)?.archivedAt != null} visible={navigation.currentViewId === 'task' && task?.id === taskId} />

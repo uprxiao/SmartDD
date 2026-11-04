@@ -205,6 +205,13 @@ describe('M11 R1.0 library launch through the production task entry',()=>{
   const argv=launch.args!.join(' ');expect(argv).not.toContain('wy_cli_');expect(argv).not.toContain('skills.config');expect(argv).toMatch(/mcp_servers\.[A-Za-z0-9_-]+\.command=/);
   expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(managedSkills()).toEqual([]);
  });
+ it('S5: advises a resume only where the Agent cannot see the new application in the running session',async()=>{
+  const codex=await create(),claude=await create(claudeId);
+  expect(tasks.resumeAdvice(codex.task.id)).toBeNull();expect(tasks.resumeAdvice(claude.task.id)).toBeNull();
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  // Codex 0.166.0 reaches the CLI-primary capability next turn; Claude Code reads Skills only after a resume.
+  expect(tasks.resumeAdvice(codex.task.id)).toBeNull();expect(tasks.resumeAdvice(claude.task.id)?.applications).toHaveLength(1);
+ });
  it('serves Claude Code 2.1.303 from the library with an MCP config and no per-task plugin directory',async()=>{
   await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const running=await create(claudeId),launch=ptys.launches[0],saved=(await managed.sessions.get(running.task.id)).snapshot;

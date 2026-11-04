@@ -152,6 +152,26 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     catch(error){if(!this.recoveryWarnings.some(w=>w.homeId==='skill-library'))this.recoveryWarnings.push({homeId:'skill-library',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
   }
   skillLibraryConflicts(){return this.library?.conflicts()??[];}
+  /**
+   * R1.0 §3.5: applications enabled or upgraded since this library run started that its Agent sees only after a
+   * resume (declared per Agent: in-session Skill reload, in-session MCP reload). Removals need no resume.
+   */
+  resumeAdvice(taskId:string):import('@shared/tasks').TaskResumeAdvice|null{
+    for(const entry of this.active.values()){
+      const record=this.runs.get(entry.run.runId);if(record.taskId!==taskId||record.state!=='active')continue;
+      const context=this.runs.bridgePreparation(entry.run.runId),plan=context.plan;if(!plan)return null;
+      if(this.support.adapters.get(context.snapshot.adapterBinding.hash).metadata.skillDelivery!=='library')return null;
+      const library=this.support.adapters.deliveryAdapters.get(context.snapshot.runner).library,names:string[]=[];
+      for(const app of this.selectedApps(context.snapshot.projectId)){
+        if(plan.applications.some(a=>a.appId===app.appId&&a.packageHash===app.packageHash))continue;
+        const manifest=this.applications.builtin.retainedMetadata(app.packageHash).manifest;
+        const usesMcp=builtinApplicationModules.capabilityViews(manifest).some(c=>selectCapabilityEntry(c,{mcp:true,cli:plan.grades.cli}).entry==='mcp');
+        if(!library.skillsReloadInSession||usesMcp&&!library.mcpReloadInSession)names.push(builtinApplicationModules.module(app.appId).presentation.displayName);
+      }
+      return names.length?{applications:names}:null;
+    }
+    return null;
+  }
   private shared(agentId:string){return this.support.adapters.deliveryAdapters.shared(agentId);}
   private cliAvailability(taskId:string):RunPlanAvailability{const policy=this.planningCliPolicies.get(taskId);return{mcp:true,cli:this.cliReady&&policy?.available===true,reason:policy?.available?undefined:policy&&'reason'in policy?policy.reason:'cli-entry-unavailable'};}
   private skillSources(snapshot:CapabilitySessionSnapshot,scope?:readonly string[],independent=false,standards?:readonly string[]){return snapshot.schema===2?this.projector.sourceSkills(snapshot,scope,independent,standards):this.projector.sourceSkills(snapshot,scope,independent,standards,this.cliAvailability(snapshot.taskId));}

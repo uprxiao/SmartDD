@@ -77,3 +77,6 @@ export function matchTask(t: Pick<TaskView, 'title' | 'firstMessage' | 'projectN
   const hay = `${t.title}\n${t.firstMessage}\n${t.projectName ?? ''}`.toLowerCase();
   return words.every((w) => hay.includes(w));
 }
+
+/** M11 R1.0 S5: applications changed since this run started that this Agent only sees after resuming the session. */
+export interface TaskResumeAdvice { applications: string[] }

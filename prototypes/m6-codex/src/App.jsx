@@ -22,7 +22,7 @@ import { CapabilitiesPanel } from './CapabilitiesPanel';
 import { ConfirmDialog } from './PreviewUI';
 import { makeProject } from './preview-model.mjs';
 import { useVoicePreview, textareaTarget, VoiceFeedback, VoiceSettings, VoiceDemoDialog } from './VoicePreview';
-import { Mic } from 'lucide-react';
+import { Mic, RotateCcw } from 'lucide-react';
 import './parity.css';
 import { ArrowLeft, Bot, Clock3, Download, GitBranch, History, House, LayoutGrid, Link2, Settings } from 'lucide-react';
 import { FitAddon } from '@xterm/addon-fit';
@@ -40,6 +40,22 @@ const CLI = { claude: 'Claude Code', codex: 'Codex' };
 const id = () => 'preview-' + Math.random().toString(36).slice(2, 9);
 const terminalTheme = dark => ({ background: dark ? '#181818' : '#ffffff', foreground: dark ? '#e3e3e3' : '#242424', cursor: dark ? '#eee' : '#292929', selectionBackground: dark ? '#494949' : '#dce5ef', black: '#202020', red: '#db6464', green: dark ? '#81c995' : '#298448', yellow: dark ? '#e4bb74' : '#9a6a17', blue: dark ? '#91b8f0' : '#3669a3', magenta: dark ? '#ca9ee6' : '#9863b7', cyan: dark ? '#7bc4cb' : '#318a94', white: '#e4e4e4', brightBlack: '#858585' });
 
+/** M11 R1.0 §3.5 synthetic preview (?m11Resume=1): same wording and confirm flow as the App's ResumeAdviceNotice. */
+function ResumeAdvicePreview({ notify }) {
+  const [visible, setVisible] = useState(() => new URLSearchParams(location.search).get('m11Resume') === '1');
+  const [confirm, setConfirm] = useState(false);
+  if (!visible) return null;
+  return <>
+    <div role="status" className="task-resume-advice" style={{display:'flex',alignItems:'center',gap:12,padding:'8px 16px',fontSize:13,borderBottom:'1px solid var(--border)',background:'var(--surface)'}}>
+      <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>应用已更新（邮件），恢复会话后生效</span>
+      <button type="button" className="button secondary" onClick={() => setConfirm(true)}><RotateCcw size={14} />恢复</button>
+    </div>
+    {confirm && <Dialog title="恢复会话" onClose={() => setConfirm(false)}>
+      <p className="m10-modal-copy">恢复会结束当前终端进程并按原会话重新打开，对话上下文保留；如果 Agent 正在回复，当前回复会被中断。</p>
+      <div className="dialog-footer"><button type="button" className="button secondary" onClick={() => setConfirm(false)}>取消</button><button type="button" className="button primary" onClick={() => { setConfirm(false); setVisible(false); notify('已按原会话恢复 · 合成演示'); }}>恢复</button></div>
+    </Dialog>}
+  </>;
+}
 function IconButton({ icon: Icon, label, onClick, className = '', ...props }) {
   return <button type="button" className={'icon-button ' + className} aria-label={label} title={label} onClick={onClick} {...props}><Icon size={17} strokeWidth={1.65} /></button>;
 }
@@ -381,6 +397,7 @@ export function App() {
       {route === 'home' && <ReferenceHome preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={profiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} />}
       {route === 'scheduled' && <section className="scheduled-placeholder" aria-label="定时任务规划"><span className="scheduled-clock" aria-hidden="true">🕗</span><h1>安排任务</h1><p>定时执行项目任务，让重复的工作按计划完成。</p><span className="scheduled-planned">功能规划中</span><p className="scheduled-note">已列入后续需求，本轮保留入口。暂不创建或执行定时任务。</p><button className="text-button" onClick={() => nav('home')}>返回工作台<ArrowRight size={14} /></button></section>}
       {task && <section className="task-page">
+        {task.status === 'running' && <ResumeAdvicePreview key={task.id} notify={notify} />}
         <TerminalPreview key={task.id + task.profile} task={task} profile={profiles.find(p => p.id === task.profile)} project={{ ...taskProject, path: task.cwd || taskProject.path }} dark={dark} fontSize={fontSize} fontFamily={fontFamily} voiceTarget={terminalVoiceTarget} integrationData={integration.data} integrationReference={integrationReference} onIntegrationReferenceHandled={ok => { setIntegrationReference(null); notify(ok ? '已插入终端输入，未发送。' : '终端不可用，引用未插入。'); }} />
         {task.archived && <div className="task-archive-notice"><Archive size={16} /><span>会话已归档</span><button className="text-button" onClick={() => archiveTask(task, false)}><ArchiveRestore size={15} />取消归档</button></div>}
         <footer className="task-statusbar"><Status tone={task.status === 'running' ? 'success' : 'muted'}>{task.status === 'running' ? '运行中' : '已停止'}</Status><span>{task.cwd || taskProject.path}</span><span className="push">{tasks.filter(t => t.status === 'running').length} 个运行中 · 演示终端</span><span>UTF-8</span></footer>

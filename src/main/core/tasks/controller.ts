@@ -18,6 +18,7 @@ export function createTaskController(svc: TaskService, requireSender: (event: Ip
       closeSession: (e, id: string) => run(e, () => svc.closeSession(id)),
       delete: (e, id: string) => run(e, () => svc.delete(id)),
       kill: (e, id: string) => run(e, () => svc.kill(id)),
+      resumeAdvice: (e, id: string) => run(e, () => svc.resumeAdvice(id)),
     }),
   };
 }
