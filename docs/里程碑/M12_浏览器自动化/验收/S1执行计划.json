@@ -193,7 +193,7 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P020",
+    "currentGroup": "M12-P029",
     "groups": [
       {
         "id": "M12-P001",
@@ -791,6 +791,149 @@
           "actual native commands and real echo/network",
           "final raw/judge/cleanup/manifest"
         ]
+      },
+      {
+        "id": "M12-P022",
+        "owner": "/root/s2_t004_test",
+        "name": "原T016基本认证完整App A",
+        "status": "deferred before UI input: native window focus unavailable; T016/T026 unexecuted, resources released",
+        "relatedCaseIds": [
+          "M12-T016",
+          "M12-T026"
+        ],
+        "layers": [
+          "A; T026 subset only"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-p022-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p021-build-001/source",
+        "sourceManifestSha256": "44247dcc82197e2cdfe37494597c402245a277f80657ad9ccb20d822c8baa1bb",
+        "package": "/private/tmp/willyou-m12-s2-package-010/mac-arm64/WillYou.app",
+        "asarSha256": "c31b4f706c5ea9a7ba89ab44f47a9ae2935d34543a0c0a6d6438e399a70bd25e",
+        "criteria": [
+          {
+            "id": "M12-T016",
+            "layer": "A",
+            "criteria": [
+              "real address UI opens synthetic HTTP Basic interface and scoped masked user dialog, no automatic submission",
+              "real UI cancellation yields401 and explicit retry login UI succeeds",
+              "restart same isolated App profile does not reuse password or autoauth; fresh prompt and empty user/password"
+            ]
+          },
+          {
+            "id": "M12-T026",
+            "layer": "auth dialog subset only",
+            "criteria": [
+              "if convenient actual terminal full line while auth dialog open and scoped geometry/screenshot; never whole T026"
+            ]
+          }
+        ],
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        }
+      },
+      {
+        "id": "M12-P021",
+        "owner": "/root",
+        "name": "统一App010构建与原生检查",
+        "status": "build complete; UI use deferred separately",
+        "relatedCaseIds": [],
+        "boundary": "engineering sublayers only; original case counts unchanged",
+        "next": "see actual round resource/inputs and execution records"
+      },
+      {
+        "id": "M12-P023",
+        "owner": "/root",
+        "name": "Cookie来源读取/解密软件实现",
+        "status": "software passed; no formal case pass",
+        "relatedCaseIds": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "boundary": "engineering sublayers only; original case counts unchanged",
+        "next": "see actual round resource/inputs and execution records"
+      },
+      {
+        "id": "M12-P024",
+        "owner": "/root",
+        "name": "Cookie替换计划/Native适配软件实现",
+        "status": "30 software checks/typecheck passed; actual protocol in P025",
+        "relatedCaseIds": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "boundary": "engineering sublayers only; original case counts unchanged",
+        "next": "see actual round resource/inputs and execution records"
+      },
+      {
+        "id": "M12-P025",
+        "owner": "/root/s2_t004_test",
+        "name": "Cookie import transaction/page lifecycle staged validation",
+        "status": "component I 11/11 verified; resources independently released; no formal case increment",
+        "relatedCaseIds": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "boundary": "engineering sublayers only; original case counts unchanged",
+        "next": "transaction recovery actual native I after fresh frozen inputs",
+        "originalCases": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
+        "executionRecord": "执行与缺陷记录.md"
+      },
+      {
+        "id": "M12-P027",
+        "name": "Cookie import transaction/page lifecycle staged validation",
+        "owner": "/root/s2_t004_test",
+        "status": "12/12 native transaction component verified; independently cleaned and released",
+        "originalCases": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
+        "executionRecord": "执行与缺陷记录.md",
+        "next": "P029 actual service/page-pause integration after fresh frozen preparation"
+      },
+      {
+        "id": "M12-P026",
+        "name": "Cookie import transaction/page lifecycle staged validation",
+        "owner": "/root",
+        "status": "software verified; original full case still pending",
+        "originalCases": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
+        "executionRecord": "执行与缺陷记录.md",
+        "next": "P029 actual service lifecycle, then packaged UI/full original cases"
+      },
+      {
+        "id": "M12-P028",
+        "name": "Cookie import transaction/page lifecycle staged validation",
+        "owner": "/root",
+        "status": "software verified; original full case still pending",
+        "originalCases": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
+        "executionRecord": "执行与缺陷记录.md",
+        "next": "P029 actual service lifecycle, then packaged UI/full original cases"
+      },
+      {
+        "id": "M12-P029",
+        "name": "Cookie import transaction/page lifecycle staged validation",
+        "owner": "/root/s2_t004_test",
+        "status": "preparing frozen actual service/page lifecycle integration; no native lease",
+        "originalCases": [
+          "M12-T080",
+          "M12-T081"
+        ],
+        "criteriaSource": "测试用例.md；保留全部原判据与层级，组件不计整条",
+        "executionRecord": "执行与缺陷记录.md",
+        "next": "compile/private native dependency preflight and report ready command before lease"
       }
     ],
     "autonomy": {
@@ -823,7 +966,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T03:58:04.174285+00:00",
+    "updatedAt": "2026-11-04T05:11:49.311547+00:00",
     "independentNext": [
       "S4 full profile management/clone and Cookie import/recovery implementation",
       "new unified packaged App for completed certificate/permission/auth/download UI and pending settings acceptance",

@@ -19,7 +19,7 @@ function fixture(){
 }
 describe('encrypted Cookie import recovery journals (software only)',()=>{
   it('preserves the complete before/after set including absent originals without putting tokens in disk plaintext',()=>{
-    const f=fixture();f.store.write(f.journal);const path=f.store.path(f.journal.profileId),disk=readFileSync(path);for(const secret of ['synthetic-before-token','synthetic-after-token','synthetic-new-token'])expect(disk.includes(Buffer.from(secret))).toBe(false);
+    const f=fixture();f.journal.changes[0].before={...f.cookie,priority:'High',sourceScheme:'Secure',sourcePort:443};f.store.write(f.journal);const path=f.store.path(f.journal.profileId),disk=readFileSync(path);for(const secret of ['synthetic-before-token','synthetic-after-token','synthetic-new-token'])expect(disk.includes(Buffer.from(secret))).toBe(false);
     expect(statSync(path).mode&0o777).toBe(0o600);expect(statSync(f.store.directory).mode&0o777).toBe(0o700);expect(readdirSync(f.store.directory)).toEqual([f.journal.profileId+'.bin']);
     const restart=new BrowserImportJournals(f.root,f.cipher);expect(restart.pending()).toEqual([f.journal.profileId]);expect(restart.read(f.journal.profileId)).toEqual(f.journal);
   });

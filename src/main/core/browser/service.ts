@@ -30,6 +30,13 @@ import {BrowserPermissions} from './permissions';
 import {BrowserDownloads} from './downloads';
 import {BrowserAuthentication} from './authentication';
 import {awaitBrowserNavigation} from './navigation-wait';
+import {BrowserImportJournals} from './cookie-import/journal';
+import {BrowserCookieSources} from './cookie-import/sources';
+import {NativeBrowserCookieStore} from './cookie-import/native-store';
+import {BrowserImportCoordinator} from './cookie-import/coordinator';
+import {BrowserImportPagePause} from './cookie-import/page-pause';
+import {safeStorageCipher} from '../../safe-storage-cipher';
+import type {SecretCipher} from '../../secrets';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -53,6 +60,8 @@ export class BrowserService {
   readonly permissions:BrowserPermissions;
   readonly downloads:BrowserDownloads;
   readonly authentication:BrowserAuthentication;
+  readonly cookieSources:BrowserCookieSources;
+  private readonly imports:BrowserImportCoordinator;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
@@ -62,7 +71,7 @@ export class BrowserService {
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
   private reconciling?:Promise<void>;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
     this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
     this.profiles=new BrowserProfiles(options);
     this.siteStates=new BrowserSiteStates(options.sqlite,id=>this.profiles.all().some(profile=>profile.id===id));
@@ -70,7 +79,7 @@ export class BrowserService {
     this.downloads=new BrowserDownloads({directory:()=>app.getPath('downloads'),available:(id,taskId)=>{this.profiles.assertAvailable(id);return!!options.taskProject(taskId)&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.authentication=new BrowserAuthentication({available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.networkPolicy=new BrowserNetworkPolicy({trusted:(id,host)=>this.siteStates.trusted(id,host),failed:(contents,failure)=>{
-      const page=this.pages.all().find(page=>page.contents===contents);if(!page)return;
+      const page=this.pages.all().find(page=>page.contents===contents);if(!page||page.importPaused)return;
       this.certificateFailures.set(page.id,{...failure,challengeId:randomUUID()});this.workspace.certificateFailed(page,failure.url,failure.error);
     }});
     this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,configure:page=>{
@@ -84,12 +93,21 @@ export class BrowserService {
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
     }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
     }});
     this.artifacts=new BrowserArtifacts(join(options.userData,'browser/artifacts'));
+    this.cookieSources=options.cookieImport?.sources??new BrowserCookieSources({temporaryRoot:join(options.userData,'browser/import-source')});
+    const partition=(profile:BrowserProfile)=>session.fromPartition(profile.partition);
+    const pause=new BrowserImportPagePause({pages:this.pages,session:partition,address:page=>page.hostNavigation??this.workspace.list(page.taskId).find(tab=>tab.pageId===page.id)?.url??page.contents.getURL(),changed:taskId=>options.changed?.(taskId)});
+    this.imports=new BrowserImportCoordinator({profiles:this.profiles,journals:new BrowserImportJournals(options.userData,options.cookieImport?.cipher??safeStorageCipher),sources:this.cookieSources,
+      open:profile=>NativeBrowserCookieStore.open(partition(profile),contents=>this.networkPolicy.install(contents,profile.id)),
+      hold:profile=>pause.hold(profile),resume:profile=>pause.resume(profile),gate:id=>this.networkPolicy.suspend(id),
+      clear:async profile=>{const target=partition(profile);await target.closeAllConnections();await target.clearData();await target.clearAuthCache();await target.cookies.flushStore();this.siteStates.forget(profile.id);},
+      changed:id=>{for(const page of this.pages.all().filter(page=>page.profileId===id))options.changed?.(page.taskId);},
+    });
   }
   pause(taskId:string,value:boolean):void{
     if(value){
@@ -409,7 +427,7 @@ export class BrowserService {
     }
   }
   private async clearProfile(profile:BrowserProfile):Promise<void>{
-    const partition=session.fromPartition(profile.partition);await partition.closeAllConnections();await partition.clearData();await partition.clearAuthCache();
+    await this.imports.discardAfterDelete(profile);
     this.siteStates.forget(profile.id);this.profiles.forget(profile.id);
   }
   /** UI-only; never part of the browser command module. Bind approval to the
@@ -423,8 +441,13 @@ export class BrowserService {
   }
   profileSiteStates(taskId:string){
     const {projectId}=this.workspace.snapshot(taskId);
-    return this.profiles.list({taskId,projectId}).map(profile=>({profile,state:this.siteStates.snapshot(profile.id)}));
+    return this.profiles.list({taskId,projectId}).map(profile=>({profile,state:this.siteStates.snapshot(profile.id),importState:this.profiles.importState(profile.id)}));
   }
+  private uiProfile(taskId:string,profileId:string):BrowserProfile{const {projectId}=this.workspace.snapshot(taskId);return this.profiles.require({taskId,projectId},profileId,'control');}
+  async importCookieSources(taskId:string){this.workspace.snapshot(taskId);return this.cookieSources.discover();}
+  async importCookies(taskId:string,profileId:string,sourceId:string){const profile=this.uiProfile(taskId,profileId);this.imports.assertImportable(profile.id);return this.imports.import(profile,sourceId);}
+  async recoverCookies(taskId:string,profileId:string){await this.imports.recover(this.uiProfile(taskId,profileId));return this.profileSiteStates(taskId);}
+  async clearCookies(taskId:string,profileId:string){await this.imports.clear(this.uiProfile(taskId,profileId));return this.profileSiteStates(taskId);}
   revokeCertificate(taskId:string,profileId:string,host:string):void{
     const {projectId}=this.workspace.snapshot(taskId);this.profiles.require({taskId,projectId},profileId,'control');this.profiles.assertAvailable(profileId);
     this.siteStates.revokeCertificate(profileId,host);
@@ -453,6 +476,7 @@ export class BrowserService {
   reconcile():Promise<void>{
     if(this.closed)return Promise.resolve();if(this.reconciling)return this.reconciling;
     this.reconciling=(async()=>{
+      await this.imports.initialize();
       await this.workspace.reconcile();let busy=false;
       for(const profile of this.profiles.all()){
         const exists=profile.owner.kind==='task'?this.options.taskProject(profile.owner.id)!==null:!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(profile.owner.id);

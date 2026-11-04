@@ -63,11 +63,13 @@ export async function cycleOwnInstallation({dmg,appRoot,userData,home,state,cwd,
 // Initial activation of a newly launched own App only, before its input guard.
 // Never applied to an instance whose guard yielded; that instance is terminal.
 export async function focusNewInstalledWindow(app,userData,result){
- const before=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})');
+ const state=async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),nativeWindowFocused:await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own new installed U required');return E.BrowserWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused())})()`)});
+ const before=await state();
  const record={pid:app.processId,before,requested:false};(result.installationInitialFocus??=[]).push(record);
- if(!before.focused){
+ if(!before.focused||!before.nativeWindowFocused){
   await app.mainEvaluate(`(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Own new installed U required');const windows=E.BrowserWindow.getAllWindows();if(windows.length!==1)throw Error('One own newly launched installed window required');windows[0].show();E.app.focus({steal:false});windows[0].focus();windows[0].webContents.focus();return true})()`);record.requested=true;
-  await app.waitFor('document.hasFocus()&&document.visibilityState==="visible"',4000);
  }
- record.after=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})');assert(record.after.focused&&record.after.visibility==='visible');
+ const deadline=Date.now()+4000;
+ do{record.after=await state();if(record.after.focused&&record.after.nativeWindowFocused&&record.after.visibility==='visible')return;await new Promise(resolve=>setTimeout(resolve,40));}while(Date.now()<deadline);
+ throw Object.assign(new Error('The new isolated App did not receive native window focus; defer UI input until the user is available.'),{code:'APP_FOCUS_YIELDED'});
 }

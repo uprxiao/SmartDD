@@ -15,6 +15,7 @@ type AccessMode='observe'|'control';
 export class BrowserProfiles {
   private readonly profiles=new Map<string,BrowserProfile>();
   private readonly busy=new Map<string,string>();
+  private readonly unavailable=new Map<string,'importing'|'needs-attention'>();
   constructor(private readonly options:{sqlite:Database.Database;taskProject:(taskId:string)=>string|null;authorized?:(caller:BrowserProfileCaller,targetTask:string,mode:AccessMode)=>boolean}){
     const row=options.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get(KEY) as {value:string}|undefined;
     if(row){
@@ -63,8 +64,11 @@ export class BrowserProfiles {
   known(id:string):BrowserProfile|undefined{return this.profiles.get(id);}
   all():BrowserProfile[]{return[...this.profiles.values()];}
   assertAvailable(id:string):void{
+    if(this.unavailable.has(id))throw new ApplicationError('BROWSER_UNAVAILABLE',this.unavailable.get(id)==='importing'?'正在导入或恢复登录态':'登录态需要处理，请重试恢复或清空登录态');
     if(this.busy.has(id))throw new ApplicationError('BROWSER_UNAVAILABLE','登录态正在'+this.busy.get(id)+'，请稍后重试');
   }
+  importState(id:string):'ready'|'importing'|'needs-attention'{return this.unavailable.get(id)??'ready';}
+  setImportState(id:string,state:'ready'|'importing'|'needs-attention'):void{if(state==='ready')this.unavailable.delete(id);else this.unavailable.set(id,state);}
   /** One lifecycle mutation per partition; callers must release in finally. */
   lock(id:string,reason:string):()=>void{
     if(!this.profiles.has(id))throw new ApplicationError('SCOPE_DENIED','当前运行无权访问该登录态');

@@ -15,7 +15,7 @@ export {browserProjectProfile} from './profiles';
 export interface BrowserPage {
   id:string;short:string;taskId:string;projectId:string;profileId:string;view:WebContentsView;contents:WebContents;
   proxy:BrowserCdpProxy;helper:BrowserHelper;references:BrowserReferences;queue:BrowserPageQueue;
-  rect:Rectangle;closed:boolean;abort:AbortController;hostNavigation:string|null;
+  rect:Rectangle;closed:boolean;abort:AbortController;hostNavigation:string|null;importPaused?:boolean;
   kind:'tab'|'popup';openerPageId?:string;popupWindow?:BaseWindow;
 }
 type BrowserPopupOptions=BrowserWindowConstructorOptions&{webContents?:WebContents};
@@ -116,9 +116,19 @@ export class BrowserPageRegistry {
     return contents;
   }
   async navigate(page:BrowserPage,url:string,signal?:AbortSignal):Promise<void>{
+    this.options.profiles?.assertAvailable(page.profileId);
+    await this.navigateOwned(page,url,signal);
+  }
+  /** Import coordinator only: keep its lifecycle lock through the reload so
+   * deletion/another import cannot race the final navigation batch. */
+  async resumeAfterImport(page:BrowserPage,url:string,signal:AbortSignal):Promise<void>{
+    if(!page.importPaused)throw new BrowserError('BROWSER_UNAVAILABLE','网页没有待恢复的导入占位状态');
+    page.abort=new AbortController();page.importPaused=false;
+    await this.navigateOwned(page,url,signal);
+  }
+  private async navigateOwned(page:BrowserPage,url:string,signal?:AbortSignal):Promise<void>{
     const navigationSignal=signal?AbortSignal.any([page.abort.signal,signal]):page.abort.signal;
     if(navigationSignal.aborted)throw navigationSignal.reason??new BrowserError('BROWSER_TAB_CLOSED','网页已关闭');
-    this.options.profiles?.assertAvailable(page.profileId);
     let normalized:string;
     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
     const request={};this.navigationRequests.set(page,request);page.references.invalidate();page.hostNavigation=normalized;

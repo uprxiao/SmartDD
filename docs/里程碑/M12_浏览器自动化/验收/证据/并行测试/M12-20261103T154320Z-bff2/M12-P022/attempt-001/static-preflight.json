@@ -1,0 +1,134 @@
+{
+  "at": "2026-11-04T04:14:06.410Z",
+  "group": "M12-P022",
+  "inputs": [
+    {
+      "path": "adjudicate.mjs",
+      "sha256": "2e20517fa6de751769aa23149a7fce2e9912f418230db18b9fbd0bfbf9ad4ed0",
+      "bytes": 6718
+    },
+    {
+      "path": "manifest.mjs",
+      "sha256": "3c643c74e90f9102eaf6c9345579bff9e386519c86e35d9b778b91708cee9361",
+      "bytes": 1059
+    },
+    {
+      "path": "package-baseline.json",
+      "sha256": "b02229380a1367912230a07cae37c03f1a2a3d564ccb664de42c03ff7932cd68",
+      "bytes": 1178
+    },
+    {
+      "path": "preflight.mjs",
+      "sha256": "59dc2eb27672d2021b43b2a535a11def2d67a1c5f7f6673e3123832385c4102c",
+      "bytes": 4544
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "bc4216fc11ec379310e5c709821fff604c6ea4b9b85b4aced13779a61c4782f9",
+      "bytes": 4269
+    },
+    {
+      "path": "prepared.json",
+      "sha256": "8944ee7f4f2b59e6bafb54ff511604cbb9d0841de8ca081eefb2b3b00605af81",
+      "bytes": 505677
+    },
+    {
+      "path": "production-inputs.json",
+      "sha256": "44247dcc82197e2cdfe37494597c402245a277f80657ad9ccb20d822c8baa1bb",
+      "bytes": 501012
+    },
+    {
+      "path": "receiver.py",
+      "sha256": "bbf4f5e80631d76f782338480ad419151b39cfd6f23f2e42bd85f0c0b465f6a0",
+      "bytes": 674
+    },
+    {
+      "path": "run.mjs",
+      "sha256": "8d8c41a469e6be8fa2407b58210592901a5a1123c0dd95cbcf562fc433b161bf",
+      "bytes": 19029
+    },
+    {
+      "path": "verify-cleanup.mjs",
+      "sha256": "825c4790a1afddcff1d2ea6eb1adecda9a8383c42fc0e4900954a5960ac742d2",
+      "bytes": 1524
+    }
+  ],
+  "privateCache": "/private/tmp/willyou-m12-p022-executor-001/cache",
+  "productionInputs": 2769,
+  "asarSha256": "c31b4f706c5ea9a7ba89ab44f47a9ae2935d34543a0c0a6d6438e399a70bd25e",
+  "syntax": [
+    "adjudicate.mjs",
+    "manifest.mjs",
+    "preflight.mjs",
+    "prepare.mjs",
+    "run.mjs",
+    "verify-cleanup.mjs"
+  ],
+  "cdpLiteralPreflight": {
+    "paths": 1,
+    "literalExpressions": 12,
+    "failures": 0,
+    "executed": false,
+    "dynamicTemplates": "not covered"
+  },
+  "dynamicExpressions": [
+    {
+      "kind": "selector",
+      "sha256": "0d6b3d662f9cd269e63630974b52d14930bae1c177fa7e2a62fd63b1f814f7df"
+    },
+    {
+      "kind": "selector",
+      "sha256": "f892088e14ac8983477307d04fac4e460017586970d38b975927ceb5185e0cb8"
+    },
+    {
+      "kind": "selector",
+      "sha256": "cf670b6d7f9ab87e18f00c36cb6e6ff56fa1a9dee444e6879fdead67f5e39253"
+    },
+    {
+      "kind": "own-main",
+      "sha256": "9bb35dd37c452bf035820b6792e75e1c584b1c44a57acc5ee31aa36b7a85018e"
+    },
+    {
+      "kind": "own-main",
+      "sha256": "e979f1966f3e7089a4ff8da621b288538b4c67d9471297dbd618e13622cdf991"
+    },
+    {
+      "kind": "own-main",
+      "sha256": "9d2bdc90b672923c510d9a4a28dcd6c7a0a2d31eaf7c7167707ff4ad8b7fa610"
+    }
+  ],
+  "pythonAst": {
+    "status": 0,
+    "stdout": "receiver AST compiled; not executed\n"
+  },
+  "native": [
+    {
+      "path": "agent-browser/arm64/agent-browser",
+      "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+      "mode": 493,
+      "executable": true
+    },
+    {
+      "path": "native/willyou-app",
+      "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+      "mode": 493,
+      "executable": true
+    },
+    {
+      "path": "native/willyou-process-identity",
+      "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+      "mode": 493,
+      "executable": true
+    }
+  ],
+  "plan": {
+    "originalCase": "T016 full A",
+    "actions": "All accepted navigation/cancel/retry/credential fill/login through real CDP mouse/keyboard UI; RPC only nonaccepted project/profile/receiver setup and read-only browser state",
+    "setup": "AI health completes; one setup reload navigation:true; initial new-instance focus; fresh allowOwnedViews guard; never rearm a yielded guard",
+    "restart": "End only fixture PTY, normal App quit0, same userData/project/task/tab/server; new-instance focus+new guard, actual task/tab click, new empty auth prompt/no Authorization",
+    "secret": "Random Basic password memory-only; UI field records redacted length; server only presence/match; userData/log/evidence canary scans flags only",
+    "cleanup": "Normal quit + exact own App/PTY/PID/listener close; external focus yield saves and ends without refocusing/restarting"
+  },
+  "nativeAppStarted": false,
+  "listenersStarted": false
+}
