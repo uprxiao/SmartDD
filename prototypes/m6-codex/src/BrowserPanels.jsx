@@ -5,16 +5,35 @@ import {
 import { IMPORT_SOURCES, SEARCH_ENGINES, importOutcome } from './browser-prototype-model.mjs';
 
 /** Shared modal shell; reuses the M9 right-workspace dialog classes. */
-export function PanelDialog({ title, subtitle, onClose, children, footer, wide }) {
+export function PanelDialog({ title, subtitle, onClose, children, footer, wide, dismissOnBackdrop = true, closeDisabled = false }) {
   const ref = useRef(null);
   useEffect(() => { ref.current?.querySelector('input, button:not([aria-label="关闭"])')?.focus(); }, []);
-  return <div className="fw-modal-scrim bw-scrim" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+  return <div className="fw-modal-scrim bw-scrim" onMouseDown={event => { if (dismissOnBackdrop && event.target === event.currentTarget) onClose(); }}>
     <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={'fw-dialog bw-dialog' + (wide ? ' bw-dialog-wide' : '')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
-      <div className="bw-dialog-head"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button type="button" className="fw-icon" aria-label="关闭" onClick={onClose}><X size={16} /></button></div>
+      <div className="bw-dialog-head"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button type="button" className="fw-icon" aria-label="关闭" disabled={closeDisabled} onClick={onClose}><X size={16} /></button></div>
       <div className="bw-dialog-body">{children}</div>
       {footer && <div className="fw-dialog-actions bw-dialog-actions">{footer}</div>}
     </div>
   </div>;
+}
+
+/** R04.6 JS dialog states. Values remain synthetic and in component memory. */
+export function JavascriptDialog({ dialog, onRespond }) {
+  const [value, setValue] = useState(dialog.defaultValue), [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const input = useRef(null), confirm = useRef(null);
+  useEffect(() => { if (dialog.kind === 'prompt') { input.current?.focus(); input.current?.select(); } else confirm.current?.focus(); }, [dialog.id, dialog.kind]);
+  const respond = async accept => { if (busy) return; setBusy(true); setError(''); try { await onRespond(accept, accept && dialog.kind === 'prompt' ? value : undefined); } catch (failure) { setError(failure.message); } finally { setBusy(false); } };
+  const title = dialog.kind === 'prompt' ? '网页输入' : dialog.kind === 'confirm' ? '网页确认' : '网页提示';
+  return <PanelDialog title={title} subtitle="https://example.test · 演示合成页面" dismissOnBackdrop={false} closeDisabled={busy} onClose={() => respond(false)} footer={<>
+    {dialog.kind !== 'alert' && <button type="button" disabled={busy} onClick={() => respond(false)}>取消</button>}
+    <button ref={confirm} type="submit" form={'javascript-' + dialog.id} disabled={busy}>确定</button>
+  </>}>
+    <form id={'javascript-' + dialog.id} className="bw-form" onSubmit={event => { event.preventDefault(); respond(true); }}>
+      <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 240, overflowY: 'auto' }}>{dialog.message}</p>
+      {dialog.kind === 'prompt' && <label>输入内容<input ref={input} aria-label="网页输入内容" disabled={busy} value={value} onChange={event => setValue(event.target.value)} /></label>}
+      {error && <p role="alert" className="fw-form-error">{error}</p>}
+    </form>
+  </PanelDialog>;
 }
 
 /** B07 download bar (R01.7, O5). Files are synthetic; actions only report what would happen. */

@@ -1,4 +1,4 @@
-import { BaseWindow, WebContentsView, type BrowserWindow, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
+import { BaseWindow, WebContentsView, session, type Session, type BrowserWindow, type Rectangle, type WebContents, type BrowserWindowConstructorOptions } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { BrowserCdpProxy } from './cdp-proxy';
@@ -31,7 +31,7 @@ export class BrowserPageRegistry {
   private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
   private stopping=false;
   private disposing?:Promise<void>;
-  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;configure?:(page:BrowserPage)=>void}){}
+  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;prepareSession?:(session:Session)=>void;configure?:(page:BrowserPage)=>void}){}
   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
   list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
@@ -62,6 +62,7 @@ export class BrowserPageRegistry {
     const profile=this.options.profiles?.binding(taskId,projectId,profileId),partition=profile?.partition??'persist:wy-browser-'+profileId;
     this.options.profiles?.assertAvailable(profileId);
     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
+    if(this.options.prepareSession)this.options.prepareSession(session.fromPartition(partition));
     const view=new WebContentsView({webPreferences:{partition,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
     const initialized=this.trackInitialization(view.webContents,profileId);
     const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);

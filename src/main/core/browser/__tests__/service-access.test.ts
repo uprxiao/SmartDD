@@ -28,6 +28,15 @@ function fixture(){
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it('routes dedicated and compatibility dialog answers through the owned host without starting a cold Helper',async()=>{
+    const f=fixture(),page=f.page('T1'),helperCommand=vi.fn(async()=>({})),reply=vi.spyOn(f.service.javascriptDialogs,'respondFromAgent').mockImplementation(async(_task,_page,_accept,_text,dispatched)=>{dispatched();return{handled:true as const};});
+    page.helper.command=helperCommand;
+    await expect(f.service.execute(f.scope(),'dialog accept',{text:'accepted-中文'})).resolves.toMatchObject({result:{handled:true}});
+    await expect(f.service.execute(f.scope(),'exec',{command:'dialog dismiss'})).resolves.toEqual({handled:true});
+    expect(reply).toHaveBeenNthCalledWith(1,'T1',page.id,true,'accepted-中文',expect.any(Function));
+    expect(reply).toHaveBeenNthCalledWith(2,'T1',page.id,false,undefined,expect.any(Function));
+    expect(page.helper.ensureSession).not.toHaveBeenCalled();expect(helperCommand).not.toHaveBeenCalled();
+  });
   it('fails an unavailable audit before native work with an honest not-started marker',async()=>{
     const f=fixture(),page=f.page('T1'),scope=f.scope();vi.spyOn(f.service.operations,'begin').mockImplementationOnce(()=>{throw Error('private audit storage path');});const failure=await f.service.execute(scope,'goto',{url:'https://fixture.example/'}).catch(e=>e);expect(failure).toMatchObject({code:'BROWSER_UNAVAILABLE'});expect(isApplicationPreflightFailure(failure,scope.operationId)).toBe(true);expect(String(failure)).not.toContain('private audit');expect(page.helper.ensureSession).not.toHaveBeenCalled();expect(f.service.operations.receipt('R1',scope.requestId)).toEqual({state:'not-found'});
   });

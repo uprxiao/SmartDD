@@ -11,6 +11,7 @@ import {browserRecentTitle,browserRecentVisit} from './recent-sites';
 import type {BrowserPermissionPrompt} from '@shared/browser-site-state';
 import type {BrowserDownload} from '@shared/browser-downloads';
 import type {BrowserAuthPrompt,BrowserAuthCancelled} from '@shared/browser-auth';
+import type {BrowserJavascriptDialog} from '@shared/browser-javascript-dialog';
 
 type Runtime=Pick<BrowserTabState,'loading'|'canGoBack'|'canGoForward'|'failure'>;
 const idle=():Runtime=>({loading:false,canGoBack:false,canGoForward:false,failure:null});
@@ -32,7 +33,7 @@ export class BrowserWorkspace {
   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
   private readonly overlays=new Set<string>();
   private reconciling?:Promise<void>;
-  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};javascriptDialog?:(taskId:string,pageId:string)=>BrowserJavascriptDialog|null;downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
       else if(!this.shuttingDown){
@@ -66,7 +67,7 @@ export class BrowserWorkspace {
     let recent:BrowserWorkspaceState['recent']=[];
     if(row)try{const values:unknown=JSON.parse(row.value);if(Array.isArray(values))recent=values.filter((r):r is BrowserWorkspaceState['recent'][number]=>!!r&&typeof r==='object'&&typeof r.url==='string'&&typeof r.title==='string'&&typeof r.host==='string'&&typeof r.visitedAt==='number').slice(0,8);}catch{/* A bad recent list must not destroy valid tabs. */}
     const found=state.activeId?this.finds.get(state.activeId):undefined,auth=state.activeId?this.options.authentication?.(taskId,state.activeId):undefined;
-    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.activity?{agentActive:this.options.activity(tab.id).active,agentRunning:this.options.activity(tab.id).running}:{}),...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{})};
+    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.activity?{agentActive:this.options.activity(tab.id).active,agentRunning:this.options.activity(tab.id).running}:{}),...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{}),...(this.options.javascriptDialog?{javascriptDialog:state.activeId?this.options.javascriptDialog(taskId,state.activeId):null}:{})};
   }
   certificateFailed(page:BrowserPage,url:string,error:string):void{
     if(page.closed||page.importPaused||this.shuttingDown)return;
@@ -141,10 +142,13 @@ export class BrowserWorkspace {
     const tab=this.load(taskId).tabs.find(t=>t.id===id);if(!tab||tab.url===BROWSER_BLANK_URL||this.runtime.get(id)?.failure||this.options.profileState?.(tab.profileId)!==undefined&&this.options.profileState(tab.profileId)!=='ready')return;
     const page=await this.ensure(taskId,id);if(this.shuttingDown||version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
   }
-  async overlay(taskId:string,id:string,open:boolean):Promise<string|null>{
+  async overlay(taskId:string,id:string,open:boolean,capture=true):Promise<string|null>{
     if(!this.load(taskId).tabs.some(tab=>tab.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
     if(!open){this.overlays.delete(id);return null;}
     this.overlays.add(id);this.placementVersion++;const page=this.options.pages.list(taskId).find(page=>page.id===id);if(!page)return null;
+    // A JavaScript dialog can block renderer capture. Park the native view
+    // first and show the trusted reply surface without waiting for pixels.
+    if(!capture){await this.placement(taskId,id,null);return null;}
     try{
       const image=await page.contents.capturePage(),size=image.getSize(),thumbnail=size.width>1920?image.resize({width:1920}):image;
       await this.placement(taskId,id,null);return'data:image/jpeg;base64,'+thumbnail.toJPEG(80).toString('base64');

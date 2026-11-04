@@ -1,0 +1,73 @@
+{
+  "scope": "Must be actually verified after original cold six; not claimed passed or complete production",
+  "boundaries": [
+    {
+      "id": "pointer-lifecycle",
+      "steps": "Real CLI snapshot and actual click/mousedown on prompt-triggering element; preserve original in-flight result/queue/native event timeline; answer via actual dialog CLI; then real next click and mouseup/release.",
+      "expected": "No duplicate trigger or stuck pointer state; original+next click counts correct; original result/effect honest. Host CDP answer is not proof Helper pending release is cleaned.",
+      "constraint": "No tester direct CDP answer and no silent out-of-band same-page queue exception. If first click blocks dialog queue, retain evidence and raise contract/implementation issue."
+    },
+    {
+      "id": "dispatch-authority",
+      "steps": "Real cold dedicated dialog and exec compatibility dialog; own/cross observe/control, pause/revoke/cancel before send and in-flight scopes.",
+      "expected": "Same write authorization/queue/admission/send marking/receipt semantics; no permission or scope bypass."
+    },
+    {
+      "id": "early-html",
+      "steps": "Prompt in initial inline HTML before load completion, real frame preload installed before page creation; actual early opening plus native CLI response.",
+      "expected": "No silent default cancellation or preload race; navigation/queue outcome honest."
+    },
+    {
+      "id": "frame-concurrency",
+      "steps": "Main/srcdoc/same-origin/cross-origin frames, concurrent frame dialogs and independent pages; record actual CDP session/frameId plus page/profile identity.",
+      "expected": "Reply matches exact current request, no wrong frame/profile; never substitute Native frameToken for CDP frameId."
+    },
+    {
+      "id": "stale-ui-lifecycle",
+      "steps": "Real trusted UI delayed response after navigation/frame detach/close/renderer gone; reopen fresh request then apply old response; profile deletion/switch/import pause/cancel.",
+      "expected": "Old response rejected and cannot answer new dialog; callbacks, source registrations, holds/UI state cleared; current page/profile protected."
+    },
+    {
+      "id": "prompt-payload",
+      "steps": "Explicit empty string, omitted CLI text/default value, quotes/Chinese/multiline input and dismissal.",
+      "expected": "Explicit empty remains empty; default semantics follow confirmed contract and are recorded, no coercion/injection or invented expected value."
+    },
+    {
+      "id": "exec-real-compat-and-empty-state",
+      "argvExamples": [
+        [
+          "browser",
+          "exec",
+          "--command",
+          "dialog accept \"compat-中文\"",
+          "--page",
+          "<actualpageID>"
+        ],
+        [
+          "browser",
+          "exec",
+          "--command",
+          "dialog dismiss",
+          "--page",
+          "<actualpageID>"
+        ],
+        [
+          "browser",
+          "dialog",
+          "accept",
+          "--page",
+          "<no-pending-page>"
+        ]
+      ],
+      "expected": "ActualrealCLI closed/return forcompat; no-pending BROWSER_ERROR/not-started/exit2/noeffect; recordactualoperation.effectState/attempt_count",
+      "status": "Notexecuted, followup afteroriginal6"
+    },
+    {
+      "id": "popup-first-sync-prompt",
+      "steps": "Actualnativewindow.open child inheritedSession withfirstinlineprompt whilechildproxyattaches; openerpanedisplay and actualchildpageID reply; recordactualNative/CDPidentities",
+      "expected": "No droppedearlyrequest,parentpagesubstitution orwrongreply; truechildreturn/closed andopeneridentity",
+      "status": "Mandatoryfollowup,notblockingfirst6"
+    }
+  ],
+  "status": "not executed; first six only before expansion"
+}

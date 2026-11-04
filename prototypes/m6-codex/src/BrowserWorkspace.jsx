@@ -3,7 +3,7 @@ import {
   ArrowLeft, ArrowRight, RotateCw, X, Lock, Info, FileText, Globe, MoreHorizontal, FlaskConical,
   Pause, Play, Bot, Search, Server, AlertTriangle, WifiOff, UserRound, ShieldAlert, Download, KeyRound, Files
 } from 'lucide-react';
-import { DownloadBar, FindBar, PromptBar, HttpAuthDialog, CrossTaskDialog, GrantsDialog, ProfilesDialog, ImportDialog, SettingsDialog } from './BrowserPanels';
+import { DownloadBar, FindBar, PromptBar, HttpAuthDialog, CrossTaskDialog, GrantsDialog, ProfilesDialog, ImportDialog, SettingsDialog, JavascriptDialog } from './BrowserPanels';
 import {
   BLANK_URL, AGENT_HOLD_MS, LOAD_FAILURES, RECOVERY_TEXT, resolveAddress, resolvePage, securityState, hostLabel,
   currentUrl, navigateTab, goBack, goForward, canGoBack, canGoForward, updateTab,
@@ -45,6 +45,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
   const [now, setNow] = useState(Date.now());
   const [findOpen, setFindOpen] = useState(false);
   const [prompt, setPrompt] = useState(null);
+  const [javascriptDialog, setJavascriptDialog] = useState(null);
   const [dialog, setDialog] = useState(null); // 'profiles' | 'import' | 'settings' | 'grants' | { cross request }
   const [importTarget, setImportTarget] = useState('project');
   const [authed, setAuthed] = useState([]);
@@ -58,6 +59,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
   const commandTimer = useRef(null);
 
   useEffect(() => { if (!editing) setDraft(url === BLANK_URL ? '' : url); }, [url, editing, tab?.id]);
+  useEffect(() => { setJavascriptDialog(null); }, [tab?.id]);
   function shortcut(event) {
     if (!(event.metaKey || event.ctrlKey) || event.altKey) return false;
     const key = event.key.toLowerCase();
@@ -257,6 +259,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
       <button type="button" onClick={endDemoRun}>模拟运行结束</button>
       <label><input type="checkbox" checked={offline} onChange={event => { setOffline(event.target.checked); startLoad(); }} />离线</label>
       <span className="bw-demo-break" />
+      {['alert', 'confirm', 'prompt', 'error'].map(kind => <button key={kind} type="button" onClick={() => setJavascriptDialog({ id: 'javascript-' + Date.now(), kind: kind === 'error' ? 'prompt' : kind, fail: kind === 'error', message: kind === 'alert' ? '这是一条合成网页提示。' : kind === 'confirm' ? '确认继续这个合成操作？' : '请输入合成内容。', defaultValue: '合成输入' })}>演示 JS {kind === 'alert' ? '提示' : kind === 'confirm' ? '确认' : kind === 'prompt' ? '输入' : '失败'}</button>)}
       <button type="button" onClick={requestPermission}>模拟站点申请位置</button>
       <button type="button" onClick={() => setPrompt({ type: 'external', url: 'zoommtg://zoom.us/join?confno=000' })}>模拟外部应用链接</button>
       <button type="button" onClick={() => startDownload('日志.zip', true)}>模拟下载失败</button>
@@ -266,6 +269,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
       <button type="button" onClick={() => { setStore(current => markRecoveryFailed(current, profileId, 1)); setStatus('演示：导入恢复失败，当前登录态需要处理'); }}>模拟导入恢复失败</button>
       <span role="status" className="bw-demo-status">{status}</span>
     </div>}
+    {javascriptDialog && <JavascriptDialog key={javascriptDialog.id} dialog={javascriptDialog} onRespond={async (accept, value) => { if (javascriptDialog.fail && accept) throw new Error('演示：原提示已失效，请取消后重新打开。'); setJavascriptDialog(null); setStatus(accept ? '演示：JS 对话框已接受' + (value === undefined ? '' : ' · ' + JSON.stringify(value)) : '演示：JS 对话框已取消'); }} />}
     {page?.kind === 'http-auth' && !authCancelled.includes(page.host) && <HttpAuthDialog host={page.host} onCancel={() => { setAuthCancelled(list => [...list, page.host]); setStatus('已取消基本认证'); }} onSubmit={() => { setAuthed(list => [...list, page.host]); startLoad(); setStatus('已提交基本认证（演示，未保存账号密码）'); }} />}
     {dialog?.type === 'cross' && <CrossTaskDialog request={dialog} onDecide={mode => { if (mode) { onChange(current => grantCrossTask(current, { taskId: dialog.targetId, title: dialog.targetTitle, mode })); setStatus(`已允许本次运行${mode === 'control' ? '操作' : '观察'}「${dialog.targetTitle}」的网页`); } else setStatus('已拒绝跨任务请求，Agent 收到 SCOPE_DENIED'); setDialog(null); }} />}
     {dialog === 'grants' && <GrantsDialog grants={grants} onRevoke={taskId => { onChange(current => revokeCrossTask(current, taskId)); setStatus('已撤销跨任务授权'); }} onClose={() => setDialog(null)} />}

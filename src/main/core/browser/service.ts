@@ -1,3 +1,4 @@
+import {BrowserJavascriptDialogs} from './javascript-dialogs';
 import { ApplicationError } from '@shared/applications';
 import { applicationPreflightFailure } from '../applications/capability-preflight';
 import { BrowserPageRegistry, type BrowserPage } from './page-registry';
@@ -68,6 +69,7 @@ export class BrowserService {
   readonly permissions:BrowserPermissions;
   readonly downloads:BrowserDownloads;
   readonly authentication:BrowserAuthentication;
+  readonly javascriptDialogs:BrowserJavascriptDialogs;
   readonly cookieSources:BrowserCookieSources;
   readonly access:BrowserAccess;
   readonly automation:BrowserAutomation;
@@ -84,7 +86,7 @@ export class BrowserService {
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
   private reconciling?:Promise<void>;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
-  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
+  constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;promptPreloadPath?:string;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
     this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.audit=new BrowserAudit(this.operations);this.importAudit=new BrowserCookieImportAudit(this.operations,options.taskProject);
     this.access=new BrowserAccess({taskProject:options.taskProject,changed:options.accessChanged,audit:event=>this.auditAccess(event)});
     this.automation=new BrowserAutomation({changed:options.changed,ended:runId=>this.access.endRun(runId)});
@@ -94,22 +96,24 @@ export class BrowserService {
     this.permissions=new BrowserPermissions({states:this.siteStates,available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.downloads=new BrowserDownloads({directory:()=>app.getPath('downloads'),available:(id,taskId)=>{this.profiles.assertAvailable(id);return!!options.taskProject(taskId)&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.authentication=new BrowserAuthentication({available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
+    this.javascriptDialogs=new BrowserJavascriptDialogs({preloadPath:()=>options.promptPreloadPath??join(app.getAppPath(),'out/preload/browser-prompt.js'),available:id=>{this.profiles.assertAvailable(id);return !this.closed&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.networkPolicy=new BrowserNetworkPolicy({trusted:(id,host)=>this.siteStates.trusted(id,host),failed:(contents,failure)=>{
       const page=this.pages.all().find(page=>page.contents===contents);if(!page||page.importPaused)return;
       this.certificateFailures.set(page.id,{...failure,challengeId:randomUUID()});this.workspace.certificateFailed(page,failure.url,failure.error);
     }});
-    this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,configure:page=>{
+    this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,prepareSession:session=>this.javascriptDialogs.prepareSession(session),configure:page=>{
       this.networkPolicy.install(page.contents,page.profileId);
       let displayPage=page;const seen=new Set<string>();
       while(displayPage.kind==='popup'&&displayPage.openerPageId&&!seen.has(displayPage.id)){seen.add(displayPage.id);const parent=this.pages.all().find(value=>value.id===displayPage.openerPageId);if(!parent)break;displayPage=parent;}
       this.permissions.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       this.downloads.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
       this.authentication.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
+      this.javascriptDialogs.install({contents:page.contents,proxy:page.proxy,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
     }});
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,activity:id=>this.automation.activity(id),paused:id=>this.automation.paused(id),available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,activity:id=>this.automation.activity(id),paused:id=>this.automation.paused(id),available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),javascriptDialog:(taskId,pageId)=>this.javascriptDialogs.snapshot(taskId,pageId),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
@@ -318,6 +322,17 @@ export class BrowserService {
           }
           if(command==='intercept disable'){send();return{result:this.recordings.get(target)!.disable()};}
           if(command==='intercept list')return{result:this.recordings.get(target)!.list()};
+          // A dialog can already be open before the first Helper connection.
+          // The host owns its real CDP state and can answer without performing
+          // a renderer-dependent kernel connection while JavaScript is blocked.
+          const execDialog=command==='exec'&&execArgs?.[0]==='dialog';
+          if(command==='dialog accept'||command==='dialog dismiss'||execDialog){
+            const action=execDialog?execArgs![1]:command==='dialog accept'?'accept':'dismiss';
+            if(action!=='accept'&&action!=='dismiss'||execDialog&&(action==='dismiss'?execArgs!.length!==2:execArgs!.length<2||execArgs!.length>3))
+              throw new ApplicationError('INVALID_INPUT','dialog只接受accept [text]或dismiss');
+            const value=await this.javascriptDialogs.respondFromAgent(taskId,target.id,action==='accept',execDialog?execArgs![2]:args.text===undefined?undefined:text(args.text),send);
+            return execDialog?this.artifacts.result(scope.taskId,'exec',value):{result:value};
+          }
           await target.helper.ensureSession();
           if(signal.aborted)throw signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
           if(command==='download'){
@@ -567,6 +582,7 @@ export class BrowserService {
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
   }
   respondPermission(taskId:string,id:string,allow:boolean):void{this.workspace.snapshot(taskId);this.permissions.respond(taskId,id,allow);}
+  async respondJavascriptDialog(taskId:string,id:string,accept:boolean,text?:string):Promise<void>{this.workspace.snapshot(taskId);await this.javascriptDialogs.respond(taskId,id,accept,text);}
   respondAuthentication(taskId:string,id:string,credentials:{user:string;pass:string}|null):void{this.workspace.snapshot(taskId);this.authentication.respond(taskId,id,credentials);}
   async retryAuthentication(taskId:string,pageId:string):Promise<void>{
     this.workspace.snapshot(taskId);const page=this.pages.get(taskId,pageId),cancelled=this.authentication.cancelledForPage(taskId,pageId);
@@ -607,5 +623,5 @@ export class BrowserService {
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
     })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;this.access.dispose();this.automation.dispose();clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
+  async dispose():Promise<void>{this.closed=true;this.access.dispose();this.automation.dispose();clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();this.javascriptDialogs.stop();try{await this.pages.dispose();}finally{try{this.javascriptDialogs.dispose();}finally{this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}}}
 }

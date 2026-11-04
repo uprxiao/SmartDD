@@ -1,0 +1,172 @@
+{
+  "at": "2026-11-04T16:00:07.900Z",
+  "group": "M12-P070",
+  "case": "M12-T068",
+  "layer": "I only",
+  "status": "failed-or-partial",
+  "counts": {
+    "total": 6,
+    "passed": 0,
+    "failed": 1,
+    "notExecuted": 5
+  },
+  "checks": [
+    {
+      "id": "alert-accept",
+      "expected": {
+        "id": "alert-accept",
+        "kind": "alert",
+        "action": "accept",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null
+      },
+      "actual": {
+        "id": "p070-alert-accept",
+        "kind": "alert",
+        "action": "accept",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null,
+        "message": "M12 p070-alert-accept",
+        "startedAtMs": 1793807755360,
+        "beforeEventCount": 0,
+        "opening": {
+          "at": 1793807755366,
+          "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+          "contentsId": 1,
+          "method": "Page.javascriptDialogOpening",
+          "params": {
+            "defaultPrompt": "",
+            "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+            "hasBrowserHandler": true,
+            "message": "M12 p070-alert-accept",
+            "type": "alert",
+            "url": "http://127.0.0.1:58236/dialog"
+          }
+        },
+        "response": {
+          "label": "answer-alert-accept",
+          "args": [
+            "browser",
+            "dialog",
+            "accept",
+            "--page",
+            "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+          ],
+          "startedAtMs": 1793807755398,
+          "raw": {
+            "kind": "cli-result",
+            "id": 2,
+            "pid": 80402,
+            "code": 5,
+            "signal": null,
+            "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"agent-browser 执行失败，未返回有效结果\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"e6847f05-ef40-4a55-80df-a048fae9d4ef\",\"requestId\":\"11ac723c-551e-4ac9-93e4-b47cddfcb157\"}\n",
+            "stderr": "willyou-app: BROWSER_ERROR\n",
+            "timedOut": false
+          },
+          "finishedAtMs": 1793807766609,
+          "parsed": {
+            "error": {
+              "effectState": "unknown",
+              "code": "BROWSER_ERROR",
+              "layer": "provider",
+              "message": "agent-browser 执行失败，未返回有效结果",
+              "retryable": false,
+              "attemptCount": 1,
+              "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+              "retryExhausted": false
+            },
+            "operationId": "e6847f05-ef40-4a55-80df-a048fae9d4ef",
+            "requestId": "11ac723c-551e-4ac9-93e4-b47cddfcb157"
+          }
+        }
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "alert-dismiss",
+      "expected": {
+        "id": "alert-dismiss",
+        "kind": "alert",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "confirm-accept",
+      "expected": {
+        "id": "confirm-accept",
+        "kind": "confirm",
+        "action": "accept",
+        "text": null,
+        "expectedType": "boolean",
+        "expectedValue": true
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "confirm-dismiss",
+      "expected": {
+        "id": "confirm-dismiss",
+        "kind": "confirm",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "boolean",
+        "expectedValue": false
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "prompt-accept",
+      "expected": {
+        "id": "prompt-accept",
+        "kind": "prompt",
+        "action": "accept",
+        "text": "accepted-中文",
+        "expectedType": "string",
+        "expectedValue": "accepted-中文"
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "prompt-dismiss",
+      "expected": {
+        "id": "prompt-dismiss",
+        "kind": "prompt",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "object",
+        "expectedValue": null
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    }
+  ],
+  "cleanup": {
+    "expected": "Normal actual root/host exit, ownedNativeWC/debugger/park/Helper/listeners cleaned, no focus",
+    "actual": {
+      "atMs": 1793807766958,
+      "code": 0,
+      "signal": null
+    },
+    "status": "failed",
+    "error": "TypeError: Cannot read properties of undefined (reading 'windows')"
+  },
+  "formalIncrement": 0,
+  "extras": "Not executed by minimal6driver; default/empty/frame/earlyHTML/close lifecycle supplements await actual frozenBackend contract",
+  "boundary": "SSE only triggers realJS; all answers actual nativeCLI→M11/v2→productionBrowserService→fixedHelper. No directCDP/IPC answer, no samepagequeue exception, no modelR/A."
+}
