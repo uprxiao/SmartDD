@@ -27,8 +27,21 @@ export function useBrowserShortcuts(){
       const header=document.querySelector<HTMLButtonElement>('[data-testid=task-new-browser]');
       if(header){event.preventDefault();header.click();}else if(taskId){event.preventDefault();openNewBrowserTab(taskId);}
     };
-    const off=events.on(browserShortcutEvent,event=>{if(event.action==='show'&&navigation.currentViewId==='task'&&tasksStore.current?.id===event.taskId&&!navigation.filePanelOpen)navigation.toggleFilePanel();});
-    document.addEventListener('keydown',key);return()=>{document.removeEventListener('keydown',key);off();};
+    let showGeneration=0;
+    const off=events.on(browserShortcutEvent,event=>{
+      if(event.action!=='show')return;
+      const generation=++showGeneration;
+      const reveal=()=>{
+        const task=tasksStore.byId.get(event.taskId);
+        if(generation!==showGeneration||!task?.projectId||tasksStore.closing.has(event.taskId))return;
+        // Reveal the requested browser without resuming an idle Agent.
+        navigation.openTask(event.taskId);
+        if(!navigation.filePanelOpen)navigation.toggleFilePanel();
+      };
+      if(tasksStore.byId.has(event.taskId))reveal();
+      else void tasksStore.refresh().then(reveal).catch(()=>console.warn('[browser] focused task lookup unavailable'));
+    });
+    document.addEventListener('keydown',key);return()=>{showGeneration++;document.removeEventListener('keydown',key);off();};
   },[]);
 }
 export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=>void}){

@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T11:37:51.098667+00:00",
+  "updatedAt": "2026-11-04T12:06:14.037718+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -23,7 +23,12 @@
   "currentGroup": "M12-P050",
   "resources": {
     "build": null,
-    "nativeUi": null
+    "nativeUi": {
+      "owner": "/root/s2_t004_test",
+      "group": "M12-P056",
+      "attempt": "attempt-003",
+      "status": "App015 current fix allpreflight ready; exclusive actual originalT115 A regression"
+    }
   },
   "groups": [
     {
@@ -2404,18 +2409,20 @@
     {
       "id": "M12-P056",
       "owner": "/root/s2_t004_test",
-      "privateRoot": "/private/tmp/willyou-m12-p056-focus-app-001",
+      "privateRoot": "/private/tmp/willyou-m12-p056-focus-app-003",
       "originalCases": [
         "M12-T115"
       ],
       "layers": [
         "A"
       ],
-      "resources": [],
-      "status": "preparing only; no App/UI/native lease",
-      "baseline": "/private/tmp/willyou-m12-p055-build-001/production-inputs.json",
-      "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
-      "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+      "resources": [
+        "nativeUi"
+      ],
+      "status": "attempt003 newApp015 original contract9criteria/source/dependency ready; execute actual A now",
+      "baseline": "/private/tmp/willyou-m12-p058-build-001/production-inputs.json",
+      "package": "/private/tmp/willyou-m12-s2-package-015/mac-arm64/WillYou.app",
+      "asarSha256": "f4972f89e332609da43920fa693836fc1aa8391604c9f3862dedf7d91d2515fa",
       "criteria": [
         "user actually viewsT2 while T1 synthetic managed Agent true nativeCLI tab create/switch/focus true",
         "create leaves new T1 user tab inactive and no user task switch; ordinary switch no user task switch",
@@ -2425,15 +2432,128 @@
         "P052002 actual terminal binding and exact App014/source usable; no repeatT106 needed"
       ],
       "remaining": [
-        "freeze/preflight private originalT115 driver then lease/run/judge/cleanup"
+        "archive actual product red; newApp015 originalT115 complete regression"
+      ],
+      "preflightSha256": "664666ad90d443e931ba42a66189e36f1c6c25f5de5ea1e5206e61f800215d49",
+      "driverSha256": "e286abea202ede469a03634eaea8bd31992b447a506b7e20997af8fca1f103da",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p056-focus-app-003/cache node /private/tmp/willyou-m12-p056-focus-app-003/run.mjs --execute",
+      "pids": [],
+      "ports": [],
+      "sessions": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "f866739ead956e2420360539fff5e05477c01214f331beab429a5d3632092329",
+          "outcome": "partial driver failure; first create real,2/3 not run; originalraw/judge retained"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "6734dbb94b908cd512edfb46aef399e928ab367b8059c5e33dcc601abc0026dc",
+          "outcome": "productred8/9, explicitfocus UI does not switch; normalcleanup"
+        }
+      ]
+    },
+    {
+      "id": "M12-P057",
+      "owner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-p057-focus-software-001",
+      "resources": [],
+      "relatedCaseIds": [
+        "M12-T115"
+      ],
+      "layers": [
+        "U supplement; original case requires A"
+      ],
+      "criteria": [
+        "explicit show request switches background task/right workspace without starting an Agent",
+        "explicit show from another top-level view, same-task panel stays open",
+        "ordinary shortcuts/deleted or projectless targets do not switch/create/start"
+      ],
+      "status": "exact private candidate applied after actual App014 product red; full3452 source/mode equals48U/webtype verified candidate",
+      "remaining": [
+        "newApp015 actual originalT115 A and affected regression"
+      ],
+      "baseline": "95b222dd production plus new failing shortcuts.test.tsx only",
+      "next": "Do not change App014 source or fudge P056 navigation; retain native red and U red before fix",
+      "candidateRoot": "/private/tmp/willyou-m12-p057-focus-software-002",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "39395883d41827b1e73ae5ed11e80cd1788dbfa35e13ccde14c669527e094deb"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "ad34b1d9a573e3aa0188b9d003183a9d645c3c43a9fc1e03bff243f6168dbae3"
+        }
+      ]
+    },
+    {
+      "id": "M12-P058",
+      "owner": "/root",
+      "resources": [],
+      "privateRoot": "/private/tmp/willyou-m12-p058-build-001",
+      "status": "App015 built,3452 source unchanged,6 native smoke green, exact process cleanup/released",
+      "layers": [
+        "build",
+        "native smoke"
+      ],
+      "criteria": [
+        "exact verified focus route fix, no Agent auto-resume or implicit focus added",
+        "all3452 current frozen source bytes/modes unchanged before/after",
+        "six native smoke and fixed binary identities"
+      ],
+      "remaining": [],
+      "output": "/private/tmp/willyou-m12-s2-package-015",
+      "package": {
+        "at": "2026-11-04T12:01:53.380199+00:00",
+        "package": "/private/tmp/willyou-m12-s2-package-015/mac-arm64/WillYou.app",
+        "sourceCommit": "95b222dd27101673591724487e54845b1ec85008",
+        "sourceManifestSha256": "d58f360cb35f3766c81594fa51e76d51269929cccdd558ddbab480bd76dce4a5",
+        "sourceUnchangedAfter": 3452,
+        "nativeSmoke": "six checks passed, build session75383 exit0",
+        "previewOnly": true,
+        "files": [
+          {
+            "path": "app.asar",
+            "sha256": "f4972f89e332609da43920fa693836fc1aa8391604c9f3862dedf7d91d2515fa",
+            "mode": 420
+          },
+          {
+            "path": "agent-browser/SOURCE.json",
+            "sha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+            "mode": 420
+          },
+          {
+            "path": "agent-browser/arm64/agent-browser",
+            "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+            "mode": 493
+          },
+          {
+            "path": "native/willyou-app",
+            "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+            "mode": 493
+          },
+          {
+            "path": "native/willyou-process-identity",
+            "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+            "mode": 493
+          }
+        ],
+        "boundary": "Current S5 + global explicit focus route fix, no auto resume; originalT115 actual A pending, no Release"
+      },
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "e81f65a346d75ad8a2bcbeb8a40b14607b4f2c2c07ae6e28da31c100cd11297c"
+        }
       ]
     }
   ],
   "next": "P056 originalT115 focus/background A; real cross-task grants/pause/stop and full audit I/A/R, remaining S4 and S6",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
-  "implementationCheckpoint": "1be3456706513da72694ace3875f2a12bd57bc1b",
+  "implementationCheckpoint": "12dd0351",
   "checkpointNote": "Current production close fix committed12dd0351; App014 source/package exact identity P055, no push or Release.",
-  "currentSourceCommit": "12dd0351",
+  "currentSourceCommit": "95b222dd",
   "baselineAmendments": [
     {
       "at": "2026-11-04T02:22:07.169680+00:00",

@@ -1,0 +1,260 @@
+{
+  "at": "2026-11-04T11:54:02.772Z",
+  "group": "M12-P056",
+  "case": "M12-T115",
+  "inputs": [
+    {
+      "path": "judge.mjs",
+      "sha256": "682378309010a7a134535f8b9fd5686e556bbcab68e54449a2d7484a3db820dd",
+      "bytes": 5833
+    },
+    {
+      "path": "package-baseline.json",
+      "sha256": "64e786dadabb9996045528ab56cc9d230791f60d72aad6b0eca081bf7ef4be79",
+      "bytes": 1318
+    },
+    {
+      "path": "preflight.mjs",
+      "sha256": "796d4943dbd535e62e2b1a5985133087ef5cc17db2367f461a72d9ee18ce0101",
+      "bytes": 7327
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "ab184abb1a4c95af1bcacda13ca13be85df2d573d10685e831734f7442680223",
+      "bytes": 5169
+    },
+    {
+      "path": "prepared.json",
+      "sha256": "274d9431a9839d986c4471b4c6fc34025cdfaa0315186a1f1fc7ee27d1ea8667",
+      "bytes": 659069
+    },
+    {
+      "path": "production-inputs.json",
+      "sha256": "b7a017d84651cb7d83625efa259b69be2d440c0a4e316d880dbd88a0ea5ffb2a",
+      "bytes": 639408
+    },
+    {
+      "path": "receiver.py",
+      "sha256": "d807076fd86f281161872bd2648e20ea8dc434a463052f39f80d9a4bf329387f",
+      "bytes": 2884
+    },
+    {
+      "path": "run.mjs",
+      "sha256": "946165842bab9591987ed7a9be95c031b00eab2509e29836003947e43d4a3a29",
+      "bytes": 19368
+    },
+    {
+      "path": "verify-cleanup.mjs",
+      "sha256": "ec2f2cc7bd9456f124414980611581591febbb392a661dbd84142438d769451b",
+      "bytes": 2368
+    }
+  ],
+  "productionInputs": 3451,
+  "sourceManifest": "b7a017d84651cb7d83625efa259b69be2d440c0a4e316d880dbd88a0ea5ffb2a",
+  "driverAndSourceFiles": 27,
+  "privateDependencyHashes": 151,
+  "package": {
+    "app": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "files": [
+      {
+        "path": "app.asar",
+        "sha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+        "mode": 420
+      },
+      {
+        "path": "agent-browser/SOURCE.json",
+        "sha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+        "mode": 420
+      },
+      {
+        "path": "agent-browser/arm64/agent-browser",
+        "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-app",
+        "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-process-identity",
+        "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+        "mode": 493
+      }
+    ],
+    "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345"
+  },
+  "syntax": [
+    "judge.mjs",
+    "preflight.mjs",
+    "prepare.mjs",
+    "run.mjs",
+    "verify-cleanup.mjs"
+  ],
+  "pythonAST": {
+    "status": 0,
+    "stdout": "ASTonlyNoProbeOrReceiverExecuted\n"
+  },
+  "cdpLiteralChecker": {
+    "status": 0,
+    "stdout": "{\"paths\":1,\"literalExpressions\":5,\"failures\":0,\"executed\":false,\"dynamicTemplates\":\"not covered\"}\n"
+  },
+  "recordPushArrayInitializations": [
+    "actions",
+    "checkpoints",
+    "commands",
+    "gates",
+    "requests",
+    "resources",
+    "screenshots"
+  ],
+  "explicitExpressions": [
+    {
+      "name": "visualExpression",
+      "sha256": "158edcc65b463b5720b3a1e2a08fe0a851d80e9574b3aaedbca39541f35d7979"
+    },
+    {
+      "name": "nativeExpression",
+      "sha256": "bdb12c97df155c36182c2d188862ab94f7967ea323fd4dd1b3d9f2fdc620361e"
+    }
+  ],
+  "dynamicSamples": 3,
+  "contracts": [
+    {
+      "id": "browser.tab.create",
+      "command": [
+        "browser",
+        "tab",
+        "create"
+      ],
+      "semantics": "write",
+      "input": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 262144
+          },
+          "task": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 262144
+          },
+          "profile": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 262144
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "usage": "willyou-app browser tab create [--url <url>] [--task <任务ID>] [--profile <id>]",
+      "cases": [
+        "M12-T073",
+        "M12-T105"
+      ],
+      "output": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pageId",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "browser.tab.switch",
+      "command": [
+        "browser",
+        "tab",
+        "switch"
+      ],
+      "semantics": "write",
+      "input": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 262144
+          },
+          "task": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 262144
+          },
+          "focus": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "usage": "willyou-app browser tab switch (--index <n> | --page <id>) [--task <任务ID>] [--focus true]",
+      "cases": [
+        "M12-T073",
+        "M12-T115"
+      ],
+      "output": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "pageId",
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "scope": "OriginalT115completeA, twoactualUIprebuiltpages/T1threeCLI whileT2viewing; firsttwo nofocus/newnotactivated, thirdfocusactualUIrouting. KnownstaticshowroutegapwillremainredifactualUIstillT2; nodriverfallback.",
+  "fixture": "OnlysyntheticAgentwaitsgatefiles beforeeachactualCLI; driveropensafterrealUIRUN/selectT2 andchecksownfocus. NoHost/Helper/pagehookorRPCnavigationwrite. Separateprivateprofilehome/stateT1/T2; version/health/requirementssimulatednotR/OSsandbox.",
+  "nativeStarted": false,
+  "listenersStarted": false,
+  "privateCache": "/private/tmp/willyou-m12-p056-focus-app-002/cache"
+}
