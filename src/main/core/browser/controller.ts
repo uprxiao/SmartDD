@@ -33,5 +33,7 @@ export function createBrowserController(service:BrowserService|undefined,trusted
     continueCertificate:(event,input:{taskId:string;tabId:string;challengeId:string})=>{const s=host(event),v=browserTabInput.extend({challengeId:z.string().uuid()}).strict().parse(input);return s.continueCertificate(v.taskId,v.tabId,v.challengeId);},
     profileSiteStates:(event,input:{taskId:string})=>host(event).profileSiteStates(browserTaskInput.parse(input).taskId),
     revokeCertificate:(event,input:{taskId:string;profileId:string;host:string})=>{const s=host(event),v=browserTaskInput.extend({profileId:z.string(),host:z.string()}).strict().parse(input);s.revokeCertificate(v.taskId,v.profileId,v.host);return s.profileSiteStates(v.taskId);},
+    respondPermission:(event,input:{taskId:string;id:string;allow:boolean})=>{const s=host(event),v=browserTaskInput.extend({id:z.string().uuid(),allow:z.boolean()}).strict().parse(input);s.respondPermission(v.taskId,v.id,v.allow);},
+    revokePermission:(event,input:{taskId:string;profileId:string;origin:string;permission:string})=>{const s=host(event),v=browserTaskInput.extend({profileId:z.string(),origin:z.string(),permission:z.string()}).strict().parse(input);s.revokePermission(v.taskId,v.profileId,v.origin,v.permission);return s.profileSiteStates(v.taskId);},
   });
 }

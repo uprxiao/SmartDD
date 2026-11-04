@@ -26,6 +26,7 @@ import {randomUUID} from 'node:crypto';
 import {BrowserSiteStates} from './site-state';
 import {BrowserNetworkPolicy} from './network-policy';
 import type {BrowserCertificateState} from '@shared/browser-workspace';
+import {BrowserPermissions} from './permissions';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -46,6 +47,7 @@ export class BrowserService {
   readonly settings:BrowserSettings;
   readonly siteStates:BrowserSiteStates;
   readonly networkPolicy:BrowserNetworkPolicy;
+  readonly permissions:BrowserPermissions;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
@@ -59,17 +61,19 @@ export class BrowserService {
     this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
     this.profiles=new BrowserProfiles(options);
     this.siteStates=new BrowserSiteStates(options.sqlite,id=>this.profiles.all().some(profile=>profile.id===id));
+    this.permissions=new BrowserPermissions({states:this.siteStates,available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.networkPolicy=new BrowserNetworkPolicy({trusted:(id,host)=>this.siteStates.trusted(id,host),failed:(contents,failure)=>{
       const page=this.pages.all().find(page=>page.contents===contents);if(!page)return;
       this.certificateFailures.set(page.id,{...failure,challengeId:randomUUID()});this.workspace.certificateFailed(page,failure.url,failure.error);
     }});
     this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,configure:page=>{
       this.networkPolicy.install(page.contents,page.profileId);
+      this.permissions.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
     }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
@@ -382,6 +386,11 @@ export class BrowserService {
     // its accepted TLS memory or erase the profile's Cookie/localStorage.
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
   }
+  respondPermission(taskId:string,id:string,allow:boolean):void{this.workspace.snapshot(taskId);this.permissions.respond(taskId,id,allow);}
+  revokePermission(taskId:string,profileId:string,origin:string,permission:string):void{
+    const {projectId}=this.workspace.snapshot(taskId);this.profiles.require({taskId,projectId},profileId,'control');this.profiles.assertAvailable(profileId);this.siteStates.revokePermission(profileId,origin,permission);
+    for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
+  }
   async preferences(taskId:string){
     this.workspace.snapshot(taskId);return{...this.settings.snapshot(),downloadDirectory:app.getPath('downloads'),artifactBytes:await this.artifacts.usage()};
   }
@@ -408,5 +417,5 @@ export class BrowserService {
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
     })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();await this.pages.dispose();this.networkPolicy.dispose();}
+  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();await this.pages.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
 }

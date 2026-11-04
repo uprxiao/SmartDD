@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-04T02:02:59.535025+00:00",
+  "classification": "private archive utility scope error",
+  "exitCode": 1,
+  "error": "Private key must never enter manifest: node_modules/.pnpm/ssh2@1.17.0/node_modules/ssh2/test/fixtures/bad_rsa_private_key",
+  "cause": "P011 standalone manifest generator was reused without excluding P012 dependency/build directories. Private-key scan correctly stopped before manifest creation on a third-party dependency test fixture. No key bytes were emitted or archived.",
+  "correction": "Traverse only actual evidence; skip node_modules/build/cache/runtime and do not follow symlinks. Retain compiled-host.cjs source snapshot and all93 runtime dependency hashes in metadata.",
+  "actualP012TlsPrivateKeyAbsent": true,
+  "producerOrRawEvidenceChanged": false,
+  "oldGeneratorSha256": "d67d0c5c79fdfe813660488370c5b61d28f1147370d2ade8a7e670d04d1fcd57"
+}

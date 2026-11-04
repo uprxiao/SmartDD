@@ -569,6 +569,64 @@
           "nativeUi": "granted",
           "build": "not allocated"
         }
+      },
+      {
+        "id": "M12-P012",
+        "owner": "/root/s2_t004_test",
+        "status": "native resource granted; awaiting actual process receipt",
+        "name": "actual production certificate/network policy component I",
+        "privateRoot": "/private/tmp/willyou-m12-p012-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p012-baseline-002/baseline.json",
+        "baselineSha256": "7565aa6689e11939b10ef3b9831767384d446c02c0dc8a1c3d8e7ea508515f1a",
+        "preflightSha256": "082362296ac6045d126f3745abac2258dbec9df92fa5c8ff0ff130339e799b08",
+        "relatedCaseIds": [
+          "M12-T012"
+        ],
+        "layers": [
+          "technical I only; no App/A"
+        ],
+        "criteria": [
+          "default untrusted denied; user trust precondition persisted in real SQLite",
+          "warm/fresh revoked endpoints yield zero HTTP requests, Cookie/LS preserved",
+          "nested suspend denies HTTP/HTTPS/no-contents Session.fetch; one release remains blocked; all releases preserve revoked certificate gate",
+          "retrust and profile isolation; dispose owned hooks, DB, windows, both servers and key"
+        ],
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        }
+      },
+      {
+        "id": "M12-P013",
+        "owner": "/root",
+        "name": "站点权限基础与B06/B12软件开发",
+        "status": "software checks passed; original native I/App A pending",
+        "cases": [
+          "M12-T017"
+        ],
+        "layers": [
+          "additional U only"
+        ],
+        "baseline": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P013/attempt-001/004/inputs.json",
+        "privateRoot": "/private/tmp/willyou-m12-p013-permissions-software-004",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P013/attempt-001",
+            "manifestSha256": "0ff4cc83c55235496834ec66f00da15adc913f68d01fc05914d46e2752973e8f",
+            "accounted": true
+          }
+        ],
+        "criteriaSource": "R01.8 / original T017 remains A+I",
+        "remaining": [
+          "actual native permission flow",
+          "actual packaged UI allow/revoke and refresh",
+          "Agent cannot grant site permissions, original scope checks"
+        ],
+        "resources": {
+          "nativeUi": "not allocated",
+          "build": "not allocated"
+        }
       }
     ],
     "autonomy": {
@@ -601,7 +659,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T01:35:47.886770+00:00",
+    "updatedAt": "2026-11-04T02:03:21.084190+00:00",
     "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit"
   }
 }

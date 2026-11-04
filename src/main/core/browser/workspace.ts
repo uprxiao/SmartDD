@@ -8,6 +8,7 @@ import {BrowserPageRegistry,browserProjectProfile,type BrowserPage} from './page
 import {BrowserError} from './errors';
 import {browserFavicon} from './favicon';
 import {browserRecentTitle,browserRecentVisit} from './recent-sites';
+import type {BrowserPermissionPrompt} from '@shared/browser-site-state';
 
 type Runtime=Pick<BrowserTabState,'loading'|'canGoBack'|'canGoForward'|'failure'>;
 const idle=():Runtime=>({loading:false,canGoBack:false,canGoForward:false,failure:null});
@@ -29,7 +30,7 @@ export class BrowserWorkspace {
   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
   private readonly overlays=new Set<string>();
   private reconciling?:Promise<void>;
-  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
       else if(!this.shuttingDown){
@@ -63,7 +64,7 @@ export class BrowserWorkspace {
     let recent:BrowserWorkspaceState['recent']=[];
     if(row)try{const values:unknown=JSON.parse(row.value);if(Array.isArray(values))recent=values.filter((r):r is BrowserWorkspaceState['recent'][number]=>!!r&&typeof r==='object'&&typeof r.url==='string'&&typeof r.title==='string'&&typeof r.host==='string'&&typeof r.visitedAt==='number').slice(0,8);}catch{/* A bad recent list must not destroy valid tabs. */}
     const found=state.activeId?this.finds.get(state.activeId):undefined;
-    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0}};
+    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{})};
   }
   certificateFailed(page:BrowserPage,url:string,error:string):void{
     if(page.closed||this.shuttingDown)return;

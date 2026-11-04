@@ -9,3 +9,4 @@ export const browserSiteStateSchema=z.object({schemaVersion:z.literal(1),certifi
   if(new Set(value.certificates.map(row=>row.host)).size!==value.certificates.length||new Set(value.permissions.map(row=>JSON.stringify([row.origin,row.permission]))).size!==value.permissions.length)ctx.addIssue({code:'custom',message:'站点状态重复'});
 });
 export type BrowserSiteState=z.infer<typeof browserSiteStateSchema>;
+export interface BrowserPermissionPrompt {id:string;pageId:string;profileId:string;origin:string;permissions:string[]}

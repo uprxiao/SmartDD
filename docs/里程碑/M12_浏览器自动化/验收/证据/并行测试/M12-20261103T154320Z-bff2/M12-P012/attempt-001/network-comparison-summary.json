@@ -1,0 +1,561 @@
+{
+  "at": "2026-11-04T02:01:20.326Z",
+  "steps": [
+    {
+      "step": "default-denied",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=default-denied",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:57025/doc?step=default-denied'",
+        "code": "ERR_CERT_AUTHORITY_INVALID",
+        "errno": -202
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [
+        {
+          "at": "2026-11-04T01:57:15.372Z",
+          "wcId": 1,
+          "url": "https://m12-cert.test:57025/doc?step=default-denied",
+          "host": "m12-cert.test",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID"
+        }
+      ],
+      "certificateStatus": null
+    },
+    {
+      "step": "trust-A",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "allowed-seed",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+      "outcome": "loaded",
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.419Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+        "host": "m12-cert.test",
+        "error": "net::ERR_CERT_AUTHORITY_INVALID"
+      }
+    },
+    {
+      "step": "allowed-state-view",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+      "outcome": "loaded",
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.468Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "host": "m12-cert.test",
+        "error": "net::ERR_CERT_AUTHORITY_INVALID"
+      }
+    },
+    {
+      "step": "isolated-B-while-A-trusted",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-B",
+      "url": "https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted'",
+        "code": "ERR_CERT_AUTHORITY_INVALID",
+        "errno": -202
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [
+        {
+          "at": "2026-11-04T01:57:15.519Z",
+          "wcId": 3,
+          "url": "https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted",
+          "host": "m12-cert.test",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID"
+        }
+      ],
+      "certificateStatus": null
+    },
+    {
+      "step": "revoke-A",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "revoked-warm",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=revoked-warm",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=revoked-warm'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [
+        {
+          "at": "2026-11-04T01:57:15.562Z",
+          "wcId": 1,
+          "url": "https://m12-cert.test:57025/doc?step=revoked-warm",
+          "host": "m12-cert.test",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID"
+        }
+      ],
+      "certificateStatus": null
+    },
+    {
+      "step": "close-A-connections",
+      "kind": "navigation/lifecycle",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "revoked-fresh",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=revoked-fresh",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=revoked-fresh'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [
+        {
+          "at": "2026-11-04T01:57:15.606Z",
+          "wcId": 1,
+          "url": "https://m12-cert.test:57025/doc?step=revoked-fresh",
+          "host": "m12-cert.test",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID"
+        }
+      ],
+      "certificateStatus": null
+    },
+    {
+      "step": "suspend-outer",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "suspend-inner",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-two-https",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=nested-two-https",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=nested-two-https'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-two-http",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "http://m12-cert.test:57026/doc?step=nested-two-http",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'http://m12-cert.test:57026/doc?step=nested-two-http'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-two-session-http",
+      "kind": "session-fetch-no-webcontents",
+      "profileId": null,
+      "url": "http://m12-cert.test:57026/fetch?step=nested-two-session-http",
+      "outcome": "blocked-or-failed",
+      "error": "net::ERR_BLOCKED_BY_CLIENT",
+      "serverRequests": [],
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "release-outer",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-one-https",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=nested-one-https",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=nested-one-https'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-one-http",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "http://m12-cert.test:57026/doc?step=nested-one-http",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'http://m12-cert.test:57026/doc?step=nested-one-http'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": null
+    },
+    {
+      "step": "nested-one-session-http",
+      "kind": "session-fetch-no-webcontents",
+      "profileId": null,
+      "url": "http://m12-cert.test:57026/fetch?step=nested-one-session-http",
+      "outcome": "blocked-or-failed",
+      "error": "net::ERR_BLOCKED_BY_CLIENT",
+      "serverRequests": [],
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "release-inner",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "all-released-http",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+      "outcome": "loaded",
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.658Z",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": null
+        }
+      ],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": null
+    },
+    {
+      "step": "all-released-session-http",
+      "kind": "session-fetch-no-webcontents",
+      "profileId": null,
+      "url": "http://m12-cert.test:57026/fetch?step=all-released-session-http",
+      "outcome": "loaded",
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.705Z",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/fetch?step=all-released-session-http",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": null
+        }
+      ],
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "all-released-still-revoked",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=all-released-still-revoked",
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=all-released-still-revoked'",
+        "code": "ERR_BLOCKED_BY_CLIENT",
+        "errno": -20
+      },
+      "serverRequests": [],
+      "certificateFailureCallbacks": [
+        {
+          "at": "2026-11-04T01:57:15.708Z",
+          "wcId": 1,
+          "url": "https://m12-cert.test:57025/doc?step=all-released-still-revoked",
+          "host": "m12-cert.test",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID"
+        }
+      ],
+      "certificateStatus": null
+    },
+    {
+      "step": "all-released-renderer-still-revoked",
+      "kind": "same-origin-renderer-fetch",
+      "profileId": null,
+      "url": "https://m12-cert.test:57025/fetch?step=all-released-renderer-still-revoked",
+      "outcome": false,
+      "error": "TypeError: Failed to fetch",
+      "serverRequests": [],
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "retrust-A",
+      "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+      "profileId": null,
+      "url": null,
+      "outcome": null,
+      "error": null,
+      "serverRequests": null,
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    },
+    {
+      "step": "retrusted",
+      "kind": "navigation/lifecycle",
+      "profileId": "profile-A",
+      "url": "https://m12-cert.test:57025/doc?step=retrusted",
+      "outcome": "loaded",
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.717Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=retrusted",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "certificateFailureCallbacks": [],
+      "certificateStatus": {
+        "url": "https://m12-cert.test:57025/doc?step=retrusted",
+        "host": "m12-cert.test",
+        "error": "net::ERR_CERT_AUTHORITY_INVALID"
+      }
+    },
+    {
+      "step": "retrusted-renderer",
+      "kind": "same-origin-renderer-fetch",
+      "profileId": null,
+      "url": "https://m12-cert.test:57025/fetch?step=retrusted-renderer",
+      "outcome": true,
+      "error": null,
+      "serverRequests": [
+        {
+          "at": "2026-11-04T01:57:15.765Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/fetch?step=retrusted-renderer",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "certificateFailureCallbacks": null,
+      "certificateStatus": null
+    }
+  ],
+  "dataSnapshots": {
+    "before": {
+      "at": "2026-11-04T01:57:15.514Z",
+      "local": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "local": "p012-login-A"
+      },
+      "cookies": [
+        {
+          "name": "p012_marker",
+          "value": "p012-login-A",
+          "domain": "m12-cert.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": true,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ]
+    },
+    "afterWarm": {
+      "at": "2026-11-04T01:57:15.604Z",
+      "local": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "local": "p012-login-A"
+      },
+      "cookies": [
+        {
+          "name": "p012_marker",
+          "value": "p012-login-A",
+          "domain": "m12-cert.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": true,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ]
+    },
+    "afterFresh": {
+      "at": "2026-11-04T01:57:15.610Z",
+      "local": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "local": "p012-login-A"
+      },
+      "cookies": [
+        {
+          "name": "p012_marker",
+          "value": "p012-login-A",
+          "domain": "m12-cert.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": true,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ]
+    },
+    "afterSuspension": {
+      "at": "2026-11-04T01:57:15.713Z",
+      "local": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "local": "p012-login-A"
+      },
+      "cookies": [
+        {
+          "name": "p012_marker",
+          "value": "p012-login-A",
+          "domain": "m12-cert.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": true,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ]
+    },
+    "afterRetrust": {
+      "at": "2026-11-04T01:57:15.765Z",
+      "local": {
+        "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+        "local": "p012-login-A"
+      },
+      "cookies": [
+        {
+          "name": "p012_marker",
+          "value": "p012-login-A",
+          "domain": "m12-cert.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": true,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ]
+    }
+  },
+  "finalState": {
+    "memoryA": {
+      "schemaVersion": 1,
+      "certificates": [
+        {
+          "host": "m12-cert.test",
+          "createdAt": 1793757435713
+        }
+      ],
+      "permissions": []
+    },
+    "memoryB": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": []
+    },
+    "persisted": [
+      {
+        "key": "browserProfileState.v1:profile-A",
+        "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435713}],\"permissions\":[]}",
+        "updated_at": 1793757435713
+      }
+    ],
+    "reloadedTrustedA": true,
+    "reloadedTrustedB": false
+  }
+}

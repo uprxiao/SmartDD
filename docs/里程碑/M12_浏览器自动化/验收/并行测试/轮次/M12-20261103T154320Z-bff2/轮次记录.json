@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T01:50:14.025492+00:00",
+  "updatedAt": "2026-11-04T02:04:58.796692+00:00",
   "status": "S3-development; S2 contract decisions/system/S4 dependencies pending",
   "coordinator": "/root",
   "agents": [
@@ -9,9 +9,9 @@
       "agent": "/root/s2_t004_test",
       "role": "test executor",
       "group": "M12-P012",
-      "privateRoot": "/private/tmp/willyou-m12-p011-executor-001",
+      "privateRoot": "/private/tmp/willyou-m12-p012-executor-001",
       "baseline": "/private/tmp/willyou-m12-p012-baseline-002",
-      "status": "P012 preparing actual production component I, no resource allocation"
+      "status": "P012 delivered, all resources released"
     }
   ],
   "branch": "feature/0.1.1",
@@ -600,11 +600,85 @@
           "accounted": true
         }
       ]
+    },
+    {
+      "id": "M12-P012",
+      "owner": "/root/s2_t004_test",
+      "status": "actual component I passed and archived; original T012 A pending",
+      "name": "actual production certificate/network policy component I",
+      "privateRoot": "/private/tmp/willyou-m12-p012-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p012-baseline-002/baseline.json",
+      "baselineSha256": "7565aa6689e11939b10ef3b9831767384d446c02c0dc8a1c3d8e7ea508515f1a",
+      "preflightSha256": "082362296ac6045d126f3745abac2258dbec9df92fa5c8ff0ff130339e799b08",
+      "relatedCaseIds": [
+        "M12-T012"
+      ],
+      "layers": [
+        "technical I only; no App/A"
+      ],
+      "criteria": [
+        "default untrusted denied; user trust precondition persisted in real SQLite",
+        "warm/fresh revoked endpoints yield zero HTTP requests, Cookie/LS preserved",
+        "nested suspend denies HTTP/HTTPS/no-contents Session.fetch; one release remains blocked; all releases preserve revoked certificate gate",
+        "retrust and profile isolation; dispose owned hooks, DB, windows, both servers and key"
+      ],
+      "resources": {
+        "nativeUi": "granted",
+        "build": "not allocated"
+      },
+      "pids": [],
+      "ports": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P012/attempt-001",
+          "manifestSha256": "a943d9b4202604ea6a56b96bb7a255589068b1640e7ec7733d27a8703ad54090",
+          "accounted": true
+        },
+        {
+          "attempt": "attempt-002",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P012/attempt-002",
+          "manifestSha256": "78f5f0f35d33b01070890fab37256f5de6897fb2512a7f552f317e57daad61ad",
+          "accounted": true
+        }
+      ]
+    },
+    {
+      "id": "M12-P013",
+      "owner": "/root",
+      "name": "站点权限基础与B06/B12软件开发",
+      "status": "software checks passed; original native I/App A pending",
+      "cases": [
+        "M12-T017"
+      ],
+      "layers": [
+        "additional U only"
+      ],
+      "baseline": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P013/attempt-001/004/inputs.json",
+      "privateRoot": "/private/tmp/willyou-m12-p013-permissions-software-004",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P013/attempt-001",
+          "manifestSha256": "0ff4cc83c55235496834ec66f00da15adc913f68d01fc05914d46e2752973e8f",
+          "accounted": true
+        }
+      ],
+      "criteriaSource": "R01.8 / original T017 remains A+I",
+      "remaining": [
+        "actual native permission flow",
+        "actual packaged UI allow/revoke and refresh",
+        "Agent cannot grant site permissions, original scope checks"
+      ],
+      "resources": {
+        "nativeUi": "not allocated",
+        "build": "not allocated"
+      }
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
-  "implementationCheckpoint": "fa9fcbfa9248c10f57bfb7b367739c9dc4e24c46",
+  "implementationCheckpoint": "97c738c1cf54991cac0f5882c3158a402b62cab6",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "a763e0496ea1e2c2279b91c39447dd7043f70ccd"
+  "currentSourceCommit": "97c738c1cf54991cac0f5882c3158a402b62cab6"
 }
