@@ -193,7 +193,7 @@
     "technicalDesign": "V1.1 §11",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P007",
+    "currentGroup": "M12-P010",
     "groups": [
       {
         "id": "M12-P001",
@@ -434,17 +434,116 @@
           "I"
         ],
         "owner": "/root/s2_t004_test",
-        "status": "preparing frozen host; native lease granted",
+        "status": "complete, current helper .4 T065/T052 verified and accounted",
         "baseline": "/private/tmp/willyou-m12-p007-baseline-001/baseline.json",
         "supplement": "/private/tmp/willyou-m12-p007-baseline-001/baseline-supplement-nth.json",
         "supplementSha256": "25c3cf2b08c5007bf1d6b0718cf4662a376a9df4c43abccea828da7aaf5f6c3a",
         "privateRoot": "/private/tmp/willyou-m12-t065-executor-001",
         "pids": [],
         "ports": [],
-        "next": "hash/preflight then real native locator matrix",
+        "next": "released",
         "criteriaSource": "测试用例.md T065 and 技研/E3_待核实事实_20261103.md",
         "criteria": "10 locators and 7 actions, all semantically valid combinations, iframe and nth focus known limitations; independent actual page event/state verification; no retry of unknown writes",
-        "applicability": "64 effective combinations, six nonsensical element/action pairs explicitly excluded (four alt/img mutations and two placeholder/text-input checkbox actions); this does not omit a valid requirement"
+        "applicability": "64 effective combinations, six nonsensical element/action pairs explicitly excluded (four alt/img mutations and two placeholder/text-input checkbox actions); this does not omit a valid requirement",
+        "resources": {
+          "nativeUi": "released",
+          "build": "released"
+        }
+      },
+      {
+        "id": "M12-P008",
+        "owner": "/root",
+        "cases": [
+          "M12-T078",
+          "M12-T084"
+        ],
+        "partialCases": [
+          "M12-T075 list/create/show/tab-create only; remaining CRUD not claimed"
+        ],
+        "regression": [
+          "M12-T023 new registered profile no Node/unknown IDs and partition refused",
+          "M12-T057 correct current-page Promise navigation only"
+        ],
+        "layers": [
+          "I"
+        ],
+        "status": "Cookie/isolation complete I; lifecycle subset complete I; clone and A/UI remain",
+        "privateRoot": "/private/tmp/willyou-m12-s1-s4-profile-001",
+        "baseline": "/private/tmp/willyou-m12-p004-software-001/inputs-027.json",
+        "criteriaSource": "测试用例.md original T078/T084 plus unchanged T057 navigation step",
+        "criteria": [
+          "two actual persistent profiles: B sees none of A Cookie/localStorage; identical cache URL causes a fresh request in B, while second A access is cached",
+          "cookie set domain/path/secure/httpOnly/sameSite/expires matches CDP read; real HTTPS request includes cookie, named deletion removes it but preserves independent sentinel; subsequent request does not include deleted cookie"
+        ],
+        "fixtureBoundary": "private synthetic HTTPS certificate only, exact fingerprint/127.0.0.1 session verification setup, restore during cleanup; does not count certificate permission UI cases",
+        "pids": [],
+        "ports": [],
+        "next": "finish clone and full UI/restart/system layers"
+      },
+      {
+        "id": "M12-P009",
+        "name": "S4任务/项目生命周期清理I子层",
+        "owner": "/root/s2_t004_test",
+        "status": "I cleanup complete after two product fixes; A/restart/actual run-ending remain",
+        "layers": [
+          "I"
+        ],
+        "relatedCaseIds": [
+          "M12-T079",
+          "M12-T013"
+        ],
+        "criteriaSource": "测试用例.md T079/T013原要求；本组仅I补充，不能代替A",
+        "caseCriteria": [
+          {
+            "caseId": "M12-T079",
+            "originalCriteria": "重启保留；删除任务profile回落且清空；项目profile不可删；删除项目清其全部profile；任务仅结束保留",
+            "validOldEvidence": "P008002 switch/delete I subset",
+            "remaining": "本组补原生I孤儿清理；原A/重启/真实任务结束仍缺",
+            "next": "prepare P2/T3真实分区数据，实际ProjectService删除再BrowserService.reconcile，独立核Cookie/存储/页面/子窗口/元数据；另删任务；owner仍存在时保留"
+          }
+        ],
+        "baseline": "/private/tmp/willyou-m12-p009-baseline-001",
+        "supplementSha256": "f78a31154865e0b7c88dcf09f4d4b0a25803d03beace2606e2a045663f865294",
+        "resources": {
+          "nativeUi": "released"
+        },
+        "next": "released"
+      },
+      {
+        "id": "M12-P010",
+        "owner": "/root",
+        "status": "U/typecheck passed; packaged A pending",
+        "cases": [
+          "M12-T021",
+          "M12-T022",
+          "M12-T026",
+          "M12-T089"
+        ],
+        "layers": [
+          "U",
+          "A"
+        ],
+        "partialOnly": [
+          "T022 restart/native CLI/search navigation/download folder unchanged",
+          "T026 other dialogs/narrow drag",
+          "T089 native CLI/restart"
+        ],
+        "privateRoot": "/private/tmp/willyou-m12-p004-software-001",
+        "baseline": "inputs037/source037",
+        "criteriaSource": "测试用例.md original T021/T022/T026/T089; A actions must use actual packaged UI",
+        "criteria": [
+          "T021 five matches, Enter/ShiftEnter/ESC + native focus",
+          "B14 settings persisted choices, confirmation/actual artifact file clear and scoped screenshot-backed modal with terminal input; full T022/T026 remain partial until all original steps"
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-001",
+            "manifestSha256": "ee3415370a4f28bbf6e40e00f3ccfcf5241fea125d7f46ee36347cd92ed5b189",
+            "accounted": true
+          }
+        ],
+        "next": "one new unified package then native UI preflight"
       }
     ],
     "autonomy": {
@@ -477,7 +576,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-03T18:32:32.829713+00:00",
+    "updatedAt": "2026-11-04T00:50:35.750345+00:00",
     "independentNext": "P005 T036 timed waits on frozen I source; coordinator fixes S3 close deadlock and prepares remaining tests without native/build contention"
   }
 }

@@ -1,16 +1,18 @@
 import { build } from 'vite';
-import { spawn } from 'node:child_process';
+import { spawn,spawnSync } from 'node:child_process';
 import { createRequire, builtinModules } from 'node:module';
-import { mkdir, writeFile, readFile, cp } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, cp,rm } from 'node:fs/promises';
 import { resolve, join, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import {pathToFileURL} from 'node:url';
+import {createServer as createHttpsServer} from 'node:https';
+import {s3FixtureHtml} from './s3-fixtures.mjs';
 const [output] = process.argv.slice(2);
-if (!output?.startsWith('/private/tmp/willyou-m12-s1-s3-')) throw Error('Explicit private S3 output required');
+if (!output?.startsWith('/private/tmp/willyou-m12-s1-')) throw Error('Explicit private browser output required');
 await mkdir(output,{recursive:false});
 for(const [source,name] of [['scripts/browser/s3-command-tail.mjs','driver.source.mjs'],['scripts/browser/s1-service-host.ts','host.source.ts'],['scripts/browser/s3-fixtures.mjs','fixture.source.mjs'],['src/shared/browser-commands.generated.json','catalog.source.json']])await cp(source,join(output,name));
 const require=createRequire(resolve('package.json')), result={at:new Date().toISOString(),steps:[]};
-let host, exited, logs='', seq=0;
+let host, exited, tlsServer, logs='', seq=0;
 const persist=()=>writeFile(join(output,'live.json'),JSON.stringify(result,null,2));
 const call=command=>new Promise((ok,no)=>{
   if(!host?.connected||host.exitCode!==null||host.signalCode!==null){no(Error('Owned service host is already disconnected'));return;}
@@ -157,7 +159,61 @@ try {
     const until=Date.now()+5000;while(Date.now()<until){result.loopDiagnostics=await call({command:'cancel-state'});result.loopServer=await call({command:'s3-server-requests'});if(result.loopDiagnostics.operations?.some(operation=>operation.command==='eval'&&operation.state==='running')&&result.loopServer.requests.some(request=>request.path==='/s3-api/loop-started'))break;await new Promise(resolve=>setTimeout(resolve,25));}
     result.loopCancel=await call({command:'cli-sigterm',pid:result.loop.pid});result.loopResult=await call({command:'cli-result',pid:result.loop.pid});result.loopResponsive=await success(['browser','eval','--expression','({responsive:true,started:window.s3LoopStarted===true})']);
   }
+  if(selected.has('eval-navigation')){
+    result.stage='T057-current-page-navigation';result.navigationEvalTarget=await success(['browser','tab','current']);const pageId=result.navigationEvalTarget.result.pageId;
+    await call({command:'error-navigate-during-eval',pageId});result.currentPageEvalNavigation=await cli(['browser','eval','--page',pageId,'--expression','new Promise(resolve=>setTimeout(()=>resolve("late"),3000))']);
+    result.currentPageAfterNavigation=await success(['browser','get','--page',pageId,'--what','url']);
+  }
+  if(selected.has('profile-cookies')){
+    result.stage='S4-profiles-cookies';result.profiles={};
+    const a=(await success(['browser','tab','profile','create','--label','Synthetic A'])).result.profile,b=(await success(['browser','tab','profile','create','--label','Synthetic B','--scope','imported'])).result.profile;
+    result.profiles={a,b,list:await success(['browser','tab','profile','list'])};
+    const pageA=await success(['browser','tab','create','--profile',a.id,'--url',base+'/s3-profile-A']),pageB=await success(['browser','tab','create','--profile',b.id,'--url',base+'/s3-profile-B']);result.profilePages={a:pageA,b:pageB};
+    const onPage=(page,args,input)=>success(['browser',...args,'--page',page.pageId],input),pageEval=async(page,expression)=>JSON.parse((await onPage(page,['eval','--stdin','expression'],expression)).value);
+    result.profileShows=[await onPage(pageA,['tab','profile','show']),await onPage(pageB,['tab','profile','show'])];
+    result.profileSecurity=await pageEval(pageA,'({require:typeof require,process:typeof process,willyou:typeof window.willyou,electronAPI:typeof window.electronAPI})');
+    result.beforeProfileRefusals=await success(['browser','tab','list']);result.profileRefusals=[await cli(['browser','tab','create','--profile','00000000-0000-4000-8000-000000000000']),await cli(['browser','tab','create','--partition','persist:unregistered-daily'])];result.afterProfileRefusals=await success(['browser','tab','list']);
+    await onPage(pageA,['cookie','set','--name','isolation','--value','profile-A']);await onPage(pageA,['storage','local','set','--key','s3-key','--value','profile-A']);
+    result.isolation={aCookies:await onPage(pageA,['cookie','get']),aLocal:await onPage(pageA,['storage','local','get','--key','s3-key']),bCookies:await onPage(pageB,['cookie','get']),bLocal:await onPage(pageB,['storage','local','get','--key','s3-key'])};
+    result.cache={a:await pageEval(pageA,'fetch("/s4-api/cache").then(response=>response.json())'),aAgain:await pageEval(pageA,'fetch("/s4-api/cache").then(response=>response.json())'),b:await pageEval(pageB,'fetch("/s4-api/cache").then(response=>response.json())'),server:await call({command:'s3-server-requests'})};
+    result.stage='S4-cookie-attributes';
+    await writeFile(join(output,'tls.cnf'),'[req]\ndistinguished_name=dn\nx509_extensions=extensions\nprompt=no\n[dn]\nCN=127.0.0.1\n[extensions]\nsubjectAltName=IP:127.0.0.1\n');
+    const certificateArgs=['req','-x509','-nodes','-newkey','rsa:2048','-days','1','-config',join(output,'tls.cnf'),'-keyout',join(output,'tls-key.pem'),'-out',join(output,'tls-cert.pem')];
+    const generation=spawnSync('/usr/bin/openssl',certificateArgs,{encoding:'utf8',timeout:15000});await writeFile(join(output,'tls-generation.json'),JSON.stringify({command:['/usr/bin/openssl',...certificateArgs],status:generation.status,signal:generation.signal,stdout:generation.stdout,stderr:generation.stderr,...(generation.error?{error:String(generation.error)}:{})},null,2));assert(generation.status===0,'Synthetic TLS certificate preparation failed');
+    result.tlsRequests=[];tlsServer=createHttpsServer({key:await readFile(join(output,'tls-key.pem')),cert:await readFile(join(output,'tls-cert.pem'))},(request,response)=>{
+      result.tlsRequests.push({url:request.url,method:request.method,cookie:request.headers.cookie??null});
+      if(request.url==='/form'){response.setHeader('content-type','text/html; charset=utf-8');response.end(s3FixtureHtml);}
+      else if(request.url?.startsWith('/s4-api/cookie/')){response.setHeader('content-type','application/json');response.setHeader('cache-control','no-store');response.end(JSON.stringify({received:true,cookie:request.headers.cookie??null}));}else{response.writeHead(204).end();}
+    });await new Promise((ok,no)=>{tlsServer.once('error',no);tlsServer.listen(0,'127.0.0.1',ok);});
+    const tlsOrigin='https://127.0.0.1:'+tlsServer.address().port;result.tlsOrigin=tlsOrigin;result.tlsTrust=await call({command:'s4-trust-fixture',pageId:pageA.pageId,input:await readFile(join(output,'tls-cert.pem'),'utf8')});
+    await onPage(pageA,['goto','--url',tlsOrigin+'/form']);
+    const expires=Math.floor(Date.now()/1000)+3600;result.cookieExpected={name:'attributes',value:'synthetic-attributes',domain:'127.0.0.1',path:'/s4-api/cookie',secure:true,httpOnly:true,sameSite:'Strict',expires};
+    result.cookieSet=await onPage(pageA,['cookie','set','--name','attributes','--value','synthetic-attributes','--domain','127.0.0.1','--path','/s4-api/cookie','--secure','true','--httpOnly','true','--sameSite','Strict','--expires',String(expires)]);
+    result.cookieRead=await onPage(pageA,['cookie','get','--url',tlsOrigin+'/s4-api/cookie/inside']);result.cookieScript=(await pageEval(pageA,'({cookie:document.cookie})')).cookie;result.cookieRequest=await pageEval(pageA,'window.s3Fetch("/s4-api/cookie/inside")');
+    result.cookieDelete=await onPage(pageA,['cookie','delete','--name','attributes','--domain','127.0.0.1']);result.cookieAfter=await onPage(pageA,['cookie','get','--url',tlsOrigin+'/s4-api/cookie/inside']);result.cookieRequestAfter=await pageEval(pageA,'window.s3Fetch("/s4-api/cookie/after")');result.tlsTrustObserved=await call({command:'s4-trust-status'});await persist();
+  }
 
+  if(selected.has('profile-lifecycle')){
+    result.stage='S4-profile-lifecycle';const l=result.lifecycle={};
+    const on=async(page,args,input)=>success(['browser',...args,'--page',page.pageId],input),observe=async page=>JSON.parse((await on(page,['eval','--stdin','expression'],'({cookie:document.cookie,local:localStorage.getItem("s3-key"),url:location.href})')).value);
+    l.default=(await success(['browser','tab','profile','show','--page',parent.pageId])).result.profileId;
+    await on(parent,['cookie','set','--name','account','--value','project-qa']);await on(parent,['storage','local','set','--key','s3-key','--value','project-qa']);l.projectBefore=await observe(parent);
+    l.profile=(await success(['browser','tab','profile','create','--label','Lifecycle qa2'])).result.profile;
+    l.page=await success(['browser','tab','create','--profile',l.profile.id,'--url',base+'/s3-lifecycle']);
+    await on(l.page,['cookie','set','--name','account','--value','task-qa2']);await on(l.page,['storage','local','set','--key','s3-key','--value','task-qa2']);l.isolatedBefore=await observe(l.page);
+    l.oldSnapshot=await on(l.page,['snapshot']);l.oldRef=l.oldSnapshot.refs.find(ref=>ref.name==='Input').ref;
+    l.useDefault=await on(l.page,['tab','profile','use-default']);l.shows=[await on(l.page,['tab','profile','show'])];l.afterDefault=await observe(l.page);
+    l.oldRefRefusal=await cli(['browser','fill','--page',l.page.pageId,'--element',l.oldRef,'--value','MUST_NOT_WRITE']);
+    l.set=await on(l.page,['tab','profile','set','--profile',l.profile.id]);l.shows.push(await on(l.page,['tab','profile','show']));l.afterSet=await observe(l.page);l.projectAfterSet=await observe(parent);
+    l.another=await success(['browser','tab','create','--profile',l.profile.id,'--url',base+'/s3-lifecycle-2']);
+    // Precondition-only dormant/closed tabs and foreign owners, prepared outside
+    // the caller's CLI. Acceptance actions below still use the actual CLI.
+    l.prepared=await call({command:'s4-profile-lifecycle-prepare',pageId:l.page.pageId});
+    l.delete=await success(['browser','tab','profile','delete','--profile',l.profile.id]);l.afterDeletePages=[await observe(l.page),await observe(l.another)];l.listAfterDelete=await success(['browser','tab','profile','list']);
+    l.afterDelete=await call({command:'s4-profile-lifecycle-observe',pageId:l.page.pageId});l.afterProjectDeleteRefusal=await cli(['browser','tab','profile','delete','--profile',l.default]);
+    l.foreignRefusals=[];for(const profile of [l.prepared.foreignProject,l.prepared.foreignTask])for(const command of ['set','delete'])l.foreignRefusals.push(await cli(['browser','tab','profile',command,'--profile',profile.id,...(command==='set'?['--page',parent.pageId]:[])]));
+    l.taskSet=await success(['browser','tab','profile','set','--task',result.ready.taskId,'--profile',l.default]);l.finalTabs=await success(['browser','tab','list']);await persist();
+  }
   result.stage='complete';await persist();
 } catch(error) { result.failure=String(error.stack??error); }
 finally {
@@ -166,6 +222,8 @@ finally {
     else host.kill('SIGTERM');
     const hardStop=setTimeout(()=>host.kill('SIGKILL'),5000);result.hostExit=await exited;clearTimeout(hardStop);
   }
+  if(tlsServer){tlsServer.closeAllConnections();await new Promise(ok=>tlsServer.close(ok));result.tlsServerClosed=true;}
+  await rm(join(output,'tls-key.pem'),{force:true});result.syntheticTlsKeyRemoved=true;
   await writeFile(join(output,'host.log'),logs);await writeFile(join(output,'result.json'),JSON.stringify(result,null,2));
   console.log(JSON.stringify({failure:result.failure,steps:result.steps.map(step=>({command:step.args.slice(0,3),code:step.raw.code,error:step.parsed?.error?.code,ms:step.ms})),cleanup:result.cleanup,hostExit:result.hostExit}));
 }

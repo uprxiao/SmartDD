@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-03T23:29:00.626Z",
+  "sourceSha256": "9db4d78cbe96489b3cfdfbeaca335ae2b55b0720da33cf542ec70e9a88e425f0",
+  "caseResults": {
+    "M12-T073": {
+      "checks": {
+        "cleanup": true,
+        "threeInitial": true,
+        "createDoesNotActivate": true,
+        "show": true,
+        "switchIndex": true,
+        "closed": true,
+        "finalUiProjection": true,
+        "createdUiProjection": true
+      },
+      "scope": "I: actual BrowserService workspace projection; rendered App/focus covered separately",
+      "missing": [],
+      "status": "passed"
+    },
+    "M12-T072": {
+      "checks": {
+        "cleanup": true,
+        "sequence": true,
+        "reloadRequest": true,
+        "provisionalReload": true,
+        "localFile": true,
+        "invalidRejected": true
+      },
+      "scope": "reload during an in-progress navigation must keep the provisional target, not reload the previous committed page",
+      "status": "passed"
+    },
+    "M12-T057": {
+      "checks": {
+        "cleanup": true,
+        "values": true,
+        "throws": true,
+        "loopStarted": true,
+        "canceled": true,
+        "responsive": true,
+        "navigation": false
+      },
+      "missing": [
+        "navigation injection targeted the original page while earlier tab switch made another page current; supplement only this step"
+      ],
+      "scope": "value/error/cancellation effects are valid on current page; prior navigation injection target must match that current page",
+      "status": "partial"
+    }
+  }
+}

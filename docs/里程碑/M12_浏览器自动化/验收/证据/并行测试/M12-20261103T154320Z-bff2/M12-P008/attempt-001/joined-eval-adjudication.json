@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-03T23:48:57.186Z",
+  "caseId": "M12-T057",
+  "layer": "I",
+  "status": "passed",
+  "checks": {
+    "values": true,
+    "throws": true,
+    "observedRunningLoop": true,
+    "cancellation": true,
+    "responsive": true,
+    "oldCleanup": true,
+    "newNavigation": true,
+    "sameEvalBranch": true,
+    "sameNativeCli": true,
+    "sameCdpProxy": true
+  },
+  "sources": [
+    {
+      "path": "../../M12-P004/attempt-012/result.json",
+      "sha256": "9db4d78cbe96489b3cfdfbeaca335ae2b55b0720da33cf542ec70e9a88e425f0",
+      "scope": "all five values/origin, throw, actual started infinite loop cancellation and responsiveness"
+    },
+    {
+      "path": "result.json",
+      "sha256": "8b4eadfc495d10e07d369ad6b61673aed911a057f8efef0ef196376882a6ac4a",
+      "scope": "correct current-page navigation while Promise pending"
+    }
+  ],
+  "impact": {
+    "evalBranchSha256": "26141cc74cbb3314eb8eaf94622e2ac27c48e9db1c3a9edac339d763bb3fe73a",
+    "nativeCliSha256": "9b16c97471d660f7273504635b0fc5d5180507aa6557d3ef68c96a2483be687e",
+    "cdpProxySha256": "96cd889e7c19d6905b5691baa0428c311fb0dd64ef4dd7e7384b7876d383b59f",
+    "otherChanges": "profile metadata/Cookie handlers; helper fill changes do not execute in the identical host eval branch"
+  }
+}

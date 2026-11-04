@@ -1,0 +1,44 @@
+--- 2/cli/src/native/interaction.rs
++++ 3/cli/src/native/interaction.rs
+@@ -143,15 +143,26 @@
+         )
+         .await?;
+ 
+-    // Select all + delete to clear
+-    client
++    // WillYou: select the retained target's contents; native insertText performs
++    // the replacement and emits real editing events, including contenteditable.
++    let selected = client
+         .send_command_typed::<_, Value>(
+             "Runtime.callFunctionOn",
+             &CallFunctionOnParams {
+                 function_declaration: r#"function() {
+-                    this.select && this.select();
+-                    this.value = '';
+-                    this.dispatchEvent(new Event('input', { bubbles: true }));
++                    if (!this.isConnected) return false;
++                    const input = this instanceof HTMLInputElement || this instanceof HTMLTextAreaElement;
++                    if ((!input && !this.isContentEditable) || this.disabled || this.readOnly) return false;
++                    const root = this.getRootNode(), focused = root.activeElement || this.ownerDocument.activeElement;
++                    if (focused !== this && !this.contains(focused)) return false;
++                    if (input) this.select();
++                    else {
++                        const selection = typeof root.getSelection === 'function' ? root.getSelection() : this.ownerDocument.getSelection();
++                        if (!selection) return false;
++                        const range = this.ownerDocument.createRange();
++                        range.selectNodeContents(this); selection.removeAllRanges(); selection.addRange(range);
++                    }
++                    return this.isConnected;
+                 }"#
+                 .to_string(),
+                 object_id: Some(object_id),
+@@ -162,6 +173,9 @@
+             Some(&effective_session_id),
+         )
+         .await?;
++    if selected.get("result").and_then(|value| value.get("value")).and_then(|value| value.as_bool()) != Some(true) {
++        return Err("Element is not an editable focused text target".to_string());
++    }
+ 
+     // Insert text (keyboard input dispatched at page level, use parent session_id)
+     client

@@ -5,7 +5,7 @@
  [[package]]
  name = "agent-browser"
 -version = "0.27.3"
-+version = "0.27.3-willyou.2"
++version = "0.27.3-willyou.4"
  dependencies = [
   "aes-gcm",
   "async-trait",
@@ -15,7 +15,7 @@
  [package]
  name = "agent-browser"
 -version = "0.27.3"
-+version = "0.27.3-willyou.2"
++version = "0.27.3-willyou.4"
  edition = "2021"
  description = "Fast browser automation CLI for AI agents"
  license = "Apache-2.0"
@@ -239,6 +239,104 @@
          name_match = name_match,
      );
  
+@@ -5983,6 +6014,20 @@
+     result
+ }
+ 
++// Literal values must stay JavaScript data, never be interpolated inside a
++// quoted CSS selector. Apostrophes/quotes/Unicode are ordinary attribute text.
++fn literal_attribute_query(selector: &str, attribute: &str, value: &str) -> String {
++    format!(r#"(() => {{
++        const el = Array.from(document.querySelectorAll({selector}))
++            .find(el => el.getAttribute({attribute}) === {value});
++        if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
++        return false;
++    }})()"#,
++        selector = serde_json::to_string(selector).unwrap_or_default(),
++        attribute = serde_json::to_string(attribute).unwrap_or_default(),
++        value = serde_json::to_string(value).unwrap_or_default())
++}
++
+ async fn handle_semantic_locator(
+     cmd: &Value,
+     state: &mut DaemonState,
+@@ -5999,12 +6044,12 @@
+ 
+     let match_fn = if exact {
+         format!(
+-            "el.textContent.trim() === {}",
++            "textOf(el).trim() === {}",
+             serde_json::to_string(value).unwrap_or_default()
+         )
+     } else {
+         format!(
+-            "el.textContent.includes({})",
++            "textOf(el).includes({})",
+             serde_json::to_string(value).unwrap_or_default()
+         )
+     };
+@@ -6042,45 +6087,27 @@
+             }})()"#,
+             )
+         }
+-        "placeholder" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('input[placeholder={val}], textarea[placeholder={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
+-        "alttext" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('img[alt={val}], [alt={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
+-        "title" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('[title={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
+-        "testid" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('[data-testid={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
++        "placeholder" => literal_attribute_query("input[placeholder],textarea[placeholder]", "placeholder", value),
++        "alttext" => literal_attribute_query("[alt]", "alt", value),
++        "title" => literal_attribute_query("[title]", "title", value),
++        "testid" => literal_attribute_query("[data-testid]", "data-testid", value),
+         _ => {
+             // "text" strategy
+             format!(
+                 r#"(() => {{
+-                    const all = document.querySelectorAll('*');
++                    const all = Array.from(document.querySelectorAll('*'));
++                    const excluded = new Set(['HEAD','TITLE','SCRIPT','STYLE','NOSCRIPT','TEMPLATE']);
++                    const text = new WeakMap();
++                    // Post-order avoids recursive traversal and retains inline
++                    // text across sibling nodes without matching script/style.
++                    for (const el of [...all].reverse()) {{
++                        text.set(el, excluded.has(el.tagName) ? '' : Array.from(el.childNodes)
++                            .map(node => node.nodeType === 3 ? node.textContent : text.get(node) || '').join(''));
++                    }}
++                    const textOf = el => text.get(el) || '';
++                    const matches = el => !excluded.has(el.tagName) && ({match_fn});
+                     for (const el of all) {{
+-                        if (el.children.length === 0 && {match_fn}) {{
++                        if (matches(el) && !Array.from(el.children).some(matches)) {{
+                             el.setAttribute('data-agent-browser-located', 'true');
+                             return true;
+                         }}
 --- a/cli/src/native/browser.rs
 +++ b/cli/src/native/browser.rs
 @@ -432,7 +432,7 @@
@@ -273,3 +371,47 @@
          Ok(())
      }
  
+--- a/cli/src/native/interaction.rs
++++ b/cli/src/native/interaction.rs
+@@ -143,15 +143,26 @@
+         )
+         .await?;
+ 
+-    // Select all + delete to clear
+-    client
++    // WillYou: select the retained target's contents; native insertText performs
++    // the replacement and emits real editing events, including contenteditable.
++    let selected = client
+         .send_command_typed::<_, Value>(
+             "Runtime.callFunctionOn",
+             &CallFunctionOnParams {
+                 function_declaration: r#"function() {
+-                    this.select && this.select();
+-                    this.value = '';
+-                    this.dispatchEvent(new Event('input', { bubbles: true }));
++                    if (!this.isConnected) return false;
++                    const input = this instanceof HTMLInputElement || this instanceof HTMLTextAreaElement;
++                    if ((!input && !this.isContentEditable) || this.disabled || this.readOnly) return false;
++                    const root = this.getRootNode(), focused = root.activeElement || this.ownerDocument.activeElement;
++                    if (focused !== this && !this.contains(focused)) return false;
++                    if (input) this.select();
++                    else {
++                        const selection = typeof root.getSelection === 'function' ? root.getSelection() : this.ownerDocument.getSelection();
++                        if (!selection) return false;
++                        const range = this.ownerDocument.createRange();
++                        range.selectNodeContents(this); selection.removeAllRanges(); selection.addRange(range);
++                    }
++                    return this.isConnected;
+                 }"#
+                 .to_string(),
+                 object_id: Some(object_id),
+@@ -162,6 +173,9 @@
+             Some(&effective_session_id),
+         )
+         .await?;
++    if selected.get("result").and_then(|value| value.get("value")).and_then(|value| value.as_bool()) != Some(true) {
++        return Err("Element is not an editable focused text target".to_string());
++    }
+ 
+     // Insert text (keyboard input dispatched at page level, use parent session_id)
+     client

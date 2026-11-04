@@ -1,10 +1,10 @@
 // I-level composition. Real service/module/CLI/gateway/SQLite/kernel peers; controlled run root and synthetic website.
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { randomUUID,X509Certificate } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { CapabilitySessionSnapshot } from '../../src/shared/application-session';
 import { capabilitySessionSnapshotV3Schema } from '../../src/shared/application-session-v3';
@@ -42,6 +42,7 @@ let browser: BrowserService, applications: ApplicationService, gateway: Applicat
 let fixture: Awaited<ReturnType<typeof agentFixture>>, run: Awaited<ReturnType<CapabilityRunRegistry['reserve']>>;
 let host: BrowserWindow, taskId: string, environment: NodeJS.ProcessEnv, binary: string;
 let secondary: {taskId:string;pageId:string}|undefined;
+let s4Lifecycle:{profileId:string;partition:string;dormantId:string;closedId:string}|undefined;
 const guardResponses=new Map<string,unknown>(),observedContents=new Set<number>();
 interface SnapshotRace { mode:string;pageId:string;iterations:{before:number;helper:number;after:number}[];captures:number[][];restored:boolean }
 const snapshotRaces:SnapshotRace[]=[],raceRestores=new Map<string,()=>void>();
@@ -79,8 +80,14 @@ const timingEvents:{label:string|null;phase:string|null;at:number}[]=[];
 const s3Requests:{path:string;method:string;bytes:number;sha256:string;headers:IncomingMessage['headers']}[]=[];
 const s3Dialogs:{pageId:string;method:string;params:Record<string,unknown>}[]=[];
 const promptProbeContexts=new Map<string,number>();
+const s4TrustedSessions=new Set<Electron.Session>(),s4TrustEvents:{hostname:string;fingerprintMatched:boolean;granted:boolean}[]=[];
+let s4CacheRequests=0;
 const respond = (request:IncomingMessage,response:ServerResponse) => {
   const url=new URL(request.url??'/','http://127.0.0.1');
+  if(url.pathname==='/s4-api/cache'){
+    const record={path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers};s3Requests.push(record);
+    response.setHeader('content-type','application/json');response.setHeader('cache-control','public,max-age=3600,immutable');response.end(JSON.stringify({received:true,cacheRequestNumber:++s4CacheRequests,...record}));return;
+  }
   if(url.pathname.startsWith('/s3-api/')){
     const chunks:Buffer[]=[];request.on('data',chunk=>chunks.push(chunk));request.on('end',()=>{
       const body=Buffer.concat(chunks),record={path:url.pathname,method:request.method??'GET',bytes:body.length,sha256:digest(body),headers:request.headers};s3Requests.push(record);
@@ -157,8 +164,8 @@ app.whenReady().then(async () => {
   }});
   browser.pages.observe(event=>{if(event.type==='created')event.page.contents.on('destroyed',()=>popupDestroyedEvents.push({pageId:event.page.id,at:Date.now()}));else retiredHelperCleanups.push({pageId:event.page.id,cleanup:event.page.helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true}});});
   const createPage=browser.pages.create.bind(browser.pages);
-  browser.pages.create=async(task,project,savedId)=>{
-    const page=await createPage(task,project,savedId);
+  browser.pages.create=async(task,project,savedId,profileId)=>{
+    const page=await createPage(task,project,savedId,profileId);
     page.proxy.onEvent(event=>{if(['Runtime.executionContextCreated','Runtime.executionContextDestroyed','Runtime.executionContextsCleared','Target.attachedToTarget','Page.frameNavigated'].includes(event.method))contextEvents.push({pageId:page.id,...event});});
     page.proxy.onEvent(event=>{if(event.method==='Page.javascriptDialogOpening'||event.method==='Page.javascriptDialogClosed')s3Dialogs.push({pageId:page.id,method:event.method,params:event.params});});
     return page;
@@ -203,6 +210,28 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     let value:unknown;
     if (message.command === 'cli') value = await launchCli(message.args!,message.inputBase64===undefined?message.input:Buffer.from(message.inputBase64,'base64')).done;
     else if(message.command==='s3-server-requests')value={requests:s3Requests};
+    else if(message.command==='s4-trust-fixture'){
+      const page=browser.pages.get(taskId,message.pageId),expected=new X509Certificate(message.input??'').fingerprint256;
+      page.contents.session.setCertificateVerifyProc((request,callback)=>{
+        let fingerprintMatched=false;try{fingerprintMatched=new X509Certificate(request.certificate.data).fingerprint256===expected;}catch{}
+        const granted=request.hostname==='127.0.0.1'&&fingerprintMatched;s4TrustEvents.push({hostname:request.hostname,fingerprintMatched,granted});callback(granted?0:-3);
+      });s4TrustedSessions.add(page.contents.session);value={boundary:'I synthetic HTTPS trust precondition, exact certificate fingerprint and loopback hostname only; not certificate UI acceptance',fingerprint:expected};
+    }
+    else if(message.command==='s4-trust-status')value={events:s4TrustEvents};
+    else if(message.command==='s4-profile-lifecycle-prepare'){
+      const page=browser.pages.get(taskId,message.pageId),profile=browser.profiles.require({taskId,projectId:'p1'},page.profileId);
+      const dormant=browser.workspace.create(taskId).activeId!;await browser.workspace.setProfile(taskId,dormant,profile.id,()=>{},()=>{});
+      const closed=browser.workspace.create(taskId).activeId!;await browser.workspace.setProfile(taskId,closed,profile.id,()=>{},()=>{});await browser.workspace.close(taskId,closed);
+      fixture.sqlite.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,1,1)').run('s4-p2','[I] foreign project');
+      const otherTask='s4-foreign-task';fixture.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(otherTask,'p1',fixture.cwd,'codex','[I] foreign task',1,1);
+      s4Lifecycle={profileId:profile.id,partition:profile.partition,dormantId:dormant,closedId:closed};
+      value={...s4Lifecycle,foreignProject:browser.profiles.ensureProject('s4-p2'),foreignTask:browser.profiles.create({taskId:otherTask,projectId:'p1'},'Foreign task')};
+    }
+    else if(message.command==='s4-profile-lifecycle-observe'){
+      if(!s4Lifecycle)throw Error('S4 lifecycle precondition missing');
+      const record=fixture.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:'+taskId) as {value:string};
+      value={profilePresent:!!browser.profiles.known(s4Lifecycle.profileId),cookies:await session.fromPartition(s4Lifecycle.partition).cookies.get({}),saved:JSON.parse(record.value),pages:browser.pages.list(taskId).map(page=>({id:page.id,kind:page.kind,profileId:page.profileId})),retiredHelperCleanups};
+    }
     else if(message.command==='s3-dialog-state')value={events:s3Dialogs};
     else if(message.command==='s3-prompt-probe-info'){
       const page=browser.pages.get(taskId,message.pageId),tree=await page.proxy.send<{frameTree:{frame:{id:string}}}>('Page.getFrameTree');
@@ -527,8 +556,9 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
       for (const child of children) child.kill('SIGKILL');
       console.error('[S1 cleanup] gateway');await gateway.close(); console.error('[S1 cleanup] run');await run.cli.exited();
       const helpers=browser.pages.list(taskId).map(page=>page.helper);
+      const restoredCertificateOverrides=s4TrustedSessions.size;for(const session of s4TrustedSessions)session.setCertificateVerifyProc(null);s4TrustedSessions.clear();
       console.error('[S1 cleanup] applications');await applications.dispose(); await browser.dispose();console.error('[S1 cleanup] helpers '+JSON.stringify(helpers.map(helper=>helper.cleanup)));
-      value={closed:true,retiredHelperCleanups,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
+      value={closed:true,restoredCertificateOverrides,retiredHelperCleanups,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
       fixture.cleanup();server.closeAllConnections();ipv6Server.closeAllConnections(); await Promise.all([new Promise<void>(ok=>server.close(()=>ok())),new Promise<void>(ok=>ipv6Server.close(()=>ok()))]); host.destroy();
     }
     else throw Error('Unknown fixture command');

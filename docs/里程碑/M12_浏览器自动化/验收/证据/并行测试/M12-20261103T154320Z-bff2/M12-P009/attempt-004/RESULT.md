@@ -1,0 +1,1 @@
+协调者核对三轮全部manifest，原I红与绿使用相同19判据；root独立ps/lsof核002/003清场。001为原生依赖夹具错误、零业务；002原19判据17绿，两处产品残留；003同判据19绿，persisted-unloaded workspace与deleted-project recent均清空。此组工程I子层完成；原T079要求A、重启保留与真实任务结束等仍未完整执行，不计整条。T013所属profile删除的I分支已覆盖两个真实子窗口销毁，A仍缺。

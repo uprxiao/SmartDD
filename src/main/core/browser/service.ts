@@ -5,7 +5,7 @@ import { BrowserArtifacts, browserDigest } from './artifacts';
 import { BrowserOperations } from './operations';
 import { BrowserError, staleReference } from './errors';
 import type Database from 'better-sqlite3';
-import { nativeImage, type BrowserWindow } from 'electron';
+import { app, nativeImage, session, type BrowserWindow } from 'electron';
 import { BrowserInputInterrupted, type BrowserHelperOptions } from './agent-browser';
 import { join } from 'node:path';
 import { browserExecArguments } from './exec-policy';
@@ -17,6 +17,12 @@ import browserCommands from '@shared/browser-commands.generated.json';
 import {executeBrowserPageCommand} from './page-commands';
 import {BrowserConditionWait} from './wait';
 import {BrowserRecorder} from './recorder';
+import {BrowserProfiles} from './profiles';
+import {executeBrowserCookie} from './cookies';
+import type {BrowserProfile} from '@shared/browser-profiles';
+import {BrowserSettings,browserUserAgent} from './settings';
+import {browserIdentitySchema} from '@shared/browser-settings';
+let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
   projectId:string;taskId:string;runId:string;requestId:string;operationId:string;signal:AbortSignal;assertActive():void;
@@ -32,16 +38,22 @@ export class BrowserService {
   readonly pages:BrowserPageRegistry;
   readonly operations:BrowserOperations;
   readonly workspace:BrowserWorkspace;
+  readonly profiles:BrowserProfiles;
+  readonly settings:BrowserSettings;
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
   private readonly readWaits=new Map<string,Set<AbortController>>();
   private closed=false;
   private readonly conditions=new WeakMap<BrowserPage,BrowserConditionWait>();
   private readonly recordings=new WeakMap<BrowserPage,BrowserRecorder>();
+  private reconciling?:Promise<void>;
+  private reconcileTimer?:ReturnType<typeof setTimeout>;
   constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
-    this.pages=new BrowserPageRegistry(options);this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
+    this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
+    this.profiles=new BrowserProfiles(options);
+    this.pages=new BrowserPageRegistry({...options,profiles:this.profiles});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages});
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine});
     this.artifacts=new BrowserArtifacts(join(options.userData,'browser/artifacts'));
   }
   pause(taskId:string,value:boolean):void{
@@ -66,8 +78,53 @@ export class BrowserService {
     try{
       this.admit(scope,args);
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
-      if(command.startsWith('tab profile ')||command.startsWith('identity ')||command.startsWith('cookie ')||command==='access request'||command==='set credentials'||command==='download')throw new ApplicationError('CAPABILITY_UNAVAILABLE','此命令依赖尚在开发的登录态、下载或授权服务');
+      if(command==='tab profile clone'){this.profiles.require(scope,text(args.profile));throw new ApplicationError('CAPABILITY_UNAVAILABLE','登录态完整克隆尚在开发');}
+      if(command==='access request'||command==='set credentials'||command==='download')throw new ApplicationError('CAPABILITY_UNAVAILABLE','此命令依赖尚在开发的下载或授权服务');
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
+      if(command==='identity get'){const value=this.settings.snapshot();return{result:{mode:value.identity,pendingMode:value.pendingIdentity,restartRequired:value.pendingIdentity!==null}};}
+      if(command==='identity set'){
+        const mode=browserIdentitySchema.safeParse(args.mode);if(!mode.success)throw new ApplicationError('INVALID_INPUT','浏览器身份须为clean或native');
+        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const result=this.settings.setIdentity(mode.data,args.reset===true,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result};
+      }
+      if(command==='tab profile list')return{result:{profiles:this.profiles.list(scope)}};
+      if(command==='tab profile create'){
+        const profileScope=args.scope??'isolated';if(profileScope!=='isolated'&&profileScope!=='imported')throw new ApplicationError('INVALID_INPUT','scope须为isolated或imported');
+        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const profile=this.profiles.create(scope,text(args.label),profileScope,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profile}};
+      }
+      if(command==='tab profile show'){
+        const tab=this.workspace.list(scope.taskId).find(tab=>tab.pageId===text(args.page));if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
+        this.profiles.ensureProject(scope.projectId);const profile=this.profiles.require(scope,tab.profileId);return{result:{browserPageId:tab.pageId,profileId:profile.id,profileLabel:profile.label}};
+      }
+      if(command==='tab profile set'||command==='tab profile use-default'){
+        if(command==='tab profile set'&&(args.page===undefined)===(args.task===undefined))throw new ApplicationError('INVALID_INPUT','set须指定page或task其中一个');
+        const profile=command==='tab profile use-default'?this.profiles.ensureProject(scope.projectId):this.profiles.require(scope,text(args.profile),'control');
+        this.profiles.assertAvailable(profile.id);
+        const tabs=this.workspace.list(scope.taskId),targets=args.page===undefined?tabs.filter(tab=>tab.kind==='tab'):tabs.filter(tab=>tab.pageId===text(args.page));
+        if(args.page!==undefined&&!targets.length)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
+        if(targets.some(tab=>tab.kind==='popup'))throw new ApplicationError('INVALID_INPUT','子窗口沿用来源页面登录态，请切换来源网页标签');
+        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        for(const tab of targets){this.profiles.assertAvailable(tab.profileId);await this.workspace.setProfile(scope.taskId,tab.pageId,profile.id,()=>{this.admit(scope,args);this.profiles.assertAvailable(profile.id);},send,scope.signal);}
+        this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profileId:profile.id,pages:targets.map(tab=>tab.pageId)}};
+      }
+      if(command==='tab profile delete'){
+        const profile=this.profiles.deletable(scope,text(args.profile));
+        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const release=this.profiles.lock(profile.id,'删除');
+        try{
+          await this.pages.cancelProfileInitializations(profile.id);
+          await this.workspace.removeProfileBindings(profile.id,taskId=>this.profiles.ensureProject(this.options.taskProject(taskId)!).id,()=>this.admit(scope,args),send);
+          // Child windows close with their opener. An orphan task may still have
+          // a native view until reconciliation; close it before clearing data.
+          for(const remaining of this.pages.all().filter(page=>page.profileId===profile.id)){
+            if(remaining.kind!=='popup'&&this.options.taskProject(remaining.taskId))throw new ApplicationError('RESOURCE_BUSY','仍有网页使用此登录态');
+            send();await this.pages.close(remaining.taskId,remaining.id);
+          }
+          this.admit(scope,args);send();await this.clearProfile(profile);
+          this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{deleted:profile.id}};
+        }finally{release();}
+      }
       if(command==='tab list')return{tabs:this.workspace.list(scope.taskId)};
       if(command==='tab show'||command==='tab current'){
         const tabs=this.workspace.list(scope.taskId),tab=command==='tab show'?tabs.find(tab=>tab.pageId===text(args.page)):tabs.find(tab=>tab.active);
@@ -83,6 +140,7 @@ export class BrowserService {
       if(command==='type'&&Array.from(text(args.input)).length>16384)throw new ApplicationError('INVALID_INPUT','type 最多16384字符；长文本请改用 inserttext');
       if(command==='wait'&&(args.fn!==undefined||args.timeout!==undefined&&(!Number.isInteger(args.timeout)||Number(args.timeout)<1||Number(args.timeout)>90000)))throw new ApplicationError('INVALID_INPUT','wait 不接受脚本，timeout须为1到90000毫秒');
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
+      if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile));
       if(command!=='tab create')page=await this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page));
       if(!read){
         const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,page?.id??null,command);
@@ -90,8 +148,7 @@ export class BrowserService {
       }
       let result:unknown;
       if(command==='tab create'){
-        if(args.profile!==undefined)throw new ApplicationError('INVALID_INPUT','S1只使用项目默认登录态');
-        send();page=await this.pages.create(scope.taskId,scope.projectId);
+        send();page=await this.pages.create(scope.taskId,scope.projectId,undefined,args.profile===undefined?undefined:text(args.profile));
         if(navigation!==undefined)await this.pages.navigate(page,navigation);
         result={pageId:page.id,url:page.contents.getURL()};
       }else{
@@ -102,6 +159,8 @@ export class BrowserService {
           const signal=AbortSignal.any([scope.signal,target.abort.signal,deadline.signal]);
           const perform=async()=>{
           if(signal.aborted)throw signal.reason;
+          this.profiles.assertAvailable(target.profileId);
+          if(command.startsWith('cookie '))return executeBrowserCookie(target,command,args,send);
           if(command==='tab switch'){this.workspace.commandTarget(scope.taskId,target.id,args.focus===true);send();return{result:{pageId:target.id,url:target.contents.getURL()}};}
           if(command==='tab close'){
             send();if(target.kind==='popup')await this.pages.close(scope.taskId,target.id,true);else await this.workspace.close(scope.taskId,target.id,true);
@@ -279,5 +338,35 @@ export class BrowserService {
       throw dispatched||read?failure:applicationPreflightFailure(failure,scope.operationId);
     }
   }
-  async dispose():Promise<void>{this.closed=true;await this.workspace.dispose();await this.pages.dispose();}
+  private async clearProfile(profile:BrowserProfile):Promise<void>{
+    const partition=session.fromPartition(profile.partition);await partition.closeAllConnections();await partition.clearData();await partition.clearAuthCache();
+    this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run('browserProfileState.v1:'+profile.id);this.profiles.forget(profile.id);
+  }
+  async preferences(taskId:string){
+    this.workspace.snapshot(taskId);return{...this.settings.snapshot(),downloadDirectory:app.getPath('downloads'),artifactBytes:await this.artifacts.usage()};
+  }
+  async clearArtifacts(taskId:string){this.workspace.snapshot(taskId);await this.artifacts.clear();return this.preferences(taskId);}
+  /** Task completion keeps profiles. Only missing task/project owners retire a
+   * partition; this also repairs cleanup interrupted by a previous App exit. */
+  reconcile():Promise<void>{
+    if(this.closed)return Promise.resolve();if(this.reconciling)return this.reconciling;
+    this.reconciling=(async()=>{
+      await this.workspace.reconcile();let busy=false;
+      for(const profile of this.profiles.all()){
+        const exists=profile.owner.kind==='task'?this.options.taskProject(profile.owner.id)!==null:!!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(profile.owner.id);
+        if(exists)continue;
+        let release:()=>void;
+        try{release=this.profiles.lock(profile.id,'清理');}catch(error){if(error instanceof ApplicationError&&error.code==='RESOURCE_BUSY'){busy=true;continue;}throw error;}
+        try{
+          await this.pages.cancelProfileInitializations(profile.id);
+          for(const page of this.pages.all().filter(page=>page.profileId===profile.id))await this.pages.close(page.taskId,page.id);
+          await this.clearProfile(profile);
+        }finally{release();}
+      }
+      const recent=this.options.sqlite.prepare('SELECT key FROM app_settings WHERE key LIKE ?').all('browserRecent.v1:%') as {key:string}[];
+      for(const row of recent)if(!this.options.sqlite.prepare('SELECT 1 FROM projects WHERE id=?').get(row.key.slice('browserRecent.v1:'.length)))this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run(row.key);
+      if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
+    })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
+  }
+  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();await this.pages.dispose();}
 }

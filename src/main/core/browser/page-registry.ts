@@ -8,6 +8,8 @@ import { BrowserPageQueue } from './queue';
 import { BrowserParkWindow } from './park-window';
 import { browserDigest } from './artifacts';
 import { BrowserError } from './errors';
+import {browserProjectProfile,type BrowserProfiles} from './profiles';
+export {browserProjectProfile} from './profiles';
 
 export interface BrowserPage {
   id:string;short:string;taskId:string;projectId:string;profileId:string;view:WebContentsView;contents:WebContents;
@@ -17,7 +19,6 @@ export interface BrowserPage {
 }
 type BrowserPopupOptions=BrowserWindowConstructorOptions&{webContents?:WebContents};
 export type BrowserPageEvent={type:'created'|'closed';page:BrowserPage};
-export const browserProjectProfile=(projectId:string)=>'project-'+browserDigest(projectId).slice(0,24);
 export class BrowserPageRegistry {
   private readonly pages=new Map<string,BrowserPage>();
   private readonly active=new Map<string,string>();
@@ -26,21 +27,39 @@ export class BrowserPageRegistry {
   private readonly observers=new Set<(event:BrowserPageEvent)=>void>();
   private readonly closing=new Map<string,Promise<void>>();
   private readonly navigationRequests=new WeakMap<BrowserPage,object>();
-  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null}){}
+  private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
+  constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles}){}
   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
   list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
+  all(){return[...this.pages.values()].filter(page=>!page.closed);}
+  private trackInitialization(contents:WebContents,profileId:string):()=>void{
+    let finish!:()=>void;const settled=new Promise<void>(resolve=>{finish=resolve;});this.initializing.set(contents,{profileId,settled,finish});
+    return()=>{this.initializing.delete(contents);finish();};
+  }
+  /** Called only with the profile lifecycle lock held. Closing unpublished
+   * contents prevents a late popup/create from writing after a data clear. */
+  async cancelProfileInitializations(profileId:string):Promise<void>{
+    const pending=[...this.initializing].filter(([,entry])=>entry.profileId===profileId);
+    for(const[contents]of pending)if(!contents.isDestroyed())contents.close();
+    await Promise.all(pending.map(([,entry])=>entry.settled));
+  }
   get(taskId:string,id?:string):BrowserPage {
     const page=this.pages.get(id??this.active.get(taskId)??'');
     if(!page||page.closed||page.contents.isDestroyed()||page.taskId!==taskId)throw new BrowserError(id?'BROWSER_TAB_NOT_FOUND':'BROWSER_NO_TAB','本任务没有这个网页标签');
     return page;
   }
-  async create(taskId:string,projectId:string,savedId?:string):Promise<BrowserPage>{
+  async create(taskId:string,projectId:string,savedId?:string,requestedProfile?:string):Promise<BrowserPage>{
     // A restored persistent page ID still needs a fresh reference scope. Counters
     // alone repeat after restart and can turn an old ref into a valid new ref.
-    const id=savedId??randomUUID(),short='k'+randomUUID().replaceAll('-',''),profileId=browserProjectProfile(projectId);
+    const id=savedId??randomUUID(),short='k'+randomUUID().replaceAll('-','');
+    const defaultProfile=this.options.profiles?.ensureProject(projectId),profileId=requestedProfile??defaultProfile?.id??browserProjectProfile(projectId);
+    if(requestedProfile&&requestedProfile!==browserProjectProfile(projectId)&&!this.options.profiles)throw new BrowserError('BROWSER_UNAVAILABLE','登录态注册表尚未就绪');
+    const profile=this.options.profiles?.require({taskId,projectId},profileId),partition=profile?.partition??'persist:wy-browser-'+profileId;
+    this.options.profiles?.assertAvailable(profileId);
     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
-    const view=new WebContentsView({webPreferences:{partition:'persist:wy-browser-'+profileId,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
+    const view=new WebContentsView({webPreferences:{partition,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
+    const initialized=this.trackInitialization(view.webContents,profileId);
     const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);
     const page:BrowserPage={id,short,taskId,projectId,profileId,view,contents:view.webContents,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:1000,height:700},closed:false,abort:new AbortController(),hostNavigation:null,kind:'tab'};
     view.webContents.setWindowOpenHandler(()=>({action:'deny'})); // Popup UI/lifecycle is implemented in S2.
@@ -56,18 +75,21 @@ export class BrowserPageRegistry {
       page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),
         // Darwin Unix-domain sockets have a short pathname limit. The home remains under userData.
         sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
+      this.options.profiles?.assertAvailable(profileId);
       this.pages.set(id,page);if(!this.active.has(taskId))this.active.set(taskId,id);
       this.publish('created',page);
       return page;
-    }catch(error){await proxy.stop();this.park.remove(view);view.webContents.close();throw error;}
+    }catch(error){await proxy.stop();this.park.remove(view);if(!view.webContents.isDestroyed())view.webContents.close();throw error;}finally{initialized();}
   }
   /** Electron binds the opener to the returned WebContents. The child uses its
    * own native window and the opener's exact session, never an App preload. */
   createPopup(opener:BrowserPage,options:BrowserPopupOptions,asTab=false):WebContents{
+    this.options.profiles?.assertAvailable(opener.profileId);
     const id=randomUUID(),short='k'+randomUUID().replaceAll('-','');
     // Adopt Electron's supplied contents to preserve the native opener identity.
     const view=new WebContentsView({...(options.webContents===undefined?{}:{webContents:options.webContents}),webPreferences:{...options.webPreferences,session:opener.contents.session,sandbox:true,contextIsolation:true,nodeIntegration:false,webSecurity:true,backgroundThrottling:false}});
     const contents=view.webContents;
+    const initialized=this.trackInitialization(contents,opener.profileId);
     const window=asTab?undefined:new BaseWindow({width:Math.max(320,Math.min(options.width??800,1400)),height:Math.max(240,Math.min(options.height??600,1000)),show:false,title:'WillYou · 网页登录'});
     const bounds=window?.getContentBounds()??{width:1000,height:700};window?.contentView.addChildView(view);view.setBounds({x:0,y:0,width:bounds.width,height:bounds.height});
     const proxy=new BrowserCdpProxy(contents),references=new BrowserReferences(proxy,short);
@@ -83,13 +105,15 @@ export class BrowserPageRegistry {
         if(asTab)await this.park.park(view,page.rect);
         await proxy.start();await references.initialize();
         if(contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
+        this.options.profiles?.assertAvailable(opener.profileId);
         page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
         this.pages.set(id,page);this.publish('created',page);if(this.mounted?.taskId===page.taskId)window?.showInactive();
-      }catch{await proxy.stop();this.park.remove(view);if(window&&!window.isDestroyed())window.close();if(!contents.isDestroyed())contents.close();}
+      }catch{await proxy.stop();this.park.remove(view);if(window&&!window.isDestroyed())window.close();if(!contents.isDestroyed())contents.close();}finally{initialized();}
     })();
     return contents;
   }
   async navigate(page:BrowserPage,url:string):Promise<void>{
+    this.options.profiles?.assertAvailable(page.profileId);
     let normalized:string;
     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
     const request={};this.navigationRequests.set(page,request);page.references.invalidate();page.hostNavigation=normalized;
@@ -113,6 +137,7 @@ export class BrowserPageRegistry {
     }
   }
   activate(taskId:string,pageId:string):void{this.get(taskId,pageId);this.active.set(taskId,pageId);}
+  isMounted(page:BrowserPage):boolean{return this.mounted===page;}
   close(taskId:string,pageId:string,fromPageQueue=false):Promise<void>{
     const page=this.pages.get(pageId);
     if(!page||page.taskId!==taskId)return Promise.reject(new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签'));

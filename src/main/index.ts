@@ -154,7 +154,7 @@ async function main(): Promise<void> {
   });
   const ptys = new PtyManager();
   let browser:BrowserService|undefined;
-  const browserOrphans=()=>{void browser?.workspace.reconcile().catch(()=>console.warn('[browser] orphan-page cleanup pending'));};
+  const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const tasks = new TaskService({
     db: client.db,
     ptys,
@@ -200,6 +200,7 @@ async function main(): Promise<void> {
         const source=JSON.parse(readFileSync(join(browserRoot,'SOURCE.json'),'utf8')),binary=source.files.find((file:{arch:string})=>file.arch===process.arch);
         if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,window:getMainWindow,changed:taskId=>events.emit(browserChangedEvent,{taskId}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
       }
+      await browser?.reconcile();
       applications=new ApplicationService(agentSupport.store,{browser,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
       await applications.recover();
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){

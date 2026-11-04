@@ -1,0 +1,63 @@
+{
+  "at": "2026-11-03T23:46:11.404Z",
+  "sourceSha256": "8b4eadfc495d10e07d369ad6b61673aed911a057f8efef0ef196376882a6ac4a",
+  "layer": "I",
+  "cases": {
+    "M12-T078": {
+      "checks": {
+        "cleanup": true,
+        "rawTransport": true,
+        "separateProfiles": true,
+        "ownCookie": true,
+        "ownStorage": true,
+        "otherCookie": true,
+        "otherStorage": true,
+        "cache": true,
+        "requestCookie": true
+      },
+      "status": "passed"
+    },
+    "M12-T084": {
+      "checks": {
+        "cleanup": true,
+        "rawTransport": true,
+        "set": true,
+        "attributes": true,
+        "actualHttps": true,
+        "deleted": true,
+        "otherCookiePreserved": true,
+        "onlyFixtureTrust": true
+      },
+      "boundary": "I synthetic HTTPS trust precondition, exact certificate fingerprint and loopback hostname only; not certificate UI acceptance",
+      "status": "passed"
+    },
+    "M12-T023-profile-regression": {
+      "checks": {
+        "cleanup": true,
+        "rawTransport": true,
+        "noNode": true,
+        "unknownProfile": true,
+        "unregisteredPartition": true,
+        "noNewViews": true
+      },
+      "scope": "new registered profile coverage; original WebPreferences evidence remains unchanged by source impact",
+      "status": "passed"
+    },
+    "M12-T075-profile-subset": {
+      "checks": {
+        "cleanup": true,
+        "rawTransport": true,
+        "registered": true,
+        "callerOwned": true,
+        "emptyImported": true,
+        "shows": true,
+        "complete": false
+      },
+      "missing": [
+        "set/use-default/delete/clone including login state; cross-task/project ID native negatives"
+      ],
+      "scope": "partial only, never counted as a whole formal pass",
+      "status": "partial"
+    }
+  }
+}

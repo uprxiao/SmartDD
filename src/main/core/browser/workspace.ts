@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import type Database from 'better-sqlite3';
+import {ApplicationError} from '@shared/applications';
 import {shell} from 'electron';
 import {BROWSER_BLANK_URL,describeBrowserLoadFailure,normalizeBrowserNavigationUrl,type BrowserSearchEngine} from '@shared/browser-navigation';
 import {browserWorkspaceSchema,type BrowserWorkspaceState,type BrowserTabState,type SavedBrowserWorkspace,type BrowserShortcut} from '@shared/browser-workspace';
@@ -25,12 +26,14 @@ export class BrowserWorkspace {
   private placementVersion=0;
   private readonly finds=new Map<string,{requestId:number;active:number;total:number}>();
   private readonly agentActive=new Map<string,string>();
+  private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
+  private readonly overlays=new Set<string>();
   private reconciling?:Promise<void>;
-  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
       if(event.type==='created')this.attached(event.page);
       else if(!this.shuttingDown){
-        const id=event.page.id;this.runtime.delete(id);this.finds.delete(id);this.navigations.delete(id);this.cancelRecovery(id);
+        const id=event.page.id;this.runtime.delete(id);this.finds.delete(id);this.navigations.delete(id);this.overlays.delete(id);this.cancelRecovery(id);
         if(this.agentActive.get(event.page.taskId)===id)this.agentActive.delete(event.page.taskId);
         if(event.page.kind!=='tab'||this.closingTabs.has(id))return;
         const state=this.tasks.get(event.page.taskId);if(state){state.tabs=state.tabs.filter(t=>t.id!==event.page.id);if(state.activeId===event.page.id)state.activeId=state.tabs.at(-1)?.id??null;this.save(event.page.taskId);}
@@ -80,10 +83,11 @@ export class BrowserWorkspace {
     this.changed(taskId);
   }
   private ensure(taskId:string,id:string):Promise<BrowserPage>{
+    const changing=this.profileChanges.get(id);if(changing)return changing.then(page=>{if(!page)throw new BrowserError('BROWSER_NO_TAB','启动页尚未加载网页');return page;});
     const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live)return Promise.resolve(live);
     const existing=this.opening.get(id);if(existing)return existing;
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return Promise.reject(new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签'));
-    const promise=(async()=>{const page=await this.options.pages.create(taskId,this.project(taskId),id);if(tab.url!==BROWSER_BLANK_URL)await this.loadUrl(page,tab.url);return page;})().finally(()=>this.opening.delete(id));
+    const promise=(async()=>{const page=await this.options.pages.create(taskId,this.project(taskId),id,tab.profileId);if(tab.url!==BROWSER_BLANK_URL)await this.loadUrl(page,tab.url);return page;})().finally(()=>this.opening.delete(id));
     this.opening.set(id,promise);return promise;
   }
   /** Explicit Agent use of a startup tab initializes its engine lazily too. */
@@ -98,7 +102,7 @@ export class BrowserWorkspace {
     const state=this.load(taskId),pages=[...state.tabs.map(t=>({pageId:t.id,browserPageId:t.id,title:t.title,url:t.url,profileId:t.profileId,kind:'tab' as const})),...this.options.pages.list(taskId).filter(p=>p.kind==='popup').map(p=>({pageId:p.id,browserPageId:p.id,title:p.contents.getTitle(),url:p.contents.getURL(),profileId:p.profileId,kind:'popup' as const,openerPageId:p.openerPageId}))],active=this.agentActive.get(taskId)??state.activeId??pages[0]?.pageId;
     return pages.map((page,index)=>({...page,index,active:page.pageId===active}));
   }
-  async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine='bing'):Promise<BrowserWorkspaceState>{
+  async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine=this.options.searchEngine?.()??'bing'):Promise<BrowserWorkspaceState>{
     const url=normalizeBrowserNavigationUrl(address,engine);if(url===null){this.notices.set(taskId,'请输入有效的 http(s) 或 localhost 地址');this.changed(taskId);return this.snapshot(taskId);}
     this.notices.delete(taskId);const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
     if(url===BROWSER_BLANK_URL){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live){this.closingTabs.add(id);try{await this.options.pages.close(taskId,id);}finally{this.closingTabs.delete(id);}}tab.url=url;tab.title='新标签页';tab.favicon=null;this.runtime.delete(id);this.save(taskId);}
@@ -123,8 +127,18 @@ export class BrowserWorkspace {
     const version=++this.placementVersion;
     // Unmount remains possible after project deletion, before UI unmount finishes.
     if(rect===null){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live)await this.options.pages.placement(taskId,id,null);return;}
+    if(this.overlays.has(id))return;
     const tab=this.load(taskId).tabs.find(t=>t.id===id);if(!tab||tab.url===BROWSER_BLANK_URL||this.runtime.get(id)?.failure)return;
-    const page=await this.ensure(taskId,id);if(version!==this.placementVersion)return;await this.options.pages.placement(taskId,page.id,rect);
+    const page=await this.ensure(taskId,id);if(version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
+  }
+  async overlay(taskId:string,id:string,open:boolean):Promise<string|null>{
+    if(!this.load(taskId).tabs.some(tab=>tab.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
+    if(!open){this.overlays.delete(id);return null;}
+    this.overlays.add(id);this.placementVersion++;const page=this.options.pages.list(taskId).find(page=>page.id===id);if(!page)return null;
+    try{
+      const image=await page.contents.capturePage(),size=image.getSize(),thumbnail=size.width>1920?image.resize({width:1920}):image;
+      await this.placement(taskId,id,null);return'data:image/jpeg;base64,'+thumbnail.toJPEG(80).toString('base64');
+    }catch(error){this.overlays.delete(id);throw error;}
   }
   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
     this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.contents;
@@ -132,12 +146,58 @@ export class BrowserWorkspace {
     const requestId=wc.findInPage(text,{forward,findNext:next});this.finds.set(id,{requestId,active:0,total:0});
   }
   async close(taskId:string,id:string,fromPageQueue=false):Promise<BrowserWorkspaceState>{
+    const changing=this.profileChanges.get(id);if(changing)await changing;
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return this.snapshot(taskId);
     this.cancelRecovery(id);const pending=this.opening.get(id);if(pending&&!this.options.pages.list(taskId).some(p=>p.id===id))await pending;
     this.closingTabs.add(id);try{if(this.options.pages.list(taskId).some(p=>p.id===id))await this.options.pages.close(taskId,id,fromPageQueue);}finally{this.closingTabs.delete(id);}
     state.closed=[...state.closed,tab].slice(-10);state.tabs=state.tabs.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.tabs.at(-1)?.id??null;this.runtime.delete(id);this.save(taskId);return this.snapshot(taskId);
   }
   reopen(taskId:string):BrowserWorkspaceState{const state=this.load(taskId),old=state.closed.pop();if(old){const tab={...old,id:randomUUID()};state.tabs.push(tab);state.activeId=tab.id;this.save(taskId);}return this.snapshot(taskId);}
+  /** The persistent tab ID survives a partition change; the engine, helper and
+   * reference scope do not. Old queued commands are rejected by the old queue. */
+  setProfile(taskId:string,id:string,profileId:string,admit:()=>void,dispatched:()=>void,signal?:AbortSignal):Promise<BrowserPage|undefined>{
+    if(this.profileChanges.has(id))return Promise.reject(new ApplicationError('RESOURCE_BUSY','网页正在切换登录态'));
+    if(this.opening.has(id))return Promise.reject(new ApplicationError('RESOURCE_BUSY','网页引擎正在初始化，请稍后切换登录态'));
+    const state=this.load(taskId),tab=state.tabs.find(tab=>tab.id===id),old=this.options.pages.list(taskId).find(page=>page.id===id);
+    if(!tab)return Promise.reject(new BrowserError('BROWSER_TAB_NOT_FOUND','只有网页标签可以切换登录态；子窗口随来源页面关闭'));
+    const work=async()=>{
+      admit();if(signal?.aborted)throw signal.reason;
+      if(tab.profileId===profileId)return old;
+      const active=this.agentActive.get(taskId)===id,mounted=old&&this.options.pages.isMounted(old),placement=this.placementVersion;
+      // Keep the last committed address rather than replay an in-flight request.
+      const url=old?.contents.getURL()||tab.url;
+      dispatched();this.closingTabs.add(id);
+      try{if(old)await this.options.pages.close(taskId,id,true);}finally{this.closingTabs.delete(id);}
+      tab.profileId=profileId;tab.url=url;tab.favicon=null;this.runtime.delete(id);this.save(taskId);
+      admit();if(signal?.aborted)throw signal.reason;
+      if(!old||url===BROWSER_BLANK_URL){if(active)this.agentActive.set(taskId,id);return undefined;}
+      // close() has fully disposed the previous daemon before reusing its home.
+      const next=await this.options.pages.create(taskId,this.project(taskId),id,profileId);
+      if(active){this.agentActive.set(taskId,id);this.options.pages.activate(taskId,id);}
+      if(mounted&&placement===this.placementVersion)await this.options.pages.placement(taskId,id,old.rect);
+      await this.loadUrl(next,url);return next;
+    };
+    const promise=(old?old.queue.run(admit,work,signal):Promise.resolve().then(work)).finally(()=>this.profileChanges.delete(id));
+    this.profileChanges.set(id,promise);return promise;
+  }
+  /** Includes unloaded and recently closed tabs so deleting a profile cannot
+   * resurrect its partition after restart or Reopen Closed Tab. */
+  async removeProfileBindings(profileId:string,projectProfile:(taskId:string)=>string,admit:()=>void,dispatched:()=>void):Promise<void>{
+    const rows=this.options.sqlite.prepare('SELECT key FROM app_settings WHERE key LIKE ?').all('browserWorkspace.v1:%') as {key:string}[];
+    const tasks=new Set([...this.tasks.keys(),...rows.map(row=>row.key.slice('browserWorkspace.v1:'.length))]);
+    for(const taskId of tasks){
+      if(!this.options.taskProject(taskId))continue;
+      const state=this.load(taskId);
+      if(!state.tabs.some(tab=>tab.profileId===profileId)&&!state.closed.some(tab=>tab.profileId===profileId))continue;
+      const replacement=projectProfile(taskId);
+      for(const tab of state.closed)if(tab.profileId===profileId)tab.profileId=replacement;
+      // Re-read after each asynchronous engine replacement. UI close/reopen can
+      // move a tab between these lists while the native teardown is pending.
+      while(true){const tab=state.tabs.find(tab=>tab.profileId===profileId);if(!tab)break;await this.setProfile(taskId,tab.id,replacement,admit,dispatched);}
+      for(const tab of state.closed)if(tab.profileId===profileId)tab.profileId=replacement;
+      this.save(taskId);
+    }
+  }
   async confirmExternal(taskId:string,id:string,allow:boolean):Promise<void>{const request=this.external.get(taskId);if(!request||request.id!==id)throw new BrowserError('BROWSER_ERROR','外部应用请求已失效');this.project(taskId);this.external.delete(taskId);this.changed(taskId);if(allow)await shell.openExternal(request.url);}
   private cancelRecovery(id:string){const timer=this.recovering.get(id);if(timer)clearTimeout(timer);this.recovering.delete(id);}
   private scheduleRecovery(page:BrowserPage){
@@ -187,7 +247,10 @@ export class BrowserWorkspace {
   }
   reconcile():Promise<void>{
     if(this.reconciling)return this.reconciling;
-    this.reconciling=(async()=>{for(const taskId of this.tasks.keys())if(!this.options.taskProject(taskId)){
+    this.reconciling=(async()=>{
+      const rows=this.options.sqlite.prepare('SELECT key FROM app_settings WHERE key LIKE ?').all('browserWorkspace.v1:%') as {key:string}[];
+      const taskIds=new Set([...this.tasks.keys(),...rows.map(row=>row.key.slice('browserWorkspace.v1:'.length))]);
+      for(const taskId of taskIds)if(!this.options.taskProject(taskId)){
       for(const page of this.options.pages.list(taskId))if(this.options.pages.list(taskId).some(p=>p.id===page.id)){this.cancelRecovery(page.id);await this.options.pages.close(taskId,page.id);this.runtime.delete(page.id);}
       this.tasks.delete(taskId);this.external.delete(taskId);this.notices.delete(taskId);this.options.sqlite.prepare('DELETE FROM app_settings WHERE key=?').run(this.key(taskId));this.changed(taskId);
     }})().finally(()=>{this.reconciling=undefined;});return this.reconciling;
