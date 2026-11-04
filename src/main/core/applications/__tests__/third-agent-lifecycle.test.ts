@@ -64,7 +64,7 @@ it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 regist
     await support.initialize();expect(support.status().state).toBe('ready');
     for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
     applications=new ApplicationService(store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
-    managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper,processes,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+    managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{retainCatalogPath:true,helper,processes,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
     await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
     const first=await tasks.create({projectId,dirId:null,aiProfileId:profile.id,firstMessage:'synthetic third Agent task'}), firstRun=first.task.runtimeSnapshot!.runId;
     const observed=await vi.waitFor(()=>{try{return JSON.parse(readFileSync(report,'utf8'));}catch{throw Error('scripted report pending: '+transcript.slice(-2000));}},{timeout:15000});

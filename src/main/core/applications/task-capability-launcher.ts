@@ -29,6 +29,7 @@ import { PrivateApplicationBroker } from './private-broker';
 import {ApplicationCliGateway} from './cli-gateway';
 import {CurrentApplicationAuthorization} from './current-authorization';
 import {SkillLibraryService} from './skill-library-service';
+import {cleanupPreLibraryCopies} from './legacy-copy-cleanup';
 import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {applicationSkillDelivery,applicationSkillProjectionName} from './application-skill-template';
 import {applicationSkillSnapshotView} from './application-skill-view';
@@ -66,6 +67,8 @@ export interface TaskCapabilityLauncherOptions {
   skillLibraryHome?:string;
   /** Tests of the pre-R1.0 catalog path only: new tasks and pre-R1.0 sessions keep that path instead of the library (S3d removes it). */
   retainCatalogPath?:boolean;
+  /** Packaged App only: also remove pre-R1.0 copies whose markers name no data directory (M4 copies, coordination root). */
+  cleanupUnattributable?:boolean;
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
@@ -94,6 +97,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
   private readonly library?:SkillLibraryService;
+  /** Last pre-R1.0 copy cleanup (diagnostics). */
+  legacyCleanup:import('./legacy-copy-cleanup').LegacyCopyCleanup|null=null;
   readonly legacyPreparationWarnings=new Map<string,string>();
   private readonly legacyRetention:LegacyTaskRetention;
   private closed=false;private closing?:Promise<void>;private sweeping=false;
@@ -141,8 +146,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   static async open(support:AgentSupportService,capabilities:CapabilityService,applications:ApplicationService,options:TaskCapabilityLauncherOptions):Promise<ManagedTaskCapabilities>{
     const result=new ManagedTaskCapabilities(support,capabilities,applications,options);
     try{await result.runs.recover();
-      const roots=support.store.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[];
+      // R1.0: the pre-R1.0 shared discovery catalog is only recovered for its retained tests; production cleans its old copies instead.
+      const roots=options.retainCatalogPath?support.store.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[]:[];
       for(const root of roots){try{if(root.home!==canonicalFuturePath(root.home)||digest(root.home)!==root.id)throw new ApplicationError('OWNERSHIP_CONFLICT','原发现根身份不同');const catalog=result.catalog(root.home);await catalog.recoverConsumers();await catalog.recoverRecordedPublication();}catch(error){result.recoveryWarnings.push({homeId:root.id,code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}}
+      if(options.skillLibraryHome&&!options.retainCatalogPath)try{result.legacyCleanup=cleanupPreLibraryCopies({home:options.skillLibraryHome,storeId:support.store.storeId,unattributable:options.cleanupUnattributable===true});}catch(error){result.recoveryWarnings.push({homeId:'legacy-copy-cleanup',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
       result.syncSkillLibrary();await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
   }
   /** Converge the Skill library after startup and every application change; a failure never blocks tasks. */
@@ -246,7 +253,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
     try{const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner);native=await(this.options.inspectNative??delivery.inspectNative).call(delivery,input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     if(native)this.planningAgents.set(input.taskId,native);
-    // R1.0: sessions bound to a library-delivery adapter never touch the shared discovery catalog.
+    // R1.0: production launches never touch the pre-R1.0 shared discovery catalog.
+    if(!this.options.retainCatalogPath)return this.prepareCurrent(input,native,unavailable);
     const library=native?await this.libraryLaunch(input,native):undefined;
     if(library)return this.prepareLibrary(input,native!,library);
     let runtimeCheck:Promise<boolean>|undefined,applicationRuntimeIssue:'HOST_INCOMPATIBLE'|undefined;
@@ -398,6 +406,30 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       return launch;
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
+  /** R1.0 production launch: the library when the Agent can use it, otherwise native only; never the shared discovery catalog. */
+  private async prepareCurrent(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined):Promise<TaskCapabilityLaunch>{
+    if(native){const library=await this.libraryLaunch(input,native);if(library)return this.prepareLibrary(input,native,library);}
+    const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,code=unavailable??'AGENT_ADAPTER_UNSUPPORTED';
+    if(input.previous?.sessionCapabilities){
+      const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针不属于当前会话');
+      const current=await this.sessions.get(input.taskId);
+      if(current.snapshot.projectId!==input.projectId||current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
+      return this.prepareUnavailableSession(input,current,native,code,undefined);
+    }
+    if(input.newTask){
+      const adapter=this.support.status().adapters.find(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.skillDelivery==='library');
+      if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本版本未准备此Agent适配资源');
+      const current=await this.sessions.create(this.createLibrarySnapshot(input,native?.version??'unverified',adapter.hash),input.home);
+      await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
+      return this.prepareUnavailableSession(input,current,native,code,undefined);
+    }
+    // History without a session record (before M10): native only.
+    if(input.previous&&!legacyRuntimeMetadata.safeParse(input.previous).success)throw new ApplicationError('SNAPSHOT_CORRUPT','原能力快照格式不支持，保留原记录并阻止受管恢复');
+    const recorded=this.support.store.sqlite.prepare('SELECT schema_version,legacy_status FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {schema_version:number;legacy_status:string}|undefined;
+    if(recorded&&(recorded.schema_version!==0||recorded.legacy_status!=='history-unknown'))throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针缺失或原历史已待核查，保留原登记且不降级重建');
+    await this.sessions.holdUnknown({taskId:input.taskId,projectId:input.projectId,runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,reason:'history-unknown'});
+    return this.prepareNativeHistory(input,native,unavailable,undefined);
+  }
   /** The library adapter that serves this launch: a resumed library session, or a new task on a declared Agent version. */
   private async libraryLaunch(input:TaskLaunchInput,native:NativeLaunchContext):Promise<{adapterHash:string;current?:StoredCapabilitySession}|undefined>{
     const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id;
@@ -429,7 +461,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
       if((await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime').length!==1)return undefined;
       // Nothing after the adoption may fail back to the old path: the stored pointer has already moved.
-      return{adapterHash:adapter.hash,current:await this.sessions.adoptLibrary(input.taskId,old.pointer.snapshotHash,this.createLibrarySnapshot(input,native,adapter.hash))};
+      return{adapterHash:adapter.hash,current:await this.sessions.adoptLibrary(input.taskId,old.pointer.snapshotHash,this.createLibrarySnapshot(input,native.version,adapter.hash))};
     }catch(error){
       if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;
       // Once adopted, the old path no longer matches the stored pointer: report instead of falling back.
@@ -444,24 +476,24 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     return null;
   }
   /** Audit record of the session; what it may call is decided per call (R17), and Skills come from the library (R16). */
-  private createLibrarySnapshot(input:TaskLaunchInput,native:NativeLaunchContext,adapterHash:string):CapabilitySessionSnapshot{
+  private createLibrarySnapshot(input:TaskLaunchInput,agentVersion:string,adapterHash:string):CapabilitySessionSnapshot{
     const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,adapter=this.support.adapters.get(adapterHash).metadata;
     const apps=this.selectedApps(input.projectId),bindings=this.bindings(input.projectId,apps.map(a=>a.appId)),packages=apps.map(a=>this.authorization.packageSelection(input.projectId,a.packageHash,bindings,[]));
     const runtimeHash=packages[0]?.runtimeHash??this.applicationRuntimeHash(),appMcp=applicationMcpServerName(digest(input.taskId));
     if(new Set(packages.map(p=>p.runtimeHash)).size>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
     const mcp:CapabilitySessionSnapshot['mcp']=runtimeHash?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash}]:[];
     if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
-    return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:'library',packages,standardSkills:[],mcp,provenance:'created'};
+    return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,standardSkills:[],mcp,provenance:'created'};
   }
   private async prepareLibrary(input:TaskLaunchInput,native:NativeLaunchContext,selected:{adapterHash:string;current?:StoredCapabilitySession}):Promise<TaskCapabilityLaunch>{
     let current=selected.current;
     if(!current){
-      current=await this.sessions.create(this.createLibrarySnapshot(input,native,selected.adapterHash),input.home);
+      current=await this.sessions.create(this.createLibrarySnapshot(input,native.version,selected.adapterHash),input.home);
       await this.sessions.addLegacyRuntimeReference(input.taskId,current.pointer.snapshotHash,this.capabilities.runtimeIdentity().hash);
     }
     const snapshot=current.snapshot,stored=current;
     await this.configureCli(input,native,snapshot);
-    if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported'){const catalog=this.catalog(input.home);return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED',catalog);}
+    if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported')return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED',this.options.retainCatalogPath?this.catalog(input.home):undefined);
     const bridgeReady=!snapshot.mcp.some(m=>m.kind==='applications')||await(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
     const run=await this.runs.reserve({taskId:input.taskId,snapshotHash:stored.pointer.snapshotHash,bindings:[]}),entry:ActiveLaunch={run};this.active.set(run.runId,entry);
     try{
@@ -503,16 +535,16 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private originalTransientAbsent(path:string):boolean{
     try{lstatSync(path);return false;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return true;throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原临时目录状态暂不能核验');}
   }
-  private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
-    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=await catalog.snapshot(),isolationEntry=snapshot.legacyBinding?this.currentAdapter(snapshot.runner,native?.version):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
-    const knownVersion=Boolean(native&&(!unavailable||unavailable==='RESOURCE_BUSY'||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=this.shared(snapshot.runner)||!knownVersion;
-    const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
+  private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog|undefined):Promise<TaskCapabilityLaunch>{
+    const snapshot=current.snapshot,adapter=this.support.adapters.get(snapshot.adapterBinding.hash),collection=(catalog?await catalog.snapshot():{generation:'library',entries:[]} as unknown as Awaited<ReturnType<DiscoveryCatalog['snapshot']>>),isolationEntry=snapshot.legacyBinding?this.currentAdapter(snapshot.runner,native?.version):undefined,isolation=isolationEntry?this.support.adapters.get(isolationEntry.hash):adapter;
+    const knownVersion=Boolean(native&&(!unavailable||unavailable==='RESOURCE_BUSY'||snapshot.legacyBinding&&unavailable!=='AGENT_ADAPTER_UNSUPPORTED')&&isolation.metadata.projectionFormatVersion===1&&isolation.metadata.cliVersions.includes(native.version)),consumesH=!!catalog&&(this.shared(snapshot.runner)||!knownVersion);
+    const discovery=consumesH?await catalog!.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
     const resources=[`agent-adapter:${snapshot.runner}:${snapshot.adapterBinding.hash}`,...(isolation.hash!==adapter.hash?[isolation.resource.resourceId]:[]),...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
     const reserve=(ids?:{runId:string;ptyId:string})=>this.runs.reserveFixedNativeGuard({taskId:input.taskId,projectId:input.projectId,runner:snapshot.runner,snapshotHash:current.pointer.snapshotHash,resourceIds:resources,...(discovery?{discovery}:{}),...(snapshot.legacyBinding||unavailable?{restriction:{reason:'managed_capabilities_unavailable' as const,issueCode:unavailable==='AGENT_ADAPTER_UNSUPPORTED'||unavailable==='AGENT_CAPABILITY_NAME_CONFLICT'?unavailable:'RESOURCE_RECOVERY_REQUIRED' as const}}:{}),verify:async proof=>{
-      discoveryProof=proof;this.support.adapters.verify(snapshot.adapterBinding.hash);if(isolation.hash!==adapter.hash)this.support.adapters.verify(isolation.hash);if(consumesH)catalog.verifyNativeIsolation(collection,proof);
+      discoveryProof=proof;this.support.adapters.verify(snapshot.adapterBinding.hash);if(isolation.hash!==adapter.hash)this.support.adapters.verify(isolation.hash);if(consumesH)catalog!.verifyNativeIsolation(collection,proof);
       if(!input.newTask)await this.sessions.verifyNativeIdentity(input.taskId,{runner:snapshot.runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
     }},ids);
-    const hold=consumesH?await catalog.reserveNativeGuardRun(collection.generation,snapshot.runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+    const hold=consumesH?await catalog!.reserveNativeGuardRun(collection.generation,snapshot.runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
     try{
       await run.prepare();
       let args:string[]=[];
@@ -520,32 +552,32 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         // Only compute false discovery flags; retain the actual fixed S everywhere
         // else. This transient request is neither stored nor granted a bridge.
         const {legacyBinding:_original,...fixed}=snapshot,hidden:CapabilitySessionSnapshot={...fixed,provenance:'created',adapterBinding:{id:snapshot.runner,version:isolation.metadata.version,hash:isolation.hash,projectionFormatVersion:1,nativeToolNames:{}},packages:[],standardSkills:[],mcp:[]};
-        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
-        const request:AgentLoadRequest={snapshot:hidden,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(isolation.hash,request,discoveryProof):this.support.adapters.plan(isolation.hash,request)).args;
+        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog!.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+        const request:AgentLoadRequest={snapshot:hidden,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:catalog!.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(isolation.hash,request,discoveryProof):this.support.adapters.plan(isolation.hash,request)).args;
       }
       const issue=snapshot.legacyBinding?unavailable??'RESOURCE_RECOVERY_REQUIRED':unavailable??'CAPABILITY_UNAVAILABLE',runtime=this.unavailableRuntime(input,current,run.runId,issue);if((!native||!adapter.metadata.cliVersions.includes(native.version))&&!runtime.snapshot.selfCheck?.issues.includes('AGENT_ADAPTER_UNSUPPORTED'))runtime.snapshot.selfCheck?.issues.push('AGENT_ADAPTER_UNSUPPORTED');entry.runtime=runtime;
       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原会话原生启动已取消');
       try{await this.applications.sessionDiagnostics.prepared({schema:2,capabilities:nativeCapabilityPreparation(snapshot,{applications:[],standardPaths:[],mcpNames:[],issue}),runId:run.runId,selectionHash:current.selectionHash,cliVersion:native?.version??null,adapterHash:snapshot.adapterBinding.hash,state:'unavailable',issueCode:issue,manifestPath:runtime.snapshot.manifestPath,configPaths:[],preparedAt:new Date().toISOString()});}catch{/* Display evidence grants nothing. */}
       let phase:'prepared'|'native-only'|'arming'='prepared';
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,assertBeforeFork:()=>{if(discoveryProof){this.support.adapters.verify(snapshot.adapterBinding.hash);if(isolation.hash!==adapter.hash)this.support.adapters.verify(isolation.hash);catalog.verifyNativeIsolation(collection,discoveryProof);}},nativeOnly:async reason=>{
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,assertBeforeFork:()=>{if(discoveryProof){this.support.adapters.verify(snapshot.adapterBinding.hash);if(isolation.hash!==adapter.hash)this.support.adapters.verify(isolation.hash);catalog!.verifyNativeIsolation(collection,discoveryProof);}},nativeOnly:async reason=>{
         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生启动窗口已使用');
         launch.args=[];runtime.snapshot.selfCheck?.issues.push(reason);phase='native-only';return launch;
       },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原会话启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry)),bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});runtime.snapshot.sessionCapabilities=bound.pointer;}};
       return launch;
     }catch(error){await run.stop('unavailable-prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
-  private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog):Promise<TaskCapabilityLaunch>{
+  private async prepareNativeHistory(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined,catalog:DiscoveryCatalog|undefined):Promise<TaskCapabilityLaunch>{
     const runner:string=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,adapter=this.currentAdapter(runner,native?.version);if(!adapter)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','缺少原生历史隔离所需适配资源');
-    const collection=await catalog.snapshot(),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
+    const collection=(catalog?await catalog.snapshot():{generation:'library',entries:[]} as unknown as Awaited<ReturnType<DiscoveryCatalog['snapshot']>>),knownVersion=native&&this.support.adapters.get(adapter.hash).metadata.cliVersions.includes(native.version);
     // A native-only guard grants no application bridge. When filtering is unverified,
     // preserve native argv/config and freeze H for the consumer rather than blocking
     // the ordinary Agent or pretending its managed Skill selection was validated.
     const nativeUnverified=Boolean(!native||unavailable||!knownVersion);
     const record=this.support.store.sqlite.prepare("SELECT snapshot_hash AS hash FROM capability_session_snapshots WHERE task_id=? AND schema_version=0 AND retention_state='hold'").get(input.taskId) as {hash:string}|undefined;if(!record)throw new ApplicationError('SESSION_ON_HOLD','缺少原历史保留依据');
-    const consumesH=this.shared(runner)||!knownVersion,resourceIds=[`agent-adapter:${runner}:${adapter.hash}`,...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
-    const discovery=consumesH?await catalog.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
-    const reserve=(ids?:{runId:string;ptyId:string})=>this.runs.reserveNativeGuard({taskId:input.taskId,projectId:input.projectId,runner,snapshotHash:record.hash,resourceIds,...(discovery?{discovery}:{}),verify:async proof=>{discoveryProof=proof;this.support.adapters.verify(adapter.hash);if(consumesH){if(proof)catalog.verifyNativeIsolation(collection,proof,true);else catalog.verify(collection);}}},ids);
-    const hold=consumesH?await catalog.reserveNativeGuardRun(collection.generation,runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
+    const consumesH=!!catalog&&(this.shared(runner)||!knownVersion),resourceIds=[`agent-adapter:${runner}:${adapter.hash}`,...(consumesH?collection.entries.filter(e=>e.storeId===this.support.store.storeId).map(e=>e.resourceId):[])];
+    const discovery=consumesH?await catalog!.nativeGuardSelection():undefined;let discoveryProof:NativeGuardDiscoveryProof|undefined;
+    const reserve=(ids?:{runId:string;ptyId:string})=>this.runs.reserveNativeGuard({taskId:input.taskId,projectId:input.projectId,runner,snapshotHash:record.hash,resourceIds,...(discovery?{discovery}:{}),verify:async proof=>{discoveryProof=proof;this.support.adapters.verify(adapter.hash);if(consumesH){if(proof)catalog!.verifyNativeIsolation(collection,proof,true);else catalog!.verify(collection);}}},ids);
+    const hold=consumesH?await catalog!.reserveNativeGuardRun(collection.generation,runner,ids=>reserve(ids)):undefined,run=hold?.run??await reserve(),entry:ActiveLaunch={run,hold};this.active.set(run.runId,entry);
     try{
       await run.prepare();
       let args:string[]=[];
@@ -553,13 +585,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         // A transient empty selection is used solely to prepare false discovery
         // flags. It is never persisted, inspected as history or granted a bridge.
         const snapshot:CapabilitySessionSnapshot={schema:2,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapter.hash,projectionFormatVersion:1,nativeToolNames:{}},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:native.version,adapterRevision:1},catalogGeneration:collection.generation,packages:[],standardSkills:[],mcp:[],provenance:'migrated-known-legacy'};
-        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
-        const request:AgentLoadRequest={snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner,home:catalog.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(adapter.hash,request,discoveryProof):this.support.adapters.plan(adapter.hash,request)).args;
+        const omissions=discoveryProof?nativeGuardCatalogOmissions(this.support.store,discoveryProof,catalog!.home,collection):undefined,flags=native.userSkillConfig.map(item=>{if(typeof item.path!=='string')return item;const path=canonicalFuturePath(resolve(input.cwd,item.path)),known=collection.entries.find(e=>!omissions?.has(e.path)&&(canonicalFuturePath(e.path)===path||canonicalFuturePath(dirname(e.path))===path));return known?{...item,path:known.path}:item;});
+        const request:AgentLoadRequest={snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner,home:catalog!.home},pluginRoot:null,pluginHash:null,catalog:collection,userSkillConfig:flags,inventory:native.inventory,mcp:[]};args=(discoveryProof?this.support.adapters.planNativeGuard(adapter.hash,request,discoveryProof):this.support.adapters.plan(adapter.hash,request)).args;
       }
       const check:RuntimeSnapshot['selfCheck']={status:'failed',issues:['HISTORY_CAPABILITIES_UNKNOWN',...(nativeUnverified?['AGENT_ADAPTER_UNSUPPORTED']:[])],at:Date.now()},runtime:PreparedRuntime={persistSnapshot:false,args:[],env:{},secretValues:[],snapshot:{runId:run.runId,projectId:input.projectId,configVersion:input.previous?.configVersion??0,configHash:record.hash,manifestPath:input.previous?.manifestPath??join(this.support.store.root,'sessions',input.taskId,'snapshot.json'),auditPath:input.previous?.auditPath??join(this.support.store.root,'resource-audit',input.projectId,input.taskId+'.jsonl'),skills:[],mcp:[],selfCheck:check},wrap:(command,argv)=>({command,args:argv}),check:()=>check,release:()=>{}};entry.runtime=runtime;
       if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生历史启动已取消');
       let phase:'prepared'|'native-only'|'arming'='prepared';
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,assertBeforeFork:()=>{if(discoveryProof){this.support.adapters.verify(adapter.hash);catalog.verifyNativeIsolation(collection,discoveryProof,true);}},nativeOnly:async reason=>{
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,env:{},command:native?.command,assertBeforeFork:()=>{if(discoveryProof){this.support.adapters.verify(adapter.hash);catalog!.verifyNativeIsolation(collection,discoveryProof,true);}},nativeOnly:async reason=>{
         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','原生历史启动窗口已使用');
         await this.runs.restrictToNative(run.runId);launch.args=[];for(const issue of ['AGENT_ADAPTER_UNSUPPORTED',reason])if(!check.issues.includes(issue))check.issues.push(issue);phase='native-only';return launch;
       },beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','原生历史启动已取消或窗口已使用');phase='arming';await hold?.activate();await run.cli.arm();},spawned:pid=>run.cli.attach(pid??0),cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>run.stop(reason).then(()=>this.releaseStopped(entry))};

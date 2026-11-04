@@ -196,6 +196,7 @@ describe('M11 R1.0 library launch through the production task entry',()=>{
   await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   expect(await call(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',operation:{origin:'cli'}}});
   tasks.kill(running.task.id);await vi.waitFor(()=>expect(ptys.live.size).toBe(0));expect(await call(token)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+  expect(existsSync(join(home,'.agents/smartdd-runtime'))).toBe(false);
  });
  it('serves an unverified Codex version from the library with MCP only, never the CLI sandbox',async()=>{
   writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.170.0";; *) exit 70;; esac\n',{mode:0o700});
@@ -204,6 +205,12 @@ describe('M11 R1.0 library launch through the production task entry',()=>{
   expect(saved.adapterBinding.version).toBe('1.4.0');expect(plan.grades.cli).toBe(false);expect(plan.allowed).toMatchObject([{capabilityId:'mail.draft.list',entry:'mcp'}]);
   const argv=launch.args!.join(' ');expect(argv).not.toContain('wy_cli_');expect(argv).not.toContain('skills.config');expect(argv).toMatch(/mcp_servers\.[A-Za-z0-9_-]+\.command=/);
   expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(managedSkills()).toEqual([]);
+ });
+ it('S3d: an Agent whose version cannot be read starts native only, without the shared discovery catalog',async()=>{
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "not a version";; *) exit 70;; esac\n',{mode:0o700});
+  const running=await create(),launch=ptys.launches[0];
+  expect(launch.args).toEqual([]);expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(running.task.runtimeSnapshot?.selfCheck.issues).toContain('AGENT_ADAPTER_UNSUPPORTED');
+  expect(existsSync(join(home,'.agents/smartdd-runtime'))).toBe(false);expect(managedSkills()).toEqual([]);
  });
  it('S5: advises a resume only where the Agent cannot see the new application in the running session',async()=>{
   const codex=await create(),claude=await create(claudeId);
