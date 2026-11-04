@@ -28,6 +28,7 @@ import { ApplicationToolService } from './tool-service';
 import { PrivateApplicationBroker } from './private-broker';
 import {ApplicationCliGateway} from './cli-gateway';
 import {CurrentApplicationAuthorization} from './current-authorization';
+import {SkillLibraryService} from './skill-library-service';
 import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {applicationSkillDelivery,applicationSkillProjectionName} from './application-skill-template';
 import {applicationSkillSnapshotView} from './application-skill-view';
@@ -61,6 +62,8 @@ export interface TaskCapabilityLauncherOptions {
   inspectNative?:(input:TaskLaunchInput)=>Promise<NativeLaunchContext>;
   probeApplicationRuntime?:(signal:AbortSignal)=>Promise<boolean>;
   pollMs?:number;
+  /** R16: HOME whose `.agents/skills` (and each Agent's link directory) holds the single WillYou Skill library. Omitted: no library delivery. */
+  skillLibraryHome?:string;
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
@@ -88,6 +91,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly embeddedNode=new EmbeddedNodeRuntime();
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
+  private readonly library?:SkillLibraryService;
   readonly legacyPreparationWarnings=new Map<string,string>();
   private readonly legacyRetention:LegacyTaskRetention;
   private closed=false;private closing?:Promise<void>;private sweeping=false;
@@ -105,6 +109,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.legacyMigration=new LegacySessionMigration(store,this.sessions,undefined,home=>this.catalog(home));
     this.projector=new SessionCapabilityProjector(store,this.sessions,support.adapters.deliveryAdapters);
     this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
+    if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;}});
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId,appIds)=>{
       const selected={...selectSessionApplications(snapshot,appIds??snapshot.packages.map(p=>p.appId)),standardSkills:[]};
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
@@ -136,8 +141,15 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     try{await result.runs.recover();
       const roots=support.store.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[];
       for(const root of roots){try{if(root.home!==canonicalFuturePath(root.home)||digest(root.home)!==root.id)throw new ApplicationError('OWNERSHIP_CONFLICT','原发现根身份不同');const catalog=result.catalog(root.home);await catalog.recoverConsumers();await catalog.recoverRecordedPublication();}catch(error){result.recoveryWarnings.push({homeId:root.id,code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}}
-      await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
+      result.syncSkillLibrary();await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
   }
+  /** Converge the Skill library after startup and every application change; a failure never blocks tasks. */
+  syncSkillLibrary():void{
+    if(!this.library)return;
+    try{this.library.sync();this.recoveryWarnings.splice(0,this.recoveryWarnings.length,...this.recoveryWarnings.filter(w=>w.homeId!=='skill-library'));}
+    catch(error){if(!this.recoveryWarnings.some(w=>w.homeId==='skill-library'))this.recoveryWarnings.push({homeId:'skill-library',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
+  }
+  skillLibraryConflicts(){return this.library?.conflicts()??[];}
   private shared(agentId:string){return this.support.adapters.deliveryAdapters.shared(agentId);}
   private cliAvailability(taskId:string):RunPlanAvailability{const policy=this.planningCliPolicies.get(taskId);return{mcp:true,cli:this.cliReady&&policy?.available===true,reason:policy?.available?undefined:policy&&'reason'in policy?policy.reason:'cli-entry-unavailable'};}
   private skillSources(snapshot:CapabilitySessionSnapshot,scope?:readonly string[],independent=false,standards?:readonly string[]){return snapshot.schema===2?this.projector.sourceSkills(snapshot,scope,independent,standards):this.projector.sourceSkills(snapshot,scope,independent,standards,this.cliAvailability(snapshot.taskId));}
