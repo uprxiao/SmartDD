@@ -1,0 +1,102 @@
+{
+  "case": "M12-T113",
+  "originalLayer": "A+I",
+  "thisGroup": "I only, no A/R/OS UI or T096 repeat",
+  "sourcePath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "sourceSha256": "4807961fabc93f779f27cfaae9de261f7c9fe19eb2b9b756640564ef78f0aabd",
+  "originalLine": "| M12-T113 | R07.6、O14、C7、B10、review R07 | A＋I | T1 两个网页标签；T2 的 Agent 已获 T1 的 control 授权；点击计数接口 | Agent 连续排入 5 条点击（第 1 条执行中）时用户点“暂停 Agent”；同时有一条 `wait` 在等；之后 T1、T2 的 Agent 各发新命令；用户手动操作页面后点“恢复”；再测运行结束和重启后的状态 | 正在执行的第 1 条完成；排队的 4 条立即返回 `BROWSER_PAUSED`，点击计数显示暂停后零执行；`wait` 立即返回 `BROWSER_PAUSED`；新命令（含 T2 跨任务来的）都返回 `BROWSER_PAUSED`；两个标签都被暂停；恢复后命令正常；运行结束或重启后暂停状态清除 | — | 待执行 | — |",
+  "criteria": [
+    {
+      "id": "I01",
+      "expected": "T1 two actual native pages, T2 separate authentic managed run; keep document/page/form identities",
+      "evidenceBoundary": "Actual BrowserService/PageRegistry/SQLite/M11/nativeCLI",
+      "actual": "not executed"
+    },
+    {
+      "id": "I02",
+      "expected": "T2 actualCLI access request T1 control, native trusted controlWC invokes production respond handler as explicit I user precondition",
+      "evidenceBoundary": "No UI A claim/no fake IpcMainInvokeEvent",
+      "actual": "not executed"
+    },
+    {
+      "id": "I03",
+      "expected": "T1 snapshot real host ref; first actualCLI click really updates site and receives genuine Helper stdout/result before private gate holds completion",
+      "evidenceBoundary": "Gate only delays original fulfilled Helper return, not actual execution",
+      "actual": "not executed"
+    },
+    {
+      "id": "I04",
+      "expected": "Four further actualCLI writes all enter same production page queue while first held; pending exactly4",
+      "evidenceBoundary": "No scheduler-only queued claims",
+      "actual": "not executed"
+    },
+    {
+      "id": "I05",
+      "expected": "Second page actualCLI wait in readWaits and actual Helper, pause through production trusted browser.pause IPC",
+      "evidenceBoundary": "Actual dedicated sandbox preload/controlWC sender+mainFrame",
+      "actual": "not executed"
+    },
+    {
+      "id": "I06",
+      "expected": "Four queued + readwait return BROWSER_PAUSED before first gate release; first releases original response normally",
+      "evidenceBoundary": "No automatic retry, record all true stdout and timestamps",
+      "actual": "not executed"
+    },
+    {
+      "id": "I07",
+      "expected": "Site counter remains first click only throughout pause except explicit manual user input",
+      "evidenceBoundary": "Actual site HTTP per-kind ledger",
+      "actual": "not executed"
+    },
+    {
+      "id": "I08",
+      "expected": "New own and authorized crosscaller commands on both pages return PAUSED",
+      "evidenceBoundary": "4 separate actual CLI requests",
+      "actual": "not executed"
+    },
+    {
+      "id": "I09",
+      "expected": "Paused manual native Input user action succeeds, no Agent service bypass claim",
+      "evidenceBoundary": "CDP native pointer event, not DOM.click/eval writes; remains I not A",
+      "actual": "not executed"
+    },
+    {
+      "id": "I10",
+      "expected": "Resume through production trusted IPC then actualCLI successful click",
+      "evidenceBoundary": "Keep original pages/documents/WCs/forms",
+      "actual": "not executed"
+    },
+    {
+      "id": "I11",
+      "expected": "Pause again then genuinely stop T1 and T2 run roots and production run handles; pause/grants clear",
+      "evidenceBoundary": "Actual process exit and run abort callbacks",
+      "actual": "not executed"
+    },
+    {
+      "id": "I12",
+      "expected": "New T1/T2 actual managed runs cannot inherit pause/old grant; own command works, cross ungranted SCOPE_DENIED",
+      "evidenceBoundary": "Fresh run IDs/peer binding same frozen session snapshot",
+      "actual": "not executed"
+    },
+    {
+      "id": "I13",
+      "expected": "Regrant under I precondition, pause, normally exit host and restart same private userData",
+      "evidenceBoundary": "No crash substitution",
+      "actual": "not executed"
+    },
+    {
+      "id": "I14",
+      "expected": "After restart same persistent pageIDs/URLs restore, pause/grants empty; actual CLI proves own available/cross denied",
+      "evidenceBoundary": "Do not claim same old native WC/unsaved memory across processes",
+      "actual": "not executed"
+    },
+    {
+      "id": "I15",
+      "expected": "Gate/exec callback hooks restored, all owned WCs/debuggers/park/run roots/gateway/TCP/Unix/helper cleaned; normal code/signal preserved",
+      "evidenceBoundary": "No formal A+I row passed until remaining A complete",
+      "actual": "not executed"
+    }
+  ],
+  "restartClarification": "During pause/run-end preserve exact documents/WCs/unsaved memory. Across normal Electron process restart only contractually persisted pageID/URL/profile restore; no cross-process old WC/memory claim.",
+  "nativeStarted": false
+}

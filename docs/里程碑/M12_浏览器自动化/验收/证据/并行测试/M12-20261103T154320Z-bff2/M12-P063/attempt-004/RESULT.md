@@ -1,0 +1,9 @@
+# P063004 原生prompt兼容方案可行
+
+修复直接捕获preload prompt会拿到Electron覆盖函数的方案错误后，使用公开webFrame同步callback在新的无Node隔离世界调用固定原生prompt，再经最小contextBridge返回主世界；iframe不启用Node／preload集成，仍用它已有的原生prompt。唯一WebContents的默认-run-dialog handler按固定版本契约窄接管prompt，非prompt委托原handler。
+
+真实主页面接受中文／取消、srcdoc及localhost→127.0.0.1同端口跨站iframe均正确，四个真实Native callback、四个真实Page.handleJavaScriptDialog与四对opening/closed事件相符；包含一个真实OOPIF附加，网页及隔离世界无Node。独立9/9绿，sandbox／contextIsolation true、Node与subframeNode false。该结果是实际Native/CDP技术证据，不是固定Helper CLI或生产App/UI，不增加原T068通过数。
+
+App正常exit0无信号，原默认listener逐引用恢复，5精确PID／1HTTP端口已核清场。默认handler在本机固定Electron42.11.14为一个、arity2、源SHA6ca5d7e71e2bc4b9041237def7a569f8b4ebb073722912dd66023cdf680b79d2。该内部接口必须受版本／结构／hash约束并用真正CLI和生命周期验证，x64没有从本机结果外推。
+
+后续生产必须补：用户可操作prompt界面，权限／暂停／运行结束／导航和销毁的取消，实际goto/click触发prompt时dialog命令不会被同页队列阻塞，default/empty/early-script与长文本，完整alert/confirm/prompt六分支固定CLI，原型状态与相关App回归。上述均未由这次实验替代。

@@ -1,0 +1,1 @@
+const{contextBridge,ipcRenderer}=require('electron');const allowed=new Set(['browser.pause','browser.respondAccess','browser.accessState','browser.snapshot']);contextBridge.exposeInMainWorld('p064Control',{invoke:(name,arg)=>{if(!allowed.has(name))throw Error('P064 control method denied');return arg===undefined?ipcRenderer.invoke(name):ipcRenderer.invoke(name,arg);}});
