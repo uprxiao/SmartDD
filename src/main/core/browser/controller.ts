@@ -36,5 +36,7 @@ export function createBrowserController(service:BrowserService|undefined,trusted
     respondPermission:(event,input:{taskId:string;id:string;allow:boolean})=>{const s=host(event),v=browserTaskInput.extend({id:z.string().uuid(),allow:z.boolean()}).strict().parse(input);s.respondPermission(v.taskId,v.id,v.allow);},
     revokePermission:(event,input:{taskId:string;profileId:string;origin:string;permission:string})=>{const s=host(event),v=browserTaskInput.extend({profileId:z.string(),origin:z.string(),permission:z.string()}).strict().parse(input);s.revokePermission(v.taskId,v.profileId,v.origin,v.permission);return s.profileSiteStates(v.taskId);},
     downloadAction:(event,input:{taskId:string;id:string;action:'cancel'|'open'|'reveal'|'remove'})=>{const s=host(event),v=browserTaskInput.extend({id:z.string().uuid(),action:z.enum(['cancel','open','reveal','remove'])}).strict().parse(input);return s.downloadAction(v.taskId,v.id,v.action);},
+    respondAuthentication:(event,input:{taskId:string;id:string;credentials:{user:string;pass:string}|null})=>{const s=host(event),v=browserTaskInput.extend({id:z.string().uuid(),credentials:z.object({user:z.string(),pass:z.string()}).strict().nullable()}).strict().parse(input);s.respondAuthentication(v.taskId,v.id,v.credentials);},
+    retryAuthentication:(event,input:{taskId:string;tabId:string})=>{const s=host(event),v=browserTabInput.parse(input);return s.retryAuthentication(v.taskId,v.tabId);},
   });
 }

@@ -3,7 +3,7 @@ import type {Session,WebContents} from 'electron';
 import {ApplicationError} from '@shared/applications';
 import {browserSiteOrigin,type BrowserPermissionPrompt} from '@shared/browser-site-state';
 import type {BrowserSiteStates} from './site-state';
-interface Owner {contents:WebContents;taskId:string;pageId:string;profileId:string}
+interface Owner {contents:WebContents;taskId:string;pageId:string;profileId:string;displayPageId?:string}
 interface Pending {owner:Owner;prompt:BrowserPermissionPrompt;callback:(allowed:boolean)=>void}
 const keys=(permission:string,media?:readonly string[])=>permission==='media'&&media?.length?[...new Set(media)].map(type=>'media:'+type):[permission];
 /** Native permission checks and requests share the same profile/origin key.
@@ -46,7 +46,7 @@ export class BrowserPermissions {
     contents.on('did-start-navigation',navigation);contents.on('render-process-gone',cancel);contents.once('destroyed',destroyed);this.detach.set(contents,()=>{contents.off('did-start-navigation',navigation);contents.off('render-process-gone',cancel);contents.off('destroyed',destroyed);});
   }
   snapshot(taskId:string,pageId:string):BrowserPermissionPrompt|null{
-    const value=[...this.pending.values()].find(value=>value.owner.taskId===taskId&&value.owner.pageId===pageId)?.prompt;
+    const value=[...this.pending.values()].find(value=>value.owner.taskId===taskId&&(value.owner.pageId===pageId||value.owner.displayPageId===pageId))?.prompt;
     return value?{...value,permissions:[...value.permissions]}:null;
   }
   respond(taskId:string,id:string,allow:boolean):void{

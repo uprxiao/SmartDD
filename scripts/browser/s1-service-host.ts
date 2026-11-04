@@ -82,8 +82,19 @@ const s3Dialogs:{pageId:string;method:string;params:Record<string,unknown>}[]=[]
 const promptProbeContexts=new Map<string,number>();
 const s4TrustedSessions=new Set<Electron.Session>(),s4TrustEvents:{hostname:string;fingerprintMatched:boolean;granted:boolean}[]=[];
 let s4CacheRequests=0;
+// Synthetic HTTP Basic fixture. Its random password stays in process/IPC/stdin
+// memory; request and observation records contain only presence/match flags.
+const s4AuthPassword='M12-synthetic-'+randomUUID();
+const s4AuthRequests:{path:string;authorizationPresent:boolean;accepted:boolean}[]=[];
 const respond = (request:IncomingMessage,response:ServerResponse) => {
   const url=new URL(request.url??'/','http://127.0.0.1');
+  if(url.pathname==='/s4-auth'){
+    const authorization=request.headers.authorization,accepted=authorization==='Basic '+Buffer.from('qa:'+s4AuthPassword).toString('base64');
+    s4AuthRequests.push({path:url.pathname,authorizationPresent:authorization!==undefined,accepted});
+    response.setHeader('cache-control','no-store');response.setHeader('content-type','text/html; charset=utf-8');
+    if(!accepted){response.statusCode=401;response.setHeader('www-authenticate','Basic realm="M12 synthetic only"');response.end('<title>[I] HTTP 401</title>需要认证');}
+    else response.end('<title>[I] HTTP Basic success</title><p>认证成功</p>');return;
+  }
   if(url.pathname==='/s3-transfer-file'){
     const payload=Buffer.from('M12 transfer fixture\n订单,190.00\n','utf8');
     s3Requests.push({path:url.pathname,method:request.method??'GET',bytes:0,sha256:digest(Buffer.alloc(0)),headers:request.headers});
@@ -217,6 +228,14 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
     let value:unknown;
     if (message.command === 'cli') value = await launchCli(message.args!,message.inputBase64===undefined?message.input:Buffer.from(message.inputBase64,'base64')).done;
     else if(message.command==='s3-server-requests')value={requests:s3Requests};
+    else if(message.command==='s4-auth-precondition')value={user:'qa',password:s4AuthPassword,boundary:'Private I fixture data: do not persist this IPC response; pass the password only via native CLI stdin'};
+    else if(message.command==='s4-auth-observe'){
+      const pages=browser.pages.list(taskId),sqliteBytes=fixture.sqlite.serialize();
+      value={requests:s4AuthRequests,pages:pages.map(page=>({pageId:page.id,url:page.contents.getURL(),prompt:browser.authentication.snapshot(taskId,page.id),cancelled:browser.authentication.cancelledState(taskId,page.id)})),passwordInDatabase:sqliteBytes.includes(Buffer.from(s4AuthPassword)),encodedPasswordInDatabase:sqliteBytes.includes(Buffer.from(Buffer.from('qa:'+s4AuthPassword).toString('base64')))};
+    }
+    else if(message.command==='s4-auth-cancel'){
+      const page=browser.pages.get(taskId,message.pageId),prompt=browser.authentication.snapshot(taskId,page.id);if(!prompt)throw Error('No owned authentication prompt');browser.respondAuthentication(taskId,prompt.id,null);value={cancelled:true,boundary:'I user-response precondition; not a UI acceptance action'};
+    }
     else if(message.command==='s4-trust-fixture'){
       const page=browser.pages.get(taskId,message.pageId),expected=new X509Certificate(message.input??'').fingerprint256;
       page.contents.session.setCertificateVerifyProc((request,callback)=>{

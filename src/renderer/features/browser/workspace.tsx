@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
-import {ArrowLeft,ArrowRight,RotateCw,X,Search,FolderOpen,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,UserRound,Download} from 'lucide-react';
+import {ArrowLeft,ArrowRight,RotateCw,X,Search,FolderOpen,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,UserRound,Download,KeyRound} from 'lucide-react';
 import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
 import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
 import {BROWSER_BLANK_URL} from '@shared/browser-navigation';
@@ -13,6 +13,7 @@ import {BrowserSettingsDialog,type BrowserPreferences} from './settings-dialog';
 import {BrowserProfileSiteStates,type ProfileSiteStates} from './profile-site-states';
 import {BrowserPermissionBar} from './permission-bar';
 import {BrowserDownloadPanel} from './download-panel';
+import {BrowserAuthDialog} from './auth-dialog';
 
 export function useBrowserShortcuts(){
   useEffect(()=>{
@@ -37,9 +38,9 @@ export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=
 function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string}){
   const tab=state.tabs.find(t=>t.id===state.activeId)!,[address,setAddress]=useState(tab.url===BROWSER_BLANK_URL?'':tab.url),[find,setFind]=useState(false),[menu,setMenu]=useState(false);
   const input=useRef<HTMLInputElement>(null),searchInput=useRef<HTMLInputElement>(null),viewport=useRef<HTMLDivElement>(null),[query,setQuery]=useState('');
-  const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
+  const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
   const taskId=state.taskId,tabId=tab.id;
-  useEffect(()=>{setAddress(tab.failure?.url??(tab.url===BROWSER_BLANK_URL?'':tab.url));},[tabId,tab.url,tab.failure]);
+  useEffect(()=>{setAddress((state.auth?.pageId===tabId?state.auth.url:state.authCancelled?.pageId===tabId?state.authCancelled.url:undefined)??tab.failure?.url??(tab.url===BROWSER_BLANK_URL?'':tab.url));},[tabId,tab.url,tab.failure,state.auth?.url,state.authCancelled?.url]);
   const run=(work:()=>Promise<unknown>)=>void store.run(work);
   const action=(value:'reload'|'hard-reload'|'stop'|'back'|'forward')=>run(()=>rpc.browser.action({taskId,tabId,action:value}));
   const shortcut=(value:BrowserShortcut)=>{
@@ -47,7 +48,7 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
     else if(value==='address'){void rpc.browser.focusChrome().then(()=>{input.current?.focus();input.current?.select();});}else if(value==='find')setFind(true);else action(value);
   };
   useEffect(()=>events.on(browserShortcutEvent,event=>{if(event.taskId===taskId)shortcut(event.action);}),[taskId,tabId]);
-  const blank=tab.url===BROWSER_BLANK_URL&&!tab.failure,blocked=blank||!!tab.failure||preferences!==null||profileRecords!==null||menu||downloadsOpen;
+  const blank=tab.url===BROWSER_BLANK_URL&&!tab.failure&&!state.auth&&!state.authCancelled,blocked=blank||!!tab.failure||!!state.auth||!!state.authCancelled||preferences!==null||profileRecords!==null||menu||downloadsOpen;
   const closeMenu=(after?:()=>void)=>{settingsGeneration.current++;run(async()=>{await rpc.browser.overlay({taskId,tabId,open:false});setMenu(false);setPageImage(null);after?.();});};
   const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setDownloadsOpen(false);setMenu(true);});};
   const closeSettings=()=>{settingsGeneration.current++;run(async()=>{try{await rpc.browser.overlay({taskId,tabId,open:false});}finally{setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setPageImage(null);}});};
@@ -58,8 +59,14 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
   });
   const showProfiles=()=>run(async()=>{const generation=++settingsGeneration.current;try{const records=await rpc.browser.profileSiteStates({taskId});if(generation!==settingsGeneration.current)return;setMenu(false);setProfileRecords(records);}catch(error){await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}});
   const showDownloads=()=>run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setMenu(false);setPageImage(image);setDownloadsOpen(true);});
-  useEffect(()=>{const latest=state.downloads?.[0]?.id;if(latest&&latest!==seenDownload.current&&!preferences&&!profileRecords&&!menu){seenDownload.current=latest;showDownloads();}if(downloadsOpen&&!state.downloads?.length)closeSettings();},[state.downloads?.[0]?.id,preferences,profileRecords,menu,downloadsOpen]);
-  useEffect(()=>{setMenu(false);setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setPageImage(null);return()=>{settingsGeneration.current++;void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});};},[taskId,tabId]);
+  useEffect(()=>{const latest=state.downloads?.[0]?.id;if(latest&&latest!==seenDownload.current&&!preferences&&!profileRecords&&!menu&&!state.auth){seenDownload.current=latest;showDownloads();}if(downloadsOpen&&!state.downloads?.length)closeSettings();},[state.downloads?.[0]?.id,preferences,profileRecords,menu,downloadsOpen,state.auth?.id]);
+  useEffect(()=>{setMenu(false);setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setAuthOpenId(null);setPageImage(null);return()=>{settingsGeneration.current++;void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});};},[taskId,tabId]);
+  useEffect(()=>{
+    const id=state.auth?.id;if(!id||preferences||profileRecords||menu||downloadsOpen)return;
+    let active=true;const generation=++settingsGeneration.current;
+    run(async()=>{const image=await rpc.browser.overlay({taskId,tabId,open:true});if(!active||generation!==settingsGeneration.current){if(generation===settingsGeneration.current)await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setAuthOpenId(id);});
+    return()=>{active=false;if(generation===settingsGeneration.current){settingsGeneration.current++;setAuthOpenId(null);setPageImage(null);void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});}};
+  },[state.auth?.id,taskId,tabId,preferences,profileRecords,menu,downloadsOpen]);
   useEffect(()=>{setFind(false);setQuery('');if(blank)void rpc.browser.focusChrome().then(()=>input.current?.focus());},[tabId]);
   useEffect(()=>{let active=true;if(find)void rpc.browser.focusChrome().then(()=>{if(active)searchInput.current?.focus();});return()=>{active=false;if(find)void rpc.browser.find({taskId,tabId,text:'',forward:true,next:false}).catch(()=>{});};},[find,tabId]);
   const search=(text:string,next=false,forward=true)=>run(()=>rpc.browser.find({taskId,tabId,text,forward,next}));
@@ -73,6 +80,7 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
   return <div className="bw-workspace" data-browser-task={taskId} onKeyDown={event=>{
     if(downloadsOpen&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSettings();return;}
     if(menu&&event.key==='Escape'){event.preventDefault();event.stopPropagation();closeMenu();return;}
+    if(event.target instanceof Element&&event.target.closest('[role=dialog]'))return;
     if(event.defaultPrevented||event.nativeEvent.isComposing||!(event.metaKey||event.ctrlKey)||event.altKey)return;
     const key=event.key.toLowerCase(),command:BrowserShortcut|undefined=key==='l'?'address':key==='f'?'find':key==='r'?(event.shiftKey?'hard-reload':'reload'):key==='w'?'close':key==='t'?(event.shiftKey?'reopen':'new'):key==='['?'back':key===']'?'forward':undefined;
     if(command){event.preventDefault();event.stopPropagation();shortcut(command);}
@@ -89,8 +97,9 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
     {tab.loading&&!blocked&&<div className="bw-progress" role="status" aria-label="网页正在加载"/>}
     <div className="bw-page" ref={viewport} data-testid="browser-viewport">
       {pageImage&&<img className="bw-page-snapshot" src={pageImage} alt="网页预览"/>}
-      {blank?<div className="bw-start"><h2>新标签页</h2><section><h3>工具</h3><button onClick={()=>{void store.select(null);}}><FolderOpen size={17}/><span>文件</span><kbd>⌘P</kbd></button></section><section><h3>推荐</h3>{state.recent.length?state.recent.map(site=><button key={site.host} onClick={()=>run(()=>rpc.browser.navigate({taskId,tabId,address:site.url}))}><Globe size={16}/><span><strong>{site.title}</strong><small>{site.host}</small></span></button>):<p>还没有访问记录</p>}</section></div>:tab.failure?<div className={'bw-failure'+(tab.certificate?.challengeId?' bw-cert':'')} role="alert">{tab.certificate?.challengeId?<><ShieldAlert size={26}/><h2>此连接不受信任</h2><p><strong>{tab.certificate.host}</strong> 的证书不是由受信任的机构签发的（常见于内网测试环境的自签名证书）。继续访问时，你与该站点之间的通信可能被他人读取或篡改。</p><small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" disabled={!tab.canGoBack} onClick={()=>action('back')}>返回</button><button type="button" className="bw-danger-link" onClick={()=>run(()=>rpc.browser.continueCertificate({taskId,tabId,challengeId:tab.certificate!.challengeId!}))}>我了解风险，继续访问</button></div><p className="bw-hint">只有你可以在这里放行；Agent 命令无法添加证书例外。例外按主机记在当前登录态中，可在登录态管理里撤销。</p></>:<><Globe size={30}/><h2>{tab.failure.title}</h2><code>{tab.failure.errorName}</code>{tab.failure.recovery&&<p>{tab.failure.recovery==='poll'?'服务启动后会自动重新加载':'网络恢复后会自动重新加载'}</p>}<button onClick={()=>action('reload')}>重试</button></>}</div>:null}
+      {blank?<div className="bw-start"><h2>新标签页</h2><section><h3>工具</h3><button onClick={()=>{void store.select(null);}}><FolderOpen size={17}/><span>文件</span><kbd>⌘P</kbd></button></section><section><h3>推荐</h3>{state.recent.length?state.recent.map(site=><button key={site.host} onClick={()=>run(()=>rpc.browser.navigate({taskId,tabId,address:site.url}))}><Globe size={16}/><span><strong>{site.title}</strong><small>{site.host}</small></span></button>):<p>还没有访问记录</p>}</section></div>:state.authCancelled?<div className="bw-failure" role="alert"><KeyRound size={26}/><h2>401 · 需要认证</h2><p>你取消了 {state.authCancelled.host} 的登录。</p><button type="button" onClick={()=>run(()=>rpc.browser.retryAuthentication({taskId,tabId:state.authCancelled!.pageId}))}>重新登录</button></div>:tab.failure?<div className={'bw-failure'+(tab.certificate?.challengeId?' bw-cert':'')} role="alert">{tab.certificate?.challengeId?<><ShieldAlert size={26}/><h2>此连接不受信任</h2><p><strong>{tab.certificate.host}</strong> 的证书不是由受信任的机构签发的（常见于内网测试环境的自签名证书）。继续访问时，你与该站点之间的通信可能被他人读取或篡改。</p><small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" disabled={!tab.canGoBack} onClick={()=>action('back')}>返回</button><button type="button" className="bw-danger-link" onClick={()=>run(()=>rpc.browser.continueCertificate({taskId,tabId,challengeId:tab.certificate!.challengeId!}))}>我了解风险，继续访问</button></div><p className="bw-hint">只有你可以在这里放行；Agent 命令无法添加证书例外。例外按主机记在当前登录态中，可在登录态管理里撤销。</p></>:<><Globe size={30}/><h2>{tab.failure.title}</h2><code>{tab.failure.errorName}</code>{tab.failure.recovery&&<p>{tab.failure.recovery==='poll'?'服务启动后会自动重新加载':'网络恢复后会自动重新加载'}</p>}<button onClick={()=>action('reload')}>重试</button></>}</div>:null}
     </div>
+    {state.auth&&authOpenId===state.auth.id&&<BrowserAuthDialog key={state.auth.id} prompt={state.auth} onRespond={async credentials=>{await rpc.browser.respondAuthentication({taskId,id:state.auth!.id,credentials});await store.refresh();}}/>}
     {profileRecords&&<BrowserProfileSiteStates taskId={taskId} currentProfile={tab.profileId} initial={profileRecords} onClose={closeSettings}/>}
     {preferences&&<BrowserSettingsDialog taskId={taskId} initial={preferences} onClose={closeSettings}/>}
   </div>;

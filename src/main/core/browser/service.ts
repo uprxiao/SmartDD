@@ -28,6 +28,8 @@ import {BrowserNetworkPolicy} from './network-policy';
 import type {BrowserCertificateState} from '@shared/browser-workspace';
 import {BrowserPermissions} from './permissions';
 import {BrowserDownloads} from './downloads';
+import {BrowserAuthentication} from './authentication';
+import {awaitBrowserNavigation} from './navigation-wait';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -50,6 +52,7 @@ export class BrowserService {
   readonly networkPolicy:BrowserNetworkPolicy;
   readonly permissions:BrowserPermissions;
   readonly downloads:BrowserDownloads;
+  readonly authentication:BrowserAuthentication;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
@@ -65,19 +68,23 @@ export class BrowserService {
     this.siteStates=new BrowserSiteStates(options.sqlite,id=>this.profiles.all().some(profile=>profile.id===id));
     this.permissions=new BrowserPermissions({states:this.siteStates,available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.downloads=new BrowserDownloads({directory:()=>app.getPath('downloads'),available:(id,taskId)=>{this.profiles.assertAvailable(id);return!!options.taskProject(taskId)&&this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
+    this.authentication=new BrowserAuthentication({available:id=>{this.profiles.assertAvailable(id);return this.profiles.all().some(profile=>profile.id===id);},changed:options.changed});
     this.networkPolicy=new BrowserNetworkPolicy({trusted:(id,host)=>this.siteStates.trusted(id,host),failed:(contents,failure)=>{
       const page=this.pages.all().find(page=>page.contents===contents);if(!page)return;
       this.certificateFailures.set(page.id,{...failure,challengeId:randomUUID()});this.workspace.certificateFailed(page,failure.url,failure.error);
     }});
     this.pages=new BrowserPageRegistry({...options,profiles:this.profiles,configure:page=>{
       this.networkPolicy.install(page.contents,page.profileId);
-      this.permissions.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
+      let displayPage=page;const seen=new Set<string>();
+      while(displayPage.kind==='popup'&&displayPage.openerPageId&&!seen.has(displayPage.id)){seen.add(displayPage.id);const parent=this.pages.all().find(value=>value.id===displayPage.openerPageId);if(!parent)break;displayPage=parent;}
+      this.permissions.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       this.downloads.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId});
+      this.authentication.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
     }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
-    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
+    this.workspace=new BrowserWorkspace({...options,pages:this.pages,searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
       const page=this.pages.all().find(page=>page.id===id),accepted=page?this.networkPolicy.certificate(page.contents,url):null;
       return accepted?{...accepted,challengeId:null}:null;
@@ -100,25 +107,38 @@ export class BrowserService {
     if(scope.signal.aborted)throw scope.signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');
   }
   async execute(scope:BrowserScope,command:string,args:Record<string,unknown>):Promise<unknown>{
-    const read=readCommands.has(command);let dispatched=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
+    const timeout=args.timeout??25000,isWait=command==='wait'||command==='wait fn',budget=isWait&&typeof timeout==='number'&&Number.isInteger(timeout)&&timeout>=1&&timeout<=90000?timeout+5000:90000;
+    const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget),signal=AbortSignal.any([scope.signal,deadline.signal]);
+    const state={dispatched:()=>false},effective={...scope,signal};
+    try{return await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);}
+    catch(error){
+      if(!signal.aborted)throw error;
+      const reason=signal.reason??error,failure=reason instanceof ApplicationError?reason:new BrowserError('BROWSER_ERROR',reason instanceof Error?reason.message:String(reason));
+      throw readCommands.has(command)||state.dispatched()?failure:applicationPreflightFailure(failure,scope.operationId);
+    }finally{clearTimeout(timer);}
+  }
+  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean}):Promise<unknown>{
+    const read=readCommands.has(command);let dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
+    state.dispatched=()=>dispatched;
+    const begin=(pageId:string|null)=>{const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command);if(!receipt.replay)receiptOwned=true;return receipt;};
     const send=()=>{dispatched=true;if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     const recordProgress=()=>{if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     try{
       this.admit(scope,args);
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
       if(command==='tab profile clone'){this.profiles.require(scope,text(args.profile));throw new ApplicationError('CAPABILITY_UNAVAILABLE','登录态完整克隆尚在开发');}
-      if(command==='access request'||command==='set credentials')throw new ApplicationError('CAPABILITY_UNAVAILABLE','此命令依赖尚在开发的认证或授权服务');
+      if(command==='access request')throw new ApplicationError('CAPABILITY_UNAVAILABLE','跨任务授权服务尚在开发');
       if(command==='operation get')return this.operations.receipt(scope.runId,text(args.request));
       if(command==='identity get'){const value=this.settings.snapshot();return{result:{mode:value.identity,pendingMode:value.pendingIdentity,restartRequired:value.pendingIdentity!==null}};}
       if(command==='identity set'){
         const mode=browserIdentitySchema.safeParse(args.mode);if(!mode.success)throw new ApplicationError('INVALID_INPUT','浏览器身份须为clean或native');
-        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         const result=this.settings.setIdentity(mode.data,args.reset===true,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result};
       }
       if(command==='tab profile list')return{result:{profiles:this.profiles.list(scope)}};
       if(command==='tab profile create'){
         const profileScope=args.scope??'isolated';if(profileScope!=='isolated'&&profileScope!=='imported')throw new ApplicationError('INVALID_INPUT','scope须为isolated或imported');
-        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         const profile=this.profiles.create(scope,text(args.label),profileScope,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profile}};
       }
       if(command==='tab profile show'){
@@ -132,13 +152,13 @@ export class BrowserService {
         const tabs=this.workspace.list(scope.taskId),targets=args.page===undefined?tabs.filter(tab=>tab.kind==='tab'):tabs.filter(tab=>tab.pageId===text(args.page));
         if(args.page!==undefined&&!targets.length)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
         if(targets.some(tab=>tab.kind==='popup'))throw new ApplicationError('INVALID_INPUT','子窗口沿用来源页面登录态，请切换来源网页标签');
-        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         for(const tab of targets){this.profiles.assertAvailable(tab.profileId);await this.workspace.setProfile(scope.taskId,tab.pageId,profile.id,()=>{this.admit(scope,args);this.profiles.assertAvailable(profile.id);},send,scope.signal);}
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profileId:profile.id,pages:targets.map(tab=>tab.pageId)}};
       }
       if(command==='tab profile delete'){
         const profile=this.profiles.deletable(scope,text(args.profile));
-        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,null,command);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
+        const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         const release=this.profiles.lock(profile.id,'删除');
         try{
           await this.pages.cancelProfileInitializations(profile.id);
@@ -175,16 +195,18 @@ export class BrowserService {
       }
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
       if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile));
-      if(command!=='tab create')page=await this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page));
+      if(command!=='tab create')page=await awaitBrowserNavigation(this.workspace.target(scope.taskId,args.page===undefined?undefined:text(args.page)),scope.signal);
+      if(command==='set credentials'&&this.authentication.snapshot(scope.taskId,page!.id))throw new ApplicationError('RESOURCE_BUSY','页面正在等待用户处理基本认证，Agent不能代答当前提示');
       if(!read){
-        const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,page?.id??null,command);
+        const receipt=begin(page?.id??null);
         if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
       }
       let result:unknown;
       if(command==='tab create'){
-        send();page=await this.pages.create(scope.taskId,scope.projectId,undefined,args.profile===undefined?undefined:text(args.profile));
-        if(navigation!==undefined)await this.pages.navigate(page,navigation);
-        result={pageId:page.id,url:page.contents.getURL()};
+        const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT','新建网页标签等待90000ms后超时')),90000),signal=AbortSignal.any([scope.signal,deadline.signal]);
+        try{send();page=await awaitBrowserNavigation(this.pages.create(scope.taskId,scope.projectId,undefined,args.profile===undefined?undefined:text(args.profile)),signal);
+          if(navigation!==undefined)await this.pages.navigate(page,navigation,signal);result={pageId:page.id,url:page.contents.getURL()};
+        }finally{clearTimeout(timer);}
       }else{
         const target=page!;
         result=await target.queue.run(()=>this.admit(scope,args),async()=>{
@@ -195,6 +217,7 @@ export class BrowserService {
           if(signal.aborted)throw signal.reason;
           this.profiles.assertAvailable(target.profileId);
           if(command.startsWith('cookie '))return executeBrowserCookie(target,command,args,send);
+          if(command==='set credentials'){this.authentication.setCredentials(target.contents,text(args.user),text(args.pass),send);return{result:{configured:true}};}
           if(command==='tab switch'){this.workspace.commandTarget(scope.taskId,target.id,args.focus===true);send();return{result:{pageId:target.id,url:target.contents.getURL()}};}
           if(command==='tab close'){
             send();if(target.kind==='popup')await this.pages.close(scope.taskId,target.id,true);else await this.workspace.close(scope.taskId,target.id,true);
@@ -226,11 +249,11 @@ export class BrowserService {
           }
           if(command==='goto'){
             const url=navigation!;
-            send();await this.pages.navigate(target,url);return{navigated:true};
+            send();await this.pages.navigate(target,url,signal);return{navigated:true};
           }
           if(command==='back'||command==='forward'||command==='reload'){
             const wc=target.contents;send();
-            if(command==='reload')await this.pages.navigate(target,target.hostNavigation??wc.getURL());
+            if(command==='reload')await this.pages.navigate(target,target.hostNavigation??wc.getURL(),signal);
             else{const possible=command==='back'?wc.navigationHistory.canGoBack():wc.navigationHistory.canGoForward();if(possible){await new Promise<void>((resolve,reject)=>{
               let settled=false;
               const finish=(error?:Error)=>{if(settled)return;settled=true;clearTimeout(timer);wc.off('did-finish-load',done);wc.off('did-navigate-in-page',inPage);wc.off('did-fail-load',failed);signal.removeEventListener('abort',aborted);error?reject(error):resolve();};
@@ -372,7 +395,7 @@ export class BrowserService {
           if(other.handled)return this.artifacts.result(scope.taskId,command.replaceAll(' ','-'),other.result);
           throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未完成接入');
           };
-          try{const value=await perform();if(signal.aborted&&command!=='tab close')throw signal.reason;return value;}
+          try{const value=await awaitBrowserNavigation(perform(),signal);if(signal.aborted&&command!=='tab close')throw signal.reason;return value;}
           finally{clearTimeout(timer);}
         },scope.signal);
       }
@@ -381,7 +404,7 @@ export class BrowserService {
     }catch(error){
       let failure=error instanceof ApplicationError?error:new BrowserError('BROWSER_ERROR',error instanceof Error?error.message:String(error));
       if(page?.closed&&dispatched)failure=new BrowserError('BROWSER_TAB_CLOSED','执行中网页已关闭，操作结果未知');
-      if(!read&&this.operations.get(scope.runId,scope.requestId))this.operations.update(scope.runId,scope.requestId,dispatched?'unknown':'failed',dispatched?'unknown':'not-started',{progress,code:failure.code});
+      if(receiptOwned)this.operations.update(scope.runId,scope.requestId,dispatched?'unknown':'failed',dispatched?'unknown':'not-started',{progress,code:failure.code});
       throw dispatched||read?failure:applicationPreflightFailure(failure,scope.operationId);
     }
   }
@@ -410,6 +433,12 @@ export class BrowserService {
     for(const page of this.pages.all().filter(page=>page.profileId===profileId))this.options.changed?.(page.taskId);
   }
   respondPermission(taskId:string,id:string,allow:boolean):void{this.workspace.snapshot(taskId);this.permissions.respond(taskId,id,allow);}
+  respondAuthentication(taskId:string,id:string,credentials:{user:string;pass:string}|null):void{this.workspace.snapshot(taskId);this.authentication.respond(taskId,id,credentials);}
+  async retryAuthentication(taskId:string,pageId:string):Promise<void>{
+    this.workspace.snapshot(taskId);const page=this.pages.get(taskId,pageId),cancelled=this.authentication.cancelledForPage(taskId,pageId);
+    if(!cancelled)throw new ApplicationError('RESOURCE_STATE_CHANGED','认证页面已变化，请重试当前页面');this.profiles.assertAvailable(page.profileId);
+    if(page.kind==='popup')await this.pages.navigate(page,cancelled.url);else await this.workspace.navigate(taskId,pageId,cancelled.url);
+  }
   async downloadAction(taskId:string,id:string,action:'cancel'|'open'|'reveal'|'remove'):Promise<void>{this.workspace.snapshot(taskId);await this.downloads.action(taskId,id,action);}
   revokePermission(taskId:string,profileId:string,origin:string,permission:string):void{
     const {projectId}=this.workspace.snapshot(taskId);this.profiles.require({taskId,projectId},profileId,'control');this.profiles.assertAvailable(profileId);this.siteStates.revokePermission(profileId,origin,permission);
@@ -441,5 +470,5 @@ export class BrowserService {
       if(busy&&!this.closed&&!this.reconcileTimer){this.reconcileTimer=setTimeout(()=>{this.reconcileTimer=undefined;void this.reconcile().catch(()=>console.warn('[browser] orphan-profile cleanup pending'));},250);this.reconcileTimer.unref();}
     })().finally(()=>{this.reconciling=undefined;});return this.reconciling;
   }
-  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
+  async dispose():Promise<void>{this.closed=true;clearTimeout(this.reconcileTimer);await this.reconciling;await this.workspace.dispose();this.downloads.dispose();await this.pages.dispose();this.authentication.dispose();this.permissions.dispose();this.networkPolicy.dispose();}
 }

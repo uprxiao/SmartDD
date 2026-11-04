@@ -1,17 +1,17 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T02:41:25.161710+00:00",
-  "status": "S3-development; S2 contract decisions/system/S4 dependencies pending",
+  "updatedAt": "2026-11-04T03:29:21.170645+00:00",
+  "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P016",
-      "privateRoot": "/private/tmp/willyou-m12-p016-executor-001",
-      "baseline": "/private/tmp/willyou-m12-p016-baseline-002",
-      "status": "preparing full T067 I; no native allocation"
+      "group": "M12-P018",
+      "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
+      "status": "dispatched; awaiting actual process receipt"
     }
   ],
   "branch": "feature/0.1.1",
@@ -20,9 +20,14 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "M12-P010",
+  "currentGroup": "M12-P018",
   "resources": {
-    "nativeUi": null,
+    "nativeUi": {
+      "owner": "/root/s2_t004_test",
+      "group": "M12-P018",
+      "assignedAt": "2026-11-04T03:23:07.308536+00:00",
+      "boundary": "isolated native Electron I only; no shared desktop focus, no packaged App or system clipboard/hardware"
+    },
     "build": null
   },
   "groups": [
@@ -746,13 +751,117 @@
         "nativeUi": "not allocated",
         "build": "not allocated"
       }
+    },
+    {
+      "id": "M12-P016",
+      "owner": "/root/s2_t004_test",
+      "name": "原T067完整真实CLI上传/下载I",
+      "status": "original T067 full I passed and accounted; targeted supplements separate",
+      "privateRoot": "/private/tmp/willyou-m12-p016-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p016-baseline-002/baseline.json",
+      "baselineSha256": "be888bbda80023d9d7c333886e96fea91ec20a8cdb136107c69344bfc96b143e",
+      "dependencySupplements": [
+        "55001d5caafdede4d02a42df2b459c0c84ffae14a0ad0a4b04a8e596c90dd708",
+        "d0559423d2737af1e44695003140fe8f25f2b0de1b33ba0b4db63b7cd8880dfa"
+      ],
+      "preflightSha256": "095800421c3139edb49023919bd7112cbe9df678f5aab24ff831295510dea4a1",
+      "cases": [
+        "M12-T067"
+      ],
+      "layers": [
+        "I"
+      ],
+      "criteriaSource": "原用例T067全部前置/步骤/预期；R1.3明确保留O7",
+      "criteria": [
+        "actual native CLI upload of project-external private file; real page File→HTTP uploaded SHA matches",
+        "actual native CLI guarded download to exact project-external path; stdout result/disk bytes/path match",
+        "relative path from taskCwd, ordinary default restored, stale-ref zero request/no file/not-started supplement"
+      ],
+      "boundary": "controlled M11 run root, not real Agent R/App A; private app.getPath(downloads) fixture isolates ordinary default; no system Downloads A claim",
+      "resources": {
+        "nativeUi": "granted",
+        "build": "not allocated"
+      },
+      "pids": [],
+      "ports": [],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P016/attempt-001",
+          "manifestSha256": "d3bb3d5ff22f35390781a1101dbdd17d1f0decf91e0565a6a861b4e24a2a5761",
+          "accounted": true
+        },
+        {
+          "attempt": "attempt-002",
+          "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P016/attempt-002",
+          "manifestSha256": "aa0c3990ebc9fcfd8650de42e416fa195e2548f04ac0dee0bda8cb3121244d2c",
+          "accounted": true
+        }
+      ]
+    },
+    {
+      "id": "M12-P018",
+      "owner": "/root/s2_t004_test",
+      "status": "ready; native lease assigned for complete T087 I and auth wait/cancel supplements",
+      "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
+      "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
+      "baselineSha256": "0de4e3c643de8b2dab26e26b0526dfe9a447cb525f40bafd7621aeef7a6a2109",
+      "cases": [
+        {
+          "id": "M12-T087",
+          "layer": "I",
+          "criteria": [
+            "real native CLI set credentials --user qa --stdin pass",
+            "actual HTTP Basic endpoint succeeds",
+            "password absent from actual process arguments and logs"
+          ]
+        },
+        {
+          "id": "M12-T016",
+          "layer": "technical I supplement only; original A still missing"
+        },
+        {
+          "id": "M12-T116",
+          "layer": "auth branch supplement only; original three prompt/Skill criteria remain"
+        }
+      ],
+      "resources": [
+        "nativeUi"
+      ],
+      "pids": [],
+      "ports": [],
+      "sessions": [],
+      "next": "executor reports actual process receipts and final cleanup; coordinator exclusively accounts ledger",
+      "artifactSupplement": {
+        "path": "/private/tmp/willyou-m12-p018-artifact-supplement-001/artifact-supplement.json",
+        "sha256": "1ff4508a3c61fcde7844846718fa00c041ec60698fbe246752d1cf70e22fa9fa",
+        "purpose": "reuse exact built runtime helper provenance required by actual fixture, replacing static build recipe at the same relative output name; no production code or binary change"
+      }
+    },
+    {
+      "id": "M12-P017",
+      "owner": "/root",
+      "status": "software accounted only; no native/App acceptance",
+      "privateRoot": "/private/tmp/willyou-m12-p017-auth-software-003",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "278f49bbd38a3591a6ec2cba1e85ea1434a6e4f755dd6786cd882736edbce731"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "79f623eddbde03185d9c462f1962bbf353170314f0fbf9c4dc5798c92e1d6a5d"
+        }
+      ],
+      "resources": [],
+      "next": "P018 actual T087 I; A and complete T116 remain separate"
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
-  "implementationCheckpoint": "97c738c1cf54991cac0f5882c3158a402b62cab6",
+  "implementationCheckpoint": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",
-  "currentSourceCommit": "97c738c1cf54991cac0f5882c3158a402b62cab6",
+  "currentSourceCommit": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "baselineAmendments": [
     {
       "at": "2026-11-04T02:22:07.169680+00:00",

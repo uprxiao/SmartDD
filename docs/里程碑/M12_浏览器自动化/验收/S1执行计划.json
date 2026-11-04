@@ -683,6 +683,79 @@
           "nativeUi": "not allocated",
           "build": "not allocated"
         }
+      },
+      {
+        "id": "M12-P016",
+        "owner": "/root/s2_t004_test",
+        "name": "原T067完整真实CLI上传/下载I",
+        "status": "original T067 complete I, accounted",
+        "privateRoot": "/private/tmp/willyou-m12-p016-executor-001",
+        "baseline": "/private/tmp/willyou-m12-p016-baseline-002/baseline.json",
+        "baselineSha256": "be888bbda80023d9d7c333886e96fea91ec20a8cdb136107c69344bfc96b143e",
+        "dependencySupplements": [
+          "55001d5caafdede4d02a42df2b459c0c84ffae14a0ad0a4b04a8e596c90dd708",
+          "d0559423d2737af1e44695003140fe8f25f2b0de1b33ba0b4db63b7cd8880dfa"
+        ],
+        "preflightSha256": "095800421c3139edb49023919bd7112cbe9df678f5aab24ff831295510dea4a1",
+        "cases": [
+          "M12-T067"
+        ],
+        "layers": [
+          "I"
+        ],
+        "criteriaSource": "原用例T067全部前置/步骤/预期；R1.3明确保留O7",
+        "criteria": [
+          "actual native CLI upload of project-external private file; real page File→HTTP uploaded SHA matches",
+          "actual native CLI guarded download to exact project-external path; stdout result/disk bytes/path match",
+          "relative path from taskCwd, ordinary default restored, stale-ref zero request/no file/not-started supplement"
+        ],
+        "boundary": "controlled M11 run root, not real Agent R/App A; private app.getPath(downloads) fixture isolates ordinary default; no system Downloads A claim",
+        "resources": {
+          "nativeUi": "granted",
+          "build": "not allocated"
+        }
+      },
+      {
+        "id": "M12-P018",
+        "phase": "S4",
+        "cases": [
+          "M12-T087"
+        ],
+        "layers": [
+          "I"
+        ],
+        "owner": "/root/s2_t004_test",
+        "status": "dispatched",
+        "requirements": "R1.3",
+        "technicalDesign": "V1.2",
+        "criteria": [
+          {
+            "id": "M12-T087",
+            "layer": "I",
+            "criteria": [
+              "real native CLI set credentials --user qa --stdin pass",
+              "actual HTTP Basic endpoint succeeds",
+              "password absent from actual process arguments and logs"
+            ]
+          },
+          {
+            "id": "M12-T016",
+            "layer": "technical I supplement only; original A still missing"
+          },
+          {
+            "id": "M12-T116",
+            "layer": "auth branch supplement only; original three prompt/Skill criteria remain"
+          }
+        ],
+        "baseline": "/private/tmp/willyou-m12-p018-baseline-001",
+        "baselineSha256": "0de4e3c643de8b2dab26e26b0526dfe9a447cb525f40bafd7621aeef7a6a2109",
+        "privateRoot": "/private/tmp/willyou-m12-p018-executor-001",
+        "dependencies": [
+          "P017 software 34 checks and typecheck passed",
+          "actual native CLI/.4/M11 inputs frozen",
+          "native resource lease clear"
+        ],
+        "next": "real HTTP auth and secret/argv/log checks; extra pending auth rejection, timeout and explicit cancel remain I supplements"
       }
     ],
     "autonomy": {
@@ -715,7 +788,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T02:41:25.161710+00:00",
+    "updatedAt": "2026-11-04T03:23:07.308536+00:00",
     "independentNext": "S4 settings/profile UI and certificate/site permissions; original remaining layers stay explicit",
     "pendingDecisions": [
       {
