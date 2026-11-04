@@ -34,6 +34,10 @@ describe('UI Cookie import coordinator (software, native/session lifecycle subst
   it('does not open the native mutation store when page unload fails and keeps all access blocked',async()=>{
     const f=fixture(),c=f.coordinator();f.options.hold.mockRejectedValueOnce(Error('unload failed'));await expect(c.import(f.profile,'a'.repeat(64))).rejects.toThrow('unload failed');expect(f.options.open).not.toHaveBeenCalled();expect(f.values).toEqual([cookie('before')]);expect(f.profiles.importState(f.profile.id)).toBe('needs-attention');await c.recover(f.profile);expect(f.profiles.importState(f.profile.id)).toBe('ready');
   });
+  it('still exposes needs-attention and preserves the original failure when the recovery directory cannot be inspected',async()=>{
+    const f=fixture(),c=f.coordinator();vi.spyOn(f.journals,'remove').mockImplementation(()=>{throw Error('cleanup unavailable');});vi.spyOn(f.journals,'pending').mockImplementation(()=>{throw Error('directory inspection unavailable');});const set=f.store.set;f.store.set=async value=>{await set(value);if(value.value==='after')throw Error('write acknowledgement lost');};
+    await expect(c.import(f.profile,'a'.repeat(64))).rejects.toMatchObject({code:'BROWSER_UNAVAILABLE',stage:'cleanup'});expect(f.profiles.importState(f.profile.id)).toBe('needs-attention');expect(f.options.resume).not.toHaveBeenCalled();
+  });
   it('resumes original pages only after successful immediate restoration of a failed write',async()=>{
     const f=fixture(),c=f.coordinator(),set=f.store.set;f.store.set=async value=>{await set(value);if(value.value==='after')throw Error('lost acknowledgement');};await expect(c.import(f.profile,'a'.repeat(64))).rejects.toMatchObject({code:'BROWSER_ERROR'});expect(f.values).toEqual([cookie('before')]);expect(f.options.resume).toHaveBeenCalledOnce();expect(f.profiles.importState(f.profile.id)).toBe('ready');
   });

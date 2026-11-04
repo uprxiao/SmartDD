@@ -52,7 +52,10 @@ export class BrowserImportCoordinator {
       return{result,reloadedPages:await this.options.resume(profile)};
     }catch(error){
       let closeFailed=false;try{await store?.close();store=undefined;}catch{closeFailed=true;}
-      const pending=this.options.journals.pending().includes(profile.id)||this.options.journals.clearing().includes(profile.id);
+      // An unreadable directory is not proof that recovery data disappeared.
+      // Preserve the original failure and the explicit recovery UI state.
+      let pending=true;
+      try{pending=this.options.journals.pending().includes(profile.id)||this.options.journals.clearing().includes(profile.id);}catch{/* Remain blocked until an explicit recovery/clear succeeds. */}
       if(pending||!held||completed||closeFailed)this.state(profile.id,'needs-attention');
       else{this.state(profile.id,'ready');await this.options.resume(profile);}
       throw error;

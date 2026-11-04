@@ -37,6 +37,7 @@ import {BrowserImportCoordinator} from './cookie-import/coordinator';
 import {BrowserImportPagePause} from './cookie-import/page-pause';
 import {safeStorageCipher} from '../../safe-storage-cipher';
 import type {SecretCipher} from '../../secrets';
+import {BrowserCookieImportAudit} from './cookie-import/audit';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -62,6 +63,7 @@ export class BrowserService {
   readonly authentication:BrowserAuthentication;
   readonly cookieSources:BrowserCookieSources;
   private readonly imports:BrowserImportCoordinator;
+  private readonly importAudit:BrowserCookieImportAudit;
   private readonly certificateFailures=new Map<string,BrowserCertificateState>();
   private readonly artifacts:BrowserArtifacts;
   private readonly paused=new Set<string>();
@@ -91,7 +93,7 @@ export class BrowserService {
       this.authentication.install({contents:page.contents,taskId:page.taskId,pageId:page.id,profileId:page.profileId,displayPageId:displayPage.id});
       page.contents.on('did-start-navigation',(_event,_url,inPlace,main)=>{if(main&&!inPlace)this.certificateFailures.delete(page.id);});
       page.contents.once('destroyed',()=>this.certificateFailures.delete(page.id));
-    }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();
+    }});this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.importAudit=new BrowserCookieImportAudit(this.operations);
     this.pages.observe(event=>{if(event.type==='created'){this.conditions.set(event.page,new BrowserConditionWait(event.page));this.recordings.set(event.page,new BrowserRecorder(event.page));}});
     this.workspace=new BrowserWorkspace({...options,pages:this.pages,available:id=>this.profiles.assertAvailable(id),profileState:id=>this.profiles.importState(id),searchEngine:()=>this.settings.snapshot().searchEngine,authentication:(taskId,pageId)=>({prompt:this.authentication.snapshot(taskId,pageId),cancelled:this.authentication.cancelledState(taskId,pageId)}),downloads:taskId=>this.downloads.snapshot(taskId),permission:(taskId,pageId)=>this.permissions.snapshot(taskId,pageId),certificate:(id,url)=>{
       const failure=this.certificateFailures.get(id);if(failure?.url===url)return failure;
@@ -445,9 +447,9 @@ export class BrowserService {
   }
   private uiProfile(taskId:string,profileId:string):BrowserProfile{const {projectId}=this.workspace.snapshot(taskId);return this.profiles.require({taskId,projectId},profileId,'control');}
   async importCookieSources(taskId:string){this.workspace.snapshot(taskId);return this.cookieSources.discover();}
-  async importCookies(taskId:string,profileId:string,sourceId:string){const profile=this.uiProfile(taskId,profileId);this.imports.assertImportable(profile.id);return this.imports.import(profile,sourceId);}
-  async recoverCookies(taskId:string,profileId:string){await this.imports.recover(this.uiProfile(taskId,profileId));return this.profileSiteStates(taskId);}
-  async clearCookies(taskId:string,profileId:string){await this.imports.clear(this.uiProfile(taskId,profileId));return this.profileSiteStates(taskId);}
+  async importCookies(taskId:string,profileId:string,sourceId:string){const profile=this.uiProfile(taskId,profileId);this.imports.assertImportable(profile.id);return this.importAudit.run(taskId,profile.id,'import',()=>this.imports.import(profile,sourceId));}
+  async recoverCookies(taskId:string,profileId:string){const profile=this.uiProfile(taskId,profileId);await this.importAudit.run(taskId,profile.id,'recover',()=>this.imports.recover(profile));return this.profileSiteStates(taskId);}
+  async clearCookies(taskId:string,profileId:string){const profile=this.uiProfile(taskId,profileId);await this.importAudit.run(taskId,profile.id,'clear',()=>this.imports.clear(profile));return this.profileSiteStates(taskId);}
   revokeCertificate(taskId:string,profileId:string,host:string):void{
     const {projectId}=this.workspace.snapshot(taskId);this.profiles.require({taskId,projectId},profileId,'control');this.profiles.assertAvailable(profileId);
     this.siteStates.revokeCertificate(profileId,host);

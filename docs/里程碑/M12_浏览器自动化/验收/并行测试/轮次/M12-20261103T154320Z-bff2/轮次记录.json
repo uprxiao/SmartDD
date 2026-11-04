@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T05:13:51.781538+00:00",
+  "updatedAt": "2026-11-04T05:28:07.306062+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -11,7 +11,7 @@
       "group": "M12-P029",
       "privateRoot": "/private/tmp/willyou-m12-p029-executor-001",
       "baseline": "/private/tmp/willyou-m12-p029-baseline-001",
-      "status": "preparing frozen actual service/page lifecycle integration; no native lease"
+      "status": "ready; exclusive native integration lease granted"
     }
   ],
   "branch": "feature/0.1.1",
@@ -23,7 +23,12 @@
   "currentGroup": "M12-P029",
   "resources": {
     "build": null,
-    "nativeUi": null
+    "nativeUi": {
+      "owner": "/root/s2_t004_test",
+      "group": "M12-P029",
+      "assignedAt": "2026-11-04T05:22:52.192641+00:00",
+      "boundary": "one private HTTP server, three page proxies, prohibited activation, actual alpha0/nonfocus park and hidden native popup; no PTY/desktop input/Keychain/remote sites"
+    }
   },
   "groups": [
     {
@@ -1238,8 +1243,8 @@
     {
       "id": "M12-P029",
       "owner": "/root/s2_t004_test",
-      "status": "preparing frozen actual service/page lifecycle integration; no native lease",
-      "privateRoot": "/private/tmp/willyou-m12-p029-executor-001",
+      "status": "attempt002 18 valid checks, one command-argument fixture miss; same lease for minimum attempt003 supplement",
+      "privateRoot": "/private/tmp/willyou-m12-p029-executor-001/attempt-002",
       "baseline": "/private/tmp/willyou-m12-p029-baseline-001",
       "baselineSha256": "3b350071538d6bf6fcabb08e1600f9654cd126e5ebda500d4cb6c989375cc4c7",
       "relatedCaseIds": [
@@ -1258,7 +1263,81 @@
       "resources": [
         "nativeUi"
       ],
-      "next": "compile/private native dependency preflight and report ready command before lease"
+      "next": "retain 18 green; correct get/what:title catalog call on one new page, independent raw/judge/cleanup",
+      "supplements": [
+        {
+          "path": "/private/tmp/willyou-m12-p029-policy-supplement-001",
+          "manifestSha256": "f5936caec7f0aaa9631b99947d21457520943d5608b59a6797b75d292e5afad5"
+        },
+        {
+          "path": "/private/tmp/willyou-m12-p029-schema-supplement-001",
+          "manifestSha256": "9681feb939353c079d4f4e1bc5b2a90282ec8696f1e71882be3ccb0267bd366f"
+        }
+      ],
+      "preflightSha256": "e673ff12e8895361b8050fa6c41182dd9b430a005e5a20a2c158e7aedd494d9a",
+      "hostSha256": "992fb8e88654ae5c6fedd6fab8cf5b62a5349ede443937036423a520a714bdba",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p029-executor-001/cache node /private/tmp/willyou-m12-p029-executor-001/run.mjs --execute",
+      "pids": [
+        98874,
+        98876,
+        98877,
+        98878,
+        98880,
+        98881,
+        98885,
+        98886,
+        98887,
+        98892
+      ],
+      "ports": [
+        64795,
+        64796,
+        64799,
+        64800
+      ],
+      "sessions": [
+        26048
+      ],
+      "priorAttempts": [
+        {
+          "path": "/private/tmp/willyou-m12-p029-executor-001",
+          "manifestSha256": "6d83e0837222a50addd78b1ade2c8966cf9f05f7c8800c6d0c3dc17f0b97e5ee",
+          "classification": "private SQL fixture 16 placeholders/15columns; no BrowserService constructed; 4 PIDs absent before next attempt"
+        }
+      ]
+    },
+    {
+      "id": "M12-P030",
+      "owner": "/root",
+      "resources": [],
+      "status": "UI import audit software/SQLite write path verified; history UI/native still pending",
+      "relatedCaseIds": [
+        "M12-T081",
+        "M12-T099"
+      ],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "25aff44c5e7698e8be0b6ee74683068393e8791ad30352428a2c81e69207a03f"
+        }
+      ],
+      "next": "S5 activity read integration and packaged/native verification"
+    },
+    {
+      "id": "M12-P031",
+      "owner": "/root",
+      "resources": [],
+      "status": "product red retained; recovery error-state fix verified in software",
+      "relatedCaseIds": [
+        "M12-T081"
+      ],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "075e40691cc2a059a5f93c420a7670d2c8309524a3eba2ee61943f16ad2c75a3"
+        }
+      ],
+      "next": "new package includes fix; full I/A recovery case still pending"
     }
   ],
   "next": "package008 T021 A retest; independent S4 backend development",
