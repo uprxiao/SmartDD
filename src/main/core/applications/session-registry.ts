@@ -162,6 +162,44 @@ export class CapabilitySessionRegistry {
       return this.read(taskId);
     }).immediate()); await this.ensureMirror(taskId); return saved;
   }
+  /**
+   * M11 R1.0 S4: a session created before R1.0 becomes a library session on its next resume. The native identity
+   * (runner, state root, cwd, session id) is kept; the snapshot becomes the record of the library launch, and its old
+   * projection/plugin references are released. Refuses while any run of the task is still live.
+   */
+  async adoptLibrary(taskId: string,expectedHash: string,input: CapabilitySessionSnapshot): Promise<StoredCapabilitySession> {
+    const parsed = capabilitySessionSnapshotSchema.safeParse(input);
+    if (!parsed.success || parsed.data.schema !== 3 || parsed.data.provenance !== 'created') throw new ApplicationError('INVALID_INPUT','库模式快照无效');
+    const next = parsed.data, bytes = canonicalJson(next), hash = digest(bytes);let previousSelection = '';
+    const saved = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+      const current = this.read(taskId), old = current.snapshot;previousSelection = current.selectionHash;
+      if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能转为库模式');
+      if (current.pointer.snapshotHash !== expectedHash) throw new ApplicationError('RESOURCE_STATE_CHANGED','快照已变化，请重新读取原身份');
+      if (next.taskId !== taskId || next.projectId !== old.projectId || next.runner !== old.runner || canonicalJson(next.native) !== canonicalJson(old.native)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','库模式快照必须沿用原任务与原生身份');
+      if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(taskId)) throw new ApplicationError('RESOURCE_BUSY','此会话仍有运行，停止后再恢复');
+      this.deps.assertInitialSelection(next); this.validatePackages(next); const refs = this.sourceReferences(next);
+      const now = new Date().toISOString();
+      this.store.sqlite.prepare("UPDATE capability_session_snapshots SET schema_version=3,snapshot_json=?,snapshot_hash=?,legacy_status='created' WHERE task_id=? AND snapshot_hash=?").run(bytes,hash,taskId,expectedHash);
+      this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,taskId,bytes,selectionHash(next),now);
+      this.store.sqlite.prepare('UPDATE capability_session_identities SET selection_hash=?,updated_at=? WHERE task_id=?').run(selectionHash(next),now,taskId);
+      // Old projections and plugin sources are released; the launch runtime reference stays.
+      this.store.sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind<>'legacy-runtime'").run(taskId);
+      const put = this.store.sqlite.prepare('INSERT INTO capability_session_refs(task_id,ref_kind,ref_id,ref_hash,relative_path) VALUES(?,?,?,?,?)');
+      for (const ref of refs) if (ref.refKind !== 'legacy-runtime') put.run(taskId,ref.refKind,ref.refId,ref.refHash,ref.relativePath);
+      this.store.sqlite.prepare('DELETE FROM capability_session_mcp_names WHERE task_id=?').run(taskId);
+      for (const mcp of next.mcp) { if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖'); this.store.sqlite.prepare('INSERT INTO capability_session_mcp_names(server_name,task_id,kind) VALUES(?,?,?)').run(mcp.serverName,taskId,mcp.kind); }
+      return this.read(taskId);
+    }).immediate());
+    // The session directory marker names the selection it was written for; move only our own marker to the new one.
+    await withResourceLock(this.store.root,() => {
+      const marker = join(ensureStoreDirectory(this.store.root,'sessions/' + taskId),'.smartdd-owned.json'), owner = (sourceHash: string) => canonicalJson({ owner: 'SmartDD',schema: 2,storeId: this.store.storeId,kind: 'session',taskId,sourceHash });
+      if (!existsSync(marker) || lstatSync(marker).isSymbolicLink()) return;
+      let known = ''; try { known = canonicalJson(JSON.parse(readFileSync(marker,'utf8'))); } catch { return; }
+      if (known !== owner(previousSelection)) return;
+      const temp = marker + '.' + randomUUID() + '.tmp'; writeFileSync(temp,owner(saved.selectionHash) + '\n',{ flag: 'wx',mode: 0o600 }); renameSync(temp,marker);
+    });
+    await this.ensureMirror(taskId); return saved;
+  }
   async verifyNativeIdentity(taskId: string,actual: { runner: CapabilitySessionSnapshot['runner'];stateRoot: string;cwd: string;sessionId: string | null;home: string }): Promise<void> {
     const current = await this.get(taskId), native = current.snapshot.native;
     if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能授予运行能力');

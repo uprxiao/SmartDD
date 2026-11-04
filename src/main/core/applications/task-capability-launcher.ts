@@ -64,8 +64,8 @@ export interface TaskCapabilityLauncherOptions {
   pollMs?:number;
   /** R16: HOME whose `.agents/skills` (and each Agent's link directory) holds the single WillYou Skill library. Omitted: no library delivery. */
   skillLibraryHome?:string;
-  /** Tests of the pre-R1.0 catalog path, which still serves sessions created before R1.0 until S4 migrates them. New tasks otherwise use the library. */
-  catalogForNewTasks?:boolean;
+  /** Tests of the pre-R1.0 catalog path only: new tasks and pre-R1.0 sessions keep that path instead of the library (S3d removes it). */
+  retainCatalogPath?:boolean;
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
@@ -385,18 +385,38 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const pointer=input.previous.sessionCapabilities;if(pointer.taskId!==input.taskId)return undefined;
       const recorded=this.support.store.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {snapshot_json:string}|undefined;
       let hash:string|undefined;try{hash=JSON.parse(recorded?.snapshot_json??'null')?.adapterBinding?.hash;}catch{return undefined;}
-      if(!hash)return undefined;try{if(this.support.adapters.get(hash).metadata.skillDelivery!=='library')return undefined;}catch{return undefined;}
+      if(!hash)return undefined;let library:boolean;try{library=this.support.adapters.get(hash).metadata.skillDelivery==='library';}catch{return undefined;}
+      if(!library)return this.options.retainCatalogPath?undefined:this.adoptLibrarySession(input,native,runner);
       const current=await this.sessions.get(input.taskId);
       if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原会话身份不符');
       if(current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
       await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
       return{adapterHash:hash,current};
     }
-    if(!input.newTask||this.options.catalogForNewTasks)return undefined;
+    if(!input.newTask||this.options.retainCatalogPath)return undefined;
     // Every version of the Agent uses the library; prefer the adapter that declares this version.
     const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.skillDelivery==='library');
     const adapter=candidates.find(a=>a.cliVersions.includes(native.version))??candidates[0];
     return adapter?{adapterHash:adapter.hash}:undefined;
+  }
+  /** S4: a pre-R1.0 session becomes a library session on resume. Any failure keeps the original path so the task still starts. */
+  private async adoptLibrarySession(input:TaskLaunchInput,native:NativeLaunchContext,runner:string):Promise<{adapterHash:string;current:StoredCapabilitySession}|undefined>{
+    const candidates=this.support.status().adapters.filter(a=>a.agentId===runner&&this.support.adapters.get(a.hash).metadata.skillDelivery==='library'),adapter=candidates.find(a=>a.cliVersions.includes(native.version))??candidates[0];
+    if(!adapter)return undefined;
+    try{
+      const pointer=input.previous!.sessionCapabilities!,old=await this.sessions.get(input.taskId);
+      if(old.snapshot.projectId!==input.projectId||old.pointer.snapshotHash!==pointer.snapshotHash||old.retention!=='active')return undefined;
+      await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
+      if((await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime').length!==1)return undefined;
+      // Nothing after the adoption may fail back to the old path: the stored pointer has already moved.
+      return{adapterHash:adapter.hash,current:await this.sessions.adoptLibrary(input.taskId,old.pointer.snapshotHash,this.createLibrarySnapshot(input,native,adapter.hash))};
+    }catch(error){
+      if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError))throw error;
+      // Once adopted, the old path no longer matches the stored pointer: report instead of falling back.
+      const now=this.support.store.sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(input.taskId) as {snapshot_json:string}|undefined;
+      try{if(this.support.adapters.get(JSON.parse(now?.snapshot_json??'null')?.adapterBinding?.hash).metadata.skillDelivery==='library')throw error;}catch(checked){if(checked===error)throw error;}
+      return undefined;
+    }
   }
   /** Pinned bridge runtime shared by every registered application package. */
   private applicationRuntimeHash():string|null{
