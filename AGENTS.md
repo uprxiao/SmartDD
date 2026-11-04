@@ -171,6 +171,7 @@ docs/
 #### 2026-11-02 驱动预检补充
 
 - 所有RPC前置、项目列表与AI配置健康检查先完成，再进行一次setup reload；reload完成后才对本次新实例取得初始焦点并安装focus guard，之后用真实UI导航。前置新增项目却沿用旧renderer缓存、或在reload前装guard，须按驱动错误留证；不重新武装已yield的guard或重放旧输入。
+- RPC准备了运行任务再reload时，renderer的终端绑定可能为空；不要把底部“运行中”或后台PTY存在当作终端已呈现。打开该任务后若显示“启动”，先通过真实UI绑定既有PTY，核对PTY编号、进程PID及运行编号未变，再等待可见xterm并输入；不通过重复启动或RPC发送替代终端操作。需先从当前TaskService.open及renderer绑定逻辑核对本次场景，不能仅凭按钮文案推定会新建进程。
 - 把只读Agent驱动扩展到草稿等写操作前，先核对真实工具审批声明与本次私有profile策略，用一个本地写流程预检。`never`拒绝的调用不计宿主业务失败；需要审批时沿用实际终端UI单次确认已核对的测试操作，不自报approved、不选择永久批准，不放开发送门槛。上游拒绝后停止依赖该结果的后续调用。
 - macOS原生`select`先用Tab取得焦点并断言`activeElement`，再用Home/方向键/Enter选择，核对UI及宿主保存回执；不要先打开系统popup再依赖renderer CDP键盘提交。已知原生选择器边界按系统层规则补验，不把DOM赋值当选择操作。
 - 驱动除`node --check`外，用`node scripts/lib/check-cdp-expressions.mjs <驱动路径...>`编译传给CDP的字面量JS，避免外层脚本语法正确但浏览器表达式引号错误；该预检不执行表达式，不覆盖带插值模板，后者使用`JSON.stringify`生成选择器并另行核对。

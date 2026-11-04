@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import {BrowserService,type BrowserScope} from '../service';
 import {ApplicationError} from '@shared/applications';
 import {isApplicationPreflightFailure} from '../../applications/capability-preflight';
+import {BrowserPageQueue} from '../queue';
+import type {BrowserPage} from '../page-registry';
 
 // Only the unavailable native app surface is substituted. These checks use the
 // actual service admission, operation store, workspace boundary and deadlines.
@@ -18,6 +20,26 @@ describe('browser command budgets and honest dispatch receipts (software)',()=>{
     const scope:BrowserScope={projectId:'p1',taskId:'t1',runId:'run1',requestId:'request1',operationId:'operation1',signal:controller.signal,assertActive:()=>{}};
     fixtures.push({service,sqlite});return{service,sqlite,scope,controller};
   }
+  function closeTarget(f:ReturnType<typeof fixture>,kind:'tab'|'popup'='tab'){
+    const page={id:'owned-page',taskId:'t1',projectId:'p1',profileId:f.service.profiles.ensureProject('p1').id,kind,closed:false,abort:new AbortController(),queue:new BrowserPageQueue()} as BrowserPage;
+    vi.spyOn(f.service.workspace,'target').mockResolvedValue(page);
+    return page;
+  }
+  it('completes its own tab or popup close after the page aborts, preserving a succeeded receipt',async()=>{
+    for(const kind of ['tab','popup'] as const){
+      const f=fixture(),page=closeTarget(f,kind),close=async()=>{page.closed=true;page.queue.close();page.abort.abort(new ApplicationError('BROWSER_TAB_CLOSED','owned close'));await Promise.resolve();};
+      if(kind==='tab')vi.spyOn(f.service.workspace,'close').mockImplementation(async()=>{await close();return f.service.workspace.snapshot('t1');});else vi.spyOn(f.service.pages,'close').mockImplementation(close);
+      await expect(f.service.execute(f.scope,'tab close',{page:page.id})).resolves.toEqual({result:{closed:page.id}});
+      expect(f.service.operations.receipt('run1','request1')).toMatchObject({state:'succeeded',effectState:'completed',summary:{result:{closed:page.id}}});
+    }
+  });
+  it('still bounds and cancels a close whose native completion has not arrived',async()=>{
+    const f=fixture(),page=closeTarget(f);vi.spyOn(f.service.workspace,'close').mockImplementation(()=>new Promise(()=>{}));
+    const result=f.service.execute(f.scope,'tab close',{page:page.id}).catch(error=>error);await vi.advanceTimersByTimeAsync(90000);
+    expect(await result).toMatchObject({code:'BROWSER_TIMEOUT'});expect(f.service.operations.receipt('run1','request1')).toMatchObject({state:'unknown',effectState:'unknown'});
+    const c=fixture(),other=closeTarget(c);vi.spyOn(c.service.workspace,'close').mockImplementation(()=>new Promise(()=>{}));const cancelled=c.service.execute(c.scope,'tab close',{page:other.id}).catch(error=>error);
+    await vi.waitFor(()=>expect(c.service.operations.get('run1','request1')?.state).toBe('running'));c.controller.abort(new ApplicationError('CANCELED','caller cancelled close'));expect(await cancelled).toMatchObject({code:'CANCELED'});
+  });
   it('times out restoration before dispatch without starting or changing any previous request receipt',async()=>{
     const f=fixture();f.service.operations.begin('run1','request1','different-task',null,'identity set');const before=f.service.operations.receipt('run1','request1');
     vi.spyOn(f.service.workspace,'target').mockImplementation(()=>new Promise(()=>{}));

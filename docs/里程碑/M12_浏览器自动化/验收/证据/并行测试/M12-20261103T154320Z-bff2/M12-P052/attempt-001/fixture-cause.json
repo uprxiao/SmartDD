@@ -1,0 +1,26 @@
+{
+  "classification": "driver-UI-terminal-attachment-precondition",
+  "evidence": {
+    "screenshot": "failure.png",
+    "visibleText": "未开始 / 还没有发过消息… / 启动; footer1运行中",
+    "actualReceiverPID": 8883,
+    "actualPTY": "fffa7fb8-1bca-4c41-a46f-acbc2a592682",
+    "CLIcount": 0
+  },
+  "source": [
+    {
+      "path": "src/renderer/core/tasks-store.ts",
+      "sha256": "7ff3529423574813d883f5e5882a4eeb5849392b356f98e70c018ee5842ba845"
+    },
+    {
+      "path": "src/renderer/core/auto-resume.ts",
+      "sha256": "0a01a408d25ac32b80e1f757eda6754861f87fab0b0b0e9fb256d0176920da42"
+    },
+    {
+      "path": "src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+    }
+  ],
+  "cause": "RPCtasks.create bypassesrenderer.terminals; setupreloadclearswindowmap; shouldAutoResume intentionallyskipsrunningtasks; StoppedPanelUIstartcalls tasksStore.resume->tasks.open returnsexistinglivePTY thenbindsrenderer. MissingUIprecondition, notT106businessfailure.",
+  "authorizedNextAttempt": "RealUIclick[data-testid=task-resume] aftersidebarselect beforebrowsercreation, verifyexistingPTY/receiverPIDunchanged, thenoriginalT106; noRPC/storewriteCLItrigger"
+}

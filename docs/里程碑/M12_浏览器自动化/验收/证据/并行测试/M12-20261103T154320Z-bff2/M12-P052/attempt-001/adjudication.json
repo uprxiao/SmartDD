@@ -1,0 +1,130 @@
+{
+  "at": "2026-11-04T11:19:53.103Z",
+  "group": "M12-P052",
+  "case": "M12-T106",
+  "layer": "A actualpackagedAppUI, syntheticmanagedAgentnotR",
+  "status": "failed-or-partial",
+  "passed": false,
+  "counts": {
+    "total": 7,
+    "passed": 1,
+    "failed": 6
+  },
+  "checks": [
+    {
+      "id": "real-App-UI-preconditions",
+      "expected": "App013 pinnedhash, actualUI creates/navigates tab andtypesRUN into realPTY after healthysetupreload/freshguard",
+      "actual": {
+        "status": "failed-or-partial",
+        "asar": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472",
+        "actions": [
+          {
+            "atMs": 1793791016826,
+            "stage": "UI-create-browser",
+            "kind": "click",
+            "selector": "[data-testid=\"sidebar-task\"][data-task-id=\"99b4a6cb-ce42-4677-8490-4e6d9beca4e9\"]",
+            "point": {
+              "x": 171.5,
+              "y": 303
+            }
+          },
+          {
+            "atMs": 1793791016866,
+            "stage": "UI-create-browser",
+            "kind": "click",
+            "selector": "[data-testid=task-new-browser]",
+            "point": {
+              "x": 1102.5,
+              "y": 22
+            }
+          },
+          {
+            "atMs": 1793791016904,
+            "stage": "UI-create-browser",
+            "kind": "click",
+            "selector": "[aria-label=\"网页地址\"]",
+            "point": {
+              "x": 1126.86328125,
+              "y": 62
+            }
+          },
+          {
+            "stage": "UI-create-browser",
+            "kind": "field",
+            "selector": "[aria-label=\"网页地址\"]",
+            "value": "http://127.0.0.1:57301/activity"
+          }
+        ],
+        "setup": {
+          "beforeOrigin": 1793791013133.4,
+          "afterOrigin": 1793791016569.8,
+          "navigationWaits": []
+        },
+        "focus": [
+          {
+            "enabled": true,
+            "appPid": 8781,
+            "checkedInputs": 17,
+            "installedAfterSetupReload": true
+          }
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed-or-partial'\n- 'executed-unjudged'\n"
+    },
+    {
+      "id": "three-real-successful-CLI-commands",
+      "expected": "Actualmanagedroot forks exactlythree sequentialnativeCLIeval, each returnsfixedstep thennormalrootexit",
+      "actual": {
+        "starts": [],
+        "results": []
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 3\n"
+    },
+    {
+      "id": "all-three-inflight-active-markers",
+      "expected": "During each actualCLI: trueagentRunning, visible tabdot andaccentpageborder, noanimatedbrowsercursor",
+      "actual": [],
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 3\n"
+    },
+    {
+      "id": "last-command-19s-marker-retained",
+      "expected": "19s screenshot has tabdot/pageborder, no in-flightcommand oranimatedbrowsercursor",
+      "status": "failed",
+      "error": "TypeError: Cannot read properties of undefined (reading 'observation')"
+    },
+    {
+      "id": "last-command-21s-marker-cleared",
+      "expected": "21s screenshot clears tabdot/pageborder, samepageformurl retained,noanimatedcursor",
+      "status": "failed",
+      "error": "TypeError: Cannot read properties of undefined (reading 'observation')"
+    },
+    {
+      "id": "five-actual-screenshots",
+      "expected": "Threeinflightplus19s/21s actualAppPNGfiles withtimings",
+      "actual": [],
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 5\n"
+    },
+    {
+      "id": "normal-cleanup-request",
+      "expected": "Ownedtaskended andAppnormalexit, noforcedclose orfocusrearm",
+      "actual": {
+        "exit": {
+          "pid": 8781,
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      },
+      "status": "passed"
+    }
+  ],
+  "remaining": {
+    "T114": "notexecuted: livewaitstop+cross-taskgrantinvalidation contract remains",
+    "T115": "notexecuted: threebackgroundtab/focustrue task-switch contract remains"
+  },
+  "boundary": "NoT114/T115claim; noactualR/modelorOSsandboxverification. Source/packagehashandexternalprocess/socketcleanuprecordedseparately."
+}

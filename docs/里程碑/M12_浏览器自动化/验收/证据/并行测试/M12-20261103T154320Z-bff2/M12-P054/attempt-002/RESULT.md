@@ -1,0 +1,1 @@
+Close-only completion-signal correction:45 affected U green. Node typecheck caught new workspace.close test mock returning void; fixture type error retained, no native started on this failed prerequisite.

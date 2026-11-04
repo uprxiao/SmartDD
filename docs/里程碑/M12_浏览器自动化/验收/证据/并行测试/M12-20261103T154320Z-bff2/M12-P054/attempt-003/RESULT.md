@@ -1,0 +1,1 @@
+Only test mock return-type corrected; production fix unchanged.6 budget/cancel/close checks and node typecheck green; other39 earlier affected greens retained under identical production source. No formal case increment; actual close I trackedP053002.

@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-04T11:04:23.018439+00:00",
+  "updatedAt": "2026-11-04T11:31:19.445053+00:00",
   "status": "S1门槛完成；S2-S6总目标active，前置缺陷定位",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "M12-P052",
+    "currentGroup": "M12-P052 App014 A final preflight",
     "groups": [
       {
         "id": "M12-P001",
@@ -1430,13 +1430,170 @@
           "P049011 software; P050003 native audit/exec; P051 App013 exact packaged source"
         ],
         "remaining": [
-          "private driver setup and minimum preflight; wait coordinator resource lease before App/UI",
-          "T114/T115 use original full criteria; incomplete branches remain partial"
+          "correct terminal/native-session UI precondition; original T106 no CLI executed",
+          "T114/T115 not executed"
         ],
-        "status": "preparing only; no UI/native lease; waiting ready driver command/inputs",
+        "status": "attempt001 driver precondition failed before CLI, archived; new002 true UI bind existing PTY prepared, pinning App014",
         "baseline": "/private/tmp/willyou-m12-p051-build-001/production-inputs.json",
-        "package": "/private/tmp/willyou-m12-s2-package-013/mac-arm64/WillYou.app",
-        "asarSha256": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472"
+        "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
+        "asarSha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+        "preflightSha256": "9df8a0806444e3f2a4b5fd2b08962b5268f7ef7b8212a0474f665355f2efa97b",
+        "driverSha256": "aa92330d4a40c881a4ae9054352ff03fb0400c4818f05f5bc8e0b33dcf86a3e0",
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p052-s5-app-001/cache node /private/tmp/willyou-m12-p052-s5-app-001/run.mjs --execute",
+        "pids": [],
+        "sessions": [],
+        "ports": [],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "dae4fd5abf70ea5e1ad021194e32e97342e210f32ab92a11c00c5503f0e8faf6",
+            "outcome": "zero CLI, fixture precondition failure, not original case execution"
+          }
+        ],
+        "next": "final014 source/dependency preflight then exclusive original T106 A"
+      },
+      {
+        "id": "M12-P053",
+        "owner": "/root",
+        "privateRoot": "/private/tmp/willyou-m12-p053-prompt-native-002",
+        "originalCases": [
+          "M12-T116"
+        ],
+        "layers": [
+          "I"
+        ],
+        "resources": [],
+        "criteria": [
+          "Actual nativeCLI goto then wait --text 成功 to real Basic/permission/non-local self-signed certificate prompts",
+          "Wait returns BROWSER_TIMEOUT, exact prompt remains unhandled, policy and HTTP auth/TLS success unchanged",
+          "Current shipped Skill explicitly asks user; raw independent judge and normal owned cleanup"
+        ],
+        "validPriorEvidence": [
+          "P050 fixed native binaries/dependencies/M11 root auth; P049011 production frozen source; P046 unchanged Skill content"
+        ],
+        "remaining": [],
+        "status": "original T116 I complete and coordinator accounted; original source/fixture red retained; resources released",
+        "fixtureBoundary": "Only controlled Python run root now allows concurrent trueCLI children to wait during pending navigation; auth cleanup cancellation only after timeout assertion, no native callback substitution; one TLS hostname mapped to loopback",
+        "pids": [],
+        "sessions": [],
+        "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p053-prompt-native-001/cache node /private/tmp/willyou-m12-p053-prompt-native-001/run.mjs --execute",
+        "hostSha256": "46345c1e67e1d0a15c7ed5c20a57431da9c04fa3fd5a5ee93efd4d68d84cc111",
+        "preflightSha256": "546aaac3d4c39736b36a9e3a697079617ea71905db253dca09ece9190d9b0298",
+        "ports": [],
+        "cleanup": "normalwillquit/exit0;13PID/3TCP/helper runtime and Unix files clear; private proxy restored",
+        "baseline": "/private/tmp/willyou-m12-p054-close-software-003/source",
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "46598663b0177de9c1703ade40547474bccfb8f2947578191c8107d5fc3bce88",
+            "outcome": "auth/permission raw valid, TLS fixture no certificate prompt; partial"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "bea22e8a58b72d8edc1036d4295c6cb6ce1f188e1fa94bfb1e21ed41e64699f7",
+            "outcome": "only certificate + own-close I rerun,21 composite criteria green, normalcleanup"
+          }
+        ]
+      },
+      {
+        "id": "M12-P054",
+        "owner": "/root",
+        "resources": [],
+        "privateRoot": "/private/tmp/willyou-m12-p054-close-software-003",
+        "status": "self-close receipt fix:45 affected U +node types and actual native tab close acknowledgement green; App014 built",
+        "relatedCaseIds": [
+          "M12-T035",
+          "M12-T037",
+          "M12-T099",
+          "M12-T116"
+        ],
+        "criteria": [
+          "own normal tab/popup close completes despite deliberate page abort",
+          "missing native completion/caller cancellation still bounded unknown",
+          "other service authorization/automation/queue paths regression"
+        ],
+        "remaining": [
+          "actual popup close I/A when corresponding original group is available; do not claim Native popup pass"
+        ],
+        "layers": [
+          "U",
+          "I supplement"
+        ],
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "ed575d88d4d02e2d8c2e1f9eba070007d924c74f9afe1b72a97fc8ea88675690"
+          },
+          {
+            "attempt": "attempt-002",
+            "manifestSha256": "dc698bb38f03be044badcb17bca05caea63b4594311a99f2cb76e07a5229b737"
+          },
+          {
+            "attempt": "attempt-003",
+            "manifestSha256": "aed566ae4da44cd73164f3dcd31257cc3665fe6a7751c7dfeacb798f83e23bbe"
+          }
+        ]
+      },
+      {
+        "id": "M12-P055",
+        "owner": "/root",
+        "privateRoot": "/private/tmp/willyou-m12-p055-build-001",
+        "resources": [],
+        "criteria": [
+          "one unified App014 after P054 own-close fix",
+          "3451 frozen current production bytes/modes unchanged before/after",
+          "six native smoke and fixed CLI/identity/helper identity"
+        ],
+        "status": "App014 built,3451 source/mode unchanged,6 native smoke green, exact own build processes absent; resources released",
+        "remaining": [],
+        "layers": [
+          "build",
+          "native smoke"
+        ],
+        "output": "/private/tmp/willyou-m12-s2-package-014",
+        "package": {
+          "at": "2026-11-04T11:29:49.168142+00:00",
+          "package": "/private/tmp/willyou-m12-s2-package-014/mac-arm64/WillYou.app",
+          "sourceCommit": "7b2e08b186ac7b36408bfda97a9258466111e1b2",
+          "sourceManifestSha256": "b7a017d84651cb7d83625efa259b69be2d440c0a4e316d880dbd88a0ea5ffb2a",
+          "sourceUnchangedAfter": 3451,
+          "nativeSmoke": "six checks passed, build session12940 exit0",
+          "previewOnly": true,
+          "files": [
+            {
+              "path": "app.asar",
+              "sha256": "ddd3b34527e03d16c41990575ec90ac18008afb7e066e2c3e2f1dc05fc951345",
+              "mode": 420
+            },
+            {
+              "path": "agent-browser/SOURCE.json",
+              "sha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+              "mode": 420
+            },
+            {
+              "path": "agent-browser/arm64/agent-browser",
+              "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+              "mode": 493
+            },
+            {
+              "path": "native/willyou-app",
+              "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+              "mode": 493
+            },
+            {
+              "path": "native/willyou-process-identity",
+              "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+              "mode": 493
+            }
+          ],
+          "boundary": "Current S5 plus self-close acknowledgement fix; no formal UI/Agent acceptance by packaging; no Release."
+        },
+        "deliveries": [
+          {
+            "attempt": "attempt-001",
+            "manifestSha256": "e13b0bf6fbe7a25938131219e5ffa91f32e50c1adedcd59f582c13b7daddf150"
+          }
+        ]
       }
     ],
     "autonomy": {
@@ -1469,7 +1626,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-04T11:04:23.018439+00:00",
+    "updatedAt": "2026-11-04T11:31:19.445053+00:00",
     "independentNext": [
       "App013 P052 original activity/stop/focus A, exact source/package pinned",
       "Actual M11/nativeCLI grant/pause cases and full T099 I/A composition",
@@ -1503,6 +1660,6 @@
         "independentWork": "native environment I and remaining S4 development continue"
       }
     ],
-    "currentSourceCheckpoint": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af"
+    "currentSourceCheckpoint": "7b2e08b1 plus frozen P054 close fix, App014 source identity P055"
   }
 }

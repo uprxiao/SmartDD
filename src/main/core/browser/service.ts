@@ -477,7 +477,11 @@ export class BrowserService {
           if(other.handled)return this.artifacts.result(scope.taskId,command.replaceAll(' ','-'),other.result);
           throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未完成接入');
           };
-          try{const value=await awaitBrowserNavigation(perform(),signal);if(signal.aborted&&command!=='tab close')throw signal.reason;return value;}
+          // Closing this page deliberately aborts its page signal. Await the
+          // close acknowledgement with the caller/deadline signals instead;
+          // cancellation and a missing native completion still remain bounded.
+          const completionSignal=command==='tab close'?AbortSignal.any([scope.signal,deadline.signal]):signal;
+          try{const value=await awaitBrowserNavigation(perform(),completionSignal);if(signal.aborted&&command!=='tab close')throw signal.reason;return value;}
           finally{clearTimeout(timer);}
         },scope.signal,scope.runId);
       }
