@@ -29,6 +29,8 @@ export class BrowserPageRegistry {
   private readonly closing=new Map<string,Promise<void>>();
   private readonly navigationRequests=new WeakMap<BrowserPage,object>();
   private readonly initializing=new Map<WebContents,{profileId:string;settled:Promise<void>;finish:()=>void}>();
+  private stopping=false;
+  private disposing?:Promise<void>;
   constructor(private readonly options:{userData:string;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;window?:()=>BrowserWindow|null;profiles?:BrowserProfiles;configure?:(page:BrowserPage)=>void}){}
   observe(listener:(event:BrowserPageEvent)=>void):()=>void{this.observers.add(listener);return()=>{this.observers.delete(listener);};}
   private publish(type:BrowserPageEvent['type'],page:BrowserPage){for(const listener of this.observers)listener({type,page});}
@@ -51,6 +53,7 @@ export class BrowserPageRegistry {
     return page;
   }
   async create(taskId:string,projectId:string,savedId?:string,requestedProfile?:string):Promise<BrowserPage>{
+    if(this.stopping)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');
     // A restored persistent page ID still needs a fresh reference scope. Counters
     // alone repeat after restart and can turn an old ref into a valid new ref.
     const id=savedId??randomUUID(),short='k'+randomUUID().replaceAll('-','');
@@ -77,6 +80,7 @@ export class BrowserPageRegistry {
       page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),
         // Darwin Unix-domain sockets have a short pathname limit. The home remains under userData.
         sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
+      if(this.stopping||view.webContents.isDestroyed())throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');
       this.options.profiles?.assertAvailable(profileId);
       this.pages.set(id,page);if(!this.active.has(taskId))this.active.set(taskId,id);
       this.publish('created',page);
@@ -86,6 +90,7 @@ export class BrowserPageRegistry {
   /** Electron binds the opener to the returned WebContents. The child uses its
    * own native window and the opener's exact session, never an App preload. */
   createPopup(opener:BrowserPage,options:BrowserPopupOptions,asTab=false):WebContents{
+    if(this.stopping){if(options.webContents&&!options.webContents.isDestroyed())options.webContents.close({waitForBeforeUnload:false});throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');}
     this.options.profiles?.assertAvailable(opener.profileId);
     const id=randomUUID(),short='k'+randomUUID().replaceAll('-','');
     // Adopt Electron's supplied contents to preserve the native opener identity.
@@ -107,7 +112,7 @@ export class BrowserPageRegistry {
         this.options.configure?.(page);
         if(asTab)await this.park.park(view,page.rect);
         await proxy.start();await references.initialize();
-        if(contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
+        if(this.stopping||contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
         this.options.profiles?.assertAvailable(opener.profileId);
         page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
         this.pages.set(id,page);this.publish('created',page);if(this.mounted?.taskId===page.taskId)window?.showInactive();
@@ -171,5 +176,18 @@ export class BrowserPageRegistry {
     this.park.remove(page.view);if(!page.contents.isDestroyed())page.contents.close();if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish('closed',page);
     if(this.active.get(taskId)===pageId){const next=this.list(taskId)[0];if(next)this.active.set(taskId,next.id);else this.active.delete(taskId);}
   }
-  async dispose():Promise<void>{for(const page of [...this.pages.values()])if(this.pages.has(page.id))await this.close(page.taskId,page.id);this.park.dispose();}
+  dispose():Promise<void>{
+    if(this.disposing)return this.disposing;
+    this.stopping=true;
+    this.disposing=(async()=>{
+      // A view can exist before create() publishes it. Close those contents and
+      // wait for their initialization cleanup before destroying the park window.
+      const pending=[...this.initializing.entries()];
+      for(const[contents]of pending)if(!contents.isDestroyed())contents.close({waitForBeforeUnload:false});
+      await Promise.all(pending.map(([,entry])=>entry.settled));
+      for(const page of [...this.pages.values()])if(this.pages.has(page.id))await this.close(page.taskId,page.id);
+      this.park.dispose();
+    })();
+    return this.disposing;
+  }
 }

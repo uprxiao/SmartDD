@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-04T12:43:56.494225+00:00",
+  "group": "M12-P060",
+  "attempt": 1,
+  "scope": "software U lifecycle, no packaged UI/PTY; original T115 A not counted",
+  "formalIncrement": 0,
+  "summary": {
+    "success": false,
+    "numTotalTests": 9,
+    "numPassedTests": 5,
+    "numFailedTests": 4
+  },
+  "failures": [
+    {
+      "file": "/private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/registry-shutdown.test.ts",
+      "name": "never allocates a view after disposal, even if a late caller still holds the registry",
+      "status": "failed",
+      "messages": [
+        "Error: promise resolved \"{ …(16) }\" instead of rejecting\n    at Assertion.__VITEST_REJECTS__ (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at Assertion.propertyGetter (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1607:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1696:22)\n    at /private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/registry-shutdown.test.ts:26:93\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+      ]
+    },
+    {
+      "file": "/private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/registry-shutdown.test.ts",
+      "name": "closes and drains a page initialization already in flight before finishing disposal",
+      "status": "failed",
+      "messages": [
+        "AssertionError: expected false to be true // Object.is equality\n    at /private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/registry-shutdown.test.ts:30:146\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "/private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/workspace.test.ts",
+      "name": "browser workspace persistence and startup pages (software only) ignores a late viewport placement after shutdown without restoring a native page",
+      "status": "failed",
+      "messages": [
+        "Error: promise rejected \"Error: Native allocation must not be reac…\" instead of resolving\n    at Assertion.__VITEST_RESOLVES__ (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1710:17)\n    at Assertion.propertyGetter (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1607:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1696:22)\n    at /private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/workspace.test.ts:41:107\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "/private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/workspace.test.ts",
+      "name": "browser workspace persistence and startup pages (software only) rejects a late target restoration after shutdown and preserves the saved tab",
+      "status": "failed",
+      "messages": [
+        "Error: expected Error: Native allocation must not be reac… to match object { code: 'BROWSER_UNAVAILABLE' }\n    at Assertion.__VITEST_REJECTS__ (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+expect@4.1.11/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at Assertion.propertyGetter (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1607:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:1696:22)\n    at /private/tmp/willyou-m12-p060-shutdown-software-001/source/src/main/core/browser/__tests__/workspace.test.ts:45:73\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "uniqueAssertions": 9,
+  "sourceFilesUnchangedAfter": 3453,
+  "types": {
+    "node": true,
+    "exitCode": 0,
+    "evidence": "original command actual exit0 from previous turn"
+  },
+  "causalBoundary": "Known late workspace restoration/new registry allocation/unpublished initialization lifecycle defects proven in U. P056003 actual quit timeout not conclusively caused by these gaps; P059002 old-App control normalexit0 is only a control. App016 affected scenario remains pending."
+}

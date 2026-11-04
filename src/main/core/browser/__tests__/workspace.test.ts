@@ -1,7 +1,7 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import Database from 'better-sqlite3';
 import {BrowserWorkspace} from '../workspace';
-import {BrowserPageRegistry} from '../page-registry';
+import {BrowserPageRegistry,browserProjectProfile} from '../page-registry';
 describe('browser workspace persistence and startup pages (software only)',()=>{
   const stores:Database.Database[]=[];
   afterEach(()=>{for(const db of stores.splice(0))db.close();});
@@ -30,5 +30,18 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
   it('cleans persisted orphan task tabs on startup without first loading their workspace',async()=>{
     const f=fixture();f.workspace.create('t1');await f.workspace.dispose();f.removed.add('t1');const restored=new BrowserWorkspace(f.options);
     try{await restored.reconcile();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toBeUndefined();expect(f.create).not.toHaveBeenCalled();}finally{await restored.dispose();}
+  });
+  function savedPage(f:ReturnType<typeof fixture>){
+    const id='11111111-1111-4111-8111-111111111111';
+    f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:t1',JSON.stringify({version:1,tabs:[{id,url:'https://fixture.example/',title:'Fixture',favicon:null,profileId:browserProjectProfile('p1')}],activeId:id,closed:[]}));
+    return id;
+  }
+  it('ignores a late viewport placement after shutdown without restoring a native page',async()=>{
+    const f=fixture(),id=savedPage(f);f.create.mockRejectedValue(new Error('Native allocation must not be reached'));
+    await f.workspace.dispose();await expect(f.workspace.placement('t1',id,{x:0,y:0,width:500,height:400})).resolves.toBeUndefined();expect(f.create).not.toHaveBeenCalled();
+  });
+  it('rejects a late target restoration after shutdown and preserves the saved tab',async()=>{
+    const f=fixture(),id=savedPage(f),before=f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1');f.create.mockRejectedValue(new Error('Native allocation must not be reached'));
+    await f.workspace.dispose();await expect(f.workspace.target('t1',id)).rejects.toMatchObject({code:'BROWSER_UNAVAILABLE'});expect(f.create).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toEqual(before);
   });
 });

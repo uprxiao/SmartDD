@@ -90,12 +90,13 @@ export class BrowserWorkspace {
     this.changed(taskId);
   }
   private ensure(taskId:string,id:string):Promise<BrowserPage>{
-    const changing=this.profileChanges.get(id);if(changing)return changing.then(page=>{if(!page)throw new BrowserError('BROWSER_NO_TAB','启动页尚未加载网页');return page;});
+    if(this.shuttingDown)return Promise.reject(new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭'));
+    const changing=this.profileChanges.get(id);if(changing)return changing.then(page=>{if(this.shuttingDown)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');if(!page)throw new BrowserError('BROWSER_NO_TAB','启动页尚未加载网页');return page;});
     const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live){this.options.available?.(live.profileId);return Promise.resolve(live);}
     const existing=this.opening.get(id);if(existing)return existing;
     const state=this.load(taskId),tab=state.tabs.find(t=>t.id===id);if(!tab)return Promise.reject(new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签'));
     this.options.available?.(tab.profileId);
-    const promise=(async()=>{const page=await this.options.pages.create(taskId,this.project(taskId),id,tab.profileId);if(tab.url!==BROWSER_BLANK_URL)await this.loadUrl(page,tab.url);return page;})().finally(()=>this.opening.delete(id));
+    const promise=(async()=>{const page=await this.options.pages.create(taskId,this.project(taskId),id,tab.profileId);if(this.shuttingDown){if(!page.closed)await this.options.pages.close(taskId,page.id);throw new BrowserError('BROWSER_UNAVAILABLE','浏览器正在关闭');}if(tab.url!==BROWSER_BLANK_URL)await this.loadUrl(page,tab.url);return page;})().finally(()=>this.opening.delete(id));
     this.opening.set(id,promise);return promise;
   }
   /** Explicit Agent use of a startup tab initializes its engine lazily too. */
@@ -135,9 +136,10 @@ export class BrowserWorkspace {
     const version=++this.placementVersion;
     // Unmount remains possible after project deletion, before UI unmount finishes.
     if(rect===null){const live=this.options.pages.list(taskId).find(p=>p.id===id);if(live)await this.options.pages.placement(taskId,id,null);return;}
+    if(this.shuttingDown)return;
     if(this.overlays.has(id))return;
     const tab=this.load(taskId).tabs.find(t=>t.id===id);if(!tab||tab.url===BROWSER_BLANK_URL||this.runtime.get(id)?.failure||this.options.profileState?.(tab.profileId)!==undefined&&this.options.profileState(tab.profileId)!=='ready')return;
-    const page=await this.ensure(taskId,id);if(version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
+    const page=await this.ensure(taskId,id);if(this.shuttingDown||version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
   }
   async overlay(taskId:string,id:string,open:boolean):Promise<string|null>{
     if(!this.load(taskId).tabs.some(tab=>tab.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
@@ -239,7 +241,7 @@ export class BrowserWorkspace {
     const external=(event:Electron.Event,url:string)=>{try{const protocol=new URL(url).protocol;if(!['http:','https:','file:','about:','javascript:','data:'].includes(protocol)){event.preventDefault();this.external.set(page.taskId,{id:randomUUID(),url});this.changed(page.taskId);}}catch{event.preventDefault();}};
     wc.on('will-navigate',external);wc.on('will-redirect',external);
     wc.setWindowOpenHandler(details=>{
-      if(page.importPaused)return{action:'deny'};
+      if(this.shuttingDown||page.closed||page.importPaused)return{action:'deny'};
       const url=normalizeBrowserNavigationUrl(details.url);if(!url){try{external({preventDefault(){}} as Electron.Event,details.url);}catch{}return{action:'deny'};}
       const now=Date.now(),userGesture=now-gesture<=500;gesture=0;if(now-burstAt>1000){burstAt=now;burst=0;}if(!userGesture&&++burst>5){this.notices.set(page.taskId,'页面打开了过多新标签，已阻止后续弹窗');this.changed(page.taskId);return{action:'deny'};}
       if(url.startsWith('file:')&&!wc.getURL().startsWith('file:'))return{action:'deny'};
