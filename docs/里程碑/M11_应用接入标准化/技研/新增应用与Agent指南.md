@@ -60,6 +60,10 @@ S11未知版本MCP best-effort已由受信交付机制显式选择：注册表ve
 4. 需要 L2／L3 时增加原生格式实现与脱敏真实版本夹具，跑 `native-user-messages.test.ts` 和一致性负例（角色伪装、畸形、截断、替换／链接、预算、混合／未知记录等）。自检另跑 `agent-format-self-check.test.ts`，不能用自检代替发布的 L3 证据。
 5. 验收使用统一打包 App 和隔离数据，按对应 M 用例全部判据归账；测试脚本 Agent 不代表 pi、zcode 或其他真实 Agent 已适配。
 
+### R1.0 起新增 Agent 的必做实测（2026-11-04）
+
+接入任何新 Agent（如 OpenCode、ZCode）前，按 [R1.0 方案 §7](R1.0_即时生效与统一存放方案.md) 实测 Skill 读取方式、运行中与恢复后的 Skill／MCP 可见性，并在适配声明登记 `readsSharedAgentSkills`、`skillDirectory`、`resumable`、`skillsReloadInSession`、`mcpReloadInSession`；未实测不得声明支持即时生效。
+
 ## 三、当前验收边界（2026-11-02）
 
 | 项 | 实际状态 |
