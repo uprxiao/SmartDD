@@ -1,0 +1,82 @@
+{
+  "at": "2026-11-04T15:06:02.460Z",
+  "group": "M12-P068",
+  "case": "M12-T108",
+  "layer": "A",
+  "status": "passed-T108-App-A-pending-independent-cleanup",
+  "originalRequiredCounts": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "A01-exact-package-and-fresh-focus",
+      "expected": "App017, setup reload before fresh focus/guard, no focus yield",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A02-two-original-real-UI-actions",
+      "expected": "task-files collapse and toolbar panel close, then actual UI reopen",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A03-genuine-wait-inflight-during-UI-action",
+      "expected": "Actual native Helper wait observed and not completed before hidden observations",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A04-browserPageId-and-native-document-retained",
+      "expected": "Persistent page ID, original WC/document/performance origin/URL/unsaved value unchanged",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A05-page-timer-keeps-running",
+      "expected": "Timer increases while each panel is hidden and continues across reopen",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A06-actual-Agent-commands-not-interrupted",
+      "expected": "Both actual CLI waits complete0 while panel still hidden, no cancel or replay",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A07-no-document-reload-or-destruction",
+      "expected": "Single actual fixture document loaded, no original native destruction during accepted actions",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A08-observers-restored",
+      "expected": "Only passive observation, exact original Helper execFile and monitor restored before normal shutdown",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "A09-normal-owned-exit",
+      "expected": "Original app exits normally0/null without cleanup fallback; exact cleanup evaluated separately",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "id": "S01-task-switch-supplement",
+      "expected": "R07.5 task switch keeps original native page and wait, supplementary not T107 performance",
+      "required": false,
+      "status": "passed"
+    }
+  ],
+  "formalFullCasePassed": false,
+  "remaining": "Coordinator must independently verify exact PID/TCP/Helper/Unix cleanup, archive then decide formal ledger. Supplement does not earn T107/R/system credit.",
+  "boundaries": [
+    "Exact App017 and actual UI hide/reopen, synthetic managed Python caller with actual M11/nativeCLI, not real modelR.",
+    "HTTP fixture completion releases only page wait condition; no App DOM/store/RPC business mutation.",
+    "Helper observer delegates exact original execFile/stdin/callback; no held result, timing gate, fake response, command replay, or extra debugger.",
+    "Fresh user initial focus after one setup reload; no focus stealing or yielded guard re-arm."
+  ]
+}

@@ -42,7 +42,7 @@ export default defineConfig({
   preload: {
     plugins: [externalizeDepsPlugin()],
     resolve: { alias },
-    build: { rollupOptions: { input: { index: resolve('src/preload/index.ts'), 'm9-html-guard': resolve('src/preload/m9-html-guard.ts'), 'm9-mcp-ui': resolve('src/preload/m9-mcp-ui.ts') } } },
+    build: { rollupOptions: { input: { index: resolve('src/preload/index.ts'), 'm9-html-guard': resolve('src/preload/m9-html-guard.ts'), 'm9-mcp-ui': resolve('src/preload/m9-mcp-ui.ts'), 'browser-prompt': resolve('src/preload/browser-prompt.ts') } } },
   },
   renderer: {
     root: 'src/renderer',
