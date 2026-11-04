@@ -123,15 +123,15 @@ describe('M8 real SQLite transfer services', { timeout: 20_000 }, () => {
     a.profiles.recordCheck(imported.id, { category: 'ok', source: 'manual', message: 'synthetic manual test', ms: 1 });
     expect(a.profiles.resolve(imported.id).env.ANTHROPIC_API_KEY).toBe('synthetic-token-m8');
   });
-  it('D02/D03/D04 requires an explicitly picked local directory or available source and rejects conflicts/symlinks', async () => {
+  it('D02/D03/D04 requires an explicitly picked local directory or available source, shares occupied directories, including via a symlink', async () => {
     const a = setup('A'), fixture = transferFixture(); fixture.directories[0].path = folder('source');
     const p = await unlock(a.svc, fixture), d = initialTransferDraft(p);
     expect(a.svc.validateDraft(1, p.token, d).valid).toBe(false);
     d.directories[0].localPath = fixture.directories[0].path; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(false);
     d.directories[0].mode = 'source'; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
     a.projects.createProject({ name: 'Occupied', aliases: [], description: '', rulesPath: null }, [{ label: '', path: fixture.directories[0].path }]);
-    expect(a.svc.validateDraft(1, p.token, d).issues[0].message).toContain('使用');
-    const alias = join(root, 'alias'); symlinkSync(fixture.directories[0].path, alias); a.svc.allowDirectory(1, p.token, alias); d.directories[0] = { ref: 'dir-1', mode: 'local', localPath: alias }; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(false);
+    expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
+    const alias = join(root, 'alias'); symlinkSync(fixture.directories[0].path, alias); a.svc.allowDirectory(1, p.token, alias); d.directories[0] = { ref: 'dir-1', mode: 'local', localPath: alias }; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
     d.directories[0].localPath = folder('valid'); a.svc.allowDirectory(1, p.token, d.directories[0].localPath); expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
     rmSync(d.directories[0].localPath, { recursive: true }); expect(() => a.svc.commit(1, p.token, randomUUID(), d)).toThrow('目录'); expect(a.projects.listProjects()).toHaveLength(1);
   });
@@ -296,20 +296,18 @@ describe('M8 real SQLite transfer services', { timeout: 20_000 }, () => {
     expect(a.client.db.select().from(schema.appSecrets).all().some(s => s.key.startsWith('ai:'))).toBe(false);
     expect(a.svc.snapshot(r.projectId, [], []).capabilities).toEqual(f.capabilities);
   });
-  it('F05/F07 allows a second copy only with an independent name and unoccupied mapped directory', async () => {
+  it('F05/F07 allows a second copy with an independent name in a directory another project uses', async () => {
     const a = setup('copies');
     const p = await unlock(a.svc), d = ready(a.svc, p, 'Original'); const r = a.svc.commit(1, p.token, randomUUID(), d);
     const original = a.projects.getProject(r.projectId), p2 = await unlock(a.svc), d2 = ready(a.svc, p2, 'Second');
     a.projects.createProject({ name: 'Late conflict', aliases: [], description: '', rulesPath: null }, [{ label: '', path: d2.directories[0].localPath! }]);
-    expect(() => a.svc.commit(1, p2.token, randomUUID(), d2)).toThrow('使用');
-    d2.directories[0].localPath = folder('new-independent'); a.svc.allowDirectory(1, p2.token, d2.directories[0].localPath);
-    a.svc.commit(1, p2.token, randomUUID(), d2); expect(a.projects.getProject(r.projectId)).toEqual(original);
+    const second = a.svc.commit(1, p2.token, randomUUID(), d2); expect(a.projects.getProject(second.projectId).dirs[0].path).toBe(d2.directories[0].localPath); expect(a.projects.getProject(r.projectId)).toEqual(original);
   });
-  it('D01/D03 archives free names and directory identities; duplicate long names remain bounded', async () => {
+  it('D01/D03 archives free names, directories stay shareable; duplicate long names remain bounded', async () => {
     const a = setup('names'), f = transferFixture(); f.project.name = '名'.repeat(100); f.directories[0].path = folder('source');
     const original = a.projects.createProject({ ...f.project }, [{ path: f.directories[0].path, label: '主目录' }]);
     const p = await unlock(a.svc, f); expect(p.suggestedName.length).toBeLessThanOrEqual(100); expect(p.suggestedName).not.toBe(f.project.name);
-    const d = initialTransferDraft(p); d.directories[0].mode = 'source'; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(false);
+    const d = initialTransferDraft(p); d.directories[0].mode = 'source'; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
     a.client.db.update(schema.projects).set({ archivedAt: clock }).where(eq(schema.projects.id, original.id)).run();
     d.name = f.project.name; expect(a.svc.validateDraft(1, p.token, d).valid).toBe(true);
     a.svc.commit(1, p.token, randomUUID(), d); expect(a.projects.listProjects()).toHaveLength(1);

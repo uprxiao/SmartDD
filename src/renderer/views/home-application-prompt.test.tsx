@@ -3,7 +3,7 @@ import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/reac
 import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
-const m=vi.hoisted(()=>({create:vi.fn(),cancelCreate:vi.fn(),update:vi.fn(),projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
+const m=vi.hoisted(()=>({create:vi.fn(),cancelCreate:vi.fn(),update:vi.fn(),projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
 vi.mock('@renderer/lib/hooks/useAiProfiles',()=>({useAiProfiles:()=>({data:m.profiles})}));
@@ -13,7 +13,7 @@ vi.mock('./voice-controls',()=>({VoiceButton:()=>null}));
 vi.mock('./capabilities',()=>({CapabilityLaunchPreview:()=>null}));
 vi.mock('./projects/project-dialogs',()=>({ProjectDialog:()=>null}));
 vi.mock('@renderer/lib/profile-health',()=>({ProfileHealthMark:()=>null}));
-beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});});
+beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
 afterEach(()=>cleanup());
 describe('application example handoff to the real home composer',()=>{
  it('preserves unsent input across actual composer unmount and appends a later summary once',async()=>{
@@ -39,4 +39,17 @@ describe('application example handoff to the real home composer',()=>{
   await act(async()=>reject(new Error('启动已取消')));await waitFor(()=>expect(button).toHaveProperty('disabled',false));expect(input).toHaveProperty('value','preserve this input');expect(m.update).not.toHaveBeenCalled();
  });
 
+});
+describe('home composer profile default',()=>{
+ const launchWith=async()=>{const button=screen.getByTestId('home-launch');await waitFor(()=>expect(button).toHaveProperty('disabled',false));fireEvent.click(button);await waitFor(()=>expect(m.create).toHaveBeenCalled());return m.create.mock.calls.at(-1)![0].aiProfileId;};
+ it('launches with the usable default even when the last task used another profile',async()=>{
+  m.profiles.splice(0,m.profiles.length,{id:'cc-work',name:'CC-work',runner:'claude',isDefault:false,check:{status:'ok'}},{id:'codex',name:'Codex',runner:'codex',isDefault:true,check:{status:'ok'}});m.draft.aiProfileId='cc-work';m.create.mockResolvedValue(undefined);
+  render(<HomeView/>);await screen.findByTestId('home-input');expect(await launchWith()).toBe('codex');
+ });
+ it('yields to the last choice when the default health check fails after the composer opened',async()=>{
+  m.profiles.splice(0,m.profiles.length,{id:'cc-work',name:'CC-work',runner:'claude',isDefault:false,check:{status:'ok'}},{id:'codex',name:'Codex',runner:'codex',isDefault:true,checking:true,check:null});m.draft.aiProfileId='cc-work';m.create.mockResolvedValue(undefined);
+  render(<HomeView/>);const input=await screen.findByTestId('home-input');
+  m.profiles=[m.profiles[0],{id:'codex',name:'Codex',runner:'codex',isDefault:true,checking:false,check:{status:'failed'}}];fireEvent.change(input,{target:{value:'re-render after the health result'}});
+  expect(await launchWith()).toBe('cc-work');
+ });
 });

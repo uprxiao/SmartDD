@@ -114,7 +114,7 @@ describe('AiProfileService', () => {
     const b = svc.create(input({ name: 'B' }));
     expect(svc.defaultProfileId()).toBe(a.id);
     svc.setDefault(b.id);
-    expect(svc.list().map((p) => p.isDefault)).toEqual([false, true]);
+    expect(svc.list().map((p) => [p.name, p.isDefault])).toEqual([['B', true], ['A', false]]);
     const c = svc.create(input({ name: 'C', isDefault: true }));
     expect(svc.defaultProfileId()).toBe(c.id);
     svc.delete(c.id);

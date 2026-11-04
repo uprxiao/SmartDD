@@ -17,6 +17,7 @@ import { SectionPage } from '@renderer/lib/ui/section-page';
 import { cn } from '@renderer/utils/utils';
 import { ConfirmDeleteDialog, EnvBadge, TestResultLine } from './projects/form-parts';
 import { DirDialog, ProjectDialog } from './projects/project-dialogs';
+import { ProjectDeleteDialog, useProjectAction } from './projects/project-actions';
 import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
 import { CapabilitiesSection } from './capabilities';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
@@ -93,35 +94,12 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/** Runs a one-click action (archive, set default, test…), refreshes, reports failures as a toast. */
-function useAction() {
-  const refresh = useRefreshProjects();
-  const { t } = useTranslation();
-  const [busy, setBusy] = useState<string | null>(null);
-  const run = async (key: string, work: () => Promise<unknown>) => {
-    setBusy(key);
-    try {
-      await work();
-      await refresh();
-    } catch (e) {
-      toast.error(t('projects.failed', { message: rpcErrorMessage(e) }));
-    } finally {
-      setBusy(null);
-    }
-  };
-  return { busy, run };
-}
-
 function Overview({ project, onSection }: { project: ProjectDetail; onSection: (id: SectionId) => void }) {
   const { t } = useTranslation();
-  const refresh = useRefreshProjects();
   const edit = useDialogTarget<ProjectDetail>();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const { busy, run } = useAction();
+  const { busy, run } = useProjectAction();
   const archived = project.archivedAt !== null;
-  const hasSecrets =
-    project.databases.some((d) => d.hasPassword) ||
-    project.servers.some((s) => s.hasPassword || s.hasPassphrase || s.hasSudoPassword);
 
   return (
     <div className="flex flex-col gap-6">
@@ -158,19 +136,7 @@ function Overview({ project, onSection }: { project: ProjectDetail; onSection: (
       </div>
       <div className="project-summary">{([{ id: 'dirs', Icon: FolderOpen, count: project.dirs.length }, { id: 'databases', Icon: Database, count: project.databases.length }, { id: 'servers', Icon: Server, count: project.servers.length }] as const).map(({ id, Icon, count }) => <button key={id} onClick={() => onSection(id)}><Icon size={18} /><span>{t(`projects.sections.${id}`)}</span><strong>{count}</strong></button>)}</div>
       {edit.target !== undefined && <ProjectDialog key={edit.key} {...edit.props} project={project} />}
-      <ConfirmDeleteDialog
-        open={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title={t('projects.confirm.projectTitle', { name: project.name })}
-        body={t('projects.confirm.projectBody')}
-        secrets={hasSecrets}
-        onConfirm={async (deleteSecrets) => {
-          await rpc.projects.delete(project.id, { deleteSecrets });
-          navigation.closeProject(project.id);
-          await refresh();
-          toast.success(t('projects.deleted'));
-        }}
-      />
+      <ProjectDeleteDialog project={project} open={confirmDelete} onOpenChange={setConfirmDelete} />
     </div>
   );
 }
@@ -253,7 +219,7 @@ function Dirs({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();
   const dialog = useDialogTarget<ProjectDirView>();
   const [removing, setRemoving] = useState<ProjectDirView | null>(null);
-  const { busy, run } = useAction();
+  const { busy, run } = useProjectAction();
   const refresh = useRefreshProjects();
 
   return (
@@ -375,7 +341,7 @@ function Databases({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();
   const dialog = useDialogTarget<DatabaseView>();
   const [deleting, setDeleting] = useState<DatabaseView | null>(null);
-  const { busy, run } = useAction();
+  const { busy, run } = useProjectAction();
   const refresh = useRefreshProjects();
 
   return (
@@ -429,7 +395,7 @@ function Servers({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();
   const dialog = useDialogTarget<ServerView>();
   const [deleting, setDeleting] = useState<ServerView | null>(null);
-  const { busy, run } = useAction();
+  const { busy, run } = useProjectAction();
   const refresh = useRefreshProjects();
 
   return (

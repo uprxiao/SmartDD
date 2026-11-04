@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import {constants,openSync,closeSync,lstatSync,realpathSync} from 'node:fs';
 import {join} from 'node:path';
+import {sameGateBinding} from './gate-binding';
 
 export interface DatabaseAccessLease {root:string;mode:'shared'|'maintenance';assertHeld():void;release():void}
 const schema='CREATE TABLE database_access_identity (id INTEGER PRIMARY KEY CHECK(id=1), binding TEXT NOT NULL)';
@@ -27,7 +28,7 @@ export async function acquireDatabaseAccess(rootInput:string,mode:DatabaseAccess
   if(connection.pragma('journal_mode',{simple:true})!=='delete')throw new Error('数据库协调模式无效');
   const tables=connection.prepare("SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name").all() as {name:string;sql:string}[];
   if(tables.length!==1||tables[0].sql!==schema||tables[0].name!=='database_access_identity'||connection.pragma('application_id',{simple:true})!==1465470028||connection.pragma('user_version',{simple:true})!==1)throw new Error('数据库协调格式无法核验');
-  const rows=connection.prepare('SELECT id,binding FROM database_access_identity').all();if(JSON.stringify(rows)!==JSON.stringify([{id:1,binding}]))throw new Error('数据库协调归属无法核验');
+  const rows=connection.prepare('SELECT id,binding FROM database_access_identity').all() as {id:number;binding:unknown}[];if(rows.length!==1||rows[0].id!==1||!sameGateBinding(rows[0].binding,binding))throw new Error('数据库协调归属无法核验');
  };
  try{
   for(;;){

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Ellipsis, Folder, FolderOpen, MessageCircle, Plus, Settings, SquarePen, Download, Upload } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronDown, ChevronRight, Ellipsis, Folder, FolderOpen, MessageCircle, Plus, Settings, SquarePen, Download, Trash2, Upload } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,8 @@ import { TaskRow } from '@renderer/lib/layout/sidebar-tasks';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
 import { ProjectDialog } from '@renderer/views/projects/project-dialogs';
+import { ProjectDeleteDialog, useProjectAction } from '@renderer/views/projects/project-actions';
+import { rpc } from '@renderer/lib/ipc';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 
@@ -18,8 +20,10 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const [menu, setMenu] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const menuTrigger = useRef<HTMLButtonElement>(null);
-  const { data: detail } = useProject(menu ? project.id : null);
+  const { data: detail } = useProject(menu || deleting ? project.id : null);
+  const { busy, run } = useProjectAction();
   const dir = detail?.dirs.find((d) => d.isDefault) ?? detail?.dirs[0];
   const active = (navigation.currentViewId === 'project' && navigation.currentProjectId === project.id) || (navigation.currentViewId === 'home' && navigation.currentProjectId === project.id);
   const archived = project.archivedAt !== null;
@@ -32,11 +36,14 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
         <button className="popup-project-title" onClick={edit}><Folder size={16} /><span>{project.name}</span></button>
         <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: tasks.length })}</span></div>
         <div className="popup-divider" /><div className="popup-meta popup-project-path" title={dir?.path}><Folder size={15} /><span>{dir?.path ?? t('home.noDir')}</span></div><div className="popup-divider" />
-        <button data-testid="sidebar-project-edit" onClick={edit}><Settings size={16} />{t('projects.dialog.editProject')}</button>
+        <button data-testid="sidebar-project-edit" onClick={edit}><Settings size={16} />{t('m6.projectResources')}</button>
         <button data-testid="sidebar-project-export" onClick={() => { setMenu(false); projectTransferNavigation.openExport(project.id, menuTrigger.current); }}><Download size={16} />导出项目</button>
+        <button data-testid="sidebar-project-archive" disabled={busy !== null} onClick={() => { setMenu(false); void run('archive', () => rpc.projects.setArchived(project.id, !archived)); }}>{archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}{archived ? t('projects.actions.unarchive') : t('projects.actions.archive')}</button>
+        <button data-testid="sidebar-project-delete" className="text-destructive" disabled={!detail} onClick={() => { setMenu(false); setDeleting(true); }}><Trash2 size={16} />{t('projects.actions.delete')}</button>
       </PopoverContent></Popover>
       {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
+    {detail && <ProjectDeleteDialog project={detail} open={deleting} onOpenChange={setDeleting} />}
     {open && <div className="reference-project-tasks">{tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}</div>}
   </div>;
 });

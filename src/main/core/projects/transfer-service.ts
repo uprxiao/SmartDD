@@ -2,7 +2,7 @@ import { runnerDescription } from '@shared/ai-profiles';
 import { createHash, randomUUID } from 'node:crypto';
 import { accessSync, constants, statSync } from 'node:fs';
 import { basename, isAbsolute, join } from 'node:path';
-import { eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { aiProfileInputSchema } from '@shared/ai-profiles';
 import { NEW_MAIN_DIR_REF, TRANSFER_CAPABILITIES, TRANSFER_LIMITS, transferDraftSchema, type DraftValidation, type ExportDescription, type ImportResult, type TransferDraft, type TransferPreview } from '@shared/project-transfer';
@@ -217,7 +217,6 @@ export class ProjectTransferService {
     const selected = new Set(draft.selectedProfileRefs);
     if (selected.size !== draft.selectedProfileRefs.length || draft.selectedProfileRefs.some(ref => !p.profiles.some(profile => profile.ref === ref))) throw new TransferError('INVALID_DRAFT', 'AI 配置选择无效');
     if (draft.executables.length !== selected.size || new Set(draft.executables.map(e => e.ref)).size !== selected.size || draft.executables.some(e => !selected.has(e.ref))) throw new TransferError('INVALID_DRAFT', 'AI 命令映射不完整');
-    const occupied = this.d.db.select({ path: projectDirs.path }).from(projectDirs).innerJoin(projects, eq(projectDirs.projectId, projects.id)).where(isNull(projects.archivedAt)).all().map(d => pathIdentity(d.path));
     const seen = new Set<string>();
     const directories = draft.directories.map(d => {
       const path = d.mode === 'source' ? (p.directories.find(source => source.ref === d.ref)?.path ?? '') : (d.localPath ?? '');
@@ -227,8 +226,7 @@ export class ProjectTransferService {
       else if (!status.available) issue = '目录不存在或不可读取，请选择可用目录';
       else {
         const identity = pathIdentity(path);
-        if (occupied.includes(identity)) issue = '目录已被其他项目使用，请重新选择';
-        else if (seen.has(identity)) issue = '本次导入的代码目录不能重复';
+        if (seen.has(identity)) issue = '本次导入的代码目录不能重复';
         seen.add(identity);
       }
       if (issue) issues.push({ field: `directories.${d.ref}`, message: issue });

@@ -10,6 +10,7 @@ import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
 import { ProfileHealthMark } from '@renderer/lib/profile-health';
+import { pickLaunchProfile } from '@renderer/lib/launch-profile';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
@@ -43,7 +44,7 @@ export const HomeView = observer(function HomeView() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { data: project } = useProject(projectId);
 
-  // Defaults: the last choice if it still exists, else the default profile (PRD F05).
+  // Project defaults to the last choice if it still exists (PRD F05).
   const initialized = useRef(false);
   useEffect(() => {
     if (initialized.current || !projects || !profiles || !draft.value) return;
@@ -55,12 +56,14 @@ export const HomeView = observer(function HomeView() {
       setProjectId(d.projectId);
       setDirId(d.dirId);
     } else if (projects.length === 1) setProjectId(projects[0].id);
-    setProfileId(
-      d.aiProfileId && profiles.some((p) => p.id === d.aiProfileId)
-        ? d.aiProfileId
-        : (profiles.find((p) => p.isDefault)?.id ?? null)
-    );
   }, [projects, profiles, draft.value]);
+
+  // Follows health results until the user picks a profile, so a default that turns out failed yields to the last choice.
+  const profileChosen = useRef(false);
+  useEffect(() => {
+    if (profileChosen.current || !profiles || !draft.value) return;
+    setProfileId(pickLaunchProfile(profiles, draft.value.aiProfileId));
+  }, [profiles, draft.value]);
 
   // "New task" under a project selects it.
   const preset = navigation.homePreset;
@@ -124,7 +127,7 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
+  const profilePicker = <Select value={profileId} onValueChange={(v) => { profileChosen.current = true; setProfileId(v as string | null); }}>
     <SelectTrigger className={CHIP} data-testid="home-profile" aria-label={t('home.pickProfile')}><Zap size={15} fill="currentColor" /><SelectValue placeholder={t('home.pickProfile')} /></SelectTrigger>
     <SelectContent>{(profiles ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}<ProfileHealthMark profile={p} /></SelectItem>)}</SelectContent>
   </Select>;

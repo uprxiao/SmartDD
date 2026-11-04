@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ensureStoreDirectory } from '../package-files';
 import { withResourceLock } from '../resource-lock';
@@ -27,5 +28,15 @@ describe('resource coordinator ownership and bounded waits', () => {
   it('does not remove a lock whose owner changed before release', async () => {
     await expect(withResourceLock(root, () => { writeFileSync(join(root, 'locks/resource.lock/owner.json'), JSON.stringify({ token: 'replacement', pid: process.pid })); })).rejects.toMatchObject({ code: 'RESOURCE_RECOVERY_REQUIRED' });
     expect(JSON.parse(readFileSync(join(root, 'locks/resource.lock/owner.json'), 'utf8')).token).toBe('replacement');
+  });
+  it('keeps its gate after a reboot changes the volume device number, but not after an inode change', async () => {
+    expect(await withResourceLock(root, () => 1)).toBe(1);
+    const gate = new Database(join(root, 'locks/.resource.lock.gate.sqlite'));
+    const rewrite = (change: (value: { root: { dev: number; ino: number }; gate: { dev: number; ino: number } }) => void) => { const value = JSON.parse((gate.prepare('SELECT identity FROM coordinator_identity').get() as { identity: string }).identity); change(value); gate.prepare('UPDATE coordinator_identity SET identity=?').run(JSON.stringify(value)); };
+    rewrite(value => { value.root.dev += 3; value.gate.dev += 3; });
+    expect(await withResourceLock(root, () => 2)).toBe(2);
+    rewrite(value => { value.gate.ino += 1; });
+    gate.close();
+    await expect(withResourceLock(root, () => 3)).rejects.toMatchObject({ code: 'RESOURCE_RECOVERY_REQUIRED' });
   });
 });

@@ -142,9 +142,6 @@ export class ProjectService {
     this.db.transaction(() => {
       const row = this.requireProject(id);
       if (!archived && row.archivedAt != null) {
-        // Coming back to life must not create a second active owner for a path.
-        const dirs = this.db.select().from(projectDirs).where(eq(projectDirs.projectId, id)).all();
-        for (const d of dirs) this.assertPathFree(d.path, id, d.id);
         this.assertUniqueName(row.name, id);
       }
       this.db
@@ -425,25 +422,12 @@ export class ProjectService {
     return id;
   }
 
-  /**
-   * PRD F01: a path belongs to at most one active project, and appears once per project.
-   * Archived projects do not hold their paths.
-   */
+  /** PRD F01: a path appears once per project; several projects may share it. */
   private assertPathFree(path: string, projectId: string, exceptDirId?: string): void {
     const identity = pathIdentity(path);
-    const rows = this.db
-      .select({ dirId: projectDirs.id, path: projectDirs.path, projectId: projects.id, name: projects.name, archivedAt: projects.archivedAt })
-      .from(projectDirs)
-      .innerJoin(projects, eq(projectDirs.projectId, projects.id))
-      .all();
-    for (const r of rows) {
-      if (r.dirId === exceptDirId) continue;
-      if (r.projectId !== projectId && r.archivedAt != null) continue;
-      if (pathIdentity(r.path) !== identity) continue;
-      throw new Error(
-        r.projectId === projectId ? `该项目已登记此目录：${r.path}` : `目录已属于项目「${r.name}」：${r.path}`
-      );
-    }
+    const rows = this.db.select({ dirId: projectDirs.id, path: projectDirs.path }).from(projectDirs).where(eq(projectDirs.projectId, projectId)).all();
+    const clash = rows.find((r) => r.dirId !== exceptDirId && pathIdentity(r.path) === identity);
+    if (clash) throw new Error(`该项目已登记此目录：${clash.path}`);
   }
 
   private assertUniqueName(name: string, exceptId: string | null): void {

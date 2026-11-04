@@ -5,6 +5,7 @@ import Database from 'better-sqlite3';
 import { z } from 'zod';
 import { ApplicationError } from '@shared/applications';
 import type { ProcessIdentityReader } from './process-identity';
+import { sameGateBinding } from '../../db/gate-binding';
 
 interface Identity { dev:number;ino:number }
 export interface CoordinatorLockOptions { timeoutMs?:number;signal?:AbortSignal;processes?:ProcessIdentityReader }
@@ -58,7 +59,7 @@ export async function withCoordinatorLock<T>(rootInput:string,kind:'resource'|'c
       }
       if(application!==1465470027||version!==1||tables.length!==1||tables[0].name!=='coordinator_identity'||tables[0].sql!==schema)throw recovery();
       const rows=gate.prepare('SELECT id,identity FROM coordinator_identity').all() as {id:number;identity:string}[];
-      if(rows.length!==1||rows[0].id!==1||rows[0].identity!==binding){
+      if(rows.length!==1||rows[0].id!==1||!sameGateBinding(rows[0].identity,binding)){
         // A previously canonical root now routed through an alias is an
         // ownership conflict, not an invitation to rebind its existing gate.
         let known:{root?:{path?:unknown}}|null=null;try{known=JSON.parse(rows[0]?.identity??'null');}catch{/* Unknown gate stays recovery-required. */}

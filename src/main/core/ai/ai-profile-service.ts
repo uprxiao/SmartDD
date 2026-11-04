@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { asc, eq, like, sql } from 'drizzle-orm';
+import { asc, desc, eq, like, sql } from 'drizzle-orm';
 import {
   aiProfileInputSchema,
   CHECK_STATUS_OF,
@@ -90,7 +90,7 @@ export class AiProfileService {
     return this.db
       .select()
       .from(aiProfiles)
-      .orderBy(asc(aiProfiles.createdAt))
+      .orderBy(desc(aiProfiles.isDefault), asc(aiProfiles.createdAt))
       .all()
       .map((r) => this.toView(r));
   }

@@ -145,15 +145,16 @@ describe('projects', () => {
 });
 
 describe('directory ownership', () => {
-  it('rejects a path already owned by another active project, including via a symlink', () => {
+  it('lets several projects register the same path, including via a symlink', () => {
     const real = dir('code');
     const link = join(tmp, 'link');
     symlinkSync(real, link);
     svc.createProject({ name: 'A', aliases: [], description: '', rulesPath: null }, [{ label: '', path: real }]);
-    const b = svc.createProject({ name: 'B', aliases: [], description: '', rulesPath: null });
-    expect(() => svc.addDir(b.id, { label: '', path: real })).toThrow('目录已属于项目「A」');
-    expect(() => svc.addDir(b.id, { label: '', path: link })).toThrow('目录已属于项目「A」');
-    expect(() => svc.addDir(b.id, { label: '', path: `${real}/` })).toThrow('目录已属于项目「A」');
+    const b = svc.createProject({ name: 'B', aliases: [], description: '', rulesPath: null }, [{ label: '', path: real }]);
+    expect(svc.getProject(b.id).dirs.map((d) => d.path)).toEqual([real]);
+    const c = svc.createProject({ name: 'C', aliases: [], description: '', rulesPath: null });
+    svc.addDir(c.id, { label: '', path: link });
+    expect(() => svc.addDir(c.id, { label: '', path: `${real}/` })).toThrow('该项目已登记此目录');
   });
 
   it('rejects the same path twice in one project', () => {
@@ -161,24 +162,23 @@ describe('directory ownership', () => {
     expect(() => svc.addDir(p.id, { label: 'again', path: join(tmp, 'x') })).toThrow('该项目已登记此目录');
   });
 
-  it('frees the path while the owner is archived and refuses to unarchive into a conflict', () => {
+  it('restores an archived project whose path another project now uses', () => {
     const shared = dir('shared');
     const a = svc.createProject({ name: 'A', aliases: [], description: '', rulesPath: null }, [{ label: '', path: shared }]);
     svc.setArchived(a.id, true);
     svc.createProject({ name: 'B', aliases: [], description: '', rulesPath: null }, [{ label: '', path: shared }]);
-    expect(() => svc.setArchived(a.id, false)).toThrow('目录已属于项目「B」');
-    expect(svc.getProject(a.id).archivedAt).not.toBeNull();
+    expect(svc.setArchived(a.id, false).archivedAt).toBeNull();
   });
 
   it('rolls the whole project back when one of its directories is rejected', () => {
-    const owned = dir('owned');
-    svc.createProject({ name: 'A', aliases: [], description: '', rulesPath: null }, [{ label: '', path: owned }]);
+    svc.createProject({ name: 'A', aliases: [], description: '', rulesPath: null });
+    const fresh = dir('fresh');
     expect(() =>
       svc.createProject({ name: 'B', aliases: [], description: '', rulesPath: null }, [
-        { label: '', path: dir('fresh') },
-        { label: '', path: owned },
+        { label: '', path: fresh },
+        { label: '', path: fresh },
       ])
-    ).toThrow();
+    ).toThrow('该项目已登记此目录');
     expect(svc.listProjects().map((p) => p.name)).toEqual(['A']);
   });
 
