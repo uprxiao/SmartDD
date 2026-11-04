@@ -52,7 +52,7 @@ NOTES = {
     'upload': 'O7：路径不限制（对标 Orca，已接受风险）；`--files` 可用逗号串或 `--json` 传数组',
     'download': 'O7：路径不限制；结果返回实际保存路径（C13）',
     'set credentials': 'C5：密码用 `--stdin pass` 传入；日志脱敏（R06.5）',
-    'set headers': '值按 JSON 解析后直接是对象（Orca 收 JSON 字符串），模式接受对象',
+    'set headers': '接受请求头对象或 JSON 文本；敏感头用 --stdin headers，宿主解析文本后按同一对象契约校验',
     'cookie get': 'O11：可读明文会话令牌（已接受风险）',
     'intercept enable': 'O9：仅记录，不能 mock／阻断／改写',
     'console': 'O8：接收 `--limit` 但忽略',
@@ -215,14 +215,16 @@ with open(OUT, 'w', encoding='utf-8') as f:
     for i, r in enumerate(rows, 1):
         cells = [str(i), r[0], f'`{r[1]}`', f'`{r[2]}`', f'`{r[3]}`', r[4], r[5], r[6], r[7], r[8]]
         f.write('| ' + ' | '.join(c.replace('|', '\\|') if not c.startswith('`') else c.replace('|', '\\|') for c in cells) + ' |\n')
+COOKIE_OPTIONS = ['--url', '--domain', '--path', '--httpOnly', '--secure', '--sameSite', '--expires']
 ALLOW = {
     'note': 'R0.9 exec 白名单（review R02）。依据 agent-browser 0.27.3 `--help`。只放行页面内操作；带专用命令且需要宿主交付文件的（screenshot、pdf、download、network har）、改变连接或会话的（connect、close、tab、session、batch）、写磁盘或开服务的（record、trace、profiler、stream、auth、state、inspect、dashboard、chat、install、upgrade、doctor、profiles、skills）、导航（open，统一用 goto 以执行宿主地址规则）一律拒绝。任何以 - 开头、不在该子命令 options 中的参数都拒绝（含 --cdp、--session、--ignore-https-errors、--init-script、--extension、--proxy、--config）。',
     'commands': {
         'click': [], 'dblclick': [], 'type': [], 'fill': [], 'press': [], 'keyboard': [], 'hover': [], 'focus': [], 'check': [], 'uncheck': [], 'select': [], 'drag': [],
         'upload': [], 'scroll': [], 'scrollintoview': [], 'wait': [], 'snapshot': ['-i', '--interactive', '-c', '--compact', '-d', '--depth', '-s', '--selector'], 'eval': [],
-        'back': [], 'forward': [], 'reload': [], 'get': [], 'is': [], 'find': ['--name', '--exact'], 'mouse': [], 'set': [],
+        'back': [], 'forward': [], 'reload': [], 'get': [], 'is': [], 'find': ['--name', '--exact'], 'mouse': [],
+        'set': {setting: [] for setting in ['viewport', 'device', 'geo', 'offline', 'headers', 'credentials', 'media']},
         'network': {'route': ['--abort', '--body', '--resource-type'], 'unroute': [], 'requests': ['--clear', '--filter', '--type', '--method', '--status'], 'request': []},
-        'cookies': ['--url', '--domain', '--path', '--httpOnly', '--secure', '--sameSite', '--expires'], 'storage': [], 'console': ['--clear'], 'errors': ['--clear'],
+        'cookies': {action: COOKIE_OPTIONS for action in ['', 'get', 'set', 'clear']}, 'storage': [], 'console': ['--clear'], 'errors': ['--clear'],
         'highlight': [], 'clipboard': [], 'dialog': [], 'diff': {'snapshot': []}, 'vitals': [], 'pushstate': [],
     },
 }
@@ -262,7 +264,7 @@ COMMAND_FIELD_OVERRIDES = {
     ('set offline', 'state'): {'enum': ['on', 'off']},
     ('get', 'what'): {'enum': ['text', 'html', 'value', 'url', 'title', 'count', 'box']},
     ('is', 'what'): {'enum': ['visible', 'enabled', 'checked']},
-    ('set headers', 'headers'): {'type': 'object', 'additionalProperties': {'type': 'string'}},
+    ('set headers', 'headers'): {'anyOf': [{'type': 'object', 'additionalProperties': {'type': 'string'}}, {'type': 'string', 'maxLength': 262144}]},
     ('upload', 'files'): {'anyOf': [TEXT, {'type': 'array', 'minItems': 1, 'items': {'type': 'string'}}]},
     ('clipboard write', 'text'): {'type': ['string', 'number', 'boolean'], 'maxLength': 16777216},
 }

@@ -1,17 +1,17 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T09:00:08.549616+00:00",
+  "updatedAt": "2026-11-04T11:04:23.018439+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/s2_t004_test",
       "role": "test executor",
-      "group": "M12-P045",
-      "privateRoot": "/private/tmp/willyou-m12-p045-executor-001",
-      "baseline": "/private/tmp/willyou-m12-p041-build-001/source",
-      "status": "P045 completed, all resources released; idle, no further native dispatch"
+      "group": "M12-P050",
+      "privateRoot": "/private/tmp/willyou-m12-p050-audit-native-001",
+      "baseline": "/private/tmp/willyou-m12-p049-browser-audit-005/source",
+      "status": "ready command dispatched; awaiting actual PID/session report"
     }
   ],
   "branch": "feature/0.1.1",
@@ -20,7 +20,7 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "S5 activity audit and native I",
+  "currentGroup": "M12-P050",
   "resources": {
     "build": null,
     "nativeUi": null
@@ -2007,9 +2007,239 @@
           "manifestSha256": "accf93893627c3fa9a3c12960bf3750e210fe7a66d39df7927e13c7a5adbb4ed"
         }
       ]
+    },
+    {
+      "id": "M12-P049",
+      "owner": "/root",
+      "resources": [],
+      "privateRoot": "/private/tmp/willyou-m12-p049-browser-audit-011",
+      "relatedCaseIds": [
+        "M12-T098",
+        "M12-T099",
+        "M12-T095"
+      ],
+      "layers": [
+        "U"
+      ],
+      "criteria": [
+        "R06.5 required six sensitive vectors masked with label+length; live command return intact",
+        "input type checked on retained reference before password fill; fail/unknown audit stays secret-free",
+        "R06.6 every module command source/task/page/state/timing/path; separate authorization/import actor metadata",
+        "history M11 dedupe, standalone read/UI rows, deleted-task source retention, exact keyset pagination; read never invokes native/browser actions"
+      ],
+      "validPriorEvidence": [
+        "P048 production baseline294 software greens; actual I/A/R still required"
+      ],
+      "remaining": [
+        "T099 actual authorization/import/unknown composition and AppA; other S5 cases keep original layers"
+      ],
+      "status": "371 unique Vitest +3 catalogue green; both typechecks valid; original product/fixture reds retained",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "225b4a4be0706fdde027cb3f564f17578ebfe5c212d51451e7804855201521f1",
+          "files": 24
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "7aba3ea3c30418ed4d6944cd65beda77f618a66cd3ae9eea10dbd6c9affbd898",
+          "files": 9
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "25ca28e1d04c8d8b3d8e3f58f9d9aca5d3c7d37605d81eed34a63d14f503f845",
+          "files": 13
+        },
+        {
+          "attempt": "attempt-004",
+          "manifestSha256": "e9af8351942df677ef250205de14a281c7dc55eaa308a6c283aeec2c09ec27ba",
+          "files": 6
+        },
+        {
+          "attempt": "attempt-005",
+          "manifestSha256": "a61bfe8e01e1cfa4adb0e1dce4a931e624fcbe0e21f5c18009b3325ef313db88",
+          "files": 7
+        },
+        {
+          "attempt": "attempt-006",
+          "manifestSha256": "cc004e95e9590cba8ff2f975b381c603ef6f22a22831c4919ff4bf51211458d2",
+          "files": 30
+        },
+        {
+          "attempt": "attempt-007",
+          "manifestSha256": "558151b350ee4bb47ad8c67726fd5fc1d4d325754507f6bec6fa1a8ad5c6580d",
+          "files": 9
+        },
+        {
+          "attempt": "attempt-008",
+          "manifestSha256": "c06620eeedae6e4e1869bf0dbfa2919f5c8bac21d6e17f5c728a625c67371c4c",
+          "files": 11
+        },
+        {
+          "attempt": "attempt-009",
+          "manifestSha256": "dcfaff710f36bbbcd4a10de92e1f7dd181f6301aa326970db3307ee60d9eddf6",
+          "files": 5
+        },
+        {
+          "attempt": "attempt-010",
+          "manifestSha256": "6338d2714efca566ab11aaf8ebcaa60ab545e6fec689303edff30cfa720a4765",
+          "files": 22
+        },
+        {
+          "attempt": "attempt-011",
+          "manifestSha256": "1d8a3a7c4d991f77aed342751cd238b6e24d291bb4247a82c0be0d7ba88b0088",
+          "files": 13
+        },
+        {
+          "attempt": "attempt-012",
+          "manifestSha256": "6daf60aebf37cf21ba8eef18b5cd2982fa484a3346448b5d41d2808a3ebbda1a",
+          "files": 2
+        }
+      ]
+    },
+    {
+      "id": "M12-P050",
+      "owner": "/root/s2_t004_test",
+      "privateRoot": "/private/tmp/willyou-m12-p050-audit-native-003",
+      "baseline": "/private/tmp/willyou-m12-p049-browser-audit-011/source",
+      "resources": [],
+      "originalCases": [
+        "M12-T098",
+        "M12-T097"
+      ],
+      "layers": [
+        "I"
+      ],
+      "criteria": [
+        "T098 all six actual nativeCLI sensitive commands through unchanged M11 auth/service/helper; audit/diagnostic redaction label+length, complete live Cookie response and native fill/storage readback",
+        "T097 actual public CLI list and fixed capabilities expose no import/certificate/permission grants; six exec bypass attempts rejected with site policy and import key calls unchanged",
+        "raw output before independent judgment; original failures retained and bounded normal exit/owned processes/ports/socket cleanup"
+      ],
+      "validPriorEvidence": [
+        "P049 software coverage and typecheck; P045 exact CLI/kernel peer auth/runtime/private native ABI dependencies retained"
+      ],
+      "remaining": [],
+      "status": "original T097 U+I and T098 I complete, coordinator verified/archived/accounted",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p050-audit-native-003/cache node /private/tmp/willyou-m12-p050-audit-native-003/run.mjs --execute",
+      "preflightSha256": "95bf3388b3e0197456df85fd082af11878da84916f1bee44b4617eccb79328eb",
+      "hostSha256": "7fba0febde40e3684d083fdaedf8c72b2f193758ace0817893aa3cc891562a22",
+      "sessions": [],
+      "pids": [],
+      "ports": [],
+      "cleanup": "26 owned PIDs absent, 63245/63260 closed, helper/Unix sockets absent, normal will-quit/exit0",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "db41dfaada41d2264a4ae2eb80ced7e7d9a111659037ae45aa9b9d20b6fa84cd",
+          "outcome": "original product red retained"
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "1dd2dc1b8dc22e02e4ab3aeb7f433a81dc3138777cc277669b0fd6555f9b3cbe",
+          "outcome": "original product red retained"
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "69d1b147bdc9b3f8e165138d21819094c755759690ec1b933a510041df01bec5",
+          "outcome": "45 native I checks green; exact cleanup verified; original T097/T098 accounted"
+        }
+      ],
+      "next": "cross-task grant/pause I and original App/Agent layers"
+    },
+    {
+      "id": "M12-P051",
+      "owner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-p051-build-001",
+      "resources": [],
+      "layers": [
+        "build",
+        "native smoke"
+      ],
+      "criteria": [
+        "all current frozen inputs unchanged before/after package",
+        "current S5 package and exact native resource identity",
+        "arm64 native smoke; packaging does not count original I/A/R"
+      ],
+      "remaining": [],
+      "status": "App013 unified S5 preview built; 3451 inputs unchanged,6 native smoke green; no original case counted",
+      "output": "/private/tmp/willyou-m12-s2-package-013",
+      "package": {
+        "at": "2026-11-04T11:01:40.928623+00:00",
+        "package": "/private/tmp/willyou-m12-s2-package-013/mac-arm64/WillYou.app",
+        "sourceCommit": "e71fd53d17c85bd383889aa391da171a439630ae",
+        "sourceManifestSha256": "78c13a50bc048c38c815515944729f079337ededcafd0a779de1246e7a0ab8ea",
+        "sourceUnchangedAfter": 3451,
+        "nativeSmoke": "sqlite/pty/voiceBridge/fileBroker/officeRenderer/fileWatcher passed; build session3308 exit0",
+        "previewOnly": true,
+        "files": [
+          {
+            "path": "app.asar",
+            "sha256": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472",
+            "mode": 420
+          },
+          {
+            "path": "agent-browser/SOURCE.json",
+            "sha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+            "mode": 420
+          },
+          {
+            "path": "agent-browser/arm64/agent-browser",
+            "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+            "mode": 493
+          },
+          {
+            "path": "native/willyou-app",
+            "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+            "mode": 493
+          },
+          {
+            "path": "native/willyou-process-identity",
+            "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+            "mode": 493
+          }
+        ],
+        "boundary": "Current S5 production; actual new App UI/Agent acceptance remains. Unsigned preview ad-hoc sealed, no Release."
+      },
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "16e962df3c5dfd7ca1d2f3e3a9fe091849452312caacb9e20526e1625998f829"
+        }
+      ],
+      "cleanup": "build session3308 exit0, no App013 native process remains; resources released"
+    },
+    {
+      "id": "M12-P052",
+      "owner": "/root/s2_t004_test",
+      "privateRoot": "/private/tmp/willyou-m12-p052-s5-app-001",
+      "originalCases": [
+        "M12-T106",
+        "M12-T114",
+        "M12-T115"
+      ],
+      "layers": [
+        "A"
+      ],
+      "resources": [],
+      "criteria": [
+        "original T106 three real CLI commands/activity markers during and19s/21s after lastfinish, no animated cursor",
+        "T114 UI stop pending wait, page kept, marker clears <=20s, cross-task grants invalidated",
+        "T115 actual background create/switch/focus behavior under UI selection; preserve original tab activation rules"
+      ],
+      "validPriorEvidence": [
+        "P049011 software; P050003 native audit/exec; P051 App013 exact packaged source"
+      ],
+      "remaining": [
+        "private driver setup and minimum preflight; wait coordinator resource lease before App/UI",
+        "T114/T115 use original full criteria; incomplete branches remain partial"
+      ],
+      "status": "preparing only; no UI/native lease; waiting ready driver command/inputs",
+      "baseline": "/private/tmp/willyou-m12-p051-build-001/production-inputs.json",
+      "package": "/private/tmp/willyou-m12-s2-package-013/mac-arm64/WillYou.app",
+      "asarSha256": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472"
     }
   ],
-  "next": "Integrate browser operation activity history/redaction, then actual M11/nativeCLI cross-task run/pause verification; build unified new package for full A/R",
+  "next": "P052 App013 activity/stop/focus A; prepare actual cross-task M11 grant/pause and remaining original I/A/R without requiring unavailable user/system steps",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "1be3456706513da72694ace3875f2a12bd57bc1b",
   "checkpointNote": "本地S5实现检查点；生产/软件验收输入见P047/P048冻结manifest，未push、未打包新App、未发布",

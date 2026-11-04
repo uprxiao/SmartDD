@@ -1,0 +1,1 @@
+Preparation-only completeness repair: union current git production roots added committed reproduce-bug Skill missed by old manifest; no tests run. Original missing-asset/preparation failures preserved in P050002.

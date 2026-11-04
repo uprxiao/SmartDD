@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/private/tmp/willyou-m12-p049-browser-audit-009/source/src/main/core/browser/exec-policy.ts",
+    "sha256": "00db6a494c51b717dd5ba06af914df893a299e31f36366f5c5130ccd6498f7b9",
+    "fromLine": 15,
+    "throughLine": 22,
+    "text": "  if(quote||escaped)throw new ApplicationError('INVALID_INPUT','exec引号或转义不完整');\n  if(started)args.push(token);\n  const commands=policy.commands as Record<string,string[]|Record<string,string[]>>;\n  let rule=commands[args[0]],offset=1;\n  if(rule&&!Array.isArray(rule)){rule=rule[args[1]];offset=2;}\n  if(!Array.isArray(rule)||!args.length)throw new ApplicationError('INVALID_INPUT','exec子命令不在固定白名单中');\n  for(const arg of args.slice(offset))if(arg.startsWith('-')&&!rule.includes(arg.split('=')[0]))throw new ApplicationError('INVALID_INPUT','exec包含未允许的参数');\n  return args;"
+  },
+  {
+    "path": "/private/tmp/willyou-m12-p049-browser-audit-009/source/src/main/core/browser/audit.ts",
+    "sha256": "7c55d7bd3cbbd512c4c9032e6dde23557d904c5c643da6a9d4ea112a65291428",
+    "fromLine": 10,
+    "throughLine": 34,
+    "text": " * results in this journal. Uninspectable fill/exec input is masked initially. */\nexport function browserAuditValue(command:string,value:unknown,side:'arguments'|'result'):BrowserCommandAudit['arguments']{\n  const secretValue=command==='cookie set'||command==='cookie get'||command.startsWith('storage ')||command==='fill';\n  const walk=(item:unknown,key='',depth=0):unknown=>{\n    if(command==='set headers'&&key==='headers'&&typeof item==='string'){\n      try{return walk(browserHeaderValues(item),key,depth+1);}catch{return mask(item);}\n    }\n    if(/headers$/i.test(key)&&item&&typeof item==='object'){\n      // Header dictionaries and HAR-style name/value lists may also be returned\n      // by network commands. Custom authentication header names are arbitrary;\n      // retain names and lengths, rather than guessing which values are secrets.\n      if((Array.isArray(item)?item.length:Object.keys(item).length)>100)return{...mask(item),omitted:true};\n      if(Array.isArray(item))return item.map(header=>header&&typeof header==='object'?'name'in header&&typeof header.name==='string'&&'value'in header?{name:header.name,value:mask(header.value)}:mask(header):mask(header));\n      return Object.fromEntries(Object.entries(item).map(([name,value])=>[name,mask(value)]));\n    }\n    if((secretValue&&key==='value')||command==='set credentials'&&/^(pass|password)$/i.test(key)||sensitiveHeader(key)||command==='exec'&&side==='arguments'&&key==='command')return mask(item);\n    if(item===null||typeof item==='boolean'||typeof item==='number')return typeof item==='number'&&!Number.isFinite(item)?String(item):item;\n    if(typeof item==='string')return item.length<=1000?item:{omitted:true,length:Array.from(item).length};\n    if(depth>=7)return{omitted:true};\n    if(Array.isArray(item))return item.length<=100?item.map(v=>walk(v,'',depth+1)):{omitted:true,length:item.length};\n    if(item&&typeof item==='object'){\n      const entries=Object.entries(item);if(entries.length>100)return{omitted:true,fields:entries.length};\n      return Object.fromEntries(entries.map(([name,v])=>[name,walk(v,name,depth+1)]));\n    }\n    return null;"
+  }
+]

@@ -1,0 +1,265 @@
+{
+  "at": "2026-11-04T10:58:52.447221+00:00",
+  "cases": [
+    {
+      "id": "M12-T098",
+      "layer": "I",
+      "status": "passed",
+      "commands": [
+        "set credentials",
+        "cookie set",
+        "storage local set",
+        "fill",
+        "set headers",
+        "cookie get"
+      ],
+      "checks": {
+        "liveCookieReturnedFull": true,
+        "nativePasswordFilled": true,
+        "nativeStorageWritten": true,
+        "nativeAuthHeaderSent": true,
+        "historyRedacts_credentials": true,
+        "journalRedacts_credentials": true,
+        "diagnosticsRedact_credentials": true,
+        "historyRedacts_cookie": true,
+        "journalRedacts_cookie": true,
+        "diagnosticsRedact_cookie": true,
+        "historyRedacts_storage": true,
+        "journalRedacts_storage": true,
+        "diagnosticsRedact_storage": true,
+        "historyRedacts_password": true,
+        "journalRedacts_password": true,
+        "diagnosticsRedact_password": true,
+        "historyRedacts_authorization": true,
+        "journalRedacts_authorization": true,
+        "diagnosticsRedact_authorization": true,
+        "audit_set credentials": true,
+        "history_set credentials": true,
+        "audit_cookie set": true,
+        "history_cookie set": true,
+        "audit_storage local set": true,
+        "history_storage local set": true,
+        "audit_fill": true,
+        "history_fill": true,
+        "audit_set headers": true,
+        "history_set headers": true,
+        "audit_cookie get": true,
+        "history_cookie get": true,
+        "passwordTypeObservedBeforeFill": true,
+        "M11Dedupe": true,
+        "validExecCookieLiveFull": true
+      },
+      "meaning": "Originalsixsensitivecommands persistmaskedvalue+length; fullactualreturnspreserved. Additionallegitimateexeccookiesgetlivefullbutpersistedredacted, provingattempt002regressionfixed."
+    },
+    {
+      "id": "M12-T097",
+      "layer": "I",
+      "status": "passed",
+      "checks": {
+        "execAllRejected": true,
+        "actualCurlImportRejected": true,
+        "sitePolicyUnchanged": true,
+        "noImportKeyAccess": true,
+        "listValid": true,
+        "all82NativeCommands": true,
+        "noPrivilegedCommand": true,
+        "readWriteManifest": true
+      },
+      "negativeResults": [
+        {
+          "command": "cookies import /private/tmp/p050-does-not-exist.json",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "command": "state load /private/tmp/p050-does-not-exist.json",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "command": "set ignore-https-errors true",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "command": "set permissions geolocation",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "command": "permissions grant geolocation",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "command": "Browser.grantPermissions",
+          "exit": 2,
+          "timedOut": false,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        }
+      ],
+      "actualImportSyntax": {
+        "command": "cookies set --curl /private/tmp/p050-does-not-exist.json",
+        "exit": 2,
+        "timedOut": false,
+        "error": {
+          "effectState": "not-started",
+          "code": "INVALID_INPUT",
+          "layer": "config",
+          "message": "exec包含未允许的参数",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        }
+      },
+      "Uboundary": "ThisexecutoronlyranI; coordinatorowns371softwarechecksandcombinesoriginalU+Icontract. Do notclaimnewUexecutionhere."
+    }
+  ],
+  "originalIndependentJudge": {
+    "cases": [
+      "M12-T098",
+      "M12-T097"
+    ],
+    "checks": {
+      "completedRawBusiness": true,
+      "liveCookieReturnedFull": true,
+      "nativePasswordFilled": true,
+      "nativeStorageWritten": true,
+      "nativeAuthHeaderSent": true,
+      "historyRedacts_credentials": true,
+      "journalRedacts_credentials": true,
+      "diagnosticsRedact_credentials": true,
+      "historyRedacts_cookie": true,
+      "journalRedacts_cookie": true,
+      "diagnosticsRedact_cookie": true,
+      "historyRedacts_storage": true,
+      "journalRedacts_storage": true,
+      "diagnosticsRedact_storage": true,
+      "historyRedacts_password": true,
+      "journalRedacts_password": true,
+      "diagnosticsRedact_password": true,
+      "historyRedacts_authorization": true,
+      "journalRedacts_authorization": true,
+      "diagnosticsRedact_authorization": true,
+      "audit_set credentials": true,
+      "history_set credentials": true,
+      "audit_cookie set": true,
+      "history_cookie set": true,
+      "audit_storage local set": true,
+      "history_storage local set": true,
+      "audit_fill": true,
+      "history_fill": true,
+      "audit_set headers": true,
+      "history_set headers": true,
+      "audit_cookie get": true,
+      "history_cookie get": true,
+      "passwordTypeObservedBeforeFill": true,
+      "M11Dedupe": true,
+      "execAllRejected": true,
+      "validExecCookieLiveFull": true,
+      "actualCurlImportRejected": true,
+      "sitePolicyUnchanged": true,
+      "noImportKeyAccess": true,
+      "listValid": true,
+      "all82NativeCommands": true,
+      "noPrivilegedCommand": true,
+      "readWriteManifest": true,
+      "normalExit": true,
+      "noRemainingWebContents": true
+    },
+    "passed": true,
+    "boundary": "Actual native CLI/M11/helper/service/SQLite history I; no packaged App A or native Agent R. OS clipboard untouched."
+  },
+  "counts": {
+    "judgeChecks": 45,
+    "passed": 45,
+    "failed": 0,
+    "rawCLI": 18
+  },
+  "cleanup": {
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "helperFilesAbsent": true,
+    "unixSocketsAbsent": true,
+    "allCleanupStepsFulfilled": true,
+    "nativeExit": {
+      "code": 0,
+      "signal": null
+    },
+    "willQuit": {
+      "at": "2026-11-04T10:56:59.987Z",
+      "pid": 80103,
+      "event": "will-quit"
+    },
+    "allOwnedWCdestroyed": true
+  },
+  "rawUnmodified": true,
+  "boundary": {
+    "entry": "RealnativeCLI/M11/kernelpeer/Helper/SQLite/history, privatePythonmanagedroot notnativeAgentR orpackagedAppA",
+    "password": "Actualsnapshotref+fill,no selector/evalinputfallback; DOMreadonly confirmation",
+    "unusedP045": "PrivateChromeSource/cipher/preseed retainedbutnotused,keyCalls0,noimport/noNativeStorecounterhook",
+    "diagnostics": "CanariesinactualCLIreturn/rawareexpected; onlyproductiondiagnosticsandrealpersistedhistoryscanned",
+    "oldEvidence": "attempt001headerscontractredandattempt002execcookieleakredareimmutable; nooverwritingorbusinessreplay",
+    "publication": "OnlysuggestT098fullI/T097Ipassed; publicledger/Umergebycoordinator"
+  }
+}

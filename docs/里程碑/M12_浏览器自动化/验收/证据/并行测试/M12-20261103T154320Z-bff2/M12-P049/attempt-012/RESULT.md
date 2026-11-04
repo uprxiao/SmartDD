@@ -1,0 +1,1 @@
+Preparation-only pinned Helper --help provenance for exec positional policy. No browser/CDP/clipboard started by help probe; no formal increment. Original raw output retained. Native CLI live/rejection proof is P050003.

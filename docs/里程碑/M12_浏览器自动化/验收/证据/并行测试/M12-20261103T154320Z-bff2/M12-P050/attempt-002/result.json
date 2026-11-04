@@ -1,0 +1,253 @@
+{
+  "at": "2026-11-04T10:10:30.587968+00:00",
+  "group": "M12-P050",
+  "attempt": 2,
+  "cases": [
+    {
+      "id": "M12-T098",
+      "layer": "I",
+      "status": "failed",
+      "failureClassification": "production-audit-redaction",
+      "actual": "Sixstandardcommandsallpersistredacted; compatibilityexeccookiesimportreturnscurrentCookiesandpersistscanaryrawinthreeplaces",
+      "leaks": [
+        {
+          "sink": "browser_operations",
+          "kind": "cookie",
+          "requestId": "audit:17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+          "command": "exec"
+        },
+        {
+          "sink": "browser_operations",
+          "kind": "cookie",
+          "requestId": "17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+          "command": "exec"
+        },
+        {
+          "sink": "activity-history",
+          "kind": "cookie",
+          "requestId": "17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+          "command": "exec"
+        }
+      ],
+      "originalSixCommandEvidence": {
+        "commands": [
+          "set credentials",
+          "cookie set",
+          "storage local set",
+          "fill",
+          "set headers",
+          "cookie get"
+        ],
+        "operationRows": 11,
+        "historyDetails": 6,
+        "canaryRedaction": {
+          "credentials": {
+            "operations": true,
+            "history": true
+          },
+          "cookie": {
+            "operations": true,
+            "history": true
+          },
+          "storage": {
+            "operations": true,
+            "history": true
+          },
+          "password": {
+            "operations": true,
+            "history": true
+          },
+          "authorization": {
+            "operations": true,
+            "history": true
+          }
+        },
+        "allCanariesAbsentFromSixCommandPersistentHistory": true
+      },
+      "headerDefectRetest": "M12-S5-STDIN-HEADERS fixed: identical --stdin headers succeeded,actualnativeAuthorizationrequest matched, audit/history argumentandresultredacted"
+    },
+    {
+      "id": "M12-T097",
+      "layer": "I",
+      "status": "not-fully-closed",
+      "failureClassification": "production-compatibility-subcommand-boundary",
+      "actual": "Catalogue82/21read61write/noimportcertificatepermissioncapabilities passed; sixnegatives executed; cookiesimportexit0actuallyreadsCookies, two setunknownsreachhelperandfailunknown, other3preflightreject",
+      "negativeOutcomes": [
+        {
+          "input": "cookies import /private/tmp/p050-does-not-exist.json",
+          "exit": 0,
+          "timedOut": false,
+          "status": "ok",
+          "error": null
+        },
+        {
+          "input": "state load /private/tmp/p050-does-not-exist.json",
+          "exit": 2,
+          "timedOut": false,
+          "status": null,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "input": "set ignore-https-errors true",
+          "exit": 5,
+          "timedOut": false,
+          "status": null,
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_ERROR",
+            "layer": "provider",
+            "message": "Unknown subcommand: ignore-https-errors\nValid options: viewport, device, geo, geolocation, offline, headers, credentials, auth, media",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          }
+        },
+        {
+          "input": "set permissions geolocation",
+          "exit": 5,
+          "timedOut": false,
+          "status": null,
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_ERROR",
+            "layer": "provider",
+            "message": "Unknown subcommand: permissions\nValid options: viewport, device, geo, geolocation, offline, headers, credentials, auth, media",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          }
+        },
+        {
+          "input": "permissions grant geolocation",
+          "exit": 2,
+          "timedOut": false,
+          "status": null,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        },
+        {
+          "input": "Browser.grantPermissions",
+          "exit": 2,
+          "timedOut": false,
+          "status": null,
+          "error": {
+            "effectState": "not-started",
+            "code": "INVALID_INPUT",
+            "layer": "config",
+            "message": "exec子命令不在固定白名单中",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          }
+        }
+      ],
+      "contractBoundary": "Originalacceptsrefusedorineffective; exit0alonedoesnotproveCookieimportorprivilegegrant. keyCalls0andsiteStateunchanged. Coordinatorwithholdscompletepasspendingboundaryfix."
+    }
+  ],
+  "originalJudge": {
+    "cases": [
+      "M12-T098",
+      "M12-T097"
+    ],
+    "checks": {
+      "completedRawBusiness": true,
+      "liveCookieReturnedFull": true,
+      "nativePasswordFilled": true,
+      "nativeStorageWritten": true,
+      "nativeAuthHeaderSent": true,
+      "historyRedacts_credentials": true,
+      "journalRedacts_credentials": true,
+      "diagnosticsRedact_credentials": true,
+      "historyRedacts_cookie": false,
+      "journalRedacts_cookie": false,
+      "diagnosticsRedact_cookie": true,
+      "historyRedacts_storage": true,
+      "journalRedacts_storage": true,
+      "diagnosticsRedact_storage": true,
+      "historyRedacts_password": true,
+      "journalRedacts_password": true,
+      "diagnosticsRedact_password": true,
+      "historyRedacts_authorization": true,
+      "journalRedacts_authorization": true,
+      "diagnosticsRedact_authorization": true,
+      "audit_set credentials": true,
+      "history_set credentials": true,
+      "audit_cookie set": true,
+      "history_cookie set": true,
+      "audit_storage local set": true,
+      "history_storage local set": true,
+      "audit_fill": true,
+      "history_fill": true,
+      "audit_set headers": true,
+      "history_set headers": true,
+      "audit_cookie get": true,
+      "history_cookie get": true,
+      "passwordTypeObservedBeforeFill": true,
+      "M11Dedupe": true,
+      "execAllRejected": false,
+      "sitePolicyUnchanged": true,
+      "noImportKeyAccess": true,
+      "listValid": true,
+      "all82NativeCommands": true,
+      "noPrivilegedCommand": true,
+      "readWriteManifest": true,
+      "normalExit": true,
+      "noRemainingWebContents": true
+    },
+    "passed": false,
+    "boundary": "Actual native CLI/M11/helper/service/SQLite history I; no packaged App A or native Agent R. OS clipboard untouched."
+  },
+  "rawUnmodified": true,
+  "scopeAnalysis": "scoped-findings.json distinguishesoriginalsixcommandredactionfromlaterexecleak, butdoesnotreplaceoriginalfailedjudge ordiscardregression",
+  "business": {
+    "rawCLIcount": 16,
+    "start": "2026-11-04T10:05:58.176Z",
+    "end": "2026-11-04T10:06:24.839Z",
+    "passwordRef": "@k1bf9c17f13b749fda28214beca50579bs3e1",
+    "nativeReadbacks": {
+      "nativePasswordFilled": true,
+      "nativeStorageWritten": true,
+      "nativeAuthHeaderSent": true,
+      "liveCookieReturnedFull": true
+    }
+  },
+  "cleanup": {
+    "normalExit": {
+      "code": 0,
+      "signal": null
+    },
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "helperFilesAbsent": true,
+    "unixSocketsAbsent": true,
+    "allWCdestroyed": true,
+    "allCleanupStepsFulfilled": true
+  },
+  "boundary": {
+    "native": "ActualM11/nativeCLI/peer/Helper/SQLite/history,controlledPythoncaller notAgentR,noAppAorclipboard",
+    "unusedP045": "InheritedsyntheticSource/cipher/preseed unused, keyCalls0,noimport/noNativeStorecounters",
+    "logs": "ActualCLIrequests/outputscontaincanarybydesign; judgeonlyscansproductiondiagnostics, notCLIoutputs. Thisredisinrealpersistedsummary/historynotcommandoutput",
+    "retry": "Onlyoneattempt002businessrun,unknownwritesnotreplayed;attempt001immutable",
+    "next": "Waitcoordinatornewfrozenproduction/bundle andnewnativelease; noattempt003started"
+  }
+}

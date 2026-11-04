@@ -7,9 +7,9 @@ import {BrowserCookieSourceError} from './chromium-source';
  * runs. Only fixed public metadata is recorded; values/paths/errors never are. */
 export class BrowserCookieImportAudit {
   private readonly runId='browser-ui-'+randomUUID();
-  constructor(private readonly operations:BrowserOperations){}
+  constructor(private readonly operations:BrowserOperations,private readonly taskProject?:(taskId:string)=>string|null){}
   async run<T>(taskId:string,profileId:string,action:'import'|'recover'|'clear',work:()=>Promise<T>):Promise<T>{
-    const requestId=randomUUID(),summary={actor:'user',profileId,action};
+    const requestId=randomUUID(),summary={actor:'user',projectId:this.taskProject?.(taskId)??null,profileId,action};
     this.operations.begin(this.runId,requestId,taskId,null,'ui cookie '+action);
     this.operations.update(this.runId,requestId,'running','unknown',{summary});
     try{

@@ -1,0 +1,1 @@
+Fix SQLite active-iterator write conflict. 370/371 initial checks green; missing ignored generated compatibility-v1 bundle is fixture failure. Build exact frozen fixture with pinned bridge then rerun module-registry only; 371 unique software green. Original product/fixture red retained. No AppA/AgentR.

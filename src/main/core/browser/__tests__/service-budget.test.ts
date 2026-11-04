@@ -35,8 +35,8 @@ describe('browser command budgets and honest dispatch receipts (software)',()=>{
     const f=fixture();vi.spyOn(f.service.workspace,'target').mockImplementation(()=>new Promise(()=>{}));
     let settled=false;const result=f.service.execute(f.scope,'wait',{timeout:20}).catch(error=>{settled=true;return error;});await vi.advanceTimersByTimeAsync(5019);expect(settled).toBe(false);await vi.advanceTimersByTimeAsync(1);
     const error:unknown=await result;expect(error).toMatchObject({code:'BROWSER_TIMEOUT'});expect(isApplicationPreflightFailure(error,f.scope.operationId)).toBe(false);expect(f.service.operations.receipt('run1','request1')).toEqual({state:'not-found'});
-    const cancelled=f.service.execute(f.scope,'goto',{url:'https://fixture.example'}).catch(error=>error);f.controller.abort(new ApplicationError('CANCELED','caller cancelled'));const cancellation:unknown=await cancelled;
-    expect(cancellation).toMatchObject({code:'CANCELED'});expect(isApplicationPreflightFailure(cancellation,f.scope.operationId)).toBe(true);
+    const cancelled=f.service.execute({...f.scope,requestId:'request2',operationId:'operation2'},'goto',{url:'https://fixture.example'}).catch(error=>error);f.controller.abort(new ApplicationError('CANCELED','caller cancelled'));const cancellation:unknown=await cancelled;
+    expect(cancellation).toMatchObject({code:'CANCELED'});expect(isApplicationPreflightFailure(cancellation,'operation2')).toBe(true);
   });
   it('rejects a conflicting request without overwriting its original receipt',async()=>{
     const f=fixture();f.service.operations.begin('run1','request1','different-task',null,'identity set');f.service.operations.update('run1','request1','succeeded','completed',{summary:{original:true}});const before=f.service.operations.receipt('run1','request1');

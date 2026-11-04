@@ -28,6 +28,9 @@ function fixture(){
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it('fails an unavailable audit before native work with an honest not-started marker',async()=>{
+    const f=fixture(),page=f.page('T1'),scope=f.scope();vi.spyOn(f.service.operations,'begin').mockImplementationOnce(()=>{throw Error('private audit storage path');});const failure=await f.service.execute(scope,'goto',{url:'https://fixture.example/'}).catch(e=>e);expect(failure).toMatchObject({code:'BROWSER_UNAVAILABLE'});expect(isApplicationPreflightFailure(failure,scope.operationId)).toBe(true);expect(String(failure)).not.toContain('private audit');expect(page.helper.ensureSession).not.toHaveBeenCalled();expect(f.service.operations.receipt('R1',scope.requestId)).toEqual({state:'not-found'});
+  });
   it('allows self without a grant; rejects unauthorized, cross-project and missing-lifetime requests before page access',async()=>{
     const f=fixture(),target=vi.spyOn(f.service.workspace,'target');await expect(f.service.execute(f.scope(),'tab list',{task:'T1'})).resolves.toEqual({tabs:[]});
     for(const [command,args]of[['tab list',{task:'T2'}],['access request',{task:'T3',mode:'control'}],['access request',{task:'T1',mode:'control'}]] as const)await expect(f.service.execute(f.scope(),command,args)).rejects.toMatchObject({code:'SCOPE_DENIED'});
@@ -45,7 +48,7 @@ describe('actual caller and target authority in the browser service',()=>{
   });
   it('clones with caller identity, rejects forged run bindings and never inherits authorization after run end',async()=>{
     const f=fixture(),profile=f.service.profiles.create({taskId:'T2',projectId:'P1'},'T2 isolated');await f.grant();const clone=vi.spyOn((f.service as unknown as {clones:BrowserProfileClones}).clones,'clone').mockImplementation(async(caller,_source,admit,send)=>{admit();send();expect(caller).toMatchObject({taskId:'T1',runId:'R1'});return f.service.profiles.create(caller,'copy');});
-    await expect(f.service.execute(f.scope(),'tab profile clone',{task:'T2',profile:profile.id})).resolves.toMatchObject({result:{profile:{owner:{id:'T1'}}}});expect(clone).toHaveBeenCalledOnce();
+    const cloneScope=f.scope();await expect(f.service.execute(cloneScope,'tab profile clone',{task:'T2',profile:profile.id})).resolves.toMatchObject({result:{profile:{owner:{id:'T1'}}}});expect(clone).toHaveBeenCalledOnce();expect(JSON.parse(f.service.operations.get('R1','audit:'+cloneScope.requestId)!.summary!).authorizations).toEqual([expect.objectContaining({targetTaskId:'T2',source:'user'})]);
     await expect(f.service.execute(f.scope('T2','R1'),'tab list',{})).rejects.toMatchObject({code:'SCOPE_DENIED'});f.runs.get('R1')!.abort();await expect(f.service.execute(f.scope('T1','R2'),'tab list',{task:'T2'})).rejects.toMatchObject({code:'SCOPE_DENIED'});expect(f.service.access.snapshot().grants).toEqual([]);
   });
   it('revokes only this run queued work immediately, preserving an admitted write and another run queue',async()=>{
@@ -73,6 +76,16 @@ describe('actual caller and target authority in the browser service',()=>{
   });
   it('writes a cross-task read artifact to the authenticated caller directory',async()=>{
     const f=fixture();await f.grant('observe');f.page();const result=await f.service.execute(f.scope(),'pdf',{task:'T2'}) as {file:{path:string;bytes:number}};expect(result.file.path).toContain(join(f.root,'browser/artifacts/T1/'));expect(readFileSync(result.file.path,'utf8')).toBe('%PDF-test');
+  });
+  it('returns full Cookie results only to the command and journals a detached redacted read record',async()=>{
+    const f=fixture(),page=f.page('T1'),cookies={cookies:[{name:'session',value:'service-cookie-canary',domain:'fixture.example'}]},send=vi.fn(async()=>cookies);Object.assign(page,{proxy:{send}});const scope=f.scope();const value=await f.service.execute(scope,'cookie get',{});expect(value).toEqual({result:cookies});expect(cookies.cookies[0].value).toBe('service-cookie-canary');const row=f.service.operations.get('R1','audit:'+scope.requestId)!;expect(row).toMatchObject({page_id:page.id,task_id:'T1',state:'succeeded',effect_state:'read-only'});expect(row.summary).not.toContain('service-cookie-canary');expect(row.summary).toContain('已脱敏');expect(f.service.operations.receipt('R1',scope.requestId)).toEqual({state:'not-found'});
+  });
+  it('queries the retained input type before filling and masks the value even when the fill fails',async()=>{
+    const f=fixture(),page=f.page('T1'),calls:string[]=[],armed={read:vi.fn(async(what:string)=>{calls.push(what);return'password';}),fill:vi.fn(async(_value:string,options:{dispatched:()=>void})=>{calls.push('fill');options.dispatched();throw Error('private native failure');}),finish:vi.fn(async()=>({connected:true,blocked:[],accepted:['input']}))};Object.assign(page,{references:{arm:vi.fn(async()=>armed)}});const scope=f.scope();await expect(f.service.execute(scope,'fill',{element:'@ref',value:'service-password-canary'})).rejects.toThrow();expect(calls).toEqual(['type','fill']);const row=f.service.operations.get('R1','audit:'+scope.requestId)!;expect(row).toMatchObject({state:'unknown',effect_state:'unknown'});expect(JSON.parse(row.summary!)).toMatchObject({passwordFill:true,arguments:{value:{redacted:'已脱敏',length:23}}});expect(JSON.stringify(f.sqlite.prepare('SELECT * FROM browser_operations').all())).not.toMatch(/service-password-canary|private native failure/);
+  });
+  it('routes compatibility credentials through the same user-prompt guard without entering the helper',async()=>{
+    const f=fixture(),page=f.page('T1'),set=vi.spyOn(f.service.authentication,'setCredentials').mockImplementation(()=>{});await expect(f.service.execute(f.scope(),'exec',{command:'set credentials user private-password'})).resolves.toEqual({result:{configured:true}});expect(set).toHaveBeenCalledWith(page.contents,'user','private-password',expect.any(Function));expect(page.helper.ensureSession).not.toHaveBeenCalled();
+    vi.spyOn(f.service.authentication,'snapshot').mockReturnValue({id:randomUUID(),pageId:page.id,profileId:page.profileId,url:'https://fixture.example/',host:'fixture.example',realm:'private',proxy:false});await expect(f.service.execute(f.scope(),'exec',{command:'set credentials user private-password'})).rejects.toMatchObject({code:'RESOURCE_BUSY'});expect(set).toHaveBeenCalledOnce();expect(JSON.stringify(f.sqlite.prepare('SELECT * FROM browser_operations').all())).not.toContain('private-password');
   });
   it('lets a started multi-page profile change finish after pause, then refuses new commands on the task',async()=>{
     const f=fixture(),state=f.service.workspace.create('T1');f.service.workspace.create('T1');const profile=f.service.profiles.create(f.scope(),'new');let count=0;

@@ -37,7 +37,7 @@ export function createApplicationController(service:ApplicationService|undefined
     cancelCleanupWait:(event,token:string)=>run(event,current=>current.cancelCleanupWait(event,token)),
     cancelCleanup:(event,input:ApplicationCleanupCancel)=>run(event,current=>current.cancelCleanup(event,input)),
     activity:(event,input?:ApplicationActivityQuery)=>run(event,current=>current.listActivity(event,input)),
-    activityDetail:(event,kind:'operation'|'send',id:string)=>run(event,current=>current.activityDetail(event,kind,id)),
+    activityDetail:(event,kind:'operation'|'send'|'browser',id:string)=>run(event,current=>current.activityDetail(event,kind,id)),
     catalog:(event)=>run(event,current=>current.catalog(event)),
     setAdded:(event,appId:ApplicationId,added:boolean,revision:number)=>run(event,current=>current.setAdded(event,appId,added,revision)),
     setEnabled:(event,appId:ApplicationId,enabled:boolean,revision:number)=>run(event,current=>current.setEnabled(event,appId,enabled,revision)),

@@ -4,6 +4,7 @@ import {ApplicationError} from '@shared/applications';
 import type {BrowserPage} from './page-registry';
 import {BrowserError,staleReference} from './errors';
 import {resolve} from 'node:path';
+import {browserHeaderValues} from './headers';
 
 interface CommandContext {signal:AbortSignal;cwd:string;send():void;notStarted():void}
 type Result={handled:false}|{handled:true;result:unknown};
@@ -70,8 +71,8 @@ export async function executeBrowserPageCommand(page:BrowserPage,command:string,
     send();await page.proxy.send('Emulation.setGeolocationOverride',{latitude,longitude,accuracy});return{handled:true,result:{result:{latitude,longitude,accuracy}}};
   }
   if(command==='set headers'){
-    if(!args.headers||typeof args.headers!=='object'||Array.isArray(args.headers)||Object.values(args.headers).some(value=>typeof value!=='string'))throw new ApplicationError('INVALID_INPUT','headers必须为字符串值对象');
-    send();await page.proxy.send('Network.enable');await page.proxy.send('Network.setExtraHTTPHeaders',{headers:args.headers});return{handled:true,result:{result:{headersSet:true}}};
+    const headers=browserHeaderValues(args.headers);
+    send();await page.proxy.send('Network.enable');await page.proxy.send('Network.setExtraHTTPHeaders',{headers});return{handled:true,result:{result:{headersSet:true}}};
   }
   if(command==='set offline'){
     const offline=(args.state??'on')==='on';

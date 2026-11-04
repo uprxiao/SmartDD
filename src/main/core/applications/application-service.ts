@@ -157,7 +157,7 @@ export class ApplicationService {
   cancelCleanupWait(sender:ApplicationUiSender,token:string){this.options.requireSender(sender);return this.maintenanceWaits.cancel(sender.sender,token);}
   async cancelCleanup(sender:ApplicationUiSender,input:ApplicationCleanupCancel){this.options.requireSender(sender);const result=await this.versions.cancelCleanup(input);this.options.changed?.();return result;}
   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
-  activityDetail(sender:ApplicationUiSender,kind:'operation'|'send',id:string){this.options.requireSender(sender);const detail=this.activity.detail(kind,id),result=detail.item.projectId&&existsSync(join(this.blobs.root,'attachment-exports'))?this.attachmentExportService().forOperation(detail.item.projectId,id):undefined;return{...detail,...(result?{attachmentSave:result}:{}),recoveryIssue:this.mailRecoveryIssue};}
+  activityDetail(sender:ApplicationUiSender,kind:'operation'|'send'|'browser',id:string){this.options.requireSender(sender);const detail=this.activity.detail(kind,id),result=detail.item.projectId&&existsSync(join(this.blobs.root,'attachment-exports'))?this.attachmentExportService().forOperation(detail.item.projectId,id):undefined;return{...detail,...(result?{attachmentSave:result}:{}),recoveryIssue:this.mailRecoveryIssue};}
   catalog(sender:ApplicationUiSender){
     this.options.requireSender(sender);return builtinApplicationModules.appIds().map(appId=>{
       const active=this.builtin.packages.active(appId),versions=this.builtin.packages.list().filter(p=>p.appId===appId),current=versions.find(p=>p.packageHash===active?.packageHash);

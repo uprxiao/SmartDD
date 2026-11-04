@@ -44,6 +44,7 @@ import {cloneBrowserSessionData} from './clone-session';
 import {BrowserAccess,type BrowserAccessAudit} from './access';
 import {BrowserAutomation} from './automation';
 import type {BrowserAccessMode} from '@shared/browser-access';
+import {BrowserAudit} from './audit';
 let nativeUserAgent:string|undefined;
 
 export interface BrowserScope {
@@ -70,6 +71,7 @@ export class BrowserService {
   readonly cookieSources:BrowserCookieSources;
   readonly access:BrowserAccess;
   readonly automation:BrowserAutomation;
+  private readonly audit:BrowserAudit;
   private readonly imports:BrowserImportCoordinator;
   private readonly importAudit:BrowserCookieImportAudit;
   private readonly clones:BrowserProfileClones;
@@ -83,7 +85,7 @@ export class BrowserService {
   private reconciling?:Promise<void>;
   private reconcileTimer?:ReturnType<typeof setTimeout>;
   constructor(private readonly options:{userData:string;sqlite:Database.Database;helper:Pick<BrowserHelperOptions,'executable'|'sha256'|'processes'>;taskProject:(taskId:string)=>string|null;taskDirectory?:(taskId:string)=>string|null;window?:()=>BrowserWindow|null;changed?:(taskId:string)=>void;accessChanged?:()=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void;cookieImport?:{cipher:SecretCipher;sources:BrowserCookieSources}}){
-    this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.importAudit=new BrowserCookieImportAudit(this.operations);
+    this.operations=new BrowserOperations(options.sqlite);this.operations.recover();this.audit=new BrowserAudit(this.operations);this.importAudit=new BrowserCookieImportAudit(this.operations,options.taskProject);
     this.access=new BrowserAccess({taskProject:options.taskProject,changed:options.accessChanged,audit:event=>this.auditAccess(event)});
     this.automation=new BrowserAutomation({changed:options.changed,ended:runId=>this.access.endRun(runId)});
     this.settings=new BrowserSettings(options.sqlite);nativeUserAgent??=app.userAgentFallback;app.userAgentFallback=browserUserAgent(nativeUserAgent,this.settings.snapshot().identity);
@@ -142,7 +144,7 @@ export class BrowserService {
     }
   }
   private auditAccess(event:BrowserAccessAudit):void{
-    const request=event.request,key='access-'+request.id,summary={actor:'agent',requesterTaskId:request.requesterTaskId,targetTaskId:request.targetTaskId,requestedMode:request.requestedMode,mode:request.mode,grantId:request.id,requestId:request.requestId??null,decisionSource:event.source,result:event.result};
+    const request=event.request,key='access-'+request.id,summary={actor:'agent',projectId:request.projectId,requesterTaskId:request.requesterTaskId,targetTaskId:request.targetTaskId,requestedMode:request.requestedMode,mode:request.mode,grantId:request.id,requestId:request.requestId??null,decisionSource:event.source,result:event.result};
     if(event.result==='revoked')for(const page of this.pages.all()){
       const owner=this.profiles.known(page.profileId)?.owner;
       if(page.taskId===request.targetTaskId||owner?.kind==='task'&&owner.id===request.targetTaskId)page.queue.cancelQueued(new ApplicationError('SCOPE_DENIED','本次运行的跨任务授权已失效'),request.runId);
@@ -166,27 +168,40 @@ export class BrowserService {
   async execute(scope:BrowserScope,command:string,args:Record<string,unknown>):Promise<unknown>{
     const timeout=args.timeout??25000,isWait=command==='wait'||command==='wait fn',budget=isWait&&typeof timeout==='number'&&Number.isInteger(timeout)&&timeout>=1&&timeout<=90000?timeout+5000:90000;
     const deadline=new AbortController(),timer=setTimeout(()=>deadline.abort(new BrowserError('BROWSER_TIMEOUT',`浏览器命令等待 ${budget}ms 后超时`)),budget),signal=AbortSignal.any([scope.signal,...(scope.runSignal?[scope.runSignal]:[]),deadline.signal]);
-    const state={dispatched:()=>false,activities:new Map<string,()=>void>()},effective={...scope,signal};
-    try{return await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);}
+    const state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>}={dispatched:()=>false,activities:new Map<string,()=>void>()},effective={...scope,signal};
+    try{
+      scope.assertActive();if(this.options.taskProject(scope.taskId)===scope.projectId)state.audit=this.audit.start(scope,command,args,readCommands.has(command));
+      const result=await awaitBrowserNavigation(this.executeScoped(effective,command,args,state),signal);state.audit?.success(result);return result;
+    }
     catch(error){
-      if(!signal.aborted)throw error;
+      try{state.audit?.failure(error,state.dispatched());}catch{console.warn('[browser] command audit unavailable');}
+      if(!signal.aborted){
+        // Audit/identity checks happen before executeScoped. A storage failure
+        // here must retain the same proven-not-started CLI contract as other
+        // preflight failures, rather than becoming an ambiguous write.
+        if(!readCommands.has(command)&&!state.dispatched())throw applicationPreflightFailure(error instanceof ApplicationError?error:new BrowserError('BROWSER_UNAVAILABLE','浏览器命令在开始前失败'),scope.operationId);
+        throw error;
+      }
       const reason=signal.reason??error,failure=reason instanceof ApplicationError?reason:new BrowserError('BROWSER_ERROR',reason instanceof Error?reason.message:String(reason));
       throw readCommands.has(command)||state.dispatched()?failure:applicationPreflightFailure(failure,scope.operationId);
     }finally{clearTimeout(timer);for(const finish of state.activities.values())finish();}
   }
-  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean;activities:Map<string,()=>void>}):Promise<unknown>{
+  private async executeScoped(scope:BrowserScope,command:string,args:Record<string,unknown>,state:{dispatched:()=>boolean;activities:Map<string,()=>void>;audit?:ReturnType<BrowserAudit['start']>}):Promise<unknown>{
     const read=readCommands.has(command);let taskId=scope.taskId,dispatched=false,receiptOwned=false,page:BrowserPage|undefined,progress:BrowserProgress|undefined;
     let waiting:{abort:AbortController;set:Set<AbortController>}|undefined;
-    const mark=(id:string)=>{if(!state.activities.has(id))state.activities.set(id,this.automation.begin(scope.runId,taskId,id));};
-    const admit=()=>this.admit(scope,args,read,false,dispatched&&!read);
-    const guardPage=()=>{if(page){this.profiles.require(scope,page.profileId,read?'observe':'control');this.profiles.assertAvailable(page.profileId);}};
+    const mark=(id:string)=>{if(!state.activities.size)state.audit?.page(id);if(!state.activities.has(id))state.activities.set(id,this.automation.begin(scope.runId,taskId,id));};
+    const recordGrant=(targetTaskId=taskId)=>{const grant=this.access.snapshot().grants.find(grant=>grant.runId===scope.runId&&grant.targetTaskId===targetTaskId);if(grant)state.audit?.grant({grantId:grant.id,mode:grant.mode,source:'user'},targetTaskId);};
+    const guardProfile=(id:string,mode:BrowserAccessMode='observe')=>{const profile=this.profiles.require(scope,id,mode);if(profile.owner.kind==='task'&&profile.owner.id!==scope.taskId)recordGrant(profile.owner.id);return profile;};
+    const admit=()=>{const result=this.admit(scope,args,read,false,dispatched&&!read);if(taskId!==scope.taskId)recordGrant();return result;};
+    const guardPage=()=>{if(page){guardProfile(page.profileId,read?'observe':'control');this.profiles.assertAvailable(page.profileId);}};
     state.dispatched=()=>dispatched;
-    const begin=(pageId:string|null)=>{const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command);if(!receipt.replay)receiptOwned=true;return receipt;};
+    const begin=(pageId:string|null)=>{if(pageId)state.audit?.page(pageId);const receipt=this.operations.begin(scope.runId,scope.requestId,scope.taskId,pageId,command);if(!receipt.replay)receiptOwned=true;return receipt;};
     const send=()=>{dispatched=true;if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     const recordProgress=()=>{if(!read)this.operations.update(scope.runId,scope.requestId,'running','unknown',{progress});};
     try{
       if(!browserCommands.some(item=>item.command.slice(1).join(' ')===command))throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器命令未登记');
       taskId=this.admit(scope,args,read,command==='access request');
+      if(taskId!==scope.taskId&&command!=='access request')recordGrant();
       if(command==='access request'){
         const mode=args.mode;if(mode!=='observe'&&mode!=='control')throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};send();
@@ -197,7 +212,7 @@ export class BrowserService {
         const abort=new AbortController(),set=this.readWaits.get(taskId)??new Set<AbortController>();set.add(abort);this.readWaits.set(taskId,set);waiting={abort,set};scope={...scope,signal:AbortSignal.any([scope.signal,abort.signal])};
       }
       if(command==='tab profile clone'){
-        const source=this.profiles.require(scope,text(args.profile),'control');this.profiles.assertAvailable(source.id);
+        const source=guardProfile(text(args.profile),'control');this.profiles.assertAvailable(source.id);
         const contextPage=args.page===undefined?null:this.workspace.list(taskId).find(tab=>tab.pageId===text(args.page))?.pageId;
         if(contextPage===undefined)throw new BrowserError('BROWSER_TAB_NOT_FOUND','本任务没有这个网页标签');
         const receipt=begin(contextPage);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
@@ -213,7 +228,7 @@ export class BrowserService {
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         const result=this.settings.setIdentity(mode.data,args.reset===true,send);this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result};
       }
-      if(command==='tab profile list')return{result:{profiles:this.profiles.list(scope)}};
+      if(command==='tab profile list'){const profiles=this.profiles.list(scope);for(const profile of profiles)if(profile.owner.kind==='task'&&profile.owner.id!==scope.taskId)recordGrant(profile.owner.id);return{result:{profiles}};}
       if(command==='tab profile create'){
         const profileScope=args.scope??'isolated';if(profileScope!=='isolated'&&profileScope!=='imported')throw new ApplicationError('INVALID_INPUT','scope须为isolated或imported');
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
@@ -221,11 +236,11 @@ export class BrowserService {
       }
       if(command==='tab profile show'){
         const tab=this.workspace.list(taskId).find(tab=>tab.pageId===text(args.page));if(!tab)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
-        this.profiles.ensureProject(scope.projectId);const profile=this.profiles.require(scope,tab.profileId);return{result:{browserPageId:tab.pageId,profileId:profile.id,profileLabel:profile.label}};
+        this.profiles.ensureProject(scope.projectId);const profile=guardProfile(tab.profileId);return{result:{browserPageId:tab.pageId,profileId:profile.id,profileLabel:profile.label}};
       }
       if(command==='tab profile set'||command==='tab profile use-default'){
         if(command==='tab profile set'&&(args.page===undefined)===(args.task===undefined))throw new ApplicationError('INVALID_INPUT','set须指定page或task其中一个');
-        const profile=command==='tab profile use-default'?this.profiles.ensureProject(scope.projectId):this.profiles.require(scope,text(args.profile),'control');
+        const profile=command==='tab profile use-default'?this.profiles.ensureProject(scope.projectId):guardProfile(text(args.profile),'control');
         this.profiles.assertAvailable(profile.id);
         const tabs=this.workspace.list(taskId),targets=args.page===undefined?tabs.filter(tab=>tab.kind==='tab'):tabs.filter(tab=>tab.pageId===text(args.page));
         if(args.page!==undefined&&!targets.length)throw new BrowserError('BROWSER_TAB_NOT_FOUND','没有该网页标签');
@@ -235,7 +250,7 @@ export class BrowserService {
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{profileId:profile.id,pages:targets.map(tab=>tab.pageId)}};
       }
       if(command==='tab profile delete'){
-        const profile=this.profiles.deletable(scope,text(args.profile));
+        const profile=this.profiles.deletable(scope,text(args.profile));guardProfile(profile.id,'control');
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
         await this.deleteProfileData(scope,profile,admit,send);
         this.operations.update(scope.runId,scope.requestId,'succeeded','completed');return{result:{deleted:profile.id}};
@@ -261,9 +276,10 @@ export class BrowserService {
         downloadPath=isAbsolute(path)?resolve(path):resolve(cwd!,path);
       }
       const execArgs=command==='exec'?browserExecArguments(text(args.command)):undefined;
-      if(command==='tab create'&&args.profile!==undefined)this.profiles.require(scope,text(args.profile),'control');
+      if(command==='tab create'&&args.profile!==undefined)guardProfile(text(args.profile),'control');
       if(command!=='tab create'){const known=this.workspace.list(taskId).find(tab=>args.page===undefined?tab.active:tab.pageId===text(args.page));if(known)mark(known.pageId);page=await awaitBrowserNavigation(this.workspace.target(taskId,args.page===undefined?undefined:text(args.page)),scope.signal);guardPage();mark(page.id);}
-      if(command==='set credentials'&&this.authentication.snapshot(taskId,page!.id))throw new ApplicationError('RESOURCE_BUSY','页面正在等待用户处理基本认证，Agent不能代答当前提示');
+      const execCredentials=command==='exec'&&execArgs?.[0]==='set'&&execArgs[1]==='credentials';
+      if((command==='set credentials'||execCredentials)&&this.authentication.snapshot(taskId,page!.id))throw new ApplicationError('RESOURCE_BUSY','页面正在等待用户处理基本认证，Agent不能代答当前提示');
       if(!read){
         const receipt=begin(page?.id??null);
         if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};
@@ -284,7 +300,10 @@ export class BrowserService {
           if(signal.aborted)throw signal.reason;
           this.profiles.assertAvailable(target.profileId);
           if(command.startsWith('cookie '))return executeBrowserCookie(target,command,args,send);
-          if(command==='set credentials'){this.authentication.setCredentials(target.contents,text(args.user),text(args.pass),send);return{result:{configured:true}};}
+          if(command==='set credentials'||execCredentials){
+            if(execCredentials&&execArgs!.length!==4)throw new ApplicationError('INVALID_INPUT','exec set credentials需要用户名和密码');
+            this.authentication.setCredentials(target.contents,execCredentials?execArgs![2]:text(args.user),execCredentials?execArgs![3]:text(args.pass),send);return{result:{configured:true}};
+          }
           if(command==='tab switch'){this.workspace.commandTarget(taskId,target.id,args.focus===true);send();return{result:{pageId:target.id,url:target.contents.getURL()}};}
           if(command==='tab close'){
             send();if(target.kind==='popup')await this.pages.close(taskId,target.id,true);else await this.workspace.close(taskId,target.id,true);
@@ -344,7 +363,7 @@ export class BrowserService {
               const actionOptions={signal,dispatched:send,notStarted:()=>{dispatched=false;}};
               let value:unknown,error:unknown;
               try{
-                if(execArgs![0]==='fill'&&refIndex===1)value=await armed.fill(execArgs!.slice(2).join(' '),actionOptions);
+                if(execArgs![0]==='fill'&&refIndex===1){state.audit?.passwordFill(await armed.read('type')==='password');value=await armed.fill(execArgs!.slice(2).join(' '),actionOptions);}
                 else if(execArgs![0]==='click'&&refIndex===1&&armed.hostClick)value=await armed.click(actionOptions);
                 else value=await target.helper.command(native,{signal,dispatched:send});
               }catch(e){error=e;}
@@ -380,7 +399,7 @@ export class BrowserService {
             const ref=text(args.element),armed=await target.references.arm(ref);let value:unknown,error:unknown;
             const actionOptions={signal,dispatched:send,notStarted:()=>{dispatched=false;}};
             try{
-              if(command==='fill')value=await armed.fill(text(args.value),actionOptions);
+              if(command==='fill'){state.audit?.passwordFill(await armed.read('type')==='password');value=await armed.fill(text(args.value),actionOptions);}
               else if(armed.hostClick)value=await armed.click(actionOptions);
               else value=await target.helper.command(['click',armed.selector],{signal,dispatched:send});
             }catch(e){error=e;}
@@ -517,7 +536,7 @@ export class BrowserService {
   private async userProfileChange<T>(taskId:string,action:string,profileId:string|null,work:(caller:BrowserProfileCaller,admit:()=>void,send:()=>void)=>Promise<T>){
     const {projectId}=this.workspace.snapshot(taskId),caller={taskId,projectId},requestId=randomUUID();let dispatched=false;
     const admit=()=>{if(this.closed)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');if(this.options.taskProject(taskId)!==projectId)throw new ApplicationError('SCOPE_DENIED','任务归属已变化');};
-    admit();const summary={actor:'user',action,profileId};this.operations.begin(this.userProfileRun,requestId,taskId,null,'ui profile '+action);
+    admit();const summary={actor:'user',projectId,action,profileId};this.operations.begin(this.userProfileRun,requestId,taskId,null,'ui profile '+action);
     const send=()=>{dispatched=true;this.operations.update(this.userProfileRun,requestId,'running','unknown',{summary});};
     try{const result=await work(caller,admit,send);this.operations.update(this.userProfileRun,requestId,'succeeded','completed',{summary});this.options.changed?.(taskId);return{result,records:this.profileSiteStates(taskId)};}
     catch(error){this.operations.update(this.userProfileRun,requestId,dispatched?'unknown':'failed',dispatched?'unknown':'not-started',{summary,code:error instanceof ApplicationError?error.code:'BROWSER_ERROR'});throw error;}

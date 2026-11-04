@@ -16,7 +16,7 @@ export function browserExecArguments(source:string):string[]{
   if(started)args.push(token);
   const commands=policy.commands as Record<string,string[]|Record<string,string[]>>;
   let rule=commands[args[0]],offset=1;
-  if(rule&&!Array.isArray(rule)){rule=rule[args[1]];offset=2;}
+  if(rule&&!Array.isArray(rule)){const explicit=args[1]!==undefined&&!args[1].startsWith('-');rule=rule[explicit?args[1]:''];offset=explicit?2:1;}
   if(!Array.isArray(rule)||!args.length)throw new ApplicationError('INVALID_INPUT','exec子命令不在固定白名单中');
   for(const arg of args.slice(offset))if(arg.startsWith('-')&&!rule.includes(arg.split('=')[0]))throw new ApplicationError('INVALID_INPUT','exec包含未允许的参数');
   return args;

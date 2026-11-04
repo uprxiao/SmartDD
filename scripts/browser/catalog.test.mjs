@@ -15,6 +15,7 @@ test('native JSON textual values remain text-compatible while object coercion is
  for(const value of ['123',123,false])assert.equal(valid('fill',{element:'@held',value}),true);
  for(const value of [{value:'text'},['text']])assert.equal(valid('fill',{element:'@held',value}),false);
  assert.equal(valid('set headers',{headers:{Authorization:'synthetic'}}),true);
+ assert.equal(valid('set headers',{headers:'{"Authorization":"synthetic"}'}),true);
  assert.equal(valid('set headers',{headers:{a:123}}),false);
  assert.equal(valid('upload',{element:'@held',files:['/private/tmp/a,b']}),true);
 });

@@ -1,0 +1,102 @@
+{
+  "catalogSource": "/private/tmp/willyou-m12-p049-browser-audit-005/source/src/shared/browser-commands.generated.json",
+  "catalogSha256": "0b389f57dcb5cfea0a0064d50da9e0b9ba4ee21544848ae19089eba50d5511ab",
+  "headersContract": {
+    "id": "browser.env.set-headers",
+    "command": [
+      "browser",
+      "set",
+      "headers"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "headers"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser set headers --headers <json> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T086"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "result": {}
+          },
+          "required": [
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "stdinTestSource": "/private/tmp/willyou-m12-p049-browser-audit-005/source/src/main/core/applications/__tests__/native-cli.test.ts",
+  "stdinTestSha256": "d7a88b5f95f73e36f34de5145f4b3c6b47e9be350003f06f96465b88bbef3a48",
+  "stdinTestLines38to46": " it('reads one field verbatim from stdin as text, minus one trailing newline (M12-D02)',async()=>{\n  const execute=vi.spyOn(f.applications.data,'execute').mockResolvedValue({items:[],nextCursor:null} as never);\n  const typed=await launch(['mail','draft','list','--cursor','123']).done;expect(typed.code).toBe(2);expect(JSON.parse(typed.stdout).error.code).toBe('INVALID_INPUT');\n  const piped=await launch(['mail','draft','list','--stdin','cursor'],{input:'123\\n'}).done;expect(piped).toMatchObject({code:0,timedOut:false});expect(execute).toHaveBeenCalledTimes(1);expect(execute.mock.calls[0][2]).toMatchObject({cursor:'123'});\n  const secret='p@ss \"quoted\"\\twith tab';const exact=await launch(['mail','draft','list','--stdin','cursor'],{input:secret}).done;expect(exact.code).toBe(0);expect(execute.mock.calls[1][2]).toMatchObject({cursor:secret});expect(exact.stdout+exact.stderr).not.toContain(secret);\n  for(const args of [['mail','draft','list','--cursor','x','--stdin','cursor'],['mail','draft','list','--stdin','token'],['mail','draft','list','--stdin','cursor','--stdin','limit'],['mail','draft','list','--stdin','json']]){const result=await launch(args,{input:'v'}).done;expect(result.code).toBe(2);expect(JSON.parse(result.stdout).error.code).toBe('INVALID_INPUT');}\n  const oversized=await launch(['mail','draft','list','--stdin','cursor'],{input:'x'.repeat(256*1024+1)}).done;expect(oversized.code).toBe(2);expect(JSON.parse(oversized.stdout).error.code).toBe('TOO_LARGE');\n  expect(execute).toHaveBeenCalledTimes(2);\n });",
+  "nativeParserBoundary": "P041scripts/applications/build.mjs:19 references native/applications/cli.mm but this file is absent from frozenP041. Do notreadactiveworktree; exactimmutableparserreview pendingcoordinator."
+}

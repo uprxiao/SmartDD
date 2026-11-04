@@ -24,6 +24,7 @@ python3 -I gen_command_map.py <orca 仓库> 映射表.generated.md
 - **不残留 `--worktree`**：WillYou 用法里不再出现 `--worktree`。
 - **运行时一致性**：保留S1已经使用的能力ID；把`withBrowserPageTarget`动态加入的`--page`写入用法和输入契约；`find`按R04.3补规格漏列的`--name`／`--exact`。这两项只补齐现行需求，不新增命令。
 - **用例对照**：每条命令至少对应一条用例，而且这些编号必须真实存在于[测试用例](../../验收/测试用例.md)中。对照只证明“有对应用例”，不证明用例判据充分。
+- **敏感输入与兼容边界**：`set headers`接受头字典或`--stdin headers`传来的JSON文本，由宿主统一校验；`exec`逐项校验`set`／`cookies`的位置子命令，拒绝未知动作及`cookies set --curl`导入。固定Helper帮助与实际CLI红／绿测见执行记录P049/P050；生成器本身不冒充原生行为验证。
 
 已用反例验证脚本会失败的情况：大写命令段、`--token` 参数、超过 8 段、不带值的开关、不存在的用例编号 `T999`。
 

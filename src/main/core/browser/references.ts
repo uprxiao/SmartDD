@@ -19,7 +19,7 @@ interface ArmedReference {
   scroll(options?:ActionOptions):Promise<void>;
   highlight(options?:ActionOptions):Promise<void>;
   fill(value: string, options?: ActionOptions): Promise<{ filled: string }>;
-  read(what: 'text'|'html'|'value'|'box'|'visible'|'enabled'|'checked'|'selected'): Promise<unknown>;
+  read(what: 'text'|'html'|'value'|'box'|'visible'|'enabled'|'checked'|'selected'|'type'): Promise<unknown>;
   select(value: string, options?: ActionOptions): Promise<void>;
   focus(options?: ActionOptions): Promise<void>;
   upload(files: string[], options?: ActionOptions): Promise<void>;
@@ -259,7 +259,7 @@ export class BrowserReferences {
           if(this.matches('input[type="checkbox"],input[type="radio"]'))checked=this.checked;
           else if(['checkbox','radio','switch','menuitemcheckbox','menuitemradio','option','treeitem'].includes(this.getAttribute('role')))checked=this.getAttribute('aria-checked')==='true';
           else {const label=this.closest('label'),input=label?.control??this.querySelector('input[type="checkbox"],input[type="radio"]');checked=!!input?.checked;}
-          const values={text:this.innerText||this.textContent||'',html:this.innerHTML,value:this.value??(this.isContentEditable?this.textContent:null),box:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},visible:!!(rect.width&&rect.height)&&style.visibility!=='hidden'&&style.display!=='none',enabled:!this.matches(':disabled')&&this.getAttribute('aria-disabled')!=='true',checked,selected:this instanceof HTMLSelectElement?Array.from(this.selectedOptions,option=>option.value):null};
+          const values={type:this instanceof HTMLInputElement?this.type:null,text:this.innerText||this.textContent||'',html:this.innerHTML,value:this.value??(this.isContentEditable?this.textContent:null),box:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},visible:!!(rect.width&&rect.height)&&style.visibility!=='hidden'&&style.display!=='none',enabled:!this.matches(':disabled')&&this.getAttribute('aria-disabled')!=='true',checked,selected:this instanceof HTMLSelectElement?Array.from(this.selectedOptions,option=>option.value):null};
           return {valid:true,value:values[what]};
         }`,arguments:[{value:what}],returnByValue:true,
       },node.sessionId);

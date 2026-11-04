@@ -6213,10 +6213,18 @@
       "type": "object",
       "properties": {
         "headers": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string",
+              "maxLength": 262144
+            }
+          ]
         },
         "task": {
           "type": [
