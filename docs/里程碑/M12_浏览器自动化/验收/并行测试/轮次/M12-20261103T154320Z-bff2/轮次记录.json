@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-04T07:50:31.714446+00:00",
+  "updatedAt": "2026-11-04T08:14:31.385765+00:00",
   "status": "S4 authentication development and native I verification; S2/S3 remaining acceptance in parallel",
   "coordinator": "/root",
   "agents": [
@@ -11,7 +11,7 @@
       "group": "M12-P045",
       "privateRoot": "/private/tmp/willyou-m12-p045-executor-001",
       "baseline": "/private/tmp/willyou-m12-p041-build-001/source",
-      "status": "preparing, no native resources assigned"
+      "status": "P045 completed, all resources released; idle, no further native dispatch"
     }
   ],
   "branch": "feature/0.1.1",
@@ -20,7 +20,7 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "M12-P045",
+  "currentGroup": "S5 integration",
   "resources": {
     "build": null,
     "nativeUi": null
@@ -1826,8 +1826,10 @@
       "privateRoot": "/private/tmp/willyou-m12-p045-executor-001",
       "baseline": "/private/tmp/willyou-m12-p041-build-001/source",
       "sourceCommit": "edfa6e9e48a40b206a954ce0ea1be1bae9afc2af",
-      "status": "preparing actual T082 I; no native lease/listener yet",
-      "resources": [],
+      "status": "original T082 complete I formally accounted; independently cleared and released",
+      "resources": [
+        "nativeUi"
+      ],
       "originalCases": [
         "M12-T082"
       ],
@@ -1848,10 +1850,83 @@
         "actual concurrency business execution and independent readback/judgment"
       ],
       "decision": "preserve actual BROWSER_UNAVAILABLE second rejection if returned by assertImportable; original test permits rejection and no expected code changed",
-      "next": "one final preflight with exact inputs/command, request whole native lease before execution"
+      "next": "other original cases, no repeat of concurrency business",
+      "preflightSha256": "1dc281ea3997a42db341e0980011820b55f1f949f139269af0e96b6535b37e40",
+      "hostSha256": "1c33e915bf31b1ea74870de3b0a29daa02a1ae04593d7652f397289b3e7224ec",
+      "driverSha256": "4558c8e3df7475e8ef5caa23589a26caeb773d1c8643e587ba6e3506a5da217f",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p045-executor-001/cache node /private/tmp/willyou-m12-p045-executor-001/run.mjs --execute",
+      "pids": [
+        22395,
+        22397,
+        22400,
+        22401,
+        22452,
+        22469,
+        22599,
+        22557,
+        22558,
+        22724,
+        22731,
+        22744,
+        22753,
+        22778,
+        22786,
+        22802
+      ],
+      "ports": [
+        54221,
+        54238
+      ],
+      "sessions": [
+        39091
+      ],
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "files": 303,
+          "manifestSha256": "382f641dc93f1e365bb4a2005029d50d4cf8c3d98a85a0b67d2507c87219baf4"
+        },
+        {
+          "attempt": "attempt-002",
+          "files": 2,
+          "manifestSha256": "f999aec9a1e5039f59ad1b4c62509abeba091218d1a80c7ebad851719a7d0270"
+        }
+      ]
+    },
+    {
+      "id": "M12-P046",
+      "owner": "/root",
+      "resources": [],
+      "status": "original T040 complete U formally accounted; SOP source/software only, T126 I/R pending",
+      "originalCases": [
+        "M12-T040"
+      ],
+      "relatedCaseIds": [
+        "M12-T126"
+      ],
+      "privateRoot": "/private/tmp/willyou-m12-p046-skill-software-003",
+      "sourcePackageHash": "2518cc6ca58b81c3e04073ba6b7c719e16210faaf4f7f30520ad797636126ee8",
+      "deliveries": [
+        {
+          "attempt": "attempt-001",
+          "manifestSha256": "d2e22d4f3a4b42c1e666fc61a58843767c6aa03bc7b77b7f7843686ab327dee7",
+          "files": 180
+        },
+        {
+          "attempt": "attempt-002",
+          "manifestSha256": "a699fbc53037d5975be8daca0743eb46530bdbdce9375c5ebffd8e67cf070973",
+          "files": 10
+        },
+        {
+          "attempt": "attempt-003",
+          "manifestSha256": "8bdcb480389daf6a0e5470f00bc1ac960f333cd2281cdd8d6fb3185b7f51ed93",
+          "files": 189
+        }
+      ],
+      "next": "finish S5 actual grant/pause/activity/audit integration then unified new package and original I/A/R; App012 retains old Skill"
     }
   ],
-  "next": "P045 original concurrent import I static preflight then native lease; root S5 real run/target/UI integration",
+  "next": "S5 actual run/target-task/controller/dialog/audit integration; remaining S4 A and user/system conditions",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": "8426f625ab471680d0da9d98e04807fc5058c8af",
   "checkpointNote": "本地提交；验收时未提交源码以各inputs.json与源快照为依据；生产输入相同，未推送或发布",

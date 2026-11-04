@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-04T07:56:22.956131+00:00",
+  "classification": "fixture-metadata-only",
+  "originalRawUnmodified": true,
+  "field": "driver.raw.json.scope",
+  "observed": "Actual T075 originalCLI I, syntheticcontrolled managedPython root notAgentR, actualnative peer auth/M11/service unchanged",
+  "correctedMeaning": "M12-T082 I concurrenttrusted-userCookieimport+realnativeCLIreadback; noT075matrixexecutedinP045",
+  "evidence": "driver.raw.case/group/actualsteps, host.raw.firstImport/secondImport/nativeTrace, result.json9checks",
+  "boundary": "Staleinheritedhumanlabelhasnoeffectonexecutionorjudge; keptoriginalraw",
+  "hostTraceReferenceBoundary": {
+    "fields": [
+      "host.raw.atKeyGate.nativeTrace",
+      "host.raw.secondBefore.nativeTrace",
+      "host.raw.secondAfter.nativeTrace"
+    ],
+    "detail": "cookieState返回同一个观察数组引用，host最终聚合JSON里的这些字段会随之后trace追加而增长；它们不是冻结时间快照。driver经真实IPC即时序列化的atKeyGate/concurrentSecond.before/after才是该时刻原始观察，均0；最终完整trace见host.nativeTrace。未改原raw，独立judge使用即时IPC记录。",
+    "affectsBusiness": false
+  }
+}

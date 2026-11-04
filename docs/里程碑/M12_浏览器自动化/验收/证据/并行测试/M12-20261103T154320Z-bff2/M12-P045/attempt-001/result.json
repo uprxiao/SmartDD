@@ -1,0 +1,1257 @@
+{
+  "at": "2026-11-04T07:55:39.675Z",
+  "group": "M12-P045",
+  "case": "M12-T082",
+  "layer": "I actual trusted-user BrowserService import + actual nativeCLI/M11 cookie readback",
+  "status": "passed-complete-T082-I",
+  "originalT082Passed": true,
+  "counts": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "id": "actual-original-I-composition",
+      "expected": "ActualnativeCLI/M11/BrowserService/real source/NativeStore/transactions; no A/S claim",
+      "actual": {
+        "run": {
+          "runId": "a3b04f68-61ff-445d-861a-cecbe613162f",
+          "taskId": "171f3962-c742-44f0-b28b-1ba1647cf828",
+          "rootPid": 22452,
+          "snapshotHash": "87e9176aa66444e0c6b3571668fb3a582198aa238e557e08e484fe988a22f3f7",
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "adapterHash": "8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+          "environmentKeys": [
+            "WILLYOU_RUN_TOKEN",
+            "WILLYOU_ENDPOINT"
+          ]
+        },
+        "cliCalls": 9,
+        "steps": 9
+      },
+      "status": "passed"
+    },
+    {
+      "id": "F-COOKIE-real-preseed-and-source",
+      "expected": "SyntheticactualChromeSQLitev24 source qa X/W google+youtube, bad profileunselected; target Xold/Y,Z,G retained",
+      "actual": {
+        "source": {
+          "schema": 24,
+          "selected": "Default",
+          "rows": [
+            {
+              "domain": "qa.example.test",
+              "name": "X",
+              "value": "P045-new-X"
+            },
+            {
+              "domain": "qa.example.test",
+              "name": "W",
+              "value": "P045-new-W"
+            },
+            {
+              "domain": "google.com",
+              "name": "G",
+              "value": "P045-excluded-G"
+            },
+            {
+              "domain": "youtube.com",
+              "name": "YT",
+              "value": "P045-new-YT"
+            }
+          ],
+          "unselectedBadRows": [
+            {
+              "domain": "broken.example.test",
+              "name": "bad",
+              "value": "unused",
+              "bad": true
+            }
+          ],
+          "boundary": "ActualsyntheticChromeSQLite encryptedv10+v24hosthash, keychainonly DI; bad profileexists but notimported or countedT081"
+        },
+        "discovered": {
+          "browsers": [
+            {
+              "family": "chrome",
+              "label": "Google Chrome",
+              "installed": true,
+              "profiles": [
+                {
+                  "id": "c078bc8ee2e75e995642aa7911cc9d627aac5a26e0d025908de1b7e0452aef80",
+                  "family": "chrome",
+                  "browserLabel": "Google Chrome",
+                  "profileName": "P045 success source",
+                  "profileDirectory": "Default",
+                  "hasCookies": true
+                },
+                {
+                  "id": "00d9d121b4a411d274c3df80b51cbd8649a15ffe919bcfb06f82fc0716f28ea4",
+                  "family": "chrome",
+                  "browserLabel": "Google Chrome",
+                  "profileName": "P045 bad source notexecuted",
+                  "profileDirectory": "Profile 1",
+                  "hasCookies": true
+                }
+              ]
+            },
+            {
+              "family": "edge",
+              "label": "Microsoft Edge",
+              "installed": false,
+              "profiles": []
+            }
+          ]
+        },
+        "initial": {
+          "qa": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": true,
+                  "domain": "qa.example.test",
+                  "expires": -1,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": true,
+                  "domain": "qa.example.test",
+                  "expires": -1,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                }
+              ]
+            }
+          },
+          "other": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": true,
+                  "domain": "other.example.test",
+                  "expires": -1,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 12,
+                  "value": "P045-keep-Z",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Z"
+                }
+              ]
+            }
+          },
+          "google": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": true,
+                  "domain": "google.com",
+                  "expires": -1,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 12,
+                  "value": "P045-keep-G",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "G"
+                }
+              ]
+            }
+          },
+          "youtube": {
+            "result": {
+              "cookies": []
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "id": "first-import-actually-inflight",
+      "expected": "Firsttrusteduser importblockedinsideactualSource keyProvider; no targetmutation yet",
+      "actual": {
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "importState": "importing",
+        "cookies": [
+          {
+            "name": "X",
+            "value": "P045-old-X",
+            "domain": "qa.example.test",
+            "hostOnly": true,
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "session": true,
+            "sameSite": "lax"
+          },
+          {
+            "name": "Y",
+            "value": "P045-old-Y",
+            "domain": "qa.example.test",
+            "hostOnly": true,
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "session": true,
+            "sameSite": "lax"
+          },
+          {
+            "name": "Z",
+            "value": "P045-keep-Z",
+            "domain": "other.example.test",
+            "hostOnly": true,
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "session": true,
+            "sameSite": "lax"
+          },
+          {
+            "name": "G",
+            "value": "P045-keep-G",
+            "domain": "google.com",
+            "hostOnly": true,
+            "path": "/",
+            "secure": false,
+            "httpOnly": true,
+            "session": true,
+            "sameSite": "lax"
+          }
+        ],
+        "keyCalls": 1,
+        "nativeTrace": [],
+        "maxMutations": 0,
+        "activeMutations": 0,
+        "hooksInstalled": true,
+        "keyTransfersErased": [],
+        "journalExists": false,
+        "profiles": [
+          {
+            "id": "project-f64551fcd6f07823cb87971c",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "p1"
+            },
+            "source": null
+          },
+          {
+            "id": "project-3946ca64ff78d93ca61090a4",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "p2"
+            },
+            "source": null
+          },
+          {
+            "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+            "scope": "isolated",
+            "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+            "label": "P045 hidden T2",
+            "owner": {
+              "kind": "task",
+              "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+            },
+            "source": null
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "id": "second-concurrent-import-rejected",
+      "expected": "Secondactualservice.importCookies rejectedbeforekeyProvider/native mutations; firststillinflight",
+      "actual": {
+        "before": {
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "importState": "importing",
+          "cookies": [
+            {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ],
+          "keyCalls": 1,
+          "nativeTrace": [],
+          "maxMutations": 0,
+          "activeMutations": 0,
+          "hooksInstalled": true,
+          "keyTransfersErased": [],
+          "journalExists": false,
+          "profiles": [
+            {
+              "id": "project-f64551fcd6f07823cb87971c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p1"
+              },
+              "source": null
+            },
+            {
+              "id": "project-3946ca64ff78d93ca61090a4",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p2"
+              },
+              "source": null
+            },
+            {
+              "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+              },
+              "source": null
+            }
+          ]
+        },
+        "outcome": {
+          "status": "rejected",
+          "error": {
+            "name": "ApplicationError",
+            "code": "BROWSER_UNAVAILABLE",
+            "message": "请先处理该登录态的恢复记录",
+            "stack": "ApplicationError: 请先处理该登录态的恢复记录\n    at BrowserImportCoordinator.assertImportable (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:21446:73)\n    at BrowserService.importCookies (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:22573:18)\n    at secondImport (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:86004:69)\n    at async process.<anonymous> (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:86151:53)"
+          },
+          "finishedAt": 1793778879757
+        },
+        "after": {
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "importState": "importing",
+          "cookies": [
+            {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ],
+          "keyCalls": 1,
+          "nativeTrace": [],
+          "maxMutations": 0,
+          "activeMutations": 0,
+          "hooksInstalled": true,
+          "keyTransfersErased": [],
+          "journalExists": false,
+          "profiles": [
+            {
+              "id": "project-f64551fcd6f07823cb87971c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p1"
+              },
+              "source": null
+            },
+            {
+              "id": "project-3946ca64ff78d93ca61090a4",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p2"
+              },
+              "source": null
+            },
+            {
+              "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+              },
+              "source": null
+            }
+          ]
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "id": "single-production-import-committed",
+      "expected": "Actualdefaulttransaction success once; sourcekeyonce; imported3 skippedGoogle1 and one page reload",
+      "actual": {
+        "outcome": {
+          "status": "fulfilled",
+          "result": {
+            "domains": [
+              "qa.example.test",
+              "youtube.com"
+            ],
+            "totalCookies": 4,
+            "importedCookies": 3,
+            "skippedCookies": 1,
+            "googleCookiesSkipped": 1,
+            "partitionSkippedCookies": 0,
+            "preservedTargetCookies": 2,
+            "reloadedPages": 1
+          },
+          "finishedAt": 1793778879859
+        },
+        "after": {
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "importState": "ready",
+          "cookies": [
+            {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "X",
+              "value": "P045-new-X",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "W",
+              "value": "P045-new-W",
+              "domain": "qa.example.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            },
+            {
+              "name": "YT",
+              "value": "P045-new-YT",
+              "domain": "youtube.com",
+              "hostOnly": true,
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ],
+          "keyCalls": 1,
+          "nativeTrace": [
+            {
+              "method": "remove",
+              "name": "X",
+              "domain": "qa.example.test",
+              "startedAt": 1793778879820,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879822
+            },
+            {
+              "method": "remove",
+              "name": "Y",
+              "domain": "qa.example.test",
+              "startedAt": 1793778879822,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879822
+            },
+            {
+              "method": "remove",
+              "name": "W",
+              "domain": "qa.example.test",
+              "startedAt": 1793778879822,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879822
+            },
+            {
+              "method": "remove",
+              "name": "YT",
+              "domain": "youtube.com",
+              "startedAt": 1793778879822,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879822
+            },
+            {
+              "method": "set",
+              "name": "X",
+              "domain": "qa.example.test",
+              "startedAt": 1793778879822,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879823
+            },
+            {
+              "method": "set",
+              "name": "W",
+              "domain": "qa.example.test",
+              "startedAt": 1793778879823,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879823
+            },
+            {
+              "method": "set",
+              "name": "YT",
+              "domain": "youtube.com",
+              "startedAt": 1793778879823,
+              "phase": "fulfilled",
+              "finishedAt": 1793778879823
+            }
+          ],
+          "maxMutations": 1,
+          "activeMutations": 0,
+          "hooksInstalled": true,
+          "keyTransfersErased": [
+            true
+          ],
+          "journalExists": false,
+          "profiles": [
+            {
+              "id": "project-f64551fcd6f07823cb87971c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p1"
+              },
+              "source": {
+                "family": "chrome",
+                "profile": "P045 success source",
+                "importedAt": 1793778879842
+              }
+            },
+            {
+              "id": "project-3946ca64ff78d93ca61090a4",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "p2"
+              },
+              "source": null
+            },
+            {
+              "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+              },
+              "source": null
+            }
+          ]
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "id": "no-concurrent-or-duplicate-native-write",
+      "expected": "DelegatingoriginalNativeStore operations exactlysingleplan: fourclear+threeset, maxactive1; no secondwriter",
+      "actual": {
+        "trace": [
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "startedAt": 1793778879820,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879822
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "startedAt": 1793778879822,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879822
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "startedAt": 1793778879822,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879822
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "startedAt": 1793778879822,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879822
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "startedAt": 1793778879822,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879823
+          },
+          {
+            "method": "set",
+            "name": "W",
+            "domain": "qa.example.test",
+            "startedAt": 1793778879823,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879823
+          },
+          {
+            "method": "set",
+            "name": "YT",
+            "domain": "youtube.com",
+            "startedAt": 1793778879823,
+            "phase": "fulfilled",
+            "finishedAt": 1793778879823
+          }
+        ],
+        "max": 1,
+        "hooksRestored": true
+      },
+      "status": "passed"
+    },
+    {
+      "id": "final-actual-CLI-matches-single-import",
+      "expected": "ExactF-COOKIEresult Xnew/W, Ygone, otherZandGoogleGunchanged, YouTubeincluded",
+      "actual": {
+        "qa": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-new-W",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "W"
+              },
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-new-X",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "X"
+              }
+            ]
+          }
+        },
+        "other": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "other.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-Z",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "Z"
+              }
+            ]
+          }
+        },
+        "google": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "google.com",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-G",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "G"
+              }
+            ]
+          }
+        },
+        "youtube": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "youtube.com",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 13,
+                "value": "P045-new-YT",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "YT"
+              }
+            ]
+          }
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "id": "one-user-import-audit",
+      "expected": "Onlyfirstuserimportauditexistsandsucceeded",
+      "actual": [
+        {
+          "run_id": "a3b04f68-61ff-445d-861a-cecbe613162f",
+          "request_id": "fbf599e7-33ab-493b-ad1f-c1dce1fdb114",
+          "task_id": "171f3962-c742-44f0-b28b-1ba1647cf828",
+          "page_id": null,
+          "command": "tab create",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"pageId\":\"3299c31b-e051-4812-b538-5e3b91d1576d\",\"url\":\"http://127.0.0.1:54221/app\"}",
+          "error_code": null,
+          "created_at": 1793778875868,
+          "updated_at": 1793778876127
+        },
+        {
+          "run_id": "browser-ui-d183208d-2c1f-41ef-980f-9fb2bbde161a",
+          "request_id": "7f352600-f1b4-4bb2-adc6-c2e61a80b4c5",
+          "task_id": "171f3962-c742-44f0-b28b-1ba1647cf828",
+          "page_id": null,
+          "command": "ui cookie import",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"actor\":\"user\",\"profileId\":\"project-f64551fcd6f07823cb87971c\",\"action\":\"import\"}",
+          "error_code": null,
+          "created_at": 1793778879751,
+          "updated_at": 1793778879858
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "native-cleanup-and-resource-release",
+      "expected": "Normalwillquit/exit0; actualrootexit, delegatehooksrestored, allWCdestroyed/debuggerdetached, allPID/ports/helperfilesgone",
+      "actual": {
+        "at": "2026-11-04T07:55:26.579Z",
+        "group": "M12-P045",
+        "processes": [
+          {
+            "pid": 22395,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22397,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22400,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22401,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22452,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22469,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22599,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22557,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22558,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22724,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22731,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22744,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22753,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22778,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22786,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          },
+          {
+            "pid": 22802,
+            "ps": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "listeners": {
+              "status": 1,
+              "stdout": "",
+              "stderr": ""
+            },
+            "absent": true
+          }
+        ],
+        "ports": [
+          {
+            "port": 54221,
+            "status": 1,
+            "stdout": "",
+            "stderr": "",
+            "closed": true
+          },
+          {
+            "port": 54238,
+            "status": 1,
+            "stdout": "",
+            "stderr": "",
+            "closed": true
+          }
+        ],
+        "allAbsent": true,
+        "allPortsClosed": true,
+        "helperSockets": [
+          {
+            "pageId": "3299c31b-e051-4812-b538-5e3b91d1576d",
+            "files": [
+              {
+                "path": "/private/tmp/wy-ab-c6f0e0898e0b965780652524/wy-k771035db08fd4074835aa6921b4ab428.pid",
+                "exists": false
+              },
+              {
+                "path": "/private/tmp/wy-ab-c6f0e0898e0b965780652524/wy-k771035db08fd4074835aa6921b4ab428.sock",
+                "exists": false
+              },
+              {
+                "path": "/private/tmp/wy-ab-c6f0e0898e0b965780652524/wy-k771035db08fd4074835aa6921b4ab428.stream",
+                "exists": false
+              }
+            ]
+          }
+        ],
+        "allRecordedHelperSocketsAbsent": true,
+        "nativeCleanup": {
+          "windows": [],
+          "contents": [
+            {
+              "id": 1,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 2,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 3,
+              "destroyed": true,
+              "debuggerAttached": false
+            }
+          ],
+          "allRemaining": []
+        },
+        "cleanupSteps": [
+          {
+            "name": "finish-owned-import-and-restore-hooks",
+            "startedAt": "2026-11-04T07:54:43.916Z",
+            "timeoutMs": 15000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:43.917Z"
+          },
+          {
+            "name": "close-real-gateway",
+            "startedAt": "2026-11-04T07:54:43.918Z",
+            "timeoutMs": 5000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:43.919Z"
+          },
+          {
+            "name": "stop-owned-run-root",
+            "startedAt": "2026-11-04T07:54:43.920Z",
+            "timeoutMs": 5000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:43.990Z"
+          },
+          {
+            "name": "stop-finished-run",
+            "startedAt": "2026-11-04T07:54:43.991Z",
+            "timeoutMs": 5000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:44.010Z"
+          },
+          {
+            "name": "dispose-real-browser-pages-helpers-park",
+            "startedAt": "2026-11-04T07:54:44.010Z",
+            "timeoutMs": 10000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:44.014Z"
+          },
+          {
+            "name": "dispose-applications",
+            "startedAt": "2026-11-04T07:54:44.030Z",
+            "timeoutMs": 8000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:44.030Z"
+          },
+          {
+            "name": "dispose-runs",
+            "startedAt": "2026-11-04T07:54:44.031Z",
+            "timeoutMs": 5000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:44.031Z"
+          },
+          {
+            "name": "final-owned-WC",
+            "startedAt": "2026-11-04T07:54:44.032Z",
+            "timeoutMs": 5000,
+            "status": "fulfilled",
+            "finishedAt": "2026-11-04T07:54:44.032Z"
+          }
+        ],
+        "runRootExit": {
+          "code": 0,
+          "signal": null
+        },
+        "rootRunnerBoundary": "RealPythonrootchild exited before run.cli.exited; no liveElectronself falsely marked exited. TrueNativeCLI/M11 auth, notAgentR.",
+        "serverClosed": true
+      },
+      "status": "passed"
+    }
+  ],
+  "boundaries": {
+    "keychain": "SyntheticprivatekeyProvider only, actualsourceSQLite/decrypt/plan/NativeStore/transactions; noOSKeychain",
+    "journalCipher": "Injected privateAES-GCM cipher, defaultproductionjournals/transactions; notOSsafeStorage",
+    "counts": "NativeStoreprototype read-onlycounts delegate exactoriginal method and restored; noresult substitution",
+    "ui": "Hosttrusteduser import APIs are I entry, CLI notgivenAgentimportcapability; noAppA/AgentR",
+    "badSource": "SeparateunselectedProfile1 notexecuted, noT081claim"
+  }
+}
