@@ -1,0 +1,204 @@
+{
+  "at": "2026-11-05T19:41:36.306Z",
+  "status": "original-eight-business-predicates-plus-strict-specific-observer-and-cleanup-root-review-required",
+  "case": "M12-T099",
+  "layer": "I remaining composite only",
+  "originalOracle": {
+    "passed": 8,
+    "total": 9,
+    "unchanged": true,
+    "rawOriginalResultSha256": "d077c0835528422c7ab6877bd95e4a74411639772e7fddfa2012329642b67634",
+    "checks": [
+      {
+        "name": "Current-source025-App021-resources-real-M11-nativeCLI-layer",
+        "passed": true
+      },
+      {
+        "name": "Actual-native-success-failure-unknown-and-single-send-no-timeout",
+        "passed": true
+      },
+      {
+        "name": "Real-activity-every-command-run-task-page-command-status-duration-deduped",
+        "passed": true
+      },
+      {
+        "name": "Real-screenshot-artifact-file-path-bytes-mode-SHA-bound-to-activity",
+        "passed": true
+      },
+      {
+        "name": "Entered-browser-valid-page-ref-failure-before-actual-click",
+        "passed": true
+      },
+      {
+        "name": "Exactly-one-real-storage-write-then-lost-ACK-remains-unknown-and-hook-restored",
+        "passed": true
+      },
+      {
+        "name": "One-real-access-request-and-trusted-I-decision-separate-actor-source-time-result",
+        "passed": true
+      },
+      {
+        "name": "One-genuine-Cookie-import-public-actor-time-state-result-and-profile",
+        "passed": true
+      },
+      {
+        "name": "Original-normal-host-run-root-hook-and-independent-exact-resource-cleanup",
+        "passed": false,
+        "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(!r.forcedStop&&!r.shutdownError&&!r.hostReadError&&!r.hostResult&&!r.observationError&&!r.shutdownObservationError&&!r.finalizationError)\n"
+      }
+    ]
+  },
+  "strictSpecificReview": {
+    "passed": true,
+    "attributedErrorPreserved": {
+      "name": "TypeError",
+      "code": null,
+      "message": "Cannot read properties of undefined (reading 'pages')",
+      "stack": "TypeError: Cannot read properties of undefined (reading 'pages')\n    at observe (/private/tmp/willyou-m12-t099-audit-composite-i-static-002/build/host.cjs:91468:25)\n    at process.<anonymous> (/private/tmp/willyou-m12-t099-audit-composite-i-static-002/build/host.cjs:91825:53)\n    at process.emit (node:events:509:28)\n    at emit (node:internal/child_process:989:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)"
+    },
+    "firstObserver": {
+      "resourceIndex": 0,
+      "phase": "fixture-server/M11-setup",
+      "at": "2026-11-05T19:32:25.726Z",
+      "ipcCommand": "observe",
+      "ipcCallId": null,
+      "ipcCallIdBoundary": "Original internal numeric id was not persisted; exact command branch/stack/source and sole pre-business missing-state row are bound without fabricating it."
+    },
+    "initializedEmptyPageObservations": 2,
+    "allCreatedPageIds": [
+      "dbb52332-f3c6-4c33-9a93-cae4d75c9c88"
+    ],
+    "helperPids": [
+      19919
+    ],
+    "exactCleanup": {
+      "pids": 14,
+      "tcp": 3,
+      "unixSocketAndParent": 1,
+      "helpers": 1
+    },
+    "normalHostAndRoot": true,
+    "originalObserverErrorNotDeleted": true
+  },
+  "sourceProof": {
+    "hostSourceSha256": "f9fe3bae32f9ec4440eef5136656b10c3a750246ffd3d8228982e0b9aa1d1b3b",
+    "compiledHostSha256": "ca5b0d17381ea4b85d57f3b8bd4d6a9ebcdcb31008281eb596ab8610c4c32e88",
+    "driverSha256": "4257eae140516aa0e81089a936bc74348ecdabda6e593c659011afadcf458f11",
+    "compiledPath": "/private/tmp/willyou-m12-t099-audit-composite-i-static-002/build/host.cjs",
+    "browserDeclarations": 1,
+    "browserInitializers": 0,
+    "browserAssignments": 1,
+    "browserAssignmentRightKind": "new BrowserService",
+    "firstObserveStatement": "const pages=browser.pages.all();",
+    "firstObserveStatementReadOnly": true,
+    "compiledObserveLine": "  const pages = browser.pages.all();",
+    "compiledHandlerLine": "    else if (m.command === \"observe\") respond(await observe());",
+    "exactObserveIpcBranch": true,
+    "driverObserveCallsOnlyInResources": true,
+    "allWebContentsCapturedUnfiltered": true,
+    "observationIPCInternalIdNotRecorded": true
+  },
+  "negativeControls": [
+    {
+      "id": "wrong-error-name",
+      "rejected": true
+    },
+    {
+      "id": "wrong-error-message",
+      "rejected": true
+    },
+    {
+      "id": "wrong-stack-frame",
+      "rejected": true
+    },
+    {
+      "id": "wrong-ipc-frame",
+      "rejected": true
+    },
+    {
+      "id": "business-phase-observer-gap",
+      "rejected": true
+    },
+    {
+      "id": "observer-after-business",
+      "rejected": true
+    },
+    {
+      "id": "initial-page-existed",
+      "rejected": true
+    },
+    {
+      "id": "extra-browser-assignment",
+      "rejected": true
+    },
+    {
+      "id": "source-bundle-changed",
+      "rejected": true
+    },
+    {
+      "id": "helper-enumeration-missing",
+      "rejected": true
+    },
+    {
+      "id": "pid-cleanup-missing",
+      "rejected": true
+    },
+    {
+      "id": "port-still-listening",
+      "rejected": true
+    },
+    {
+      "id": "hooks-not-restored",
+      "rejected": true
+    },
+    {
+      "id": "host-real-failure",
+      "rejected": true
+    },
+    {
+      "id": "forced-host-exit",
+      "rejected": true
+    },
+    {
+      "id": "wrong-willquit-owner",
+      "rejected": true
+    },
+    {
+      "id": "real-cleanup-failed",
+      "rejected": true
+    },
+    {
+      "id": "root-nonzero",
+      "rejected": true
+    },
+    {
+      "id": "owned-webcontents-not-destroyed",
+      "rejected": true
+    },
+    {
+      "id": "owned-webcontents-observer-unproved",
+      "rejected": true
+    }
+  ],
+  "sourceRawReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-t099-audit-composite-i-static-002/driver.raw.json",
+      "sha256": "486e80f1e908d7c82f5db69ab1e4acca9bed9d2b634f0b92aac4d21d8b282749"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t099-audit-composite-i-static-002/host.raw.json",
+      "sha256": "29dcb0b53b0113936e07d26e37081d94f6a73274d1b0e14295f64c964c9036f9"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t099-audit-composite-i-static-002/cleanup.json",
+      "sha256": "a4a963728c201d10b5b029285caa4859b64d7031488a7999c81a027fbddf5307"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t099-audit-composite-i-static-002/will-quit.json",
+      "sha256": "9cfa241357f7b73929faaca268dbdf4cfb5833dae8f87937f0cebc083f0dcbe1"
+    }
+  ],
+  "boundary": "Original8/9 and observer TypeError remain untouched. Only exact pre-BrowserService read-only observe IPC race is attributed; no blanket allow of observer errors. Original activitypage UI A absent; formal full-case increment0. No business rerun/Native/SQL/HTTP/model.",
+  "formalCaseIncrement": 0,
+  "resourceLeaseHeld": false
+}
