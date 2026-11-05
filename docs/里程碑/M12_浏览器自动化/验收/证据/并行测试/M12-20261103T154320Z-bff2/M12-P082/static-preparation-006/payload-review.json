@@ -1,0 +1,60 @@
+{
+  "at": "2026-11-05T06:53:01.564149+00:00",
+  "status": "authorized-specific-reviewed-scope-not-executed",
+  "destination": {
+    "configuredProvider": "openai",
+    "model": "gpt-6.1-sol",
+    "externalService": "Existing OpenAI/ChatGPT model service using the already logged-in WillYou Codex account",
+    "customBaseURLInSeed": false,
+    "actualNetworkDestinationObserved": false,
+    "reason": "R006 not executed; historical R004 health request/initial-focus failure separately preserved.",
+    "authentication": "Existing cached ChatGPT identity authentication only, copied inside ignored isolated CODEX_HOME. Auth content/hash are never placed in review or public evidence."
+  },
+  "templates": {
+    "variableValues": "Only localhost ephemeral port and 8-byte random synthetic marker vary. Neither is a credential.",
+    "first": "M12_REAL_<16-hex-test-nonce>_T041\n这是隔离本机浏览器验收任务。请先从本次会话已交付的 Skills 中定位浏览器能力，完整读取其 SKILL.md 内容到工具输出，给足够的输出预算，收到完整读取结果后再按 Skill 中提供的实际入口打开 http://127.0.0.1:<ephemeral-port>/site 并取得一次页面快照。根据实际快照确认页面含有“M12_REAL_<16-hex-test-nonce>”。不要使用外部浏览器、网上搜索、浏览器外第三方服务或直接 HTTP 抓取替代该能力。保持当前标准沙箱，不申请提权或修改权限。不要读取或输出认证文件、服务密钥、令牌或环境秘密值。成功后回复 M12_REAL_<16-hex-test-nonce>_T041_DONE，若失败如实停止并说明，不重发结果未知的写命令。",
+    "second": "M12_REAL_<16-hex-test-nonce>_T042\n继续在当前会话和当前默认标准沙箱中验证。让一个实际工具子进程检查 WILLYOU_RUN_TOKEN 与 WILLYOU_ENDPOINT 是否存在，只输出 JSON 布尔值：{\"marker\":\"M12_REAL_<16-hex-test-nonce>_ENV\",\"token_present\":true或false,\"endpoint_present\":true或false}，绝不能打印它们的值、其他环境变量或认证文件内容。然后实际执行 willyou-app browser tab list，核对成功返回当前任务页面。不要申请提权，不改变审批或沙箱，不尝试旁路。成功后回复 M12_REAL_<16-hex-test-nonce>_T042_DONE；失败如实停止。"
+  },
+  "skillSources": [
+    {
+      "skillId": "browser",
+      "source": "/private/tmp/willyou-m12-s2-package-020/mac-arm64/WillYou.app/Contents/Resources/capability-bundles/apps/browser/0.1.0/eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140/skills/browser/SKILL.md",
+      "reviewFile": "review-templates/browser-SKILL.template.md",
+      "sha256": "933fb325f6a78633b1806365c6a71b2a281e3b78bda82eb978885befe1e203f7",
+      "boundary": "Frozen template only; actual run-rendered content/SHA will be independently checked at runtime, currently no run exists."
+    },
+    {
+      "skillId": "reproduce-bug",
+      "source": "/private/tmp/willyou-m12-s2-package-020/mac-arm64/WillYou.app/Contents/Resources/capability-bundles/apps/browser/0.1.0/eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140/skills/reproduce-bug/SKILL.md",
+      "reviewFile": "review-templates/reproduce-bug-SKILL.template.md",
+      "sha256": "f0cb39c6687ca717d98aec046f861970327968b1ed5fdac98c23ed2b4000a6fb",
+      "boundary": "Frozen template only; actual run-rendered content/SHA will be independently checked at runtime, currently no run exists."
+    }
+  ],
+  "dataSentToModel": [
+    "The two exact synthetic prompt templates above",
+    "Current delivered browser Skill and reproduce-bug SOP public documentation, rendered command list and capability rules",
+    "Private empty test project/HOME/CODEX_HOME paths and standard Codex runtime/tool metadata",
+    "CLI output restricted in this scenario to synthetic localhost page marker/snapshot, test page list, operation IDs/status and env presence booleans; no environment values"
+  ],
+  "excluded": [
+    "Daily projects/tasks/files/history/MCP/Skills and daily config changes",
+    "Auth files, passwords, service keys, WILLYOU_RUN_TOKEN/WILLYOU_ENDPOINT values",
+    "Raw native journal/authentication/electron output in public evidence"
+  ],
+  "isolatedScope": {
+    "project": "/private/tmp/willyou-m12-t041-t042-real-codex-006/runtime-001/project",
+    "home": "/private/tmp/willyou-m12-t041-t042-real-codex-006/runtime-001/home",
+    "codexHome": "/private/tmp/willyou-m12-t041-t042-real-codex-006/runtime-001/codex",
+    "currentlyCreated": false,
+    "contentsWhenLaunched": "Empty project and HOME; CODEX_HOME only minimum existing auth/model/provider plus test config, runtime Skill projection and new test journal"
+  },
+  "standardPolicy": {
+    "profileArgs": [],
+    "sandbox": "workspace-write",
+    "approval": "on-request",
+    "noYoloBypass": true
+  },
+  "approvalState": "Existing specific user payload/destination authorization retained; exact action still subject to normal automatic review. No Native/model start until P092 resources released and pending user foreground availability answered.",
+  "knownStaticFixBeforeNextRun": "R004 now selects exactly skillId browser; both browser and reproduce-bug complete delivery file hashes are verified/preserved. Original R003 refused inputs unchanged."
+}
