@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-05T23:55:25.652Z",
+  "helper": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app/Contents/Resources/native/willyou-files",
+  "helperSha256": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736",
+  "boundary": "I: real store, FileService, watcher, independent drafts and native save receipts. Only IO delivery/timers controlled; no mocked successful writes. Normal App quit is verified separately.",
+  "rows": [
+    {
+      "scenario": "last detach delayed native write",
+      "independentDisk": "LATEST 中文🙂\n",
+      "saveCalls": 1,
+      "watchesAfter": {
+        "roots": 0,
+        "consumers": 0,
+        "timers": 0,
+        "stopping": 0
+      },
+      "timersAfter": 0
+    },
+    {
+      "scenario": "reattach while older write pending; newer input autosaves",
+      "independentDisk": "NEWER\n",
+      "saveCalls": 2
+    },
+    {
+      "scenario": "clean source is not rewritten",
+      "saveCalls": 0
+    }
+  ]
+}
