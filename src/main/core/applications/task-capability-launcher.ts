@@ -24,6 +24,7 @@ import {ApplicationCliGateway} from './cli-gateway';
 import {CurrentApplicationAuthorization} from './current-authorization';
 import {SkillLibraryService} from './skill-library-service';
 import {cleanupPreLibraryCopies} from './legacy-copy-cleanup';
+import {retirePreLibraryResources,type PreLibraryRetirement} from './retire-pre-library-resources';
 import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {createApplicationRunPlan,selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
 import { AgentBridgeProcesses } from './agent-bridge-processes';
@@ -76,6 +77,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly library?:SkillLibraryService;
   /** Last pre-R1.0 copy cleanup (diagnostics). */
   legacyCleanup:import('./legacy-copy-cleanup').LegacyCopyCleanup|null=null;
+  /** Last retirement of pre-R1.0 resource records (diagnostics). */
+  retirement:PreLibraryRetirement|null=null;
   private closed=false;private closing?:Promise<void>;private sweeping=false;
   private constructor(private readonly support:AgentSupportService,private readonly capabilities:CapabilityService,private readonly applications:ApplicationService,private readonly options:TaskCapabilityLauncherOptions){
     const store=support.store;this.processes=options.processes??new MacProcessIdentityReader(options.helper);
@@ -102,6 +105,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const result=new ManagedTaskCapabilities(support,capabilities,applications,options);
     try{await result.runs.recover();
       if(options.skillLibraryHome)try{result.legacyCleanup=cleanupPreLibraryCopies({home:options.skillLibraryHome,storeId:support.store.storeId,unattributable:options.cleanupUnattributable===true});}catch(error){result.recoveryWarnings.push({homeId:'legacy-copy-cleanup',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
+      try{result.retirement=await retirePreLibraryResources(support.store);}catch(error){result.recoveryWarnings.push({homeId:'pre-library-retirement',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
       result.syncSkillLibrary();await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
   }
   /** Converge the Skill library after startup and every application change; a failure never blocks tasks. */
@@ -269,7 +273,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const facets=nativeCapabilityConflicts(snapshot,native,undefined,this.support.adapters.deliveryAdapters),appConflict=facets.applications.size>0;
       const projectMcp=snapshot.mcp.find(m=>m.kind==='legacy-project-context'),mcpName=projectMcp&&!facets.projectMcp&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY)?projectMcp.serverName:null;
       await run.prepare();
-      const runtime=this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName,skills:[],projections:{}}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=stored.pointer;
+      const runtime=this.capabilities.prepare({projectId:input.projectId,taskId:input.taskId,runner:input.profile.runner,cwd:input.cwd,home:input.home,profileArgs:input.profile.args,previous:input.previous,managed:{runId:run.runId,runtimeHash:legacy[0].refHash,mcpName}});entry.runtime=runtime;runtime.snapshot.sessionCapabilities=stored.pointer;
       const issues=[...(bridgeReady?[]:['HOST_INCOMPATIBLE']),...(appConflict||facets.projectMcp?['AGENT_CAPABILITY_NAME_CONFLICT']:[])];
       if(issues.length)runtime.snapshot.selfCheck={status:'failed',issues:[...new Set([...runtime.snapshot.selfCheck.issues,...issues])],at:Date.now()};
       const planned=this.runs.bridgePreparation(run.runId).plan;if(!planned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本次运行身份记录缺失');

@@ -1,5 +1,4 @@
 import type {DatabaseAccessLease} from '../../db/database-access-gate';
-import {assertClaudePublication} from './claude-delivery-state';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -179,7 +178,7 @@ export class ResourceStore {
   private async restoreMissing(spec: PublishResource, signal?: AbortSignal): Promise<ResourceRecord> {
     const operationId = randomUUID(); let leaseId = '', present = false;
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      assertClaudePublication(this,spec.relativePath,spec.contentHash);const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
+      const row = this.get(spec.resourceId); this.assertIdentity(row, spec); spec.assertPublish?.(operationId); this.assertDependencies(spec.dependencies);
       if (row.state !== 'ready' || row.integrity !== 'valid') throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源已有发布或清理操作，先恢复原操作');
       const state = this.sqlite.prepare('SELECT store_id,maintenance_state FROM capability_store_state WHERE singleton=1').get() as {store_id:string;maintenance_state:string}|undefined;
       if (state && (state.store_id !== this.storeId || state.maintenance_state !== 'ready')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '原资源库正在维护或待恢复');
@@ -213,7 +212,6 @@ export class ResourceStore {
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
       this.assertDependencies(spec.dependencies); spec.assertPublish?.(operationId);
       const old = this.sqlite.prepare(SELECT + ' WHERE resource_id=?').get(spec.resourceId) as ResourceRecord | undefined;
-      assertClaudePublication(this,spec.relativePath,spec.contentHash,old?.state==='ready'&&old.integrity==='valid');
       if (old) {
         this.assertIdentity(this.get(spec.resourceId), spec);
         if (old.state !== 'removed' && (old.state !== 'ready' || old.integrity !== 'valid')) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED', '资源有未完成的发布或清理，先恢复原操作');
@@ -263,7 +261,6 @@ export class ResourceStore {
       spec.verify(stage);
     } else spec.verify(target);
     await withResourceLock(this.root, () => this.sqlite.transaction(() => {
-      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || row.state === 'deleting' || row.state === 'removed') throw new ApplicationError('RESOURCE_STATE_CHANGED', '发布资源状态已变化');
@@ -273,7 +270,6 @@ export class ResourceStore {
     }).immediate(), { signal });
     this.checkpoint?.('materialized');
     await withResourceLock(this.root, () => {
-      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);
       this.assertRecordedDependencies(spec);
       const row = this.get(spec.resourceId);
@@ -283,7 +279,6 @@ export class ResourceStore {
       else renameSync(stage, target);
       this.phase(operationId, 'published');
       this.checkpoint?.('renamed');
-      assertClaudePublication(this,spec.relativePath,spec.contentHash);
       this.assertOwnPublisher(spec.resourceId,operationId,leaseId);spec.assertPublish?.(operationId);spec.verify(target);
       this.sqlite.transaction(() => {
         this.assertOwnPublisher(spec.resourceId,operationId,leaseId);this.assertRecordedDependencies(spec);
@@ -330,7 +325,6 @@ export class ResourceStore {
       }
       for(const lease of expectedInstalls)if(lease.state!=='released')observe({pid:lease.pid!,startedAt:lease.process_started_at!});
       return this.sqlite.transaction(() => {
-      const slotOld=this.get(spec.resourceId);assertClaudePublication(this,spec.relativePath,spec.contentHash,slotOld.state==='ready'&&slotOld.integrity==='valid');
       const row = this.get(spec.resourceId); this.assertIdentity(row, spec);
       if (row.operationId !== operationId || this.activeOperations.has(operationId)) throw new ApplicationError('RESOURCE_BUSY', '原发布操作仍在执行或归属不同');
       const operation = readOperation();

@@ -18,7 +18,6 @@ import { stateRootFor } from '../tasks/native-sessions';
 import { BUNDLED_SKILLS, runtimeFiles, sha256, treeHash, type BundledSkill } from './assets';
 import { discoverCapabilities } from './discovery';
 import { readOwnedTree, writeOwnedTree } from './files';
-import { projectSkillName } from '../applications/session-projector';
 import { registerOriginalRun,type OriginalRunCleanup } from './original-run-lifetime';
 import { CLAUDE_PNG_ADAPTER, imageInputLaunchSchema, imageInputMode, type ImageInputLaunch } from '@shared/terminal-image';
 
@@ -38,13 +37,11 @@ export interface PreparedRuntime {
   release: () => void;
 }
 
-/** Trusted M10 caller has already reserved resources and projected these exact source versions. */
+/** Trusted host caller has already reserved the run. R1.0: standard Skills come from the machine-wide library, never per run. */
 export interface ManagedCapabilityPlacement {
   runId: string;
   runtimeHash: string;
   mcpName: string | null;
-  skills: RuntimeSkill[];
-  projections: Record<string,{ path: string;nativeName: string;format?:'legacy-tree-v1';files: Readonly<Record<string,Uint8Array>> }>;
 }
 
 export interface CapabilityDeps {
@@ -163,7 +160,7 @@ export class CapabilityService {
     // A profile with its own skills.config would replace our per-session disable list.
     if (!input.managed && input.runner === 'codex' && input.profileArgs.some((a) => /^skills(?:\.|\s*=)/.test(a.trim()))) throw new Error('AI 配置包含 skills 覆盖参数，请移除后使用项目能力开关');
     const previous = input.previous?.projectId === project.id ? input.previous : null;
-    const selected = input.managed ? input.managed.skills.map(s => ({ ...s })) : this.selection(project.id,previous);
+    const selected:RuntimeSkill[] = input.managed ? [] : this.selection(project.id,previous);
     const capabilityRoot = input.managed ? realpathSync(this.root) : this.root;
     if (input.managed && (!/^[a-f0-9-]{36}$/.test(input.managed.runId) || !/^[a-f0-9]{64}$/.test(input.managed.runtimeHash) || (input.managed.mcpName !== null && !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(input.managed.mcpName)))) throw new Error('受管运行或原上下文桥身份无效');
     const runtimeRoot = input.managed ? join(capabilityRoot,'runtime',input.managed.runtimeHash) : this.runtimeRoot;
@@ -232,19 +229,7 @@ export class CapabilityService {
     }
     const args: string[] = [];
     if (input.managed) {
-      for (const { selection,files: source } of packages) if (selection.enabled) {
-        const projection = input.managed.projections[selection.versionId];
-        if (!projection || !isAbsolute(projection.path) || !projection.path.endsWith('/SKILL.md') || !/^[a-z][a-z0-9-]{0,63}$/.test(projection.nativeName) || Object.keys(projection.files).sort().join('\n') !== Object.keys(source).sort().join('\n')) throw new Error('原标准Skill完整投影未准备好');
-        for (const [name,text] of Object.entries(source)) {
-          const expected = name === 'SKILL.md' && projection.format!=='legacy-tree-v1' ? projectSkillName(Buffer.from(text),projection.nativeName) : Buffer.from(text);
-          if(name==='SKILL.md'&&projection.format==='legacy-tree-v1'){
-            const front=/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text),doc=front?parseDocument(front[1],{uniqueKeys:true,logLevel:'silent'}):null;
-            if(!doc||doc.errors.length||doc.get('name')!==projection.nativeName||treeHash(source)!==selection.hash)throw new Error('原标准Skill名称或完整来源不同');
-          }
-          if (!expected.equals(Buffer.from(projection.files[name])) || !readFileSync(join(dirname(projection.path),name)).equals(expected)) throw new Error('原标准Skill投影内容不同');
-        }
-        selection.name = projection.nativeName; selection.path = projection.path;
-      }
+      // Managed runs carry no standard Skill copies (R1.0 library).
     } else if (input.runner === 'claude') {
       files['plugin/.claude-plugin/plugin.json'] = json({ name: 'smartdd', version: '1.0.0', description: 'WillYou project capabilities' });
       for (const { selection, files: source } of packages) if (selection.enabled) {
@@ -299,7 +284,6 @@ export class CapabilityService {
     const hashes = Object.fromEntries(Object.entries(files).map(([path, content]) => [join(runRoot, path), sha256(content)]));
     // Also verify immutable runtime code and Codex's external skill projection in the child.
     for (const [name,content] of Object.entries(scriptFiles)) hashes[join(runtimeRoot,name)] = sha256(content);
-    if (input.managed) for (const selection of selected) if (selection.enabled) { const p = input.managed.projections[selection.versionId]; for (const [name,bytes] of Object.entries(p.files)) hashes[join(dirname(p.path),name)] = sha256(Buffer.from(bytes)); }
     for (const { selection, files: source } of packages) if (!input.managed && input.runner === 'codex' && selection.enabled) for (const [name, content] of Object.entries(source)) hashes[join(dirname(selection.path), name)] = sha256(content);
     const manifestPath = join(runRoot, 'manifest.json');
     const manifest = json({ ...metadata, runId, files: hashes, requiredEnv: Object.keys(env), pathEnv: { ...pathEnv, SMARTDD_PROJECT_ID: project.id, SMARTDD_CONFIG_VERSION: String(project.configVersion) },

@@ -13,7 +13,8 @@ import {openElectron} from '../lib/electron-harness.mjs';
 import {installAppFocusGuard,isAppFocusYield} from '../lib/app-focus-guard.mjs';
 import {compileApplicationFixture} from '../lib/compile-application-fixture.mjs';
 import {runSharedCleanupUI} from './fixtures/shared-cleanup-ui.mjs';
-const graphMode=process.env.WILLYOU_RECOVERY_UI_GRAPH,requireScope=process.env.WILLYOU_RECOVERY_UI_SCOPE==='1';assert(!graphMode||['shared','last'].includes(graphMode));
+const graphMode=process.env.WILLYOU_RECOVERY_UI_GRAPH,requireScope=process.env.WILLYOU_RECOVERY_UI_SCOPE==='1';// R1.0 S3d-c2: the shared-catalog graph fixture was retired with the catalog; only the store-local (C) mode remains.
+assert(!graphMode,'WILLYOU_RECOVERY_UI_GRAPH 已随 R1.0 共享发现目录删除');
 const executable=process.env.WILLYOU_ACCEPTANCE_APP,expected=process.env.WILLYOU_ACCEPTANCE_ASAR_SHA;
 assert(executable?.startsWith('/private/tmp/willyou-m10-')&&expected);
 const cases=(process.env.WILLYOU_RECOVERY_UI_CASES??(graphMode?'normal-light,complete-light,partial-light,confirmation-race-light,normal-dark,complete-dark,partial-dark,confirmation-race-dark':'complete-light,partial-light,occupied-light,confirmation-race-light,complete-dark,partial-dark,occupied-dark,confirmation-race-dark')).split(',');

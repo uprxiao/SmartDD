@@ -83,32 +83,6 @@ it.skipIf(process.platform!=='darwin').each(['clear','status'].flatMap(kind=>['a
 // Same original H operation must finish before a compatible startup activation.
 // The publisher and process identities are explicit software fixtures; no App or
 // real CLI/process-exit acceptance is inferred from this matrix.
-it.skipIf(process.platform!=='darwin').each([
- ...(['registered','materialized','renamed','catalog-published','records-committed'] as const).map(phase=>({phase,owner:'stopped' as const})),
- ...(['running','unknown','tampered-source'] as const).map(owner=>({phase:'registered' as const,owner})),
-])('recovers recorded H $phase before activation only with proved original sources: $owner',async({phase,owner})=>{
- const f=await agentFixture(),reader=new FixtureProcessReader(),oldBirth='darwin-proc-v1:99:9';let client:Awaited<ReturnType<typeof openManagedDatabase>>|undefined;
- try{
-  const {DiscoveryCatalog}=await import('../core/applications/discovery-catalog');
-  const targetSource=fixtureBundle('2.0.0');targetSource.manifest.runtime.hash=f.source.manifest.runtime.hash;const target=await f.packages.install(targetSource),prior=f.packages.active('zentao')!;
-  const sources=f.projector.sourceSkills(f.plan('codex')),catalog=new DiscoveryCatalog(f.store,f.home,{read:pid=>({pid,startedAt:oldBirth}),state:()=> 'running'},{checkpoint:at=>{if(at===phase)throw Error('fixture publisher interrupted');}});
-  await expect(catalog.publish(sources)).rejects.toThrow('fixture publisher interrupted');
-  const pending=join(catalog.root,'pending.json'),intent=readFileSync(pending),original=JSON.parse(String(intent));
-  const originalOp=f.sqlite.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(original.operationId),originalLeases=f.sqlite.prepare('SELECT * FROM capability_resource_leases WHERE owner_id=? ORDER BY lease_id').all(original.operationId),projects=f.sqlite.prepare('SELECT * FROM projects ORDER BY id').all(),sourcePaths=sources.map(s=>f.store.directory(f.store.get(s.sourceResourceId))),sourceTrees=sourcePaths.map(path=>f.snapshotTree(path));
-  if(owner==='tampered-source')writeFileSync(join(f.store.directory(f.store.get(sources[0].sourceResourceId)),'SKILL.md'),'edited source must stay untrusted');
-  f.sqlite.close();renameSync(join(f.root,'state.sqlite'),join(f.root,'smartdd.db'));let activated=false;
-  const processes={read:(pid:number)=>reader.read(pid),state:(identity:{pid:number;startedAt:string})=>identity.startedAt===oldBirth&&owner!=='stopped'&&owner!=='tampered-source'?owner:reader.state(identity)};
-  const open=()=>openManagedDatabase(join(f.root,'smartdd.db'),{processes,activationRequired:store=>new PackageRegistry(store,'h-upgrade').active('zentao')?.packageHash!==target.packageHash,activate:async(store,lease)=>{await activatePreparedPackages({packages:new PackageRegistry(store,'h-upgrade'),lease,buildId:'h-upgrade',requests:[{hash:target.packageHash,expectedGeneration:prior.generation}]});activated=true;}});
-  if(owner==='stopped'){
-   client=await open();expect(activated).toBe(true);expect(existsSync(pending)).toBe(false);expect(client.sqlite.prepare('SELECT state FROM capability_resource_operations WHERE operation_id=?').get(original.operationId)).toEqual({state:'committed'});expect(client.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_id=? AND state<>'released'").get(original.operationId)).toBeUndefined();expect(client.sqlite.prepare("SELECT package_hash FROM capability_active_packages WHERE app_id='zentao'").get()).toEqual({package_hash:target.packageHash});expect(client.sqlite.prepare('SELECT * FROM projects ORDER BY id').all()).toEqual(projects);expect(sourcePaths.map(path=>f.snapshotTree(path))).toEqual(sourceTrees);
-  }else{
-   await expect(open()).rejects.toThrow('受管运行或在途操作尚未停妥');expect(activated).toBe(false);expect(readFileSync(pending)).toEqual(intent);const retained=new Database(join(f.root,'smartdd.db'),{readonly:true,fileMustExist:true});try{expect(retained.prepare('SELECT * FROM capability_resource_operations WHERE operation_id=?').get(original.operationId)).toEqual(originalOp);expect(retained.prepare('SELECT * FROM capability_resource_leases WHERE owner_id=? ORDER BY lease_id').all(original.operationId)).toEqual(originalLeases);expect(retained.prepare("SELECT package_hash FROM capability_active_packages WHERE app_id='zentao'").get()).toEqual({package_hash:prior.packageHash});expect(retained.prepare('SELECT * FROM projects ORDER BY id').all()).toEqual(projects);}finally{retained.close();}
-  }
- }finally{client?.close();if(f.sqlite.open)f.sqlite.close();rmSync(f.root,{recursive:true,force:true});}
-},20000);
-
-// Original startup/upgrade recovery: use real run registration and a controlled
-// historical kernel ledger; no actual CLI/process exit is fabricated as live E2E.
 it.skipIf(process.platform!=='darwin').each(['all-stopped','live-child','armed-unknown'] as const)('recovers proven abandoned runs before distribution activation while preserving $0 protection',async(mode)=>{
  const reader=new FixtureProcessReader(),f=await runFixture(reader,{application:true});let client:Awaited<ReturnType<typeof openManagedDatabase>>|undefined;
  try{

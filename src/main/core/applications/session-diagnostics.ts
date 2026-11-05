@@ -1,11 +1,9 @@
 import {recordedAttemptCount} from '@shared/application-call-feedback';
 import type {NativeUserMessages} from './native-user-messages';
 import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
-import {readClaudeSlot} from './claude-delivery-state';
-import {inspectClaudeDeliveryCopies} from './claude-delivery-copies';
 import {lstatSync,openSync,closeSync,fstatSync,readSync,constants} from 'node:fs';
 import type {SkillReadTarget,SkillReadObservation} from './codex-skill-read-evidence';
-import {join,relative,isAbsolute,dirname} from 'node:path';
+import {join,dirname} from 'node:path';
 import {z} from 'zod';
 import {ApplicationError} from '@shared/applications';
 import {applicationIdSchema,type ApplicationProvider} from '@shared/application-connections';
@@ -24,7 +22,6 @@ import {canonicalJson,digest} from './manifest';
 import {withResourceLock} from './resource-lock';
 import {readLaunchRestriction} from './launch-restriction';
 import {verifyApplicationRunPlan} from './run-plan';
-import {runPlanSkillView} from './application-skill-view';
 import type {ApplicationRunPlan} from '@shared/application-run-plan';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import {builtinCapabilityDeliveryAdapters,type CapabilityDeliveryAdapterRegistry} from './capability-delivery-adapters';
@@ -113,20 +110,11 @@ export class ApplicationSessionDiagnostics {
   const path=this.store.directory(resource),root=path.slice(0,-resource.relativePath.length).replace(/\/$/,'');let current=root;for(const part of ['',...resource.relativePath.split('/')]){if(part)current=join(current,part);const st=lstatSync(current);if(st.isSymbolicLink()||!st.isDirectory())throw new ApplicationError('OWNERSHIP_CONFLICT','原资源目录包含链接或异常归属');}return path;
  }
  private resourceIssue(session:StoredCapabilitySession,appId?:string):string|null{
-  let refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(session.snapshot.taskId) as {ref_id:string}[];
+  // R1.0: Skills live in the machine-wide library, so only the session's own references are verified here.
+  const refs=this.store.sqlite.prepare('SELECT ref_id FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(session.snapshot.taskId) as {ref_id:string}[];
   try{
-  const delivery=session.snapshot.runner==='claude-code'&&!session.snapshot.legacyBinding?readClaudeSlot(this.store,session.snapshot.taskId):null;
-  const scoped=!!delivery?.current||appId!==undefined&&(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding;
-  // Templated Skills of a codex run live under the per-run names fixed in that run's plan (M11-R1-D04).
-  const latest=(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding?this.store.sqlite.prepare('SELECT run_id FROM capability_runs WHERE task_id=? ORDER BY started_at DESC,run_id DESC LIMIT 1').get(session.snapshot.taskId) as {run_id:string}|undefined:undefined;
-  const viewed=latest?runPlanSkillView(session.snapshot,storedRunPlan(this.store,latest.run_id)):session.snapshot;
-  const skills=[...viewed.packages.filter(p=>!scoped||appId===undefined||p.appId===appId).flatMap(p=>p.skills),...(appId!==undefined&&(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).shared(session.snapshot.runner)&&!session.snapshot.legacyBinding?[]:session.snapshot.standardSkills)];
-   if(scoped){
-    const projectionIds=delivery?.current?[delivery.current.resourceId]:refs.filter(ref=>{const resource=this.store.get(ref.ref_id);if(!['session-projection','agent-projection'].includes(resource.kind))return false;const root=this.store.directory(resource);return skills.some(skill=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});}).map(r=>r.ref_id);
-    refs=this.sessions.scopedReferencesCoordinated(session.snapshot.taskId,appId?[appId]:session.snapshot.packages.map(p=>p.appId),projectionIds).map(r=>({ref_id:r.refId}));
-   }
-   const projectionRoots:string[]=[];for(const ref of refs){const resource=this.store.get(ref.ref_id);const directory=this.directory(resource);if(['session-projection','agent-projection','standard-skill','legacy-static-plugin','legacy-agent-projection','claude-delivery'].includes(resource.kind))projectionRoots.push(directory);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
-   for(const skill of skills){const owned=projectionRoots.some(root=>{const suffix=relative(root,skill.projectionPath);return !!suffix&&!suffix.startsWith('..')&&!isAbsolute(suffix);});if(!owned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原Skill缺少所属投影引用');const st=lstatSync(skill.projectionPath);if(st.isSymbolicLink()||!st.isFile())throw new ApplicationError('OWNERSHIP_CONFLICT','原Skill投影不是受管文件');}return null;}catch(e){return code(e);}
+   for(const ref of refs){const resource=this.store.get(ref.ref_id);if(appId!==undefined&&resource.kind==='application-package'&&this.packages.get(resource.contentHash).appId!==appId)continue;const directory=this.directory(resource);if(resource.state!=='ready'||resource.integrity!=='valid')throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原资源未就绪');if(resource.kind==='application-package'){const pack=this.packages.get(resource.contentHash);verifyPackageTree(directory,pack,this.store.storeId);}else if(resource.kind==='runtime')new RuntimeRegistry(this.store).verify(resource.contentHash);else if(this.inspector)this.inspector.verify(resource,session.snapshot,session.discoveryHome);else throw new ApplicationError('CAPABILITY_UNAVAILABLE','完整投影核验尚无所属宿主');}
+   return null;}catch(e){return code(e);}
  }
  /** Prepare synchronously before stop revokes the run. Completion writes only
   * the captured historical run, never a current-run display or authorization. */
@@ -259,7 +247,8 @@ export class ApplicationSessionDiagnostics {
    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
    applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
   }
-  const deliveryCopies=task.runner==='claude'?inspectClaudeDeliveryCopies(this.store,taskId):null;
+  // Per-task Claude plugin copies ended with R1.0 (S3d-c2); the field stays for the existing page and is always empty.
+  const deliveryCopies=null;
   return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
  });}
 }

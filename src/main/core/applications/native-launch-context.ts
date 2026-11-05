@@ -2,11 +2,11 @@ import { execFile } from 'node:child_process';
 import { accessSync, constants, statSync } from 'node:fs';
 import { delimiter, isAbsolute, join, resolve } from 'node:path';
 import { ApplicationError } from '@shared/applications';
-import { agentLoadRequestSchema, type AgentLoadRequest } from '@shared/agent-adapters';
+import { nativeLaunchFieldSchemas, type NativeInventory, type NativeUserSkillConfig } from '@shared/agent-adapters';
 import { discoverCapabilities, type DiscoveryContext, type NativeDiscoveryDetails } from '../capabilities/discovery';
 import type { TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
 export type TaskLaunchInput = Parameters<TaskCapabilityLauncher['prepare']>[0];
-export interface NativeLaunchContext { command: string; version: string; inventory: AgentLoadRequest['inventory']; userSkillConfig: AgentLoadRequest['userSkillConfig'];skillConfigSources?:NativeDiscoveryDetails['skillConfigSources'] }
+export interface NativeLaunchContext { command: string; version: string; inventory: NativeInventory; userSkillConfig: NativeUserSkillConfig;skillConfigSources?:NativeDiscoveryDetails['skillConfigSources'] }
 /** Read only native files and execute exactly --version, never profile arguments, login helpers or a model. */
 export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<NativeLaunchContext> {
   const env = input.environment, requested = input.profile.command;
@@ -24,6 +24,6 @@ export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<Nativ
   const context: DiscoveryContext = {runner:input.profile.runner,cwd:input.cwd,home:input.home,stateRoot:input.stateRoot,claudeConfigExplicit:input.claudeConfigExplicit,path:env.PATH ?? '',args:input.profile.args,details,nativeVersion:version};
   const found = discoverCapabilities(context);
   const userSkillConfig=details.effectiveSkillConfig??details.userSkillConfig;
-  if (details.issues.length || found.length >= 2000 || !agentLoadRequestSchema.shape.userSkillConfig.safeParse(userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
+  if (details.issues.length || found.length >= 2000 || !nativeLaunchFieldSchemas.userSkillConfig.safeParse(userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
   return {command,version,userSkillConfig,skillConfigSources:details.skillConfigSources??[],inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
 }

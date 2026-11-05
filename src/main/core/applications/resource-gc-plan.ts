@@ -1,35 +1,26 @@
 import {ApplicationError} from '@shared/applications';
-import {constants,lstatSync,openSync,readFileSync,closeSync,realpathSync} from 'node:fs';
-import {join} from 'node:path';
 import {canonicalJson,compareCodePoints,digest} from './manifest';
 import {CapabilitySessionRegistry} from './session-registry';
 import type {ResourceRecord,ResourceStore} from './resource-store';
 import {PackageRegistry} from './package-registry';
-import {claudeGcFacts} from './resource-gc-claude';
 
-/** A read-only observation made while the corresponding H coordinator is locked.
- * A plan is diagnostic data; execution must reacquire H -> C and recheck its hash. */
-export interface ResourceGcCatalog {
- homeId:string;generation:string;pending:boolean;consumerIds:readonly string[];
- entries:readonly {resourceId:string;storeId:string;projectionHash:string;path:string}[];
-}
 export interface ResourceGcPlan {
  schema:1;storeId:string;rootResourceId:string;planHash:string;canCollect:boolean;
  resources:ResourceRecord[];deleteOrder:string[];
  retained:{resourceId:string;reasons:string[]}[];issues:string[];
- catalogs:{homeId:string;generation:string;consumerIds:string[];pending:boolean}[];
 }
-const supportedKinds=new Set(['application-package','runtime','legacy-runtime','agent-adapter','standard-skill','session-projection','agent-projection','legacy-agent-projection','claude-projection-source','claude-projection-archive','claude-delivery','claude-delivery-root']);
+// R1.0: pre-library projection kinds are retired at startup; any still present stays retained as unverified.
+const supportedKinds=new Set(['application-package','runtime','legacy-runtime','agent-adapter','standard-skill']);
 const sorted=(values:Iterable<string>)=>[...values].sort(compareCodePoints);
 
 /** Expand consumers first, then dependencies. Never sweep unrelated unused packages,
  * infer release from age, or discard retained edges to make a package collectable. */
-export function resourceGcPlan(store:ResourceStore,rootResourceId:string,catalogs:readonly ResourceGcCatalog[]=[]):ResourceGcPlan {
- return resourceGcPlans(store,catalogs)(rootResourceId);
+export function resourceGcPlan(store:ResourceStore,rootResourceId:string):ResourceGcPlan {
+ return resourceGcPlans(store)(rootResourceId);
 }
 /** One inventory call reads/validates its shared basis once. Do not reuse this
  * snapshot after releasing coordination, a DB mutation, or an awaited action. */
-export function resourceGcPlans(store:ResourceStore,catalogs:readonly ResourceGcCatalog[]=[]):(rootResourceId:string)=>ResourceGcPlan {
+export function resourceGcPlans(store:ResourceStore):(rootResourceId:string)=>ResourceGcPlan {
  const db=store.sqlite;
  const raw=db.prepare('SELECT * FROM capability_resources ORDER BY resource_id').all() as {resource_id:string;state:string}[];
  const rawStates=new Map(raw.map(r=>[r.resource_id,r.state]));
@@ -48,9 +39,7 @@ export function resourceGcPlans(store:ResourceStore,catalogs:readonly ResourceGc
  const records=new Map<string,ResourceRecord>(),issues=new Set<string>(),reasons=new Map<string,Set<string>>();
  const retain=(id:string,reason:string)=>{let held=reasons.get(id);if(!held){held=new Set();reasons.set(id,held);}held.add(reason);};
  for(const row of raw)try{records.set(row.resource_id,store.get(row.resource_id));}catch{issues.add('resource-identity:'+row.resource_id);}
- const claude=claudeGcFacts(store,records);for(const issue of claude.issues)issues.add(issue);for(const root of claude.roots)retain(root.resourceId,root.reason);
  const dependencies=new Map<string,Set<string>>(),consumers=new Map<string,Set<string>>();
- const physicalAliases=new Map<string,Set<string>>();for(const group of claude.aliases){const ids=new Set(group);for(const id of group)physicalAliases.set(id,ids);}
  for(const edge of edges){
   if(rawStates.get(edge.resource_id)==='removed')continue;
   const parent=records.get(edge.resource_id),child=records.get(edge.dependency_id);
@@ -58,24 +47,13 @@ export function resourceGcPlans(store:ResourceStore,catalogs:readonly ResourceGc
   if(!dependencies.has(parent.resourceId))dependencies.set(parent.resourceId,new Set());dependencies.get(parent.resourceId)!.add(child.resourceId);
   if(!consumers.has(child.resourceId))consumers.set(child.resourceId,new Set());consumers.get(child.resourceId)!.add(parent.resourceId);
  }
- // Missing dependency rows must not turn a still-discoverable H projection into
- // an unrelated resource. Compare the graph with immutable source declarations.
+ // Compare the graph with immutable source declarations.
  const registry=new PackageRegistry(store,'read-only-gc');
  for(const row of records.values()){
   if(row.state==='removed')continue;
   try{
    let expected:string[]|undefined;
-   if(claude.declarations.has(row.resourceId))expected=claude.declarations.get(row.resourceId);
-   else if(row.kind==='application-package')expected=['runtime:'+registry.get(row.contentHash).manifest.runtime.hash];
-   else if(['agent-projection','session-projection','claude-projection-source'].includes(row.kind)){
-    const directory=store.directory(row);if(realpathSync(directory)!==directory)throw Error('resource parent alias');
-    const path=join(directory,'bundle.json'),stat=lstatSync(path);if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>4*1024*1024)throw Error('unverified bundle metadata');
-    const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);let manifest;try{manifest=JSON.parse(readFileSync(fd,'utf8'));}finally{closeSync(fd);}
-    if(digest(canonicalJson(manifest))!==row.contentHash)throw Error('changed immutable metadata');
-    if(row.kind==='agent-projection'){if(manifest.metadata?.kind!=='codex-agent-projection-v1'||typeof manifest.metadata.sourceResourceId!=='string')throw Error('projection source absent');expected=[manifest.metadata.sourceResourceId];}
-    else {if(!Array.isArray(manifest.metadata?.sources)||!manifest.metadata.sources.every((s:{resourceId?:unknown})=>typeof s.resourceId==='string'))throw Error('projection sources absent');expected=sorted(new Set<string>(manifest.metadata.sources.map((s:{resourceId:string})=>s.resourceId)));}
-   }
-   else if(row.kind==='legacy-agent-projection'){const match=/^\.agents\/skills\/smartdd-([a-z][a-z0-9-]{0,63})-([a-f0-9]{16})$/.exec(row.relativePath);if(!match||match[2]!==row.contentHash.slice(0,16))throw Error('legacy projection identity');expected=['standard-skill:'+match[1]+':'+row.contentHash];}
+   if(row.kind==='application-package')expected=['runtime:'+registry.get(row.contentHash).manifest.runtime.hash];
    if(expected&&canonicalJson(sorted(dependencies.get(row.resourceId)??[]))!==canonicalJson(sorted(expected)))issues.add('dependency-declaration:'+row.resourceId);
   }catch{issues.add('dependency-declaration:'+row.resourceId);}
  }
@@ -93,25 +71,17 @@ export function resourceGcPlans(store:ResourceStore,catalogs:readonly ResourceGc
  for(const ref of refs){const resource=records.get(ref.ref_id);retain(ref.ref_id,'session-reference:'+ref.task_id);if(!resource||resource.kind!==ref.ref_kind||resource.contentHash!==ref.ref_hash||resource.relativePath!==ref.relative_path||!snapshots.some(s=>s.task_id===ref.task_id))issues.add('reference-integrity:'+ref.task_id+':'+ref.ref_id);}
  for(const lease of leases){retain(lease.resource_id,'lease:'+lease.lease_id);if(!records.has(lease.resource_id))issues.add('lease-resource-missing:'+lease.lease_id);}
  for(const run of runs)if(!snapshots.some(s=>s.task_id===run.task_id)||!refs.some(r=>r.task_id===run.task_id))issues.add('run-history-unresolved:'+run.run_id);
- const catalogIds=new Set<string>();
- for(const catalog of catalogs){
-  if(catalogIds.has(catalog.homeId))issues.add('catalog-duplicate:'+catalog.homeId);catalogIds.add(catalog.homeId);
-  for(const entry of catalog.entries.filter(e=>e.storeId===store.storeId)){const row=records.get(entry.resourceId);if(!row||row.pathScope!=='H'||row.scopeIdentity!==catalog.homeId||row.contentHash!==entry.projectionHash||store.directory(row)+'/SKILL.md'!==entry.path)issues.add('catalog-identity:'+entry.resourceId);}
- }
  const baseReasons=reasons,baseIssues=issues;
- const observations=[...catalogs].sort((a,b)=>compareCodePoints(a.homeId,b.homeId)).map(c=>({...c,consumerIds:sorted(c.consumerIds),entries:[...c.entries].sort((a,b)=>compareCodePoints(a.resourceId,b.resourceId))}));
- const basisHash=digest(canonicalJson({storeId:store.storeId,raw,edges,refs,leases,active,snapshots,histories,mcpNames,packages,storeState,nativeUnknown,holds,runs,claude:claude.basis,issues:sorted(baseIssues),catalogs:observations}));
+ const basisHash=digest(canonicalJson({storeId:store.storeId,raw,edges,refs,leases,active,snapshots,histories,mcpNames,packages,storeState,nativeUnknown,holds,runs,issues:sorted(baseIssues)}));
  return(rootResourceId:string)=>{
  const root=records.get(rootResourceId);
  if(!root||root.kind!=='application-package')throw new ApplicationError('NOT_FOUND','清理计划的原应用资源不存在或归属不符');
  const reasons=new Map([...baseReasons].map(([id,values])=>[id,new Set(values)])),issues=new Set(baseIssues);
  const retain=(id:string,reason:string)=>{let held=reasons.get(id);if(!held){held=new Set();reasons.set(id,held);}held.add(reason);};
- const derived=new Set([rootResourceId]),consumerQueue=[rootResourceId];for(let at=0;at<consumerQueue.length;at++)for(const id of [...(consumers.get(consumerQueue[at])??[]),...(physicalAliases.get(consumerQueue[at])??[])])if(!derived.has(id)){derived.add(id);consumerQueue.push(id);}
+ const derived=new Set([rootResourceId]),consumerQueue=[rootResourceId];for(let at=0;at<consumerQueue.length;at++)for(const id of consumers.get(consumerQueue[at])??[])if(!derived.has(id)){derived.add(id);consumerQueue.push(id);}
  const affected=expand(derived,dependencies);
- for(const id of affected){const row=records.get(id);if(!row||row.pathScope!=='H')continue;const catalog=catalogs.find(c=>c.homeId===row.scopeIdentity);
-  if(!catalog)retain(id,'catalog-lock-required');
-  else {if(catalog.pending)retain(id,'catalog-maintenance');if(catalog.consumerIds.length)retain(id,'catalog-consumers');if(!catalog.entries.some(e=>e.resourceId===id&&e.storeId===store.storeId&&e.projectionHash===row.contentHash))retain(id,'catalog-entry-missing');}
- }
+ // Shared-catalog copies (H) belong to pre-R1.0 launches; one still recorded is never collected here.
+ for(const id of affected){const row=records.get(id);if(row&&row.pathScope==='H')retain(id,'pre-library-copy');}
  // A dependency shared by another package/projection remains outside this request.
  for(const id of affected)for(const parent of consumers.get(id)??[])if(!affected.has(parent))retain(id,'external-consumer:'+parent);
  // Every retained consumer protects its complete dependency closure, including
@@ -128,6 +98,6 @@ export function resourceGcPlans(store:ResourceStore,catalogs:readonly ResourceGc
  if(acyclic.length!==affected.size)issues.add('dependency-cycle');
  if(issues.size)for(const id of affected)retain(id,'unresolved-authority');
  const canCollect=issues.size===0&&root.state==='ready'&&!reasons.has(rootResourceId);
- return{schema:1,storeId:store.storeId,rootResourceId,canCollect,resources:sorted(affected).map(id=>records.get(id)!).filter(Boolean),deleteOrder:canCollect?order:[],retained:sorted(affected).filter(id=>reasons.has(id)).map(resourceId=>({resourceId,reasons:sorted(reasons.get(resourceId)!)})),issues:sorted(issues),catalogs:observations.map(({homeId,generation,consumerIds,pending})=>({homeId,generation,consumerIds,pending})),planHash:digest(canonicalJson({basisHash,rootResourceId,issues:sorted(issues)}))};
+ return{schema:1,storeId:store.storeId,rootResourceId,canCollect,resources:sorted(affected).map(id=>records.get(id)!).filter(Boolean),deleteOrder:canCollect?order:[],retained:sorted(affected).filter(id=>reasons.has(id)).map(resourceId=>({resourceId,reasons:sorted(reasons.get(resourceId)!)})),issues:sorted(issues),planHash:digest(canonicalJson({basisHash,rootResourceId,issues:sorted(issues)}))};
  };
 }

@@ -10,7 +10,6 @@ import {bundledMigrations,planMigrations} from './migrations';
 import {MigrationJournals} from './migration-journal';
 import type {ProcessIdentityReader} from '../core/applications/process-identity';
 import {ResourceStore} from '../core/applications/resource-store';
-import {DiscoveryCatalog} from '../core/applications/discovery-catalog';
 import {canonicalFuturePath} from '../core/applications/session-registry';
 import {recoverApplicationReads} from '../core/applications/read-context-recovery';
 import {recoverApplicationCacheClears,recoverApplicationCacheStatus} from '../core/applications/cache-context-recovery';
@@ -64,18 +63,6 @@ export async function openManagedDatabase(path:string,options:{processes?:Proces
   // Run recovery normally happens after service creation. Proved dead old
   // consumers must settle before startup activation's strict idle preflight.
   if(options.processes)await recoverCapabilityRuns(store,options.processes);
-  // The current schema is now known, but activation's idle preflight must not
-  // run before abandoned H publishers have a chance to finish. This is the
-  // host-lifetime DB gate, not a resource lock/transaction: recovery still takes
-  // the usual short H -> C locks and verifies original kernel/source identities.
-  if(options.processes){
-   const roots=client.sqlite.prepare('SELECT home_id AS id,canonical_home AS home FROM capability_discovery_roots').all() as {id:string;home:string}[];
-   for(const recorded of roots)try{
-    if(recorded.home!==canonicalFuturePath(recorded.home)||createHash('sha256').update(recorded.home).digest('hex')!==recorded.id)throw new Error('原发现根身份不同');
-    const catalog=new DiscoveryCatalog(store,recorded.home,options.processes);await catalog.recoverConsumers();await catalog.recoverRecordedPublication();
-   }catch{console.warn('[applications] Recorded discovery publication remains unresolved:',recorded.id);}
-  }
-
   const abandoned=client.sqlite.prepare("SELECT DISTINCT owner_id FROM capability_resource_leases WHERE owner_kind='application-activation' AND state<>'released'").all() as {owner_id:string}[];
   for(const row of abandoned)await store.recoverActivationLeases(row.owner_id,maintenance);
   if(options.activationRequired?.(store)){if(!options.activate)throw new Error('缺少应用升级执行入口');await options.activate(store,maintenance);}

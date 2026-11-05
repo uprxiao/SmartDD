@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { ApplicationError } from '@shared/applications';
 import {BRIDGE_LIMITS} from '@shared/application-bridge';
-import { agentAdapterMetadataSchema, agentLoadPlanSchema,libraryLoadRequestSchema, type LibraryLoadRequest, type AgentAdapterMetadata, type AgentLoadRequest, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
+import { agentAdapterMetadataSchema, agentLoadPlanSchema,libraryLoadRequestSchema, type LibraryLoadRequest, type AgentAdapterMetadata, type LaunchMcpServer, type AgentLoadPlan, type AgentLevel } from '@shared/agent-adapters';
 import type { CapabilitySessionSnapshot } from '@shared/application-session';
 import { canonicalJson, digest } from './manifest';
 import { effectiveLevels, type EffectiveLevels } from './agent-levels';
@@ -24,7 +24,7 @@ const loader = createRequire(import.meta.url);
  * and the MCP text/structured representations. This adds no tool or authority.
  * Host transport policy also applies to retained adapters without changing
  * their immutable bytes or the session's fixed package/adapter selection. */
-function codexToolBudget(plan:AgentLoadPlan,cliVersion:string,mcp:AgentLoadRequest['mcp'],declared:readonly string[]):AgentLoadPlan{
+function codexToolBudget(plan:AgentLoadPlan,cliVersion:string,mcp:readonly LaunchMcpServer[],declared:readonly string[]):AgentLoadPlan{
   if(plan.agentId!=='codex'||!['0.162.1','0.166.0'].includes(cliVersion))return plan;
   const bridge=mcp.find(m=>m.kind==='applications');if(!bridge)return plan;
   const names=[...new Set(declared)].sort();
@@ -103,7 +103,7 @@ export class AgentAdapterRegistry {
     const manifest = verifyOwnedBundle(join(this.store.root,installed.resource.relativePath),hash,this.store.storeId);
     if (canonicalJson(manifest) !== canonicalJson(installed.manifest)) throw new ApplicationError('HASH_MISMATCH','Agent适配器完整树已改变'); return installed;
   }
-  private assertBridges(snapshot:CapabilitySessionSnapshot,input:Pick<AgentLoadRequest,'mcp'|'currentExecutable'|'runId'>):void{
+  private assertBridges(snapshot:CapabilitySessionSnapshot,input:Pick<LibraryLoadRequest,'mcp'|'currentExecutable'|'runId'>):void{
     if (new Set(input.mcp.map(m => m.kind)).size !== input.mcp.length || new Set(input.mcp.map(m => m.serverName)).size !== input.mcp.length) throw new ApplicationError('INVALID_INPUT','本次工具桥重复');
     for (const mcp of input.mcp) {
       const expected = snapshot.mcp.find(m => m.kind === mcp.kind);
