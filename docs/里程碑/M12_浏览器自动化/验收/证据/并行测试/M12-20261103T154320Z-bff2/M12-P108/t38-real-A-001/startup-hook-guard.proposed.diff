@@ -1,0 +1,13 @@
+--- frozen-T06-private-harness
++++ proposed-T38-private-harness
+@@ -57,7 +57,9 @@
+     !startupMainHook ||
+       (inspectMain &&
+         (executable?.startsWith("/private/tmp/willyou-m10-") ||
+-          executable?.startsWith("/private/tmp/willyou-m11-s7/"))),
++          executable?.startsWith("/private/tmp/willyou-m11-s7/") ||
++          (executable === "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app/Contents/MacOS/WillYou" &&
++            userData === "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/userdata"))),
+     "Pre-entry hook requires this explicit private inspected App",
+   );
+   const child = spawn(
