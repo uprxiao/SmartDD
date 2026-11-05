@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-05T18:00:35.864868+00:00",
+  "updatedAt": "2026-11-05T19:27:18.254925+00:00",
   "status": "S4/S5 acceptance closure with S2/S3 pointer/dialog fixes; originalT062 partial reopened",
   "coordinator": "/root",
   "agents": [
@@ -26,7 +26,7 @@
   "requirements": "需求R1.4",
   "technicalDesign": "技术方案V1.3",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "M12-P113 remaining original compositeI preparation",
+  "currentGroup": "M12-P113-T099-fixture-preload-fix",
   "resources": {
     "build": null,
     "nativeUi": null,
@@ -4063,7 +4063,7 @@
       "finishedAt": "2026-11-05T08:23:38.691745+00:00"
     }
   ],
-  "next": "Root序列执行私有App21复制→官方prepackagedDMG（publish never）→私有只读挂载/安装/逐文件对比→Native6；之后单独交接无UI安装启动CLI测试。x64官方构建仅允许matching native runner，保留真机前置，不用本机arm64假称x64。",
+  "next": "Run autonomous originalT099 I; T121 App022 is finalREADY232Rootverified and same-payload authorization saved, nofocus/nolease. No oldwindow/guard/input replay.",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": {
     "commit": "70a54dcb0e45944cfa1551e370fb76ae75f737f6",
@@ -4105,14 +4105,15 @@
     "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
     "status": "officialbuild/sixNative/strictlocalsignature/onlypackedmain delta green;162software andtypechecks0; originalfullperformance/remainingR/A/S notcomplete"
   },
-  "nextExecution": "T099真实Service/M11/nativeCLI原审计组合I完整READY核验后立即分配资源自主跑；T131 scope-peer原A/R只准备。T121及T120/T125可执行静态已复核，真实新发送/UI/可能审批等用户前置后置。",
+  "nextExecution": "Ready-first exclusive: T099 original compositeI; originalT06/T38 backend App/Codex/synthetic-provider A/R has no tested UI action and can run unattended once READY. No external OpenAI auth/sending or UI input; other actual UI/system cases deferred.",
   "nextPackageCandidate": {
-    "source": "/private/tmp/willyou-m12-p078-source-023/source",
-    "manifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
-    "productionIdenticalTo022": true,
-    "status": "officialApp019/source023 build0/native6green; T147 A009 fullgreen and P085 installed arm64 preview originalT140/T143 passed; remaining originalUI/Agent/system open",
-    "app": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app",
-    "asarSha256": "f1995c81a490d3c7e899e1e94358402d863b4cff8fef20f4eab10d5cb0727868"
+    "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
+    "sourceManifestSha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9",
+    "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
+    "browserVersion": "0.1.1",
+    "browserHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+    "status": "build-smokes-resource-verifier-passed; originalR-retet-pending",
+    "packageResourceGateSha256": "28a0b91a7ff48c2c6567522f5269d38b049dea61ccb70eaf808506aa273284b9"
   },
   "currentImplementationCheckpoint": {
     "commit": "64d57e3b",
@@ -4354,9 +4355,9 @@
     }
   ],
   "foregroundCoordination": {
-    "at": "2026-11-05T16:05:04.936049+00:00",
+    "at": "2026-11-05T18:22:39.417640+00:00",
     "userInstruction": "2026-11-06用户要睡觉，继续目标，优先不需要其参与的用例",
-    "status": "user asleep; no new foreground/system/manual/external-model-data steps; autonomous installer/reuse/file preparation only",
+    "status": "user explicitly available for fresh SOP windows; prioritize whole T121 then T120/T125",
     "currentR43Session": null,
     "currentR43Run": "e9c642d5-ae13-4cfb-9058-fb92e9794e28",
     "nextUnattended": [
@@ -4367,7 +4368,8 @@
     "deferredUI": {
       "T130004": "fresh READY frozen35/36; neverexecuted, no oldguard/late-reply replay",
       "T113prefix": "changed reference/Helper coupling, old10 prefix not automatically reused"
-    }
+    },
+    "authorizationReference": "request_user_input_async/call_3f3ffe6dae154b289c5a82abd8393bfb/0"
   },
   "currentAutonomousReceipts": [
     {
@@ -4471,6 +4473,103 @@
       "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P112/t120-t125-static-coordinator-002/manifest.json",
       "resourceStatus": "none; owner now file-only T131 scope-peer A/R preparation",
       "formalCaseIncrement": 0
+    },
+    {
+      "id": "P113-compile001",
+      "status": "compile-precondition-failed-before-host-runtime",
+      "classification": "driver-entry-bare-import-resolution-failure",
+      "toolExit": 1,
+      "frozenInputsAfterFailure": 4048,
+      "NativeApp": 0,
+      "HTTP": 0,
+      "business": 0,
+      "actualNodePid": "unknown",
+      "lease": "Root compile-only released after terminal1; no App or HTTP ever launched",
+      "evidencePrivate": "/private/tmp/willyou-m12-t099-audit-composite-i-static-001/compile-preflight-001/coordinator-failure.json",
+      "next": "separate002 minimal module resolution fix"
+    },
+    {
+      "id": "T121-real001-terminal",
+      "toolSession": 61460,
+      "driverPid": 12060,
+      "appPid": 12068,
+      "status": "executed but not accepted; actual final conversation missing environment URL",
+      "appExit": {
+        "code": 0,
+        "signal": null
+      },
+      "cleanup": "actual independent28checks allClear/exit0",
+      "rawSha256": "2c1bd69d74202cae20fe23c3dc3694c4e4545633c615ac1c788d5c79ce4b542c",
+      "initialJudgement": "global7/7,case5/12; original kept, separate pure finite-carrier and privacy diagnosis ongoing",
+      "resourceStatus": "released for next group after actual terminal and cleanup",
+      "formalCaseIncrement": 0
+    },
+    {
+      "id": "P112-real002-terminal",
+      "session": 23083,
+      "driverPid": 26361,
+      "appPid": 26381,
+      "appNormalExit": {
+        "pid": 26381,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupAllClear": true,
+      "cleanupChecks": 243,
+      "rawSha256": "35fa8aee04214174afd3c757300eef012edb2212e2511546201ed7aa9f6743ab",
+      "T120": "actual20.01 reproduction completed; originalnetwork evidence missing, not passed",
+      "T125": "no nativejournal record after followupAt; original driver600s timeout before actual user message, business unexecuted",
+      "resourceStatus": "original group released after terminal0 and independent243checks",
+      "formalCaseIncrement": 0
+    },
+    {
+      "id": "P113-compile002-passed",
+      "childPid": 64971,
+      "wrapperPid": 64970,
+      "toolExit": 0,
+      "actualSeconds": 2.81,
+      "independentCompileOracle": "passed",
+      "hostSha256": "916e4b1d163ec2ec219153d4861d0b3d8da7ebc05737ddb07d5eb86c7f8bb99b",
+      "moduleInputs": 551,
+      "esbuildStop": "fulfilled",
+      "App": 0,
+      "HTTP": 0,
+      "business": 0,
+      "resourceStatus": "Root compile lease released, no runtime dispatched while focus on SOP",
+      "formalCaseIncrement": 0
+    },
+    {
+      "id": "P116-local-terminal-preflight001",
+      "at": "2026-11-05T19:14:43.135646+00:00",
+      "actualSession": 88917,
+      "appPid": 75115,
+      "status": "driver-schema-failure-before-tested-followup; actual initial user message and completion present",
+      "cleanup": "normal0/null/signals[]; independent17checks allClear; executor explicitly released all resources",
+      "safeManifestSha256": "32e6a19aafcaea370390c20ab027cf2029ff7f3615417009100e46c8615de30f",
+      "formalNewPasses": 0
+    },
+    {
+      "id": "P116-local-terminal-preflight002",
+      "actualSession": 84490,
+      "driverPid": 113,
+      "appPid": 115,
+      "status": "environment-prerequisite-no-focus; actual boot canonicalNative passed; 0followup/0Enter",
+      "judge": "2/7; originalnoinput notpassed",
+      "cleanup": "actual normal0/null/signals[]; independent17allClear; executor explicitly released allNative/UI/PTY/localHTTP/TCP/Unix",
+      "formalNewPasses": 0,
+      "at": "2026-11-05T19:24:02.275915+00:00"
+    },
+    {
+      "id": "P113-T099-composite-I001",
+      "actualSession": 77988,
+      "driverPid": 9605,
+      "hostPid": 9622,
+      "pythonPid": 9662,
+      "httpPort": 54081,
+      "status": "fixture missing explicit dialog preload path; firsttabcreate BROWSER_UNAVAILABLE/unknown5; no accepted audit combination",
+      "cleanup": "actual Host/Python0/null,7stepsfulfilled/windows+contents empty; original zero-helper cleanup assertion red retained, strictderived6PID/1TCP/gatewayclear; executor released all resources",
+      "formalNewPasses": 0,
+      "at": "2026-11-05T19:27:18.254925+00:00"
     }
   ]
 }
