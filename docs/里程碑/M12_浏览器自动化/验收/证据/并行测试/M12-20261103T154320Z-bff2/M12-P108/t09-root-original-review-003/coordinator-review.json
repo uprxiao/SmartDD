@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-05T22:37:02.315855+00:00",
+  "passed": true,
+  "scope": "Only original A HTTP normal/timeout/drop/cancel and already executed C normal precondition; no CM faults fabricated",
+  "originalInputsVerified": 244,
+  "safeFilesVerified": 108,
+  "independentOwnedDBRowMatches": 5,
+  "onlyOwnedOperationTableRead": true,
+  "DBSHAUnchanged": true,
+  "originalA01PrerequisitesRechecked": true,
+  "originalOracleVoidDeltaOnly": true,
+  "replayChanges": [
+    {
+      "path": "replay-A.mjs",
+      "originalSHA": "8fadbce0fa17b9bb73e50419ebd290619b489109fc82c913a2b11d36e24c3d26",
+      "replaySHA": "da64c32388d43ac53a87fbe0a8a7f5f7d58d59b574a48e106d91988a4a568151",
+      "scope": "original absolute input imports and private cache assertion only; output passed outside original root; all business predicates unchanged"
+    },
+    {
+      "path": "replay-C.mjs",
+      "originalSHA": "50edd6f5750596ee860bf00b59bfbc69695f3d9ecae660c424872de04bcbe3aa",
+      "replaySHA": "a38109d9cedc394819fa7ea3e99c93e2b9627edf47a10f9328167ac74f60870d",
+      "scope": "original absolute input imports and private cache assertion only; output passed outside original root; all business predicates unchanged"
+    }
+  ],
+  "runs": [
+    {
+      "role": "A",
+      "exitCode": 0,
+      "passed": 7,
+      "scope": "Only executed original A HTTP timeout/drop/cancel slice. C/M actual transport faults remain missing."
+    },
+    {
+      "role": "C",
+      "exitCode": 0,
+      "passed": 7,
+      "scope": "Already executed C normal upstreamCLI precondition only, not fault"
+    }
+  ],
+  "originalJudgementPreserved": "0/9",
+  "initialAJudgementPreserved": "5/7",
+  "currentA": "7/7 original HTTP slice",
+  "currentC": "7/7 normal MCP-through-CLI only;MCP numericexit unknown",
+  "cleanupChecks": 47,
+  "normalAppExit": true,
+  "missing": [
+    "real upstream CLI hang",
+    "real upstream MCP disconnect"
+  ],
+  "formalWholeCaseIncrement": 0
+}

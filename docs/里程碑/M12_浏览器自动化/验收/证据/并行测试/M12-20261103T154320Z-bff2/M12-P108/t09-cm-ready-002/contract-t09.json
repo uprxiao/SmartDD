@@ -1,0 +1,84 @@
+{
+  "case": {
+    "id": "M11-T09",
+    "originalAuthoritativeLine": "| M11-T09／R09／I＋A | 可控读超时、上游 CLI 卡住、MCP 断连与写效果未知夹具 | 分别取消、等待截止时间及模拟外部已接受后断连；查询原操作回执 | 有界结束；取消／失败／未知可区分；写动作不自动重发；仅收尾本次自有进程 | 通过（C21，证据 `证据/并行测试/M11-C21-20261102T0159Z-t09/M11-C21-A-T09-FAULT/attempt-001/`）：基线 `feature/0.1.0` 提交 `64b93db4`、工作区干净、冻结包 `b87809c7…` 未重建；真实打包 App＋真实 Codex 0.166.0＋回环合成禅道上游（真实 HTTP 传输、按需注入故障，`result.upstream` 已声明，不代表真实站点数据）。挂起读由产品自身结束为 `TIMEOUT`(provider, retryable, attemptCount 3)，断连报 `TRANSIENT_FAILURE`，取消后无输出且会话已结束（`CANCELED`／gone 可区分）；会话只下发 3 条只读能力，无写能力可重发，全部尝试 `effectState=read-only`；写效果未知与不重发另由 I 层 `mail-effect-boundary.test.ts` 覆盖；`ownAppCleanupComplete:true` 仅收尾本轮自有 App/PTY。未覆盖：真实禅道故障时的同类行为、Windows／Linux 平台 |",
+    "requirementAndLayers": "M11-T09／R09／I＋A",
+    "prerequisite": "可控读超时、上游 CLI 卡住、MCP 断连与写效果未知夹具",
+    "steps": "分别取消、等待截止时间及模拟外部已接受后断连；查询原操作回执",
+    "expected": "有界结束；取消／失败／未知可区分；写动作不自动重发；仅收尾本次自有进程",
+    "historicalActual": "通过（C21，证据 `证据/并行测试/M11-C21-20261102T0159Z-t09/M11-C21-A-T09-FAULT/attempt-001/`）：基线 `feature/0.1.0` 提交 `64b93db4`、工作区干净、冻结包 `b87809c7…` 未重建；真实打包 App＋真实 Codex 0.166.0＋回环合成禅道上游（真实 HTTP 传输、按需注入故障，`result.upstream` 已声明，不代表真实站点数据）。挂起读由产品自身结束为 `TIMEOUT`(provider, retryable, attemptCount 3)，断连报 `TRANSIENT_FAILURE`，取消后无输出且会话已结束（`CANCELED`／gone 可区分）；会话只下发 3 条只读能力，无写能力可重发，全部尝试 `effectState=read-only`；写效果未知与不重发另由 I 层 `mail-effect-boundary.test.ts` 覆盖；`ownAppCleanupComplete:true` 仅收尾本轮自有 App/PTY。未覆盖：真实禅道故障时的同类行为、Windows／Linux 平台"
+  },
+  "originalSource": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/contracts/cases.json",
+  "scope": "Continuation only: new C/M actual transport faults with same-run normal prerequisites; original A7/7 and I63 reused by exact original-source/production scope. No A task created.",
+  "mapping": [
+    {
+      "id": "read-timeout",
+      "evidence": "Original actual attempt001 A slice, exact postmortem7/7 and full source hashes; no replay in002",
+      "required": true
+    },
+    {
+      "id": "transport-failure",
+      "evidence": "Original actual attempt001 A slice, exact postmortem7/7 and full source hashes; no replay in002",
+      "required": true
+    },
+    {
+      "id": "cancel",
+      "evidence": "Original actual attempt001 A slice, exact postmortem7/7 and full source hashes; no replay in002",
+      "required": true
+    },
+    {
+      "id": "upstream-cli-stuck",
+      "evidence": "new actualbuiltin sample-kv entry over realMCP/trueupstreamCLI, exactownchild SIGSTOP; originaldeadline+owned process termination",
+      "required": true
+    },
+    {
+      "id": "mcp-disconnect",
+      "evidence": "new actualbuiltin sample-kv/realMCP/trueupstreamMCP initialize+toolcall then exactownchild disconnect",
+      "required": true
+    },
+    {
+      "id": "accepted-write-unknown-no-replay",
+      "evidence": "accepted current I9 originaleffect-boundary, no A write added or I9 replay",
+      "required": true
+    },
+    {
+      "id": "original-receipts-and-owned-cleanup",
+      "evidence": "new real operation/request/run/task/package, actualnormalexit/exactcleanup",
+      "required": true
+    }
+  ],
+  "refs": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/coordinator-review.json",
+      "copy": "evidence-reuse/t09-read-coordinator-001/coordinator-review.json",
+      "sha256": "3fe3a666a3fb81a0839f1bc54468cd9bc52b8faf95cb60d431e382f75fbeb597"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/result.json",
+      "copy": "evidence-reuse/t09-read-coordinator-001/result.json",
+      "sha256": "2704f58f0ad45c840219b98040a832ac15a81716813cd7f87ae322237609106e"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/manifest.json",
+      "copy": "evidence-reuse/t09-read-coordinator-001/manifest.json",
+      "sha256": "43f63e067bb09cd254bcbdc345f05de99697194189fc435ece5e641ee9041043"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-write-coordinator-001/coordinator-review.json",
+      "copy": "evidence-reuse/t09-write-coordinator-001/coordinator-review.json",
+      "sha256": "c3fb94f486bb2fbd79c7e4251e564c657b7a24acc6197d11bcf39c6a56b3c110"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-write-coordinator-001/result.json",
+      "copy": "evidence-reuse/t09-write-coordinator-001/result.json",
+      "sha256": "4c601545c4e841159feb71d9dbd40cdc590b54e2ef56b048e6a24f672153945c"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-write-coordinator-001/manifest.json",
+      "copy": "evidence-reuse/t09-write-coordinator-001/manifest.json",
+      "sha256": "c187c7c294e46038b7dfc49cfc3c9f541db8c53323cb1d5885a4b581ba062ad5"
+    }
+  ],
+  "formalNewPasses": 0,
+  "NativeExecuted": false
+}

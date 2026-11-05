@@ -1,0 +1,192 @@
+{
+  "at": "2026-11-05T22:37:02.177Z",
+  "scope": "Only executed original A HTTP timeout/drop/cancel slice. C/M actual transport faults remain missing.",
+  "status": "original-A-http-slice-evidenced-not-whole-T09",
+  "passed": 7,
+  "total": 7,
+  "checks": [
+    {
+      "id": "A-original-source-plan-Skill-default-policy-exact-calls",
+      "passed": true,
+      "proof": [
+        {
+          "role": "A",
+          "validPlan": true,
+          "exactPrefix": true,
+          "skillReadComplete": true,
+          "currentNativeSession": true,
+          "defaultPolicy": true,
+          "exactCallsOnly": true
+        }
+      ]
+    },
+    {
+      "id": "T09-A02-real-CLI-normal-read-control",
+      "passed": true,
+      "proof": {
+        "operationId": "7e1d26c8-babf-4970-85e9-d077a426ff4d",
+        "requestId": "65ed0440-5ce3-41b6-9713-c84d39e4ff3a",
+        "childExitCodeObserved": 0
+      }
+    },
+    {
+      "id": "T09-A03-timeout",
+      "passed": true,
+      "proof": {
+        "operationId": "ce183adf-20e3-45d0-ac3f-572a82746f55",
+        "requestId": "f5e0ac5d-efe8-48f5-ae69-207b2708cbf8",
+        "errorCode": "TIMEOUT",
+        "attemptCount": 3,
+        "elapsedMs": 28671,
+        "actualBusinessRequests": 3,
+        "transport": "realHTTP held until product deadline"
+      }
+    },
+    {
+      "id": "T09-A03-drop",
+      "passed": true,
+      "proof": {
+        "operationId": "fbf57058-6780-4411-a82f-d9eadd02f7a0",
+        "requestId": "3615f519-a4d1-4938-94db-76674e9dc232",
+        "errorCode": "TRANSIENT_FAILURE",
+        "attemptCount": 3,
+        "elapsedMs": 4576,
+        "actualBusinessRequests": 3,
+        "transport": "realHTTP socket only; not the MCP-disconnect arm"
+      }
+    },
+    {
+      "id": "T09-A04-cancel-real-inflight-read",
+      "passed": true,
+      "proof": {
+        "operationId": "b2372deb-9f02-4c93-b339-750021578b59",
+        "requestId": "1cf927bb-b844-4119-b9fa-b0825e60369f",
+        "actualHTTPBeforeStop": true,
+        "taskStopFinishedAt": "2026-11-05T21:25:57.401Z",
+        "CLIOutputMayBeAbsentAfterRealTaskTermination": true
+      }
+    },
+    {
+      "id": "T09-A08-owned-hooks-normal-exit-exact-cleanup",
+      "passed": true,
+      "proof": null
+    },
+    {
+      "id": "A-original-request-receipts-readonly-exact-DB-and-I63",
+      "passed": true,
+      "proof": {
+        "originalOperations": [
+          {
+            "operationId": "7e1d26c8-babf-4970-85e9-d077a426ff4d",
+            "requestId": "65ed0440-5ce3-41b6-9713-c84d39e4ff3a",
+            "errorCode": null,
+            "attemptCount": 1
+          },
+          {
+            "operationId": "ce183adf-20e3-45d0-ac3f-572a82746f55",
+            "requestId": "f5e0ac5d-efe8-48f5-ae69-207b2708cbf8",
+            "errorCode": "TIMEOUT",
+            "attemptCount": 3
+          },
+          {
+            "operationId": "fbf57058-6780-4411-a82f-d9eadd02f7a0",
+            "requestId": "3615f519-a4d1-4938-94db-76674e9dc232",
+            "errorCode": "TRANSIENT_FAILURE",
+            "attemptCount": 3
+          },
+          {
+            "operationId": "b2372deb-9f02-4c93-b339-750021578b59",
+            "requestId": "1cf927bb-b844-4119-b9fa-b0825e60369f",
+            "errorCode": "CANCELED",
+            "attemptCount": 1
+          }
+        ],
+        "I63retained": true,
+        "writeReplay": 0
+      }
+    }
+  ],
+  "prechecks": [
+    {
+      "id": "all-original-source-plan-Skill-actual-carriers-I63-cleanup-inputs",
+      "passed": true
+    }
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/raw.private.json",
+      "sha256": "d3bd65e12142e5f1201b298bead86de66e1f736190165352386a8b4d89ba4964",
+      "bytes": 1042489
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/postmortem-review-001/exact-owned-db-receipts.json",
+      "sha256": "fc10d3cec057f963a691c419349825227b8aa2ced2857ec30223515810dce914",
+      "bytes": 4837
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/runtime-001/A-manifest.private.json",
+      "sha256": "d138956d29269695ff70e4df9e7f1ff4bc1d9bf0a352a377af218db03012da20",
+      "bytes": 4758
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/runtime-001/A-skill.private.md",
+      "sha256": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc",
+      "bytes": 1868
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/runtime-001/A-native-prefix-0.private.jsonl",
+      "sha256": "520da32509b3bf793f2e736adc443c240a660561846f797cad874a4a56b319bb",
+      "bytes": 76798
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/runtime-001/codex/sessions/2026/11/06/rollout-2026-11-06T05-25-22-01a1ad9a-2305-7d30-b925-5de98a7f3399.jsonl",
+      "sha256": "520da32509b3bf793f2e736adc443c240a660561846f797cad874a4a56b319bb",
+      "bytes": 76798
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/i63-source-compatibility.json",
+      "sha256": "feaad17258f5f6199188b1c81ae9fea52ba0bd1d3945d28d00baef35dc3e8f29",
+      "bytes": 9238
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t09-read-i-001/source-inputs.json",
+      "sha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+      "bytes": 723387
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p114-source-026/source-inputs.json",
+      "sha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9",
+      "bytes": 724021
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/evidence-reuse/t09-read-coordinator-001/coordinator-review.json",
+      "sha256": "3fe3a666a3fb81a0839f1bc54468cd9bc52b8faf95cb60d431e382f75fbeb597",
+      "bytes": 2382
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/evidence-reuse/t09-write-coordinator-001/coordinator-review.json",
+      "sha256": "c3fb94f486bb2fbd79c7e4251e564c657b7a24acc6197d11bcf39c6a56b3c110",
+      "bytes": 2210
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/cleanup-verification.json",
+      "sha256": "d0af74d7b7f67ccaedfaf97693cbf55d0adc1442e60e6a521dd19ddd9fceff8f",
+      "bytes": 11743
+    }
+  ],
+  "originalJudgementPreserved": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/judgement.json",
+  "initialScopeJudgementPreserved": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001/postmortem-review-001/adjudication-A.json",
+  "corrections": [
+    "tasks.kill is original void, not truthy-return contract; invocation no-throw plus actual task/Host lifecycle remains strict",
+    "Compare complete rows by operationId, not unspecified SQL row order"
+  ],
+  "originalPassed": 0,
+  "originalTotal": 9,
+  "derivedRecordView": "Host rows added only from independent immutable/read-only exact owned DB read, original raw unchanged; no status/failure field changed",
+  "remaining": [
+    "C actual upstream CLI hang not issued",
+    "M actual upstream MCP normal/disconnect not issued"
+  ],
+  "formalWholeCaseCount": 0,
+  "executionNotRepeated": true
+}

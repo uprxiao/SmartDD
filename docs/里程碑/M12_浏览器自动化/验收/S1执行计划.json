@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-05T21:22:01.355366+00:00",
+  "updatedAt": "2026-11-05T22:41:10.929220+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "技术方案V1.3",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T09 remaining fault-A private preparation",
+    "currentGroup": "T09 CM-only002 Root-reviewed READY; await awake condition",
     "groups": [
       {
         "id": "M12-P001",
@@ -4064,9 +4064,9 @@
         "remaining": "See latest execution record nine-case subcriteria mapping; no real UI/system/model rerun while user asleep",
         "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/manifest.json",
         "nextSubgroup": {
-          "root": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-001",
           "owner": "/root/s2_t004_test",
-          "status": "private preparation, realCLIhang/MCPdisconnect added to exact original A; no Nativelease yet",
+          "root": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-002",
+          "status": "delivered252input CM-only Root-reviewed READY,requiresawakeandfreshlease;no actualexecute",
           "Native": false
         },
         "compositionSmoke": {
@@ -4107,6 +4107,18 @@
           "actualSession": 60531,
           "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-root-review-001/manifest.json",
           "resourcesReleased": true
+        },
+        "originalT09": {
+          "status": "I63 validreuse;actualA HTTPslice7/7+Cnormal proof Root-reviewed;realCLIhang/MCPdisconnect notissued",
+          "originalSession": 8695,
+          "originalEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-original-partial-001/manifest.json",
+          "rootEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-root-original-review-003/manifest.json",
+          "remainingRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-002",
+          "remainingReadySHA": "ffb5b3b641f8eb9fc8ead5daf52437c6bda642690237c7bfc8aa0d868f47d0e1",
+          "remainingEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-cm-ready-002/manifest.json",
+          "NativeStarted": false,
+          "leaseGranted": false,
+          "AReplayed": false
         }
       },
       {
@@ -4212,8 +4224,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-05T21:22:01.355366+00:00",
-    "independentNext": "T09 original A actualfaults pendingREADY, then T07/T14 original UI/R and other foreground/system/platform steps; current exact-authorized App022 SOP R remains ready but no freshforeground",
+    "updatedAt": "2026-11-05T22:41:10.929220+00:00",
+    "independentNext": "oldT09 A/C results Root-replayed and archived;newCM252input exactREADY reviewed,notrun;onceMacawake recheckready/package/processes then issuefreshlease;foreground/SOP/UI/system/x64 originalcontracts retained",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4266,7 +4278,7 @@
       "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P115/app022-build-001/manifest.json"
     },
     "currentAutonomousBatch": {
-      "at": "2026-11-05T21:22:01.355366+00:00",
+      "at": "2026-11-05T22:41:10.929220+00:00",
       "productionBaseline": "App022/source026",
       "P103": "原完整1800s及CPU独立闭合，T111通过；旧产品红、前置guard失败与计量判定错误均保留",
       "RealCLI": "T041/T042从实际R010原始journal/Host与当前CLI必经getenv证据闭合；R012直接布尔值补充不同run不混用",
@@ -4296,14 +4308,34 @@
       "P112": "双轮SOP002静态235输入经Root24+14+6+6独立重放，普通缓存误伤已修；两prompt不变，R/新发送/焦点/工具审批前置仍待",
       "T38": "originalauthcontract currentI+A evidenced; additionalNativecachefinding open; no changedexpectations/originaloracleoverwritten",
       "T29": "current original compatibility complete;Root real-source replay/213pins/40tools/33cleanup/declared-delta reverseexact; originaldriver/network/configredretained",
-      "next": "T09faultA and T37entryA/R onlymissing exactcontracts,private prep; Native leases pendingREADY",
+      "next": "Macawake thenCM-only actual2runs;realM12R/UI/system/platformneeds unchanged",
       "T37": "original currentI+A+R complete;originalpurejudge/rootreplay directpassed/202pins/6calls/6files/29cleanup",
       "T131remaining": [
         "T07 originalUI/R",
         "T09 originalfaultA",
         "T14 originalUI/restart/R"
       ],
-      "formalWholeCaseIncrement": 0
+      "formalWholeCaseIncrement": 0,
+      "T09": "originalA7/7 andCnormal7/7 independentRootreplay/5exactownedDBrows/47cleanup;old0/9 and5/7 retained;CM-only252inputready,notrun",
+      "P116003": "CUAgetApp cgWindowNotFound/0inputs;targetclosed/exitnull/TERM+KILL/1of7red;exactstaleUnix17red→17clear;timeline+OSsleepfacts separate,no causeinvented",
+      "awakePrerequisite": {
+        "status": "pending-external-awake-condition",
+        "observedAt": "2026-11-05T22:35:10.813240+00:00",
+        "observed": "ioreg AppleClamshellState Yes;currentlidclosed",
+        "requested": "One async request to openMac/keepawake/staydesktop;no credentials/site login;no response yet",
+        "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/readonly-env-diag-001/manifest.json",
+        "continuing": "file-only result replay/source review/READY handoff;no newApp or foreground actions",
+        "noPowerSettingsChanged": true
+      }
+    },
+    "awakePrerequisite": {
+      "status": "pending-external-awake-condition",
+      "observedAt": "2026-11-05T22:35:10.813240+00:00",
+      "observed": "ioreg AppleClamshellState Yes;currentlidclosed",
+      "requested": "One async request to openMac/keepawake/staydesktop;no credentials/site login;no response yet",
+      "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/readonly-env-diag-001/manifest.json",
+      "continuing": "file-only result replay/source review/READY handoff;no newApp or foreground actions",
+      "noPowerSettingsChanged": true
     }
   }
 }
