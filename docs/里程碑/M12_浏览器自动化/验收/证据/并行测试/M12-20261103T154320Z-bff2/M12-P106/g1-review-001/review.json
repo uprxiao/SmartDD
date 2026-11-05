@@ -1,0 +1,98 @@
+{
+  "at": "2026-11-05T11:01:02.401273+00:00",
+  "status": "file-only-audit",
+  "root": "/private/tmp/willyou-m12-g1-skill-hash-review-001",
+  "inputs": [
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/run.mjs",
+      "saved": "source/run.mjs",
+      "sha256": "cca1554ec386b1388d32ce23a2ae83b00cc92d968f58c5c16ecb4722c8fcad95"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/judge.mjs",
+      "saved": "source/judge.mjs",
+      "sha256": "937325fc4ba9237f04e60dc3c22efab7d6a18034be5cf042202f2b7dfee953a6"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/judge-core.mjs",
+      "saved": "source/judge-core.mjs",
+      "sha256": "1f6207786d39a12364fbd0ced9daed2dd2d64c54f2e9c0c7199ef70e98cd8ac6"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/check-static.mjs",
+      "saved": "source/check-static.mjs",
+      "sha256": "4eb3228d35941a022ce9a8fe6cf0c0f5ed9ebf370758a0edd96dac75a4f4e1fa"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/native-journal.mjs",
+      "saved": "source/native-journal.mjs",
+      "sha256": "5f9891dbde0ded8938c9830ed195d29ecf89898fbb3523cfa7b72d5bcff83bda"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/plan-reader.mjs",
+      "saved": "source/plan-reader.mjs",
+      "sha256": "b0d09c5a5d74e8e3bd5f4db76fd42b397c1b925ea9b0eba725f8d6e441265ccd"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-002/execution-ready.json",
+      "saved": "source/execution-ready.json",
+      "sha256": "36c390b35a9401503db55b723a710f0936fb1b6c2420c392c12848b10aab1d2b"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p090-source-024/source/src/main/core/applications/session-registry.ts",
+      "saved": "source/session-registry.ts",
+      "sha256": "c9e4382d8f4ec3a0894825328f8bb50f5fc695b793e691f780ca6200060ff434"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p090-source-024/source/src/main/core/applications/session-projector.ts",
+      "saved": "source/session-projector.ts",
+      "sha256": "8ab5dd7d4524220b0d9bc5f161797b34624ba66a8cf3124f04876963a06f5e71"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p090-source-024/source/src/main/core/applications/run-plan.ts",
+      "saved": "source/run-plan.ts",
+      "sha256": "224ea175f40e0c4523b65f5ee646f1d9e4eb875d4506f0acbbc690ed214c3b0a"
+    }
+  ],
+  "findings": [
+    {
+      "id": "G1-H01",
+      "locations": [
+        "run.mjs:61",
+        "judge.mjs:21",
+        "judge-core.mjs:38"
+      ],
+      "finding": "Single rendered SKILL.md SHA is required equal to directory aggregate renderedHash. Real plan cannot pass this check."
+    },
+    {
+      "id": "G1-H02",
+      "locations": [
+        "run.mjs:55-67",
+        "judge.mjs:21"
+      ],
+      "finding": "Only SKILL.md copied/rehashed; no complete owned bundle/source manifest verification, no auxiliary relative payload files or ownership/canonical marker proof."
+    },
+    {
+      "id": "G1-H03",
+      "locations": [
+        "check-static.mjs:19",
+        "check-static.mjs:21",
+        "check-static.mjs:47",
+        "check-static.mjs:63-65"
+      ],
+      "finding": "Synthetic positive targets deliberately equate single SHA and aggregate; actual R007 control verifies plan only and never runs delivered proof with real separated hashes."
+    },
+    {
+      "id": "G1-H04",
+      "locations": [
+        "native-journal.mjs:65-67",
+        "native-journal.mjs:90-92"
+      ],
+      "finding": "Read proof uses correct single target SHA, but labels it renderedHash. Rename targetHash and preserve single-file binding; never substitute directory hash."
+    }
+  ],
+  "nativeCalls": 0,
+  "modelCalls": 0,
+  "formalNewPasses": 0,
+  "proposal": "New attempt only: verify source manifest canonical packageHash + templateFilesHash, verify complete owned bundle and directory aggregate; keep SKILL read target.sha256 single-file and compare plan against target.renderedHash. Preserve original002."
+}

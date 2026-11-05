@@ -170,12 +170,12 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-05T10:34:13.858100+00:00",
-  "status": "S1门槛完成；S2-S6总目标active，前置缺陷定位",
+  "updatedAt": "2026-11-05T12:59:36.107610+00:00",
+  "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
   "pauseHandoff": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
-  "next": "先定位、修复并真实复验S1-M11-CLI-SANDBOX，再按技术方案§11分批推进S2-S6",
+  "next": "App021/source025上接续已授权SOP G1及剩余A/R/S、跨阶段回归与平台验收；正式结果只取测试用例.md",
   "followupAgreement": {
     "document": "../技研/技术方案.md#11-开发顺序",
     "recordedAt": "2026-11-03",
@@ -193,7 +193,7 @@
     "technicalDesign": "V1.2",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "R008 actual completeRunPlan reader ready; App021/source025 built; P103 staticprepare paused whileGUI",
+    "currentGroup": "G1-004静态适配与P067006原始数据独立复核；Native资源空闲，尚未授予下一批",
     "groups": [
       {
         "id": "M12-P001",
@@ -4030,8 +4030,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-05T07:52:45.263597+00:00",
-    "independentNext": "Poll original execsession79789 or exact P089 payload/live; observationtimeout is not terminal; preserve all7original checkpoints. Full result+original analyzers+independentcleanup required before any T111 credit.",
+    "updatedAt": "2026-11-05T12:59:36.107610+00:00",
+    "independentNext": "先复核G1-004完整冻结/实际carrier与原payload授权，再一次授予NativeUI/PTY；P067006不为判定器错误重跑业务，严格20s证据单独闭合。",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4061,29 +4061,32 @@
       }
     ],
     "currentSourceCheckpoint": {
-      "name": "source024",
-      "manifestSha256": "26e9637bf5b5a77b63dc89930c71461180e593b4889f7cc9487fb92e7d8662c0",
-      "overlay": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P090/source-checkpoint-024/overlay-receipt.json"
+      "name": "source025",
+      "manifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+      "overlay": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P101/source-checkpoint-025/overlay-receipt.json",
+      "implementationCommit": "64d57e3b"
     },
     "candidateBaseline": {
-      "app": "App020",
-      "asarSha256": "ce58fc54e78fee16c2914dfbd3c72eaaea86661a4d5297e7146d7912605d3a0c",
-      "source": "source024",
-      "status": "built/sixnative/codesign verified; actual originallongrun running, not fullcasepass"
+      "app": "App021",
+      "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
+      "source": "source025",
+      "status": "actual arm64 preview built/sixnative/codesign verified; fullT111/T041/T042 passed within original criteria, remaining cases not implied"
     },
     "currentSourceInputs": {
-      "manifest": "/private/tmp/willyou-m12-p078-source-023/source-inputs.json",
-      "sha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
-      "archive": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P078/source-checkpoint-023/source-inputs.json",
-      "status": "frozen023 exact11overlay recovery;finalsoftware andApp019buildgreen;actualUI/perf remain"
+      "manifest": "/private/tmp/willyou-m12-p101-source-025/source-inputs.json",
+      "sha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+      "archive": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P101/source-checkpoint-025/source-inputs.json",
+      "status": "frozen025 production unchanged since localcheckpoint64d57e3b"
     },
     "currentAutonomousBatch": {
-      "at": "2026-11-05T11:08:25.868567+00:00",
+      "at": "2026-11-05T12:59:36.107610+00:00",
       "productionBaseline": "App021/source025",
-      "P103": "001前置guard失败且独立清场，002精确目录重绑与控制后继续原1800s",
-      "R009": "原两条已授权payload；修复完整plan和三类Skill哈希判定，57inputs38pure/syntax静态就绪，独立二次只读复核中；需新的实际前台",
-      "G1": "003修复同类目录哈希，已授权payload d128不变；未执行Native/model，root复核后才运行",
-      "CookieRecovery": "原源024实际I宿主编译通过，三阶段Native故障/恢复待执行；原UI层缺项不算通过",
+      "P103": "原完整1800s及CPU独立闭合，T111通过；旧产品红、前置guard失败与计量判定错误均保留",
+      "RealCLI": "T041/T042从实际R010原始journal/Host与当前CLI必经getenv证据闭合；R012直接布尔值补充不同run不混用",
+      "G1": "004仅文件/纯控制适配实际custom_tool载体与passive3s初始焦点；原授权d128 payload不变，未启动模型/App",
+      "P067": "006双正常重启、实际A12与停止业务已跑；S03原筛选action=wait误匹配browser.nav.wait独立复核，严格20s采样尚未证明，不计整条",
+      "CookieRecovery": "三阶段实际I10判据绿/33PID2TCP3Unix清场；原T080/T081全UI仍缺",
+      "T130": "253/253纯U通过，A及Native原组仍缺，不计整条",
       "formalAuthority": "测试用例.md",
       "externalActions": "不合并main/tag/push/release"
     }

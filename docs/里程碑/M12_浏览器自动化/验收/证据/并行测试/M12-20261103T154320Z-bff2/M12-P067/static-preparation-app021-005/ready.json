@@ -1,0 +1,61 @@
+{
+  "at": "2026-11-05T11:27:16.944078+00:00",
+  "status": "frozen-ready-static-only",
+  "root": "/private/tmp/willyou-m12-p067-pause-stop-app021-005",
+  "group": "M12-P067",
+  "scope": "A12/T114-only",
+  "package": "App021",
+  "source": "source025",
+  "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+  "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
+  "inputCount": 228,
+  "inputManifest": {
+    "path": "static-preflight.json",
+    "sha256": "81b29b2a01b6360687697e2a7fa3ddbbad8ce2fca781286db2e29c69c1faa22b"
+  },
+  "driver": {
+    "path": "run.mjs",
+    "sha256": "58a187c6995fc25aa29fceffc037ec83f179af9af13339430e87c854f5e70bf6"
+  },
+  "independentJudge": {
+    "path": "judge.mjs",
+    "sha256": "59cd3e09f07160f976116fa66a357f48dea015d93e50cf45383658bdd71d86e5"
+  },
+  "staticControls": {
+    "path": "static-controls.json",
+    "sha256": "45e81a16f6c35d5ca14224b61c1c39e237ca45d17d7ce5a4fff0385bdfa66d58",
+    "count": 14
+  },
+  "syntax": {
+    "path": "syntax-checks.json",
+    "sha256": "1adf89a9064b11ebb96d332909cc65452a1c11c26246f22e376953688e0c8ff9",
+    "nodeCount": 15,
+    "embeddedJs": 28
+  },
+  "contractEquivalence": {
+    "path": "contract-equivalence.json",
+    "sha256": "45190988532ec556e6e636331a5a31a174fa0e9c3d3f02900712583a36f5cee9",
+    "unchangedCriteria": 10
+  },
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p067-pause-stop-app021-005/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-p067-pause-stop-app021-005/cache/node node /private/tmp/willyou-m12-p067-pause-stop-app021-005/run.mjs --execute",
+  "postDriverCommands": [
+    "node /private/tmp/willyou-m12-p067-pause-stop-app021-005/verify-cleanup.mjs",
+    "node /private/tmp/willyou-m12-p067-pause-stop-app021-005/judge.mjs"
+  ],
+  "manualPrerequisites": [
+    "Coordinator grants exclusive Native/UI lease only after P103002 has fully exited and independently cleared",
+    "Initial and restart each require actual trusted left pointerdown on this own App content within5min; then continuous Native+DOM1s and once original guard",
+    "Loss yields; do not reactivate/rearm/replay old input; normal cleanup then new attempt if needed"
+  ],
+  "unresolved": [
+    "App017 historical A01-A10 applicability to App021 needs coordinator impact review",
+    "App020003 historical actual A11 applicability to App021 needs coordinator impact review",
+    "A12/T114 acceptance and exact cleanup not executed; preparation adds no formal pass"
+  ],
+  "nativeCalls": 0,
+  "appStarts": 0,
+  "models": 0,
+  "listeners": 0,
+  "resourcesHeld": false,
+  "formalNewPasses": 0
+}

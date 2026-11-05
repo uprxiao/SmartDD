@@ -1,0 +1,147 @@
+{
+  "at": "2026-11-05T11:06:36.704Z",
+  "status": "actual-source-pure-guard-and-launch-controls-pass",
+  "checks": [
+    {
+      "name": "broker.m:0 accepts exact current ROOT",
+      "passed": true
+    },
+    {
+      "name": "broker.m:0 denies other-root",
+      "passed": true
+    },
+    {
+      "name": "broker.m:0 denies prefix-sibling",
+      "passed": true
+    },
+    {
+      "name": "broker.m:0 denies traversal",
+      "passed": true
+    },
+    {
+      "name": "broker.m:0 denies symlink and missing canonical target",
+      "passed": true
+    },
+    {
+      "name": "broker.m:1 accepts exact current ROOT",
+      "passed": true
+    },
+    {
+      "name": "broker.m:1 denies other-root",
+      "passed": true
+    },
+    {
+      "name": "broker.m:1 denies prefix-sibling",
+      "passed": true
+    },
+    {
+      "name": "broker.m:1 denies traversal",
+      "passed": true
+    },
+    {
+      "name": "broker.m:1 denies symlink and missing canonical target",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:0 accepts exact current ROOT",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:0 denies other-root",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:0 denies prefix-sibling",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:0 denies traversal",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:0 denies symlink and missing canonical target",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:1 accepts exact current ROOT",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:1 denies other-root",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:1 denies prefix-sibling",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:1 denies traversal",
+      "passed": true
+    },
+    {
+      "name": "wrapper.m:1 denies symlink and missing canonical target",
+      "passed": true
+    },
+    {
+      "name": "All native bytes outside four exact-root/canonical guards identical",
+      "passed": true
+    },
+    {
+      "name": "ACTUAL outer callback block fails immediately for broker exit3/zeroevents; no120s retry",
+      "passed": true
+    },
+    {
+      "name": "Terminal after possible submission remains cleanup-unresolved; no orphan release claim",
+      "passed": true
+    },
+    {
+      "name": "Real live pending-callback path preserves original22+120s observation safety",
+      "passed": true
+    },
+    {
+      "name": "Unknown terminal zeroexit without callback is never assumed no-App",
+      "passed": true
+    }
+  ],
+  "guards": [
+    {
+      "file": "broker.m",
+      "index": 0,
+      "subject": "configPath",
+      "nativeCondition": "![configPath isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002/broker-config.private.json\"] || ![canonicalPath(configPath) isEqualToString:configPath]",
+      "translatedCondition": "!eq(configPath,\"/private/tmp/willyou-m12-p103-app021-long-002/broker-config.private.json\") || !eq(canonicalPath(configPath),configPath)",
+      "returnCode": 3
+    },
+    {
+      "file": "broker.m",
+      "index": 1,
+      "subject": "root",
+      "nativeCondition": "![root isKindOfClass:NSString.class] || ![appPath isKindOfClass:NSString.class] || ![root isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002\"] || ![canonicalPath(root) isEqualToString:root] || ![appPath isEqualToString:[root stringByAppendingPathComponent:@\"wrapper/M12AcceptanceRunner.app\"]]",
+      "translatedCondition": "!isString(root) || !isString(appPath) || !eq(root,\"/private/tmp/willyou-m12-p103-app021-long-002\") || !eq(canonicalPath(root),root) || !eq(appPath,component(root,\"wrapper/M12AcceptanceRunner.app\"))",
+      "returnCode": 3
+    },
+    {
+      "file": "wrapper.m",
+      "index": 0,
+      "subject": "file",
+      "nativeCondition": "![file isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002/wrapper-config.private.json\"]||![canonicalPath(file) isEqualToString:file]",
+      "translatedCondition": "!eq(file,\"/private/tmp/willyou-m12-p103-app021-long-002/wrapper-config.private.json\")||!eq(canonicalPath(file),file)",
+      "returnCode": 3
+    },
+    {
+      "file": "wrapper.m",
+      "index": 1,
+      "subject": "root",
+      "nativeCondition": "![root isKindOfClass:NSString.class]||![root isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002\"]||![canonicalPath(root) isEqualToString:root]||![payload isEqual:[root stringByAppendingString:@\"/payload\"]]||![file isEqual:[root stringByAppendingString:@\"/wrapper-config.private.json\"]]",
+      "translatedCondition": "!isString(root)||!eq(root,\"/private/tmp/willyou-m12-p103-app021-long-002\")||!eq(canonicalPath(root),root)||!eq(payload,append(root,\"/payload\"))||!eq(file,append(root,\"/wrapper-config.private.json\"))",
+      "returnCode": 6
+    }
+  ],
+  "currentRoot": "/private/tmp/willyou-m12-p103-app021-long-002",
+  "NativeExecuted": false,
+  "actualConfigFilesCreated": false,
+  "AppStarted": false,
+  "compileRun": false,
+  "formalCaseCredit": 0,
+  "boundary": "Pure translations of actual path predicates; canonical existence/UID/mode/OS/kernel API remain actual runtime gates. No Native compile or launch."
+}

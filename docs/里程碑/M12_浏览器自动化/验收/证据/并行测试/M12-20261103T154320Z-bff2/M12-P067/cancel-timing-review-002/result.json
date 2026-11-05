@@ -1,0 +1,76 @@
+{
+  "scope": "file-only supplemental strict T114/S05 boundary review; supersedes any interpretation that S05 green proves strict20s",
+  "S03": "closed independently: schema-filter error; original result retained",
+  "S05Strict20s": "incomplete",
+  "productFailureProven": false,
+  "wholeT114PassRecommended": false,
+  "formalCaseIncrement": 0,
+  "anchors": {
+    "logicalEndRunActivityFinishAtMs": 1793882993275,
+    "actualHelperWaitCallbackAtMs": 1793882993364,
+    "unifiedM11EndedAtMs": 1793882993416,
+    "logicalDeadlineMs": 1793883013275,
+    "reason": "BrowserAutomation.endRun invokes idempotent token.finish on run abort; token.finish stamps endedAt and schedules +20000. Later Helper termination/Host audit persistence are not silently substituted for this producer anchor."
+  },
+  "hostSnapshotInterval": {
+    "lastPresentReadCompletedAtMs": 1793883013253,
+    "firstAbsentReadCompletedAtMs": 1793883013329,
+    "relativeMs": [
+      -22,
+      54
+    ]
+  },
+  "uiSnapshotInterval": {
+    "lastPresentExpressionAtMs": 1793883013251,
+    "firstAbsentExpressionAtMs": 1793883013328,
+    "relativeMs": [
+      -24,
+      53
+    ],
+    "strictAdjudication": "incomplete: interval straddles strict bound",
+    "timestampBoundary": "Date.now captured by synchronous DOM snapshot expression; not a MutationObserver removal timestamp."
+  },
+  "observability": {
+    "mutationObserverInstalled": false,
+    "actualActivityTimerCallbackTimestampRecorded": false,
+    "existingMonitors": [
+      "UI business RPC call/return log",
+      "WC/window/navigation/quit monitor",
+      "receiver/CLI events",
+      "periodic workspace/UI/automation snapshots"
+    ],
+    "conclusion": "No recorded event resolves on which side of the deadline actual DOM mark removal occurred. Source setTimeout20s guarantees no early callback but not <=20s firing/display; cannot use source or sampling tolerance as strict upper-bound proof."
+  },
+  "decision": "S03 driver failure corrected by existing actual evidence; S05 original green remains historical but independent strict boundary is unresolved, not a proven product overrun. Do not claim entire T114 pass from this evidence alone. No rerun/Native recommended or performed by this review. Coordinator should resolve the original20s wording/accepted time semantics rather than change expectations to obtain green.",
+  "inputs": [
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/raw.json",
+      "sha256": "95089836221648c7c98003c0181397669da8fe1c2a276f08b6488c5d13973fb1"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/result.json",
+      "sha256": "018cac60e0a5a013e1c0c9e30131f09b627041cec150e641e417f0f4726557ae"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/judge.mjs",
+      "sha256": "5f86b51fcc4c79825c6e3e6e56a136d94f84e0baf10a1062b23405c6b73a7a06"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/run.mjs",
+      "sha256": "9eacdb093edc9f84c1ee11e32322e5d4a4570a8f965929ee4f52790a2fcef7a0"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/ui-rpc-observer.js",
+      "sha256": "538f5ce510bce8d5565ea8dec297e4ee9c2662dd9f54e66a88bc8cd0f530bb67"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/monitor-function.js",
+      "sha256": "866c01ecd62f62a043168cb43685d18b50114f5dffaab15b86042da1843827bf"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/browser/automation.ts",
+      "sha256": "32e461338e9fa1d24b2bde04d86c5d4c754428812c4c57b5c388c8704a0c9c43"
+    }
+  ],
+  "resourcesHeld": []
+}

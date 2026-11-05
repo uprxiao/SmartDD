@@ -1,0 +1,60 @@
+{
+  "at": "2026-11-05T11:05:54.185105+00:00",
+  "allExplicitInputFilesReviewed": 292,
+  "includesOriginal288": true,
+  "actualRuntimeInputs": [
+    "broker.m",
+    "kernel.py",
+    "native_api.py",
+    "payload/analyze.py",
+    "payload/api_audit.py",
+    "payload/coalition_accounting.py",
+    "payload/coalition_judge.py",
+    "payload/cpu_collector.py",
+    "payload/cpu_judge.py",
+    "payload/receiver.py",
+    "payload/resource-sampler.py",
+    "payload/run.mjs",
+    "payload/verify-cleanup.py",
+    "run.mjs",
+    "wrapper.m"
+  ],
+  "actualRuntimeLegacyBindings": [],
+  "hits": [
+    {
+      "path": "check-metrics-observer.mjs",
+      "roots": [
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-002"
+      ],
+      "classification": "static-readonly-historical-comparison",
+      "actualRuntimeTarget": false
+    },
+    {
+      "path": "lineage.json",
+      "roots": [
+        "/private/tmp/willyou-m12-p096-sync-metrics-long-001"
+      ],
+      "classification": "historical-provenance-only-metadata-to-be-refreshed",
+      "actualRuntimeTarget": false
+    },
+    {
+      "path": "prefix-guard-static-check.json",
+      "roots": [
+        "/private/tmp/willyou-m12-p096-sync-metrics-long-"
+      ],
+      "classification": "historical-provenance-only-metadata-to-be-refreshed",
+      "actualRuntimeTarget": false
+    },
+    {
+      "path": "unchanged-execution-proof.json",
+      "roots": [
+        "/private/tmp/willyou-m12-p096-sync-metrics-long-001"
+      ],
+      "classification": "historical-provenance-only-metadata-to-be-refreshed",
+      "actualRuntimeTarget": false
+    }
+  ],
+  "review": "check-metrics-observer reads immutable P092 driver source only; lineage/proof references are historical metadata, not spawn/config/target ROOT. Old prefix proof is replaced by actual-source exact guard controls. Native4 exactROOT guards have current-root positive and other/traversal/canonical negatives.",
+  "NativeExecuted": false,
+  "historicalProofSuperseded": "prefix-guard-static-check.json regenerated from actual currentNative if predicates; oldP096 prefix acceptance metadata not retained as current proof."
+}

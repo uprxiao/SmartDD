@@ -1,0 +1,139 @@
+{
+  "at": "2026-11-05T11:12:50.081423+00:00",
+  "sourceRoot": "/private/tmp/willyou-m12-t041-t042-real-codex-009",
+  "sourceReadySha256": "f5267ff35774cfb12264a88bc3dfa08acbc82e7f496d37b2773c0442d0518821",
+  "inputs": [
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/run.mjs",
+      "sha256": "47f5590005c0550008a7dea843a50467ebb33e9ab0837db03072bebba3d19824",
+      "saved": "sources/run.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/judge.mjs",
+      "sha256": "e590f70101459e4a3a2c5ed786e09147623768c073514cce22ada8f514492d2c",
+      "saved": "sources/judge.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/native-journal.mjs",
+      "sha256": "ae25fdfc09f723bc516aa0ea4b8147e213111290d96762b194b1fbb3ec9e104d",
+      "saved": "sources/native-journal.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/skill-proof.mjs",
+      "sha256": "4ff4a8a41a263cf01e36af5fa2a3c783326b5a979836161e1bc3d7db7ceb99bb",
+      "saved": "sources/skill-proof.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/skill-files-proof.mjs",
+      "sha256": "4d37277aea3ad96471d519bfd7548f8e62cd438a6f57a51080f0e7518e3539c9",
+      "saved": "sources/skill-files-proof.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/check-judge-contract.mjs",
+      "sha256": "2ffb8f9f9f18a77fa5f78d4db66ff41633206780823c7573b496fca17eb7bc5d",
+      "saved": "sources/check-judge-contract.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/check-native-parser.mjs",
+      "sha256": "be9893c7364b0da9d073d8e871de1872b8242558682dde6ae51cc733acfb3241",
+      "saved": "sources/check-native-parser.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/check-inspection-labels.mjs",
+      "sha256": "396b5e42d02ca8c49a0aaa8f8d94748d0ae827103ad890919f9327b86d244a10",
+      "saved": "sources/check-inspection-labels.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/prompts.mjs",
+      "sha256": "1768dc43267549ca6963832df6a60232dbd0e420b4490421483f14f74e700afc",
+      "saved": "sources/prompts.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/ui.mjs",
+      "sha256": "2eeb41dce482577fef66b6f8d829646a83eb67567e3f21ca32208604f90e7392",
+      "saved": "sources/ui.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/resources.mjs",
+      "sha256": "b36a69cc937b6970cdfe454f97e4b4e3043849db805f8c328681d390cb01899b",
+      "saved": "sources/resources.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/cleanup.mjs",
+      "sha256": "e45749addd5732bbb2a4ea01543b46ccc40201f3eca41d6aa964d4f50b0d442f",
+      "saved": "sources/cleanup.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/io.mjs",
+      "sha256": "6e7744a7008bf1d68938f824a1e5bc463ce58866c23e1b0756632b694b07108b",
+      "saved": "sources/io.mjs"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/contract.json",
+      "sha256": "51d99c28c9989ece9fc1106458f1bb7c9c09bd230a9b01df8763be261541aaca",
+      "saved": "sources/contract.json"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/execution-ready.json",
+      "sha256": "f5267ff35774cfb12264a88bc3dfa08acbc82e7f496d37b2773c0442d0518821",
+      "saved": "sources/execution-ready.json"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-009/pin.json",
+      "sha256": "b021a75847977790e523d5eafb2dbc877a74cd9978cced6996b2bae689ddb104",
+      "saved": "sources/pin.json"
+    }
+  ],
+  "verifiedReadyInputs": 57,
+  "verifiedPrivateDependencies": 170,
+  "findings": [
+    {
+      "id": "R009-B01",
+      "severity": "execution-blocker",
+      "location": "run.mjs:24 T042-final assertion",
+      "finding": "sha(single actual SKILL.md) is still compared to rendered directory aggregate; existing R007 separated hashes prove mismatch. Use deliveredSkill.fileSha256."
+    },
+    {
+      "id": "R009-V02",
+      "severity": "independent-verification-gap",
+      "locations": [
+        "judge.mjs:3",
+        "judge.mjs:15",
+        "check-judge-contract.mjs:14,22-24"
+      ],
+      "finding": "Offline authority is cached nativeEvidence. Positive control source is one syntheticOfflineControl object and no native rows, but both cases pass. Reparse actual final JSONL and compare immutable source digest/session/current run authority."
+    },
+    {
+      "id": "R009-C03",
+      "severity": "cleanup-verification-gap",
+      "location": "cleanup.mjs:7",
+      "finding": "Helper runtime filter checks pid/sock/port but misses .stream. Fixed Helper daemon.rs82/105 and production agent-browser.ts175 include actual .stream. No actual leak claimed; check should reject lone .stream."
+    }
+  ],
+  "reviewedWithoutNewBlockers": [
+    "App021/source025 PIN labels in runtime io and judge match final input; whole package prior verification remains reused.",
+    "Actual RunPlan uses persisted verified record, not session summary; package/template/directory and read single SHA separation is correct except B01 tail.",
+    "Actual harness has observedProcess/waitForExit/logs/close APIs, private passive adapter preserved.",
+    "Native CLI cli.mm45-46 requires both WILLYOU env values before any browser call; actual successful native tab list supports inherited-environment criterion.",
+    "Same-page fixture snapshot URLs/marker and task/run/request activity check are wired, but actual model behavior remains unexecuted.",
+    "All own-process inspection labels use lower-case allowed strings; no added UI/RPC business substitution found."
+  ],
+  "unverified": [
+    {
+      "item": "Actual Codex0.166 native journal carrier/schema",
+      "reason": "R007 actual raw has no captured native sources/rows. Its plan/projection proof does not establish journal parser runtime behavior. Existing synthetic controls only.",
+      "actualR007Counts": {
+        "sources": 0,
+        "sessions": 0,
+        "contexts": 0,
+        "calls": 0,
+        "outputs": 0
+      }
+    },
+    {
+      "item": "Fresh real focus/user gesture and T042 actual terminal submission",
+      "reason": "Only future actual UI can establish focus/input and native output; no App/model run in this review."
+    }
+  ],
+  "scope": "File-only audit. No production or R009 frozen file changed; no auth read, App/model/native/port/OS probe executed. Original T041/T042 credit remains0."
+}

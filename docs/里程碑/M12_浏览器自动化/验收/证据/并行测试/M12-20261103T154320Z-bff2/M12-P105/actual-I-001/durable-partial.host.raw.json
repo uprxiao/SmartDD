@@ -1,0 +1,675 @@
+{
+  "group": "cookie-recovery-native-I",
+  "cases": [
+    "M12-T080-data-only",
+    "M12-T081-I-failure-recovery"
+  ],
+  "pid": 31679,
+  "startedAt": "2026-11-05T12:24:12.365Z",
+  "versions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "stage": "ready",
+  "events": [
+    {
+      "kind": "root-ready",
+      "pid": 31700,
+      "at": 1793881453654
+    },
+    {
+      "kind": "root-configured",
+      "pid": 31700,
+      "environmentValuesLogged": false,
+      "at": 1793881453693
+    },
+    {
+      "kind": "cli-spawn",
+      "id": 1,
+      "pid": 31725,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:60308/durable-partial"
+      ],
+      "at": 1793881453778
+    },
+    {
+      "kind": "native-window",
+      "id": 1
+    },
+    {
+      "kind": "page-created",
+      "id": "6363f190-4026-4362-a220-eb0b596eead1",
+      "contentsId": 3
+    }
+  ],
+  "cli": [
+    {
+      "id": 1,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:60308/durable-partial"
+      ],
+      "at": 1793881453777,
+      "result": {
+        "kind": "cli-result",
+        "id": 1,
+        "pid": 31725,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:60308\\/durable-partial\",\"pageId\":\"6363f190-4026-4362-a220-eb0b596eead1\"},\"resources\":[],\"operation\":{\"id\":\"73de7cc1-62cf-46b2-a205-7645a7b654d8\",\"requestId\":\"2bcf2539-8e10-4994-a7b3-1d4095255eba\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      }
+    }
+  ],
+  "cleanupSteps": [],
+  "boundaries": {
+    "layer": "RealnativeCLI/M11 gateway/token+kernel peer/run registry/BrowserModule/BrowserService/SQLite, controlled Python run root notAgentR",
+    "native": "prohibited, actualproduction alpha0 nonfocus park showInactive, no desktopinput or visibleUI/PTY, mockkeychain",
+    "tokens": "Gateway token memory/owned stdio only; environment values never logged",
+    "fixtures": "F-COOKIE synthetic encryptedChrome sources/privateAESjournal cipher; actualtrusted-user importCookies/recover/clear APIs for I only; fault injection delegates real native writes before lost-ack, before restore failure, or controlled post-flush abrupt App exit17; actualNativeStore methodsreadonly counting wrappers delegate+restore; actualCLI onlyfor readback, notUIA/KeychainS"
+  },
+  "precondition": {
+    "policy": "prohibited",
+    "beforeReady": true,
+    "mockKeychain": true
+  },
+  "navigationEvents": [
+    {
+      "url": "data:text/html,<title>WillYou browser background</title>",
+      "at": 1793881454734,
+      "startupComplete": true
+    },
+    {
+      "url": "http://127.0.0.1:60308/durable-partial",
+      "at": 1793881454828,
+      "startupComplete": true
+    }
+  ],
+  "faultTrace": [
+    {
+      "method": "remove",
+      "name": "X",
+      "domain": "qa.example.test",
+      "value": "P045-new-X",
+      "mode": "crash-write",
+      "at": 1793881455142,
+      "phase": "fulfilled",
+      "endedAt": 1793881455143
+    },
+    {
+      "method": "remove",
+      "name": "Y",
+      "domain": "qa.example.test",
+      "value": "P045-old-Y",
+      "mode": "crash-write",
+      "at": 1793881455143,
+      "phase": "fulfilled",
+      "endedAt": 1793881455144
+    },
+    {
+      "method": "remove",
+      "name": "W",
+      "domain": "qa.example.test",
+      "value": "P045-new-W",
+      "mode": "crash-write",
+      "at": 1793881455144,
+      "phase": "fulfilled",
+      "endedAt": 1793881455144
+    },
+    {
+      "method": "remove",
+      "name": "YT",
+      "domain": "youtube.com",
+      "value": "P045-new-YT",
+      "mode": "crash-write",
+      "at": 1793881455144,
+      "phase": "fulfilled",
+      "endedAt": 1793881455144
+    },
+    {
+      "method": "set",
+      "name": "X",
+      "domain": "qa.example.test",
+      "value": "P045-new-X",
+      "mode": "crash-write",
+      "at": 1793881455144,
+      "phase": "fulfilled"
+    }
+  ],
+  "migrations": [
+    {
+      "id": 1,
+      "hash": "be40f3d6257fdef5a7217b17944be56a5bdcd9f85ba54a6b05027ac901869abc",
+      "created_at": 1791978722839
+    },
+    {
+      "id": 2,
+      "hash": "4bab5cf57bdceb9c06fc57e0038813e0d9ed46a2abb49047c2e3d9719158663a",
+      "created_at": 1791988005282
+    },
+    {
+      "id": 3,
+      "hash": "904773c9e8b4da27b9353ab94fecabffedfe735c32f677183fd8d04d78f559ab",
+      "created_at": 1791992183018
+    },
+    {
+      "id": 4,
+      "hash": "6bfc36642b0c06118be8832b4934495f52ce55d033d23f86d1e0c054a0c9ca07",
+      "created_at": 1792026072572
+    },
+    {
+      "id": 5,
+      "hash": "f2bc3557385f76b4e477f37d7b851139be27da379101fb79393073a87e774cea",
+      "created_at": 1792035171435
+    },
+    {
+      "id": 6,
+      "hash": "fdaed3e47b42942aacdb9819c21f781d69516a721d66d802f3aca210a34090e8",
+      "created_at": 1792140000000
+    },
+    {
+      "id": 7,
+      "hash": "1caf98558cb1df6019377944cdce8331ffb8835cd817091bf3be468e3cc3cd85",
+      "created_at": 1792461246000
+    },
+    {
+      "id": 8,
+      "hash": "9380e0ef13b50a2746ab230d5356ceff496a5c73ed7635f6e5cffad9565fa981",
+      "created_at": 1792462400000
+    },
+    {
+      "id": 9,
+      "hash": "9a5fdd76319ed7142bb28297ca1da2b7bbaad9f4c8254b5db4592f070e768afd",
+      "created_at": 1792464000000
+    },
+    {
+      "id": 10,
+      "hash": "6a384b27bc72c2929a66033f32aaa8d3e4e1526192606fe98cf91f00566bc92f",
+      "created_at": 1792464600000
+    },
+    {
+      "id": 11,
+      "hash": "fdff765aab04d6690b5ab16ad0c7fc6d66719f29824bc23f1c4642184405de64",
+      "created_at": 1792465800000
+    },
+    {
+      "id": 12,
+      "hash": "8870b5206914cf411863e7fe60c48eaf5250233be97a9367bc0532c9564ab461",
+      "created_at": 1792466400000
+    },
+    {
+      "id": 13,
+      "hash": "af86db1bccbb4ae4bf177f381def368089a481c725050a85748de2040d86a707",
+      "created_at": 1792467000000
+    },
+    {
+      "id": 14,
+      "hash": "41c0ad4c019e54ac464f608dd5520569ab11b52aab18d3bf029446a5a101e1ba",
+      "created_at": 1792467600000
+    },
+    {
+      "id": 15,
+      "hash": "7045ad7d93f78906170d249cce7e1a4f828af07dad9d66e31ae96cdfa21ebd4b",
+      "created_at": 1792468200000
+    },
+    {
+      "id": 16,
+      "hash": "9ab0392e2b85a38631dfbb0c1bd394553f9e500b19c31d05abafab8bc4fc973f",
+      "created_at": 1792468800000
+    },
+    {
+      "id": 17,
+      "hash": "53f4acac1b3fd243baac7f78b10ca361dd9264fb6a242a8547f08fb5bcc01f47",
+      "created_at": 1792469400000
+    },
+    {
+      "id": 18,
+      "hash": "90b45345febe2d1a18c9c35678b7c898e739f5a8220973e0976bdeae15f6f747",
+      "created_at": 1792470000000
+    },
+    {
+      "id": 19,
+      "hash": "1803f48431be0895b648697d5b052bfc5560fe3a6dd7cd633c461da718ab93c6",
+      "created_at": 1792470600000
+    },
+    {
+      "id": 20,
+      "hash": "d7426823d98863dd1f1ced3dc2c4b553838ea5f722241a4c731068a3f33e78fe",
+      "created_at": 1792471200000
+    },
+    {
+      "id": 21,
+      "hash": "9b48a5f6a3718088932ee066b296d5d03267ea240a0d72568fc7d07692b54193",
+      "created_at": 1792498800000
+    },
+    {
+      "id": 22,
+      "hash": "9246563053b650cf21d92136d35fb6d434c49baa0d259049d86eb5c770091a9e",
+      "created_at": 1792506000000
+    },
+    {
+      "id": 23,
+      "hash": "d22eb6341c34e42fca2c41a11c616732e8c42a47ba90464e45df791551a03613",
+      "created_at": 1792521000000
+    },
+    {
+      "id": 24,
+      "hash": "f2d5672bd1ef4518c1168a31da2043f350db27857649f9e6f897da66d3effd38",
+      "created_at": 1792546200000
+    },
+    {
+      "id": 25,
+      "hash": "49df754443ae88bfafdaed9c6f9db97e8691c0d08a2e310b4eda8e401b98beeb",
+      "created_at": 1792563000000
+    },
+    {
+      "id": 26,
+      "hash": "f5a49f39cdb3649ee4031cf31475180267f6435d229a9b0cb85e55b8f2eac257",
+      "created_at": 1792571040000
+    },
+    {
+      "id": 27,
+      "hash": "3bdf781a665fde585a452b2c94e3ef8437449cd673304742d7ce31cb3d3a8918",
+      "created_at": 1792744200000
+    },
+    {
+      "id": 28,
+      "hash": "0d594d25a2bcb542b160a342538774b1d9e5be12f305e6859150d6d1a2a767d5",
+      "created_at": 1792782000000
+    },
+    {
+      "id": 29,
+      "hash": "6bf80e62b46289877ea457758ea6bbb825968ef903b6f58c3907dd52e44af8b7",
+      "created_at": 1792785600000
+    },
+    {
+      "id": 30,
+      "hash": "376aec9d05539593311b6c4dfd816a11b4694d9f9c92618b3eb2a7e9ba761dec",
+      "created_at": 1793507771201
+    },
+    {
+      "id": 31,
+      "hash": "4a24c1123d81dea27e1c3cd185c5ada6a7bc593f5f7626a8dd366ceab7599a70",
+      "created_at": 1793697600000
+    }
+  ],
+  "sourceFixture": {
+    "schema": 24,
+    "selected": "Default",
+    "rows": [
+      {
+        "domain": "qa.example.test",
+        "name": "X",
+        "value": "P045-new-X"
+      },
+      {
+        "domain": "qa.example.test",
+        "name": "W",
+        "value": "P045-new-W"
+      },
+      {
+        "domain": "google.com",
+        "name": "G",
+        "value": "P045-excluded-G"
+      },
+      {
+        "domain": "youtube.com",
+        "name": "YT",
+        "value": "P045-new-YT"
+      }
+    ],
+    "unselectedBadRows": [
+      {
+        "domain": "broken.example.test",
+        "name": "bad",
+        "value": "unused",
+        "bad": true
+      }
+    ],
+    "boundary": "ActualsyntheticChromeSQLite encryptedv10+v24hosthash, keychainonly DI; bad profile retained as original source fixture; four new failures use selected Chrome source with exact I keyProvider/owned-directory fault modes"
+  },
+  "startupRecovery": {
+    "startedAt": 1793881453027,
+    "before": {
+      "at": 1793881453096,
+      "profileId": "project-5808a3350042b969b8262133",
+      "importState": "ready",
+      "cookies": [],
+      "journal": {
+        "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+        "exists": false
+      }
+    },
+    "completedAt": 1793881453100,
+    "after": {
+      "at": 1793881453143,
+      "profileId": "project-5808a3350042b969b8262133",
+      "importState": "ready",
+      "cookies": [],
+      "journal": {
+        "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+        "exists": false
+      }
+    }
+  },
+  "fixtureProfiles": {
+    "p1": {
+      "id": "project-5808a3350042b969b8262133",
+      "scope": "project",
+      "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+      "label": "项目登录态",
+      "owner": {
+        "kind": "project",
+        "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+      },
+      "source": null
+    },
+    "p2": {
+      "id": "project-4045387592e655ecc6f24a6c",
+      "scope": "project",
+      "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+      "label": "项目登录态",
+      "owner": {
+        "kind": "project",
+        "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+      },
+      "source": null
+    },
+    "t2": {
+      "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+      "scope": "isolated",
+      "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+      "label": "P045 hidden T2",
+      "owner": {
+        "kind": "task",
+        "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+      },
+      "source": null
+    }
+  },
+  "discovered": {
+    "browsers": [
+      {
+        "family": "chrome",
+        "label": "Google Chrome",
+        "installed": true,
+        "profiles": [
+          {
+            "id": "647aba3986d7dac0dccf41746673854baf7636acd92254d6c657c8551a3991b1",
+            "family": "chrome",
+            "browserLabel": "Google Chrome",
+            "profileName": "P045 success source",
+            "profileDirectory": "Default",
+            "hasCookies": true
+          },
+          {
+            "id": "eb8381102e049b86c1dc28c9619d4418617e1ccea8178916f96ebddf76effce7",
+            "family": "chrome",
+            "browserLabel": "Google Chrome",
+            "profileName": "P045 bad source notexecuted",
+            "profileDirectory": "Profile 1",
+            "hasCookies": true
+          }
+        ]
+      },
+      {
+        "family": "edge",
+        "label": "Microsoft Edge",
+        "installed": false,
+        "profiles": []
+      }
+    ]
+  },
+  "selectedSourceId": "647aba3986d7dac0dccf41746673854baf7636acd92254d6c657c8551a3991b1",
+  "targetPreseed": {
+    "profileId": "project-5808a3350042b969b8262133",
+    "importState": "ready",
+    "cookies": [
+      {
+        "name": "X",
+        "value": "P045-old-X",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": false,
+        "expirationDate": 1793885053,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Y",
+        "value": "P045-old-Y",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": false,
+        "expirationDate": 1793885053,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Z",
+        "value": "P045-keep-Z",
+        "domain": "other.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": false,
+        "expirationDate": 1793885053,
+        "sameSite": "lax"
+      },
+      {
+        "name": "G",
+        "value": "P045-keep-G",
+        "domain": "google.com",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": false,
+        "expirationDate": 1793885053,
+        "sameSite": "lax"
+      }
+    ],
+    "keyCalls": 0,
+    "nativeTrace": [],
+    "maxMutations": 0,
+    "activeMutations": 0,
+    "hooksInstalled": false,
+    "keyTransfersErased": [],
+    "journalExists": false,
+    "profiles": [
+      {
+        "id": "project-5808a3350042b969b8262133",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+        },
+        "source": null
+      },
+      {
+        "id": "project-4045387592e655ecc6f24a6c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+        },
+        "source": null
+      },
+      {
+        "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+        },
+        "source": null
+      }
+    ]
+  },
+  "runRecovery": [],
+  "runRootPid": 31700,
+  "exactGatewayPaths": [
+    "/private/tmp/wy-cli-501-9H5JXa/cli.sock"
+  ],
+  "gatewayIdentities": [
+    {
+      "path": "/private/tmp/wy-cli-501-9H5JXa/cli.sock",
+      "directory": "/private/tmp/wy-cli-501-9H5JXa",
+      "uid": "501",
+      "dev": "16777230",
+      "ino": "334377968",
+      "socket": true,
+      "directoryUid": "501",
+      "directoryDev": "16777230",
+      "directoryIno": "334377967"
+    }
+  ],
+  "run": {
+    "runId": "b3af1ae9-694c-4a2f-8b2a-5a58c6fb4e87",
+    "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+    "rootPid": 31700,
+    "snapshotHash": "8c3608999751157e971d21e22371aafda62beee280e71cbda0ab8b90008cb295",
+    "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+    "adapterHash": "8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+    "environmentKeys": [
+      "WILLYOU_RUN_TOKEN",
+      "WILLYOU_ENDPOINT"
+    ]
+  },
+  "keyCalls": 1,
+  "keyFamily": "chrome",
+  "keyFaultCalls": [
+    {
+      "mode": "crash-write",
+      "at": 1793881455081
+    }
+  ],
+  "crashPartial": {
+    "at": 1793881455186,
+    "profileId": "project-5808a3350042b969b8262133",
+    "importState": "importing",
+    "cookies": [
+      {
+        "kind": "readable",
+        "cookie": {
+          "name": "Z",
+          "value": "P045-keep-Z",
+          "domain": "other.example.test",
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "hostOnly": true,
+          "sameSite": "lax",
+          "expirationDate": 1793885053,
+          "partitionKey": null,
+          "priority": "Medium",
+          "sourceScheme": "NonSecure",
+          "sourcePort": 80
+        }
+      },
+      {
+        "kind": "readable",
+        "cookie": {
+          "name": "G",
+          "value": "P045-keep-G",
+          "domain": "google.com",
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "hostOnly": true,
+          "sameSite": "lax",
+          "expirationDate": 1793885053,
+          "partitionKey": null,
+          "priority": "Medium",
+          "sourceScheme": "NonSecure",
+          "sourcePort": 80
+        }
+      },
+      {
+        "kind": "readable",
+        "cookie": {
+          "name": "X",
+          "value": "P045-new-X",
+          "domain": "qa.example.test",
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "hostOnly": true,
+          "sameSite": "lax",
+          "expirationDate": null,
+          "partitionKey": null,
+          "priority": "Medium",
+          "sourceScheme": "NonSecure",
+          "sourcePort": 80
+        }
+      }
+    ],
+    "journal": {
+      "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+      "exists": true,
+      "mode": 384,
+      "directoryMode": 448,
+      "bytes": 1512,
+      "sha256": "3c4c7ccf72eaae6d0b34d2b9807e8a7f52e7db4e3dba949b631c019f080658b0",
+      "containsCookieCanary": false
+    }
+  },
+  "crashJournal": {
+    "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+    "exists": true,
+    "mode": 384,
+    "directoryMode": 448,
+    "bytes": 1512,
+    "sha256": "3c4c7ccf72eaae6d0b34d2b9807e8a7f52e7db4e3dba949b631c019f080658b0",
+    "containsCookieCanary": false
+  },
+  "expectedCrash17": true
+}

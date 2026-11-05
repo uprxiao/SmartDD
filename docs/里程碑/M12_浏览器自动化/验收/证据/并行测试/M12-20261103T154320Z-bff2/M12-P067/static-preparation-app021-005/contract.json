@@ -1,0 +1,50 @@
+{
+  "cases": [
+    "| M12-T113 | R07.6、O14、C7、B10、review R07 | A＋I | T1 两个网页标签；T2 的 Agent 已获 T1 的 control 授权；点击计数接口 | Agent 连续排入 5 条点击（第 1 条执行中）时用户点“暂停 Agent”；同时有一条 `wait` 在等；之后 T1、T2 的 Agent 各发新命令；用户手动操作页面后点“恢复”；再测运行结束和重启后的状态 | 正在执行的第 1 条完成；排队的 4 条立即返回 `BROWSER_PAUSED`，点击计数显示暂停后零执行；`wait` 立即返回 `BROWSER_PAUSED`；新命令（含 T2 跨任务来的）都返回 `BROWSER_PAUSED`；两个标签都被暂停；恢复后命令正常；运行结束或重启后暂停状态清除 | P064002原Native I全部15判据绿：两真实页/双M11运行、真实Helper首点击结果保留、4条真实排队点击及另一页wait在首结果释放前全部PAUSED，8项自己/跨任务双页读写均拒；真实native Input手动操作与恢复、run结束/新run/同数据正常重启清理均成立。两host0/null、钩子恢复、52PID/5TCP清场；旧产品红保留。原打包App真实UI A未执行，不能计整条。 | 部分通过 | [原15项Native I复验及边界](证据/并行测试/M12-20261103T154320Z-bff2/M12-P064/coordinator-review-green.json) |",
+    "| M12-T114 | R07.7 | A | Agent 正在执行 `wait`，T2 持有授权 | 用户停止 T1 任务 | 在途命令被取消；页面保持原状态，不关闭；活动标记在 20 秒内清除；T1 运行发出的跨任务授权失效 | — | 待执行 | — |"
+  ],
+  "requirements": "**R07.6 暂停**\n- 本任务的页面被 Agent 驱动时，工具栏显示“暂停 Agent”，暂停后改为“恢复 Agent”。\n- 暂停作用于该任务的全部网页标签，包括经授权从其他任务过来的命令。\n- 暂停时：\n  - 清空待执行队列，排队的命令立即返回 `BROWSER_PAUSED`；\n  - 之后到达的命令同样返回 `BROWSER_PAUSED`；\n  - 正在执行的写命令执行完当前这一条；\n  - 正在进行的只读等待立即结束，返回 `BROWSER_PAUSED`；\n  - 命令执行前再检查一次暂停状态。\n- 暂停只在本次运行内有效，运行结束、终端退出、App 重启即清除。\n- 暂停期间用户可以手动操作页面，完成后点“恢复 Agent”。不做“请求用户接管”命令。\n\n**R07.7 停止**\n- 停止任务、终止终端或 CLI 进程时，宿主取消在途命令。页面保持当前状态，不回滚、不关闭。\n- 活动标记按 R07.2 清除，跨任务授权随运行结束失效。\n\n",
+  "criteriaT113": [
+    "ActualApp021 UI prebuiltT1two pages/T2page and same-project actualruns",
+    "T2actualCLI requestsT1control; actual UI selectscontrol/allows currentrun",
+    "First Helperclick real effect/stdout held at originalcallback; four actualCLI pending same actualpage.queue",
+    "Page2actualwait/readWaits; UI pause cancels queued4+wait while first callback remains held",
+    "First callback released unchanged exactlyonce; both native documents retained; no extra agent effect",
+    "Own/cross callers/both pages/read/write allPAUSED; actual UI manualnativeInput works",
+    "UI restore then actualCLIclick succeeds",
+    "UI terminal END makes genuine run exit; UI newrun doesnotinherit pause/grant",
+    "UI regrant+pause then normalAppquit/restart sameuserData; persistentpageIDsURLs restored, pause/grants empty",
+    "Normalquit both instances and exact cleanup/hooks restored"
+  ],
+  "criteriaT114": [
+    "T1actualrun requestsT2control, actualUIallows",
+    "T1own actualwait active in realreadWaits/Helper",
+    "ActualUI task-actions/task-kill; host cancelswait",
+    "Same nativepages/WC/document/URL/unsavedvalues preserved",
+    "Activitymark clears according20s requirement; exacttiming",
+    "StoppedT1run oldcross-grant removed; otherT2run remains",
+    "Normalshutdown/exactcleanup"
+  ],
+  "scope": "A only actualM11/nativeCLI controlledsyntheticPython, notR; P064002NativeI independent. NoRPC business UI substitutions/Clipboard",
+  "remaining": "A12/T114/C01 only in005; historical App020003 A11 referenced without replay; App017A01-A10 and App020A11 currentApp021 applicability pending coordinator impact review",
+  "timingClarification": "R07.7 referencesR07.2:20s startsat actual lastcommandfinish, not beforeUIkill. Actual hostautomation.endedAt/deadline andDOMsampling retained; same-byte originalT10619s/21sA evidence reused.",
+  "restartClarification": "Duringpause/runend preserveexactnativeWC/document/unsavedstate. Across normalApprestart only persistentpageIDs/URLs/profile; private roots end viaUIbefore quit, restart not isolated from run-end clearing.",
+  "currentAuthoritativeLines": [
+    "| M12-T113 | R07.6、O14、C7、B10、review R07 | A＋I | T1 两个网页标签；T2 的 Agent 已获 T1 的 control 授权；点击计数接口 | Agent 连续排入 5 条点击（第 1 条执行中）时用户点“暂停 Agent”；同时有一条 `wait` 在等；之后 T1、T2 的 Agent 各发新命令；用户手动操作页面后点“恢复”；再测运行结束和重启后的状态 | 正在执行的第 1 条完成；排队的 4 条立即返回 `BROWSER_PAUSED`，点击计数显示暂停后零执行；`wait` 立即返回 `BROWSER_PAUSED`；新命令（含 T2 跨任务来的）都返回 `BROWSER_PAUSED`；两个标签都被暂停；恢复后命令正常；运行结束或重启后暂停状态清除 | P064002原Native I15判据全绿；App017 P067001真实A前十判据已得：UI control允许、首真实点击回调保留、生产queue4/readWait1、UI暂停后队列/wait及8项自己/跨任务双页读写PAUSED，native手动操作、UI恢复及两run正常结束。fresh-run恢复菜单移动被驱动在点击前拦下；收尾漏用私有harness接口导致driver退出1、最终raw从原live/7日志只读恢复，来源/缺项明确。002在发RUN前实际失焦后置，0CLI/0网页，完整raw/正常0-null/8PID3TCP清场保留。A11/A12及完整收尾合同仍未执行/缺失；原失败保留，不计整条。 | 部分通过 | [真实I](证据/并行测试/M12-20261103T154320Z-bff2/M12-P064/coordinator-review-green.json)；[真实A部分与驱动失败](证据/并行测试/M12-20261103T154320Z-bff2/M12-P067/coordinator-review-partial.json) |",
+    "| M12-T114 | R07.7 | A | Agent 正在执行 `wait`，T2 持有授权 | 用户停止 T1 任务 | 在途命令被取消；页面保持原状态，不关闭；活动标记在 20 秒内清除；T1 运行发出的跨任务授权失效 | — | 待执行 | — |"
+  ],
+  "foreground": {
+    "instances": [
+      "initial",
+      "restart"
+    ],
+    "freshInitialFocusOccasions": 2,
+    "automaticActivation": false,
+    "manualGesture": "After all RPC/health and once setupreload, passive actual trusted left content pointerdown then exact-owned Electron Native+DOM focused/visible continuously1s",
+    "manualHandshakeTimeoutMs": 300000,
+    "guardRearm": false,
+    "guardCountPerFreshInstance": 1,
+    "ownerRoot": "/private/tmp/willyou-m12-p067-pause-stop-app021-005",
+    "basis": "Actual successful P083 A4 attempt011 freshUi; not unexecuted auto-focus claims"
+  }
+}

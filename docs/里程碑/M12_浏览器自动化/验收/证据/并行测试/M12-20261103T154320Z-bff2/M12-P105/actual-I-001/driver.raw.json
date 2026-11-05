@@ -1,0 +1,4599 @@
+{
+  "scope": "T080 data-only historical success reused, T081 remaining I service faults/recovery+realCLI; no UI/A/Keychain/model claim",
+  "startedAt": 1793881441401,
+  "driverPid": 31403,
+  "phases": [
+    {
+      "name": "live-failures",
+      "expectedExit": 0,
+      "startedAt": 1793881441404,
+      "cli": [
+        {
+          "label": "new-owned-fixture-page",
+          "args": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:60308/live-failures"
+          ],
+          "startedAt": 1793881443484,
+          "raw": {
+            "kind": "cli-result",
+            "id": 1,
+            "pid": 31462,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:60308\\/live-failures\",\"pageId\":\"abb711a1-bb65-4d04-8924-ec95a6e3c6c0\"},\"resources\":[],\"operation\":{\"id\":\"9881909a-57a7-47b4-bce5-f1c02df6a9c3\",\"requestId\":\"affff096-5512-4c4d-be25-03c27bff7ea5\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "url": "http://127.0.0.1:60308/live-failures",
+              "pageId": "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            },
+            "resources": [],
+            "operation": {
+              "id": "9881909a-57a7-47b4-bce5-f1c02df6a9c3",
+              "requestId": "affff096-5512-4c4d-be25-03c27bff7ea5",
+              "effectState": "completed",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.tab.create"
+          }
+        },
+        {
+          "label": "baseline-real-cli-qa",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881444699,
+          "raw": {
+            "kind": "cli-result",
+            "id": 2,
+            "pid": 31474,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"}]}},\"resources\":[],\"operation\":{\"id\":\"f64f7abd-761f-47cf-beee-b6dc38ab06a9\",\"requestId\":\"6afa416d-9ef8-45a2-a6fb-8e35ad857e47\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-Y",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Y"
+                  },
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-X",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "X"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "f64f7abd-761f-47cf-beee-b6dc38ab06a9",
+              "requestId": "6afa416d-9ef8-45a2-a6fb-8e35ad857e47",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "prefix-no-write-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881446033,
+          "raw": {
+            "kind": "cli-result",
+            "id": 3,
+            "pid": 31517,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"b9e8ddc2-8c9a-492e-8510-9c1efbb9c528\",\"requestId\":\"743cc17a-d316-49a2-89a0-efd4d69b8b74\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-X",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "X"
+                  },
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-Y",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Y"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "b9e8ddc2-8c9a-492e-8510-9c1efbb9c528",
+              "requestId": "743cc17a-d316-49a2-89a0-efd4d69b8b74",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "rollback-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881447072,
+          "raw": {
+            "kind": "cli-result",
+            "id": 4,
+            "pid": 31542,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"df3e4521-04a5-447f-b575-529c99864f5b\",\"requestId\":\"9efd300e-312c-469b-94aa-15da156741d9\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-X",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "X"
+                  },
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-Y",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Y"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "df3e4521-04a5-447f-b575-529c99864f5b",
+              "requestId": "9efd300e-312c-469b-94aa-15da156741d9",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "attention-real-cli-unavailable",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881448131,
+          "raw": {
+            "kind": "cli-result",
+            "id": 5,
+            "pid": 31577,
+            "code": 2,
+            "signal": null,
+            "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_UNAVAILABLE\",\"layer\":\"provider\",\"message\":\"登录态需要处理，请重试恢复或清空登录态\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"fc1425a0-ac62-493b-898e-ac33cb35f03c\",\"requestId\":\"d34e78a6-2511-4df2-a609-ac5ae22e0924\"}\n",
+            "stderr": "willyou-app: BROWSER_UNAVAILABLE\n",
+            "timedOut": false
+          },
+          "parsed": {
+            "error": {
+              "effectState": "read-only",
+              "code": "BROWSER_UNAVAILABLE",
+              "layer": "provider",
+              "message": "登录态需要处理，请重试恢复或清空登录态",
+              "retryable": false,
+              "attemptCount": 1,
+              "nextAction": "核对本次错误后重新明确操作",
+              "retryExhausted": false
+            },
+            "operationId": "fc1425a0-ac62-493b-898e-ac33cb35f03c",
+            "requestId": "d34e78a6-2511-4df2-a609-ac5ae22e0924"
+          }
+        },
+        {
+          "label": "retry-restored-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881449102,
+          "raw": {
+            "kind": "cli-result",
+            "id": 6,
+            "pid": 31590,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"405a63a4-04ee-45b7-b880-ce8da5f54330\",\"requestId\":\"679f3a5c-ba20-40e7-b6a3-b56096cd0acb\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-X",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "X"
+                  },
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885042,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-Y",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Y"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "405a63a4-04ee-45b7-b880-ce8da5f54330",
+              "requestId": "679f3a5c-ba20-40e7-b6a3-b56096cd0acb",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "second-attention-unavailable",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881450192,
+          "raw": {
+            "kind": "cli-result",
+            "id": 7,
+            "pid": 31636,
+            "code": 2,
+            "signal": null,
+            "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_UNAVAILABLE\",\"layer\":\"provider\",\"message\":\"登录态需要处理，请重试恢复或清空登录态\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"81f48197-59e2-40a1-acec-5c10517cd185\",\"requestId\":\"7ba01b27-3499-4972-886c-703f594ff420\"}\n",
+            "stderr": "willyou-app: BROWSER_UNAVAILABLE\n",
+            "timedOut": false
+          },
+          "parsed": {
+            "error": {
+              "effectState": "read-only",
+              "code": "BROWSER_UNAVAILABLE",
+              "layer": "provider",
+              "message": "登录态需要处理，请重试恢复或清空登录态",
+              "retryable": false,
+              "attemptCount": 1,
+              "nextAction": "核对本次错误后重新明确操作",
+              "retryExhausted": false
+            },
+            "operationId": "81f48197-59e2-40a1-acec-5c10517cd185",
+            "requestId": "7ba01b27-3499-4972-886c-703f594ff420"
+          }
+        },
+        {
+          "label": "clear-empty-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+          ],
+          "startedAt": 1793881451184,
+          "raw": {
+            "kind": "cli-result",
+            "id": 8,
+            "pid": 31647,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[]}},\"resources\":[],\"operation\":{\"id\":\"7a4344ae-1f53-4aa1-9872-cf1355e10f40\",\"requestId\":\"cd2906cc-e620-460d-994e-c93434e2a220\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": []
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "7a4344ae-1f53-4aa1-9872-cf1355e10f40",
+              "requestId": "cd2906cc-e620-460d-994e-c93434e2a220",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        }
+      ],
+      "messages": [
+        {
+          "stage": "M11-setup",
+          "pid": 31404
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-ready",
+            "pid": 31420
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-configured",
+            "pid": 31420,
+            "environmentValuesLogged": false
+          }
+        },
+        {
+          "stage": "ready",
+          "pid": 31404
+        },
+        {
+          "ready": true,
+          "pid": 31404,
+          "runRootPid": 31420,
+          "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+          "runId": "3eab51d3-a7db-4008-b449-6daab3088664",
+          "fixtureProfiles": {
+            "p1": {
+              "id": "project-5808a3350042b969b8262133",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+              },
+              "source": null
+            },
+            "p2": {
+              "id": "project-4045387592e655ecc6f24a6c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+              },
+              "source": null
+            },
+            "t2": {
+              "id": "50800717-6f21-4b76-8f94-633b657baabf",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-50800717-6f21-4b76-8f94-633b657baabf",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+              },
+              "source": null
+            }
+          },
+          "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 1,
+            "pid": 31462,
+            "args": [
+              "browser",
+              "tab",
+              "create",
+              "--url",
+              "http://127.0.0.1:60308/live-failures"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 2,
+            "pid": 31474,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 3,
+            "pid": 31517,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 4,
+            "pid": 31542,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 5,
+            "pid": 31577,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 6,
+            "pid": 31590,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 7,
+            "pid": 31636,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 8,
+            "pid": 31647,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+            ]
+          }
+        },
+        {
+          "stage": "cleanup",
+          "pid": 31404
+        },
+        {
+          "stage": "done",
+          "pid": 31404
+        },
+        {
+          "willQuit": true
+        }
+      ],
+      "resources": [
+        {
+          "at": 1793881443484,
+          "processes": [
+            {
+              "pid": 31404,
+              "ppid": 31403,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+            },
+            {
+              "pid": 31407,
+              "ppid": 31404,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31408,
+              "ppid": 31404,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31420,
+              "ppid": 31404,
+              "path": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+            }
+          ],
+          "tcp": ""
+        }
+      ],
+      "hostPid": 31404,
+      "ready": {
+        "ready": true,
+        "pid": 31404,
+        "runRootPid": 31420,
+        "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+        "runId": "3eab51d3-a7db-4008-b449-6daab3088664",
+        "fixtureProfiles": {
+          "p1": {
+            "id": "project-5808a3350042b969b8262133",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+            },
+            "source": null
+          },
+          "p2": {
+            "id": "project-4045387592e655ecc6f24a6c",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+            },
+            "source": null
+          },
+          "t2": {
+            "id": "50800717-6f21-4b76-8f94-633b657baabf",
+            "scope": "isolated",
+            "partition": "persist:wy-browser-50800717-6f21-4b76-8f94-633b657baabf",
+            "label": "P045 hidden T2",
+            "owner": {
+              "kind": "task",
+              "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+            },
+            "source": null
+          }
+        },
+        "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+      },
+      "pageId": "abb711a1-bb65-4d04-8924-ec95a6e3c6c0",
+      "baseline": {
+        "at": 1793881444697,
+        "profileId": "project-5808a3350042b969b8262133",
+        "importState": "ready",
+        "cookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "journal": {
+          "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+          "exists": false
+        }
+      },
+      "initialQa": {
+        "label": "baseline-real-cli-qa",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881444699,
+        "raw": {
+          "kind": "cli-result",
+          "id": 2,
+          "pid": 31474,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"}]}},\"resources\":[],\"operation\":{\"id\":\"f64f7abd-761f-47cf-beee-b6dc38ab06a9\",\"requestId\":\"6afa416d-9ef8-45a2-a6fb-8e35ad857e47\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "f64f7abd-761f-47cf-beee-b6dc38ab06a9",
+            "requestId": "6afa416d-9ef8-45a2-a6fb-8e35ad857e47",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "prefix": [
+        {
+          "kind": "key-denied",
+          "before": {
+            "at": 1793881445690,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "after": {
+            "at": 1793881445739,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "error": {
+            "name": "BrowserCookieSourceError",
+            "code": null,
+            "reason": "keychain-denied",
+            "message": "Synthetic I key-provider key-denied; no OS credential request",
+            "stack": "Error: Synthetic I key-provider key-denied; no OS credential request\n    at Object.key2 [as key] (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14610:66)\n    at Object.keychain (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87345:35)\n    at getKey (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21951:195)\n    at readChromiumCookies (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21845:24)\n    at async BrowserCookieSources.prepare (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21951:55)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22189:24)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14710:34)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+          },
+          "trace": [],
+          "faults": {
+            "writeFault": false,
+            "restoreFault": false
+          }
+        },
+        {
+          "kind": "key-timeout",
+          "before": {
+            "at": 1793881445785,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "after": {
+            "at": 1793881445850,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "error": {
+            "name": "BrowserCookieSourceError",
+            "code": null,
+            "reason": "keychain-timeout",
+            "message": "Synthetic I key-provider key-timeout; no OS credential request",
+            "stack": "Error: Synthetic I key-provider key-timeout; no OS credential request\n    at Object.key2 [as key] (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14610:66)\n    at Object.keychain (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87345:35)\n    at getKey (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21951:195)\n    at readChromiumCookies (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21845:24)\n    at async BrowserCookieSources.prepare (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21951:55)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22189:24)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14710:34)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+          },
+          "trace": [],
+          "faults": {
+            "writeFault": false,
+            "restoreFault": false
+          }
+        },
+        {
+          "kind": "source-missing",
+          "before": {
+            "at": 1793881445893,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "after": {
+            "at": 1793881445939,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "error": {
+            "name": "BrowserCookieSourceError",
+            "code": null,
+            "reason": "source-missing",
+            "message": "所选浏览器或profile已不存在，请重新选择",
+            "stack": "Error: 所选浏览器或profile已不存在，请重新选择\n    at BrowserCookieSources.prepare (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21944:77)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22189:24)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14710:34)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+          },
+          "trace": [],
+          "faults": {
+            "writeFault": false,
+            "restoreFault": false
+          }
+        },
+        {
+          "kind": "wrong-key",
+          "before": {
+            "at": 1793881445984,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "after": {
+            "at": 1793881446031,
+            "profileId": "project-5808a3350042b969b8262133",
+            "importState": "ready",
+            "cookies": [
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "X",
+                  "value": "P045-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Y",
+                  "value": "P045-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "Z",
+                  "value": "P045-keep-Z",
+                  "domain": "other.example.test",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              },
+              {
+                "kind": "readable",
+                "cookie": {
+                  "name": "G",
+                  "value": "P045-keep-G",
+                  "domain": "google.com",
+                  "path": "/",
+                  "secure": false,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793885042,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "NonSecure",
+                  "sourcePort": 80
+                }
+              }
+            ],
+            "journal": {
+              "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+              "exists": false
+            }
+          },
+          "error": {
+            "name": "BrowserCookieSourceError",
+            "code": null,
+            "reason": "cookies-undecryptable",
+            "message": "无法解密来源Cookie；目标登录态尚未写入",
+            "stack": "Error: 无法解密来源Cookie；目标登录态尚未写入\n    at decryptMacChromiumCookie (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:78:11)\n    at readChromiumCookies (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21846:17)\n    at async BrowserCookieSources.prepare (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21951:55)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22189:24)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14710:34)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+          },
+          "trace": [],
+          "faults": {
+            "writeFault": false,
+            "restoreFault": false
+          }
+        }
+      ],
+      "afterPrefixQa": {
+        "label": "prefix-no-write-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881446033,
+        "raw": {
+          "kind": "cli-result",
+          "id": 3,
+          "pid": 31517,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"b9e8ddc2-8c9a-492e-8510-9c1efbb9c528\",\"requestId\":\"743cc17a-d316-49a2-89a0-efd4d69b8b74\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "b9e8ddc2-8c9a-492e-8510-9c1efbb9c528",
+            "requestId": "743cc17a-d316-49a2-89a0-efd4d69b8b74",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "lostAck": {
+        "kind": "lost-ack",
+        "before": {
+          "at": 1793881446945,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "ready",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P045-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": false
+          }
+        },
+        "after": {
+          "at": 1793881447070,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "ready",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P045-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": false
+          }
+        },
+        "error": {
+          "name": "ApplicationError",
+          "code": "BROWSER_ERROR",
+          "reason": null,
+          "message": "导入未完成，原登录态已恢复",
+          "stack": "ApplicationError: 导入未完成，原登录态已恢复\n    at /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22036:15\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14716:22)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+        },
+        "trace": [
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "lost-ack",
+            "at": 1793881447008,
+            "phase": "fulfilled",
+            "endedAt": 1793881447009
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "lost-ack",
+            "at": 1793881447009,
+            "phase": "fulfilled",
+            "endedAt": 1793881447010
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "lost-ack",
+            "at": 1793881447010,
+            "phase": "fulfilled",
+            "endedAt": 1793881447010
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "lost-ack",
+            "at": 1793881447010,
+            "phase": "fulfilled",
+            "endedAt": 1793881447010
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "lost-ack",
+            "at": 1793881447010,
+            "phase": "fulfilled",
+            "endedAt": 1793881447011
+          },
+          {
+            "method": "set",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "lost-ack",
+            "at": 1793881447011,
+            "phase": "actual-set-then-lost-ack",
+            "error": {
+              "name": "Error",
+              "code": null,
+              "reason": null,
+              "message": "I lost acknowledgment after actual W set",
+              "stack": "Error: I lost acknowledgment after actual W set\n    at NativeBrowserCookieStore.<computed> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14634:19)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22032:66\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14716:22)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+            },
+            "endedAt": 1793881447013
+          },
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "lost-ack",
+            "at": 1793881447013,
+            "phase": "fulfilled",
+            "endedAt": 1793881447013
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "lost-ack",
+            "at": 1793881447013,
+            "phase": "fulfilled",
+            "endedAt": 1793881447013
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "lost-ack",
+            "at": 1793881447013,
+            "phase": "fulfilled",
+            "endedAt": 1793881447013
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "lost-ack",
+            "at": 1793881447013,
+            "phase": "fulfilled",
+            "endedAt": 1793881447013
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-old-X",
+            "mode": "lost-ack",
+            "at": 1793881447014,
+            "phase": "fulfilled",
+            "endedAt": 1793881447014
+          },
+          {
+            "method": "set",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "lost-ack",
+            "at": 1793881447014,
+            "phase": "fulfilled",
+            "endedAt": 1793881447014
+          }
+        ],
+        "faults": {
+          "writeFault": true,
+          "restoreFault": false
+        }
+      },
+      "afterLostAckQa": {
+        "label": "rollback-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881447072,
+        "raw": {
+          "kind": "cli-result",
+          "id": 4,
+          "pid": 31542,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"df3e4521-04a5-447f-b575-529c99864f5b\",\"requestId\":\"9efd300e-312c-469b-94aa-15da156741d9\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "df3e4521-04a5-447f-b575-529c99864f5b",
+            "requestId": "9efd300e-312c-469b-94aa-15da156741d9",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "attention": {
+        "kind": "restore-fails",
+        "before": {
+          "at": 1793881448018,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "ready",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P045-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": false
+          }
+        },
+        "after": {
+          "at": 1793881448129,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "needs-attention",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": true,
+            "mode": 384,
+            "directoryMode": 448,
+            "bytes": 1512,
+            "sha256": "6a505eeb4d427b08f0e3a0b5f274b736047d581c100ad9319ed375dd81f3dbbb",
+            "containsCookieCanary": false
+          }
+        },
+        "error": {
+          "name": "BrowserCookieRecoveryRequired",
+          "code": "BROWSER_UNAVAILABLE",
+          "reason": null,
+          "message": "登录态处理尚未完成，请先重试恢复或清空该登录态",
+          "stack": "ApplicationError: 登录态处理尚未完成，请先重试恢复或清空该登录态\n    at BrowserCookieTransactions.restore (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22000:23)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22035:9\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14721:31)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+        },
+        "trace": [
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881448080,
+            "phase": "fulfilled",
+            "endedAt": 1793881448081
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881448081,
+            "phase": "fulfilled",
+            "endedAt": 1793881448082
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881448082,
+            "phase": "fulfilled",
+            "endedAt": 1793881448082
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "restore-fails",
+            "at": 1793881448082,
+            "phase": "fulfilled",
+            "endedAt": 1793881448082
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881448082,
+            "phase": "fulfilled",
+            "endedAt": 1793881448083
+          },
+          {
+            "method": "set",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881448083,
+            "phase": "actual-set-then-lost-ack",
+            "error": {
+              "name": "Error",
+              "code": null,
+              "reason": null,
+              "message": "I lost acknowledgment after actual W set",
+              "stack": "Error: I lost acknowledgment after actual W set\n    at NativeBrowserCookieStore.<computed> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14634:19)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22032:66\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14721:31)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+            },
+            "endedAt": 1793881448084
+          },
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881448084,
+            "phase": "fulfilled",
+            "endedAt": 1793881448084
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881448084,
+            "phase": "fulfilled",
+            "endedAt": 1793881448084
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881448084,
+            "phase": "fulfilled",
+            "endedAt": 1793881448084
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "restore-fails",
+            "at": 1793881448084,
+            "phase": "fulfilled",
+            "endedAt": 1793881448085
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-old-X",
+            "mode": "restore-fails",
+            "at": 1793881448085,
+            "phase": "injected-before-restore"
+          },
+          {
+            "method": "set",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881448086,
+            "phase": "fulfilled",
+            "endedAt": 1793881448086
+          }
+        ],
+        "faults": {
+          "writeFault": true,
+          "restoreFault": true
+        }
+      },
+      "blockedCli": {
+        "label": "attention-real-cli-unavailable",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881448131,
+        "raw": {
+          "kind": "cli-result",
+          "id": 5,
+          "pid": 31577,
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_UNAVAILABLE\",\"layer\":\"provider\",\"message\":\"登录态需要处理，请重试恢复或清空登录态\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"fc1425a0-ac62-493b-898e-ac33cb35f03c\",\"requestId\":\"d34e78a6-2511-4df2-a609-ac5ae22e0924\"}\n",
+          "stderr": "willyou-app: BROWSER_UNAVAILABLE\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "read-only",
+            "code": "BROWSER_UNAVAILABLE",
+            "layer": "provider",
+            "message": "登录态需要处理，请重试恢复或清空登录态",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "fc1425a0-ac62-493b-898e-ac33cb35f03c",
+          "requestId": "d34e78a6-2511-4df2-a609-ac5ae22e0924"
+        }
+      },
+      "blockedImport": {
+        "error": {
+          "name": "ApplicationError",
+          "code": "BROWSER_UNAVAILABLE",
+          "reason": null,
+          "message": "请先处理该登录态的恢复记录",
+          "stack": "ApplicationError: 请先处理该登录态的恢复记录\n    at BrowserImportCoordinator.assertImportable (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22235:73)\n    at BrowserService.importCookies (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:23815:18)\n    at Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14729:28)\n    at process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:62)\n    at process.emit (node:events:509:28)\n    at emit (node:internal/child_process:989:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)"
+        },
+        "additionalNativeWrites": 0,
+        "keyCallsBefore": 5,
+        "keyCallsAfter": 5
+      },
+      "recover": {
+        "at": 1793881449101,
+        "profileId": "project-5808a3350042b969b8262133",
+        "importState": "ready",
+        "cookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885042,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "journal": {
+          "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+          "exists": false
+        }
+      },
+      "afterRetryQa": {
+        "label": "retry-restored-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881449102,
+        "raw": {
+          "kind": "cli-result",
+          "id": 6,
+          "pid": 31590,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885042,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"405a63a4-04ee-45b7-b880-ce8da5f54330\",\"requestId\":\"679f3a5c-ba20-40e7-b6a3-b56096cd0acb\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885042,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "405a63a4-04ee-45b7-b880-ce8da5f54330",
+            "requestId": "679f3a5c-ba20-40e7-b6a3-b56096cd0acb",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "attentionAgain": {
+        "kind": "restore-fails",
+        "before": {
+          "at": 1793881450067,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "ready",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P045-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": false
+          }
+        },
+        "after": {
+          "at": 1793881450189,
+          "profileId": "project-5808a3350042b969b8262133",
+          "importState": "needs-attention",
+          "cookies": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P045-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "G",
+                "value": "P045-keep-G",
+                "domain": "google.com",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P045-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": false,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793885042,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "NonSecure",
+                "sourcePort": 80
+              }
+            }
+          ],
+          "journal": {
+            "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+            "exists": true,
+            "mode": 384,
+            "directoryMode": 448,
+            "bytes": 1512,
+            "sha256": "cc479b867bb738ffe25fdc7f8579885066a9aa1e70f816dba34c888ca69ca494",
+            "containsCookieCanary": false
+          }
+        },
+        "error": {
+          "name": "BrowserCookieRecoveryRequired",
+          "code": "BROWSER_UNAVAILABLE",
+          "reason": null,
+          "message": "登录态处理尚未完成，请先重试恢复或清空该登录态",
+          "stack": "ApplicationError: 登录态处理尚未完成，请先重试恢复或清空该登录态\n    at BrowserCookieTransactions.restore (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22000:23)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22035:9\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14721:31)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+        },
+        "trace": [
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881450138,
+            "phase": "fulfilled",
+            "endedAt": 1793881450139
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881450140,
+            "phase": "fulfilled",
+            "endedAt": 1793881450140
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881450140,
+            "phase": "fulfilled",
+            "endedAt": 1793881450140
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "restore-fails",
+            "at": 1793881450141,
+            "phase": "fulfilled",
+            "endedAt": 1793881450141
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881450141,
+            "phase": "fulfilled",
+            "endedAt": 1793881450141
+          },
+          {
+            "method": "set",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881450141,
+            "phase": "actual-set-then-lost-ack",
+            "error": {
+              "name": "Error",
+              "code": null,
+              "reason": null,
+              "message": "I lost acknowledgment after actual W set",
+              "stack": "Error: I lost acknowledgment after actual W set\n    at NativeBrowserCookieStore.<computed> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14634:19)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22032:66\n    at async BrowserCookieTransactions.exclusive (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:21970:14)\n    at async /private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22193:9\n    at async BrowserImportCoordinator.work (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22149:23)\n    at async BrowserImportCoordinator.import (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22191:50)\n    at async BrowserCookieImportAudit.run (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:22305:23)\n    at async attempt (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14695:19)\n    at async Object.invoke (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:14721:31)\n    at async process.<anonymous> (/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build/host.cjs:87540:49)"
+            },
+            "endedAt": 1793881450143
+          },
+          {
+            "method": "remove",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-new-X",
+            "mode": "restore-fails",
+            "at": 1793881450143,
+            "phase": "fulfilled",
+            "endedAt": 1793881450143
+          },
+          {
+            "method": "remove",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881450144,
+            "phase": "fulfilled",
+            "endedAt": 1793881450144
+          },
+          {
+            "method": "remove",
+            "name": "W",
+            "domain": "qa.example.test",
+            "value": "P045-new-W",
+            "mode": "restore-fails",
+            "at": 1793881450144,
+            "phase": "fulfilled",
+            "endedAt": 1793881450144
+          },
+          {
+            "method": "remove",
+            "name": "YT",
+            "domain": "youtube.com",
+            "value": "P045-new-YT",
+            "mode": "restore-fails",
+            "at": 1793881450144,
+            "phase": "fulfilled",
+            "endedAt": 1793881450144
+          },
+          {
+            "method": "set",
+            "name": "X",
+            "domain": "qa.example.test",
+            "value": "P045-old-X",
+            "mode": "restore-fails",
+            "at": 1793881450144,
+            "phase": "injected-before-restore"
+          },
+          {
+            "method": "set",
+            "name": "Y",
+            "domain": "qa.example.test",
+            "value": "P045-old-Y",
+            "mode": "restore-fails",
+            "at": 1793881450146,
+            "phase": "fulfilled",
+            "endedAt": 1793881450146
+          }
+        ],
+        "faults": {
+          "writeFault": true,
+          "restoreFault": true
+        }
+      },
+      "blockedAgain": {
+        "label": "second-attention-unavailable",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881450192,
+        "raw": {
+          "kind": "cli-result",
+          "id": 7,
+          "pid": 31636,
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_UNAVAILABLE\",\"layer\":\"provider\",\"message\":\"登录态需要处理，请重试恢复或清空登录态\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"81f48197-59e2-40a1-acec-5c10517cd185\",\"requestId\":\"7ba01b27-3499-4972-886c-703f594ff420\"}\n",
+          "stderr": "willyou-app: BROWSER_UNAVAILABLE\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "read-only",
+            "code": "BROWSER_UNAVAILABLE",
+            "layer": "provider",
+            "message": "登录态需要处理，请重试恢复或清空登录态",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "81f48197-59e2-40a1-acec-5c10517cd185",
+          "requestId": "7ba01b27-3499-4972-886c-703f594ff420"
+        }
+      },
+      "clear": {
+        "at": 1793881451183,
+        "profileId": "project-5808a3350042b969b8262133",
+        "importState": "ready",
+        "cookies": [],
+        "journal": {
+          "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+          "exists": false
+        }
+      },
+      "afterClear": {
+        "label": "clear-empty-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "abb711a1-bb65-4d04-8924-ec95a6e3c6c0"
+        ],
+        "startedAt": 1793881451184,
+        "raw": {
+          "kind": "cli-result",
+          "id": 8,
+          "pid": 31647,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[]}},\"resources\":[],\"operation\":{\"id\":\"7a4344ae-1f53-4aa1-9872-cf1355e10f40\",\"requestId\":\"cd2906cc-e620-460d-994e-c93434e2a220\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": []
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "7a4344ae-1f53-4aa1-9872-cf1355e10f40",
+            "requestId": "cd2906cc-e620-460d-994e-c93434e2a220",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "shutdown": {
+        "cleanup": {
+          "windows": [],
+          "contents": [
+            {
+              "id": 1,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 2,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 3,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 4,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 5,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 6,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 7,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 8,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 9,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 10,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 11,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 12,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 13,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 14,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 15,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 16,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 17,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 18,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 19,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 20,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 21,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 22,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 23,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 24,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 25,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 26,
+              "destroyed": true,
+              "debuggerAttached": false
+            }
+          ],
+          "allRemaining": []
+        }
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "status": "executed",
+      "helperOptions": [
+        {
+          "home": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/live-userdata/browser/agent-browser-home/abb711a1-bb65-4d04-8924-ec95a6e3c6c0",
+          "sockets": "/private/tmp/wy-ab-a482e87248da2ea533580db9",
+          "session": "wy-kecd68e97737a4627a86fa5c9bb5bcdc4"
+        }
+      ],
+      "hostRawFile": "live-failures.host.raw.json",
+      "endedAt": 1793881452192
+    },
+    {
+      "name": "durable-partial",
+      "expectedExit": 17,
+      "startedAt": 1793881452193,
+      "cli": [
+        {
+          "label": "new-owned-fixture-page",
+          "args": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:60308/durable-partial"
+          ],
+          "startedAt": 1793881453776,
+          "raw": {
+            "kind": "cli-result",
+            "id": 1,
+            "pid": 31725,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:60308\\/durable-partial\",\"pageId\":\"6363f190-4026-4362-a220-eb0b596eead1\"},\"resources\":[],\"operation\":{\"id\":\"73de7cc1-62cf-46b2-a205-7645a7b654d8\",\"requestId\":\"2bcf2539-8e10-4994-a7b3-1d4095255eba\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "url": "http://127.0.0.1:60308/durable-partial",
+              "pageId": "6363f190-4026-4362-a220-eb0b596eead1"
+            },
+            "resources": [],
+            "operation": {
+              "id": "73de7cc1-62cf-46b2-a205-7645a7b654d8",
+              "requestId": "2bcf2539-8e10-4994-a7b3-1d4095255eba",
+              "effectState": "completed",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.tab.create"
+          }
+        }
+      ],
+      "messages": [
+        {
+          "stage": "M11-setup",
+          "pid": 31679
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-ready",
+            "pid": 31700
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-configured",
+            "pid": 31700,
+            "environmentValuesLogged": false
+          }
+        },
+        {
+          "stage": "ready",
+          "pid": 31679
+        },
+        {
+          "ready": true,
+          "pid": 31679,
+          "runRootPid": 31700,
+          "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+          "runId": "b3af1ae9-694c-4a2f-8b2a-5a58c6fb4e87",
+          "fixtureProfiles": {
+            "p1": {
+              "id": "project-5808a3350042b969b8262133",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+              },
+              "source": null
+            },
+            "p2": {
+              "id": "project-4045387592e655ecc6f24a6c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+              },
+              "source": null
+            },
+            "t2": {
+              "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+              },
+              "source": null
+            }
+          },
+          "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 1,
+            "pid": 31725,
+            "args": [
+              "browser",
+              "tab",
+              "create",
+              "--url",
+              "http://127.0.0.1:60308/durable-partial"
+            ]
+          }
+        },
+        {
+          "crashReady": true,
+          "pid": 31679,
+          "expectedExit": 17
+        }
+      ],
+      "resources": [
+        {
+          "at": 1793881453776,
+          "processes": [
+            {
+              "pid": 31679,
+              "ppid": 31403,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+            },
+            {
+              "pid": 31680,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31681,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31700,
+              "ppid": 31679,
+              "path": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+            }
+          ],
+          "tcp": ""
+        },
+        {
+          "at": 1793881455033,
+          "processes": [
+            {
+              "pid": 31679,
+              "ppid": 31403,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+            },
+            {
+              "pid": 31680,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31681,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31700,
+              "ppid": 31679,
+              "path": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+            },
+            {
+              "pid": 31743,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+            },
+            {
+              "pid": 31744,
+              "ppid": 31679,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+            },
+            {
+              "pid": 31745,
+              "ppid": 31679,
+              "path": "(Electron Helper )"
+            }
+          ],
+          "tcp": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 31679 liubu   83u  IPv4 0xb112500162b89d18      0t0  TCP 127.0.0.1:60408 (LISTEN)\n"
+        }
+      ],
+      "hostPid": 31679,
+      "ready": {
+        "ready": true,
+        "pid": 31679,
+        "runRootPid": 31700,
+        "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+        "runId": "b3af1ae9-694c-4a2f-8b2a-5a58c6fb4e87",
+        "fixtureProfiles": {
+          "p1": {
+            "id": "project-5808a3350042b969b8262133",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+            },
+            "source": null
+          },
+          "p2": {
+            "id": "project-4045387592e655ecc6f24a6c",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+            },
+            "source": null
+          },
+          "t2": {
+            "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "scope": "isolated",
+            "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "label": "P045 hidden T2",
+            "owner": {
+              "kind": "task",
+              "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+            },
+            "source": null
+          }
+        },
+        "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+      },
+      "pageId": "6363f190-4026-4362-a220-eb0b596eead1",
+      "before": {
+        "at": 1793881454945,
+        "profileId": "project-5808a3350042b969b8262133",
+        "importState": "ready",
+        "cookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "journal": {
+          "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+          "exists": false
+        }
+      },
+      "preCrashNative": {
+        "profiles": [
+          {
+            "id": "project-5808a3350042b969b8262133",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+            },
+            "source": null
+          },
+          {
+            "id": "project-4045387592e655ecc6f24a6c",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+            },
+            "source": null
+          },
+          {
+            "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "scope": "isolated",
+            "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "label": "P045 hidden T2",
+            "owner": {
+              "kind": "task",
+              "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+            },
+            "source": null
+          }
+        ],
+        "workspace": [
+          {
+            "pageId": "6363f190-4026-4362-a220-eb0b596eead1",
+            "browserPageId": "6363f190-4026-4362-a220-eb0b596eead1",
+            "title": "Cookie recovery I",
+            "url": "http://127.0.0.1:60308/durable-partial",
+            "profileId": "project-5808a3350042b969b8262133",
+            "kind": "tab",
+            "index": 0,
+            "active": true
+          }
+        ],
+        "pages": [
+          {
+            "id": "6363f190-4026-4362-a220-eb0b596eead1",
+            "kind": "tab",
+            "contentsId": 3,
+            "url": "http://127.0.0.1:60308/durable-partial",
+            "profileId": "project-5808a3350042b969b8262133",
+            "proxyPort": 60408,
+            "helperOptions": {
+              "home": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/agent-browser-home/6363f190-4026-4362-a220-eb0b596eead1",
+              "sockets": "/private/tmp/wy-ab-b14d6e060682b61547a8c717",
+              "session": "wy-k59fa3850a44e467c97514bc8b713e08a"
+            },
+            "helperRuntime": {
+              "initialized": false,
+              "activePid": null,
+              "daemonPid": null
+            },
+            "helperCleanup": null
+          }
+        ],
+        "windows": [
+          {
+            "id": 1,
+            "title": "WillYou browser background",
+            "visible": true,
+            "focused": false,
+            "focusable": false,
+            "opacity": 0
+          }
+        ],
+        "browserOperations": [
+          {
+            "run_id": "b3af1ae9-694c-4a2f-8b2a-5a58c6fb4e87",
+            "request_id": "audit:2bcf2539-8e10-4994-a7b3-1d4095255eba",
+            "task_id": "b758f8a4-3469-403a-9560-8475872c2946",
+            "page_id": "6363f190-4026-4362-a220-eb0b596eead1",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"d3e31b46-3354-4ec9-a150-5d1326e84ce3\",\"targetTaskId\":\"b758f8a4-3469-403a-9560-8475872c2946\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:60308/durable-partial\"},\"result\":{\"pageId\":\"6363f190-4026-4362-a220-eb0b596eead1\",\"url\":\"http://127.0.0.1:60308/durable-partial\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793881454686,
+            "updated_at": 1793881454841
+          },
+          {
+            "run_id": "b3af1ae9-694c-4a2f-8b2a-5a58c6fb4e87",
+            "request_id": "2bcf2539-8e10-4994-a7b3-1d4095255eba",
+            "task_id": "b758f8a4-3469-403a-9560-8475872c2946",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"6363f190-4026-4362-a220-eb0b596eead1\",\"url\":\"http://127.0.0.1:60308/durable-partial\"}",
+            "error_code": null,
+            "created_at": 1793881454690,
+            "updated_at": 1793881454841
+          }
+        ],
+        "cloneIntents": []
+      },
+      "crashNotice": {
+        "crashReady": true,
+        "pid": 31679,
+        "expectedExit": 17
+      },
+      "exit": {
+        "code": 17,
+        "signal": null
+      },
+      "pendingReply": {
+        "expectedTransportLost": "Error: Host exited during fault-crash"
+      },
+      "status": "executed",
+      "hostRawFile": "durable-partial.host.raw.json",
+      "endedAt": 1793881455221
+    },
+    {
+      "name": "recover-restart",
+      "expectedExit": 0,
+      "startedAt": 1793881455222,
+      "cli": [
+        {
+          "label": "new-owned-fixture-page",
+          "args": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:60308/recover-restart"
+          ],
+          "startedAt": 1793881456382,
+          "raw": {
+            "kind": "cli-result",
+            "id": 1,
+            "pid": 31807,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:60308\\/recover-restart\",\"pageId\":\"29778de4-f141-45b5-bbe9-e08e1222f1d3\"},\"resources\":[],\"operation\":{\"id\":\"e5c8e685-8dba-44ac-b41a-cba41a06a0a2\",\"requestId\":\"a52e8527-b488-4873-9730-a3d2a0cb8553\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "url": "http://127.0.0.1:60308/recover-restart",
+              "pageId": "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+            },
+            "resources": [],
+            "operation": {
+              "id": "e5c8e685-8dba-44ac-b41a-cba41a06a0a2",
+              "requestId": "a52e8527-b488-4873-9730-a3d2a0cb8553",
+              "effectState": "completed",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.tab.create"
+          }
+        },
+        {
+          "label": "startup-restored-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://qa.example.test/",
+            "--page",
+            "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+          ],
+          "startedAt": 1793881457558,
+          "raw": {
+            "kind": "cli-result",
+            "id": 2,
+            "pid": 31819,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"9e574383-9e52-4120-8aba-3890f2620c77\",\"requestId\":\"c9e24497-38cc-4400-bad8-fc562652f62f\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885053,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-X",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "X"
+                  },
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "qa.example.test",
+                    "expires": 1793885053,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 11,
+                    "value": "P045-old-Y",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Y"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "9e574383-9e52-4120-8aba-3890f2620c77",
+              "requestId": "c9e24497-38cc-4400-bad8-fc562652f62f",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "outside-scope-preserved-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://other.example.test/",
+            "--page",
+            "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+          ],
+          "startedAt": 1793881458494,
+          "raw": {
+            "kind": "cli-result",
+            "id": 3,
+            "pid": 31850,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"other.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-Z\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Z\"}]}},\"resources\":[],\"operation\":{\"id\":\"9ab29eb9-b278-461a-bd23-d8fdf5a71617\",\"requestId\":\"a0a7f0ba-87f8-471f-b269-64637027e422\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "other.example.test",
+                    "expires": 1793885053,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 12,
+                    "value": "P045-keep-Z",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "Z"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "9ab29eb9-b278-461a-bd23-d8fdf5a71617",
+              "requestId": "a0a7f0ba-87f8-471f-b269-64637027e422",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        },
+        {
+          "label": "excluded-google-preserved-real-cli",
+          "args": [
+            "browser",
+            "cookie",
+            "get",
+            "--url",
+            "http://google.com/",
+            "--page",
+            "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+          ],
+          "startedAt": 1793881459371,
+          "raw": {
+            "kind": "cli-result",
+            "id": 4,
+            "pid": 31868,
+            "code": 0,
+            "signal": null,
+            "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"google.com\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-G\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"G\"}]}},\"resources\":[],\"operation\":{\"id\":\"e99430bb-7b69-47c8-9cc5-68d02739d94a\",\"requestId\":\"76d2dbc1-bd19-4d8e-8e51-45bf39f24353\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+            "stderr": "",
+            "timedOut": false
+          },
+          "parsed": {
+            "schema": "willyou-app-result-v2",
+            "status": "ok",
+            "source": {
+              "appId": "browser",
+              "revision": null,
+              "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+              "connections": []
+            },
+            "data": {
+              "result": {
+                "cookies": [
+                  {
+                    "httpOnly": true,
+                    "sourcePort": 80,
+                    "secure": false,
+                    "session": false,
+                    "domain": "google.com",
+                    "expires": 1793885053,
+                    "path": "/",
+                    "priority": "Medium",
+                    "size": 12,
+                    "value": "P045-keep-G",
+                    "sameSite": "Lax",
+                    "sourceScheme": "NonSecure",
+                    "name": "G"
+                  }
+                ]
+              }
+            },
+            "resources": [],
+            "operation": {
+              "id": "e99430bb-7b69-47c8-9cc5-68d02739d94a",
+              "requestId": "76d2dbc1-bd19-4d8e-8e51-45bf39f24353",
+              "effectState": "read-only",
+              "origin": "cli"
+            },
+            "pagination": null,
+            "completeness": {
+              "missing": [],
+              "complete": true
+            },
+            "contractMajor": 2,
+            "capabilityId": "browser.cookie.get"
+          }
+        }
+      ],
+      "messages": [
+        {
+          "stage": "M11-setup",
+          "pid": 31753
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-ready",
+            "pid": 31797
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "root-configured",
+            "pid": 31797,
+            "environmentValuesLogged": false
+          }
+        },
+        {
+          "stage": "ready",
+          "pid": 31753
+        },
+        {
+          "ready": true,
+          "pid": 31753,
+          "runRootPid": 31797,
+          "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+          "runId": "e9bb11ff-4f69-45e6-a497-0f6150c111cb",
+          "fixtureProfiles": {
+            "p1": {
+              "id": "project-5808a3350042b969b8262133",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+              },
+              "source": null
+            },
+            "p2": {
+              "id": "project-4045387592e655ecc6f24a6c",
+              "scope": "project",
+              "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+              "label": "项目登录态",
+              "owner": {
+                "kind": "project",
+                "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+              },
+              "source": null
+            },
+            "t2": {
+              "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+              "scope": "isolated",
+              "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+              "label": "P045 hidden T2",
+              "owner": {
+                "kind": "task",
+                "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+              },
+              "source": null
+            }
+          },
+          "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 1,
+            "pid": 31807,
+            "args": [
+              "browser",
+              "tab",
+              "create",
+              "--url",
+              "http://127.0.0.1:60308/recover-restart"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 2,
+            "pid": 31819,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://qa.example.test/",
+              "--page",
+              "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 3,
+            "pid": 31850,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://other.example.test/",
+              "--page",
+              "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+            ]
+          }
+        },
+        {
+          "nativeEvent": {
+            "kind": "cli-spawn",
+            "id": 4,
+            "pid": 31868,
+            "args": [
+              "browser",
+              "cookie",
+              "get",
+              "--url",
+              "http://google.com/",
+              "--page",
+              "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+            ]
+          }
+        },
+        {
+          "stage": "cleanup",
+          "pid": 31753
+        },
+        {
+          "stage": "done",
+          "pid": 31753
+        },
+        {
+          "willQuit": true
+        }
+      ],
+      "resources": [
+        {
+          "at": 1793881456382,
+          "processes": [
+            {
+              "pid": 31753,
+              "ppid": 31403,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+            },
+            {
+              "pid": 31756,
+              "ppid": 31753,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31757,
+              "ppid": 31753,
+              "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+            },
+            {
+              "pid": 31797,
+              "ppid": 31753,
+              "path": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+            }
+          ],
+          "tcp": ""
+        }
+      ],
+      "hostPid": 31753,
+      "ready": {
+        "ready": true,
+        "pid": 31753,
+        "runRootPid": 31797,
+        "taskId": "b758f8a4-3469-403a-9560-8475872c2946",
+        "runId": "e9bb11ff-4f69-45e6-a497-0f6150c111cb",
+        "fixtureProfiles": {
+          "p1": {
+            "id": "project-5808a3350042b969b8262133",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-5808a3350042b969b8262133",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "d3e31b46-3354-4ec9-a150-5d1326e84ce3"
+            },
+            "source": null
+          },
+          "p2": {
+            "id": "project-4045387592e655ecc6f24a6c",
+            "scope": "project",
+            "partition": "persist:wy-browser-project-4045387592e655ecc6f24a6c",
+            "label": "项目登录态",
+            "owner": {
+              "kind": "project",
+              "id": "508f44d4-6b45-43ab-a7c0-0e55bca6ae0c"
+            },
+            "source": null
+          },
+          "t2": {
+            "id": "9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "scope": "isolated",
+            "partition": "persist:wy-browser-9ce8bf79-2ffb-477f-8e4a-5413678a2844",
+            "label": "P045 hidden T2",
+            "owner": {
+              "kind": "task",
+              "id": "c15e3f6c-1df2-489d-be86-fb63182ac5ab"
+            },
+            "source": null
+          }
+        },
+        "sourceBundleHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140"
+      },
+      "pageId": "29778de4-f141-45b5-bbe9-e08e1222f1d3",
+      "recovered": {
+        "at": 1793881457557,
+        "profileId": "project-5808a3350042b969b8262133",
+        "importState": "ready",
+        "cookies": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P045-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "G",
+              "value": "P045-keep-G",
+              "domain": "google.com",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P045-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P045-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793885053,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 80
+            }
+          }
+        ],
+        "journal": {
+          "path": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/import-journal/project-5808a3350042b969b8262133.bin",
+          "exists": false
+        }
+      },
+      "qa": {
+        "label": "startup-restored-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+        ],
+        "startedAt": 1793881457558,
+        "raw": {
+          "kind": "cli-result",
+          "id": 2,
+          "pid": 31819,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"qa.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"9e574383-9e52-4120-8aba-3890f2620c77\",\"requestId\":\"c9e24497-38cc-4400-bad8-fc562652f62f\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885053,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-X",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "X"
+                },
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "qa.example.test",
+                  "expires": 1793885053,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 11,
+                  "value": "P045-old-Y",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Y"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "9e574383-9e52-4120-8aba-3890f2620c77",
+            "requestId": "c9e24497-38cc-4400-bad8-fc562652f62f",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "other": {
+        "label": "outside-scope-preserved-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://other.example.test/",
+          "--page",
+          "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+        ],
+        "startedAt": 1793881458494,
+        "raw": {
+          "kind": "cli-result",
+          "id": 3,
+          "pid": 31850,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"other.example.test\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-Z\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Z\"}]}},\"resources\":[],\"operation\":{\"id\":\"9ab29eb9-b278-461a-bd23-d8fdf5a71617\",\"requestId\":\"a0a7f0ba-87f8-471f-b269-64637027e422\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "other.example.test",
+                  "expires": 1793885053,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 12,
+                  "value": "P045-keep-Z",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "Z"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "9ab29eb9-b278-461a-bd23-d8fdf5a71617",
+            "requestId": "a0a7f0ba-87f8-471f-b269-64637027e422",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "google": {
+        "label": "excluded-google-preserved-real-cli",
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://google.com/",
+          "--page",
+          "29778de4-f141-45b5-bbe9-e08e1222f1d3"
+        ],
+        "startedAt": 1793881459371,
+        "raw": {
+          "kind": "cli-result",
+          "id": 4,
+          "pid": 31868,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":false,\"domain\":\"google.com\",\"expires\":1793885053,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-G\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"G\"}]}},\"resources\":[],\"operation\":{\"id\":\"e99430bb-7b69-47c8-9cc5-68d02739d94a\",\"requestId\":\"76d2dbc1-bd19-4d8e-8e51-45bf39f24353\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "cookies": [
+                {
+                  "httpOnly": true,
+                  "sourcePort": 80,
+                  "secure": false,
+                  "session": false,
+                  "domain": "google.com",
+                  "expires": 1793885053,
+                  "path": "/",
+                  "priority": "Medium",
+                  "size": 12,
+                  "value": "P045-keep-G",
+                  "sameSite": "Lax",
+                  "sourceScheme": "NonSecure",
+                  "name": "G"
+                }
+              ]
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "e99430bb-7b69-47c8-9cc5-68d02739d94a",
+            "requestId": "76d2dbc1-bd19-4d8e-8e51-45bf39f24353",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.cookie.get"
+        }
+      },
+      "shutdown": {
+        "cleanup": {
+          "windows": [],
+          "contents": [
+            {
+              "id": 1,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 2,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 3,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 4,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 5,
+              "destroyed": true,
+              "debuggerAttached": false
+            },
+            {
+              "id": 6,
+              "destroyed": true,
+              "debuggerAttached": false
+            }
+          ],
+          "allRemaining": []
+        }
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "status": "executed",
+      "helperOptions": [
+        {
+          "home": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/runtime-001/restart-userdata/browser/agent-browser-home/29778de4-f141-45b5-bbe9-e08e1222f1d3",
+          "sockets": "/private/tmp/wy-ab-3c353974eab006e83488953f",
+          "session": "wy-ked0f17dba0704c07b2748bffe73647ac"
+        }
+      ],
+      "hostRawFile": "recover-restart.host.raw.json",
+      "endedAt": 1793881460341
+    }
+  ],
+  "requests": [
+    {
+      "url": "/live-failures",
+      "at": 1793881444550
+    },
+    {
+      "url": "/favicon.ico",
+      "at": 1793881444649
+    },
+    {
+      "url": "/live-failures",
+      "at": 1793881447023
+    },
+    {
+      "url": "/live-failures",
+      "at": 1793881449053
+    },
+    {
+      "url": "/live-failures",
+      "at": 1793881451134
+    },
+    {
+      "url": "/durable-partial",
+      "at": 1793881454830
+    },
+    {
+      "url": "/favicon.ico",
+      "at": 1793881454897
+    },
+    {
+      "url": "/recover-restart",
+      "at": 1793881457412
+    },
+    {
+      "url": "/favicon.ico",
+      "at": 1793881457507
+    }
+  ],
+  "knownPids": [
+    31403,
+    31404,
+    31420,
+    31407,
+    31408,
+    31462,
+    31474,
+    31517,
+    31542,
+    31577,
+    31590,
+    31636,
+    31647,
+    31471,
+    31470,
+    31679,
+    31700,
+    31680,
+    31681,
+    31725,
+    31743,
+    31744,
+    31745,
+    31753,
+    31797,
+    31756,
+    31757,
+    31807,
+    31819,
+    31850,
+    31868,
+    31816,
+    31813
+  ],
+  "knownPorts": [
+    60308,
+    60408
+  ],
+  "exactUnix": [
+    "/private/tmp/wy-cli-501-uFa3DZ/cli.sock",
+    "/private/tmp/wy-cli-501-9H5JXa/cli.sock",
+    "/private/tmp/wy-cli-501-oPXqfY/cli.sock"
+  ],
+  "cleanupErrors": [],
+  "status": "executed-unjudged",
+  "serverClosed": true,
+  "finishedAt": 1793881460342
+}

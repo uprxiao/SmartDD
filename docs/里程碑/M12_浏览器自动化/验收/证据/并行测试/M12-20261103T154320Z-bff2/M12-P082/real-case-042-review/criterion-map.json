@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-05T12:44:28.622266+00:00",
+  "originalCaseRow": "| M12-T042 | P1 \u8865\u5145 | R | \u771f\u5b9e Codex 0.166.0\uff0c\u9ed8\u8ba4\u6c99\u7bb1 | Codex \u5728\u4f1a\u8bdd\u4e2d\u6267\u884c `willyou-app browser tab list` | Codex \u5b50\u8fdb\u7a0b\u80fd\u8bfb\u5230 `WILLYOU_RUN_TOKEN` \u4e0e `WILLYOU_ENDPOINT`\uff0c\u8c03\u7528\u6210\u529f\uff0c\u4e0d\u9700\u8981\u63d0\u6743 | \u2014 | \u5f85\u6267\u884c | \u2014 |",
+  "meaningUnchanged": true,
+  "criteria": [
+    {
+      "criterion": "Real Codex0.166.0 in the default standard sandbox",
+      "evidence": "R010 actual native session meta cli_version0.166.0, task native_session_id binding in previous T041 proof; original managed profile args[]; every actual turn_context workspace-write/on-request.",
+      "source": "existing-proof-safe.json:R010.contexts/testProfileArgs + prior actual T041 derived-safe.json",
+      "status": "proven"
+    },
+    {
+      "criterion": "Within that real session execute literal willyou-app browser tab list",
+      "evidence": "R010 real custom exec line21/24 statically parsed: const result=await tools.exec_command({cmd:\"willyou-app browser tab list\",max_output_tokens:12000});text(result.output). No cmd/env/PATH/sandbox override or JS side effect before call.",
+      "source": "existing-proof-safe.json:R010.list",
+      "status": "proven"
+    },
+    {
+      "criterion": "Child can read WILLYOU_RUN_TOKEN and WILLYOU_ENDPOINT; call succeeds",
+      "evidence": "Same R010 native CLI child returned actual v2ok read-only and exact authenticated Host succeeded/attempt1 current actor/request/op row. Official fixed binary2da7 source45\u201346 must getenv both before connecting, with no fallback. Packaged PATH injection, runtime fileSHA and kernel-peer executable checks bind this successful call to that binary. Therefore BOTH env are necessarily readable in THAT same child; this is a source-backed inference, not an invented Boolean observation.",
+      "source": "existing-proof-safe.json:cliProvenance + R010.list.hostEvidence",
+      "status": "proven-by-same-child-necessary-code-path"
+    },
+    {
+      "criterion": "No escalation required",
+      "evidence": "Actual list request parameters only cmd/max_output_tokens. No sandbox_permissions or require_escalated in any R010 tool request, managed args[], actual standard contexts, actual successful Host receipt.",
+      "source": "actual R010 four-request AST decoding + actual contexts; existing-proof-safe.json",
+      "status": "proven"
+    }
+  ],
+  "separateSupplement": {
+    "source": "existing-proof-safe.json:R012Supplement + r012-python-ast-proof.json",
+    "claim": "R012 DIFFERENT task/run actually checked key membership in Python child and printed two true booleans, observed full result exit_code0. It did not execute tab list and is NOT merged as the same R010 run.",
+    "necessaryToCloseOriginalT042": false
+  },
+  "partialNativeNegative": {
+    "path": "/private/tmp/willyou-m12-t042-env-proof-001/missing-token.stdout.json",
+    "sha256": "579c58021793185604db450fea29cdad958861cc3414bc29a7184f7c1c000fd5",
+    "errorCode": "AUTH_REQUIRED",
+    "effectState": "not-started",
+    "numericExitObserved": null,
+    "statusFieldPresent": false,
+    "completeNegativeCaseCredit": false,
+    "requiredForT042Proof": false,
+    "boundary": "Root actual missing-token stdout only. Auxiliary checker expected nonexistent status field and did not serialize numeric child exit; do not claim code3 observed."
+  },
+  "removedOnlyDriverExtras": [
+    "same secondPrompt/stage after T041",
+    "explicit env Boolean print",
+    "DONE marker",
+    "numeric list child exit observation",
+    "additional full Skill read"
+  ],
+  "remainingOriginalPredicateGaps": [],
+  "newModelRequests": 0,
+  "formalWholeCaseCount": 0,
+  "requiresRootIndependentReview": true
+}
