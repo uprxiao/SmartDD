@@ -1,0 +1,23 @@
+--- source025/run-registry.test.ts
++++ private/test-adapted.ts
+@@ -1,4 +1,6 @@
+ import {randomUUID} from 'node:crypto';
++import {existsSync,mkdirSync,writeFileSync} from 'node:fs';
++import {join} from 'node:path';
+ import {withResourceLock} from '../resource-lock';
+ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+ import { FixtureProcessReader, runFixture } from './run-fixture';
+@@ -8,8 +10,11 @@
+ const protection = (runId: string) => f.sqlite.prepare("SELECT lr.resource_id FROM capability_lease_resources lr JOIN capability_resource_leases l ON l.lease_id=lr.lease_id WHERE l.owner_kind='run' AND l.owner_id=? ORDER BY lr.resource_id").all(runId);
+ const hostStopped = (runId: string) => f.sqlite.prepare('UPDATE capability_runs SET owner_pid=?,owner_started_at=? WHERE run_id=?').run(987654321,'darwin-proc-v1:1:1',runId);
+ async function active(): Promise<OwnedCapabilityRun> { const run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001); return run; }
+-beforeEach(async () => { reader = new FixtureProcessReader(); f = await runFixture(reader); });
+-afterEach(() => f.cleanup());
++const cleanupReceipts:unknown[]=[];let observerIdentity:{workerPid:number;caseName:string;fixtureRoot:string}|undefined;
++function captureIdentity(){try{return{workerPid:process.pid,caseName:expect.getState().currentTestName!,fixtureRoot:f.root};}catch{return undefined;}}
++function safeCleanupReceipt(){try{cleanupReceipts.push({...observerIdentity,fixtureRootRemoved:!!observerIdentity&&!existsSync(observerIdentity.fixtureRoot)});const out=process.env.WILLYOU_TEST_EVIDENCE_DIR!;mkdirSync(out,{recursive:true});writeFileSync(join(out,'fixture-cleanup.json'),JSON.stringify(cleanupReceipts,null,2)+'\n',{mode:0o600});}catch{}}
++beforeEach(async () => { observerIdentity=undefined;reader = new FixtureProcessReader(); f = await runFixture(reader);observerIdentity=captureIdentity(); });
++afterEach(() => {try{f.cleanup();}finally{safeCleanupReceipt();}});
+ describe('capability run resource registration, revocation and conservative recovery', () => {
+   it('rolls back a failed restriction receipt without guessing the CLI was restricted or armed',async()=>{
+     const run=await f.create();await run.prepare();f.sqlite.exec("CREATE TRIGGER restriction_write_fail BEFORE INSERT ON capability_run_restrictions BEGIN SELECT RAISE(ABORT,'private restriction receipt failure'); END");await expect(f.runs.restrictToNative(run.runId)).rejects.toThrow('private restriction receipt failure');expect(f.sqlite.prepare('SELECT COUNT(*) n FROM capability_run_restrictions').get()).toEqual({n:0});expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE run_id=?').get(run.runId)).toEqual({state:'reserved'});f.sqlite.exec('DROP TRIGGER restriction_write_fail');const bridge=await run.reserveBridge();await bridge.cancelBeforeLaunch();await run.cli.arm();reader.identities.set(200001,'darwin-proc-v1:200:1');await run.cli.attach(200001);expect(f.runs.assertActive(run.runId).run.runId).toBe(run.runId);await run.cli.exited();

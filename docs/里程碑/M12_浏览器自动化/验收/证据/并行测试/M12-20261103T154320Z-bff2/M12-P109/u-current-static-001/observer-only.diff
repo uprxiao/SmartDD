@@ -1,0 +1,37 @@
+--- source025-current-original
++++ private-safe-observer-only
+@@ -1,7 +1,7 @@
+ import {randomUUID} from 'node:crypto';
+ import {once} from 'node:events';
+-import {existsSync,readdirSync,writeFileSync} from 'node:fs';
+-import {dirname} from 'node:path';
++import {existsSync,readdirSync,writeFileSync,mkdirSync} from 'node:fs';
++import {dirname,join} from 'node:path';
+ import {connect,type Socket} from 'node:net';
+ import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+ import type {BridgeResponse} from '@shared/application-bridge';
+@@ -12,6 +12,9 @@
+ 
+ let f:Awaited<ReturnType<typeof cliFixture>>,gateway:ApplicationCliGateway,time:number,identity:UnixPeerIdentity|null,peerReads:number;
+ let issued:ReturnType<ApplicationCliGateway['issue']>;
++const cleanupReceipts:Record<string,unknown>[]=[];let observerIdentity:ReturnType<typeof captureIdentity>|undefined;
++function captureIdentity(){const value:{workerPid:number;caseName:string|null;fixtureRoot:string|null;endpoint:string|null;observationErrors:string[]}={workerPid:process.pid,caseName:null,fixtureRoot:null,endpoint:null,observationErrors:[]};try{value.caseName=expect.getState().currentTestName??null;}catch(e){value.observationErrors.push('case:'+String(e));}try{value.fixtureRoot=f?.root??null;}catch(e){value.observationErrors.push('root:'+String(e));}try{value.endpoint=gateway?.endpoint??null;}catch(e){value.observationErrors.push('endpoint:'+String(e));}return value;}
++function safeCleanupReceipt(value:ReturnType<typeof captureIdentity>){try{cleanupReceipts.push({...value,fixtureRootRemoved:!!value.fixtureRoot&&!existsSync(value.fixtureRoot)});const path=process.env.WILLYOU_TEST_EVIDENCE_DIR!;mkdirSync(path,{recursive:true});writeFileSync(join(path,'fixture-cleanup.json'),JSON.stringify(cleanupReceipts,null,2)+'\n',{mode:0o600});return true;}catch{return false;}}
+ const sockets=new Set<Socket>();
+ async function client(){
+  const socket=connect(gateway.endpoint);sockets.add(socket);socket.on('error',()=>{});socket.on('close',()=>sockets.delete(socket));await once(socket,'connect');
+@@ -19,11 +22,11 @@
+ }
+ const request=(extra:Record<string,unknown>={})=>({schema:'willyou-cli-v1',id:randomUUID(),token:issued.environment.WILLYOU_RUN_TOKEN,method:'capabilities/call',call:{operation:'mail.draft.list',contractMajor:2,connectionId:null,arguments:{}},...extra});
+ const count=()=>f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get();
+-beforeEach(async()=>{
++beforeEach(async()=>{observerIdentity=undefined;
+  f=await cliFixture();time=Date.now();peerReads=0;identity={schema:2,state:'running',uid:process.getuid!(),peer:{pid:921002,startedAt:'darwin-proc-v1:2026:921002',executable:f.executable},ancestors:[{pid:921002,startedAt:'darwin-proc-v1:2026:921002',ppid:921001},{pid:921001,startedAt:'darwin-proc-v1:2026:921001',ppid:1}]};
+- gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>{peerReads++;return identity;}},{executable:{path:f.executable,sha256:f.executableHash},now:()=>time,tokenTtlMs:30000});await gateway.start();issued=gateway.issue(f.run);
++ gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>{peerReads++;return identity;}},{executable:{path:f.executable,sha256:f.executableHash},now:()=>time,tokenTtlMs:30000});await gateway.start();issued=gateway.issue(f.run);observerIdentity=captureIdentity();
+ });
+-afterEach(async()=>{for(const socket of sockets)socket.destroy();sockets.clear();await gateway?.close();vi.restoreAllMocks();await f?.cleanup();});
++afterEach(async()=>{try{for(const socket of sockets)socket.destroy();sockets.clear();await gateway?.close();vi.restoreAllMocks();await f?.cleanup();}finally{safeCleanupReceipt(observerIdentity??captureIdentity());}});
+ 
+ describe('M11 CLI invocation through the common production executor',()=>{
+  it('shares draft data and v2 results with the page, fixes CLI origin, and closes the inactive MCP fallback',async()=>{

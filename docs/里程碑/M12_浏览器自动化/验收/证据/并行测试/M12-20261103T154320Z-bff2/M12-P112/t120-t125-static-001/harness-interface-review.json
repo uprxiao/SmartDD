@@ -1,0 +1,1841 @@
+{
+  "current": {
+    "root": "/private/tmp/willyou-m12-t120-t125-sop-static-001",
+    "normal": {
+      "line": 497,
+      "conditions": [],
+      "members": [
+        {
+          "name": "cdp",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "cdp"
+        },
+        {
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        },
+        {
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        },
+        {
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        },
+        {
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        },
+        {
+          "name": "rendererErrors",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "rendererErrors"
+        },
+        {
+          "name": "navigationWaits",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "navigationWaits"
+        },
+        {
+          "name": "onCDP",
+          "kind": "PropertyAssignment",
+          "value": "(method, listener) => {\n        const listeners = cdpListeners.get(method) ?? new Set();\n        listeners.add(listener);\n        cdpListeners.set(method, listeners);\n        return () => {\n          listeners.delete(listener);\n          if (!listeners.size) cdpListeners.delete(method);\n        };\n      }"
+        },
+        {
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        },
+        {
+          "name": "observedProcess",
+          "kind": "PropertyAssignment",
+          "value": "() => JSON.parse(JSON.stringify({...observed,currentCode:child.exitCode,currentSignal:child.signalCode}))"
+        },
+        {
+          "name": "waitForExit",
+          "kind": "PropertyAssignment",
+          "value": "(timeoutMs = 15_000) => {\n        closeMainInspection();\n        return new Promise((resolve, reject) => {\n          const result = () => ({\n            pid: child.pid,\n            code: child.exitCode,\n            signal: child.signalCode,\n          });\n          if (child.exitCode !== null || child.signalCode !== null) {\n            resolve(result());\n            return;\n          }\n          const onExit = () => {\n            clearTimeout(timer);\n            resolve(result());\n          };\n          const timer = setTimeout(() => {\n            child.off(\"exit\", onExit);\n            reject(new Error(\"Isolated App did not finish its normal exit\"));\n          }, timeoutMs);\n          child.once(\"exit\", onExit);\n        });\n      }"
+        },
+        {
+          "name": "crash",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        assert(\n          child.exitCode === null && child.signalCode === null,\n          \"Test App is already stopped\",\n        );\n        const exited = new Promise((resolve) =>\n          child.once(\"exit\", (code, signal) =>\n            resolve({ pid: child.pid, code, signal }),\n          ),\n        );\n        assert(child.kill(\"SIGKILL\"), \"Could not stop this isolated test App\");\n        return await Promise.race([\n          exited,\n          pause(3000).then(() => {\n            throw new Error(\"Test App crash did not finish\");\n          }),\n        ]);\n      }"
+        },
+        {
+          "name": "arm",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "arm"
+        },
+        {
+          "name": "output",
+          "kind": "PropertyAssignment",
+          "value": "(ptyId) =>\n        evaluate(`window.__m5?.output[${JSON.stringify(ptyId)}] ?? ''`)"
+        },
+        {
+          "name": "input",
+          "kind": "PropertyAssignment",
+          "value": "(ptyId, data) =>\n        evaluate(\n          `window.electronAPI.eventSend('pty:input', ${JSON.stringify({ ptyId, data })})`,\n        )"
+        },
+        {
+          "name": "screenshot",
+          "kind": "PropertyAssignment",
+          "value": "async (path) => {\n        const { data } = await cdp(\"Page.captureScreenshot\", { format: \"png\" });\n        await writeFile(path, Buffer.from(data, \"base64\"), { mode: 0o600 });\n      }"
+        },
+        {
+          "name": "logs",
+          "kind": "PropertyAssignment",
+          "value": "() => logs"
+        },
+        {
+          "name": "close",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        for (const item of pending.values()) {\n          clearTimeout(item.timer);\n          item.reject(new Error(\"Electron test closed\"));\n        }\n        pending.clear();\n        ws.close();\n        cdpListeners.clear();\n        if (child.exitCode === null && child.signalCode === null) {\n          const done = new Promise((r) => child.once(\"exit\", r));\n          observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGTERM\",accepted:child.kill(\"SIGTERM\")});\n          await Promise.race([done, pause(3000)]);\n          if (child.exitCode === null && child.signalCode === null)\n            observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGKILL\",accepted:child.kill(\"SIGKILL\")});\n        }\n      }"
+        }
+      ]
+    },
+    "otherTopReturns": [],
+    "harnessSha256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+    "guardSha256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+    "guardInjected": [
+      {
+        "name": "cdp",
+        "source": "actual installAppFocusGuard assignment",
+        "line": 39,
+        "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+      },
+      {
+        "name": "checkInputFocus",
+        "source": "actual installAppFocusGuard assignment",
+        "line": 38,
+        "value": "check"
+      }
+    ],
+    "uses": [
+      {
+        "path": "run.mjs",
+        "line": 44,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 44,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 59,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 82,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 83,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 83,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 84,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 95,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 95,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 99,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 99,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 102,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 103,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 103,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 104,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 106,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 107,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 108,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 109,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 110,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 110,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 113,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 114,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 115,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 115,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 115,
+        "member": "waitFor",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 115,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 117,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 117,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 117,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 121,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 122,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 124,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 126,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 127,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 128,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 132,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 133,
+        "member": "waitFor",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 136,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 136,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 136,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 144,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 146,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 146,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 146,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 149,
+        "member": "waitForExit",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitForExit",
+          "kind": "PropertyAssignment",
+          "value": "(timeoutMs = 15_000) => {\n        closeMainInspection();\n        return new Promise((resolve, reject) => {\n          const result = () => ({\n            pid: child.pid,\n            code: child.exitCode,\n            signal: child.signalCode,\n          });\n          if (child.exitCode !== null || child.signalCode !== null) {\n            resolve(result());\n            return;\n          }\n          const onExit = () => {\n            clearTimeout(timer);\n            resolve(result());\n          };\n          const timer = setTimeout(() => {\n            child.off(\"exit\", onExit);\n            reject(new Error(\"Isolated App did not finish its normal exit\"));\n          }, timeoutMs);\n          child.once(\"exit\", onExit);\n        });\n      }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 150,
+        "member": "logs",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "logs",
+          "kind": "PropertyAssignment",
+          "value": "() => logs"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 150,
+        "member": "close",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "close",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        for (const item of pending.values()) {\n          clearTimeout(item.timer);\n          item.reject(new Error(\"Electron test closed\"));\n        }\n        pending.clear();\n        ws.close();\n        cdpListeners.clear();\n        if (child.exitCode === null && child.signalCode === null) {\n          const done = new Promise((r) => child.once(\"exit\", r));\n          observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGTERM\",accepted:child.kill(\"SIGTERM\")});\n          await Promise.race([done, pause(3000)]);\n          if (child.exitCode === null && child.signalCode === null)\n            observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGKILL\",accepted:child.kill(\"SIGKILL\")});\n        }\n      }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 150,
+        "member": "observedProcess",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "observedProcess",
+          "kind": "PropertyAssignment",
+          "value": "() => JSON.parse(JSON.stringify({...observed,currentCode:child.exitCode,currentSignal:child.signalCode}))"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 3,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "checkInputFocus",
+        "kind": "method",
+        "provider": {
+          "name": "checkInputFocus",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 38,
+          "value": "check"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 7,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 8,
+        "member": "screenshot",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "screenshot",
+          "kind": "PropertyAssignment",
+          "value": "async (path) => {\n        const { data } = await cdp(\"Page.captureScreenshot\", { format: \"png\" });\n        await writeFile(path, Buffer.from(data, \"base64\"), { mode: 0o600 });\n      }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 12,
+        "member": "checkInputFocus",
+        "kind": "method",
+        "provider": {
+          "name": "checkInputFocus",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 38,
+          "value": "check"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 12,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 12,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "resources.mjs",
+        "line": 2,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 10,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 11,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 12,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 15,
+        "member": "waitFor",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 23,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 26,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 30,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      }
+    ],
+    "missing": [],
+    "boundary": "Actual top-level normal return and actual guard assignments, never includes(string) or mocked return shape. openElectron used with nodeModeNegative absent/default false."
+  },
+  "previous": {
+    "root": "/private/tmp/willyou-m12-t121-sop-static-001",
+    "normal": {
+      "line": 497,
+      "conditions": [],
+      "members": [
+        {
+          "name": "cdp",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "cdp"
+        },
+        {
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        },
+        {
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        },
+        {
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        },
+        {
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        },
+        {
+          "name": "rendererErrors",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "rendererErrors"
+        },
+        {
+          "name": "navigationWaits",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "navigationWaits"
+        },
+        {
+          "name": "onCDP",
+          "kind": "PropertyAssignment",
+          "value": "(method, listener) => {\n        const listeners = cdpListeners.get(method) ?? new Set();\n        listeners.add(listener);\n        cdpListeners.set(method, listeners);\n        return () => {\n          listeners.delete(listener);\n          if (!listeners.size) cdpListeners.delete(method);\n        };\n      }"
+        },
+        {
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        },
+        {
+          "name": "observedProcess",
+          "kind": "PropertyAssignment",
+          "value": "() => JSON.parse(JSON.stringify({...observed,currentCode:child.exitCode,currentSignal:child.signalCode}))"
+        },
+        {
+          "name": "waitForExit",
+          "kind": "PropertyAssignment",
+          "value": "(timeoutMs = 15_000) => {\n        closeMainInspection();\n        return new Promise((resolve, reject) => {\n          const result = () => ({\n            pid: child.pid,\n            code: child.exitCode,\n            signal: child.signalCode,\n          });\n          if (child.exitCode !== null || child.signalCode !== null) {\n            resolve(result());\n            return;\n          }\n          const onExit = () => {\n            clearTimeout(timer);\n            resolve(result());\n          };\n          const timer = setTimeout(() => {\n            child.off(\"exit\", onExit);\n            reject(new Error(\"Isolated App did not finish its normal exit\"));\n          }, timeoutMs);\n          child.once(\"exit\", onExit);\n        });\n      }"
+        },
+        {
+          "name": "crash",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        assert(\n          child.exitCode === null && child.signalCode === null,\n          \"Test App is already stopped\",\n        );\n        const exited = new Promise((resolve) =>\n          child.once(\"exit\", (code, signal) =>\n            resolve({ pid: child.pid, code, signal }),\n          ),\n        );\n        assert(child.kill(\"SIGKILL\"), \"Could not stop this isolated test App\");\n        return await Promise.race([\n          exited,\n          pause(3000).then(() => {\n            throw new Error(\"Test App crash did not finish\");\n          }),\n        ]);\n      }"
+        },
+        {
+          "name": "arm",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "arm"
+        },
+        {
+          "name": "output",
+          "kind": "PropertyAssignment",
+          "value": "(ptyId) =>\n        evaluate(`window.__m5?.output[${JSON.stringify(ptyId)}] ?? ''`)"
+        },
+        {
+          "name": "input",
+          "kind": "PropertyAssignment",
+          "value": "(ptyId, data) =>\n        evaluate(\n          `window.electronAPI.eventSend('pty:input', ${JSON.stringify({ ptyId, data })})`,\n        )"
+        },
+        {
+          "name": "screenshot",
+          "kind": "PropertyAssignment",
+          "value": "async (path) => {\n        const { data } = await cdp(\"Page.captureScreenshot\", { format: \"png\" });\n        await writeFile(path, Buffer.from(data, \"base64\"), { mode: 0o600 });\n      }"
+        },
+        {
+          "name": "logs",
+          "kind": "PropertyAssignment",
+          "value": "() => logs"
+        },
+        {
+          "name": "close",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        for (const item of pending.values()) {\n          clearTimeout(item.timer);\n          item.reject(new Error(\"Electron test closed\"));\n        }\n        pending.clear();\n        ws.close();\n        cdpListeners.clear();\n        if (child.exitCode === null && child.signalCode === null) {\n          const done = new Promise((r) => child.once(\"exit\", r));\n          observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGTERM\",accepted:child.kill(\"SIGTERM\")});\n          await Promise.race([done, pause(3000)]);\n          if (child.exitCode === null && child.signalCode === null)\n            observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGKILL\",accepted:child.kill(\"SIGKILL\")});\n        }\n      }"
+        }
+      ]
+    },
+    "otherTopReturns": [],
+    "harnessSha256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+    "guardSha256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+    "guardInjected": [
+      {
+        "name": "cdp",
+        "source": "actual installAppFocusGuard assignment",
+        "line": 39,
+        "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+      },
+      {
+        "name": "checkInputFocus",
+        "source": "actual installAppFocusGuard assignment",
+        "line": 38,
+        "value": "check"
+      }
+    ],
+    "uses": [
+      {
+        "path": "run.mjs",
+        "line": 43,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 43,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 58,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 86,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 86,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 90,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 90,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 93,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 94,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 94,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 95,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 97,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 98,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 99,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 100,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 101,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 101,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 104,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 105,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 106,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 106,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 106,
+        "member": "waitFor",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 106,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 108,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 108,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 108,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 112,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 113,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 115,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 117,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 118,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 119,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 122,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 123,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 124,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 126,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 131,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 131,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 131,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 139,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 141,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 141,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 141,
+        "member": "invoke",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "invoke",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "invoke"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 144,
+        "member": "waitForExit",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitForExit",
+          "kind": "PropertyAssignment",
+          "value": "(timeoutMs = 15_000) => {\n        closeMainInspection();\n        return new Promise((resolve, reject) => {\n          const result = () => ({\n            pid: child.pid,\n            code: child.exitCode,\n            signal: child.signalCode,\n          });\n          if (child.exitCode !== null || child.signalCode !== null) {\n            resolve(result());\n            return;\n          }\n          const onExit = () => {\n            clearTimeout(timer);\n            resolve(result());\n          };\n          const timer = setTimeout(() => {\n            child.off(\"exit\", onExit);\n            reject(new Error(\"Isolated App did not finish its normal exit\"));\n          }, timeoutMs);\n          child.once(\"exit\", onExit);\n        });\n      }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 145,
+        "member": "logs",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "logs",
+          "kind": "PropertyAssignment",
+          "value": "() => logs"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 145,
+        "member": "close",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "close",
+          "kind": "PropertyAssignment",
+          "value": "async () => {\n        closeMainInspection();\n        for (const item of pending.values()) {\n          clearTimeout(item.timer);\n          item.reject(new Error(\"Electron test closed\"));\n        }\n        pending.clear();\n        ws.close();\n        cdpListeners.clear();\n        if (child.exitCode === null && child.signalCode === null) {\n          const done = new Promise((r) => child.once(\"exit\", r));\n          observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGTERM\",accepted:child.kill(\"SIGTERM\")});\n          await Promise.race([done, pause(3000)]);\n          if (child.exitCode === null && child.signalCode === null)\n            observed.signals.push({atMs:Date.now(),method:\"close\",signal:\"SIGKILL\",accepted:child.kill(\"SIGKILL\")});\n        }\n      }"
+        }
+      },
+      {
+        "path": "run.mjs",
+        "line": 145,
+        "member": "observedProcess",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "observedProcess",
+          "kind": "PropertyAssignment",
+          "value": "() => JSON.parse(JSON.stringify({...observed,currentCode:child.exitCode,currentSignal:child.signalCode}))"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 3,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "checkInputFocus",
+        "kind": "method",
+        "provider": {
+          "name": "checkInputFocus",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 38,
+          "value": "check"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 4,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "cdp",
+        "kind": "method",
+        "provider": {
+          "name": "cdp",
+          "source": "actual installAppFocusGuard assignment",
+          "line": 39,
+          "value": "async(method,...args)=>{\n    if(method.startsWith('Input.')||method==='Page.bringToFront')await check(method);\n    return cdp(method,...args);\n  }"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 5,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 7,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "ui.mjs",
+        "line": 8,
+        "member": "screenshot",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "screenshot",
+          "kind": "PropertyAssignment",
+          "value": "async (path) => {\n        const { data } = await cdp(\"Page.captureScreenshot\", { format: \"png\" });\n        await writeFile(path, Buffer.from(data, \"base64\"), { mode: 0o600 });\n      }"
+        }
+      },
+      {
+        "path": "resources.mjs",
+        "line": 2,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 10,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 11,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 12,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 15,
+        "member": "waitFor",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "waitFor",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "waitFor"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 23,
+        "member": "processId",
+        "kind": "property",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "processId",
+          "kind": "PropertyAssignment",
+          "value": "child.pid"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 26,
+        "member": "evaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "evaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "evaluate"
+        }
+      },
+      {
+        "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+        "line": 30,
+        "member": "mainEvaluate",
+        "kind": "method",
+        "provider": {
+          "source": "openElectron normal return",
+          "name": "mainEvaluate",
+          "kind": "ShorthandPropertyAssignment",
+          "value": "mainEvaluate"
+        }
+      }
+    ],
+    "missing": [],
+    "boundary": "Actual top-level normal return and actual guard assignments, never includes(string) or mocked return shape. openElectron used with nodeModeNegative absent/default false."
+  },
+  "negativeControl": "actual normal return property removed; method unavailable",
+  "Native": 0,
+  "App": 0
+}

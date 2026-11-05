@@ -1,0 +1,34 @@
+--- P111001-frozen/run.mjs
++++ P111002-private/run.mjs
+@@ -1,3 +1,4 @@
++import{recordCleanupStep,finishWithRaw}from'./cleanup-protocol.mjs';
+ import{validateInstallationGates}from'./installation-gates.mjs';
+ import{extractOutput}from'./extractors.mjs';
+ import assert from'node:assert/strict';import{readFile,writeFile,mkdir,readdir,appendFile,stat}from'node:fs/promises';import{execFileSync}from'node:child_process';
+@@ -53,11 +54,19 @@
+  r.status='executed-unjudged';
+ }catch(error){r.status=interrupted?'interrupted':'failed-or-partial';r.failure={stage,error:String(error.stack??error)};}
+ finally{
+- clearTimeout(watchdog);const clean=async(label,work)=>{const row={label,at:new Date().toISOString()};r.cleanupSteps.push(row);try{row.value=await work();row.status='fulfilled';return row.value}catch(error){row.status='failed';row.error=String(error.stack??error);r.cleanupErrors.push(row);return undefined}};
+- if(app){await clean('final-resource-inventory',inventory);r.exactGatewayPaths=await clean('readonly-exact-owned-gateway-paths',()=>own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string"&&h.address().startsWith("/private/tmp/wy-cli-")).map(h=>h.address())','readonly-owned-unix-listeners'));
+-  for(const task of r.tasks)await clean('stop-own-task-'+task.role,async()=>{const before=await app.invoke('tasks.get',task.taskId);if(before.ptyId)await app.invoke('tasks.kill',task.taskId);return poll(async()=>{const x=await app.invoke('tasks.get',task.taskId);return !x.ptyId?x:null},15000,{cleanup:true})});
+-  await clean('normal-own-app-quit',async()=>{await own('setTimeout(()=>E.app.quit(),100);return true','normal-own-app-quit');r.appExit=await app.waitForExit(45000);assert.equal(r.appExit.code,0);assert.equal(r.appExit.signal,null);return r.appExit});
+-  await clean('save-own-electron-log',()=>writeFile(root+'/electron.log',app.logs()));await clean('close-owned-harness',()=>app.close());r.observedProcess=app.observedProcess();app=null;
+- }
+- await clean('close-own-HTTP',async()=>{await fixture?.close();r.httpClosed=true;return true});r.requests=fixture?.requests??[];r.agentEvents=await clean('read-final-caller-events',events)??[];for(const e of r.agentEvents)if(e.pid)pids.add(e.pid);r.knownPids=[...pids];r.knownPorts=[...ports];r.knownPageIds=[...pageIds];r.exactGatewayPaths=[...new Set([...(r.exactGatewayPaths??[]),...r.agentEvents.map(x=>x.endpointPath).filter(Boolean)])];r.finishedAt=new Date().toISOString();await persistChain.catch(()=>{});await save('raw.json',r);console.log(JSON.stringify({group:r.group,status:r.status,failure:r.failure,knownPids:r.knownPids,knownPorts:r.knownPorts,exactGatewayPaths:r.exactGatewayPaths,cleanupErrors:r.cleanupErrors}));
++ clearTimeout(watchdog);
++ const clean=(label,work)=>recordCleanupStep({r,label,work,persist});
++ await finishWithRaw({r,persist,writeRaw:value=>save('raw.json',value),work:async()=>{
++  if(app){await clean('final-resource-inventory',inventory);r.exactGatewayPaths=await clean('readonly-exact-owned-gateway-paths',()=>own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string"&&h.address().startsWith("/private/tmp/wy-cli-")).map(h=>h.address())','readonly-owned-unix-listeners'));
++   for(const task of r.tasks)await clean('stop-own-task-'+task.role,async()=>{const before=await app.invoke('tasks.get',task.taskId);if(before.ptyId)await app.invoke('tasks.kill',task.taskId);return poll(async()=>{const x=await app.invoke('tasks.get',task.taskId);return !x.ptyId?x:null},15000,{cleanup:true})});
++   await clean('normal-own-app-quit',async()=>{await own('setTimeout(()=>E.app.quit(),100);return true','normal-own-app-quit');r.appExit=await app.waitForExit(45000);assert.equal(r.appExit.code,0);assert.equal(r.appExit.signal,null);return r.appExit});
++   await clean('save-own-electron-log',()=>writeFile(root+'/electron.log',app.logs()));
++   await clean('close-owned-harness',()=>app.close());
++   await clean('observe-owned-child-exit',()=>{r.observedProcess=app.observedProcess();return r.observedProcess});app=null;
++  }
++ },settle:async()=>{
++  await clean('close-own-HTTP',async()=>{await fixture?.close();r.httpClosed=true;return true});r.requests=fixture?.requests??[];
++  r.agentEvents=await clean('read-final-caller-events',events)??[];for(const e of r.agentEvents)if(e.pid)pids.add(e.pid);r.knownPids=[...pids];r.knownPorts=[...ports];r.knownPageIds=[...pageIds];r.exactGatewayPaths=[...new Set([...(r.exactGatewayPaths??[]),...r.agentEvents.map(x=>x.endpointPath).filter(Boolean)])];
++ }});
++ console.log(JSON.stringify({group:r.group,status:r.status,failure:r.failure,knownPids:r.knownPids,knownPorts:r.knownPorts,exactGatewayPaths:r.exactGatewayPaths,cleanupErrors:r.cleanupErrors,recordingErrors:r.recordingErrors,finalizerErrors:r.finalizerErrors}));
+ }

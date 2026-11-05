@@ -1,0 +1,82 @@
+{
+  "at": "2026-11-05T16:46:23.323653+00:00",
+  "parent": "M12-T131",
+  "originalCase": "M11-T37",
+  "layer": "I current run-plan8 support only",
+  "authoritativeOriginalContract": {
+    "path": "/private/tmp/willyou-m12-m11-regression-static-001/contracts/cases.json",
+    "sha256": "4ccb94e106faa9dcb0e2638377fb03cc88af46965fd4bf838a777b2c48a50726",
+    "requirementAndLayers": "M11-T37／R10、R02／I＋A＋R",
+    "prerequisite": "禅道运行计划生效入口为 CLI（或降级为 MCP）的两个会话",
+    "steps": "在生效入口为 CLI 的会话中直接调用该能力的 MCP 工具；反之亦然",
+    "expected": "非生效入口的调用**不得交付、不得执行**（`ENTRY_NOT_ACTIVE` 或 `AUTH_REQUIRED` 均可，须记录实际码与原因）；运行计划记录的 Skill 渲染哈希与实际交付一致",
+    "acceptedErrorBoundary": "2026-11-02 user-approved original contract permits ENTRY_NOT_ACTIVE or AUTH_REQUIRED, with non-delivery/no business as hard criteria; this group retains original expected concrete codes."
+  },
+  "originalSource": {
+    "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/__tests__/run-plan.test.ts",
+    "sha256": "4d4aa6576469caa622a6caf7e1afa1e51c5c9ee3fc96b19384e2a57bbee9dd43"
+  },
+  "selected": "All original current source025 run-plan.test.ts eight scenarios; no name filter. All50 expect ASTs,51 business calls and entire it callbacks identical.",
+  "criteria": [
+    {
+      "test": "selects a read fallback only when the primary is unavailable, and never falls back a write",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "pins allowed permissions and entry contracts, rejecting a non-active entry and an unknown capability",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "retains the immutable plan after the host binds the first native id, but refuses all selection changes",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "stores one exact plan, detects content tampering and retains old session bytes",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "makes the real MCP service hide an inactive entry and refuse direct calls before any business execution",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "creates a new plan on each run and refuses the old stopped run without rewriting its plan",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "renders only the selected invocation and records different template, parameter and output identities",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    },
+    {
+      "test": "supports a pure CLI schema-3 snapshot while preserving the schema-2 parser and rejecting an added bridge",
+      "expected": "Exactly original test callback assertions in test-original.ts; all8 pass/no skip/pending."
+    }
+  ],
+  "explicitFixtureBoundaries": [
+    {
+      "point": "Original FixtureProcessReader/runFixture",
+      "scope": "Real host service/SQLite; synthetic process identities/snapshot/application package fixture, no actual OS peer/application/model/login evidence.",
+      "restore": "Original afterEach run.cli.exited if allocated; fixture.cleanup."
+    },
+    {
+      "point": "Original tamper tests SQL UPDATE snapshot_json/plan_json",
+      "scope": "Only exact newly created local fixture DB. Assert SCOPE_DENIED/HASH_MISMATCH/SNAPSHOT_IMMUTABLE; inactiveentry mutation restored in original finally; other tampered disposable DB deleted in original afterEach. No production/daily DB reads or writes."
+    },
+    {
+      "point": "Original Skill render template byte fixtures",
+      "scope": "Unit-in-I deterministic render/hash comparison; it proves selected invocation text/hash formula only, not real Skill files delivered to actual Codex.",
+      "restore": "In-memory buffers/per-test fixture disposal."
+    }
+  ],
+  "complementaryCurrentEvidence": {
+    "path": "/private/tmp/willyou-m12-t043-u-current-001",
+    "entryCase": "rejects wrong-entry without invoking business or reading a secret",
+    "sameSource025": true,
+    "status": "actual17/17 plus6/6 independent judge, frozen separately; not rerun here."
+  },
+  "remaining": [
+    "Original T37 A/R both directions through real App/CLI/model and actual delivered Skill renderedHash remain separately required",
+    "No wholeT37/T131 formal pass",
+    "Other original M11 I case mappings remain parent queue; no P10071/162 rerun"
+  ],
+  "formalNewPasses": 0
+}

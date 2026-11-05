@@ -42,8 +42,12 @@
 
 真实Codex继续复用WillYou已有CLI登录，测试项目和数据独立。原T041已从实际Codex原生日志、完整Skill读取与宿主操作记录[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-041.json)；原T042由实际默认沙箱CLI成功记录及已核原生入口的环境变量必经检查[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-042.json)。前次计划摘要、Skill哈希、原生日志载体及额外点击门槛的驱动错误保留在执行记录，不重复发送已完成业务。同一授权payload的G1三条真实运行已结束，[T126两种项目组合I＋R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P098/t126-coordinator-review-001/coordinator-case-review.json)已完整通过；[T122缺失／矛盾地址两臂R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P098/t122-coordinator-review-001/coordinator-case-review.json)也已从原始日志独立收口；原prompt顺序差异保留，其余SOP按原合同继续，不重复发送已完成请求。初始焦点按本次隔离实例真实状态检查，运行中的失焦守卫保留。
 
-M11回归已补[原T08 I](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-coordinator-review-001/coordinator-review.json)及[T06/T38现行D01边界I](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/coordinator-review.json)。旧固定TTL预期与已批准续租规则的差异、原红及新两分支均留证，父用例仍部分通过。下一批继续无需前台的原I；真实长测的新具体发送范围已获用户明确授权，本机短探针通过后已开始同run真实等待；不提前计R通过。
+M11回归已补[原T08 I](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-coordinator-review-001/coordinator-review.json)及[T06/T38现行D01边界I](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/coordinator-review.json)。旧固定TTL预期与已批准续租规则的差异、原红及新两分支均留证，父用例仍部分通过。原真实长测已独立完整收口；其余原I与已有真实证据复用继续按原合同归账，见下方最新记录。
 
-当前本机安装／原生／包体核算的已验收范围见[P085复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/coordinator-case-review.json)；系统剪贴板仅[安全桥前置](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P084/attempt-003/native-gates-result.json)已验证。完整系统读写、用户／真实站点／硬件／x64等缺项以权威用例账为准，未因预览包存在补算完成。完整M12未交付。
+当前App021安装／原生／启动及包体核算已[完成受影响复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P111/coordinator-final-001/manifest.json)，[P085旧复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/coordinator-case-review.json)保留历史；系统剪贴板仅[安全桥前置](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P084/attempt-003/native-gates-result.json)已验证。完整系统读写、用户／真实站点／硬件／x64等缺项以权威用例账为准，未因预览包存在补算完成。完整M12未交付。
 
 [停止后活动标记T114](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P067/accepted-timing-review-003/coordinator-review.json)已按用户本次确认的现行口径从原数据独立收口；旧严格边界记录保留。当前其余进度仍取原用例账。
+
+[原T043同一运行超过35分钟仍可调用、停止后原身份拒绝](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P109/real35min-coordinator-001/coordinator-case-review.json)已与当前U完整收口。后台等待回执的旧解析红、严格来源补判和正常清场均保留；没有重跑真实长测。用户睡觉期间继续原M11无需前台的I，新的界面／系统／额外发送步骤后置。
+
+夜间自主回归已补齐原T09、运行计划与生命周期的对应I，并[精确复用原T01已有真实I/A/R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/manifest.json)；父回归用例的其余App／Agent层继续保留。新未复现SOP的[可执行静态准备已复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P110/t121-static-coordinator-001/manifest.json)，实际发送及前台步骤后置。当前安装器已完成私有安装、原生检查与安装后启动复验；启动首轮的驱动接口错误及修正复验均留证。

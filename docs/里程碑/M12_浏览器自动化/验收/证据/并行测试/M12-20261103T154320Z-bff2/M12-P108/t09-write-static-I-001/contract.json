@@ -1,0 +1,67 @@
+{
+  "at": "2026-11-05T15:37:39.997247+00:00",
+  "parent": "M12-T131",
+  "originalCase": "M11-T09",
+  "layer": "I write-effect subset only",
+  "originalStep": "取消/截止时间/外部已接受后断连，原操作回执、状态区分、写不重发、自有收尾",
+  "acceptedOriginalScopeSource": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/执行与缺陷记录.md",
+    "sha256": "114f48096df3676fbf2a08adae9f95510e67e9da3862b5fc65a22d463d29fdac",
+    "quotes": [
+      {
+        "line": 550,
+        "text": "**层级**：A 层为真实打包 App＋真实 Codex＋真实终端执行 `willyou-app`；上游是回环合成禅道 HTTP 服务（真实传输、按需注入挂起/断连/取消），**不代表真实站点数据**，驱动在 `result.upstream` 中声明。I 层由 `mail-effect-boundary.test.ts`（写效果未知、不自动重发）与 `zentao-data.test.ts`（单一截止时间 TIMEOUT）覆盖，本次执行前本地 63 例通过。"
+      }
+    ]
+  },
+  "selected": "Original C6 accepted mail-effect-boundary9 only, exact assertions/business calls preserved",
+  "criteria": [
+    {
+      "group": "preflight1",
+      "expected": "Local draft through actual v2 executor, counts intents0/executions0"
+    },
+    {
+      "group": "known-preconditions3",
+      "expected": "missing SMTP/unconfirmed/mismatched identity failed/not-started, zero secret/auth/provider/prepare/send side effect"
+    },
+    {
+      "group": "post-write3",
+      "expected": "AUTH_REQUIRED/TIMEOUT/TRANSIENT after actual persisted prepare stay unknown, one handler/intent only, clear-memory replay unavailable"
+    },
+    {
+      "group": "copied-proof1",
+      "expected": "Foreign operation proof cannot downgrade actual post-write unknown; no send"
+    },
+    {
+      "group": "returned-unknown1",
+      "expected": "Real engine auth/persisted execution plus original configured submit unknown stays unknown across bridge/ledger, no repeated provider submit"
+    }
+  ],
+  "faultInjections": [
+    {
+      "point": "Original MailExecutionOptions.checkpoint prepared",
+      "scope": "Throw only after real intent/review write; no SMTP submission",
+      "restore": "Per-test new app/fixture; app.dispose and fixture.cleanup, original mocks restore"
+    },
+    {
+      "point": "Original configured mailSend.submit",
+      "scope": "Returns unknown to real mail engine once; realToolService/SQL result path, no real SMTP/socket/provider",
+      "restore": "Per-test app/fixture disposal; no production hook modification"
+    },
+    {
+      "point": "Original controlled process identities/connection verifier/fake secret cipher",
+      "scope": "I only, no OS identity/realcredential/Keychain claim"
+    }
+  ],
+  "remaining": [
+    "T09 I zentao-data single-deadline TIMEOUT remains untested in this new group",
+    "Original T09 A timeout/drop/cancel/CLI behavior remains pending",
+    "No wholeT09I/T131 credit"
+  ],
+  "noGreenReplay": "prior-coverage-check.json",
+  "Native": 0,
+  "Socket": 0,
+  "SQLite": 0,
+  "collect": 0,
+  "formalNewPasses": 0
+}
