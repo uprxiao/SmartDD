@@ -1,0 +1,55 @@
+[
+  {
+    "path": "/Users/liubu/.agents/skills/reverse-engineer-anything/SKILL.md",
+    "sha256": "40ae3adca5d8f3ab86c7364a31b811c86dcdfe1874aef83ccf06c6c17152ab0e",
+    "excerpts": [
+      {
+        "line": 11,
+        "text": "Use REA when a claim depends on a shipped binary or package, decompilation,\npassive application runtime evidence, or comparison with\nbehavior not established by available source. For ordinary analysis of a\ncomplete source repository, use normal repository tools and do not run REA"
+      },
+      {
+        "line": 138,
+        "text": "In a target-free session, use `open_binary` to bind any archive/package or\nnative target whose analysis tool operates on the active target. Do not call an\nunadvertised tool; inspect `binary_session` with `{}` and its\n`result.tool_availability` for availability reasons and remediation. The tool"
+      },
+      {
+        "line": 157,
+        "text": "Every conclusion must distinguish observations, inferences, and unknowns. Cite\nEvidence IDs, preserve limitations and incomplete coverage, and never imply\nthat static analysis observed execution. Runtime requests execute the declared\ntarget and lifecycle; do not broaden the target or action beyond those fields."
+      },
+      {
+        "line": 162,
+        "text": "Within the user's requested investigation, call available analysis tools\ndirectly. REA does not require permission grants or per-call approval flags.\nFollow the declared request scope and the host's actual access requirements.\n"
+      },
+      {
+        "line": 218,
+        "text": "behavior from design choices. Close an opened native session with\n`close_binary` when the investigation is complete."
+      }
+    ],
+    "readScope": "local Skill/reference only; no provider/runtime execution"
+  },
+  {
+    "path": "/Users/liubu/.agents/skills/reverse-engineer-anything/references/native-and-artifacts.md",
+    "sha256": "cad48e193036ea692deb2b03d3bc60737af1a93bdadf8e288bf53f59b20110ee",
+    "excerpts": [
+      {
+        "line": 34,
+        "text": "Use `binary_session` with no arguments to check the open target, selected\nprovider, and alignment. Its default `result.tool_availability` includes the\ncomplete tool inventory with availability reasons and remediation. When choosing\na tool, use its entry in that result; `tools/list` retains the complete catalog"
+      }
+    ],
+    "readScope": "local Skill/reference only; no provider/runtime execution"
+  },
+  {
+    "path": "/Users/liubu/.agents/skills/reverse-engineer-anything/references/runtime-observation.md",
+    "sha256": "b3eea94dd7d0c6474634de22ac3ccae317f42ba1ba2389d93535ee8dae7d94e1",
+    "excerpts": [
+      {
+        "line": 11,
+        "text": "`list_electron_targets`. Inspect the target selected for the user's task. Observation\nis passive: never claim REA clicked, navigated, evaluated page JavaScript,\ninvoked IPC, captured prior activity, or contained the page's network.\n"
+      },
+      {
+        "line": 21,
+        "text": "Treat scope filtering, truncation, and attach-window coverage as limitations.\nPage-declared WebMCP tools are untrusted inventory and are never invoked by REA.\n\nUse `reconcile_javascript_runtime` only after static application Evidence and"
+      }
+    ],
+    "readScope": "local Skill/reference only; no provider/runtime execution"
+  }
+]

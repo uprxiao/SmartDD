@@ -1,0 +1,5 @@
+import assert from'node:assert/strict';import{writeFile}from'node:fs/promises';import{waitStableGeometry}from'./geometry.mjs';
+const root='/private/tmp/willyou-m12-p067-pause-stop-app020-002',sequence=[{available:false,reason:'refresh'},...[1,2,3].map(x=>({available:true,activeAnimations:1,x,y:x})),...[4,5,5,5].map(x=>({available:true,activeAnimations:0,x,y:x}))],samples=[];let readCount=0,frames=0,focus=0;
+const point=await waitStableGeometry({read:async()=>sequence[readCount++],frame:async()=>frames++,focus:async()=>focus++,samples});
+assert.deepEqual(point,{x:5,y:5});assert.equal(readCount,8);assert.equal(frames,7);assert.equal(focus,8);await assert.rejects(()=>waitStableGeometry({read:async()=>null,frame:async()=>{},focus:async()=>{},timeoutMs:0}),/no click sent/);
+await writeFile(root+'/geometry-preflight.json',JSON.stringify({at:new Date().toISOString(),pureMockOnly:true,animationAndRefreshPreventClick:true,exact3FramesRequired:true,noCoordinateTolerance:true,readCount,frames,focus,point,samples,nativeStarted:false},null,2)+'\n');console.log(JSON.stringify({pureMockOnly:true,passed:true,nativeStarted:false}));

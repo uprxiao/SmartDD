@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-05T09:03:55.931861+00:00",
+  "group": "M12-P083003",
+  "checks": {
+    "actualApp020SameFrozenSource": true,
+    "A1BothFreshFocusAndActualRestart": true,
+    "A2ActualDeleteAndProjectFallback": true,
+    "A3ActualProjectNoDeleteControl": true,
+    "A5ActualStopKeepsLogin": true,
+    "T013NativeTrustedNamedSameProfile": true,
+    "T013SameDeletionActuallyClosesPopup": true,
+    "ActualNormalExitsNoSignals": true,
+    "NoGuardYield": true,
+    "IndependentCleanup": true
+  },
+  "originalRawSha256": "c621927f8db49340feda1f7f37e6f84e939db95876169cd8b7e2050a74fa5e92",
+  "T079": {
+    "status": "partial A1/A2/A3/A5 actualpass; A4originaldriverfailed, remaining partitionclear A4-only prepared",
+    "wholeCaseCredit": 0
+  },
+  "T013": {
+    "newScope": "Previously missing profile-delete A; same trusted named popup/same expectedpartition, window+WC destroyed by same actualUI deletion",
+    "priorEvidence": [
+      {
+        "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P002/attempt-048/popup-adjudication.json",
+        "sha256": "47a7ff44ade1d41c16b798a2c9aecedb0fad23191ac062c7cd29003e15d0644d",
+        "scope": "T013 I except S4 profile deletion; A not proved here; no whole formal case pass"
+      },
+      {
+        "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P002/attempt-053/popup-ui-adjudication.json",
+        "sha256": "3cc6fafac69dc0e6755a1859a9f5b00773fd4b23f81b6330edd6cc445d52d312",
+        "scope": "T013 A available branches including cross-site OAuth; profile deletion deferred to S4, no whole formal case pass"
+      }
+    ],
+    "wholeCaseDecision": "all original I/A criteria now covered; retain all old red and baseline scopes",
+    "wholeCaseCredit": 1
+  },
+  "A4FailureReview": {
+    "classification": "driver-completion-wait absent before metadata assert; no immediate productfailure assigned",
+    "actualPostQuitDatabase": {
+      "targetProjectId": "31fe5373-e47d-4a7d-be2d-946f9c0d9550",
+      "targetProfileIds": [
+        "project-b5798a6c57544365ed0cc413",
+        "2995b6f3-6ee0-49f1-8cc1-7930b0375d53"
+      ],
+      "projectStillPresent": false,
+      "projectTaskCount": 0,
+      "retainedTargetProfileIds": [],
+      "boundary": "Readonly after actualnormalquit only; not evidence that A4partitionclear/UI completed before original assertion. Do not turn original failed flow green."
+    },
+    "sourceEvidence": "src/main/index.ts158 browserOrphans runs async reconcile; service.ts633–654 actual async partitionclear; fresh A4 must await concrete cleanup then assert realCookie/LS empty"
+  },
+  "judgeBoundary": "Original result.json kept; missing finalDatabase after A4 abort made independent preceding checks unavailable. These raw records independently prove A1/A2/A3/A5/T013, no invented finalDatabase or wholeT079pass."
+}

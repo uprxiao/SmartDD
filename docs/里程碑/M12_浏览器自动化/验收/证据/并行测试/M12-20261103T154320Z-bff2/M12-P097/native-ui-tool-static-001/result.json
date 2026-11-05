@@ -1,0 +1,159 @@
+{
+  "schema": "willyou-native-focus-tool-static-v1",
+  "at": "2026-11-05T08:09:57.870936+00:00",
+  "task": "native_focus_prep",
+  "status": "static-contract-reviewed-foreground-capability-unproven",
+  "root": "/private/tmp/willyou-m12-native-focus-tool-static-001",
+  "formalCaseCredit": 0,
+  "resourceClaimed": false,
+  "execution": {
+    "nativeToolCalls": 0,
+    "cuaCalls": 0,
+    "binarySessionCalls": 0,
+    "openBinaryCalls": 0,
+    "AppLaunches": 0,
+    "modelCalls": 0,
+    "clipboardCalls": 0,
+    "processObservations": 0,
+    "osPermissionChanges": 0
+  },
+  "observed": [
+    {
+      "id": "K01",
+      "claim": "observe_native_ui explicitly selects already-running PID + window_id and requires active Mach-O binding; does not launch target on OS permission denial or broaden capture.",
+      "evidence": "tool-metadata.json:mcp__rea__observe_native_ui description/input",
+      "kind": "advertised-contract"
+    },
+    {
+      "id": "K02",
+      "claim": "capture_native_ui_scenario click is described as selected-element press; scroll uses increment/decrement; key-entry uses AXValue text entry. No physical coordinate, activate, raise, expected_birth, expected_executable or per-step approval argument is advertised.",
+      "evidence": "tool-metadata.json:mcp__rea__capture_native_ui_scenario description/input",
+      "kind": "advertised-contract"
+    },
+    {
+      "id": "K03",
+      "claim": "Returned native window facts include executable, launch_time, pid, title, window_id; Evidence includes target_sha256, gaps, limitations, truncation and action outcomes. Frontmost/native-focus/document-focus state is not a returned field.",
+      "evidence": "tool-metadata.json:native UI return declarations",
+      "kind": "advertised-contract"
+    },
+    {
+      "id": "K04",
+      "claim": "binary_session({}) reports target/provider/capability/server status without starting analysis; result exposes open/path/sha256, analysis_activity and provider capability effect tags including may_show_ui/launches_process.",
+      "evidence": "tool-metadata.json:mcp__rea__binary_session",
+      "kind": "advertised-contract"
+    },
+    {
+      "id": "K05",
+      "claim": "open_binary uses active target/provider state. provider selection is stable with no failure fallback; same target/profile retains existing database/metadata. close_binary closes active target and every provider resource started for it. No per-call session ID, metadata-only open flag, or no-GUI flag is advertised.",
+      "evidence": "tool-metadata.json:mcp__rea__open_binary and close_binary",
+      "kind": "advertised-contract"
+    },
+    {
+      "id": "K06",
+      "claim": "The available REA catalog inspected here advertises no native window enumeration or activate/raise tool. This is bounded to current catalog metadata, not a claim about CUA/OS/other tools.",
+      "evidence": "catalog-scope.json",
+      "kind": "bounded-negative-catalog-check"
+    }
+  ],
+  "unknown": [
+    {
+      "id": "U01",
+      "question": "Does click internally invoke exactly AXPress, and does it implicitly activate or raise the selected app/window?",
+      "reason": "Description gives accessibility press semantics, but no implementation/explicit activation guarantee; no native execution performed."
+    },
+    {
+      "id": "U02",
+      "question": "Where to obtain the exact native CG window_id for the new isolated test instance?",
+      "reason": "No REA native window enumeration advertised. Must use only this isolated App or already-supported native inventory; Electron BrowserWindow.id or a native handle/pointer is not established as CGWindowID."
+    },
+    {
+      "id": "U03",
+      "question": "Does active target binding revalidate PID birth/executable before every action atomically? What units/definition does returned launch_time use?",
+      "reason": "Input includes no expected birth/hash; output facts alone do not prove revalidation algorithm or timestamp units."
+    },
+    {
+      "id": "U04",
+      "question": "Could opening the required Mach-O replace another analysis session, launch Hopper GUI or mutate provider database/session state?",
+      "reason": "Provider lifecycle effects and current active session were not queried; explicit deep provider is supported, no metadata-only/no-GUI option advertised."
+    },
+    {
+      "id": "U05",
+      "question": "Can any supported action establish actual Native frontmost + DOM visibility/focus stable1s for the original focus guard?",
+      "reason": "No activation/physical click guarantee or focus output. AX press success/screenshot/window title cannot prove focus."
+    },
+    {
+      "id": "U06",
+      "question": "Are OS AX/screenshot permissions available and is Native UI operation currently available for the target/provider?",
+      "reason": "Tool listing is not runtime availability. No session or permission observation performed."
+    }
+  ],
+  "minimalFutureReadOnlyPlan": [
+    {
+      "order": 1,
+      "kind": "resource-gate",
+      "action": "Root first observes same P096 handle to terminal, preserves result, independently verifies owned cleanup and grants a new Native lease. Never operate on current P096 App/window."
+    },
+    {
+      "order": 2,
+      "kind": "identity-prerequisites",
+      "action": "Create/identify only a fresh isolated App020 under existing harness. Record known PID, native birth, canonical exact executable, expected executable digest and userData; no daily App/name/path selector and no new login."
+    },
+    {
+      "order": 3,
+      "kind": "session-readonly",
+      "tool": "mcp__rea__binary_session",
+      "arguments": {},
+      "gate": "Read-only future request only after lease; record server/tool_availability/effects/active target and busy state. Do not inspect or close a foreign active target; do not switch it."
+    },
+    {
+      "order": 4,
+      "kind": "conditional-binding",
+      "tool": "mcp__rea__open_binary",
+      "arguments_template": {
+        "path": "<verified exact App020 Contents/MacOS/WillYou>",
+        "provider_id": "<explicit available provider with compatible effects>"
+      },
+      "gate": "Only if target binding is actually needed, existing session is empty/owned, and returned provider capability/effect information establishes acceptable scope. No auto provider/GUI/install/snapshot import. If effects remain unknown, stop this route. For normal Mach-O omit architecture/format (architecture is only accepted for raw-binary)."
+    },
+    {
+      "order": 5,
+      "kind": "window-id-prerequisite",
+      "action": "Obtain current CG/native window ID from this isolated App or an already-supported scoped native inventory. Verify owner PID and exact test title/window identity. Never substitute BrowserWindow.id, NSWindow/NSView pointer, or guessed number."
+    },
+    {
+      "order": 6,
+      "kind": "passive-native-observation",
+      "tool": "mcp__rea__observe_native_ui",
+      "arguments_template": {
+        "pid": "<verified integer PID>",
+        "window_id": "<verified integer CGWindowID>",
+        "accessibility": true,
+        "screenshot": false,
+        "max_nodes": 80
+      },
+      "gate": "First request is AX-only and bounded. Check complete Evidence, target_sha256, canonical executable, PID/windowID, launch_time consistency, gaps and truncation. Recheck native PID birth/exe externally before/after; establish launch_time units before cross-comparing numeric clocks."
+    },
+    {
+      "order": 7,
+      "kind": "fail-closed",
+      "action": "Any permission denial, target mismatch, PID reuse, absent window source or ambiguous provider: keep missing item, no broader screen capture, target launch, daily attachment, CDP bypass or activation variant. A truncated AX tree stays partial; only a justified bounded increase for the same exact window can resolve that coverage gap."
+    },
+    {
+      "order": 8,
+      "kind": "foreground-decision",
+      "action": "Current static evidence does not justify using AX click as a foreground fix. Root can inspect actual CUA getState documentation later under a lease for exact existing-window support; this task has not called CUA. Only a newly evidenced safe activation route permits a minimal disposable-window experiment."
+    },
+    {
+      "order": 9,
+      "kind": "actual-focus-proof",
+      "action": "After any separately justified action, original Native frontmost/visibility plus document focus stable1s and once-only guard must actually pass. No raw tool outcome substitutes for this, no rearming yielded guards, no historical focus reused."
+    }
+  ],
+  "captureScenarioNotAuthorizedByThisStaticPlan": {
+    "reason": "No known AX path or proven activation semantics. Do not issue click/key-entry/scroll to obtain focus solely from this schema.",
+    "requirement": "Separately justified intended action and exact observed node/action semantics; original focus check still authoritative.",
+    "laterInputSignature": "pid:number, window_id:number, steps:[{kind:click, path:number[]}] only after exact observed path and separately justified action; no executable click request exists in this handoff."
+  },
+  "sourceBoundary": "ALL_TOOLS current advertised name/description/TypeScript declarations and local Skill/reference files only. This is not raw MCP JSON-schema introspection or runtime evidence.",
+  "ownedSessionCleanup": "No session opened by this task. Root must not close a foreign pre-existing target; close only a future explicitly owned analysis session."
+}

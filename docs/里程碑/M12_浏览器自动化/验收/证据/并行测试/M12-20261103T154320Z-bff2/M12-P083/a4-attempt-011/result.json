@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-05T10:06:23.543Z",
+  "case": "M12-T079",
+  "layer": "A4-only actual packaged UI remainder",
+  "status": "A4-passed",
+  "checks": [
+    {
+      "id": "A4 actual fresh App020 single-project/two-task/two-profile setup",
+      "status": "passed"
+    },
+    {
+      "id": "A4 actual user UI single delete/confirm, not a project-deletion RPC",
+      "status": "passed"
+    },
+    {
+      "id": "A4 bounded joint completion: project/tasks/profiles/workspaces/recent/native views",
+      "status": "passed"
+    },
+    {
+      "id": "A4 both original native partitions have no Cookie/localStorage/login after completion",
+      "status": "passed"
+    },
+    {
+      "id": "A4 one fresh guard/normal exit; clean shutdown is independent",
+      "status": "passed"
+    }
+  ],
+  "rawSha256": "d2ec7fb37e220936a976112319d2b7045c19ed225d2616d601ad32dd7fb9b786",
+  "priorActualGreens": {
+    "at": "2026-11-05T09:04:05.706101+00:00",
+    "priorRoot": "/private/tmp/willyou-m12-p083-profile-lifecycle-app-003",
+    "priorRawSha256": "c621927f8db49340feda1f7f37e6f84e939db95876169cd8b7e2050a74fa5e92",
+    "priorResultSha256": "cda7075cb620dc0fcacb41ca95366b2f1504df8a762f89e80a3ba6679e75b625",
+    "priorCleanupSha256": "e7a25b1c7825e7e56500872d2831bece9e1598c976349450de44250446c0fa0e",
+    "actualRecordedGreens": [
+      "A1 restart",
+      "A2 task profile deletion",
+      "T013 named popup same-profile deletion inside A2",
+      "A3 project profile not deletable",
+      "A5 stopped task retains profile"
+    ],
+    "priorStatusAndRed": {
+      "status": "failed-or-partial",
+      "failure": {
+        "stage": "A4-delete-project-P2",
+        "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(!db.profiles.some(x=>x.id===profile.id))\n\n    at Object.deleteP2 (file:///private/tmp/willyou-m12-p083-profile-lifecycle-app-003/cases.mjs:12:1351)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///private/tmp/willyou-m12-p083-profile-lifecycle-app-003/run.mjs:14:631"
+      },
+      "retained": true,
+      "reason": "Original UI A4 project deletion issued once; driver asserted profile removal before asynchronous browserOrphans reconcile finished. Root independently observed postquit DB cleared; this new independent instance waits exact joint completion."
+    },
+    "currentScope": "A4-only, one new project/two task callers/two profiles; no prior business inputs replayed",
+    "boundary": "No one-run full-T079 pass claim. Root independently combines historical current-App020 raw record evidence plus this A4 and each normal cleanup. Original A4 red/result untouched.",
+    "newSourceManifest": "26e9637bf5b5a77b63dc89930c71461180e593b4889f7cc9487fb92e7d8662c0",
+    "newASAR": "ce58fc54e78fee16c2914dfbd3c72eaaea86661a4d5297e7146d7912605d3a0c",
+    "formalAdded": 0
+  },
+  "formalWholeCaseCount": 0,
+  "boundary": "Only A4 executed here. A1/A2/A3/A5 and T013 task-profile-popup deletion come from original App020003 actual raw, preserved separately with its original premature-wait red. No finalDatabase field needed; actual A4 record contains joint-completion DB/native snapshots. Root independently combines/archives/accounts."
+}

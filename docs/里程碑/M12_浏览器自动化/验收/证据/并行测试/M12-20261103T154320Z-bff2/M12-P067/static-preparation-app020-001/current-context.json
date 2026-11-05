@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-05T08:17:24.095959+00:00",
+  "README": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/README.md",
+    "sha256": "cb26538b765dee93c16172adfceee1721d4cd7340a4489478aca86c98fb442ae"
+  },
+  "authoritativeCases": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "sha256": "06aafde7cd4bcab631fd23d615aa3d6bfa25ee13cf660b706d9b17f2c78f61c3",
+    "rows": [
+      "| M12-T113 | R07.6、O14、C7、B10、review R07 | A＋I | T1 两个网页标签；T2 的 Agent 已获 T1 的 control 授权；点击计数接口 | Agent 连续排入 5 条点击（第 1 条执行中）时用户点“暂停 Agent”；同时有一条 `wait` 在等；之后 T1、T2 的 Agent 各发新命令；用户手动操作页面后点“恢复”；再测运行结束和重启后的状态 | 正在执行的第 1 条完成；排队的 4 条立即返回 `BROWSER_PAUSED`，点击计数显示暂停后零执行；`wait` 立即返回 `BROWSER_PAUSED`；新命令（含 T2 跨任务来的）都返回 `BROWSER_PAUSED`；两个标签都被暂停；恢复后命令正常；运行结束或重启后暂停状态清除 | P064002原Native I15判据全绿；App017 P067001真实A前十判据已得：UI control允许、首真实点击回调保留、生产queue4/readWait1、UI暂停后队列/wait及8项自己/跨任务双页读写PAUSED，native手动操作、UI恢复及两run正常结束。fresh-run恢复菜单移动被驱动在点击前拦下；收尾漏用私有harness接口导致driver退出1、最终raw从原live/7日志只读恢复，来源/缺项明确。002在发RUN前实际失焦后置，0CLI/0网页，完整raw/正常0-null/8PID3TCP清场保留。A11/A12及完整收尾合同仍未执行/缺失；原失败保留，不计整条。 | 部分通过 | [真实I](证据/并行测试/M12-20261103T154320Z-bff2/M12-P064/coordinator-review-green.json)；[真实A部分与驱动失败](证据/并行测试/M12-20261103T154320Z-bff2/M12-P067/coordinator-review-partial.json) |",
+      "| M12-T114 | R07.7 | A | Agent 正在执行 `wait`，T2 持有授权 | 用户停止 T1 任务 | 在途命令被取消；页面保持原状态，不关闭；活动标记在 20 秒内清除；T1 运行发出的跨任务授权失效 | — | 待执行 | — |"
+    ]
+  },
+  "round": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
+    "sha256": "a0f7395845c72000c8612d7785bb3563190c0135fa72b4abe43d0d53fbf031ac",
+    "updatedAt": "2026-11-05T08:16:09.439706+00:00",
+    "resourceOwnerAtRead": {
+      "owner": "/root",
+      "group": "M12-P096",
+      "privateRoot": "/private/tmp/willyou-m12-p096-sync-metrics-long-001",
+      "phase": "one originalfull30minute run, exclusive Native",
+      "readySha256": "23f99531f2514d18d328ba721e06d2b80646c148a3d6923d8d7da0f2bfe68b15",
+      "grantedAt": "2026-11-05T07:47:46.493476+00:00",
+      "sessionId": 36535,
+      "outerPid": 54612,
+      "brokerPid": 54664,
+      "wrapperPid": 54667,
+      "driverPid": 54677,
+      "appPid": 54697,
+      "clock0Utc": "2026-11-05T07:48:09.284Z",
+      "resourceCID": 68672,
+      "ongoingObservation": {
+        "at": "2026-11-05T07:52:45.263597+00:00",
+        "elapsedSeconds": 275.059065958,
+        "formalCLI": 5,
+        "milestones": [
+          0
+        ],
+        "CPUgaps": [],
+        "notFinal": true
+      }
+    }
+  },
+  "boundary": "Readonly file snapshot, not OS/process status inspection; no lease acquired."
+}

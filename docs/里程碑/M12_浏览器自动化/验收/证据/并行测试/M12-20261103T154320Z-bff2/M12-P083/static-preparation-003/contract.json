@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-05T03:09:02.771219+00:00",
+  "group": "M12-P083",
+  "case": "M12-T079",
+  "layer": "A actual App020; supporting actual CLI I prerequisites/readonly native storage observers, no realmodelR",
+  "originalLine": "| M12-T079 | R05.9、B12 | A | 有项目 profile、任务 profile，有页面正在使用任务 profile | 重启 App；删除任务 profile；尝试删除项目 profile；删除项目 P2 | 重启后 profile 和登录态保留；删除任务 profile 时清除其登录态，使用它的页面回落到项目 profile；项目 profile 不可删除；删除项目时项目 profile 及其下任务 profile 一并删除、分区存储清空；任务只是结束时 profile 保留（技术方案 §5） | 工程I已补齐：profile切换/删除/项目拒绝、真实TaskService/ProjectService删除后分区Cookie和localStorage、元数据、站点状态、页面/子窗口与持久标签记录清理；两处orphan workspace/recent旧红在同一19判据复验全绿。owner仍存在的合成已归档任务保留。正式A、重启保留和真实任务运行结束分支仍缺，不计整条。 | 部分通过 | [真实I红/修复/绿](证据/并行测试/M12-20261103T154320Z-bff2/M12-P009/attempt-004/RESULT.md) |",
+  "requirement": "**R05.9 删除**\n\n| 操作 | 处理 |\n| --- | --- |\n| 删除任务 profile | 正在使用它的页面先切回项目 profile 并重新加载，再清空它的存储、缓存和站点设置 |\n| 删除项目 profile | 不允许 |\n| 删除任务 | 一并删除它的任务 profile 和网页标签记录 |\n| 删除项目 | 删除项目 profile 及其下所有任务 profile |\n| 任务只是结束 | 全部保留 |\n\n",
+  "criteria": [
+    {
+      "id": "A1",
+      "expected": "Actual normal same-userData restart preserves original project/task profile IDs and real login Cookie/localStorage; actualUI shows T2 active independent qa2 page",
+      "UI": "select existing task/browser tab before/after restart, actual management list and presented native page",
+      "readback": "IPC profile IDs, native DOM+HTTP account, real session Cookie metadata and readonly partition probe"
+    },
+    {
+      "id": "A2",
+      "expected": "ActualUI confirm delete task-owned active profile clears old Cookie/localStorage and same page falls back project profile/account qa",
+      "UI": "browser menu→profiles selected task independent→删除→确认删除→完成",
+      "readback": "same pageId binding nowproject; metadata absent; real oldpartition cookies empty/storage null and HTTP taskT2 qa"
+    },
+    {
+      "id": "A3",
+      "expected": "Project profile cannot be deleted through UI",
+      "UI": "actual select project profile; visible detail has no enabled delete/confirmdelete action, screenshot",
+      "readback": "project profile metadata stillpresent and Cookie unchanged"
+    },
+    {
+      "id": "A4",
+      "expected": "ActualUI delete separate P2 removes its project+task profile metadata and all partition Cookie/localStorage",
+      "UI": "P2 more→项目设置→概览→删除→真实确认",
+      "readback": "readonly SQLite projects/tasks/profile metadata absent; oldpartitions cookies empty/localStorage null through hidden sandboxed observer, selfclosed"
+    },
+    {
+      "id": "A5",
+      "expected": "Actual UI stop a running own T5 retains task profile/login/storage",
+      "UI": "task-actions→task-kill; actualPTY goesnull/taskstopped view",
+      "readback": "taskowner still exists; profile persisted, Cookie/session qa5/localStorage qa5 stillpresent"
+    }
+  ],
+  "trustedPrep": "ActualTaskService projects/AI/tasks + originalCLI create/profilecreate/set/fill/click/local loginPOST before assertion UI. No browser profile/delete/stop/projectdelete businessRPC substituted for tested UI. No daily auth copied or real model/provider used. Synthetic receiver only blocks on stdin.",
+  "observerBoundary": "Reuse P009 actual sandboxed BrowserWindow(show:false,focusable:false,skipTaskbar:true) partition readback, localhost GET account does not write storage; executeJavaScript pure localStorage read + actual session.cookies metadata/hash. No mocked records, no store mutation, each probe window closed in finally. Supporting readback only, not business A action.",
+  "Remainder": "Two new instances before/after, one actual normal same-userData restart, 36 prerequisite CLI. Each needs actual initial native+DOM foreground and a fresh guard: two foreground occasions. No automatic activation/rearm. User availability and explicit new Native/UI lease required. Static preparation only; no A executed.",
+  "formalWholeCaseCount": 0,
+  "supportingCase": "M12-T013",
+  "supplement": {
+    "id": "T013-profile-delete-A",
+    "requirement": "R01.6; T013 original final profile-delete branch",
+    "steps": [
+      "Actual user Input clicks named-popup button in original T2 qa2 independent page exactly once",
+      "Read-only native WC/session/window and actual child DOM prove same profile/native opener; popup remains open",
+      "Execute existing A2 actual B12 delete/confirm UI once",
+      "Assert original logical page falls back qa and old storage clears; same popup WC and independent window both gone"
+    ],
+    "unchanged": "Original T079 A1-A5, UI actions, timings, 36 prerequisite CLI calls and all expected results unchanged",
+    "notExecuted": true
+  }
+}

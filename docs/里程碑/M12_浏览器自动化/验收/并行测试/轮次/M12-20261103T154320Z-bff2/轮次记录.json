@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-05T07:52:45.263597+00:00",
+  "updatedAt": "2026-11-05T11:13:00.122531+00:00",
   "status": "S4/S5 acceptance closure with S2/S3 pointer/dialog fixes; originalT062 partial reopened",
   "coordinator": "/root",
   "agents": [
@@ -26,34 +26,44 @@
   "requirements": "R1.3",
   "technicalDesign": "V1.2 §11",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "P096 originalfull T111 with proven synchronous readonly observer",
+  "currentGroup": "P103002 actual original1800s running, clock0 fence verified; static test preparation only otherwise",
   "resources": {
     "build": null,
     "nativeUi": {
       "owner": "/root",
-      "group": "M12-P096",
-      "privateRoot": "/private/tmp/willyou-m12-p096-sync-metrics-long-001",
-      "phase": "one originalfull30minute run, exclusive Native",
-      "readySha256": "23f99531f2514d18d328ba721e06d2b80646c148a3d6923d8d7da0f2bfe68b15",
-      "grantedAt": "2026-11-05T07:47:46.493476+00:00",
-      "sessionId": 36535,
-      "outerPid": 54612,
-      "brokerPid": 54664,
-      "wrapperPid": 54667,
-      "driverPid": 54677,
-      "appPid": 54697,
-      "clock0Utc": "2026-11-05T07:48:09.284Z",
-      "resourceCID": 68672,
-      "ongoingObservation": {
-        "at": "2026-11-05T07:52:45.263597+00:00",
-        "elapsedSeconds": 275.059065958,
-        "formalCLI": 5,
-        "milestones": [
-          0
+      "group": "M12-P103-002",
+      "privateRoot": "/private/tmp/willyou-m12-p103-app021-long-002",
+      "readySha256": "73d1aeaea318ac8bbc71c148fc8ca21aed7758feaf3acc1f52a21a056337d1b5",
+      "scope": "Original full1800s App021/source025, exactNative root guards corrected not broadened; actual App/clock0 not yet observed. Original6/35+5/5pages/7points/RSSlast4+110%/wholeCPU<5 allunchanged; no model/clipboard/foreground input. Independent001prelaunch6PID allClear.",
+      "actualSessionId": 21544,
+      "actualPids": {
+        "outer": 25043,
+        "broker": 25088,
+        "wrapper": 25099,
+        "driver": 25102,
+        "app": 25109
+      },
+      "resourceId": 72986,
+      "cohortFence": {
+        "wrapperPid": 25099,
+        "driverPid": 25102,
+        "resourceId": 72986,
+        "externalResourceIds": [
+          719,
+          719
         ],
-        "CPUgaps": [],
-        "notFinal": true
-      }
+        "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+        "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
+        "actualAnchorRoles": {
+          "app": 1,
+          "electron": 9,
+          "receiver": 5,
+          "fixed-daemon": 5
+        },
+        "verifiedAtDriverMonoNs": "172249537371250",
+        "beforeClock0": true
+      },
+      "measurementStartMonoNs": "172249540709250"
     },
     "lightSoftware": null
   },
@@ -3682,7 +3692,16 @@
       "privateRoot": "/private/tmp/willyou-m12-p083-profile-lifecycle-app-002",
       "readySha256": "d9792faed48cd7dc5d7ec2bb32d54644542260cc3ca932bf5fe0e4cc6ced51eb",
       "manifestSha256": "a700bfe8423be4fc91f53c456dba79515da194f260ac32c0fbf3bab13613440b",
-      "staticEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/static-preparation-002/manifest.json"
+      "staticEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/static-preparation-002/manifest.json",
+      "nextStaticPreparation": {
+        "owner": "/root/s2_t004_test",
+        "group": "M12-P083-003",
+        "privateRoot": "/private/tmp/willyou-m12-p083-profile-lifecycle-app-003",
+        "status": "delivered/SHAverified/archived; no resources held",
+        "manifestSha256": "c11e1f7c5153a12d8e159391b3c69e7086d838efea1d02c4113d1eecca0ba42a",
+        "publicEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/static-preparation-003/manifest.json",
+        "remainingPrerequisites": "CurrentP096 actualteardown + two fresh valid foregrounds or proven supported exact-window tool route, original guard"
+      }
     },
     {
       "id": "M12-P084",
@@ -4023,7 +4042,7 @@
       "id": "M12-P096",
       "owner": "/root",
       "privateRoot": "/private/tmp/willyou-m12-p096-sync-metrics-long-001",
-      "status": "actual originalfull1800s started/actual20rolefence beforeclock0/5warm+0minute5formalCLI success;notfinal",
+      "status": "originalfull complete/35CLIgreen/CPU4.150551%green/RSSlast4red/independent74PID13TCP5HelperUnixclear",
       "formalCaseCredit": 0,
       "baseline": "App020/source024 unchanged; private observer only synchronously gets synchronous metrics; all original criteria/cadence unchanged",
       "execution": {
@@ -4074,10 +4093,12 @@
         ],
         "CPUgaps": [],
         "notFinal": true
-      }
+      },
+      "resultEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P096/attempt-001/manifest.json",
+      "finishedAt": "2026-11-05T08:23:38.691745+00:00"
     }
   ],
-  "next": "Observe SAME36535 to terminal; original analysis/CPU scope/plot/normalexit and exact independentcleanup. Then remainingR/A/S with valid source024 baseline; inspect supported nativeUI exact-window targeting if genuinely new capability can remove manual initialfocus need, without dailyApp launch/oldguard rearm or blind activation variants.",
+  "next": "先启动新生产修复后的原完整性能长测；用户步骤集中后置，不重复请求已有同范围模型发送授权。",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": {
     "commit": "70a54dcb0e45944cfa1551e370fb76ae75f737f6",
@@ -4103,13 +4124,13 @@
     }
   ],
   "candidateBaseline": {
-    "source": "source024",
-    "sourceManifestSha256": "26e9637bf5b5a77b63dc89930c71461180e593b4889f7cc9487fb92e7d8662c0",
-    "app": "/private/tmp/willyou-m12-s2-package-020/mac-arm64/WillYou.app",
-    "asarSha256": "ce58fc54e78fee16c2914dfbd3c72eaaea86661a4d5297e7146d7912605d3a0c",
-    "status": "built, awaiting actualfixed full performance and originalremainingA/R/S"
+    "source": "source025",
+    "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+    "app": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app",
+    "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
+    "status": "officialbuild/sixNative/strictlocalsignature/onlypackedmain delta green;162software andtypechecks0; originalfullperformance/remainingR/A/S notcomplete"
   },
-  "nextExecution": "Poll original execsession79789 or exact P089 payload/live; observationtimeout is not terminal; preserve all7original checkpoints. Full result+original analyzers+independentcleanup required before any T111 credit.",
+  "nextExecution": "P103独占Native；两执行者仅私有静态文件准备，禁止Native/App/clang/端口。",
   "nextPackageCandidate": {
     "source": "/private/tmp/willyou-m12-p078-source-023/source",
     "manifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
@@ -4178,7 +4199,30 @@
       "readySha256": "99cf07e061e71d98ad92e45c177414dade03ee233cd21bbc74827bd4bf638dbe",
       "executionTiming": "R004 actually executed after P069 cleanup under accepted exact re-review; healthok then initial120s focusnotmet, zero business task/input. Await changed foreground condition for fresh attempt.",
       "formalCaseCredit": 0,
-      "automaticReReview": "R004 exact action accepted;actual execution started after P069 cleanup;no alternative tool"
+      "automaticReReview": "R004 exact action accepted;actual execution started after P069 cleanup;no alternative tool",
+      "currentAttempt": "R008 observercontract fix only, original exactpayload scope persists; normal automaticreview requested"
+    },
+    "R008": {
+      "at": "2026-11-05T10:44:16.868524+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-t041-t042-real-codex-008",
+      "status": "initial-foreground-prerequisite-not-met",
+      "actualUiTaskLaunched": false,
+      "gestureCount": 0,
+      "normalExit": {
+        "pid": 77789,
+        "code": 0,
+        "signal": null
+      },
+      "signals": [],
+      "cleanup": {
+        "allClear": true,
+        "pids": 5,
+        "ports": 3,
+        "unix": 1,
+        "helpers": 0
+      },
+      "formalWholeCaseCredit": 0,
+      "next": "不重发原任务；修正离线judge仍使用UI摘要skills的假设后，待新的持续前台条件。先推进无需用户的P103完整性能。"
     }
   },
   "dispatchDiagnostics": [
@@ -4206,6 +4250,19 @@
       "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P079/attempt-011",
       "status": "14/14 realengineering; AppmetricCID63949 vs host719/currentcounterread; privateidentity true; no activation/DOMfocus; normalAppquitness observed but kernelExitunknown; root9PID2TCPclear",
       "formalCaseCredit": 0
+    },
+    {
+      "id": "P103001",
+      "at": "2026-11-05T10:55:48.628713+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-p103-app021-long-001",
+      "sessionId": 93426,
+      "status": "driver-prelaunch-root-guard-error",
+      "actualAppStarted": false,
+      "actualClock0": false,
+      "brokerExit": 3,
+      "cleanup": "coordinator-prelaunch-cleanup.json independent6PID allClear; raw originalcleanupUnresolved retained",
+      "formalWholeCaseCredit": 0,
+      "next": "002 exact-private-root allowlist rebinding + positive/negative guard controls; original6scripts/1800s/criteria unchanged"
     }
   ],
   "manualForegroundPrerequisite": {
@@ -4217,7 +4274,7 @@
   },
   "currentDocumentationCheckpoint": {
     "commit": "293b6935d028ac5cd615af1d9652e7148e99c100",
-    "scope": "P089 originalfull red+completeCPU; P090 confirmedschemafix133tests/types; P091 App020; P092002 running actualstartup recovery, no finalpass",
+    "scope": "P096 final originalRSSred/CPUfullgreen/cleanup; P099 loginwindow actualfocus blocker; P083/P067/SOPstatic SHAaccepted",
     "noPushMergeTagRelease": true
   },
   "continuationAudit": [
@@ -4232,5 +4289,76 @@
       ],
       "nextSafeAction": "Root serial P088 private LaunchServices wrapper to put unchanged direct-child harness in separate resource coalition; preserve true waitpid App0 and originalsixscripts; short proof first"
     }
-  ]
+  ],
+  "staticParallelPreparation": {
+    "owner": "/root/s2_t004_test",
+    "group": "M12-P083-003",
+    "privateRoot": "/private/tmp/willyou-m12-p083-profile-lifecycle-app-003",
+    "status": "delivered/SHAverified/archived; no resources held",
+    "manifestSha256": "c11e1f7c5153a12d8e159391b3c69e7086d838efea1d02c4113d1eecca0ba42a",
+    "publicEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/static-preparation-003/manifest.json",
+    "remainingPrerequisites": "Desktop unlocked; two fresh valid foregrounds after own setupreload",
+    "cookieRecoveryCompiled": {
+      "privateRoot": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001",
+      "status": "coordinator private I host compile passed; Native unexecuted",
+      "sourceManifestSha256": "26e9637bf5b5a77b63dc89930c71461180e593b4889f7cc9487fb92e7d8662c0",
+      "hostSha256": "0fded0b446253606703af45f7f7e310567febfb402d310989004b599112bcda2",
+      "moduleClosureCount": 508,
+      "preparationFailures": "preserveSymlinks logical-root missing tldts-core/cross-spawn; original frozen source/input retained, separate compile003 normal realpath resolution passed",
+      "formalWholeCaseCredit": 0
+    }
+  },
+  "nativeUiToolStatic": {
+    "owner": "/root/native_focus_prep",
+    "status": "delivered/verified/archived; no resources held; does not resolve foreground",
+    "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P097/native-ui-tool-static-001/manifest.json",
+    "future": "When current P096 exactcleanup releases resources, root may read actual CUA docs/inventory using getState only; safe exact-window ability must be established before input. No open dailyApp by path or blind activation variant.",
+    "actualCuaReadonlyReview": {
+      "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P097/cua-documentation-review.json",
+      "sha256": "98cc4e2f05a2baaa025cd528dd8127bc21997551542a5745a786eaafa0c11d0f",
+      "status": "metadata only; no safe exactinstance input shown by docs, no actualinput/App launch",
+      "NativeLeaseReleased": true
+    }
+  },
+  "currentParticipants": {
+    "coordinator": "/root",
+    "executionSlots": [
+      {
+        "owner": "/root/s2_t004_test",
+        "work": "P067 pause/stop App020 static preparation",
+        "resourcesHeld": []
+      },
+      {
+        "owner": "/root/native_focus_prep",
+        "work": "Original T120–T126 SOP payload/driver static preparation, no model authorization assumed",
+        "resourcesHeld": []
+      }
+    ],
+    "retiredUnavailable": [
+      {
+        "owner": "/root/t108_app",
+        "reason": "Earlier quota error; root had taken over, no current resource lease/work; new second execution slot uses native_focus_prep"
+      }
+    ],
+    "resourceBoundary": "Exactly coordinator+2 current participants; no recursive delegation. Both preparers file-only while rootP096 has allNative. Root owns production/ledger/build."
+  },
+  "parallelPreparationNext": [
+    {
+      "owner": "/root/native_focus_prep",
+      "work": "G1newattempt002 actualfullplan read fix, sameauthorizedpayload; P103 purefile preparation paused",
+      "resourcesHeld": []
+    },
+    {
+      "owner": "/root/s2_t004_test",
+      "work": "Cookie static draft saved; noNative; laststatic86048 handleowner mayfinishcheck afterGUI",
+      "resourcesHeld": []
+    }
+  ],
+  "foregroundCoordination": {
+    "askedAt": "2026-11-05T08:16:09.439706+00:00",
+    "time": "16:20 after expected P096 cleanup",
+    "purpose": "Original profile/popup/pause/stop UI batch, fresh window focus and same-userData restart secondfresh focus, no login/code",
+    "status": "Actualmanualcontentgesture handshake provedA4-only011; only issue newwindowafterstalequestions, always freshusergesture before guard. Useracknot equalactualfocus.",
+    "latestEvidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P099/attempt-001/system-foreground-review.json"
+  }
 }

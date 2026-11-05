@@ -1,0 +1,416 @@
+{
+  "at": "2026-11-05T11:02:31.012951+00:00",
+  "firstFailure": {
+    "classification": "private-build-dependency-resolution",
+    "status": 1,
+    "signal": null,
+    "message": "Rollup failed to resolve import tldts-core from frozen work-final/node_modules/tldts/dist/es6/index.js",
+    "originalFullStderr": "tool return; bounded excerpt retained here, not fabricated full log",
+    "hostCompiled": false,
+    "actualNativeStarted": false
+  },
+  "diagnosis": "work-final symlinks frozen source024; its tldts symlink points current same locked7.4.18. preserveSymlinks:true makes Rollup resolve dependency from logical private source root, whose tldts-core entry is absent. Do not mutate shared frozen source or repository node_modules.",
+  "fix": "Copy exactly existing locked tldts-core7.4.18 into private build-dependencies and add one explicit private alias in separate coordinator compile-attempt-002.mjs. Original25 frozen inputs unchanged; no new dependency install/externalization.",
+  "sourcePackageRoot": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/tldts-core@7.4.18/node_modules/tldts-core",
+  "privatePackageRoot": "/private/tmp/willyou-m12-cookie-import-recovery-native-static-001/build-dependencies/tldts-core",
+  "dependencyFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "c64182d48160db948b6aa97a984f1a32974ce4d2053900361264cd33853796cb",
+      "mode": 420
+    },
+    {
+      "path": "README.md",
+      "sha256": "d7ba00f168549978086466b2ce81009f4e55287a537b4d6ad019adc0330ffc7f",
+      "mode": 420
+    },
+    {
+      "path": "package.json",
+      "sha256": "c213bae89da25bcc72ca37c1745265c29baa9ee8ee002690bf41db906ec06321",
+      "mode": 420
+    },
+    {
+      "path": "index.ts",
+      "sha256": "b9bfec8044371ad6527dc0c554ebe549c1117d426032f0551d25f54e69d11f6b",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/index.d.ts",
+      "sha256": "5e5c1ae2c2698f3029c0ed9f2b7fc3a72d155d04fe5d845fa04f657aa14e156d",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/domain.d.ts",
+      "sha256": "728ead54363374ff91f50d97f4e4cb016cf7d98b5776e4a275561465e9b55644",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/is-special-use.d.ts",
+      "sha256": "76677f4770c031af79ba5f09a1d53868c1c5bb3f01a3c4c30edb31030c76e2b9",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/extract-hostname.d.ts",
+      "sha256": "b1774764c74ae0cceddc36e11431efc6c64cc2268e47ee19a1c3e2a484596a31",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/is-ip.d.ts",
+      "sha256": "0070d0b5eac342c134ec352d2df82c2b44a89313c911a9a2c4192846b6670f47",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/options.d.ts",
+      "sha256": "aeeb9130be0f1123f09ccb0d8315566ae2b4e2a6696b0de3f05d27076507ab1a",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/is-valid.d.ts",
+      "sha256": "a4a9a883a79a43efcf8329429655b80c252e56c3e9dc838aed79e2b57cc7a301",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/domain-without-suffix.d.ts",
+      "sha256": "e4b94e1cab43978c2cb360210076dc0ddc24127f899b26ecd1d08ad3e69a8bfb",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/subdomain.d.ts",
+      "sha256": "570e79005c2a54cb13c7f8c04d072b96fb65209c977a6f2d06220b7972ec63fd",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/factory.d.ts",
+      "sha256": "3f599646f5cbf70ef49ea67867a1f4462fb71acf1bf1f8eb4ee316b72c57a313",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/lookup/fast-path.d.ts",
+      "sha256": "899c62c52e9f287a86c1c4dd1281495fd80c652ccc578d93b976fa6c1efa1941",
+      "mode": 420
+    },
+    {
+      "path": "dist/types/src/lookup/interface.d.ts",
+      "sha256": "863cbb90fdbdd1d4d46722580a9648a44732bbbca2ca36655f0951a872154ccc",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/index.js",
+      "sha256": "d57dd426973c20706fb7bba91fb53488902aa498bf396c38c211c146bf85bbcd",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/tsconfig.bundle.tsbuildinfo",
+      "sha256": "67cd3c5d7c637e9150311ed91415d32cabfdb4454b73316cb4bed6632b39e715",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/index.js.map",
+      "sha256": "4326d0e51415d23b452cfc084afa2894116d8bdd76f768e179b10978b171074c",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/factory.js.map",
+      "sha256": "b2f8616573130027371b350b112cd6cebcbbdbc5b43cb761c87f317987bc6aca",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/factory.js",
+      "sha256": "db03b526156a341a62316a723b6e32836cf82adfdb21873dfa42fd3dfa2a2faa",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/extract-hostname.js.map",
+      "sha256": "73c27ab5b4d8d0a7726a014aa23d3e857ce4585f68d8f41041a985080d880243",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-special-use.js",
+      "sha256": "d37bcbcfc5b3afc35de0d852303b040788d41436cd114e6c0825d697d0b5d993",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/subdomain.js",
+      "sha256": "82261d7e31d277709a382a3adbb99a07e503536bcdcec2333bc4aae0ff4f2ff9",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-valid.js",
+      "sha256": "b7083a126badf4e1829236147605382e288070965943e6128a86d9481ab781f4",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-ip.js.map",
+      "sha256": "71c10f2a76f95d399e28ca829a362f1fe6264fcb84f98212e2875777b79ba2e9",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/domain-without-suffix.js",
+      "sha256": "858a833898b8dfa4e0a44de80c56caba0e8befd505e7cd4eac994d27ca5a5918",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-ip.js",
+      "sha256": "0e5e5349d1d3ab79f370dfce855a8d74176c47609c5c99092bf4b87161323ced",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/options.js",
+      "sha256": "9c1343ed22a496db448a99553c98fdf2e7e7e56c166cc3a6d03f20bda953f2a2",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-special-use.js.map",
+      "sha256": "f8e8e934a101b0746b9d24d3e0479214b890ed1bf36a065eb1eb7db78d2c6182",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/extract-hostname.js",
+      "sha256": "e77e127157bcd65c39227c7461001ea09e40c4ee73209a6d6e61a233db2dd630",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/is-valid.js.map",
+      "sha256": "6f9378255fd966d6e3247860a3e3835f2f70f09d83084e6caeb0728e9b9945bf",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/domain.js",
+      "sha256": "4fa86fb22250738f9c80971b2d939ab827aaee0fc76ae204a11785f9bc700773",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/options.js.map",
+      "sha256": "2e32b110cd47a865c4b55ab45f5321ad037d2f28f773a431e6b40e904a84a6d0",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/domain-without-suffix.js.map",
+      "sha256": "001f88d04469ab31d6a72a63775e28600f9f6da9ed99887c697c620299805a13",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/subdomain.js.map",
+      "sha256": "97a79d773117ad94b7e28301bc068baeccb629345653a078572a081c3e75432f",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/domain.js.map",
+      "sha256": "da5b29563110ac22e91c46f630e327d5a405669dc63f6387b081529946d64074",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/lookup/interface.js",
+      "sha256": "8fa84aa17e52ad42624c65fd0fb63e288ec05eed683813b511c7caac6b83b6a9",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/lookup/interface.js.map",
+      "sha256": "903587c84f7a17dd43541bc2e6698ed1e8c637fca67ed142e5d4ec9bbf475a4b",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/lookup/fast-path.js.map",
+      "sha256": "9e1108b462e1349e6109c99490f6ed13104ffc71b6d9230670f2d82989e697d0",
+      "mode": 420
+    },
+    {
+      "path": "dist/es6/src/lookup/fast-path.js",
+      "sha256": "3756dbaea5294ac360e566d1325b1821972a9ca04035ce8edc707868667d39e1",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/tsconfig.tsbuildinfo",
+      "sha256": "3bdc453823033021070d49d6fd08a6f3f3f5b1055e13cf04565ca3833f727e78",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/index.js",
+      "sha256": "48f0b26c20f26ded6749f2055ef5c58530091ee88239c2cf922e574161ae58d6",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/index.js.map",
+      "sha256": "a46c45919be0b0da2c92e5eb56479d17a6eafa493247db73190ed244837b31eb",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/factory.js.map",
+      "sha256": "7a493d20b148953a7e850ff6df8216be10de958ec8c203e05ffbf5e0da40354e",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/factory.js",
+      "sha256": "cdeb1b78d74b1c1f377a6d43c1ebb4e742015014a4cefe338f394076c1665da0",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/extract-hostname.js.map",
+      "sha256": "06818c5694c486e9200a1f376274b9fcc1430abac3e8413c627c026457598631",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-special-use.js",
+      "sha256": "386d275aec40ac3f328db875e55aa37a2452de63d9475d683d44f4511431a01b",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/subdomain.js",
+      "sha256": "0d0ab6b2eb24cca656d8314e912637a965b984a73489f08134f5ffb3a72e48c0",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-valid.js",
+      "sha256": "acc4cf7efa212740bef4580ae550b4340f75d21b75083a7f24eb815071fc2184",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-ip.js.map",
+      "sha256": "c27e5d8a77ce70f6e5d27d66dd19df0cbf6772573fbccd31640ca5b5f8260c5d",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/domain-without-suffix.js",
+      "sha256": "5538aa2bfaa0b2e78e58e255bd58aef6ee456e8eb1ca7902e992c5f396537582",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-ip.js",
+      "sha256": "aea17c908f435d91d9f04191d46004a609b3e730ccaf5f3a47806638c8300e31",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/options.js",
+      "sha256": "19d81af13f2d87ca08c9fe901dd7d76d46dc7b0074477bb9f66d2709de7be8d7",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-special-use.js.map",
+      "sha256": "bf62d1f16ebfb142cc81acf7885812dfa8a522c8f5d9b8a9ea2d85bd2118c9ee",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/extract-hostname.js",
+      "sha256": "0c5d22e4634df7e7234d353c8fe7b318897ececb619ce94b4ca47c5ec9104aa4",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/is-valid.js.map",
+      "sha256": "b496558b1819fe364ccac8378bc9387530ad2d79dd1caf7ae7bd66d5195edd6b",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/domain.js",
+      "sha256": "b4e6ebf8227825914f91239f991efa5cd5fb25e5926cbc798887f7faec57a8c6",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/options.js.map",
+      "sha256": "057ecdb889e425daf7ef7bda08f5754396cf6423cc827098051d13153eec1272",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/domain-without-suffix.js.map",
+      "sha256": "d5c608fb066c16c8b5b9bfaff4ec32f2a6b2e779009429ff172d8eae860999ac",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/subdomain.js.map",
+      "sha256": "418c7c336ec53ab58a05b8e9d5fed565c5d52eab8f849e2cb8a4c02e30056834",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/domain.js.map",
+      "sha256": "56ce0753043329a6a8c2efe2c682fbede78aed976dd04d700634c08b462a18bf",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/lookup/interface.js",
+      "sha256": "61a8caa1b4c642d3a24982eb9cd109da0806875184038b1ab7cd705dad63ca10",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/lookup/interface.js.map",
+      "sha256": "903587c84f7a17dd43541bc2e6698ed1e8c637fca67ed142e5d4ec9bbf475a4b",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/lookup/fast-path.js.map",
+      "sha256": "76728253d8a33e40aecd86ae250c75b0806eed55a7580b5e5a23d54638dc3cb3",
+      "mode": 420
+    },
+    {
+      "path": "dist/cjs/src/lookup/fast-path.js",
+      "sha256": "f88f954cc52817c6a62564f161a40703a16d29268aff02bc9353cdb1421305f4",
+      "mode": 420
+    },
+    {
+      "path": "src/factory.ts",
+      "sha256": "ec57c29943ff9ff16eff158e2fdd79b385bf683340699858f1c625ff229fe3f0",
+      "mode": 420
+    },
+    {
+      "path": "src/subdomain.ts",
+      "sha256": "b9d4b43460d9f3f3e3d0a78a8f27fe95dc9442fefb4264107f7e66dab1a723c0",
+      "mode": 420
+    },
+    {
+      "path": "src/is-special-use.ts",
+      "sha256": "c58ef45c657181fe7345620ab29102b7d71f4ff551afb57a931ff42be6a8164c",
+      "mode": 420
+    },
+    {
+      "path": "src/extract-hostname.ts",
+      "sha256": "39718c055a7a853f647808f0b68dc5c8c9748c37d98b51ee827a6d9d04b3e917",
+      "mode": 420
+    },
+    {
+      "path": "src/domain.ts",
+      "sha256": "68c0b48ca6aa01158d632d75e3b0c7512b7241453134b0e6f9b5fd85568170e8",
+      "mode": 420
+    },
+    {
+      "path": "src/is-valid.ts",
+      "sha256": "ef82e680515fbb3b450c21201f8097c82ff0e4cf4c5f602e635fddca0220577b",
+      "mode": 420
+    },
+    {
+      "path": "src/domain-without-suffix.ts",
+      "sha256": "5c875363227e1151e0927c969e844d509e9cf2d0ec49675e8cc8e756fea657b2",
+      "mode": 420
+    },
+    {
+      "path": "src/is-ip.ts",
+      "sha256": "7c2969eab6d8f8a679234deb30e6baa5017d3f32b2e35a7c1450659d47395845",
+      "mode": 420
+    },
+    {
+      "path": "src/options.ts",
+      "sha256": "dcc620b7d9152ba28e56ab6d42e6b5cf4de94e048b455ab9ef3e8e2063633f35",
+      "mode": 420
+    },
+    {
+      "path": "src/lookup/fast-path.ts",
+      "sha256": "b9bef413fdb659ff3f25595b9d2d71c741daad836c26b8b1579ed8e82daf120b",
+      "mode": 420
+    },
+    {
+      "path": "src/lookup/interface.ts",
+      "sha256": "58eb284519a37bcad186960e7e5e7090193ef4397d74fd121ac964115c60ddb8",
+      "mode": 420
+    }
+  ],
+  "originalPrepareSha256": "beac2c0a71ffcbe8a040e8dddae6cda8dd5c45c6b68f465d41b9720f993f068a",
+  "coordinatorCompileScriptSha256": "54e9bd0ab9f80617b2ef6d462466979176546c60f06b5c8facc9cb3b1670f68a",
+  "scope": "compile only, not Native/App execution or formal case pass",
+  "secondFailure": {
+    "result": "compile-attempt-002.result.json",
+    "message": "same logical-root dependency issue for cross-spawn under @modelcontextprotocol/client; one tldts-core alias was insufficient"
+  },
+  "thirdAttempt": {
+    "at": "2026-11-05T11:03:03.365713+00:00",
+    "fix": "Use normal realpath module resolution (preserveSymlinks:false) for immutable frozen-source and pnpm dependency symlinks. All original source SHA/mode, closure, external imports and nonempty-glob gates retained. No extra dependency externalization; first copied dependency and attempts retained.",
+    "scriptSha256": "4645720113cb94aa7ab1ed2c1f45c8992ca2d2e478ffc1990d5d5897b08ce861",
+    "explicitExtraDependencyAlias": false
+  }
+}

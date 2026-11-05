@@ -71,6 +71,35 @@ describe('fixed-package tools, exact request receipts, semantic retries and reso
       expect(compile).toHaveBeenCalledTimes(4);
     } finally { if (second) await second.cli.exited(); compile.mockRestore(); }
   });
+  it('rechecks every listed contract source on each request, including the nonfirst tool', async () => {
+    const baseline = await service.list(run.runId), hash = f.application!.packageHash, name = 'smartdd_zentao_write_v1';
+    const saved = f.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,name) as { input_source:string;output_source:string };
+    for (const column of ['input_source','output_source'] as const) {
+      try {
+        f.sqlite.prepare('UPDATE capability_package_contracts SET ' + column + '=? WHERE package_hash=? AND tool_name=?').run(JSON.stringify({...JSON.parse(saved[column]),description:'changed after earlier listing'}),hash,name);
+        expect(await service.list(run.runId)).toEqual({tools:[],unavailable:[{appId:'zentao',code:'HASH_MISMATCH'}]});
+      } finally { f.sqlite.prepare('UPDATE capability_package_contracts SET ' + column + '=? WHERE package_hash=? AND tool_name=?').run(saved[column],hash,name); }
+      expect(await service.list(run.runId)).toEqual(baseline);
+    }
+    const row = f.sqlite.prepare('SELECT manifest_json FROM capability_packages WHERE package_hash=?').get(hash) as {manifest_json:string};
+    try {
+      f.sqlite.prepare('UPDATE capability_packages SET manifest_json=? WHERE package_hash=?').run(JSON.stringify({...JSON.parse(row.manifest_json),displayName:'changed after earlier listing'}),hash);
+      expect(await service.list(run.runId)).toEqual({tools:[],unavailable:[{appId:'zentao',code:'HASH_MISMATCH'}]});
+    } finally { f.sqlite.prepare('UPDATE capability_packages SET manifest_json=? WHERE package_hash=?').run(row.manifest_json,hash); }
+    expect(await service.list(run.runId)).toEqual(baseline);
+    expect(count).toBe(0);
+  });
+  it('keeps an excluded contract out of listing and does not read its tampered retained source', async () => {
+    const reader = new FixtureProcessReader(), isolated = await runFixture(reader,{application:true,allowedOperations:['zentao.read']});
+    let owned: Awaited<ReturnType<typeof isolated.create>> | undefined;
+    try {
+      owned=await isolated.create();await owned.prepare();await owned.cli.arm();reader.identities.set(200003,'darwin-proc-v1:200:3');await owned.cli.attach(200003);
+      isolated.sqlite.prepare("UPDATE capability_package_contracts SET output_source='{}' WHERE package_hash=? AND tool_name=?").run(isolated.application!.packageHash,'smartdd_zentao_write_v1');
+      const limited = new ApplicationToolService(isolated.store,isolated.runs,{resolve:()=>{throw Error('Listing must not execute');}});
+      expect(await limited.list(owned.runId)).toMatchObject({tools:[{name:'smartdd_zentao_query_v1'}],unavailable:[]});
+      expect((await limited.list(owned.runId)).tools).toHaveLength(1);
+    } finally { if(owned)await owned.cli.exited();isolated.cleanup(); }
+  });
   it('lists actual fixed package schemas and routes using host project/task/package context', async () => {
     const listed = await service.list(run.runId); expect(listed.tools.map(t => t.name)).toEqual(['smartdd_zentao_query_v1','smartdd_zentao_write_v1']); expect(listed.tools[0].annotations.readOnlyHint).toBe(true); expect(listed.unavailable).toEqual([]);
     const response = await service.call(run.runId,randomUUID(),call()); expect(response).toMatchObject({ status: 'ok',value: { packageHash: f.application!.packageHash,projectId: 'p1',taskId: f.snapshot.taskId,value: 'synthetic-body' } });

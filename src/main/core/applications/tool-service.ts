@@ -78,17 +78,18 @@ export class ApplicationToolService {
     if (!boundedJson(json) || !json || Array.isArray(json) || typeof json !== 'object' || (json as { type?: unknown }).type !== 'object') throw new ApplicationError('INVALID_PACKAGE','工具契约必须是有界JSON对象schema');
     return json as { type: 'object';[key: string]: unknown };
   }
-  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true): SelectedTool {
+  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true,listing?: { application: InstalledApplicationPackage;sources: ReadonlyMap<string,{input:string;output:string}> }): SelectedTool {
     const record=this.snapshotContracts(context).find(p=>Object.hasOwn(p.contracts,call.operation)),selected=record?.selection;
     if (!selected || record?.contracts[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
     assertRunApplication(context,selected.appId);
     if(context.plan){const allowed=context.plan.allowed.find(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','能力不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,this.entry);}
     else if(this.entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
-    const application = this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
-    if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
+    const application = listing?.application ?? this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
+    if (application.packageHash !== selected.packageHash || application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
-    const schemas = this.packages.toolContractSources(application.packageHash,declaration.name);
+    const schemas = listing ? listing.sources.get(declaration.name) : this.packages.toolContractSources(application.packageHash,declaration.name);
+    if (!schemas) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
     const inputSchema = this.schema(schemas.input);
     const originalDescription = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description,notice=applicationConnectionNotice(this.store,context.snapshot,application.appId);
     const description=notice?originalDescription+'\n\n'+notice:originalDescription;
@@ -101,9 +102,10 @@ export class ApplicationToolService {
         const group: BridgeTool[] = [];
         try {
           assertRunApplication(context,application.appId);
-          const manifest = this.packages.get(application.packageHash).manifest;
+          const installed = this.packages.get(application.packageHash), manifest = installed.manifest;
           const permitted = Object.entries(contracts).filter(([name,major]) => {const declaration=applicationInvocationDeclarations(manifest,this.entry).find(t=>t.name===name);return !!declaration&&application.allowedOperations.includes(declaration.permission)&&(!context.plan&&this.entry==='mcp'||!!context.plan?.allowed.some(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry===this.entry));});
-          for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);
+          const listing = { application: installed,sources: this.packages.toolContractSourcesBatch(application.packageHash,permitted.map(([operation]) => operation)) };
+          for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false,listing).tool);
           tools.push(...group);
           if (permitted.length) { const [operation,contractMajor] = permitted[0]; this.selected(context,{ operation,contractMajor }); }
         }
