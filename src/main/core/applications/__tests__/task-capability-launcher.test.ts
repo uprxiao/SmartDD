@@ -677,6 +677,8 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
 
   }finally{tasks.dispose();real.killAll();if(oldShell===undefined)delete process.env.SHELL;else process.env.SHELL=oldShell;}
  },30000);
+ // Multiple durable launch/stop cycles exceed the framework's default 5s on
+ // this host. This bounded fixture budget is not a product latency criterion.
  it('opens genuine no-snapshot Codex history with every managed Skill disabled and no application bridge',async()=>{
   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
   const id=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,aiProfileName:'historical fixture',runner:'codex',nativeSessionId:'old-owned-native',title:'old history',firstMessage:'',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
@@ -685,7 +687,7 @@ describe('production ManagedTaskCapabilities composed with actual TaskService an
   const opened=await tasks.open({taskId:id}),runId=opened.task.runtimeSnapshot!.runId,argv=ptys.launches.at(-1)!.args,flags=argv.find(a=>a.startsWith('skills.config='))!;
   expect((parseToml(flags).skills as {config:{enabled:boolean}[]}).config.every(item=>item.enabled===false)).toBe(true);expect(argv.join('\n')).not.toContain('--bootstrap');expect(argv.join('\n')).not.toContain('mcp_servers.');expect(opened.task.runtimeSnapshot?.selfCheck.issues).toEqual(['HISTORY_CAPABILITIES_UNKNOWN']);expect(()=>managed.runs.assertActive(runId)).toThrow('不签发');expect(managed.runs.inputContext(id,opened.ptyId)).toBeNull();expect(consumers()).toHaveLength(1);
   await new Promise<void>(done=>setTimeout(done,250));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});tasks.kill(id);await vi.waitFor(()=>expect(consumers()).toEqual([]));expect(sqlite.prepare('SELECT runtime_snapshot FROM tasks WHERE id=?').get(id)).toEqual({runtime_snapshot:null});expect(sqlite.prepare('SELECT schema_version,retention_state FROM capability_session_snapshots WHERE task_id=?').get(id)).toEqual({schema_version:0,retention_state:'hold'});
- });
+ },30000);
  it('continues known native history when its disable-list injection exceeds capacity without rewriting the old record',async()=>{
   const first=await create();tasks.kill(first.task.id);await vi.waitFor(()=>expect(consumers()).toEqual([]));
   const id=randomUUID(),nativeId=randomUUID(),stamp=Date.now();drizzle(sqlite,{schema}).insert(schema.tasks).values({id,projectId,cwd,aiProfileId:codexId,runner:'codex',nativeSessionId:nativeId,title:'capacity history fixture',runtimeSnapshot:null,configVersion:0,stateRoot:join(home,'.codex'),createdAt:stamp,updatedAt:stamp}).run();
@@ -1247,9 +1249,11 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   const partial=await tasks.open({taskId:initial.task.id});try{expect(managed.runs.assertActive(partial.task.runtimeSnapshot!.runId).applicationScope).toEqual([]);for(const p of original.snapshot.packages)await builtin.install(source,source.index.apps.find(a=>a.hash===p.packageHash)!);expect(managed.runs.assertActive(partial.task.runtimeSnapshot!.runId).applicationScope).toEqual([]);expect((await appTools().list(partial.task.runtimeSnapshot!.runId)).tools).toEqual([]);}finally{tasks.kill(initial.task.id);await vi.waitFor(()=>expect(managed.runs.get(partial.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
   const full=await tasks.open({taskId:initial.task.id});try{const context=managed.runs.assertActive(full.task.runtimeSnapshot!.runId);expect(context.applicationScope??context.snapshot.packages.map(p=>p.appId)).toEqual(original.snapshot.packages.map(p=>p.appId));expect((await appTools().list(full.task.runtimeSnapshot!.runId)).tools).toHaveLength(17);expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(initial.task.id)).toEqual(raw);}finally{tasks.kill(initial.task.id);await vi.waitFor(()=>expect(managed.runs.get(full.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
  },30000);
+ // Old source017 also exceeds 5s here; keep every assertion and a finite
+ // multi-launch fixture budget, independent of browser performance gates.
  it.each(['claude-code','codex'] as const)('keeps original independent Skills while respecting current project MCP disablement after app loss: %s',async runner=>{
   const builtin=await selectBoth(),first=await create(runner==='codex'?codexId:claudeId);await stopForSwitchFixture(first,runner);const fixed=await managed.sessions.get(first.task.id);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);for(const p of fixed.snapshot.packages)rmSync(join(support.store.root,builtin.retainedMetadata(p.packageHash).relativePath),{recursive:true});const started=await tasks.open({taskId:first.task.id});try{expect(started.task.runtimeSnapshot!.mcp).toEqual([]);expect(started.task.runtimeSnapshot!.skills.length).toBe(fixed.snapshot.standardSkills.length);expect(managed.runs.assertActive(started.task.runtimeSnapshot!.runId).applicationScope).toEqual([]);expect((await managed.sessions.get(first.task.id)).snapshot).toEqual(fixed.snapshot);const args=ptys.launches.at(-1)!.args;if(runner==='claude-code')expect(args).not.toContain('--mcp-config');else expect(args.join('\n')).not.toContain('mcp_servers.');}finally{tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(started.task.runtimeSnapshot!.runId).state).toBe('stopped'));}
- });
+ },30000);
 
  it.each((['claude-code','codex'] as const).flatMap(runner=>(['new','resume'] as const).flatMap(mode=>(['missing-bytes','registered-unready'] as const).map(fault=>({runner,mode,fault})))))('keeps original independent Skills and project MCP when all selected apps are unavailable: $runner $mode $fault',async({runner,mode,fault})=>{
   const builtin=await selectBoth(),profile=runner==='codex'?codexId:claudeId,first=mode==='resume'?await create(profile):undefined;
@@ -1358,13 +1362,14 @@ describe('per-application availability does not withdraw healthy fixed tools',()
   const x=await startCoreScope(runner,'zentao'),before=sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(x.task.task.id),refs=sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(x.task.task.id);
   try{const tools=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),result=await tools.call(x.scope.runId,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}});expect(result.status,JSON.stringify(result)).toBe('ok');expect((await tools.list(x.scope.runId)).tools.map(t=>t.name).sort()).toEqual(Object.keys(x.fixed.snapshot.packages.find(p=>p.appId==='mail')!.toolContractMajors).sort());expect(sqlite.prepare('SELECT snapshot_json FROM capability_session_snapshots WHERE task_id=?').get(x.task.task.id)).toEqual(before);expect(sqlite.prepare('SELECT * FROM capability_session_refs WHERE task_id=? ORDER BY ref_id').all(x.task.task.id)).toEqual(refs);}finally{await x.close();}
  });
+ // Same durable-store budget as the adjacent scoped-run compositions.
  it.each(['claude-code','codex'] as const)('host API foundation refuses forged direct Mail scopes after a same-hash repair in a scoped %s run',async runner=>{
   const x=await startCoreScope(runner,'mail');
   try{const source=new CapabilityBundleSource(resolve('out/capability-bundles-compatibility-v1')),entry=source.index.apps.find(a=>a.hash===x.bad.packageHash)!;expect(entry).toBeTruthy();await x.builtin.install(source,entry);expect(x.builtin.assertTrusted(x.bad.packageHash).packageHash).toBe(x.bad.packageHash);
    const known=managed.runs.assertActive(x.scope.runId),claim={...known,applicationScope:['mail']},binding={packageHash:x.bad.packageHash,appId:'mail',toolName:'smartdd_mail_draft_list_v1',permission:'mail.draft'},operation={operationId:randomUUID(),requestId:randomUUID(),attempt:1,deadline:Date.now()+1000,signal:new AbortController().signal,packageHash:binding.packageHash,appId:'mail',toolName:binding.toolName,contractMajor:1,connectionId:null},before=sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get();let executed=0;
    expect(()=>applications.contexts.withAgent(claim,binding,operation,'read',async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertAgentReceipt(claim,binding,randomUUID())).toThrow('本轮此应用能力');expect(()=>applications.contexts.withReadReceipt(claim,binding,randomUUID(),async()=>{executed++;})).toThrow('本轮此应用能力');expect(()=>applications.contexts.assertSendOrigin(projectId,x.task.task.id,x.scope.runId)).toThrow('本轮此应用能力');expect(executed).toBe(0);expect(sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get()).toEqual(before);expect(managed.runs.assertActive(x.scope.runId).applicationScope).toEqual(['zentao']);
   }finally{await x.close();}
- });
+ },30000);
 
  beforeEach(()=>{
   // This composition uses TestPtys: no CLI/MCP child is ever forked. The two

@@ -15,6 +15,12 @@ it('continues after an unavailable observation and stops at host shutdown',async
 });
 it('never starts with a revoked run',()=>{const collect=vi.fn(),monitor=new SkillObservationMonitor(collect),abort=new AbortController();abort.abort();monitor.start('task','run',abort.signal);expect(collect).not.toHaveBeenCalled();monitor.close();});
 
+it('releases each run polling hint on revocation or host shutdown exactly once',async()=>{
+ vi.useFakeTimers();const released=vi.fn(),monitor=new SkillObservationMonitor(async()=>{},20,released),a=new AbortController(),b=new AbortController();
+ monitor.start('a','run-a',a.signal);monitor.start('b','run-b',b.signal);a.abort();monitor.close();b.abort();await vi.advanceTimersByTimeAsync(100);
+ expect(released.mock.calls).toEqual([['run-a'],['run-b']]);expect(vi.getTimerCount()).toBe(0);
+});
+
 it('keeps simultaneous run ownership independent and cancels pending work at shutdown',async()=>{
  vi.useFakeTimers();const resolvers:(()=>void)[]=[],collect=vi.fn(()=>new Promise<void>(resolve=>resolvers.push(resolve))),monitor=new SkillObservationMonitor(collect,20),a=new AbortController(),b=new AbortController();
  monitor.start('task-a','run-a',a.signal);monitor.start('task-b','run-b',b.signal);expect(collect.mock.calls).toEqual([['task-a','run-a'],['task-b','run-b']]);

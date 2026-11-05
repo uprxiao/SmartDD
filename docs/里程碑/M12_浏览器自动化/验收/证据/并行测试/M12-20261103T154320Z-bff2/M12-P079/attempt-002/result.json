@@ -1,0 +1,799 @@
+{
+  "kind": "independent-controlled-rusage-characterization",
+  "checks": [
+    {
+      "id": "RAW-JSON",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "id": "COMPILE",
+      "passed": true,
+      "detail": {
+        "command": [
+          "/usr/bin/clang",
+          "-v",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-O1",
+          "-isysroot",
+          "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+          "-mmacosx-version-min=13.0",
+          "-MD",
+          "-MF",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-002/build/probe.d",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-002/probe.c",
+          "-o",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-002/build/probe",
+          "-lproc"
+        ],
+        "pid": 31846,
+        "returnCode": 0,
+        "actualExitCode": 0,
+        "signal": null,
+        "binarySha256": "5920445fb5a7bd02a641f3fac2afb06b8bb9b40296c6266721b8ff0050202f8c"
+      }
+    },
+    {
+      "id": "NATIVE-EXIT",
+      "passed": true,
+      "detail": {
+        "pid": 31869,
+        "command": [
+          "/private/tmp/willyou-m12-p069-rusage-controlled-002/build/probe"
+        ],
+        "startedMonotonic": 133926.27520975,
+        "returnCode": 0,
+        "actualExitCode": 0,
+        "signal": null,
+        "terminationByRunner": false,
+        "endedMonotonic": 133926.823820166
+      }
+    },
+    {
+      "id": "SIX-PHASE-COMPLETE",
+      "passed": true,
+      "detail": {
+        "complete": [
+          {
+            "kind": "complete",
+            "pid": 31869,
+            "cases": 6,
+            "signal": 0,
+            "atMonotonicNs": 134040774316000
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "EXACT-CLEANUP",
+      "passed": true,
+      "detail": {
+        "kind": "actual-controlled-process-cleanup",
+        "knownIdentityCount": 7,
+        "runnerForcedTermination": false,
+        "nativeHooksInstalled": false,
+        "portsOpened": false,
+        "AppOrPTYStarted": false,
+        "checks": [
+          {
+            "command": [
+              "/private/tmp/willyou-m12-p069-rusage-controlled-002/build/probe",
+              "--verify-list",
+              "/private/tmp/willyou-m12-p069-rusage-controlled-002/owned-identities.tsv",
+              "--observe"
+            ],
+            "pid": 31886,
+            "returnCode": 0,
+            "signal": null,
+            "stdout": "cleanup-observe.jsonl"
+          }
+        ],
+        "errors": [],
+        "exactOwnedIdentitiesClear": true
+      }
+    },
+    {
+      "id": "ABI-AND-V1-V2",
+      "passed": true,
+      "detail": [
+        {
+          "kind": "abi",
+          "rusageV1Size": 144,
+          "rusageV2Size": 160,
+          "v1ChildUserOffset": 96,
+          "v2ChildUserOffset": 96,
+          "bsdInfoSize": 136,
+          "rusageSize": 144,
+          "timebaseRc": 0,
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "zombieConstant": 5,
+          "cpuUnitsNotAssumed": true
+        }
+      ]
+    },
+    {
+      "id": "SELF-UNIT-CALIBRATION",
+      "passed": true,
+      "detail": {
+        "rawOwnDelta": 2040763,
+        "referenceOwnDeltaUs": 85032,
+        "compatibleCandidates": [
+          {
+            "name": "mach-absolute-ticks",
+            "rawUnitsPerSecond": 24000000.0,
+            "measuredSeconds": 0.08503179166666666,
+            "referenceSeconds": 0.085032
+          }
+        ],
+        "uniqueScaleEstablished": true,
+        "note": "Equivalent numeric Mach/nanosecond scales may remain named ambiguously; no API unit claim beyond the observed scale."
+      }
+    },
+    {
+      "id": "V1-V2-AGREEMENT",
+      "passed": true,
+      "detail": [
+        {
+          "label": "self-before-work",
+          "selfDifferenceSeconds": 1.0416666666666667e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "self-after-work",
+          "selfDifferenceSeconds": 1.5e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-child",
+          "selfDifferenceSeconds": 3.3333333333333335e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-child-alive",
+          "selfDifferenceSeconds": 2.25e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child-alive",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-zombie-unwaited",
+          "selfDifferenceSeconds": 1.4166666666666667e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child-zombie-unwaited",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-child-wait",
+          "selfDifferenceSeconds": 4.1666666666666667e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-hidden-child",
+          "selfDifferenceSeconds": 3.75e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-hidden-child",
+          "selfDifferenceSeconds": 1.0416666666666667e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-nested",
+          "selfDifferenceSeconds": 3.3333333333333335e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent",
+          "selfDifferenceSeconds": 1.875e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "grandchild",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent",
+          "selfDifferenceSeconds": 1.7916666666666667e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "grandchild",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent",
+          "selfDifferenceSeconds": 4.583333333333333e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent",
+          "selfDifferenceSeconds": 3.5833333333333335e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-nested-wait",
+          "selfDifferenceSeconds": 5e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-intermediate",
+          "selfDifferenceSeconds": 4.1666666666666667e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-reparent",
+          "selfDifferenceSeconds": 2.25e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "intermediate-alive",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "daemon-before-reparent",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-intermediate-wait",
+          "selfDifferenceSeconds": 4.583333333333333e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "daemon-after-reparent",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-daemon-work",
+          "selfDifferenceSeconds": 1.875e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "daemon-after-work",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "daemon-first-after-exiting-message",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-after-daemon-exit",
+          "selfDifferenceSeconds": 1.7916666666666667e-06,
+          "childDifferenceSeconds": 0.0
+        }
+      ]
+    },
+    {
+      "id": "DIRECT-CHILD-ROLLUP-REFERENCE",
+      "passed": true,
+      "detail": {
+        "liveChildOwnSeconds": 0.120239,
+        "parentChildDeltaWhileLive": 0.0,
+        "parentChildDeltaAtZombieBeforeWait": 0.0,
+        "parentChildDeltaAtWait": 0.1202655,
+        "parentChildWholeDelta": 0.1202655,
+        "parentGetrusageChildrenWholeDeltaSeconds": 0.120265,
+        "wait4Seconds": 0.120265,
+        "zombieTargetRead": {
+          "kind": "snapshot",
+          "seq": 7,
+          "stage": "V3",
+          "label": "child-zombie-unwaited",
+          "readerPid": 31869,
+          "targetPid": 31870,
+          "startMonotonicNs": 134040443150000,
+          "endMonotonicNs": 134040443151000,
+          "wallNs": 1793838901521024000,
+          "bsd": {
+            "bytes": 0,
+            "errno": 3,
+            "pid": 0,
+            "ppid": 0,
+            "uid": 0,
+            "status": 0,
+            "birthSeconds": 0,
+            "birthMicroseconds": 0
+          },
+          "v1": {
+            "rc": 0,
+            "errno": 0,
+            "user": 2859416,
+            "system": 26956,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 3214232746388,
+            "exitAbstime": 3214235640144
+          },
+          "v2": {
+            "rc": 0,
+            "errno": 0,
+            "user": 2859416,
+            "system": 26956,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 3214232746388,
+            "exitAbstime": 3214235640144
+          },
+          "readerReference": {
+            "selfRc": 0,
+            "childrenRc": 0,
+            "selfUserUs": 85059,
+            "selfSystemUs": 1863,
+            "childrenUserUs": 0,
+            "childrenSystemUs": 0
+          }
+        },
+        "liveIncludedAccordingToObservedDelta": false,
+        "exitBeforeWaitIncludedAccordingToObservedDelta": false,
+        "waitCausedRollupAccordingToObservedDelta": true,
+        "wholeRollupMatchesWait4": true,
+        "wholeRollupMatchesParentGetrusageChildren": true
+      }
+    },
+    {
+      "id": "HIDDEN-CHILD-REFERENCE",
+      "passed": true,
+      "detail": {
+        "targetPid": 31871,
+        "parentDeltaSeconds": 0.07524641666666666,
+        "wait4Seconds": 0.075245,
+        "elapsedBoundarySeconds": 0.075732,
+        "targetCpuSnapshotsBetweenBoundaries": [],
+        "note": "Identity and child self-rusage oracle are intentionally retained; the scheduled target CPU reader never samples this hidden child.",
+        "referenceMatches": true
+      }
+    },
+    {
+      "id": "NESTED-ROLLUP-REFERENCE",
+      "passed": true,
+      "detail": {
+        "parentChildDeltaSeconds": 0.1207195,
+        "controllerWait4NestedSubtreeSeconds": 0.120717,
+        "childWait4GrandchildSeconds": 0.075201,
+        "frontiers": [
+          {
+            "stage": "V5-live",
+            "targets": [
+              {
+                "pid": 31869,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31872,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31873,
+                "status": 2,
+                "v2rc": 0
+              }
+            ],
+            "allCountersAvailable": true,
+            "selfPlusChildAllUnreapedRaw": 9685533,
+            "selfPlusChildLiveOnlyRaw": 9685533,
+            "readSpanSeconds": 1.2e-05
+          },
+          {
+            "stage": "V5-grand-zombie",
+            "targets": [
+              {
+                "pid": 31869,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31872,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31873,
+                "status": 0,
+                "v2rc": 0
+              }
+            ],
+            "allCountersAvailable": true,
+            "selfPlusChildAllUnreapedRaw": 9687662,
+            "selfPlusChildLiveOnlyRaw": 9687662,
+            "readSpanSeconds": 2.1e-05
+          },
+          {
+            "stage": "V5-grand-waited",
+            "targets": [
+              {
+                "pid": 31869,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31872,
+                "status": 2,
+                "v2rc": 0
+              }
+            ],
+            "allCountersAvailable": true,
+            "selfPlusChildAllUnreapedRaw": 9688626,
+            "selfPlusChildLiveOnlyRaw": 9688626,
+            "readSpanSeconds": 5e-06
+          },
+          {
+            "stage": "V5-child-zombie",
+            "targets": [
+              {
+                "pid": 31869,
+                "status": 2,
+                "v2rc": 0
+              },
+              {
+                "pid": 31872,
+                "status": 0,
+                "v2rc": 0
+              }
+            ],
+            "allCountersAvailable": true,
+            "selfPlusChildAllUnreapedRaw": 9689561,
+            "selfPlusChildLiveOnlyRaw": 9689561,
+            "readSpanSeconds": 1.9e-05
+          }
+        ],
+        "recursiveRollupMatchesWait4": true,
+        "grandchildNotAbsentFromSubtreeReference": true
+      }
+    },
+    {
+      "id": "REPARENT-ACTUALLY-EXERCISED",
+      "passed": true,
+      "detail": {
+        "actualBoundary": [
+          {
+            "kind": "reparent-boundary",
+            "daemonPid": 31876,
+            "oldParentPid": 31875,
+            "actualNewParentPid": 1,
+            "changed": true
+          }
+        ],
+        "terminalBoundary": [
+          {
+            "kind": "daemon-terminal-boundary",
+            "pid": 31876,
+            "originalIdentityNoLongerPresent": true,
+            "notOurWaitableChild": true,
+            "atMonotonicNs": 134040774289000
+          }
+        ],
+        "knownAliveDaemonOwnSecondsAfterReparent": 0.11017866666666666,
+        "parentChildDeltaAfterIntermediateWaitSeconds": 0.0,
+        "finalTargetApi": {
+          "v1": {
+            "rc": -1,
+            "errno": 3,
+            "user": 0,
+            "system": 0,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 0,
+            "exitAbstime": 0
+          },
+          "v2": {
+            "rc": -1,
+            "errno": 3,
+            "user": 0,
+            "system": 0,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 0,
+            "exitAbstime": 0
+          },
+          "bsd": {
+            "bytes": 0,
+            "errno": 3,
+            "pid": 0,
+            "ppid": 0,
+            "uid": 0,
+            "status": 0,
+            "birthSeconds": 0,
+            "birthMicroseconds": 0
+          }
+        },
+        "daemonSelfBeforeExitIsNotExactTerminalUsage": true,
+        "guaranteedFutureFiveSecondTerminalCapture": false,
+        "note": "A single successful zombie read or before-exit self report cannot guarantee all future reparented terminal CPU. No ledger/full-scope proof is inferred here."
+      }
+    },
+    {
+      "id": "NORMAL-CONTROLLED-EXIT-NO-FALLBACK",
+      "passed": true,
+      "detail": {
+        "runnerErrors": [],
+        "normalCleanupNoSignals": true
+      }
+    }
+  ],
+  "allControlledChecksPassed": true,
+  "observations": {
+    "unitCalibration": {
+      "rawOwnDelta": 2040763,
+      "referenceOwnDeltaUs": 85032,
+      "compatibleCandidates": [
+        {
+          "name": "mach-absolute-ticks",
+          "rawUnitsPerSecond": 24000000.0,
+          "measuredSeconds": 0.08503179166666666,
+          "referenceSeconds": 0.085032
+        }
+      ],
+      "uniqueScaleEstablished": true,
+      "note": "Equivalent numeric Mach/nanosecond scales may remain named ambiguously; no API unit claim beyond the observed scale."
+    },
+    "V2_V3_V4_directChild": {
+      "liveChildOwnSeconds": 0.120239,
+      "parentChildDeltaWhileLive": 0.0,
+      "parentChildDeltaAtZombieBeforeWait": 0.0,
+      "parentChildDeltaAtWait": 0.1202655,
+      "parentChildWholeDelta": 0.1202655,
+      "parentGetrusageChildrenWholeDeltaSeconds": 0.120265,
+      "wait4Seconds": 0.120265,
+      "zombieTargetRead": {
+        "kind": "snapshot",
+        "seq": 7,
+        "stage": "V3",
+        "label": "child-zombie-unwaited",
+        "readerPid": 31869,
+        "targetPid": 31870,
+        "startMonotonicNs": 134040443150000,
+        "endMonotonicNs": 134040443151000,
+        "wallNs": 1793838901521024000,
+        "bsd": {
+          "bytes": 0,
+          "errno": 3,
+          "pid": 0,
+          "ppid": 0,
+          "uid": 0,
+          "status": 0,
+          "birthSeconds": 0,
+          "birthMicroseconds": 0
+        },
+        "v1": {
+          "rc": 0,
+          "errno": 0,
+          "user": 2859416,
+          "system": 26956,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 3214232746388,
+          "exitAbstime": 3214235640144
+        },
+        "v2": {
+          "rc": 0,
+          "errno": 0,
+          "user": 2859416,
+          "system": 26956,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 3214232746388,
+          "exitAbstime": 3214235640144
+        },
+        "readerReference": {
+          "selfRc": 0,
+          "childrenRc": 0,
+          "selfUserUs": 85059,
+          "selfSystemUs": 1863,
+          "childrenUserUs": 0,
+          "childrenSystemUs": 0
+        }
+      },
+      "liveIncludedAccordingToObservedDelta": false,
+      "exitBeforeWaitIncludedAccordingToObservedDelta": false,
+      "waitCausedRollupAccordingToObservedDelta": true,
+      "wholeRollupMatchesWait4": true,
+      "wholeRollupMatchesParentGetrusageChildren": true
+    },
+    "V4_hiddenChild": {
+      "targetPid": 31871,
+      "parentDeltaSeconds": 0.07524641666666666,
+      "wait4Seconds": 0.075245,
+      "elapsedBoundarySeconds": 0.075732,
+      "targetCpuSnapshotsBetweenBoundaries": [],
+      "note": "Identity and child self-rusage oracle are intentionally retained; the scheduled target CPU reader never samples this hidden child.",
+      "referenceMatches": true
+    },
+    "V5_nested": {
+      "parentChildDeltaSeconds": 0.1207195,
+      "controllerWait4NestedSubtreeSeconds": 0.120717,
+      "childWait4GrandchildSeconds": 0.075201,
+      "frontiers": [
+        {
+          "stage": "V5-live",
+          "targets": [
+            {
+              "pid": 31869,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31872,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31873,
+              "status": 2,
+              "v2rc": 0
+            }
+          ],
+          "allCountersAvailable": true,
+          "selfPlusChildAllUnreapedRaw": 9685533,
+          "selfPlusChildLiveOnlyRaw": 9685533,
+          "readSpanSeconds": 1.2e-05
+        },
+        {
+          "stage": "V5-grand-zombie",
+          "targets": [
+            {
+              "pid": 31869,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31872,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31873,
+              "status": 0,
+              "v2rc": 0
+            }
+          ],
+          "allCountersAvailable": true,
+          "selfPlusChildAllUnreapedRaw": 9687662,
+          "selfPlusChildLiveOnlyRaw": 9687662,
+          "readSpanSeconds": 2.1e-05
+        },
+        {
+          "stage": "V5-grand-waited",
+          "targets": [
+            {
+              "pid": 31869,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31872,
+              "status": 2,
+              "v2rc": 0
+            }
+          ],
+          "allCountersAvailable": true,
+          "selfPlusChildAllUnreapedRaw": 9688626,
+          "selfPlusChildLiveOnlyRaw": 9688626,
+          "readSpanSeconds": 5e-06
+        },
+        {
+          "stage": "V5-child-zombie",
+          "targets": [
+            {
+              "pid": 31869,
+              "status": 2,
+              "v2rc": 0
+            },
+            {
+              "pid": 31872,
+              "status": 0,
+              "v2rc": 0
+            }
+          ],
+          "allCountersAvailable": true,
+          "selfPlusChildAllUnreapedRaw": 9689561,
+          "selfPlusChildLiveOnlyRaw": 9689561,
+          "readSpanSeconds": 1.9e-05
+        }
+      ],
+      "recursiveRollupMatchesWait4": true,
+      "grandchildNotAbsentFromSubtreeReference": true
+    },
+    "V6_reparent": {
+      "actualBoundary": [
+        {
+          "kind": "reparent-boundary",
+          "daemonPid": 31876,
+          "oldParentPid": 31875,
+          "actualNewParentPid": 1,
+          "changed": true
+        }
+      ],
+      "terminalBoundary": [
+        {
+          "kind": "daemon-terminal-boundary",
+          "pid": 31876,
+          "originalIdentityNoLongerPresent": true,
+          "notOurWaitableChild": true,
+          "atMonotonicNs": 134040774289000
+        }
+      ],
+      "knownAliveDaemonOwnSecondsAfterReparent": 0.11017866666666666,
+      "parentChildDeltaAfterIntermediateWaitSeconds": 0.0,
+      "finalTargetApi": {
+        "v1": {
+          "rc": -1,
+          "errno": 3,
+          "user": 0,
+          "system": 0,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 0,
+          "exitAbstime": 0
+        },
+        "v2": {
+          "rc": -1,
+          "errno": 3,
+          "user": 0,
+          "system": 0,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 0,
+          "exitAbstime": 0
+        },
+        "bsd": {
+          "bytes": 0,
+          "errno": 3,
+          "pid": 0,
+          "ppid": 0,
+          "uid": 0,
+          "status": 0,
+          "birthSeconds": 0,
+          "birthMicroseconds": 0
+        }
+      },
+      "daemonSelfBeforeExitIsNotExactTerminalUsage": true,
+      "guaranteedFutureFiveSecondTerminalCapture": false,
+      "note": "A single successful zombie read or before-exit self report cannot guarantee all future reparented terminal CPU. No ledger/full-scope proof is inferred here."
+    }
+  },
+  "fullAppLifetimeScopeAccountingApproved": false,
+  "productionSamplerChanged": false,
+  "originalT111FormalPassClaim": false,
+  "originalCpuPercentCriterion": 5,
+  "futureGate": "Characterization only. Review exact rollup/frontier/reparent semantics and implement/test a complete accounting ledger before allowing a future <5% full-scope pass. All original raw/curves/activity/peaks remain.",
+  "status": "controlled-characterization-completed-scope-not-approved"
+}

@@ -29,7 +29,7 @@ export interface NativeUserMessageResult {
   status: 'matched' | 'no-match' | 'unavailable' | 'unsupported';
   messages: readonly NativeUserMessage[]; issueCode: string | null;
 }
-interface Registration { version: string; signal: AbortSignal; detach: () => void }
+interface Registration { version: string; signal: AbortSignal; detach: () => void; observationRetry?:number; observationSource?: {snapshotHash:string;context:RunContext;root:string;file:string;cwd:string} }
 interface Proof { file: string; root: string; offset: number; length: number; device: number; inode: number; headerHash: string | null; cwd: string; expiresAt: number }
 /** Main-process origin evidence only. Native roles AND input accepted by the owned PTY or launch argument must
  * match. Neither a native file nor one of these receipts decides whether sending is intended.
@@ -146,6 +146,35 @@ export class NativeUserMessages {
   /** Host-only diagnostic observation. Does not create or consume user-input receipts. */
   async skillReads(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'read');}
   async skillDiscoveries(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'discovery');}
+  /** A negative polling hint only: unchanged native bytes need no new evidence
+   * collection. This never certifies evidence, resources, liveness or authority.
+   * A changed hint must still use the ordinary fully checked readers above. */
+  async skillObservationRevision(runId:string,snapshotHash:string):Promise<string|null>{
+    const registration=this.registrations.get(runId);
+    if(this.closed||!registration||registration.signal.aborted)return null;
+    try{
+      let source=registration.observationSource;
+      if(!source||source.snapshotHash!==snapshotHash){
+        const {context}=this.context(runId,'L2');
+        if(context.run.snapshotHash!==snapshotHash)return null;
+        const format=this.formats.get(context.snapshot.runner);if(!format.observeSkillReads&&!format.observeSkillDiscoveries)return null;
+        const located=await this.locate(context);
+        source={snapshotHash,context:{...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[]},...located,cwd:await realpath(context.snapshot.native.cwd)};
+        if(this.registrations.get(runId)!==registration||registration.signal.aborted)return null;
+        registration.observationSource=source;
+      }
+      const file=await this.openFile(source.root,source.file);
+      try{
+        const before=await file.stat(),header=await this.header(file,source.context),start=Math.max(0,before.size-LIMIT.tail),bytes=Buffer.alloc(before.size-start),read=await file.read(bytes,0,bytes.length,start);
+        const after=await file.stat(),pathState=await lstat(source.file);
+        if(read.bytesRead!==bytes.length||after.size!==before.size||after.mtimeMs!==before.mtimeMs||after.ctimeMs!==before.ctimeMs||after.dev!==before.dev||after.ino!==before.ino||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||await this.header(file,source.context)!==header||await realpath(source.context.snapshot.native.stateRoot)!==source.root||await realpath(source.context.snapshot.native.cwd)!==source.cwd)return null;
+        if(this.closed||registration.signal.aborted||this.registrations.get(runId)!==registration)return null;
+        // Hash actual bounded bytes, not just size/mtime: equal-size rewrites
+        // and file replacements must wake the fully checked collection path.
+        return digest(JSON.stringify([before.dev,before.ino,before.size,header,digest(bytes),registration.observationRetry??0]));
+      }finally{await file.close();}
+    }catch{delete registration.observationSource;return null;}
+  }
   /** Seal a display-only stop read while the run is still owned. The returned
    * one-shot reader works only after revocation and never creates input receipts.
    * Its time range ends at capture, so later runs cannot extend this evidence. */
@@ -162,8 +191,8 @@ export class NativeUserMessages {
         if(consumed)return empty();consumed=true;
         if(this.closed||!registration.signal.aborted)return empty();
         const valid=()=>!this.closed&&registration.signal.aborted;
-        const reads=await this.readSkillObservations(frozen,fixed,'read',through,valid);
-        const discoveries=await this.readSkillObservations(frozen,fixed,'discovery',through,valid);
+        const reads=await this.readSkillObservations(frozen,fixed,'read',through,valid)??[];
+        const discoveries=await this.readSkillObservations(frozen,fixed,'discovery',through,valid)??[];
         return valid()?{reads,discoveries}:empty();
       };
     }catch{return async()=>empty();}
@@ -173,18 +202,22 @@ export class NativeUserMessages {
       const {context}=this.context(runId,'L2');
       if(!this.formats.get(context.snapshot.runner)[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'])return [];
       const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
-      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
-      return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
-    }catch{return [];}
+      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))throw new ApplicationError('SOURCE_UNAVAILABLE','Skill观测目标与固定交付不符');
+      const observations=await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
+      if(observations===null)throw new ApplicationError('SOURCE_UNAVAILABLE','Skill观测来源尚未完整核验');
+      return observations;
+    }catch{const registration=this.registrations.get(runId);if(registration)registration.observationRetry=(registration.observationRetry??0)+1;return [];}
   }
-  private async readSkillObservations(context:RunContext,targets:readonly SkillReadTarget[],kind:'read'|'discovery',through:number,validate:()=>boolean):Promise<SkillReadObservation[]>{
+  private async readSkillObservations(context:RunContext,targets:readonly SkillReadTarget[],kind:'read'|'discovery',through:number,validate:()=>boolean):Promise<SkillReadObservation[]|null>{
     try{
       const located=await this.locate(context),file=await this.openFile(located.root,located.file);
       try{
         const before=await file.stat(),header=await this.header(file,context),cwd=await realpath(context.snapshot.native.cwd);
         const start=Math.max(0,before.size-LIMIT.tail),data=Buffer.alloc(before.size-start),read=await file.read(data,0,data.length,start);
-        if(read.bytesRead!==data.length)return [];
+        if(read.bytesRead!==data.length)return null;
         const first=start?data.indexOf(10)+1:0;if(start&&first===0)return [];
+        // No complete record (including an empty Claude log) is a legitimate
+        // empty window. New bytes will wake it; do not busy-retry unchanged data.
         const last=data.lastIndexOf(10);if(last<first)return [];
         const lines=utf8(data.subarray(first,last)).split('\n');
         // Budgets belong to the host, including for a newly registered format.
@@ -195,13 +228,13 @@ export class NativeUserMessages {
         const format=this.formats.get(context.snapshot.runner),parser=format[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'];
         if(!parser)return [];
         const observations=parser.call(format,boundedLines,targets,Date.parse(context.run.startedAt),through);
-        if(!validSkillObservations(observations,targets,Date.parse(context.run.startedAt),through))return [];
+        if(!validSkillObservations(observations,targets,Date.parse(context.run.startedAt),through))return null;
         const after=await file.stat(),pathState=await lstat(located.file),again=Buffer.alloc(data.length),reread=await file.read(again,0,again.length,start);
-        if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return [];
-        if(!validate())return [];
+        if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return null;
+        if(!validate())return null;
         return observations;
       }finally{await file.close();}
-    }catch{return [];}
+    }catch{return null;}
   }
   async verify(message: NativeUserMessage): Promise<boolean> {
     this.prune(); const proof = this.proofs.get(message); if (!proof) return false;

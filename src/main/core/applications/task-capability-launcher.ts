@@ -74,7 +74,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
   readonly bridgeRecovery=new BridgeSupervisor();
-  private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.inspect(taskId,runId);});
+  private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.collectSkillObservations(taskId,runId);},undefined,runId=>this.applications.sessionDiagnostics.forgetSkillObservations(runId));
   private readonly recoveryServices=new Map<string,string>();
   readonly claudeDelivery:ClaudeDeliveryCoordinator;
   private readonly catalogs=new Map<string,DiscoveryCatalog>();

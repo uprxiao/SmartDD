@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-04T21:57:15.178502+00:00",
+  "group": "M12-P075",
+  "attempt": "002",
+  "status": "not-executed-initial-focus-environment-block",
+  "formalCaseIncrement": 0,
+  "scope": [
+    "M12-T006-A",
+    "M12-T022-A",
+    "M12-T146-A",
+    "M12-T147-A"
+  ],
+  "actualUiActions": 0,
+  "freshguardInstalled": false,
+  "criteriaUnchanged": true,
+  "failure": {
+    "stage": "setup",
+    "error": "Error: Bounded lifecycle condition timeout\n    at poll (file:///private/tmp/willyou-m12-navigation-settings-app-002/lifecycle.mjs:4:170)\n    at async launchPhase (file:///private/tmp/willyou-m12-navigation-settings-app-002/lifecycle.mjs:13:1617)\n    at async bootstrap (file:///private/tmp/willyou-m12-navigation-settings-app-002/run.mjs:7:65)\n    at async file:///private/tmp/willyou-m12-navigation-settings-app-002/run.mjs:14:312"
+  },
+  "classification": "Actual initial focus unmet within original 120s after visible/non-minimized setup reload. One coordinator OS frontmost returned exit0 but actual focus guard prerequisites did not pass. No product conclusion from unexecuted case UI.",
+  "cliPrecondition": {
+    "hostPlan": {
+      "effectiveEntry": "cli",
+      "reason": null,
+      "nativeSendEvidence": false,
+      "source": "equivalent-simple-legacy-policy"
+    },
+    "actualReadonlyCli": {
+      "kind": "cli-precheck-result",
+      "pid": 25412,
+      "code": 0,
+      "signal": null,
+      "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140\",\"connections\":[]},\"data\":{\"result\":{\"mode\":\"clean\",\"pendingMode\":null,\"restartRequired\":false}},\"resources\":[],\"operation\":{\"id\":\"c82ac5df-e179-4b8c-93b6-4aa46e11c896\",\"requestId\":\"4783e3c5-48cf-4a06-b53f-3480c684a566\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.identity.get\"}\n",
+      "stderr": "",
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "mode": "clean",
+            "pendingMode": null,
+            "restartRequired": false
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "c82ac5df-e179-4b8c-93b6-4aa46e11c896",
+          "requestId": "4783e3c5-48cf-4a06-b53f-3480c684a566",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.identity.get"
+      },
+      "elapsedNs": 781995459,
+      "phase": "before",
+      "atMs": 1793829263966
+    },
+    "ready": true,
+    "boundary": "Trusted setup native read-only CLI only, not final original T022 UI terminal get; synthetic caller not real modelR"
+  },
+  "rawSha256": "04862b890b7c6991e777b9f150038ba59662afe4f35cc8e9c562cb4f82e45ae9",
+  "adjudicationSha256": "f2e2679b742569bf5b61af6cdea2026ded5c2604bae1ff6eb1e6eeff88efe772",
+  "cleanupSha256": "aa6c52ec5a61e1847d7dcd8184c6e15e991c8f02437ebb12b3ddffc532dcee5e",
+  "allExactOwnedResourcesReleased": true,
+  "next": "Wait user/coordinator real initial-focus solution; no automatic rerun or guard rearm."
+}

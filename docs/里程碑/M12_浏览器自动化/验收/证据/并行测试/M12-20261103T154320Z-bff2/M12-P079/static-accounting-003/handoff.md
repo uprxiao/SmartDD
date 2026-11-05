@@ -1,0 +1,5 @@
+P079003-preparation 仅静态交付。algorithm.md给出保守上界主路线，upper_bound.py为可执行纯数据核心，8项合成算术/负控通过；这不是新的Native/OS/App证据。minimal-preflight.md列只需补的child inventory/zombie/final cut短预检，不重跑原六控。proof-requirements.json把未闭合证明明确保留为pending，模型任何缺项都incomplete，formalFullScopeApproved恒false。
+
+实际sources以source022唯一manifest逐文件校验，Helper6b用协调者77文件冻结复制和其SOURCE/原build链共同引用；不读取活动out。历史T111003拓扑只作20个曾观测身份的事实，不据它证明没有隐藏短进程。原00358.99%红/001夹具红/00213绿和独立纠正全部保留。
+
+可行性：若final inventory、已wait leaf闭包和固定root持续身份这些前提实际封闭，上界收费允许double/warm/busy且不改原idle分母，证明比精确去重更简单。但当前final未reap inventory、并发归并和隐藏orphan排除尚未实测，故不能给未来<5完整绿。未占Native/编译/UI/PTY租约，没有执行资源待清理。

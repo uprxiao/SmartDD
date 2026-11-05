@@ -1,0 +1,953 @@
+{
+  "kind": "native-child-inventory-and-final-race-preflight",
+  "checks": [
+    {
+      "id": "RAW-JSON",
+      "passed": true,
+      "evidence": []
+    },
+    {
+      "id": "COMPILE-GATE",
+      "passed": true,
+      "evidence": {
+        "command": [
+          "/usr/bin/clang",
+          "-v",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-O1",
+          "-isysroot",
+          "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+          "-mmacosx-version-min=13.0",
+          "-MD",
+          "-MF",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-004/build/probe.d",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-004/probe.c",
+          "-o",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-004/build/probe",
+          "-lproc"
+        ],
+        "pid": 92271,
+        "returnCode": 0,
+        "actualExitCode": 0,
+        "signal": null,
+        "binarySha256": "b04e017a87965f91c94a112edf06972ff5926804cb5e9c21f1b7c6f0b2dc7130"
+      }
+    },
+    {
+      "id": "NATIVE-NORMAL-EXIT",
+      "passed": true,
+      "evidence": {
+        "pid": 92285,
+        "command": [
+          "/private/tmp/willyou-m12-p069-rusage-controlled-004/build/probe"
+        ],
+        "startedMonotonic": 135869.660028875,
+        "returnCode": 0,
+        "actualExitCode": 0,
+        "signal": null,
+        "terminationByRunner": false,
+        "endedMonotonic": 135869.704524708
+      }
+    },
+    {
+      "id": "BOTH-GROUPS-COMPLETE",
+      "passed": true,
+      "evidence": {
+        "complete": [
+          {
+            "kind": "complete",
+            "groups": 2,
+            "signal": 0,
+            "atMonotonicNs": 135983658106000
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "EXACT-CLEANUP",
+      "passed": true,
+      "evidence": {
+        "kind": "actual-controlled-process-cleanup",
+        "knownIdentityCount": 3,
+        "runnerForcedTermination": false,
+        "nativeHooksInstalled": false,
+        "portsOpened": false,
+        "AppOrPTYStarted": false,
+        "checks": [
+          {
+            "command": [
+              "/private/tmp/willyou-m12-p069-rusage-controlled-004/build/probe",
+              "--verify-list",
+              "/private/tmp/willyou-m12-p069-rusage-controlled-004/owned-identities.tsv",
+              "--observe"
+            ],
+            "pid": 92290,
+            "returnCode": 0,
+            "signal": null,
+            "stdout": "cleanup-observe.jsonl"
+          }
+        ],
+        "errors": [],
+        "exactOwnedIdentitiesClear": true
+      }
+    },
+    {
+      "id": "KNOWN-LIVE-CHILDREN-IN-FULL-LIST",
+      "passed": true,
+      "evidence": {
+        "kind": "child-list",
+        "label": "two-live-full",
+        "parentPid": 92285,
+        "capacityPids": 16,
+        "capacityBytes": 64,
+        "pidSize": 4,
+        "returnValue": 2,
+        "errno": 0,
+        "slots": [
+          92287,
+          92286,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777
+        ],
+        "guardBeforeIntact": true,
+        "guardAfterIntact": true,
+        "startMonotonicNs": 135983653963000,
+        "endMonotonicNs": 135983654075000
+      }
+    },
+    {
+      "id": "RETURN-UNIT-DETERMINED",
+      "passed": true,
+      "evidence": {
+        "candidates": [
+          "pid-count"
+        ],
+        "fullRaw": {
+          "kind": "child-list",
+          "label": "two-live-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 2,
+          "errno": 0,
+          "slots": [
+            92287,
+            92286,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983653963000,
+          "endMonotonicNs": 135983654075000
+        }
+      }
+    },
+    {
+      "id": "REQUESTED-BYTE-BOUNDARY-RESPECTED",
+      "passed": true,
+      "evidence": [
+        {
+          "kind": "child-list",
+          "label": "empty-family-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 0,
+          "errno": 0,
+          "slots": [
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983618255000,
+          "endMonotonicNs": 135983618383000
+        },
+        {
+          "kind": "child-list",
+          "label": "two-live-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 2,
+          "errno": 0,
+          "slots": [
+            92287,
+            92286,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983653963000,
+          "endMonotonicNs": 135983654075000
+        },
+        {
+          "kind": "child-list",
+          "label": "two-live-one-slot",
+          "parentPid": 92285,
+          "capacityPids": 1,
+          "capacityBytes": 4,
+          "pidSize": 4,
+          "returnValue": 1,
+          "errno": 0,
+          "slots": [
+            92287,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983654076000,
+          "endMonotonicNs": 135983654077000
+        },
+        {
+          "kind": "child-list",
+          "label": "two-live-zero-bytes",
+          "parentPid": 92285,
+          "capacityPids": 0,
+          "capacityBytes": 0,
+          "pidSize": 4,
+          "returnValue": 1180,
+          "errno": 0,
+          "slots": [
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983654078000,
+          "endMonotonicNs": 135983654079000
+        },
+        {
+          "kind": "child-list",
+          "label": "A-unreaped-B-live-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 2,
+          "errno": 0,
+          "slots": [
+            92287,
+            92286,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983657864000,
+          "endMonotonicNs": 135983657885000
+        },
+        {
+          "kind": "child-list",
+          "label": "A-waited-B-live-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 1,
+          "errno": 0,
+          "slots": [
+            92287,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983657891000,
+          "endMonotonicNs": 135983657904000
+        },
+        {
+          "kind": "child-list",
+          "label": "race-child-scan-before-reap",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 1,
+          "errno": 0,
+          "slots": [
+            92287,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983657910000,
+          "endMonotonicNs": 135983657922000
+        },
+        {
+          "kind": "child-list",
+          "label": "race-final-empty-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 0,
+          "errno": 0,
+          "slots": [
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983658089000,
+          "endMonotonicNs": 135983658101000
+        }
+      ]
+    },
+    {
+      "id": "TRUNCATION-IS-NOT-COMPLETE-INVENTORY",
+      "passed": true,
+      "evidence": {
+        "kind": "child-list",
+        "label": "two-live-one-slot",
+        "parentPid": 92285,
+        "capacityPids": 1,
+        "capacityBytes": 4,
+        "pidSize": 4,
+        "returnValue": 1,
+        "errno": 0,
+        "slots": [
+          92287,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777
+        ],
+        "guardBeforeIntact": true,
+        "guardAfterIntact": true,
+        "startMonotonicNs": 135983654076000,
+        "endMonotonicNs": 135983654077000
+      }
+    },
+    {
+      "id": "REAL-WNOWAIT-BOUNDARY",
+      "passed": true,
+      "evidence": {
+        "kind": "terminated-unreaped-observed",
+        "pid": 92286,
+        "parentPid": 92285,
+        "rc": 0,
+        "errno": 0,
+        "siginfoPid": 92286,
+        "siginfoCode": 1,
+        "siginfoStatus": 0,
+        "wnowait": true,
+        "atMonotonicNs": 135983657855000
+      }
+    },
+    {
+      "id": "UNREAPED-ZOMBIE-IS-IN-FULL-CHILD-INVENTORY",
+      "passed": true,
+      "evidence": {
+        "expectedKernelChildren": [
+          92286,
+          92287
+        ],
+        "actualPids": [
+          92286,
+          92287
+        ],
+        "raw": {
+          "kind": "child-list",
+          "label": "A-unreaped-B-live-full",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 2,
+          "errno": 0,
+          "slots": [
+            92287,
+            92286,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983657864000,
+          "endMonotonicNs": 135983657885000
+        },
+        "boundary": "If false, this API alone cannot close a hidden unreaped-child frontier. Do not call a stable endpoint list full scope."
+      }
+    },
+    {
+      "id": "WAITED-CHILD-REMOVED-LIVE-B-RETAINED",
+      "passed": true,
+      "evidence": {
+        "kind": "child-list",
+        "label": "A-waited-B-live-full",
+        "parentPid": 92285,
+        "capacityPids": 16,
+        "capacityBytes": 64,
+        "pidSize": 4,
+        "returnValue": 1,
+        "errno": 0,
+        "slots": [
+          92287,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777
+        ],
+        "guardBeforeIntact": true,
+        "guardAfterIntact": true,
+        "startMonotonicNs": 135983657891000,
+        "endMonotonicNs": 135983657904000
+      }
+    },
+    {
+      "id": "UNREAPED-RUSAGE-READABLE-WITH-LIVE-BIRTH",
+      "passed": true,
+      "evidence": {
+        "kind": "snapshot",
+        "label": "A-unreaped",
+        "readerPid": 92285,
+        "targetPid": 92286,
+        "startMonotonicNs": 135983657861000,
+        "endMonotonicNs": 135983657862000,
+        "bsd": {
+          "bytes": 0,
+          "errno": 3,
+          "ppid": 0,
+          "birthSeconds": 0,
+          "birthMicroseconds": 0
+        },
+        "v1": {
+          "rc": 0,
+          "errno": 0,
+          "user": 715232,
+          "system": 8809,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 3260871865770,
+          "exitAbstime": 3260872722382
+        },
+        "v2": {
+          "rc": 0,
+          "errno": 0,
+          "user": 715232,
+          "system": 8809,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 3260871865770,
+          "exitAbstime": 3260872722382
+        }
+      }
+    },
+    {
+      "id": "FINAL-SCAN-REAL-REAP-RACE-ORDER",
+      "passed": true,
+      "evidence": {
+        "scan": {
+          "kind": "child-list",
+          "label": "race-child-scan-before-reap",
+          "parentPid": 92285,
+          "capacityPids": 16,
+          "capacityBytes": 64,
+          "pidSize": 4,
+          "returnValue": 1,
+          "errno": 0,
+          "slots": [
+            92287,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777,
+            -777777
+          ],
+          "guardBeforeIntact": true,
+          "guardAfterIntact": true,
+          "startMonotonicNs": 135983657910000,
+          "endMonotonicNs": 135983657922000
+        },
+        "wait4": {
+          "kind": "wait4",
+          "label": "B-race-waited",
+          "pid": 92287,
+          "parentPid": 92285,
+          "exited": true,
+          "exitCode": 0,
+          "signal": 0,
+          "userUs": 34737,
+          "systemUs": 422,
+          "atMonotonicNs": 135983658082000
+        },
+        "missingTarget": {
+          "kind": "snapshot",
+          "label": "race-B-after-reap",
+          "readerPid": 92285,
+          "targetPid": 92287,
+          "startMonotonicNs": 135983658083000,
+          "endMonotonicNs": 135983658084000,
+          "bsd": {
+            "bytes": 0,
+            "errno": 3,
+            "ppid": 0,
+            "birthSeconds": 0,
+            "birthMicroseconds": 0
+          },
+          "v1": {
+            "rc": -1,
+            "errno": 3,
+            "user": 0,
+            "system": 0,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 0,
+            "exitAbstime": 0
+          },
+          "v2": {
+            "rc": -1,
+            "errno": 3,
+            "user": 0,
+            "system": 0,
+            "childUser": 0,
+            "childSystem": 0,
+            "startAbstime": 0,
+            "exitAbstime": 0
+          }
+        },
+        "parentLast": {
+          "kind": "snapshot",
+          "label": "race-parent-last-counter",
+          "readerPid": 92285,
+          "targetPid": 92285,
+          "startMonotonicNs": 135983658085000,
+          "endMonotonicNs": 135983658087000,
+          "bsd": {
+            "bytes": 136,
+            "errno": 0,
+            "ppid": 92269,
+            "birthSeconds": 1793840844,
+            "birthMicroseconds": 694243
+          },
+          "v1": {
+            "rc": 0,
+            "errno": 0,
+            "user": 15597,
+            "system": 31444,
+            "childUser": 1548933,
+            "childSystem": 18960,
+            "startAbstime": 3260871817126,
+            "exitAbstime": 0
+          },
+          "v2": {
+            "rc": 0,
+            "errno": 0,
+            "user": 15598,
+            "system": 31454,
+            "childUser": 1548933,
+            "childSystem": 18960,
+            "startAbstime": 3260871817126,
+            "exitAbstime": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "TARGET-AFTER-REAP-ACTUALLY-UNAVAILABLE",
+      "passed": true,
+      "evidence": {
+        "kind": "snapshot",
+        "label": "race-B-after-reap",
+        "readerPid": 92285,
+        "targetPid": 92287,
+        "startMonotonicNs": 135983658083000,
+        "endMonotonicNs": 135983658084000,
+        "bsd": {
+          "bytes": 0,
+          "errno": 3,
+          "ppid": 0,
+          "birthSeconds": 0,
+          "birthMicroseconds": 0
+        },
+        "v1": {
+          "rc": -1,
+          "errno": 3,
+          "user": 0,
+          "system": 0,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 0,
+          "exitAbstime": 0
+        },
+        "v2": {
+          "rc": -1,
+          "errno": 3,
+          "user": 0,
+          "system": 0,
+          "childUser": 0,
+          "childSystem": 0,
+          "startAbstime": 0,
+          "exitAbstime": 0
+        }
+      }
+    },
+    {
+      "id": "POST-REAP-ANCHOR-COUNTER-COVERS-REAL-LEAF",
+      "passed": true,
+      "evidence": {
+        "parentChildDeltaSeconds": 0.0351605,
+        "wait4Seconds": 0.035159,
+        "scaleRawPerSecond": 24000000.0
+      }
+    },
+    {
+      "id": "NEGATIVE-CONTROL-DOES-NOT-SILENTLY-ZERO-MISSING-PID",
+      "passed": true,
+      "evidence": {
+        "unsafeAlgorithm": "Use pre-scan parent children counter and treat the missing scanned target as zero.",
+        "unsafeChildrenSeconds": 0.030168375,
+        "postAnchorChildrenSeconds": 0.065328875,
+        "underchargedSeconds": 0.0351605,
+        "actualWait4Seconds": 0.035159,
+        "unsafeCollectorMustReject": true,
+        "safeClaimBoundary": "This one controlled reap race has a real post-parent counter. It does not prove arbitrary missing PIDs reaped here, other orphans, or all production concurrency."
+      }
+    },
+    {
+      "id": "FINAL-FAMILY-EMPTY",
+      "passed": true,
+      "evidence": {
+        "kind": "child-list",
+        "label": "race-final-empty-full",
+        "parentPid": 92285,
+        "capacityPids": 16,
+        "capacityBytes": 64,
+        "pidSize": 4,
+        "returnValue": 0,
+        "errno": 0,
+        "slots": [
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777,
+          -777777
+        ],
+        "guardBeforeIntact": true,
+        "guardAfterIntact": true,
+        "startMonotonicNs": 135983658089000,
+        "endMonotonicNs": 135983658101000
+      }
+    }
+  ],
+  "observations": {
+    "returnUnitCandidates": [
+      "pid-count"
+    ],
+    "liveFull": {
+      "kind": "child-list",
+      "label": "two-live-full",
+      "parentPid": 92285,
+      "capacityPids": 16,
+      "capacityBytes": 64,
+      "pidSize": 4,
+      "returnValue": 2,
+      "errno": 0,
+      "slots": [
+        92287,
+        92286,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777
+      ],
+      "guardBeforeIntact": true,
+      "guardAfterIntact": true,
+      "startMonotonicNs": 135983653963000,
+      "endMonotonicNs": 135983654075000
+    },
+    "oneSlot": {
+      "kind": "child-list",
+      "label": "two-live-one-slot",
+      "parentPid": 92285,
+      "capacityPids": 1,
+      "capacityBytes": 4,
+      "pidSize": 4,
+      "returnValue": 1,
+      "errno": 0,
+      "slots": [
+        92287,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777
+      ],
+      "guardBeforeIntact": true,
+      "guardAfterIntact": true,
+      "startMonotonicNs": 135983654076000,
+      "endMonotonicNs": 135983654077000
+    },
+    "zeroByteQueryRaw": {
+      "kind": "child-list",
+      "label": "two-live-zero-bytes",
+      "parentPid": 92285,
+      "capacityPids": 0,
+      "capacityBytes": 0,
+      "pidSize": 4,
+      "returnValue": 1180,
+      "errno": 0,
+      "slots": [
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777,
+        -777777
+      ],
+      "guardBeforeIntact": true,
+      "guardAfterIntact": true,
+      "startMonotonicNs": 135983654078000,
+      "endMonotonicNs": 135983654079000
+    },
+    "zeroByteQueryNotAssumedTotalCount": true,
+    "unreapedZombieIncluded": true,
+    "raceCounterReference": {
+      "parentChildDeltaSeconds": 0.0351605,
+      "wait4Seconds": 0.035159
+    },
+    "negativeControl": {
+      "unsafeAlgorithm": "Use pre-scan parent children counter and treat the missing scanned target as zero.",
+      "unsafeChildrenSeconds": 0.030168375,
+      "postAnchorChildrenSeconds": 0.065328875,
+      "underchargedSeconds": 0.0351605,
+      "actualWait4Seconds": 0.035159,
+      "unsafeCollectorMustReject": true,
+      "safeClaimBoundary": "This one controlled reap race has a real post-parent counter. It does not prove arbitrary missing PIDs reaped here, other orphans, or all production concurrency."
+    }
+  },
+  "nativeProtocolCompleted": true,
+  "allRequiredTechnicalChecksPassed": true,
+  "zombieListingCapabilityObserved": true,
+  "fullScopeAccountingApproved": false,
+  "originalT111PassClaim": false,
+  "originalThresholdPercent": 5,
+  "productionSamplerChanged": false,
+  "status": "all-short-gates-satisfied-scope-still-needs-production-proof"
+}

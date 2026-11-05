@@ -1,0 +1,193 @@
+{
+  "at": "2026-11-04T20:41:16.050748+00:00",
+  "group": "M12-P075",
+  "root": "/private/tmp/willyou-m12-navigation-settings-app-001",
+  "status": "static-preparation-waiting-final-App018-source-and-package",
+  "contracts": {
+    "M12-T006": {
+      "originalLine": "| M12-T006 | R01.1、O2、B03 | A | F-SITE；设置里搜索引擎选 Bing | 地址栏分别输入 `127.0.0.1:<端口>`、`react hooks`、`javascript:alert(1)`；首次点击已有地址的地址栏后直接输入 | 第一条打开测试站点首页；第二条地址变为 Bing 搜索地址且查询词已 URL 编码（不要求外网可达）；第三条显示“请输入有效的 http(s) 或 localhost 地址”且不白屏；首次点击会全选旧地址 | — | 待执行 | — |",
+      "layer": "A real final packagedApp only",
+      "status": "not-executed",
+      "criteria": [
+        "Settings Bing via actual UI",
+        "Address actual input 127.0.0.1:port opens local homepage",
+        "Actual react hooks submission produces Bing URL with encoded query; external reachability not required",
+        "javascript:alert(1) shows exact invalid-address Chinese message and nonblank page",
+        "First real click on existing address selects entire old address; direct text replaces it"
+      ]
+    },
+    "M12-T022": {
+      "originalLine": "| M12-T022 | O2、O5、O12、R01.13、B14 | A | 设置页；任务数据目录里已有若干截图、PDF 文件 | 切换搜索引擎后在地址栏搜索；切换浏览器身份；查看下载位置说明与浏览器文件占用；点“清理全部浏览器文件”并确认 | 搜索立即使用新引擎；身份切换提示“重启后生效”，重启后 `browser identity get` 返回新值；下载位置显示系统“下载”目录；占用空间与磁盘实际一致，清理后浏览器文件目录为空、占用显示为 0，系统“下载”目录不受影响 | — | 待执行 | — |",
+      "layer": "A real final packagedApp only",
+      "status": "not-executed",
+      "criteria": [
+        "Existing real captured PNG+PDF precondition in isolated browser artifacts; exact lstat bytes compared to readonlypreferences and roundedUI",
+        "Actual search-engine radio switch immediately changes next actual address search",
+        "Actual identity radio switch shows restart required; normal quit, sameuserData restart, actual managed nativeCLI identity get reports new mode",
+        "Actual UI download position equals unmodified Electron OS downloads path",
+        "Actual clear-all then actual confirmation empties entire browser artifacts root and UI 0 MB",
+        "Own uniquely named synthetic normal download in OS downloads remains same exact path/hash before/after artifact clear; no unrelated user file contents read/changed"
+      ]
+    },
+    "M12-T146": {
+      "originalLine": "| M12-T146 | R01.3 | A | 超长标题页、超长地址 | 打开页面，查看标签和地址栏 | 标签标题截断不溢出，地址栏可滚动查看完整地址，悬停显示完整标题 | — | 待执行 | — |",
+      "layer": "A real final packagedApp only",
+      "status": "not-executed",
+      "criteria": [
+        "Actual address navigation to long title/long URL page",
+        "Title span ellipsis, scrollWidth>clientWidth, bounded within tab",
+        "Address input retains complete URL and real keyboard Home/End/arrow scroll makes full string traversable",
+        "Real hover displays full title; URL alone does not satisfy title; save actual hover evidence or mark missing native tooltip visibility"
+      ],
+      "tooltipClarification": "Full title may be shown with URL; do not require exact tooltip string equality or suppress additional URL. Actual visible title evidence still required."
+    },
+    "M12-T147": {
+      "originalLine": "| M12-T147 | B01、B02 | A | 网页标签与工具栏 | 依次悬停、聚焦每个按钮，用 Tab 键遍历工具栏 | 悬停、焦点、按下状态都有可见变化，Tab 顺序与视觉顺序一致 | — | 待执行 | — |",
+      "layer": "A real final packagedApp only",
+      "status": "not-executed",
+      "criteria": [
+        "B01 tabs/close/new controls and B02 toolbar all visible buttons inventoried independently of implementation-specific gaps; conditional state controls listed separately",
+        "Enough A/B/C history to make back and forward enabled; loading/stop state also tested",
+        "Each enabled button baseline/hover/keyboard-focus/pressed captures current computed visual properties plus screenshots; :active boolean alone does not satisfy visible change",
+        "Real Tab traversal within B01/B02 plus address input; disabled controls skipped explicitly; actual stops must match top-to-bottom/left-to-right visual order",
+        "Mouse press visual sampled before release, then real pointer drag/release outside to cancel side effects; no DOM value/style mutation",
+        "Light/dark affected state checked via real App theme controls; not full T145 matrix or pixel-perfect claim"
+      ],
+      "scopeClarification": "B01 browser tabs, their close buttons and new-web-tab control; B02 browser toolbar. M9 find-file/fullscreen/hide-file tools are outside this original browser contract. Do not add a CSS-only hover rule: actual tooltip or child-visibility/screenshot evidence may satisfy visible hover change; computed-property differences are supporting measurements only."
+    }
+  },
+  "basis": {
+    "requirementRevision": "R1.3",
+    "locatorsFromSource015Manifest": "beb858ca46df4dd12246969c0c435f54234afcb0cc52ad323188b55558460f5b",
+    "sourceReference": "/private/tmp/willyou-m12-p075-source-017/source",
+    "oldApp017Use": "Foundation driver evidence only; expressly not an execution target",
+    "frozenReferenceFiles": [
+      {
+        "path": "src/renderer/features/browser/workspace.tsx",
+        "sha256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018"
+      },
+      {
+        "path": "src/renderer/features/browser/settings-dialog.tsx",
+        "sha256": "40f27b27aad672c9aa8a43a3a4c45c95d4bc25c98c32a0afbcd0b1808bb3a39b"
+      },
+      {
+        "path": "src/renderer/features/browser/workspace.css",
+        "sha256": "641e90b9c5fac7aa71db5409a73dd4cdfa9be7c469ee0ad271e5b2a5b714eb61"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-panel.tsx",
+        "sha256": "e7322928509811f0847f276316ef08f23d230ed14b783c3ba1d4ff27cb65d40e"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-baseline.css",
+        "sha256": "f13d1bd043860f78319d8d8a206e6cf7ad7d977a534de73800bd617171a2587a"
+      },
+      {
+        "path": "src/renderer/features/files/workspace.css",
+        "sha256": "c6d551793a957a87945cc0302a0da87baa7411ca8c84f1d846f098f0b347a6df"
+      },
+      {
+        "path": "src/renderer/m6.css",
+        "sha256": "4c45d01c8143bee767d143a3dab1dda26f97acacaa68384d11a76235e1c2560c"
+      },
+      {
+        "path": "src/shared/browser-navigation.ts",
+        "sha256": "cbd913eeeee3b9850e7375690afb9b3053bd9b960c544705082ce53c32a919e9"
+      },
+      {
+        "path": "src/main/core/browser/settings.ts",
+        "sha256": "50c38d8f42fb9f79c2a8fc251d96978fe3915900a361b44196e0928e5b4e527f"
+      },
+      {
+        "path": "src/main/core/browser/artifacts.ts",
+        "sha256": "66e510b849703d6f4e99922f08c6ae6b890698b98ebe7d6ec84c94693e881d11"
+      },
+      {
+        "path": "src/main/core/browser/operations.ts",
+        "sha256": "d9b2b4b846949af99426abb294f2c67ef0982a596915c886ce26377ebd9cfbf8"
+      },
+      {
+        "path": "src/renderer/views/settings-view.tsx",
+        "sha256": "b7395036835eab0f2c59321f48b6ac303f4b9bacefba5ae9b1c69440093aa6e2"
+      },
+      {
+        "path": "prototypes/m6-codex/src/FileWorkspace.jsx",
+        "sha256": "f2ec36f73a46cc92b96875af4181c2e561470a947f03f5b4f1dbc6039a175b31"
+      },
+      {
+        "path": "prototypes/m6-codex/AGENTS.md",
+        "sha256": "7c7db16025388ceadea87162b048953071d1b24c609f1bb2be662c6fc8877bdc"
+      }
+    ],
+    "preparationOverlayOnly": "/private/tmp/willyou-m12-p075-ui-fix-001/source (not final frozen App/source)",
+    "source017CandidateManifestSha256": "a1df3a568ad4d228dbcb328c45a69811ec4075ba86a22da5e8d6b70a1f999987",
+    "source017ReferenceFiles": [
+      {
+        "path": "prototypes/m6-codex/AGENTS.md",
+        "sha256": "7c7db16025388ceadea87162b048953071d1b24c609f1bb2be662c6fc8877bdc"
+      },
+      {
+        "path": "prototypes/m6-codex/src/FileWorkspace.jsx",
+        "sha256": "de52b2c9ba3c85974030fdc3da26a6117a2b75f0a67009764534046aea0d73b8"
+      },
+      {
+        "path": "src/main/core/browser/artifacts.ts",
+        "sha256": "66e510b849703d6f4e99922f08c6ae6b890698b98ebe7d6ec84c94693e881d11"
+      },
+      {
+        "path": "src/main/core/browser/operations.ts",
+        "sha256": "d9b2b4b846949af99426abb294f2c67ef0982a596915c886ce26377ebd9cfbf8"
+      },
+      {
+        "path": "src/main/core/browser/settings.ts",
+        "sha256": "50c38d8f42fb9f79c2a8fc251d96978fe3915900a361b44196e0928e5b4e527f"
+      },
+      {
+        "path": "src/renderer/features/browser/settings-dialog.tsx",
+        "sha256": "40f27b27aad672c9aa8a43a3a4c45c95d4bc25c98c32a0afbcd0b1808bb3a39b"
+      },
+      {
+        "path": "src/renderer/features/browser/workspace.css",
+        "sha256": "7872ed08d74faca6ba5d7801b1a9c48237672e09303e28cbd96457f5e0064611"
+      },
+      {
+        "path": "src/renderer/features/browser/workspace.tsx",
+        "sha256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-baseline.css",
+        "sha256": "f13d1bd043860f78319d8d8a206e6cf7ad7d977a534de73800bd617171a2587a"
+      },
+      {
+        "path": "src/renderer/features/files/workspace-panel.tsx",
+        "sha256": "be21fa822b4eaa839a8d567a1657b886780fc4f067ff137a347a6835156a0196"
+      },
+      {
+        "path": "src/renderer/features/files/workspace.css",
+        "sha256": "c6d551793a957a87945cc0302a0da87baa7411ca8c84f1d846f098f0b347a6df"
+      },
+      {
+        "path": "src/renderer/m6.css",
+        "sha256": "4c45d01c8143bee767d143a3dab1dda26f97acacaa68384d11a76235e1c2560c"
+      },
+      {
+        "path": "src/renderer/views/settings-view.tsx",
+        "sha256": "b7395036835eab0f2c59321f48b6ac303f4b9bacefba5ae9b1c69440093aa6e2"
+      },
+      {
+        "path": "src/shared/browser-navigation.ts",
+        "sha256": "cbd913eeeee3b9850e7375690afb9b3053bd9b960c544705082ce53c32a919e9"
+      }
+    ]
+  },
+  "priorEvidence": "P010 settings old partial and P068 passive harness/setup-reload/freshguard/normalcleanup foundation only. No originalfourcase results counted.",
+  "trustedPreparation": "RPC may prepare project/AI profile/task/capability health, actual capture PNG/PDF into isolated artifact root; tested new tab/navigation/settings/clear all/UI focus all actualUI. ReadonlyRPC/SQL/disk crosscheck only.",
+  "focusProtocol": "All prep health complete -> one setup reload -> actual initial focus -> freshguard; new restarted instance repeats new prep/reload/focus; never rearm yielded guard or replay input queue.",
+  "noNativeOrListenerStarted": true,
+  "knownStaticGaps": [
+    "Root private prototype+production tooltip/full title and browser focus/pressed fix now present in immutable source017 candidate. Actual App018/native visible result still unverified.",
+    "Pressed/hover visible styling must be actual tested; current CSS absent explicit :active support is a risk, not runtime red",
+    "Final source/App018 frozen pins unavailable, execute must hard fail before any listener/App start",
+    "Actual title tooltip OS capture boundary needs final driver path; DOM title only will not be claimed as visible tooltip"
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "kind": "independent-existing-raw-scope-adjudication",
+  "originalJudgeSha256": "ea966a084f00099ee943dd69f9d9e7869654b888ae77a281300bcf8845b7f193",
+  "originalResultSha256": "fc1f07d4fd63bc74682a650a1948f635f362f8ae1f63595e67ed013fa27d7ca3",
+  "rawSha256": "192f9adcabb3a6394321d6697762e440ecd885a3e87061c2e1219247600a7996",
+  "original13ChecksUnchanged": true,
+  "descriptionCarrierCorrection": {
+    "field": "observations.V5_nested.frontiers[*].selfPlusChildLiveOnlyRaw",
+    "problem": "Original descriptive calculation used BSD status!=SZOMB. This SDK returns BSD bytes0/errno3/status0 for an actual waitable zombie, so it misclassified the missing BSD status as live. No original success assertion or fullScope approval depended on that descriptive field.",
+    "correction": "Only existing WNOWAIT and successful v2 exitAbstime identify these controlled terminated-unreaped children. Keep raw status0; do not change it to5. Sum all unreaped frontier for transfer continuity; do not call that sum live-only."
+  },
+  "unitScaleRawPerSecond": 24000000.0,
+  "correctedNestedFrontiers": [
+    {
+      "stage": "V5-live",
+      "targets": [
+        {
+          "pid": 31869,
+          "label": "parent",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214230577495,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 2097955,
+          "childRaw": 4692286
+        },
+        {
+          "pid": 31872,
+          "label": "child",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214237609704,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 1090826,
+          "childRaw": 0
+        },
+        {
+          "pid": 31873,
+          "label": "grandchild",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214238702128,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 1804466,
+          "childRaw": 0
+        }
+      ],
+      "unreapedFrontierRaw": 9685533,
+      "actualLiveOnlyFrontierRaw": 9685533,
+      "unreapedFrontierSeconds": 0.403563875,
+      "actualLiveOnlyFrontierSeconds": 0.403563875
+    },
+    {
+      "stage": "V5-grand-zombie",
+      "targets": [
+        {
+          "pid": 31869,
+          "label": "parent",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214230577495,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 2098594,
+          "childRaw": 4692286
+        },
+        {
+          "pid": 31872,
+          "label": "child",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214237609704,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 1091934,
+          "childRaw": 0
+        },
+        {
+          "pid": 31873,
+          "label": "grandchild",
+          "bsdBytes": 0,
+          "bsdErrno": 3,
+          "bsdStatusRaw": 0,
+          "v2StartAbstime": 3214238702128,
+          "v2ExitAbstime": 3214240515081,
+          "classification": "terminated-unreaped",
+          "matchingWnowait": [
+            {
+              "kind": "terminated-unreaped-observed",
+              "label": "grandchild",
+              "parentPid": 31872,
+              "pid": 31873,
+              "waitidRc": 0,
+              "errno": 0,
+              "flags": 37,
+              "wnowait": true,
+              "siginfoPid": 31873,
+              "siginfoUid": 0,
+              "siginfoCode": 1,
+              "siginfoStatus": 0,
+              "polls": 2,
+              "atMonotonicNs": 134040645031000
+            }
+          ],
+          "ownRaw": 1804848,
+          "childRaw": 0
+        }
+      ],
+      "unreapedFrontierRaw": 9687662,
+      "actualLiveOnlyFrontierRaw": 7882814,
+      "unreapedFrontierSeconds": 0.4036525833333333,
+      "actualLiveOnlyFrontierSeconds": 0.3284505833333333
+    },
+    {
+      "stage": "V5-grand-waited",
+      "targets": [
+        {
+          "pid": 31869,
+          "label": "parent",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214230577495,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 2099177,
+          "childRaw": 4692286
+        },
+        {
+          "pid": 31872,
+          "label": "child",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214237609704,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 1092315,
+          "childRaw": 1804848
+        }
+      ],
+      "unreapedFrontierRaw": 9688626,
+      "actualLiveOnlyFrontierRaw": 9688626,
+      "unreapedFrontierSeconds": 0.40369275,
+      "actualLiveOnlyFrontierSeconds": 0.40369275
+    },
+    {
+      "stage": "V5-child-zombie",
+      "targets": [
+        {
+          "pid": 31869,
+          "label": "parent",
+          "bsdBytes": 136,
+          "bsdErrno": 0,
+          "bsdStatusRaw": 2,
+          "v2StartAbstime": 3214230577495,
+          "v2ExitAbstime": 0,
+          "classification": "live-at-this-read",
+          "matchingWnowait": [],
+          "ownRaw": 2100007,
+          "childRaw": 4692286
+        },
+        {
+          "pid": 31872,
+          "label": "child",
+          "bsdBytes": 0,
+          "bsdErrno": 3,
+          "bsdStatusRaw": 0,
+          "v2StartAbstime": 3214237609704,
+          "v2ExitAbstime": 3214240637925,
+          "classification": "terminated-unreaped",
+          "matchingWnowait": [
+            {
+              "kind": "terminated-unreaped-observed",
+              "label": "nested-child",
+              "parentPid": 31869,
+              "pid": 31872,
+              "waitidRc": 0,
+              "errno": 0,
+              "flags": 37,
+              "wnowait": true,
+              "siginfoPid": 31872,
+              "siginfoUid": 0,
+              "siginfoCode": 1,
+              "siginfoStatus": 0,
+              "polls": 2,
+              "atMonotonicNs": 134040651374000
+            }
+          ],
+          "ownRaw": 1092420,
+          "childRaw": 1804848
+        }
+      ],
+      "unreapedFrontierRaw": 9689561,
+      "actualLiveOnlyFrontierRaw": 6792293,
+      "unreapedFrontierSeconds": 0.40373170833333333,
+      "actualLiveOnlyFrontierSeconds": 0.28301220833333335
+    },
+    {
+      "stage": "V5-parent-after-all-waited",
+      "unreapedFrontierRaw": 9690188,
+      "actualLiveOnlyFrontierRaw": 9690188,
+      "unreapedFrontierSeconds": 0.4037578333333333,
+      "actualLiveOnlyFrontierSeconds": 0.4037578333333333
+    }
+  ],
+  "daemonBoundary": {
+    "actualNewParentPid": 1,
+    "liveOwnSeconds": 0.11017866666666666,
+    "terminalCounterCaughtOnlyByExplicitExitMessageFastRead": 0.11021025,
+    "terminalCounterExitAbstime": 3214243458744,
+    "sameStartAbstimeAsLive": true,
+    "controllerChildDeltaAfterIntermediateWaitSeconds": 0.0,
+    "laterApiUnavailable": true,
+    "gapUntilFinalReadSeconds": 0.011635,
+    "guaranteedFiveSecondCapture": false,
+    "beforeExitSelfOracleNotUsedAsExactTerminalCpu": true
+  },
+  "scopeConclusions": {
+    "directReapedChildrenSupportedForThisControlledTrace": true,
+    "unreapedZombiesStillNeedAccounting": true,
+    "nestedReapedSubtreeRollupSupportedForThisControlledTrace": true,
+    "naiveLiveOnlyPlusParentChildIsNotAlwaysContinuous": true,
+    "allOwnedForestIncludingReparentedDaemonAutomaticallyCovered": false,
+    "futureScopeMustFailClosedOnUnresolvedTerminalOrOwnershipGap": true,
+    "fullScopeAccountingApproved": false,
+    "originalT111CpuThresholdPercentUnchanged": 5,
+    "originalT111003FailureUnchanged": true
+  },
+  "NativeReexecuted": false,
+  "originalFilesChanged": false
+}

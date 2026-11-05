@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-05T01:02:15.897Z",
+  "asarLibrary": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@electron+asar@3.4.1/node_modules/@electron/asar/lib/asar.js",
+  "asarSha256": "f1995c81a490d3c7e899e1e94358402d863b4cff8fef20f4eab10d5cb0727868",
+  "mainSha256": "818ce0164a07fc33c230af67412ca22a267822b090d2ae8728f6cd707f3c7b9b",
+  "cssEntries": [
+    "/out/renderer/assets/index-D5GVoVeP.css"
+  ],
+  "checks": {
+    "skillObservationRevision": true,
+    "collectSkillObservations": true,
+    "noReaderRetryEpoch": true,
+    "preparedAck": true,
+    "tabHoverOverlay": true,
+    "pressedOverlay": true,
+    "toolbarPressedSelector": true
+  },
+  "helperUnchanged": true,
+  "sourceManifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
+  "checkerCorrection": "Original substring lacked retained optional chaining; actual packaged collector independently read; original false record preserved",
+  "collectorSnippetSha256": "79f820323737cdccf4e82c7743fa8f6ec6488ad411623b5d5c11b70729e7953a",
+  "collectorSnippet": "async collectSkillObservations(taskId, runId) {\n    const hint = this.store.sqlite.prepare(\"SELECT r.snapshot_hash AS snapshotHash,i.session_id AS sessionId FROM capability_runs r JOIN capability_session_identities i ON i.task_id=r.task_id WHERE r.run_id=? AND r.task_id=? AND r.state='active' AND r.revocation_state='open'\").get(runId, taskId);\n    if (!hint?.sessionId) {\n      this.forgetSkillObservations(runId);\n      return;\n    }\n    let state2 = this.observationPolls.get(runId);\n    if (!state2 || state2.taskId !== taskId || state2.snapshotHash !== hint.snapshotHash) {\n      if (this.observationPolls.size >= 128) this.observationPolls.delete(this.observationPolls.keys().next().value);\n      state2 = { taskId, snapshotHash: hint.snapshotHash, revision: null };\n      this.observationPolls.set(runId, state2);\n    }\n    const revision2 = this.deps.skillObservationRevision ? await this.deps.skillObservationRevision(runId, hint.snapshotHash) : null;\n    if (this.deps.skillObservationRevision && (!revision2 || revision2 === state2.revision)) return;\n    const value = await this.inspect(taskId, runId);\n    if (this.observationPolls.get(runId) === state2 && value.snapshotHash === hint.snapshotHash && value.currentRun?.id === runId && value.currentRun.preparation?.state === \"prepared\" && !value.currentRun.preparationIssue && !value.currentRun.skillObservationIssue && value.applications.every((app) => !app.packageHash || app.resourceState === \"verified\")) state2.revision = revision2;\n  }\n  forgetSkillObservations(runId) {\n    this.observationPolls.delete(runId);\n  }\n  "
+}
