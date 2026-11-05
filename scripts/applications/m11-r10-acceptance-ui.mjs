@@ -7,7 +7,7 @@
 // T42 notice part (Claude resume advice). T40, T47 and the Claude conversation part of T42 are separate.
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
-import {execFileSync,spawnSync} from 'node:child_process';
+import {execFile,execFileSync,spawnSync} from 'node:child_process';
 import {existsSync,lstatSync,readdirSync,readlinkSync,realpathSync} from 'node:fs';
 import {mkdtemp,mkdir,readFile,writeFile} from 'node:fs/promises';
 import {join,dirname,resolve} from 'node:path';
@@ -70,7 +70,7 @@ const server=createServer((req,res)=>{let chunks=[],bytes=0;req.on('data',b=>{by
  result.requests.push({at:new Date().toISOString(),marker:marker??null,health:!!health,bytes,toolNames:(body.tools??[]).map(t=>t.name??t.type)});
  res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache','connection':'close'});
  const send=(type,value)=>res.write('event: '+type+'\ndata: '+JSON.stringify({type,...value})+'\n\n');
- const s=marker?scenario.get(marker):undefined;
+ const s=marker?scenario.get(marker):undefined;if(s&&raw.includes('willyou-zentao-'))s.sawLibrarySkill=true;
  if(s?.command&&!s.issued){
   const tools=(body.tools??[]).flatMap(t=>t.type==='namespace'?(t.tools??[]).map(v=>({...v,namespace:t.name})):[t]),exec=tools.find(t=>t.name==='exec'&&t.type==='custom')??tools.find(t=>t.name==='exec_command');
   if(!exec){s.failure='EXEC_TOOL_MISSING';}else{
@@ -117,7 +117,9 @@ async function clickText(selector,text){const p=await app.evaluate(`(()=>{const 
 // Native <select>: Tab to the closed control and use its incremental key search (macOS popups are outside CDP).
 async function chooseOption(label,expected){const s=sel(label),choice=await app.evaluate(`(()=>{const select=document.querySelector(${JSON.stringify(s)}),options=[...select.options],o=options.find(o=>o.value===${JSON.stringify(expected)});if(!o)return null;let prefix=o.textContent.trim();for(let n=1;n<=prefix.length;n++)if(options.filter(x=>x.textContent.trim().startsWith(prefix.slice(0,n))).length===1){prefix=prefix.slice(0,n);break;}return{prefix,current:select.value}})()`);assert(choice,'option missing: '+expected);
  for(let n=0;n<120;n++){if(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(s)})`))break;await key('Tab','Tab',9);}assert(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(s)})`),'select not focused');
- if(choice.current!==expected)for(const ch of choice.prefix)await app.cdp('Input.dispatchKeyEvent',{type:'char',key:ch,text:ch});await app.waitFor(`document.querySelector(${JSON.stringify(s)}).value===${JSON.stringify(expected)}`,3000);await key('Tab','Tab',9);}
+ // Type-ahead joins keystrokes typed within ~1 s; let the previous search expire before each attempt.
+ for(let attempt=0;attempt<3&&(await app.evaluate(`document.querySelector(${JSON.stringify(s)}).value`))!==expected;attempt++){await new Promise(r=>setTimeout(r,1200));for(const ch of choice.prefix)await app.cdp('Input.dispatchKeyEvent',{type:'char',key:ch,text:ch});await new Promise(r=>setTimeout(r,300));}
+ await app.waitFor(`document.querySelector(${JSON.stringify(s)}).value===${JSON.stringify(expected)}`,3000);await key('Tab','Tab',9);}
 // Project "Applications" page: the switch and connection radios a user operates.
 async function projectApps(p){await click('[data-testid=nav-apps]');await app.waitFor(`Array.from(document.querySelectorAll('.m10-sidebar button')).some(b=>b.textContent.includes('项目选用')&&b.getBoundingClientRect().width)`,10000);
  for(let attempt=0;attempt<3;attempt++){await clickText('.m10-sidebar button','项目选用');try{await app.waitFor(`!!document.querySelector(${JSON.stringify(sel('当前应用项目'))})`,4000);break;}catch(error){if(attempt===2)throw error;}}await chooseOption('当前应用项目',p.id);await app.waitFor(`document.querySelectorAll('.m10-project-application').length>=2&&!!document.querySelector(${JSON.stringify(sel(p.name+'的应用'))})`,10000);}
@@ -227,6 +229,21 @@ try{
  await openTask(t43.task);await app.waitFor(`document.body.innerText.includes('恢复会话后生效')&&document.body.innerText.includes('邮件')`,15000);await app.screenshot(join(root,'resume-notice.png'));
  checked('S5-notice','A running Codex task shows “应用已更新（邮件），恢复会话后生效” after Mail (MCP entry) is enabled on its project page',{advice});
 
+ // ---- T48 (2026-11-05 user-confirmed expectation) ------------------------------------------------------------------
+ stage='T48';await progress();
+ const bare=spawnSync(join(resources,'native/willyou-app'),['zentao','object','list','--kind','bug'],{env:{PATH:'/usr/bin:/bin',HOME:home},encoding:'utf8',timeout:10000});
+ assert.notEqual(bare.status,0,'willyou-app outside WillYou must fail');assert.match(bare.stdout,/AUTH_REQUIRED/);
+ const zentaoSkill=libraryEntries().find(n=>n.startsWith('willyou-zentao-'));assert(zentaoSkill,'ZenTao library Skill expected');assert((await readFile(join(skills,zentaoSkill,'SKILL.md'),'utf8')).includes('仅在 WillYou 任务中使用'));
+ // A Codex session started outside WillYou (same isolated HOME and its library), asked to use the ZenTao Skill.
+ const outside=async(label,path)=>{const marker=M('T48'+label);scenario.set(marker,{command:'willyou-app zentao object list --kind bug'});const reads=providerReads,dir=join(work,'outside-'+label);await mkdir(join(dir,'.git'),{recursive:true});
+  const out=await new Promise(done=>execFile(cli,['exec','--skip-git-repo-check','-C',dir,marker+': use the WillYou ZenTao Skill to list my bugs.'],{env:{PATH:path,HOME:home,CODEX_HOME:state,HTTP_PROXY:'http://127.0.0.1:1',HTTPS_PROXY:'http://127.0.0.1:1',NO_PROXY:'127.0.0.1,localhost'},encoding:'utf8',timeout:90000},(error,stdout,stderr)=>done({code:error?.code??0,stdout,stderr})).stdin.end());
+  const s=scenario.get(marker);assert(s.issued,'outside session did not attempt the call: '+out.stderr.slice(-600));assert.equal(providerReads,reads,'a ZenTao request was made outside WillYou');
+  return{exit:out.code,sawLibrarySkill:!!s.sawLibrarySkill,toolOutput:(s.output??'').slice(0,1200)};};
+ const notOnPath=await outside('A','/usr/bin:/bin'),onPath=await outside('B',join(resources,'native')+':/usr/bin:/bin');
+ assert.match(notOnPath.toolOutput,/command not found|not found/i);assert.match(onPath.toolOutput,/AUTH_REQUIRED/);
+ result.cases.T48={...(result.cases.T48??{checks:[]}),bareExit:bare.status,bare:bare.stdout.slice(0,600),notOnPath,onPath};
+ checked('T48','A Codex session outside WillYou that tries the ZenTao Skill fails (command not found / AUTH_REQUIRED) with no provider request; the Skill says WillYou tasks only',{notOnPath:notOnPath.sawLibrarySkill,onPath:onPath.sawLibrarySkill});
+
  // ---- T44 ------------------------------------------------------------------------------------------------------
  stage='T44';await progress();
  await setProjectApp(A,'禅道',false);scenario.set(M('T44'),{command:'willyou-app zentao object list --kind bug'});const reads44=providerReads;
@@ -238,14 +255,6 @@ try{
  assert(libraryEntries().some(n=>n.startsWith('willyou-mail-')),'mail Skill must stay');
  const connections=await app.invoke('applications.connections','zentao');result.cases.T44={...(result.cases.T44??{checks:[]}),cliOutput:out44.slice(0,2000),zentaoConnectionsAfterRemove:connections?.ok?connections.value.length:connections?.message??null};
  checked('T44','After disabling, the running session’s next call was refused without a provider request; removing ZenTao deleted its library entities and Claude links, Mail stayed');
-
- // ---- T48 ------------------------------------------------------------------------------------------------------
- stage='T48';await progress();
- const bare=spawnSync(join(resources,'native/willyou-app'),['mail','draft','list'],{env:{PATH:'/usr/bin:/bin',HOME:home},encoding:'utf8',timeout:10000});
- result.cases.T48={...(result.cases.T48??{checks:[]}),exit:bare.status,stdout:bare.stdout.slice(0,2000),stderr:bare.stderr.slice(0,2000)};
- assert.notEqual(bare.status,0,'willyou-app outside WillYou must fail');assert.match(bare.stdout+bare.stderr,/WillYou|WILLYOU|身份|token/i);
- const mailSkill=libraryEntries().find(n=>n.startsWith('willyou-mail-'));const text=await readFile(join(skills,mailSkill,'SKILL.md'),'utf8');assert(text.includes('仅在 WillYou 任务中使用'));
- checked('T48','willyou-app run outside a WillYou task fails immediately with an explicit missing-identity error; the library Skill says it is for WillYou tasks only');
 
  // ---- S6 risk: every run ends after its Agent stops, including a Claude Code that never started its MCP servers ----
  stage='runs-settle';await progress();
