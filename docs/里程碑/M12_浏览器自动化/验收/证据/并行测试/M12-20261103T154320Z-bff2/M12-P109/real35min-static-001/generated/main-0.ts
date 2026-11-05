@@ -1,0 +1,2 @@
+declare const process:any;
+(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(process.pid!==1234||process.execPath!=="/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app/Contents/MacOS/WillYou"||E.app.getPath('userData')!=="/private/tmp/willyou-m12-t043-real-35min-static-001/runtime-001/userdata")throw Error('Exact private App required');E.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith("file:")).setTitle("[R] T04335min isolated");return true})();

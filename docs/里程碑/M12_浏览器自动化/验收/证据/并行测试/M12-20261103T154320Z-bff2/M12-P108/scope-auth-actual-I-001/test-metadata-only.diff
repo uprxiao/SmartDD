@@ -1,0 +1,25 @@
+--- t06-original.ts
++++ t06-adapted.ts
+@@ -30,9 +30,9 @@
+ let f:Awaited<ReturnType<typeof agentFixture>>|undefined,app:ApplicationService|undefined,owned:OwnedCapabilityRun|undefined,server:Server|undefined;
+ const sockets=new Set<Socket>(),paths:string[]=[],outcomes:unknown[]=[];
+ afterEach(async()=>{
+- const root=f?.root;await owned?.cli.exited();await app?.dispose();for(const s of sockets)s.destroy();sockets.clear();if(server)await new Promise<void>(r=>server!.close(()=>r()));f?.cleanup();
++ const root=f?.root;let observedHttpAddress:ReturnType<Server['address']>=null;try{observedHttpAddress=server?.address()??null;}catch{}await owned?.cli.exited();await app?.dispose();for(const s of sockets)s.destroy();sockets.clear();if(server)await new Promise<void>(r=>server!.close(()=>r()));f?.cleanup();
+  writeFileSync(join(output,'raw-outcomes.json'),JSON.stringify(outcomes,null,2)+'\n');
+- writeFileSync(join(output,'fixture-cleanup.json'),JSON.stringify({root,rootExists:root?existsSync(root):false,httpListening:server?.listening??false,sockets:sockets.size,nativePtysStarted:0,realAgentsStarted:0},null,2)+'\n');
++ writeFileSync(join(output,'fixture-cleanup.json'),JSON.stringify({workerPid:process.pid,httpAddress:observedHttpAddress,root,rootExists:root?existsSync(root):false,httpListening:server?.listening??false,sockets:sockets.size,nativePtysStarted:0,realAgentsStarted:0},null,2)+'\n');
+ });
+ it('T06 current A scope rejects B project/connection, extra capability and self approval before a final legal A query',async()=>{
+  f=await agentFixture();const reader=new FixtureProcessReader();
+--- t38-original.ts
++++ t38-adapted.ts
+@@ -28,7 +28,7 @@
+  f=await cliFixture();time=Date.now();peerReads=0;identity={schema:2,state:'running',uid:process.getuid!(),peer:{pid:921002,startedAt:'darwin-proc-v1:2026:921002',executable:f.executable},ancestors:[{pid:921002,startedAt:'darwin-proc-v1:2026:921002',ppid:921001},{pid:921001,startedAt:'darwin-proc-v1:2026:921001',ppid:1}]};
+  gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>{peerReads++;return identity;}},{executable:{path:f.executable,sha256:f.executableHash},now:()=>time,tokenTtlMs:30000});await gateway.start();issued=gateway.issue(f.run);fixtureRoots.push(f.root);endpoints.push(gateway.endpoint);
+ });
+-afterEach(async()=>{for(const socket of sockets)socket.destroy();sockets.clear();await gateway?.close();vi.restoreAllMocks();await f?.cleanup();writeFileSync(join(evidence,'fixture-cleanup.json'),JSON.stringify({at:new Date().toISOString(),fixtureRoots,endpoints,remainingRoots:fixtureRoots.filter(existsSync),remainingEndpoints:endpoints.filter(existsSync),openClientSockets:sockets.size,noAppPtyCodexHelperBuild:true})+'\n');});
++afterEach(async()=>{for(const socket of sockets)socket.destroy();sockets.clear();await gateway?.close();vi.restoreAllMocks();await f?.cleanup();writeFileSync(join(evidence,'fixture-cleanup.json'),JSON.stringify({workerPid:process.pid,at:new Date().toISOString(),fixtureRoots,endpoints,remainingRoots:fixtureRoots.filter(existsSync),remainingEndpoints:endpoints.filter(existsSync),openClientSockets:sockets.size,noAppPtyCodexHelperBuild:true})+'\n');});
+ 
+ describe('M11 CLI invocation through the common production executor',()=>{
+  it('shares draft data and v2 results with the page, fixes CLI origin, and closes the inactive MCP fallback',async()=>{

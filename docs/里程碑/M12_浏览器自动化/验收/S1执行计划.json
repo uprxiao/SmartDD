@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-05T13:54:15.033072+00:00",
+  "updatedAt": "2026-11-05T15:57:30.733105+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -189,11 +189,11 @@
     "status": "active",
     "branch": "feature/0.1.1",
     "sourceCommit": "6f13d734",
-    "requirements": "R1.3",
-    "technicalDesign": "V1.2",
+    "requirements": "需求R1.4（用户确认活动标记19s/21s；其他R1.3范围保持）",
+    "technicalDesign": "技术方案V1.3",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T130A003仅D04/D06实际新窗等待初始焦点；T126完整归账；T122原数据补判",
+    "currentGroup": "M12-T043-REAL-R001",
     "groups": [
       {
         "id": "M12-P001",
@@ -4030,8 +4030,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-05T13:45:36.599352+00:00",
-    "independentNext": "观察执行者现有77031，不重启或重放；初始focus300s未满足则原尝试正常收尾转无需焦点I组。T122只读补判，T08后续先实际权限下Unix预检。",
+    "updatedAt": "2026-11-05T15:57:30.733105+00:00",
+    "independentNext": "下一不依赖焦点原M11I组静态准备/复核后才分配Native；T043具体payload和可执行静态代码完成后单独请求明确发送确认；用户UI原请求窗口已关闭，不重放。",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4079,18 +4079,19 @@
       "status": "frozen025 production unchanged since localcheckpoint64d57e3b"
     },
     "currentAutonomousBatch": {
-      "at": "2026-11-05T12:59:36.107610+00:00",
+      "at": "2026-11-05T15:46:48.053576+00:00",
       "productionBaseline": "App021/source025",
       "P103": "原完整1800s及CPU独立闭合，T111通过；旧产品红、前置guard失败与计量判定错误均保留",
       "RealCLI": "T041/T042从实际R010原始journal/Host与当前CLI必经getenv证据闭合；R012直接布尔值补充不同run不混用",
-      "G1": "005原三模型回合已结束，正常0/null/signals[]与8PID5TCPUnix清场；T126两组合原9条件+17负控已root独立闭合并归账。T122两臂保留partial，从原完整raw补判，不重发模型。",
-      "P067": "006双正常重启、实际A12与停止业务已跑；S03原筛选action=wait误匹配browser.nav.wait独立复核，严格20s采样尚未证明，不计整条",
+      "G1": "原G1三真实模型回合已结束，原raw来源/Host/HTTP独立补核：T126两组合与T122缺失/矛盾两臂按原合同完整归账。旧额外顺序red单独留证，无新模型重发。",
+      "P067": "原T114按用户明确R1.4标准由原实际App021数据重新独立闭合：19.037s仍显示、20.053s已清，8负控；取消20项复核和原正常清场保持。T113原A01–A11适用性缺项仍保留，不连带计绿。",
       "CookieRecovery": "三阶段实际I10判据绿/33PID2TCP3Unix清场；原T080/T081全UI仍缺",
-      "T130": "253/253纯U通过，A及Native原组仍缺，不计整条",
+      "T130": "253/253纯U与D12/D13实际A子项绿；其余原矩阵仍缺，D04/D06新UI初始焦点超时后后置。",
       "formalAuthority": "测试用例.md",
       "externalActions": "不合并main/tag/push/release",
-      "T130A": "003经root34inputs35manifest核对后已由执行者require_escalated实际开跑，只补D04/D06，现新App55466等待真实初始焦点，actions0。D12/D13现有有效绿不重跑。",
-      "T131": "T08I002原3测试在CLI通道前置失败，底层errno未知；endpoint观察器getter打断afterEach为驱动问题。原失败/控制器/清场已归档，4PID/精确root/socket均清且释放Native，3惰性诊断fixture保留。后续新attempt先做拟用权限下Unix listen/close前置与安全观察器，不改原判据。"
+      "T130A": "003新窗300s实际Native/DOM焦点未满足，1181样本false且0业务，原超时正常清场已归档；D04/D06后置新批，D12/D13绿保持，不重开旧窗。",
+      "T131": "T08原I完整3/3；T06原I通过，T38 17原绿复用＋现行D01活跃续租/真实stop两支I002实际2/2及Root6/6，原expired红保留。parent部分，原A/R及其他I继续T09。",
+      "T043": "本机short I实际4/4＋Root4/4/14PID8TCP2Unix全清；新精确payload已获真实用户授权，原R001 session50143/App94231同run真实2100s等待中，首次Host成功、初始焦点3052ms；未计R全绿。P100 U17候选依赖319/320一致，pty.node差异由运行时闭包核适用性。"
     }
   }
 }

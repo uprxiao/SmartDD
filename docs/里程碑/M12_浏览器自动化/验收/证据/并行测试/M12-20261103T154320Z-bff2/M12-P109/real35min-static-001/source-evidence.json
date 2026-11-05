@@ -1,0 +1,85 @@
+{
+  "sourceManifest": "/private/tmp/willyou-m12-p101-source-025/source-inputs.json",
+  "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+  "records": [
+    {
+      "copy": "source-evidence/cli-gateway.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/task-capability-launcher.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "7b8182e0e9895c8e60dfd36bc4eb57fc4a579ad2f50bf87f26f003d081368b50",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/run-registry.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/task-service.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/pty-manager.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/pty-manager.ts",
+      "sha256": "da12449e592d94fa723e7f2a6b83f9996d9e529e54b805d4b67501f0a08c4327",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/cli.mm",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/native/applications/cli.mm",
+      "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/process-identity.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/process-identity.ts",
+      "sha256": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/process-identity.cc",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/native/applications/process-identity.cc",
+      "sha256": "edfb9019632cffb1cd05f712f1cef6ea66eda941466213b6d0ff607a4a125b06",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/cli-gateway.test.ts",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/__tests__/cli-gateway.test.ts",
+      "sha256": "e8fac94518327908eb18bd71507c007dc6405b8109e3116388fca11139ea2713",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    },
+    {
+      "copy": "source-evidence/node-pty-unixTerminal.js",
+      "frozenSource": "/private/tmp/willyou-m12-p101-source-025/source/node_modules/node-pty/lib/unixTerminal.js",
+      "sha256": "a62e3a60c3bc1b0e7261f58284856df748dcee6761a2bc7a5a5ba98b22660473",
+      "scope": "source025 production/source or pinned dependency; no code executed"
+    }
+  ],
+  "inferences": [
+    {
+      "source": "cli-gateway.ts:51-57,62-80",
+      "fact": "Default30min lease renews for active real run. No tokenTTL override is passed by TaskCapabilityLauncher. token binding lookup precedes kernel ancestor, so an unchanged old credential rejected with real host requestId/AUTH_REQUIRED after stop is distinct from PEER_MISMATCH."
+    },
+    {
+      "source": "task-service.ts:407-416 / pty-manager.ts / node-pty-unixTerminal.js:226-228",
+      "fact": "Task stop revokes managed run and signals the held PTY pid via node-pty SIGHUP. No static guarantee that reviewed detached worker survives: runtime before-positive/samebirth/after-negative gate mandatory."
+    },
+    {
+      "source": "cli.mm:15-31,45-61,68-82",
+      "fact": "Stock CLI requires two env values before ordinary stdin parsing, then verifies response requestId. task is a legal tab-list input, so nonsecret stdin task UUID holds a child only for birth capture. No response intercepted, no fixed numeric exit/op-id assumption on auth denial."
+    },
+    {
+      "source": "process-identity.cc:101-116",
+      "fact": "Known own process identity uses exact pid/start tuple; stopped/zombie distinct from unknown. Cleanup cannot mark unknown identity absent."
+    }
+  ],
+  "boundary": "Source/official package build PIN establishes origin; this static source review is not runtime survival or35minute R proof."
+}
