@@ -26,7 +26,7 @@ export interface RunRow {
 export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:string;snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
-interface OwnedRun { planHash?:string;guard?:NativeGuard;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+interface OwnedRun { planHash?:string;guard?:NativeGuard;unclaimed?:Set<string>;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 export interface RunContext { plan?:ApplicationRunPlan;
   /** R17: set by the current-authorization view; names the project page to enable an application that owns this operation. */
   unavailableApplication?(operation:string,entry:ApplicationEntry):ApplicationError|null;
@@ -55,6 +55,12 @@ export interface OwnedRunProcess {
   /** Call only from the exit event of that same owned native handle. */
   exited(): Promise<void>;
   cancelBeforeLaunch(): Promise<void>;
+  /**
+   * Bridge only. The host atomically took back this bridge's one-use bootstrap before any process read it, so no
+   * bridge can ever join this run. Once the Agent process has exited, the armed window is released (an Agent that
+   * exits before starting its MCP servers no longer leaves the run stopping forever).
+   */
+  releaseUnclaimed?(): Promise<void>;
 }
 export interface OwnedCapabilityRun {
   runId: string;ptyId: string;signal: AbortSignal;cli: OwnedRunProcess;
@@ -344,7 +350,7 @@ export class CapabilityRunRegistry {
         this.owner(runId); const process = this.processRow(runId,id); cli = process.kind === 'cli';
         if (process.state === 'reserved') throw new ApplicationError('RESOURCE_STATE_CHANGED','尚未启动的记录不能伪造退出事件');
         if (PROCESS_DONE.has(process.state)) return;
-        this.store.sqlite.prepare("UPDATE capability_run_processes SET state='exited',ended_at=? WHERE process_id=?").run(now(),id); this.finish(runId);
+        this.store.sqlite.prepare("UPDATE capability_run_processes SET state='exited',ended_at=? WHERE process_id=?").run(now(),id); if (cli) this.releaseUnclaimedBridges(runId); this.finish(runId);
       }).immediate());
       // A revoker may wait for this exit callback; never wait back on that same revocation.
       if (cli && !this.owned.get(runId)?.revocation) await this.stop(runId,'cli-exited');
@@ -353,6 +359,12 @@ export class CapabilityRunRegistry {
         this.owner(runId); const process = this.processRow(runId,id);
         if (process.state !== 'reserved' && process.state !== 'canceled') throw new ApplicationError('RESOURCE_STATE_CHANGED','已登记启动窗口，不能宣称没有子进程');
         this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE process_id=?").run(now(),id); this.finish(runId);
+      }).immediate());
+    },releaseUnclaimed: async () => {
+      await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
+        const { owned } = this.owner(runId), process = this.processRow(runId,id);
+        if (process.kind !== 'bridge' || process.state !== 'armed' || process.pid !== null) return;
+        (owned.unclaimed ??= new Set()).add(id); this.releaseUnclaimedBridges(runId); this.finish(runId);
       }).immediate());
     } };
   }
@@ -398,6 +410,14 @@ export class CapabilityRunRegistry {
     finally { await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => { this.store.sqlite.prepare("UPDATE capability_run_activities SET state='finished',ended_at=? WHERE activity_id=? AND state='active'").run(now(),id); this.finish(runId); }).immediate()); }
   }
   private finish(runId: string): void { finishCapabilityRun(this.store,runId); }
+  /** Under C: armed bridges whose bootstrap was taken back unread end once the run's Agent process has exited. */
+  private releaseUnclaimedBridges(runId:string):void{
+    const owned=this.owned.get(runId);if(!owned?.unclaimed?.size)return;
+    const cli=this.store.sqlite.prepare("SELECT state FROM capability_run_processes WHERE run_id=? AND kind='cli'").get(runId) as {state:string}|undefined;
+    if(!cli||!PROCESS_DONE.has(cli.state))return;
+    for(const id of owned.unclaimed)this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE process_id=? AND run_id=? AND kind='bridge' AND state='armed' AND pid IS NULL").run(now(),id,runId);
+    owned.unclaimed.clear();
+  }
   async stop(runId: string,reason = 'user-stop'): Promise<CapabilityRunRecord> {
     const owned = this.owned.get(runId); if (!owned) throw new ApplicationError('SCOPE_DENIED','不能停止另一宿主的运行');
     owned.abort.abort();

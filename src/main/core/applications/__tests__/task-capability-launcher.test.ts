@@ -220,6 +220,21 @@ describe('M11 R1.0 library launch through the production task entry',()=>{
   // The adopted pointer is the task's pointer from now on: a second resume stays on the library path.
   tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(resumed.task.runtimeSnapshot!.runId).state).toBe('stopped'));const again=await tasks.open({taskId:first.task.id});expect(again.task.nativeSessionId).toBe(nativeId);expect(ptys.launches.at(-1)!.args!.join(' ')).not.toContain('skills.config');
  });
+ // S6 finding (Claude Code not logged in): the Agent exits before starting its MCP servers, so no bridge ever joins.
+ const exitWithoutBridge=(ptyId:string)=>{const pid=ptys.live.get(ptyId);if(pid){reader.identities.delete(pid);ptys.live.delete(ptyId);ptys.emit('exit',ptyId,0);}};
+ const settled=async(runId:string)=>{
+  await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
+  expect(sqlite.prepare('SELECT kind,state,pid FROM capability_run_processes WHERE run_id=? ORDER BY kind').all(runId)).toEqual([{kind:'bridge',state:'canceled',pid:null},{kind:'cli',state:'exited',pid:expect.any(Number)}]);
+  expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_resource_leases WHERE owner_kind='run' AND owner_id=? AND state<>'released'").get(runId)).toEqual({n:0});
+ };
+ it('ends a run whose Agent exits on its own before starting its MCP servers',async()=>{
+  const running=await create(),runId=running.task.runtimeSnapshot!.runId;exitWithoutBridge(running.ptyId!);await settled(runId);
+  expect(managed.activeTaskIds(projectId).has(running.task.id)).toBe(false);
+ });
+ it('ends a user-stopped run whose Agent never started its MCP servers',async()=>{
+  const running=await create(),runId=running.task.runtimeSnapshot!.runId;vi.mocked(ptys.kill).mockImplementationOnce(id=>exitWithoutBridge(id));
+  tasks.kill(running.task.id);await settled(runId);
+ });
  it('records the enabled application without per-run Skill copies and resumes on the same library path',async()=>{
   await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const first=await create(),saved=(await managed.sessions.get(first.task.id)).snapshot;

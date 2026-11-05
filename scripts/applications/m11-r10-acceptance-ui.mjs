@@ -102,7 +102,8 @@ for(const name of Object.keys(process.env))if(!['PATH','TMPDIR','LANG','LC_ALL',
 Object.assign(process.env,privateEnv);
 
 async function poll(fn,timeout=30000,what=stage){const end=Date.now()+timeout;let v;do{v=await fn();if(v)return v;await new Promise(r=>setTimeout(r,150));}while(Date.now()<end);throw Error('Bounded wait timed out: '+what);}
-async function click(selector){const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height);if(!e)throw Error('Control missing: '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked');return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+// The first visible, uncovered match: mounted but hidden views (e.g. other tasks' terminals) are skipped.
+async function click(selector){const p=await app.evaluate(`(()=>{const all=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height);if(!all.length)throw Error('Control missing: '+${JSON.stringify(selector)});for(const e of all){e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(!e.matches(':disabled')&&e.contains(document.elementFromPoint(x,y)))return{x,y};}throw Error('Control blocked: '+${JSON.stringify(selector)});})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
 async function key(k,code,num,modifiers=0,commands){for(const type of ['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:k,code,windowsVirtualKeyCode:num,modifiers,...(type==='keyDown'&&commands?{commands}:{})});}
 const ok=async(promise,what)=>{const v=await promise;assert(v?.ok,what+': '+(v?.message??JSON.stringify(v)));return v.value;};
 const project=async name=>{const dir=join(work,name);await mkdir(join(dir,'.git'),{recursive:true});const p=await app.invoke('projects.create',{name,aliases:[],description:'M11 R1.0 S6',rulesPath:null},[{label:'fixture',path:dir}]);return p;};
@@ -111,9 +112,34 @@ const plain=text=>text.replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g,'').replace(/\x1b\]
 const output=async task=>{const t=await app.invoke('tasks.get',task.id);return t.ptyId?plain(await app.output(t.ptyId)):'';};
 let lastTask=null;
 const waitDone=async(task,marker,timeout=45000)=>{lastTask=task;return poll(async()=>(await output(task)).includes(marker+'_DONE'),timeout,marker);};
-// Same renderer channel xterm uses for keystrokes (pty:input with the task and PTY identity).
-const keys=(taskId,ptyId,data)=>app.evaluate('window.electronAPI.eventSend("pty:input",'+JSON.stringify({taskId,ptyId,data})+')');
-const turn=async(task,marker,text)=>{lastTask=task;const t=await app.invoke('tasks.get',task.id);assert(t.ptyId,'task has no live PTY');await keys(task.id,t.ptyId,text);await poll(async()=>plain(await app.output(t.ptyId)).includes(text.slice(0,24)),10000,marker+' typed');await new Promise(r=>setTimeout(r,300));await keys(task.id,t.ptyId,'\r');};
+const sel=label=>'[aria-label='+JSON.stringify(label)+']';
+async function clickText(selector,text){const p=await app.evaluate(`(()=>{const e=Array.from(document.querySelectorAll(${JSON.stringify(selector)})).find(e=>e.getBoundingClientRect().width&&e.textContent.trim().includes(${JSON.stringify(text)}));if(!e)throw Error('Control missing: '+${JSON.stringify(selector+' '+text)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(e.matches(':disabled')||!e.contains(document.elementFromPoint(x,y)))throw Error('Control blocked: '+${JSON.stringify(text)});return{x,y};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});}
+// Native <select>: Tab to the closed control and use its incremental key search (macOS popups are outside CDP).
+async function chooseOption(label,expected){const s=sel(label),choice=await app.evaluate(`(()=>{const select=document.querySelector(${JSON.stringify(s)}),options=[...select.options],o=options.find(o=>o.value===${JSON.stringify(expected)});if(!o)return null;let prefix=o.textContent.trim();for(let n=1;n<=prefix.length;n++)if(options.filter(x=>x.textContent.trim().startsWith(prefix.slice(0,n))).length===1){prefix=prefix.slice(0,n);break;}return{prefix,current:select.value}})()`);assert(choice,'option missing: '+expected);
+ for(let n=0;n<120;n++){if(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(s)})`))break;await key('Tab','Tab',9);}assert(await app.evaluate(`document.activeElement?.matches(${JSON.stringify(s)})`),'select not focused');
+ if(choice.current!==expected)for(const ch of choice.prefix)await app.cdp('Input.dispatchKeyEvent',{type:'char',key:ch,text:ch});await app.waitFor(`document.querySelector(${JSON.stringify(s)}).value===${JSON.stringify(expected)}`,3000);await key('Tab','Tab',9);}
+// Project "Applications" page: the switch and connection radios a user operates.
+async function projectApps(p){await click('[data-testid=nav-apps]');await app.waitFor(`Array.from(document.querySelectorAll('.m10-sidebar button')).some(b=>b.textContent.includes('项目选用')&&b.getBoundingClientRect().width)`,10000);
+ for(let attempt=0;attempt<3;attempt++){await clickText('.m10-sidebar button','项目选用');try{await app.waitFor(`!!document.querySelector(${JSON.stringify(sel('当前应用项目'))})`,4000);break;}catch(error){if(attempt===2)throw error;}}await chooseOption('当前应用项目',p.id);await app.waitFor(`document.querySelectorAll('.m10-project-application').length>=2&&!!document.querySelector(${JSON.stringify(sel(p.name+'的应用'))})`,10000);}
+async function setProjectApp(p,appName,enabled,connectionName){await projectApps(p);const t=sel('为'+p.name+'启用'+appName);await app.waitFor(`!!document.querySelector(${JSON.stringify(t)})&&!document.querySelector(${JSON.stringify(t)}).disabled`,10000);
+ if(await app.evaluate(`document.querySelector(${JSON.stringify(t)}).getAttribute('aria-checked')!==${JSON.stringify(String(enabled))}`))await click(t);await app.waitFor(`document.querySelector(${JSON.stringify(t)}).getAttribute('aria-checked')===${JSON.stringify(String(enabled))}&&!document.querySelector(${JSON.stringify(t)}).disabled`,15000);
+ if(enabled&&connectionName){const r=sel('为'+p.name+'选用'+connectionName);await app.waitFor(`!!document.querySelector(${JSON.stringify(r)})&&!document.querySelector(${JSON.stringify(r)}).disabled`,10000);if(!(await app.evaluate(`document.querySelector(${JSON.stringify(r)}).checked`)))await click(r);await app.waitFor(`document.querySelector(${JSON.stringify(r)}).checked&&!document.querySelector(${JSON.stringify(r)}).disabled`,15000);}}
+async function removeApp(appName){await click('[data-testid=nav-apps]');await clickText('.m10-sidebar .installed',appName);await app.waitFor(`!!document.querySelector(${JSON.stringify(sel('应用更多操作'))})&&!document.querySelector(${JSON.stringify(sel('应用更多操作'))}).disabled`,10000);await click(sel('应用更多操作'));await clickText('[role=menuitem]','移除应用');
+ await app.waitFor(`Array.from(document.querySelectorAll('dialog footer button.primary')).some(b=>b.textContent.includes('移除应用')&&!b.disabled)`,15000);await clickText('dialog footer button.primary','移除应用');await app.waitFor(`!document.querySelector('dialog[open]')`,15000);}
+// Composer: pick project and profile, type, send; the new Task is the one that appears.
+async function composerLaunch(p,profileName,text){await click('[data-testid=nav-home]');await app.waitFor(`!!document.querySelector('[data-testid=home-input]')`,10000);
+ if(!(await app.evaluate(`document.querySelector('[data-testid=home-project]')?.textContent.includes(${JSON.stringify(p.name)})`)))await pick('home-project',p.name);
+ if(!(await app.evaluate(`document.querySelector('[data-testid=home-profile]')?.textContent.includes(${JSON.stringify(profileName)})`)))await pick('home-profile',profileName);
+ for(let attempt=0;attempt<3;attempt++){await click('[data-testid=home-input]');await app.waitFor(`document.activeElement?.matches('[data-testid=home-input]')`,5000);await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text});if(await app.evaluate(`document.querySelector('[data-testid=home-input]').value===${JSON.stringify(text)}`))break;await new Promise(r=>setTimeout(r,300));}
+ assert.equal(await app.evaluate(`document.querySelector('[data-testid=home-input]').value`),text,'composer text not entered');
+ const before=new Set((await app.invoke('tasks.list',{includeArchived:true})).map(t=>t.id)),t0=Date.now();await click('[data-testid=home-launch]');
+ await app.waitFor(`!!document.querySelector('.xterm-screen')&&document.querySelector('.xterm-screen').getBoundingClientRect().width>0`,20000);const elapsed=Date.now()-t0;
+ const task=await poll(async()=>(await app.invoke('tasks.list',{includeArchived:true})).find(t=>!before.has(t.id)&&t.projectId===p.id),20000,'composer task');return{task,elapsed};}
+// Radix Select: open the trigger, then choose among the opened [role=option] items only.
+async function pick(testid,text){await click(`[data-testid=${testid}]`);const opt=`Array.from(document.querySelectorAll('[role=option]')).find(e=>e.textContent.includes(${JSON.stringify(text)})&&e.getBoundingClientRect().width)`;await app.waitFor('!!'+opt,5000);const pt=await app.evaluate(`(()=>{const e=${opt};e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...pt,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});await app.waitFor(`document.querySelector('[data-testid=${testid}]')?.textContent.includes(${JSON.stringify(text)})`,5000);await new Promise(r=>setTimeout(r,300));}
+// Open a Task from the sidebar and type into its terminal like a user.
+async function openTask(task){const row=`[data-testid=sidebar-task][data-task-id=${JSON.stringify(task.id)}]`;if(!(await app.evaluate(`!!document.querySelector(${JSON.stringify(row)})?.getBoundingClientRect().width`)))await click('[data-testid=nav-home]');await app.waitFor(`!!document.querySelector(${JSON.stringify(row)})?.getBoundingClientRect().width`,10000);await click(row);await app.waitFor(`!!document.querySelector('.xterm-screen')&&document.querySelector('.xterm-screen').getBoundingClientRect().width>0`,10000);}
+const turn=async(task,marker,text)=>{lastTask=task;await openTask(task);const t=await app.invoke('tasks.get',task.id);assert(t.ptyId,'task has no live PTY');await click('.xterm-screen');await app.waitFor(`document.activeElement?.classList.contains('xterm-helper-textarea')`,10000);await app.cdp('Input.insertText',{text});await poll(async()=>plain(await app.output(t.ptyId)).includes(text.slice(0,24)),10000,marker+' typed');await new Promise(r=>setTimeout(r,300));await key('Enter','Enter',13);};
 const libraryEntries=()=>tree(skills).filter(n=>n.startsWith('willyou-'));
 const claudeLinks=()=>tree(claudeSkills).filter(n=>n.startsWith('willyou-'));
 
@@ -143,14 +169,16 @@ try{
  for(const appId of ['mail','zentao']){const entry=catalog.find(x=>x.appId===appId);await ok(app.invoke('applications.setAdded',appId,true,entry.revision),'add '+appId);}
  const tested=await ok(app.invoke('applications.testConnection',{name:'R10 Synthetic ZenTao',expectedRevision:0,config:{kind:'zentao',baseUrl:'http://127.0.0.1:'+port+'/zt/',username:'tester',authMode:'token'},secret:'M11_SYNTHETIC_ZT'}),'test zentao');
  const connection=await ok(app.invoke('applications.saveConnection','zentao',tested.operationId,tested.candidateHash),'save zentao');zentaoConnections.zentao=connection.id;
+ // Prerequisites were created by RPC; reload once so the renderer lists them, then re-arm the page collectors.
+ const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,15000,{navigation:true});await app.evaluate(`document.title='A · M11 R1.0 S6 统一 Skill 库与即时授权';true`);await app.arm();
 
  // ---- T39 ------------------------------------------------------------------------------------------------------
  stage='T39';await progress();
  await select(A.id,'zentao',true,zentaoConnections);await select(A.id,'mail',true,{foxmail:null,smtp:null});
  await poll(async()=>libraryEntries().some(n=>n.startsWith('willyou-zentao-'))&&libraryEntries().some(n=>n.startsWith('willyou-mail-'))&&claudeLinks().length===libraryEntries().length,20000,'library sync');
  const before=libraryEntries();
- scenario.set(M('T39C'),{});const t39c=await app.invoke('tasks.create',{projectId:A.id,dirId:null,aiProfileId:codex.id,firstMessage:M('T39C')+': reply with the marker only.'});await waitDone(t39c.task,M('T39C'));
- const t39claude=await app.invoke('tasks.create',{projectId:A.id,dirId:null,aiProfileId:claudeProfile.id,firstMessage:''});result.claudeTask=t39claude.task.id;
+ scenario.set(M('T39C'),{});const t39c=await composerLaunch(A,'R10 Codex 0.166.0',M('T39C')+': reply with the marker only.');await waitDone(t39c.task,M('T39C'));
+ const t39claude=await composerLaunch(A,'R10 Claude Code','T39 Claude Code '+run);result.claudeTask=t39claude.task.id;
  await poll(async()=>(await app.invoke('tasks.get',t39claude.task.id)).ptyId,15000,'claude pty');
  const after=libraryEntries();assert.deepEqual(after,before,'tasks created new library copies');
  for(const name of after){assert.match(name,/^willyou-[a-z][a-z0-9-]*$/);assert.doesNotMatch(name,/-[0-9a-f]{12,}$/,'hash suffix: '+name);assert(existsSync(join(skills,name,'.willyou-owned.json')));
@@ -162,9 +190,9 @@ try{
  // ---- T41 ------------------------------------------------------------------------------------------------------
  stage='T41';await progress();
  scenario.set(M('T41A'),{});scenario.set(M('T41B'),{command:'willyou-app zentao object list --kind bug'});
- const t41=await app.invoke('tasks.create',{projectId:C.id,dirId:null,aiProfileId:codex.id,firstMessage:M('T41A')+': reply with the marker only.'});await waitDone(t41.task,M('T41A'));
+ const t41=await composerLaunch(C,'R10 Codex 0.166.0',M('T41A')+': reply with the marker only.');await waitDone(t41.task,M('T41A'));
  const t41before=await app.invoke('tasks.get',t41.task.id);
- await select(C.id,'zentao',true,zentaoConnections);
+ await setProjectApp(C,'禅道',true,'R10 Synthetic ZenTao');
  const readsBefore=providerReads;await turn(t41.task,M('T41B'),M('T41B')+': list my ZenTao bugs with the WillYou CLI.');await waitDone(t41.task,M('T41B'));
  const t41after=await app.invoke('tasks.get',t41.task.id),out41=scenario.get(M('T41B')).output??'';result.cases.T41={...(result.cases.T41??{checks:[]}),cliOutput:out41.slice(0,4000)};
  assert.equal(t41after.ptyId,t41before.ptyId,'T41 started another PTY');assert(t41after.nativeSessionId,'native session not bound');if(t41before.nativeSessionId)assert.equal(t41after.nativeSessionId,t41before.nativeSessionId);result.cases.T41={...(result.cases.T41??{checks:[]}),nativeSessionId:t41after.nativeSessionId,ptyId:t41after.ptyId};assert.equal((await app.invoke('tasks.list',{includeArchived:true})).filter(t=>t.projectId===C.id).length,1);
@@ -175,7 +203,7 @@ try{
  // ---- T43 ------------------------------------------------------------------------------------------------------
  stage='T43';await progress();
  scenario.set(M('T43'),{command:'willyou-app zentao object list --kind bug'});const reads43=providerReads;
- const t43=await app.invoke('tasks.create',{projectId:B.id,dirId:null,aiProfileId:codex.id,firstMessage:M('T43')+': list my ZenTao bugs with the WillYou CLI.'});await waitDone(t43.task,M('T43'));
+ const t43=await composerLaunch(B,'R10 Codex 0.166.0',M('T43')+': list my ZenTao bugs with the WillYou CLI.');await waitDone(t43.task,M('T43'));
  const out43=scenario.get(M('T43')).output??'';result.cases.T43={...(result.cases.T43??{checks:[]}),cliOutput:out43.slice(0,4000)};
  assert(out43.includes('请到项目「R10 项目B」的‘应用’页开启禅道'),'guidance missing: '+out43.slice(0,600));assert.equal(providerReads,reads43,'a ZenTao request was made');
  checked('T43','Project B without ZenTao: the host refused with the guidance to enable it on project B’s Applications page; no provider request');
@@ -183,40 +211,29 @@ try{
  // ---- T46 ------------------------------------------------------------------------------------------------------
  stage='T46';await progress();
  const running=(await app.invoke('tasks.list',{includeArchived:true})).filter(t=>t.ptyId).length;assert(running>=2,'T46 needs two running tasks');
- await select(D.id,'mail',true,{foxmail:null,smtp:null});
- const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&!!document.querySelector('[data-testid=home-input]')`,15000);
- await app.evaluate(`document.title='A · M11 R1.0 S6 统一 Skill 库与即时授权';true`);await app.arm();// collectors live on the page; a reload drops them
- // Radix Select: open the trigger, then choose among the opened [role=option] items only.
- const pick=async(testid,text)=>{await click(`[data-testid=${testid}]`);const sel=`Array.from(document.querySelectorAll('[role=option]')).find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width)`;await app.waitFor('!!'+sel,5000);const p=await app.evaluate(`(()=>{const e=${sel};e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);for(const type of ['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,...p,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});await app.waitFor(`document.querySelector('[data-testid=${testid}]')?.textContent.includes(${JSON.stringify(text)})`,5000);await new Promise(r=>setTimeout(r,300));};
- result.cases.T46={...(result.cases.T46??{checks:[]}),composerBefore:await app.evaluate(`({project:document.querySelector('[data-testid=home-project]')?.textContent,profile:document.querySelector('[data-testid=home-profile]')?.textContent})`)};
- if(!(await app.evaluate(`document.querySelector('[data-testid=home-project]')?.textContent.includes('R10 项目D')`)))await pick('home-project','R10 项目D');
- if(!(await app.evaluate(`document.querySelector('[data-testid=home-profile]')?.textContent.includes('R10 Codex')`)))await pick('home-profile','R10 Codex 0.166.0');
- await app.waitFor(`document.querySelector('[data-testid=home-project]')?.textContent.includes('R10 项目D')&&document.querySelector('[data-testid=home-profile]')?.textContent.includes('R10 Codex')`,10000);
- scenario.set(M('T46'),{});const prompt=M('T46')+': reply with the marker only.';
- for(let attempt=0;attempt<3;attempt++){await click('[data-testid=home-input]');await app.waitFor(`document.activeElement?.matches('[data-testid=home-input]')`,5000);await key('a','KeyA',65,4,['selectAll']);await app.cdp('Input.insertText',{text:prompt});if(await app.evaluate(`document.querySelector('[data-testid=home-input]').value===${JSON.stringify(prompt)}`))break;await new Promise(r=>setTimeout(r,300));}
- assert.equal(await app.evaluate(`document.querySelector('[data-testid=home-input]').value`),prompt,'composer text not entered');
- const count=(await app.invoke('tasks.list',{includeArchived:true})).length,t0=Date.now();await click('[data-testid=home-launch]');
- await app.waitFor(`!!document.querySelector('.xterm-screen')&&document.querySelector('.xterm-screen').getBoundingClientRect().width>0`,20000);const elapsed=Date.now()-t0;
- const t46=await poll(async()=>{const list=await app.invoke('tasks.list',{includeArchived:true});return list.length===count+1?list.find(t=>t.projectId===D.id):null;},20000,'T46 task');await waitDone(t46,M('T46'));
- result.cases.T46={...result.cases.T46,clickToTerminalMs:elapsed,baselineR09:'0.65–0.9 s (isolated environment)',runningBefore:running};
+ await setProjectApp(D,'邮件',true);
+ scenario.set(M('T46'),{});const launched=await composerLaunch(D,'R10 Codex 0.166.0',M('T46')+': reply with the marker only.'),t46=launched.task,elapsed=launched.elapsed;await waitDone(t46,M('T46'));
+ result.cases.T46={...(result.cases.T46??{checks:[]}),clickToTerminalMs:elapsed,baselineR09:'0.65–0.9 s (isolated environment)',runningBefore:running};
  await app.screenshot(join(root,'t46-terminal.png'));
  checked('T46','With two running tasks and an application just enabled, a third task launched from the composer reached the terminal and answered',{clickToTerminalMs:elapsed});
 
- // ---- T42 (notice part) ----------------------------------------------------------------------------------------
- stage='T42-notice';await progress();
- const t42=await app.invoke('tasks.create',{projectId:B.id,dirId:null,aiProfileId:claudeProfile.id,firstMessage:''});await poll(async()=>(await app.invoke('tasks.get',t42.task.id)).ptyId,15000,'claude T42 pty');
- assert.equal(await app.invoke('tasks.resumeAdvice',t42.task.id),null);
- await select(B.id,'zentao',true,zentaoConnections);
- const advice=await poll(async()=>app.invoke('tasks.resumeAdvice',t42.task.id),10000,'resume advice');assert.deepEqual(advice,{applications:['禅道']});
- checked('T42','A running Claude Code task is told to resume after ZenTao is enabled in its project (Claude reloads Skills only on resume)',{advice,claudeVersion:result.cli.claude});
+ // ---- S5 resume notice (real App) ---------------------------------------------------------------------------------
+ // Codex keeps the MCP tool list it loaded at start, so enabling Mail (MCP entry) must advise a resume. T42 (Claude
+ // conversation) needs an authenticated Claude Code and stays a separate, user-run case.
+ stage='resume-notice';await progress();
+ assert.equal(await app.invoke('tasks.resumeAdvice',t43.task.id),null);
+ await setProjectApp(B,'邮件',true);
+ const advice=await poll(async()=>app.invoke('tasks.resumeAdvice',t43.task.id),10000,'resume advice');assert.deepEqual(advice,{applications:['邮件']});
+ await openTask(t43.task);await app.waitFor(`document.body.innerText.includes('恢复会话后生效')&&document.body.innerText.includes('邮件')`,15000);await app.screenshot(join(root,'resume-notice.png'));
+ checked('S5-notice','A running Codex task shows “应用已更新（邮件），恢复会话后生效” after Mail (MCP entry) is enabled on its project page',{advice});
 
  // ---- T44 ------------------------------------------------------------------------------------------------------
  stage='T44';await progress();
- await select(A.id,'zentao',false,zentaoConnections);scenario.set(M('T44'),{command:'willyou-app zentao object list --kind bug'});const reads44=providerReads;
+ await setProjectApp(A,'禅道',false);scenario.set(M('T44'),{command:'willyou-app zentao object list --kind bug'});const reads44=providerReads;
  await turn(t39c.task,M('T44'),M('T44')+': list my ZenTao bugs with the WillYou CLI.');await waitDone(t39c.task,M('T44'));
  const out44=scenario.get(M('T44')).output??'';assert(out44.includes('APP_NOT_ENABLED')||out44.includes('开启禅道'),'not refused: '+out44.slice(0,600));assert.equal(providerReads,reads44);
- for(const id of [B.id,C.id])await select(id,'zentao',false,zentaoConnections);
- const zentao=(await ok(app.invoke('applications.catalog'),'catalog')).find(x=>x.appId==='zentao');await ok(app.invoke('applications.setAdded','zentao',false,zentao.revision),'remove zentao');
+ await removeApp('禅道');
+ for(const id of [A.id,B.id,C.id])assert.equal((await ok(app.invoke('applications.projectSettings',id,'zentao'),'settings')).enabled,false,'removal must close project use');
  await poll(async()=>!libraryEntries().some(n=>n.startsWith('willyou-zentao-'))&&!claudeLinks().some(n=>n.startsWith('willyou-zentao-')),20000,'library removal');
  assert(libraryEntries().some(n=>n.startsWith('willyou-mail-')),'mail Skill must stay');
  const connections=await app.invoke('applications.connections','zentao');result.cases.T44={...(result.cases.T44??{checks:[]}),cliOutput:out44.slice(0,2000),zentaoConnectionsAfterRemove:connections?.ok?connections.value.length:connections?.message??null};
@@ -230,6 +247,14 @@ try{
  const mailSkill=libraryEntries().find(n=>n.startsWith('willyou-mail-'));const text=await readFile(join(skills,mailSkill,'SKILL.md'),'utf8');assert(text.includes('仅在 WillYou 任务中使用'));
  checked('T48','willyou-app run outside a WillYou task fails immediately with an explicit missing-identity error; the library Skill says it is for WillYou tasks only');
 
+ // ---- S6 risk: every run ends after its Agent stops, including a Claude Code that never started its MCP servers ----
+ stage='runs-settle';await progress();
+ for(const t of await app.invoke('tasks.list',{includeArchived:true}))if(t.ptyId)await app.invoke('tasks.kill',t.id);
+ // Read-only check of this run's own private database: no run may be left stopping once its Agent has exited.
+ const runStates=()=>execFileSync('/usr/bin/sqlite3',[join(userData,'smartdd.db'),"SELECT task_id||'|'||state FROM capability_runs ORDER BY started_at"],{encoding:'utf8'}).trim().split('\n').filter(Boolean);
+ const settledRuns=await poll(async()=>{const rows=runStates();return rows.every(r=>/\|(stopped|failed)$/.test(r))?rows:null;},30000,'runs settle');
+ assert(settledRuns.some(r=>r.startsWith(result.claudeTask+'|')),'Claude run missing');
+ checked('S6-risk','After stop every run ended, including the Claude Code runs whose Agent never started its MCP servers',{runs:settledRuns.length});
  assert.deepEqual(app.rendererErrors,[]);result.status='passed';
 }catch(error){result.status='failed';result.failedStage=stage;result.error=String(error);result.stack=error.stack;process.exitCode=1;
  if(app)try{result.dom=(await app.evaluate('document.body.innerText')).slice(0,4000);await app.screenshot(join(root,'failure.png'));if(lastTask){const t=await app.invoke('tasks.get',lastTask.id);if(t.ptyId)await writeFile(join(root,'terminal-failure.txt'),await app.output(t.ptyId));}}catch{}}

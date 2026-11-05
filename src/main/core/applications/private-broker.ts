@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { chmodSync, lstatSync, mkdtempSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, lstatSync, mkdtempSync, renameSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { createServer, type Server, type Socket } from 'node:net';
 import { join } from 'node:path';
 import { ApplicationError } from '@shared/applications';
@@ -50,7 +50,7 @@ export class PrivateApplicationBroker {
       const ticket:Ticket={runId:run.runId,bridge,path,expiresAt,authorize,dev:stat.dev,ino:stat.ino};this.tickets.set(digest(secret),ticket);
       ticket.expiry=setTimeout(()=>{
         if(this.tickets.get(digest(secret))!==ticket)return;
-        this.tickets.delete(digest(secret));this.cleanupTicket(ticket);this.finishHandshake(run.runId,bridge.processId,false);
+        this.tickets.delete(digest(secret));const unread=this.cleanupTicket(ticket);this.finishHandshake(run.runId,bridge.processId,false);if(unread)this.releaseUnclaimed(ticket);
         // Only a never-armed reservation can be released; unknown native children retain protection.
         const cleanup=bridge.cancelBeforeLaunch().catch(()=>undefined);this.expiredReservations.add(cleanup);void cleanup.finally(()=>this.expiredReservations.delete(cleanup));
       },Math.max(1,expiresAt-this.clock()));ticket.expiry.unref();
@@ -79,7 +79,15 @@ export class PrivateApplicationBroker {
   private finishHandshake(runId:string,bridgeId:string,value:boolean):void {
     for(const waiter of this.handshakeWaiters)if(waiter.runId===runId&&waiter.bridgeId===bridgeId)waiter.finish(value);
   }
-  private cleanupTicket(ticket: Ticket): void { clearTimeout(ticket.expiry); try { const stat = lstatSync(ticket.path); if (!stat.isSymbolicLink() && stat.isFile() && stat.dev === ticket.dev && stat.ino === ticket.ino) unlinkSync(ticket.path); } catch { /* consumed or no longer ours */ } }
+  /** Take the bootstrap back atomically. True only when our original file was still unread: no bridge can ever use it. */
+  private cleanupTicket(ticket: Ticket): boolean {
+    clearTimeout(ticket.expiry);
+    const claimed = ticket.path + '.revoked-' + randomBytes(8).toString('hex');
+    try { renameSync(ticket.path,claimed); } catch { return false; /* consumed by its bridge or no longer ours */ }
+    try { const stat = lstatSync(claimed); const ours = !stat.isSymbolicLink() && stat.isFile() && stat.dev === ticket.dev && stat.ino === ticket.ino; unlinkSync(claimed); return ours; } catch { return false; }
+  }
+  /** An unread bootstrap means no bridge joined; let the run end once its Agent process exits. */
+  private releaseUnclaimed(ticket: Ticket): void { const work = ticket.bridge.releaseUnclaimed?.().catch(() => undefined); if (!work) return; this.expiredReservations.add(work); void work.finally(() => this.expiredReservations.delete(work)); }
   private accept(socket: Socket): void {
     const peer: Peer = { socket,buffer: Buffer.alloc(0),controllers: new Map(),inFlight: 0 }; this.peers.add(peer); socket.setTimeout(10000,() => socket.destroy()); socket.on('error',() => undefined);
     socket.on('close',() => { this.peers.delete(peer); this.revokePeer(peer); if(peer.binding&&!this.closed)try{this.options.disconnected?.(peer.binding.runId,peer.binding.bridgeId);}catch{/* Observer errors cannot revive a closed transport. */} });
@@ -162,7 +170,7 @@ export class PrivateApplicationBroker {
   }
   hasAuthenticated(runId:string):boolean{for(const peer of this.peers)if(peer.binding?.runId===runId&&!peer.socket.destroyed)try{this.checkBinding(peer,peer.binding);return true;}catch{/* stale is not connected */}return false;}
   private revokePeer(peer: Peer): void { if (peer.binding) { peer.binding.revoked = true; this.bindings.delete(peer.binding.digest); } for (const controller of peer.controllers.values()) controller.abort(); }
-  revokeRun(runId: string): void { for(const waiter of this.handshakeWaiters)if(waiter.runId===runId)waiter.finish(false); for (const peer of this.peers) if (peer.binding?.runId === runId) { this.revokePeer(peer); peer.socket.destroy(); } for (const [hash,ticket] of this.tickets) if (ticket.runId === runId) { this.tickets.delete(hash); this.cleanupTicket(ticket); } this.tools.clearMemory(runId); }
+  revokeRun(runId: string): void { for(const waiter of this.handshakeWaiters)if(waiter.runId===runId)waiter.finish(false); for (const peer of this.peers) if (peer.binding?.runId === runId) { this.revokePeer(peer); peer.socket.destroy(); } for (const [hash,ticket] of this.tickets) if (ticket.runId === runId) { this.tickets.delete(hash); if (this.cleanupTicket(ticket)) this.releaseUnclaimed(ticket); } this.tools.clearMemory(runId); }
   async close(): Promise<void> {
     if (this.closed) return; this.closed = true;
     for(const waiter of this.handshakeWaiters)waiter.finish(false);
