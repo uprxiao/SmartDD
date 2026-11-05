@@ -1,0 +1,1 @@
+R005 static READY, original R004 runtime byte-for-byte after root substitution. No automatic activation; fresh user foreground availability required and asked asynchronously. Original user-authorized payload/model/sandbox unchanged. No new runtime/App/model/OS execution.
