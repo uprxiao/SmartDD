@@ -1,0 +1,129 @@
+{
+  "source": "/private/tmp/willyou-m12-p114-source-026/source/src/main/core/applications/upstream/session-pool.ts",
+  "sha256": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64",
+  "lines": [
+    {
+      "line": 68,
+      "text": "  }"
+    },
+    {
+      "line": 69,
+      "text": "  private async open(session:Session){"
+    },
+    {
+      "line": 70,
+      "text": "    const definition=session.definition;"
+    },
+    {
+      "line": 71,
+      "text": "    if(definition.kind==='mcp'){"
+    },
+    {
+      "line": 72,
+      "text": "      const transport=new StdioClientTransport({command:definition.command,args:[...definition.args],env:session.environment,cwd:session.directory,stderr:'pipe',maxBufferSize:1024*1024});session.transport=transport;transport.stderr?.on('data',()=>{});"
+    },
+    {
+      "line": 73,
+      "text": "      const client=new Client({name:'WillYou 受管上游',version:'1.0.0'},{capabilities:{},listMaxPages:4,enforceStrictCapabilities:true});session.client=client;"
+    },
+    {
+      "line": 74,
+      "text": "      await client.connect(transport,{signal:session.abort.signal,timeout:5000});if(!definition.versions.includes(client.getServerVersion()?.version??''))throw new ApplicationError('HOST_INCOMPATIBLE','上游MCP版本未声明');"
+    },
+    {
+      "line": 75,
+      "text": "    }else{"
+    },
+    {
+      "line": 76,
+      "text": "      const result=await this.process(session,[...definition.args,'--version'],session.abort.signal,5000);if(result.code!==0||!definition.versions.includes(result.stdout.trim()))throw new ApplicationError('HOST_INCOMPATIBLE','上游CLI版本未声明');"
+    },
+    {
+      "line": 77,
+      "text": "    }"
+    },
+    {
+      "line": 78,
+      "text": "  }"
+    },
+    {
+      "line": 79,
+      "text": "  private async invoke(session:Session,mapping:UpstreamMapping,input:Record<string,unknown>,protection:string|null,signal:AbortSignal,timeout:AbortSignal){"
+    },
+    {
+      "line": 80,
+      "text": "    let submitted=false;"
+    },
+    {
+      "line": 81,
+      "text": "    try{"
+    },
+    {
+      "line": 82,
+      "text": "      signal.throwIfAborted();this.verify(session.definition);const args=mapping.arguments(input,protection);if(!boundedJson(args))throw new ApplicationError('INVALID_INPUT','上游参数映射超过预算');let data:unknown;"
+    },
+    {
+      "line": 83,
+      "text": "      if(session.definition.kind==='mcp'){"
+    },
+    {
+      "line": 84,
+      "text": "        if(!mapping.tool||mapping.command)throw new ApplicationError('HOST_INCOMPATIBLE','上游MCP映射无效');submitted=true;"
+    },
+    {
+      "line": 85,
+      "text": "        const result=await session.client!.callTool({name:mapping.tool,arguments:args},{signal,timeout:120000});"
+    },
+    {
+      "line": 86,
+      "text": "        if(!boundedJson(result)||result.isError)throw new ApplicationError('INVALID_RESPONSE','上游MCP返回受控失败');"
+    },
+    {
+      "line": 87,
+      "text": "        data=result.structuredContent??JSON.parse((result.content.find(item=>item.type==='text') as {text?:string}|undefined)?.text??'null');"
+    },
+    {
+      "line": 88,
+      "text": "      }else{"
+    },
+    {
+      "line": 89,
+      "text": "        if(!mapping.command||mapping.tool)throw new ApplicationError('HOST_INCOMPATIBLE','上游CLI映射无效');submitted=true;"
+    },
+    {
+      "line": 90,
+      "text": "        const result=await this.process(session,[...session.definition.args,...mapping.command,'--json',JSON.stringify(args)],signal,120000);if(result.code!==0)throw new ApplicationError('INVALID_RESPONSE','上游CLI返回受控失败');data=JSON.parse(result.stdout);"
+    },
+    {
+      "line": 91,
+      "text": "      }"
+    },
+    {
+      "line": 92,
+      "text": "      if(!boundedJson(data)||Buffer.byteLength(JSON.stringify(data))>1024*1024)throw new ApplicationError('INVALID_RESPONSE','上游结果超过预算');const parsed=mapping.output.safeParse(data);if(!parsed.success)throw new ApplicationError('INVALID_RESPONSE','上游结果不符合固定契约');return parsed.data;"
+    },
+    {
+      "line": 93,
+      "text": "    }catch(error){"
+    },
+    {
+      "line": 94,
+      "text": "      if(mapping.semantics==='write'&&submitted)throw new ApplicationError('UPSTREAM_RESULT_UNKNOWN','上游写入可能生效，请按原业务防重标识查询，不要重发');"
+    },
+    {
+      "line": 95,
+      "text": "      if(signal.aborted)throw new ApplicationError(timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED','上游读取已中断');"
+    },
+    {
+      "line": 96,
+      "text": "      if(error instanceof ApplicationError)throw error;throw new ApplicationError('INVALID_RESPONSE','上游结果无法按固定契约读取');"
+    }
+  ],
+  "originalCase": "M11-T09 expected bounded cancellation/failure/unknown and onlyowned cleanup; no tools/list obligation",
+  "originalContract": {
+    "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/contract-t09.json",
+    "sha256": "f0d49d58686d048f50c3bf8f16cdc49097139dc68e2195f95178cbd6122069a7"
+  },
+  "actualPhase": "same originalPID58947 initialized→normalcall→disconnectcall→SIGTERM; response INVALID_RESPONSE/read-only/attempt1",
+  "NativeRepeated": false
+}

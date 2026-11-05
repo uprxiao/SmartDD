@@ -1,0 +1,180 @@
+{
+  "at": "2026-11-05T23:31:09.688505+00:00",
+  "status": "M-original-contract-evidence-pass-coordinator-independent5of5",
+  "case": "M11-T09 remainingM only / M12-T131 subcase",
+  "actualExecutionCount": 1,
+  "toolSession": 65294,
+  "driverPid": 58651,
+  "appPid": 58655,
+  "HTTP": 61487,
+  "powerGuard": {
+    "pid": 58652,
+    "ppid": 58651,
+    "birth": "Fri Nov  6 07:26:37 2026",
+    "executable": "/usr/bin/caffeinate",
+    "command": "/usr/bin/caffeinate -i -s /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/run.mjs --execute --t09-m",
+    "expectedCommand": "/usr/bin/caffeinate -i -s /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/run.mjs --execute --t09-m",
+    "sourceAt": "2026-11-05T23:26:42.750Z",
+    "layout": "utility retains Node PID; caffeinate guard is direct child",
+    "assertions": "process-scoped -i -s only; no -d/-u or permanent setting"
+  },
+  "toolDriverExitCode": 0,
+  "ACPreflight": "power-preflight.json actualpmset AC Power100%, no settings changed",
+  "originalJudgement": {
+    "path": "judgement.json",
+    "sha256": "317219ee305960be3c5c50e2739e19279471080cdc0f705be4029cca7c9ca68b",
+    "passed": 4,
+    "total": 5,
+    "failure": "Only erroneous extra tools/list requirement; original4/5 preserved"
+  },
+  "correctedJudgement": {
+    "path": "postmortem-review-001/adjudication-M.json",
+    "sha256": "1c20c1c03aab4b0843d05060fdabfcc98d368c291dd6fd64a28c25827c41cc22",
+    "passed": 5,
+    "total": 5,
+    "narrowCorrection": "Source fixedMCP mapping client.connect then directcall; require exactsamechild init→normal→target→TERM instead of unspecifiedlist, originalothers unchanged"
+  },
+  "actor": {
+    "projectId": "3576bf9d-9323-4c5e-b67e-c9fbe4b5c099",
+    "taskId": "bb14ce8b-ad53-4ee5-8ff0-4ede78a8c2fd",
+    "runId": "24d781ec-b05e-44b1-9d63-a309b70e89c1"
+  },
+  "actualOperations": [
+    {
+      "operation_id": "cc3ee9f1-0da9-485d-acd5-f205dd621064",
+      "request_id": "6fdf92a7-98d6-4b28-b149-77883e05d3a1",
+      "run_id": "24d781ec-b05e-44b1-9d63-a309b70e89c1",
+      "task_id": "bb14ce8b-ad53-4ee5-8ff0-4ede78a8c2fd",
+      "project_id": "3576bf9d-9323-4c5e-b67e-c9fbe4b5c099",
+      "app_id": "sample-kv",
+      "package_hash": "2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+      "connection_id": null,
+      "tool_name": "smartdd_sample_kv_read_v2",
+      "contract_major": 2,
+      "semantics": "read",
+      "state": "succeeded",
+      "effect_state": "read-only",
+      "error_code": null,
+      "attempt_count": 1,
+      "started_at": "2026-11-05T23:26:45.755Z",
+      "ended_at": "2026-11-05T23:26:45.922Z"
+    },
+    {
+      "operation_id": "d3757849-9e40-4c54-a1fa-8b82f9952a24",
+      "request_id": "9ef8d43e-2a88-4146-8dc7-dbacd3fbbb02",
+      "run_id": "24d781ec-b05e-44b1-9d63-a309b70e89c1",
+      "task_id": "bb14ce8b-ad53-4ee5-8ff0-4ede78a8c2fd",
+      "project_id": "3576bf9d-9323-4c5e-b67e-c9fbe4b5c099",
+      "app_id": "sample-kv",
+      "package_hash": "2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+      "connection_id": null,
+      "tool_name": "smartdd_sample_kv_read_v2",
+      "contract_major": 2,
+      "semantics": "read",
+      "state": "failed",
+      "effect_state": "read-only",
+      "error_code": "INVALID_RESPONSE",
+      "attempt_count": 1,
+      "started_at": "2026-11-05T23:26:46.075Z",
+      "ended_at": "2026-11-05T23:26:46.275Z"
+    }
+  ],
+  "MCPChildExitCodeObserved": null,
+  "nativePrefixMetadata": [
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/runtime-001/M-native-prefix-0.private.jsonl",
+      "sha256": "f23609340605037c0db9331badb18ee076832cfbff4b647a6d7fd2e4f817fb5a",
+      "bytes": 65054,
+      "originalSource": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/runtime-001/codex/sessions/2026/11/06/rollout-2026-11-06T07-26-45-01a1ae09-4493-7091-9c35-d8e07aad8fbc.jsonl"
+    }
+  ],
+  "originalAandCReplayed": false,
+  "priorProofs": [
+    "A001 corrected7/7 with original0/9 and scoped5/7 retained",
+    "C003 originalcontract7/7; actualSIGTERM and originalSIGKILLextra red retained",
+    "Current I63 unchanged150production files; not rerun"
+  ],
+  "cleanup": {
+    "allClear": true,
+    "checks": 27,
+    "knownPids": [
+      58651,
+      58655,
+      58652,
+      58691,
+      58692,
+      58765,
+      58769,
+      58937,
+      58845,
+      58900,
+      58901,
+      58902,
+      58904,
+      58908,
+      58947,
+      58950,
+      58956,
+      58970,
+      58973
+    ],
+    "knownPorts": [
+      61487,
+      61501,
+      61489,
+      61690
+    ],
+    "exactGatewayPaths": [
+      "/tmp/wy-501-kvAkQG/broker.sock",
+      "/private/tmp/wy-cli-501-oh1Lhr/cli.sock"
+    ],
+    "exactGatewayDirectories": [
+      "/tmp/wy-501-kvAkQG",
+      "/private/tmp/wy-cli-501-oh1Lhr"
+    ],
+    "AppExit": {
+      "pid": 58655,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "cleanupErrors": [],
+    "persistenceErrors": [],
+    "upstreamRestored": true,
+    "captureRestored": {
+      "workerRestored": true,
+      "captureRemoved": true
+    },
+    "cipherRestored": {
+      "restored": true,
+      "counts": {
+        "encrypt": 1,
+        "decrypt": 3
+      },
+      "originalCryptoInvoked": 0
+    },
+    "allCriticalFiles": 16,
+    "guardAbsenceCheck": {
+      "kind": "exact-pid",
+      "pid": 58652,
+      "expected": {
+        "pid": 58652,
+        "ppid": 58651,
+        "birth": "Fri Nov  6 07:26:37 2026",
+        "executable": "/usr/bin/caffeinate"
+      },
+      "present": false,
+      "clear": true
+    }
+  },
+  "sourceInputsUnchanged": 264,
+  "safeSource": {
+    "path": "safe-source",
+    "manifestSha256": "2359874758b327af478d1d9091e60b5b4871600d0dc0a3de85d5500ac794285f",
+    "sourceInputs": 94,
+    "dependencyIdentities": 170
+  },
+  "knownSeparateBoundary": "Prior T38 private exec-cache runtime-token issue is not suppressed or reclassified. No actual raw/Native/lease/runtime/cache/token bytes copied to safe subset.",
+  "resourcesHeld": [],
+  "formalWholeCaseCount": 0
+}

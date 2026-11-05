@@ -1,0 +1,62 @@
+--- App017/src/main/core/browser/cdp-proxy.ts
+
++++ current026/src/main/core/browser/cdp-proxy.ts
+
+@@ -25,6 +25,7 @@
+
+   private readonly token = randomBytes(32).toString('hex');
+   private readonly targetId = 'wy-page-' + randomBytes(12).toString('hex');
+   private ordinal = 0;
++  private readonly mouseInputs=new Set<Promise<unknown>>();
+   private capture?: BrowserAXTree[];
+   private frameInitializer?: (sessionId: string) => Promise<void>;
+   private frameInitializations = new Map<string, Promise<void>>();
+@@ -46,12 +47,27 @@
+
+     if (sessionId && !this.frameSessions.has(sessionId)) throw new BrowserError('BROWSER_TAB_CHANGED', '网页框架会话已经失效');
+     let timer: ReturnType<typeof setTimeout> | undefined;
+     try {
++      const native=(sessionId?this.contents.debugger.sendCommand(method,params,sessionId):this.contents.debugger.sendCommand(method,params)) as Promise<T>;
++      if(method==='Input.dispatchMouseEvent'){
++        this.mouseInputs.add(native);
++        void native.then(()=>{this.mouseInputs.delete(native);},()=>{this.mouseInputs.delete(native);});
++      }
+       return await Promise.race([
+-        (sessionId ? this.contents.debugger.sendCommand(method, params, sessionId) : this.contents.debugger.sendCommand(method, params)) as Promise<T>,
++        native,
+         new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new BrowserError('BROWSER_TIMEOUT', `CDP ${method} 超时`)), 10000); }),
+       ]);
+     } finally { clearTimeout(timer); }
+   };
++
++  async waitForInputCompletion():Promise<void>{
++    let timer:ReturnType<typeof setTimeout>|undefined;
++    try{
++      await Promise.race([
++        (async()=>{while(this.mouseInputs.size)await Promise.allSettled([...this.mouseInputs]);})(),
++        new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new BrowserError('BROWSER_TIMEOUT','原生鼠标输入仍未确认结束，保留旧引用守卫')),10000);}),
++      ]);
++    }finally{clearTimeout(timer);}
++  }
+ 
+   private trusted(request: IncomingMessage): boolean {
+     return request.socket.remoteAddress === '127.0.0.1' && request.headers.host === `127.0.0.1:${this.port}` &&
+@@ -187,7 +203,16 @@
+
+       if (method === 'Page.bringToFront') { reply({}); return; }
+       // Storage/BrowserContext operations could affect another task sharing a partition.
+       if (method.startsWith('Storage.') || method.startsWith('SystemInfo.') || method.startsWith('Tethering.')) denied();
+-      const effectiveSession = sessionId && this.frameSessions.has(sessionId) ? sessionId : undefined;
++      let effectiveSession = sessionId && this.frameSessions.has(sessionId) ? sessionId : undefined;
++      // The fixed Helper can discover an iframe in its first snapshot before
++      // its attached-target cache has consumed the real child session event.
++      // Route only this explicit read to the frame already owned by this page.
++      // Keep the caller's wire session in the reply; never enumerate targets.
++      if (!effectiveSession && method === 'Accessibility.getFullAXTree' && typeof params.frameId === 'string') {
++        const owners = [...this.frameSessions].filter(([, target]) => target.targetId === params.frameId);
++        if (owners.length > 1) throw new BrowserError('BROWSER_TAB_CHANGED', '网页框架的所属会话尚未唯一确定');
++        effectiveSession = owners[0]?.[0];
++      }
+       await this.frameReady(effectiveSession);
+       let captured: BrowserAXTree | undefined;
+       if (this.capture && method === 'Accessibility.getFullAXTree') {

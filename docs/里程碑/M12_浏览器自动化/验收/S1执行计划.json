@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-05T22:41:10.929220+00:00",
+  "updatedAt": "2026-11-05T23:37:07.979994+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "技术方案V1.3",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T09 CM-only002 Root-reviewed READY; await awake condition",
+    "currentGroup": "T113 original I+A whole-case complete; T09 original contract complete; original UI/SOP display/focus pending",
     "groups": [
       {
         "id": "M12-P001",
@@ -4064,9 +4064,9 @@
         "remaining": "See latest execution record nine-case subcriteria mapping; no real UI/system/model rerun while user asleep",
         "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/manifest.json",
         "nextSubgroup": {
-          "owner": "/root/s2_t004_test",
-          "root": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-002",
-          "status": "delivered252input CM-only Root-reviewed READY,requiresawakeandfreshlease;no actualexecute",
+          "owner": "/root/native_focus_prep",
+          "root": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003",
+          "status": "CM003driver handedoff/root-reviewed;externalpowerwrapper preparing; noNativeleaseyet",
           "Native": false
         },
         "compositionSmoke": {
@@ -4113,12 +4113,15 @@
           "originalSession": 8695,
           "originalEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-original-partial-001/manifest.json",
           "rootEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-root-original-review-003/manifest.json",
-          "remainingRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-002",
-          "remainingReadySHA": "ffb5b3b641f8eb9fc8ead5daf52437c6bda642690237c7bfc8aa0d868f47d0e1",
+          "remainingRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003",
+          "remainingReadySHA": "555b7d58fb2fa7fda847fcc78cb4f6700b93f468b58d240598a3ac91ce063c13",
           "remainingEvidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-cm-ready-002/manifest.json",
           "NativeStarted": false,
           "leaseGranted": false,
-          "AReplayed": false
+          "AReplayed": false,
+          "remainingExecutionReadySHA": "2fcbd50fd8f455fbebeec2759694ee6199fbdaafa1fb76a9ebbef91f49335ee8",
+          "completionObservation": "Root exactreverse restored002run SHA;10s readonly newoperation terminal fence only,oracleunchanged",
+          "powerWrapper": "/private/tmp/willyou-m12-t09-cm-power-wrapper-001 preparing; no actualCM yet"
         }
       },
       {
@@ -4224,8 +4227,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-05T22:41:10.929220+00:00",
-    "independentNext": "oldT09 A/C results Root-replayed and archived;newCM252input exactREADY reviewed,notrun;onceMacawake recheckready/package/processes then issuefreshlease;foreground/SOP/UI/system/x64 originalcontracts retained",
+    "updatedAt": "2026-11-05T23:37:07.979994+00:00",
+    "independentNext": "No replay of T113/T09. Resume frozen App022 T121 then T120/T125 original payload when new actual window/display/focus is available; original T131 T07/T14 and remaining UI/system/platform gates stay explicit.",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4278,12 +4281,12 @@
       "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P115/app022-build-001/manifest.json"
     },
     "currentAutonomousBatch": {
-      "at": "2026-11-05T22:41:10.929220+00:00",
+      "at": "2026-11-05T23:31:14.869734+00:00",
       "productionBaseline": "App022/source026",
       "P103": "原完整1800s及CPU独立闭合，T111通过；旧产品红、前置guard失败与计量判定错误均保留",
       "RealCLI": "T041/T042从实际R010原始journal/Host与当前CLI必经getenv证据闭合；R012直接布尔值补充不同run不混用",
       "G1": "原G1三真实模型回合已结束，原raw来源/Host/HTTP独立补核：T126两组合与T122缺失/矛盾两臂按原合同完整归账。旧额外顺序red单独留证，无新模型重发。",
-      "P067": "原T114按用户明确R1.4标准由原实际App021数据重新独立闭合：19.037s仍显示、20.053s已清，8负控；取消20项复核和原正常清场保持。T113原A01–A11适用性缺项仍保留，不连带计绿。",
+      "P067": "T113 original I15+A01-A12 complete by exact scoped 4-baseline source/actual evidence Root review; original driver/cleanup reds retained",
       "CookieRecovery": "三阶段实际I10判据绿/33PID2TCP3Unix清场；原T080/T081全UI仍缺",
       "T130": "253/253纯U与D12/D13实际A子项绿；其余原矩阵仍缺，D04/D06新UI初始焦点超时后后置。",
       "formalAuthority": "测试用例.md",
@@ -4293,11 +4296,10 @@
       "T043": "完整U＋R已通过：当前原17U、一次真实wait2100.005s/同run CLI0/0/真实stop旧token HostAUTH_REQUIRED；原7/8解析红保留，37同wait链严格补判并由Root9条件26控重放，Skill12402B先读/13PID7TCP2Unix双独立清场。无重发/重跑。",
       "overnightSelection": {
         "instruction": "2026-11-06用户睡觉，优先自主可执行，不反复前台请求",
-        "current": "无需焦点原I及T01复用归账完成；当前App021安装原T140/T143受影响复验完整；T121静态READY，T120125修正普通缓存collector的新002准备；用户参与项后置。",
+        "current": "T09 original complete; T113 existing full I/A evidence source applicability review in progress",
         "next": [
-          "P111仅受影响启动新002复验",
-          "T120/T125纯文件可执行准备",
-          "原未闭合子判据映射与有效证据复用，不增加范围或缩减原层级"
+          "T113 full-case exact evidence closure",
+          "Original UI/SOP pending actual display/focus; system/user/x64 items remain"
         ],
         "deferred": [
           "T130004真实UI（静态35/36已核）",
@@ -4308,34 +4310,40 @@
       "P112": "双轮SOP002静态235输入经Root24+14+6+6独立重放，普通缓存误伤已修；两prompt不变，R/新发送/焦点/工具审批前置仍待",
       "T38": "originalauthcontract currentI+A evidenced; additionalNativecachefinding open; no changedexpectations/originaloracleoverwritten",
       "T29": "current original compatibility complete;Root real-source replay/213pins/40tools/33cleanup/declared-delta reverseexact; originaldriver/network/configredretained",
-      "next": "Macawake thenCM-only actual2runs;realM12R/UI/system/platformneeds unchanged",
+      "next": "No replay of T113/T09. Resume frozen App022 T121 then T120/T125 original payload when new actual window/display/focus is available; original T131 T07/T14 and remaining UI/system/platform gates stay explicit.",
       "T37": "original currentI+A+R complete;originalpurejudge/rootreplay directpassed/202pins/6calls/6files/29cleanup",
       "T131remaining": [
         "T07 originalUI/R",
-        "T09 originalfaultA",
         "T14 originalUI/restart/R"
       ],
-      "formalWholeCaseIncrement": 0,
-      "T09": "originalA7/7 andCnormal7/7 independentRootreplay/5exactownedDBrows/47cleanup;old0/9 and5/7 retained;CM-only252inputready,notrun",
+      "formalWholeCaseIncrement": 1,
+      "T09": "I63 plus A001 HTTP/cancel7/7, C003 CLI-hang original7/7, M005 realMCPdisconnect Root5/5 complete; original0/9/A5/7/Cexpandedred/M4/5 preserved; no extra KILL/list requirement; own App exits normal and independent resources clear",
       "P116003": "CUAgetApp cgWindowNotFound/0inputs;targetclosed/exitnull/TERM+KILL/1of7red;exactstaleUnix17red→17clear;timeline+OSsleepfacts separate,no causeinvented",
       "awakePrerequisite": {
-        "status": "pending-external-awake-condition",
-        "observedAt": "2026-11-05T22:35:10.813240+00:00",
-        "observed": "ioreg AppleClamshellState Yes;currentlidclosed",
+        "status": "UI-awaits-user-display/focus; backgroundmaycontinue-underverified-scoped-powerguard",
+        "observedAt": "2026-11-05T23:29:11.264037+00:00",
+        "observed": "single current readonly check: clamshellClosed false, CoreGraphics onlineDisplayCount0",
         "requested": "One async request to openMac/keepawake/staydesktop;no credentials/site login;no response yet",
-        "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/readonly-env-diag-001/manifest.json",
-        "continuing": "file-only result replay/source review/READY handoff;no newApp or foreground actions",
+        "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/manifest.json",
+        "continuing": "background M005 actual finished; T113 pure evidence review; original UI focus gate retained",
         "noPowerSettingsChanged": true
       }
     },
     "awakePrerequisite": {
-      "status": "pending-external-awake-condition",
-      "observedAt": "2026-11-05T22:35:10.813240+00:00",
-      "observed": "ioreg AppleClamshellState Yes;currentlidclosed",
+      "status": "UI-awaits-user-display/focus; backgroundmaycontinue-underverified-scoped-powerguard",
+      "observedAt": "2026-11-05T23:29:11.264037+00:00",
+      "observed": "single current readonly check: clamshellClosed false, CoreGraphics onlineDisplayCount0",
       "requested": "One async request to openMac/keepawake/staydesktop;no credentials/site login;no response yet",
-      "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/readonly-env-diag-001/manifest.json",
-      "continuing": "file-only result replay/source review/READY handoff;no newApp or foreground actions",
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/manifest.json",
+      "continuing": "background M005 actual finished; T113 pure evidence review; original UI focus gate retained",
       "noPowerSettingsChanged": true
+    },
+    "backgroundExecutionGate": {
+      "status": "background-eligible-with-scoped-verified-AC-power-assertion;UI-pending-display/focus",
+      "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/temporary-awake-probe-001/manifest.json",
+      "measured": "20.074s/198ticks/max103ms;ownIdle/Systemassertionsobserved,allownedcommandsreleased",
+      "limit": "20s probe only; actual M005 used exact process-scoped standard utility and completed/cleaned. It does not prove foreground UI or all clamshell conditions; permanent preferences unchanged.",
+      "currentKnownDisplay": "0online at23:29:11Z; no new foreground input"
     }
   }
 }

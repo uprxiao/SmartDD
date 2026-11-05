@@ -1,0 +1,1 @@
+Original94 non-node_modules frozen execution input bytes/modes preserved. Restore original root/source paths or review a new rebound attempt before execution. Actual private Native/userData/raw and real lease are excluded; no default authorization. Dependency payload170 not copied, identities retained.
