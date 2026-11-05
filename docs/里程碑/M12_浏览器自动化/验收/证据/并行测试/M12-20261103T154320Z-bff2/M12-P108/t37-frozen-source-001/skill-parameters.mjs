@@ -1,0 +1,3 @@
+import assert from'node:assert/strict';import{canonical,sha}from'./plan-reader.mjs';
+// Production session-projector.ts uses this delivery/nativeName pair, not a SKILL.md file hash.
+export function verifySkillParameters({target,delivery,permissions,plan}){assert.equal(delivery.schema,1);assert.deepEqual(delivery.allowedOperations,permissions);assert.equal(new Set(permissions).size,permissions.length);const allowed=plan.allowed.filter(c=>c.appId===target.appId);assert.deepEqual(delivery.available,{mcp:allowed.some(c=>c.entry==='mcp'),cli:allowed.some(c=>c.entry==='cli')});const parametersHash=sha(canonical({delivery,nativeName:target.nativeName}));assert.equal(parametersHash,target.parametersHash);return parametersHash;}

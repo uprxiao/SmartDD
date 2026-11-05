@@ -1,0 +1,84 @@
+{
+  "at": "2026-11-05T21:18:44.089Z",
+  "passed": true,
+  "status": "original-T37-entry-refusal-and-delivered-tree-AR-root-review-required",
+  "facts": [
+    {
+      "role": "CLI",
+      "appId": "zentao",
+      "effectiveEntry": "cli",
+      "rejection": {
+        "authority": "actual-native-tool-call-refused-before-host",
+        "actualMessage": "unsupported call: smartdd_zentao_work_list_v2",
+        "actualCode": null,
+        "childExitObserved": null,
+        "hostEntryNotActiveProof": "current I8, not claimed as this Native-layer code"
+      },
+      "skillTrees": [
+        {
+          "appId": "zentao",
+          "skillId": "bug-analysis",
+          "files": 2,
+          "templateHash": "f994c237ee6f3e464c76d74e570f255bd07633f3b37a16770ba9d4f9aff8bb7b",
+          "parametersHash": "b2cd54f27d9b2c219e501042189f8142cf0fbb84a08adf6eff05b23acd46766b",
+          "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007",
+          "singleSkillFileSHA": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc"
+        },
+        {
+          "appId": "zentao",
+          "skillId": "story-review",
+          "files": 2,
+          "templateHash": "40c52d743df3ce86e450e440b556ba9cd504d3a9f64dca588346c54a31a4a15c",
+          "parametersHash": "8c7d50f94c5226696a25036ac1c5b08621c766ba4f4a4da5698e46104aaaf25d",
+          "renderedHash": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c",
+          "singleSkillFileSHA": "e9eb74bec1dfe65636ddc84d3587b68209e76a946d7481ff1ceb4051e470f26c"
+        }
+      ],
+      "hostBusinessRows": 0,
+      "mailDraftCountBeforeAfter": [
+        0,
+        0
+      ],
+      "actualCliIdentityDelivered": true
+    },
+    {
+      "role": "MCP",
+      "appId": "mail",
+      "effectiveEntry": "mcp",
+      "rejection": {
+        "authority": "actual-stockCLI-preflight-auth-before-host",
+        "actualCode": "AUTH_REQUIRED",
+        "layer": "auth",
+        "effect": "not-started",
+        "childExitObserved": 3,
+        "extraCliTokenIssued": false,
+        "notClaimedHostInvocation": true
+      },
+      "skillTrees": [
+        {
+          "appId": "mail",
+          "skillId": "work-assistant",
+          "files": 2,
+          "templateHash": "907f3590477e92bb20e3263c9fd81588c7d266abe1d447904c41b08ab4562301",
+          "parametersHash": "4d7e25eded2c4fd04b20e4f303c2fa5cac2c8978c15f93ab663b750ef8a54a52",
+          "renderedHash": "d7650131ac4e8d233e96772f00c5b7b28cad4a95b3372b2b04777cc88d1dbf58",
+          "singleSkillFileSHA": "34082a63fbdc7dff6976db6b0db1207e024377627390c535da088d55577b4f93"
+        }
+      ],
+      "hostBusinessRows": 0,
+      "mailDraftCountBeforeAfter": [
+        0,
+        0
+      ],
+      "actualCliIdentityDelivered": false
+    }
+  ],
+  "formalCaseIncrement": 0,
+  "boundaries": [
+    "TaskService start is non-UI preparation, no Composer UI claim",
+    "Native unsupported-call is actual no-delivery rejection; Host ENTRY_NOT_ACTIVE separately current I8",
+    "MCP-only stockCLI returns AUTH_REQUIRED before Host; no extra token/endpoint or fake version/policy injected",
+    "Preset local model uses original M11 approved R definition, no OpenAI/auth/external business service",
+    "Private shell_snapshots token persistence is a separate known open T38 boundary, no full-cache absence claim"
+  ]
+}

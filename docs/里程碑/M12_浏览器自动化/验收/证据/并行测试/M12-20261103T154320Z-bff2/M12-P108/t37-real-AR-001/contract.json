@@ -1,0 +1,112 @@
+{
+  "schema": "m12-t131-t37-contract-v1",
+  "originalCasePath": "docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+  "originalCaseSHA": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+  "originalCase": "| M11-T37／R10、R02／I＋A＋R | 禅道运行计划生效入口为 CLI（或降级为 MCP）的两个会话 | 在生效入口为 CLI 的会话中直接调用该能力的 MCP 工具；反之亦然 | 非生效入口的调用**不得交付、不得执行**（`ENTRY_NOT_ACTIVE` 或 `AUTH_REQUIRED` 均可，须记录实际码与原因）；运行计划记录的 Skill 渲染哈希与实际交付一致 | **通过（I＋A＋R）**；2026-11-02 C19：以真实包＋真实 Codex 0.166.0 的真实会话补齐“运行计划 Skill 渲染哈希与实交付一致”——两个 Skill（`bug-analysis`／`story-review`）各 2 个文件，按 `run-plan.ts:26` 的 `skillFilesHash` 同一公式重算，`renderedHash` 逐一相等（产品自身在 `agent-adapter-registry.ts:133` 用同一校验，不一致即 `HASH_MISMATCH`）；[A](证据/并行测试/M11-C19-20261102T0128Z-t37/M11-C19-A-T37-RENDER/attempt-001/result.json) `status=passed-skill-render-hash`、6 项断言、`sourceCommit 37ccc59f` 干净树。此前 C12 结果：C12 同一数据根两会话：运行计划 mail=`mcp`／zentao=`cli`，会话一实际下发 14 个邮件 v2 工具、禅道 0 个；停用邮件后新会话邮件工具 0、禅道 0，不继承上一会话工具；两方向对未下发工具的实际调用均被拒（`unsupported call: smartdd_zentao_work_list_v2`／`smartdd_mail_draft_list_v2`），无业务结果。宿主级 `ENTRY_NOT_ACTIVE` 由 I 层双向单测精确断言（`run-plan.test.ts:30,58`、`cli-gateway.test.ts:33`，24 用例全绿）；仍缺“运行计划 Skill 渲染哈希与实交付一致”的 A 证据。[A](证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-A-T37/attempt-001/result.json)、[I](证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-I-T37/attempt-001/unit-run.txt)。**2026-11-02 用户确认预期口径 A**：不要求改实现去统一错误码（MCP 会话本就不签发 CLI token，为凑码值而发 token 会扩大凭据面）；以“不交付、业务未执行”为硬判据，两方向各一次真实证据，允许码值为 `ENTRY_NOT_ACTIVE`（CLI→MCP 方向）或 `AUTH_REQUIRED`（MCP→CLI 方向，因先撞身份认证）。R10 原文只要求“服务端拒绝非生效入口的调用”，未规定错误码，故不改需求。 |",
+  "confirmedErrorBoundary": "User2026-11-02 accepted not-delivered/not-executed as hard rules; ENTRY_NOT_ACTIVE/first-auth AUTH_REQUIRED acceptable. Root explicitly accepted original C12 Native unsupported-call layer + Host I8, and actual stockCLI auth before Host. Do not issue new token or force fallback.",
+  "currentBaseline": "App022/source026/Codex0.166 actual physicalNodePTY3/current CLI/helper/identity/framework PIN; all tests data private/no auth/external model",
+  "originalIReuse": {
+    "path": "/private/tmp/willyou-m12-t37-run-plan-i-001/result.json",
+    "sha256": "0f274819cb06e8a10e6c8545c7f98b5ed909a1c854a81dad1964eb5a8498c7ed",
+    "status": "T37-run-plan8-I-passed-root-review-required",
+    "boundary": "Current8 run-plan scenarios, Host dual-entry/immutable plan hash checks; no new whole-case pass, no claim these are actual delivery A/R"
+  },
+  "currentAReusableSkillWitness": {
+    "path": "/private/tmp/willyou-m12-t131-t06-scope-ar-001/raw.private.json",
+    "sha256": "cd8ef0175059e30beb1d27d19bf75cfb31a470435c8922ada6cafd019635c690",
+    "asarSHA": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
+    "sourceManifestSHA": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9",
+    "taskId": "c2da2a8c-4b42-4a8d-bd4a-60b4256a69c7",
+    "runId": "a25abb87-e738-40e2-ac5b-67fea579242c",
+    "appId": "zentao",
+    "skillId": "bug-analysis",
+    "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+    "templateHash": "f994c237ee6f3e464c76d74e570f255bd07633f3b37a16770ba9d4f9aff8bb7b",
+    "parametersHash": "b2cd54f27d9b2c219e501042189f8142cf0fbb84a08adf6eff05b23acd46766b",
+    "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 1868,
+        "sha256": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc",
+        "executable": false
+      },
+      {
+        "path": "references/scope.md",
+        "size": 733,
+        "sha256": "eb609e6cf4f94436185dbd3439196484e01b19486284db4b28fb261474021371",
+        "executable": false
+      }
+    ],
+    "boundary": "Actual App022 current bug-analysis fulltree verified; not a new foreign-entry rejection and not the mail Skill. New missing-entry tasks recheck their actual trees as required; no replay of lawful M10 query matrix"
+  },
+  "sourceApplicability": [
+    {
+      "path": "src/main/core/applications/run-plan.ts",
+      "currentSHA": "224ea175f40e0c4523b65f5ee646f1d9e4eb875d4506f0acbbc690ed214c3b0a",
+      "C19SHA": "224ea175f40e0c4523b65f5ee646f1d9e4eb875d4506f0acbbc690ed214c3b0a",
+      "sameAsC19": true
+    },
+    {
+      "path": "src/main/core/applications/application-skill-template.ts",
+      "currentSHA": "5394151a3a862e7c057393ef4ec203f94e7ef2197452eaa11ad0c391d4b311ef",
+      "C19SHA": "5394151a3a862e7c057393ef4ec203f94e7ef2197452eaa11ad0c391d4b311ef",
+      "sameAsC19": true
+    },
+    {
+      "path": "src/main/core/applications/session-projector.ts",
+      "currentSHA": "8ab5dd7d4524220b0d9bc5f161797b34624ba66a8cf3124f04876963a06f5e71",
+      "C19SHA": "8ab5dd7d4524220b0d9bc5f161797b34624ba66a8cf3124f04876963a06f5e71",
+      "sameAsC19": true
+    },
+    {
+      "path": "src/main/core/applications/agent-adapter-registry.ts",
+      "currentSHA": "476d8fd6d6a733a1eba4f18004e40996cc16a742f64170c7daf2a0f29e59c4fc",
+      "C19SHA": "476d8fd6d6a733a1eba4f18004e40996cc16a742f64170c7daf2a0f29e59c4fc",
+      "sameAsC19": true
+    },
+    {
+      "path": "native/applications/cli.mm",
+      "currentSHA": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+      "C19SHA": "40a7c7190f8d331de29ac104322b7edfbfb0f660f82830ba041922a88f52149f",
+      "sameAsC19": false
+    }
+  ],
+  "phases": [
+    {
+      "role": "CLI",
+      "selectedApplication": "zentao",
+      "expectedEntry": "cli",
+      "connections": {
+        "zentao": null
+      },
+      "actualActions": [
+        "Native cat all files of both actual Skill trees",
+        "Only token/endpoint presence booleans",
+        "Real Native function call smartdd_zentao_work_list_v2(kind=bug), absent from delivered tools"
+      ],
+      "hardOracle": "No delivered Zen MCP tool in any actual role request; exact Native unsupported call before Host; current committed own plan source; zero currentrun application invocations, zero drafts; Host ENTRY_NOT_ACTIVE independently currentI8"
+    },
+    {
+      "role": "MCP",
+      "selectedApplication": "mail",
+      "expectedEntry": "mcp",
+      "connections": {
+        "foxmail": null,
+        "smtp": null
+      },
+      "actualActions": [
+        "Native cat all files of actual mail Skill tree",
+        "Only token/endpoint presence booleans must both be absent",
+        "Actual absolute pinned stockCLI executable zentao object list --kind bug"
+      ],
+      "hardOracle": "Actual mail14 MCP tools, only MCP plan entries; no CLI identity/environment injected; actual CLI auth-layer AUTH_REQUIRED/effect not-started/attempt0, observed nonzero child exit kept (no arbitrary required code); Host not reached/not claimed, zero business/drafts"
+    }
+  ],
+  "fullSkillContract": "All current actualplan skills, entire registered directory and owner/store/nativeName/package/templateHash/parametersHash/renderedHash verified. parametersHash independently sha(canonical({delivery,nativeName})), delivery allowedOperations equals session fixed permissions and entry availability. Single-file SHA not confused with bundle renderedHash. Actual Native reads every registered file before refusal.",
+  "inputPreparation": "ActualTaskServiceRPC start/profile/project selection are non-UI prerequisites. Original case does not require Composer UI input; no UI acceptance claimed. No fake version, no policy weakening, no handissued token.",
+  "knownPrivateCacheBoundary": "T38 shell_snapshots token persistence stays separate/open, no full-cache token-absence oracle added",
+  "remainingThisGroup": "Two actual current App/CLI/MCP refusal attempts and current mail/fullSkill witness; prepared only, not yet executed",
+  "formalCaseIncrement": 0,
+  "Native": 0
+}
