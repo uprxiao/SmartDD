@@ -62,7 +62,6 @@ export class CurrentApplicationAuthorization {
     const snapshot:CapabilitySessionSnapshotV3={...context.snapshot,packages};
     const applications=apps.map(a=>{const manifest=this.builtin.retainedMetadata(a.packageHash).manifest;return{packageHash:a.packageHash,manifest,capabilities:this.modules.capabilityViews(manifest)};});
     const plan=createApplicationRunPlan({runId:launch.runId,snapshotHash:launch.snapshotHash,snapshot,applications,skills:[],available:{mcp:launch.grades.mcp,cli:launch.grades.cli},cliVersion:launch.cliVersion,sandbox:launch.sandbox,now:launch.createdAt});
-    const {applicationScope:_scope,excludedApplications:_excluded,...rest}=context;
-    return{...rest,snapshot,plan,bindings,unavailableApplication:(operation,entry)=>{const appId=this.owner(operation,entry);return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;}};
+    return{...context,recorded:context.snapshot,snapshot,plan,bindings,unavailableApplication:(operation,entry)=>{const appId=this.owner(operation,entry);return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;}};
   }
 }

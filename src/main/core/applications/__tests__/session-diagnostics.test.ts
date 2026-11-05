@@ -1,9 +1,9 @@
 import {ApplicationError} from '@shared/applications';
 import type {NativeUserMessages} from '../native-user-messages';
 import type {SkillReadTarget,SkillReadObservation} from '../codex-skill-read-evidence';
-import {ClaudeDeliveryCoordinator} from '../claude-delivery';
 import {readClaudeSlot} from '../claude-delivery-state';
 import {SessionCapabilityProjector} from '../session-projector';
+import {ClaudeDeliveryCoordinator} from '../claude-delivery';
 import {randomUUID} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -20,7 +20,7 @@ let recoveryIssue:string|null=null;
 let discoveryObserver:((id:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>)|undefined;
 let skillObserver:((id:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>)|undefined;
 let f:Awaited<ReturnType<typeof runFixture>>,diagnostics:ApplicationSessionDiagnostics,activePty:string|null,connected:boolean,handles:OwnedCapabilityRun[],bridges:OwnedRunProcess[];
-async function start(){let run:OwnedCapabilityRun;if(readClaudeSlot(f.store,f.snapshot.taskId)){const c=new ClaudeDeliveryCoordinator(f.store,f.sessions,new SessionCapabilityProjector(f.store,f.sessions),f.reader,f.runs.instanceId),apps=f.snapshot.packages.map(p=>p.appId),token=await c.prepare(f.snapshot.taskId,apps);run=await f.runs.reserveScoped({taskId:f.snapshot.taskId,snapshotHash:f.session.pointer.snapshotHash,bindings:[]},apps,[token.resourceId],undefined,token);c.proof(run.runId,token);}else run=await f.create();handles.push(run);await run.prepare();await run.cli.arm();const pid=19000+handles.length;(f.reader as FixtureProcessReader).identities.set(pid,'darwin-proc-v1:100:'+pid);await run.cli.attach(pid);activePty=run.ptyId;return run;}
+async function start(){const run=await f.create();handles.push(run);await run.prepare();await run.cli.arm();const pid=19000+handles.length;(f.reader as FixtureProcessReader).identities.set(pid,'darwin-proc-v1:100:'+pid);await run.cli.attach(pid);activePty=run.ptyId;return run;}
 const prepared=(run:OwnedCapabilityRun):SessionPreparationEvidence=>({schema:1,runId:run.runId,selectionHash:f.session.selectionHash,cliVersion:'fixture-cli-1',adapterHash:f.snapshot.adapterBinding.hash,state:'prepared',issueCode:null,manifestPath:join(f.root,'host/manifest.json'),configPaths:[join(f.root,'host/mcp.json')],preparedAt:new Date().toISOString()});
 beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:true,fullProjection:true});activePty=null;connected=false;stopReader=undefined;skillObserver=undefined;discoveryObserver=undefined;recoveryIssue=null;handles=[];bridges=[];f.sqlite.prepare("INSERT INTO tasks(id,project_id,cwd,runner,title,first_message,runtime_snapshot,created_at,updated_at) VALUES(?,'p1',?,'claude','private fixture','do-not-copy-user-message','{\"secret\":\"never-copy-raw-config\"}',1,1)").run(f.snapshot.taskId,f.root);
  const selections={requireEnabled:()=>({enabled:true}),connectionSlot:()=>({connectionId:null,identityRevision:null,revision:0})} as unknown as ApplicationSelectionService;

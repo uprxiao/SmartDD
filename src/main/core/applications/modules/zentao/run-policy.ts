@@ -13,5 +13,5 @@ export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySe
  if((original?.connectionId??null)===current&&(!original||original.identityRevision===row?.identity_revision))return null;
  const label=(id:string|null,name:string|null)=>id?JSON.stringify((name??'原连接').slice(0,128))+' ('+id.slice(0,128)+')':'未选用';
  const old=original?store.sqlite.prepare('SELECT name FROM application_connections WHERE id=?').get(original.connectionId) as {name:string}|undefined:undefined;
- return '禅道来源已变化：本会话创建时为 '+label(original?.connectionId??null,old?.name??null)+'，本项目当前为 '+label(current,row?.name??null)+'。沿用原工具版本与动作上限；旧来源对象引用不会改投当前来源，需在当前来源重新查询。';
+ return '禅道来源已变化：本会话创建时为 '+label(original?.connectionId??null,old?.name??null)+'，本项目当前为 '+label(current,row?.name??null)+'。调用按项目当前来源执行；旧来源对象引用不会改投当前来源，需在当前来源重新查询。';
 }

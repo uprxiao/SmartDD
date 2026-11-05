@@ -28,12 +28,6 @@ describe('original schema1 Codex paths in the shared discovery catalog',()=>{
   writeOwnedTree(target(),f.standard.files,join(f.root,'conflicts'));const p=join(target(),'SKILL.md'),old=lstatSync(p),tree=f.snapshotTree(target());
   const first=await catalog.publish([source()]),second=await catalog.publish([source()]);expect(second).toEqual(first);expect(f.snapshotTree(target())).toEqual(tree);expect(lstatSync(p).ino).toBe(old.ino);expect(lstatSync(p).ctimeMs).toBe(old.ctimeMs);
  });
- it('keeps the original projection disabled in a new session and preserves user Skill configuration',async()=>{
-  const legacy=await catalog.publish([source()]),snapshot=f.plan('codex'),c=await catalog.publish(f.projector.sourceSkills(snapshot));await f.sessions.create(snapshot,f.home);
-  const request=await f.request(snapshot,c),user={path:join(f.home,'user-skill/SKILL.md'),enabled:true,note:'user keeps this'};request.userSkillConfig=[user];
-  const plan=f.adapters.plan(snapshot.adapterBinding.hash,request),flag=plan.args.find(a=>a.startsWith('skills.config='))!,config=toml(flag).skills as {config:{path:string;enabled:boolean}[]};
-  expect(config.config).toContainEqual(user);expect(config.config).toContainEqual({path:legacy.entries[0].path,enabled:false});expect(config.config.filter(s=>s.enabled&&s.path!==user.path).map(s=>s.path).sort()).toEqual([...snapshot.standardSkills.map(s=>s.projectionPath),...snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath))].sort());
- });
  it('waits for Claude consumers too and cancels before changing the original discovery set',async()=>{
   const c=await catalog.snapshot(),taskId='old-'+randomUUID(),runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});
   catalog=new DiscoveryCatalog(f.store,f.home,reader,{instanceId:runs.instanceId});

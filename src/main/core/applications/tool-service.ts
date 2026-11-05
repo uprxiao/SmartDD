@@ -1,6 +1,5 @@
 import {applicationInvocationDeclarations,type ApplicationEntry} from '@shared/application-capabilities';
 import {cliInvocationCallSchema} from '@shared/application-cli';
-import {assertRunApplication} from './application-run-scope';
 import {applicationConnectionNotice} from './application-run-policy';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
@@ -69,7 +68,6 @@ export class ApplicationToolService {
     const record=this.snapshotContracts(context).find(p=>Object.hasOwn(p.contracts,call.operation)),selected=record?.selection;
     if (!selected) throw context.unavailableApplication?.(call.operation,this.entry) ?? new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
     if (record?.contracts[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
-    assertRunApplication(context,selected.appId);
     if(context.plan){const allowed=context.plan.allowed.find(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','能力不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,this.entry);}
     else if(this.entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
     const application = this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
@@ -78,7 +76,7 @@ export class ApplicationToolService {
     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
     const schemas = this.packages.toolContractSources(application.packageHash,declaration.name);
     const inputSchema = this.schema(schemas.input);
-    const originalDescription = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description,notice=applicationConnectionNotice(this.store,context.snapshot,application.appId);
+    const originalDescription = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description,notice=applicationConnectionNotice(this.store,context.recorded??context.snapshot,application.appId);
     const description=notice?originalDescription+'\n\n'+notice:originalDescription;
     return { application,declaration,tool: { name: declaration.name,description,inputSchema,outputSchema: this.schema(schemas.output),annotations: declaration.annotations,contractMajor: declaration.contractMajor } };
   }
@@ -88,7 +86,6 @@ export class ApplicationToolService {
       for (const {selection:application,contracts} of this.snapshotContracts(context)) {
         const group: BridgeTool[] = [];
         try {
-          assertRunApplication(context,application.appId);
           const manifest = this.packages.get(application.packageHash).manifest;
           const permitted = Object.entries(contracts).filter(([name,major]) => {const declaration=applicationInvocationDeclarations(manifest,this.entry).find(t=>t.name===name);return !!declaration&&application.allowedOperations.includes(declaration.permission)&&(!context.plan&&this.entry==='mcp'||!!context.plan?.allowed.some(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry===this.entry));});
           for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);

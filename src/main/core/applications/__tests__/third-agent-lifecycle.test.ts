@@ -24,7 +24,7 @@ import { ManagedTaskCapabilities } from '../task-capability-launcher';
 import { MacProcessIdentityReader } from '../process-identity';
 import type { TaskLaunchInput } from '../native-launch-context';
 
-it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 registered third Agent creates/resumes a real native session and reads its Skill before calling the actual MCP child', async () => {
+it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 registered third Agent creates/resumes a real native session and reads its library Skill before calling the actual MCP child', async () => {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-third-agent-'))), home = join(root,'home'), cwd = join(root,'project'), nativeRoot = join(home,'.scripted');
   mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(nativeRoot);
   const sqlite = new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);
@@ -54,8 +54,8 @@ it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 regist
   const profiles = new AiProfileService(db,secrets,Date.now,runners), report=join(root,'report.json'), stop=join(root,'stop');
   const profile = profiles.create({name:'Scripted Test',runner:'scripted-test',executable:command,env:[{name:'ELECTRON_RUN_AS_NODE',secret:false,value:'1'},{name:'WY_SCRIPTED_REPORT',secret:false,value:report},{name:'WY_SCRIPTED_STOP',secret:false,value:stop}],args:[],color:null,isDefault:true});
   const capabilities = new CapabilityService({db,projects,secrets,userData:root}), store = new ResourceStore(sqlite,root);
-  const metadata = {schema:'willyou-agent-adapter-v1' as const,agentId:'scripted-test',version:'1.0.0',entry:'index.cjs' as const,projectionFormatVersion:1 as const,platforms:['darwin-arm64' as const],cliVersions:['1.0.0'],bridgeRecovery:'unverified' as const,evidenceBaseline:'T35 scripted CLI only; L0/L1',levels:{'1.0.0':['L0.skill' as const,'L0.mcp' as const,'L1' as const]}};
-  const planner = `exports.api=1;exports.agentId='scripted-test';exports.version='1.0.0';exports.prepare=input=>({schema:1,agentId:'scripted-test',phase:'prepared',bridgeRecovery:'unverified',args:['--capability-config',input.mcpConfigPath],files:{'mcp.json':JSON.stringify({servers:input.mcp,skills:[...input.snapshot.packages.flatMap(p=>p.skills.map(s=>s.projectionPath)),...input.snapshot.standardSkills.map(s=>s.projectionPath)]})}});`;
+  const metadata = {schema:'willyou-agent-adapter-v1' as const,agentId:'scripted-test',version:'1.0.0',entry:'index.cjs' as const,projectionFormatVersion:1 as const,skillDelivery:'library' as const,platforms:['darwin-arm64' as const],cliVersions:['1.0.0'],bridgeRecovery:'unverified' as const,evidenceBaseline:'T35 scripted CLI only; L0/L1',levels:{'1.0.0':['L0.skill' as const,'L0.mcp' as const,'L1' as const]}};
+  const planner = `exports.api=1;exports.agentId='scripted-test';exports.version='1.0.0';exports.prepare=input=>({schema:1,agentId:'scripted-test',phase:'prepared',bridgeRecovery:'unverified',args:['--capability-config',input.mcpConfigPath],files:{'mcp.json':JSON.stringify({servers:input.mcp,skills:require('node:fs').readdirSync(require('node:path').join(input.native.home,'.agents/skills')).filter(n=>n.startsWith('willyou-')).map(n=>require('node:path').join(input.native.home,'.agents/skills',n,'SKILL.md'))})}});`;
   const support = new AgentSupportService(store,capabilities,resolve('out/capability-bundles-compatibility-v1'),{adapters:new AgentAdapterRegistry(store,undefined,delivery),additionalAdapters:[{metadata,files:{'index.cjs':Buffer.from(planner)}}]});
   const ptys = new PtyManager(), helper=resolve('out/native/willyou-process-identity'), processes=new MacProcessIdentityReader(helper);
   const tasks = new TaskService({db,ptys,profiles,projects,capabilities,runnerAdapters:runners,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',SHELL:'/bin/sh'}),onChanged:()=>{}});
@@ -64,8 +64,8 @@ it.skipIf(process.platform !== 'darwin' || process.arch !== 'arm64')('T35 regist
     await support.initialize();expect(support.status().state).toBe('ready');
     for(const skill of capabilities.list(projectId))capabilities.setEnabled(projectId,skill.id,false);capabilities.setEnabled(projectId,MCP_CAPABILITY,false);
     applications=new ApplicationService(store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes});await applications.recover();
-    managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{retainCatalogPath:true,helper,processes,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
-    await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+    managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{skillLibraryHome:home,helper,processes,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+    await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});managed.syncSkillLibrary();
     const first=await tasks.create({projectId,dirId:null,aiProfileId:profile.id,firstMessage:'synthetic third Agent task'}), firstRun=first.task.runtimeSnapshot!.runId;
     const observed=await vi.waitFor(()=>{try{return JSON.parse(readFileSync(report,'utf8'));}catch{throw Error('scripted report pending: '+transcript.slice(-2000));}},{timeout:15000});
     expect(observed).toMatchObject({agentId:'scripted-test',mode:'new',sessionId:first.task.nativeSessionId});expect(observed.result.isError).not.toBe(true);expect(observed.result.structuredContent).toEqual({items:[],nextCursor:null});

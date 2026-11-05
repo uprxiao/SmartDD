@@ -154,9 +154,9 @@ export class NativeUserMessages {
     try{
       const {context,registration}=this.context(runId,'L2');
       if(!this.formats.get(context.snapshot.runner).observeSkillReads&&!this.formats.get(context.snapshot.runner).observeSkillDiscoveries)return async()=>empty();
-      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return async()=>empty();
-      const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[],applicationScope:context.applicationScope?.slice()},fixed=structuredClone(targets),through=this.now();
+      const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[]},fixed=structuredClone(targets),through=this.now();
       let consumed=false;
       return async()=>{
         if(consumed)return empty();consumed=true;
@@ -172,7 +172,7 @@ export class NativeUserMessages {
     try{
       const {context}=this.context(runId,'L2');
       if(!this.formats.get(context.snapshot.runner)[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'])return [];
-      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.flatMap(p=>p.skills);
       if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
       return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
     }catch{return [];}

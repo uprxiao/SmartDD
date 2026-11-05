@@ -1,7 +1,6 @@
 import {recordedAttemptCount} from '@shared/application-call-feedback';
 import type {NativeUserMessages} from './native-user-messages';
 import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
-import {readApplicationRunScope} from './application-run-scope';
 import {readClaudeSlot} from './claude-delivery-state';
 import {inspectClaudeDeliveryCopies} from './claude-delivery-copies';
 import {lstatSync,openSync,closeSync,fstatSync,readSync,constants} from 'node:fs';
@@ -59,11 +58,6 @@ const bridgeSchema=z.object({schema:z.literal(1),runId:z.uuid(),bridgeId:z.uuid(
 interface RunRow {run_id:string;task_id:string;project_id:string;pty_id:string|null;state:string;started_at:string;ended_at:string|null;}
 interface Inspector {verify(resource:ResourceRecord,snapshot:CapabilitySessionSnapshot,home:string):void;channelConnected(runId:string):boolean;recoveryIssue?(runId:string):string|null;deliveryAdapters?:CapabilityDeliveryAdapterRegistry;}
 const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_REQUIRED';
-function assertPreparationScope(store:ResourceStore,runId:string,snapshot:CapabilitySessionSnapshot,evidence:Extract<SessionPreparationEvidence,{schema:2}>){
- const scope=readApplicationRunScope(store,runId,snapshot);
- if(scope&&evidence.capabilities.some(item=>item.kind==='application'&&item.state==='prepared'&&!scope.applications.some(app=>app.appId===item.id)))throw new ApplicationError('SCOPE_DENIED','原运行范围排除的应用不能显示为已准备');
- return scope;
-}
 
 /** Display-only evidence: no discoveries inferred from files, no approvals inferred
  * from a tool call, and no current grants inferred from an older run. */
@@ -80,8 +74,8 @@ export class ApplicationSessionDiagnostics {
     assertNativeCapabilityPreparation(session.snapshot,evidence.capabilities);
     const runtime=this.deps.runs(),owner=this.store.sqlite.prepare('SELECT owner_instance_id,owner_pid,owner_started_at FROM capability_runs WHERE run_id=?').get(evidence.runId) as {owner_instance_id:string;owner_pid:number;owner_started_at:string};
     if(!runtime||runtime.store!==this.store||owner.owner_instance_id!==runtime.instanceId||owner.owner_pid!==runtime.host.pid||owner.owner_started_at!==runtime.host.startedAt)throw new ApplicationError('SCOPE_DENIED','逐项准备证据不属于当前宿主运行');
-    const scope=assertPreparationScope(this.store,evidence.runId,session.snapshot,evidence),restriction=readLaunchRestriction(this.store,evidence.runId,session.snapshot.taskId,session.selectionHash);
-    if(evidence.capabilities.some(item=>item.state==='prepared'&&(!!restriction||item.kind==='application'&&scope&&!scope.applications.some(app=>app.appId===item.id))))throw new ApplicationError('SCOPE_DENIED','未加载或已停用的能力不能记录为本轮已准备');
+    const restriction=readLaunchRestriction(this.store,evidence.runId,session.snapshot.taskId,session.selectionHash);
+    if(evidence.capabilities.some(item=>item.state==='prepared'&&!!restriction))throw new ApplicationError('SCOPE_DENIED','未加载或已停用的能力不能记录为本轮已准备');
    }
    const previous=this.store.sqlite.prepare('SELECT evidence_json FROM capability_run_preparations WHERE run_id=?').get(evidence.runId) as {evidence_json:string}|undefined;if(previous&&previous.evidence_json!==text)throw new ApplicationError('RESOURCE_STATE_CHANGED','本次准备证据已经固定');if(!previous)this.store.sqlite.prepare('INSERT INTO capability_run_preparations VALUES(?,?,?,?)').run(evidence.runId,text,digest(text),evidence.preparedAt);
   });
@@ -96,7 +90,7 @@ export class ApplicationSessionDiagnostics {
   const runtime=this.deps.runs();let current=false;try{current=!!row.pty_id&&this.deps.activePty?.(row.task_id)===row.pty_id&&runtime?.currentNativeRun(row.task_id,row.pty_id)?.runId===row.run_id;}catch{/* An orphaned or damaged run is not the current owned terminal. */}
   const prep=this.store.sqlite.prepare('SELECT * FROM capability_run_preparations WHERE run_id=?').get(row.run_id) as {evidence_json:string;evidence_hash:string;prepared_at:string}|undefined;
   let preparation:SessionPreparationEvidence|null=null,preparationIssue:string|null=null;
-  if(prep)try{const parsed=preparationSchema.parse(JSON.parse(prep.evidence_json));if(digest(canonicalJson(parsed))!==prep.evidence_hash||parsed.runId!==row.run_id||parsed.preparedAt!==prep.prepared_at||!session||parsed.selectionHash!==session.selectionHash||parsed.adapterHash!==session.snapshot.adapterBinding.hash)throw new Error();if(parsed.schema===2){assertNativeCapabilityPreparation(session.snapshot,parsed.capabilities);assertPreparationScope(this.store,row.run_id,session.snapshot,parsed);}preparation=parsed;}catch{preparationIssue='RESOURCE_RECOVERY_REQUIRED';}
+  if(prep)try{const parsed=preparationSchema.parse(JSON.parse(prep.evidence_json));if(digest(canonicalJson(parsed))!==prep.evidence_hash||parsed.runId!==row.run_id||parsed.preparedAt!==prep.prepared_at||!session||parsed.selectionHash!==session.selectionHash||parsed.adapterHash!==session.snapshot.adapterBinding.hash)throw new Error();if(parsed.schema===2){assertNativeCapabilityPreparation(session.snapshot,parsed.capabilities);}preparation=parsed;}catch{preparationIssue='RESOURCE_RECOVERY_REQUIRED';}
   let restriction:SessionRunDiagnostic['restriction']=null,restrictionIssue:string|null=null;
   try{const basis=session?.selectionHash??(this.store.sqlite.prepare('SELECT snapshot_hash FROM capability_session_snapshots WHERE task_id=? AND schema_version=0').get(row.task_id) as {snapshot_hash:string}|undefined)?.snapshot_hash;if(basis)restriction=readLaunchRestriction(this.store,row.run_id,row.task_id,basis);else if(this.store.sqlite.prepare('SELECT 1 FROM capability_run_restrictions WHERE run_id=?').get(row.run_id))throw new Error();}catch{restrictionIssue='RESOURCE_RECOVERY_REQUIRED';}
   const observations=this.store.sqlite.prepare('SELECT * FROM capability_bridge_observations WHERE run_id=? ORDER BY observed_at DESC,bridge_id').all(row.run_id) as {bridge_id:string;evidence_json:string;evidence_hash:string;observed_at:string}[];
@@ -150,7 +144,7 @@ export class ApplicationSessionDiagnostics {
    if(!row)return noop;
    const preparation=this.run(row,session).preparation;
    if(!preparation?.cliVersion||preparation.state!=='prepared')return noop;
-   const captures=session.snapshot.packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(pack=>{
+   const captures=session.snapshot.packages.flatMap(pack=>{
     if(this.resourceIssue(session,pack.appId))return [];
     const targets=pack.skills.map(skill=>{const fd=openSync(skill.projectionPath,constants.O_RDONLY|constants.O_NOFOLLOW);try{const stat=fstatSync(fd);if(!stat.isFile()||stat.size>1024*1024)throw new Error('bounded Skill required');const bytes=Buffer.alloc(stat.size);if(readSync(fd,bytes,0,bytes.length,0)!==bytes.length||fstatSync(fd).size!==stat.size)throw new Error('changed Skill');return{id:skill.skillId,nativeName:skill.nativeName,path:skill.projectionPath,content:new TextDecoder('utf-8',{fatal:true}).decode(bytes)};}finally{closeSync(fd);}});
     return [{pack,read:this.deps.prepareStoppedSkillRead!(runId,targets)}];
@@ -249,8 +243,6 @@ export class ApplicationSessionDiagnostics {
   const resourceIssue=session?this.resourceIssue(session):null;if(resourceIssue)issues.push(resourceIssue);
   const selected=task.project_id?db.prepare('SELECT app_id FROM application_project_settings WHERE project_id=? AND enabled=1').all(task.project_id) as {app_id:string}[]:[];
   const appIds=new Set([...selected.map(s=>s.app_id),...session?.snapshot.packages.map(p=>p.appId)??[]]);
-  let excluded:ReturnType<typeof readApplicationRunScope>=null;
-  if(currentRun&&session)try{excluded=readApplicationRunScope(this.store,currentRun.id,session.snapshot);}catch{issues.push('RESOURCE_RECOVERY_REQUIRED');}
   const applications:SessionApplicationDiagnostic[]=[];
   for(const name of appIds){const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)continue;const fixed=session?.snapshot.packages.find(p=>p.appId===appId);let defaultVersion:string|null=null;try{const active=this.packages.active(appId);if(active)defaultVersion=this.packages.get(active.packageHash).version;}catch{/* keep fixed identity, do not substitute default */}
    let policy:SessionApplicationDiagnostic['policy']='unverified';try{if(task.project_id){this.selections.requireEnabled(task.project_id,appId);policy='enabled';}}catch{policy='disabled';}
@@ -265,7 +257,7 @@ export class ApplicationSessionDiagnostics {
    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\'succeeded\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;
    const latest=currentRun&&fixed?db.prepare('SELECT error_code,effect_state,attempt_count FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=? ORDER BY started_at DESC,operation_id DESC LIMIT 1').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {error_code:string|null;effect_state:string|null;attempt_count:number}|undefined:undefined;
    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
-   applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:excluded?.excludedApplications?.find(p=>p.appId===appId)?.code??(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
+   applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
   }
   const deliveryCopies=task.runner==='claude'?inspectClaudeDeliveryCopies(this.store,taskId):null;
   return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
