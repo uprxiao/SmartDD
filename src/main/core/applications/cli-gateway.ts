@@ -99,7 +99,7 @@ export class ApplicationCliGateway {
       const parsed=cliRequestSchema.safeParse(value);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','CLI协议或请求字段无效');
       const request=parsed.data;id=request.id;method=request.method==='capabilities/list'?'cli-list':request.method==='capabilities/call'?'cli-call':'cli-cancel';
       const context=await this.authenticate(peer,request);
-      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan?.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')?.cliCommand})),unavailable:result.unavailable}};}
+      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan?.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')?.cliCommand})),unavailable:result.unavailable,notEnabled:context.notEnabledCommands?.()??[]}};}
       if(request.method==='cancel'){const work=peer.controllers.get(request.targetId);if(work?.runId===context.run.runId)work.abort.abort();return{schema:1,id,status:'ok',value:{cancelled:!!work}};}
       if(peer.controllers.has(id))throw new ApplicationError('REQUEST_CONFLICT','本连接正在执行同编号调用');
       const abort=new AbortController();peer.controllers.set(id,{runId:context.run.runId,abort});

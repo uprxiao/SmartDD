@@ -55,7 +55,7 @@ if (process.platform === 'darwin') {
   const capabilityIndex = JSON.parse(fs.readFileSync(path.join(resources, 'capability-bundles/index.json'), 'utf8'));
   assert.equal(capabilityIndex.schema, 'willyou-capability-bundles-v1', 'Packaged capability bundle index');
   assert.equal(capabilityIndex.build.appVersion, expectedVersion, 'Capability resources match App version');
-  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'codex@1.0.0', 'codex@1.1.0', 'codex@1.2.0', 'codex@1.3.0'], 'Original/legacy adapters and Codex 0.166.0 baseline packaged');
+  assert.deepEqual(capabilityIndex.adapters.map(a => a.agentId + '@' + a.version).sort(), ['claude-code@1.0.0', 'claude-code@1.1.0', 'claude-code@1.2.0', 'codex@1.0.0', 'codex@1.1.0', 'codex@1.2.0', 'codex@1.3.0', 'codex@1.4.0'], 'Original/legacy adapters and Codex 0.166.0 baseline packaged');
   assert.deepEqual(capabilityIndex.apps.map(a => a.appId).sort(), require('../../src/shared/application-module-catalog.json').applications.map(a=>a.appId).sort(), 'All registered application packages packaged');
   for (const record of [...capabilityIndex.adapters, ...capabilityIndex.runtimes, ...capabilityIndex.apps]) assert(fs.existsSync(path.join(resources, 'capability-bundles', record.path)), 'Indexed capability resource directory');
   for (const notice of ['mcp-server-LICENSE.txt', 'mcp-core-LICENSE.txt', 'zod-LICENSE.txt']) assert(fs.existsSync(path.join(asar, 'licenses/M10/bridge', notice)), 'Packaged bridge library notice');

@@ -30,6 +30,8 @@ interface OwnedRun { planHash?:string;guard?:NativeGuard;selectionHash: string;l
 export interface RunContext { plan?:ApplicationRunPlan;
   /** R17: set by the current-authorization view; names the project page to enable an application that owns this operation. */
   unavailableApplication?(operation:string,entry:ApplicationEntry):ApplicationError|null;
+  /** R17 view only: CLI command prefixes of applications this project has not enabled, with their guidance. */
+  notEnabledCommands?():{app:string;code:'APP_NOT_ENABLED';message:string}[];
   /** R17 view only: the session as recorded at creation (its original connections), for source-change notices. */
   recorded?:CapabilitySessionSnapshot;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal }
 export interface RunRegistryDeps {

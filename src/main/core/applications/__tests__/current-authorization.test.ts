@@ -1,4 +1,8 @@
 import {randomUUID} from 'node:crypto';
+import {execFile} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {digest} from '../manifest';
 import {once} from 'node:events';
 import {connect,type Socket} from 'node:net';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
@@ -37,6 +41,18 @@ describe('M11 R17 per-call authorization from current project settings',()=>{
   // Enabling again needs no new run or token: the next call reads the new setting.
   await setMail(true);
   expect(await send()).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',operation:{origin:'cli'}}});expect(count()).toBe(2);
+ });
+ // T43 (S6 finding): the native CLI resolves a command against the listed capabilities before calling, so the list
+ // carries the guidance for applications this project has not enabled, and the real binary reports it.
+ it('lets the native CLI report where to enable an application this project has not enabled',async()=>{
+  const binary=resolve('out/native/willyou-app');await gateway.close();identity={...identity,peer:{...identity.peer,executable:binary}};
+  gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>identity},{executable:{path:binary,sha256:digest(readFileSync(binary))},tokenTtlMs:30000});await gateway.start();issued=gateway.issue(f.run);
+  const guidance='请到项目「agent fixture」的‘应用’页开启邮件';await setMail(false);
+  expect(await send({method:'capabilities/list',call:undefined})).toMatchObject({status:'ok',value:{capabilities:[],notEnabled:[{app:'mail',code:'APP_NOT_ENABLED',message:guidance}]}});
+  // Asynchronous: the gateway answering this child runs on the same event loop.
+  const cli=await new Promise<{status:number|null;stdout:string}>(done=>{execFile(binary,['mail','draft','list'],{env:{PATH:'/usr/bin:/bin',...issued.environment},encoding:'utf8',timeout:10000},(error,stdout)=>done({status:error?(typeof error.code==='number'?error.code:null):0,stdout}));});
+  expect(cli.status).toBe(2);expect(JSON.parse(cli.stdout).error).toMatchObject({code:'APP_NOT_ENABLED',message:guidance});expect(count()).toBe(0);
+  await setMail(true);expect((await send({method:'capabilities/list',call:undefined}) as {value:{notEnabled:unknown[]}}).value.notEnabled).toEqual([]);
  });
  it('applies the same current view to the MCP entry and the tool list',async()=>{
   await setMail(false);

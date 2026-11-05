@@ -53,6 +53,22 @@ export class CurrentApplicationAuthorization {
     return new ApplicationError('APP_NOT_ENABLED',`请到项目「${project?.name??projectId}」的‘应用’页开启${name}`);
   }
 
+  /**
+   * Registered applications with CLI commands that this project has not enabled. The CLI resolves a command against
+   * the listed capabilities before calling, so it needs the enable-here guidance up front (T43).
+   */
+  private notEnabledCommands(projectId:string,apps:readonly {appId:string}[]):{app:string;code:'APP_NOT_ENABLED';message:string}[]{
+    const out:{app:string;code:'APP_NOT_ENABLED';message:string}[]=[];
+    for(const appId of this.modules.appIds()){
+      if(apps.some(a=>a.appId===appId))continue;const active=this.builtin.packages.active(appId);if(!active)continue;
+      let manifest;try{manifest=this.builtin.retainedMetadata(active.packageHash).manifest;}catch{continue;}
+      if(manifest.schema!=='smartdd-app-package-v2')continue;
+      const names=new Set(manifest.capabilities.flatMap(c=>{const fallback=c.binding.fallback as {cli?:{command:readonly string[]}}|undefined;return[c.binding.cli?.command[0],fallback?.cli?.command[0]].filter((v):v is string=>typeof v==='string');}));
+      for(const app of names)out.push({app,code:'APP_NOT_ENABLED',message:this.notEnabled(projectId,appId).message});
+    }
+    return out;
+  }
+
   /** Replace the launch-time application list and allowed table with the project's current ones. */
   view(context:RunContext):RunContext{
     const launch=context.plan;if(!launch||context.snapshot.schema!==3)return context;
@@ -62,6 +78,6 @@ export class CurrentApplicationAuthorization {
     const snapshot:CapabilitySessionSnapshotV3={...context.snapshot,packages};
     const applications=apps.map(a=>{const manifest=this.builtin.retainedMetadata(a.packageHash).manifest;return{packageHash:a.packageHash,manifest,capabilities:this.modules.capabilityViews(manifest)};});
     const plan=createApplicationRunPlan({runId:launch.runId,snapshotHash:launch.snapshotHash,snapshot,applications,skills:[],available:{mcp:launch.grades.mcp,cli:launch.grades.cli},cliVersion:launch.cliVersion,sandbox:launch.sandbox,now:launch.createdAt});
-    return{...context,recorded:context.snapshot,snapshot,plan,bindings,unavailableApplication:(operation,entry)=>{const appId=this.owner(operation,entry);return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;}};
+    return{...context,recorded:context.snapshot,snapshot,plan,bindings,notEnabledCommands:()=>this.notEnabledCommands(projectId,apps),unavailableApplication:(operation,entry)=>{const appId=this.owner(operation,entry);return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;}};
   }
 }
