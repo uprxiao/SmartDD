@@ -28,7 +28,7 @@ test('CLI builds pinned application bundles from an escaped native path with com
   execFileSync(process.execPath, [join(root, 'scripts/applications/build-bundles.mjs'), bundles, runtimeEntry], child);
   const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
   const verified = bundleVerifier.verifyCapabilityBundles(bundles, version);
-  assert.equal(verified.adapters, 6);
+  assert.equal(verified.adapters, 8);
   assert.equal(verified.runtimes, 1);
   assert.deepEqual(verified.apps.map(app => app.appId).sort(), definitions.map(app=>app.appId).sort());
   const index = JSON.parse(readFileSync(join(bundles, 'index.json'), 'utf8'));
