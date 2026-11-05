@@ -15,7 +15,7 @@ import type { TaskCapabilityLaunch, TaskCapabilityLauncher } from '../tasks/capa
 import type { AgentSupportService } from './agent-support-service';
 import type { ApplicationService } from './application-service';
 import type { ResourceRecord } from './resource-store';
-import { CapabilitySessionRegistry, selectSessionApplications, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
+import { CapabilitySessionRegistry, canonicalFuturePath, type StoredCapabilitySession } from './session-registry';
 import { CapabilityRunRegistry, type RunBindingRevision, type OwnedCapabilityRun } from './run-registry';
 import { ApplicationAdapterRegistry } from './application-adapter-registry';
 import { ApplicationToolService } from './tool-service';
@@ -86,7 +86,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
     if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;},standardSkills:()=>(store.sqlite.prepare('SELECT skill_id AS skillId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;hash:string}[]).map(s=>({skillId:s.skillId,files:Object.fromEntries(Object.entries(support.legacy.verify(store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([path,text])=>[path,Buffer.from(text,'utf8')]))}))});
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId)=>{
-      const selected={...selectSessionApplications(snapshot,snapshot.packages.map(p=>p.appId)),standardSkills:[]};
+      // R17: the plan records what the Agent loads at this launch, i.e. the project's current applications (not the
+      // session's creation record), so the resume advice compares against what this run actually loaded.
+      const apps=this.authorization.selectedApps(snapshot.projectId),bindings=this.authorization.bindings(snapshot.projectId,apps.map(a=>a.appId));
+      const selected={...snapshot,packages:apps.map(a=>this.authorization.packageSelection(snapshot.projectId,a.packageHash,bindings,[])),standardSkills:[]} as CapabilitySessionSnapshot;
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
       // R16: Skills come from the machine-wide library; a run plan carries no per-run Skill copies.
       return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills:[],available:this.cliAvailability(snapshot.taskId),sandbox:this.planningCliPolicies.has(snapshot.taskId)?{source:this.planningCliPolicies.get(snapshot.taskId)!.source,digest:this.planningCliPolicies.get(snapshot.taskId)!.digest}:undefined,cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});

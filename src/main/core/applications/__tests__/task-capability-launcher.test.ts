@@ -235,6 +235,14 @@ describe('M11 R1.0 library launch through the production task entry',()=>{
   const running=await create(),runId=running.task.runtimeSnapshot!.runId;vi.mocked(ptys.kill).mockImplementationOnce(id=>exitWithoutBridge(id));
   tasks.kill(running.task.id);await settled(runId);
  });
+ // S6 (T40): the run plan records what the Agent loads at this launch (the project's current applications), so a
+ // resumed session is not told to resume again for an application it already loaded.
+ it('clears the resume advice once the session is resumed after an application change',async()=>{
+  const first=await create(),nativeId=await stopForSwitchFixture(first,'codex');
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  const resumed=await tasks.open({taskId:first.task.id}),plan=managed.runs.bridgePreparation(resumed.task.runtimeSnapshot!.runId).plan!;
+  expect(resumed.task.nativeSessionId).toBe(nativeId);expect(plan.applications.map(a=>a.appId)).toEqual(['mail']);expect(managed.resumeAdvice(first.task.id)).toBeNull();
+ });
  it('records the enabled application without per-run Skill copies and resumes on the same library path',async()=>{
   await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const first=await create(),saved=(await managed.sessions.get(first.task.id)).snapshot;

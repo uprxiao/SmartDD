@@ -191,7 +191,8 @@ export class CapabilityRunRegistry {
       this.deps.assertCurrent(session.snapshot,value.bindings);const timestamp=now();
       const resources=this.closure(value.taskId);
       this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
-      if(plan){if(plan.projectId!==session.snapshot.projectId||plan.applications.some(a=>!session.snapshot.packages.some(p=>p.appId===a.appId&&p.packageHash===a.packageHash)))throw new ApplicationError('SCOPE_DENIED','运行计划超出本次固定应用范围');storeApplicationRunPlan(this.store,plan);}
+      // R17: the host composes the plan from the project's current applications; it only has to belong to this project.
+      if(plan){if(plan.projectId!==session.snapshot.projectId)throw new ApplicationError('SCOPE_DENIED','运行计划不属于本项目');storeApplicationRunPlan(this.store,plan);}
       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
       for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId,r.resourceId,r.contentHash,r.generation);
       this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId,runId,ptyId);
