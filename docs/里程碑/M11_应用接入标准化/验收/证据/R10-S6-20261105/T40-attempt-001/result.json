@@ -1,0 +1,208 @@
+{
+  "schema": "m11-r10-s6-t40-upgrade-v1",
+  "startedAt": "2026-11-05T09:22:26.506Z",
+  "root": "/private/tmp/willyou-m11-r10-8lMoRQ",
+  "home": "/private/tmp/willyou-m11-r10-8lMoRQ/home",
+  "userData": "/private/tmp/willyou-m11-r10-8lMoRQ/userdata",
+  "branch": "feature/0.1.2",
+  "sourceCommit": "9599289ca874a2e53263b7b8906c105a80064c8a",
+  "sourceDirty": true,
+  "app": "/private/tmp/willyou-m11-s7/r10-172100/WillYou.app",
+  "asarSha256": "372991e78f9d3d0ff1cb75a521a5dd3103effac32d7cc37b61d566cb44e155da",
+  "layer": "A: real packaged App + actual Codex 0.166.0 PTY + real CLI gateway/Skill library; synthetic Responses model and ZenTao provider; reversible test cipher instead of Keychain",
+  "setup": "projects, AI profiles, application add/select and ZenTao connection via RPC are prerequisites; T46 task launch uses the real composer",
+  "requests": [
+    {
+      "at": "2026-11-05T09:22:32.320Z",
+      "marker": null,
+      "health": true,
+      "bytes": 30364,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "request_user_input",
+        "view_image",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    },
+    {
+      "at": "2026-11-05T09:22:34.123Z",
+      "marker": "M11R10_T40A_8lMoRQ",
+      "health": false,
+      "bytes": 50097,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_0999cae63411",
+        "mcp__wy_0999cae634116f0490e2dfde",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    },
+    {
+      "at": "2026-11-05T09:22:34.289Z",
+      "marker": "M11R10_T40A_8lMoRQ",
+      "health": false,
+      "bytes": 53614,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_0999cae63411",
+        "mcp__wy_0999cae634116f0490e2dfde",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    },
+    {
+      "at": "2026-11-05T09:22:44.702Z",
+      "marker": "M11R10_T40B_8lMoRQ",
+      "health": false,
+      "bytes": 53958,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_0999cae63411",
+        "mcp__wy_0999cae634116f0490e2dfde",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    },
+    {
+      "at": "2026-11-05T09:22:44.857Z",
+      "marker": "M11R10_T40B_8lMoRQ",
+      "health": false,
+      "bytes": 57515,
+      "toolNames": [
+        "exec_command",
+        "write_stdin",
+        "list_mcp_resources",
+        "list_mcp_resource_templates",
+        "read_mcp_resource",
+        "request_user_input",
+        "view_image",
+        "mcp__codex_worktrees",
+        "mcp__smartdd_project_0999cae63411",
+        "mcp__wy_0999cae634116f0490e2dfde",
+        "get_goal",
+        "create_goal",
+        "update_goal"
+      ]
+    }
+  ],
+  "cases": {
+    "T40": {
+      "checks": [
+        {
+          "name": "App A (mail 1.1.0): the Codex session read the single library Skill without the 1.1.1 marker",
+          "at": "2026-11-05T09:22:35.301Z",
+          "owner": {
+            "contentHash": "450fb825588ffca2a507dcdc0bc41732bacfe77f5e3eb9fdbdb49a7526f6b111",
+            "name": "willyou-mail-work-assistant",
+            "owner": "WillYou",
+            "schema": 1
+          }
+        },
+        {
+          "name": "After the upgrade the library holds exactly one mail Skill with the 1.1.1 content (new content hash), no partial copies; the Claude link still points to it",
+          "at": "2026-11-05T09:22:39.763Z"
+        },
+        {
+          "name": "Opened in the upgraded App, the same native Codex session resumed (no stale resume notice) and read the 1.1.1 Skill on its next turn",
+          "at": "2026-11-05T09:22:45.080Z",
+          "nativeSessionId": "01a1ab04-6322-73b2-9755-6b1d4e3146e9"
+        }
+      ],
+      "versions": [
+        {
+          "version": "1.1.1",
+          "default": true,
+          "state": "ready"
+        },
+        {
+          "version": "1.1.0",
+          "default": false,
+          "state": "ready"
+        }
+      ],
+      "entries": [
+        "willyou-mail-work-assistant"
+      ],
+      "afterOwner": {
+        "contentHash": "5c47ea3dc493a09397a1f8a5f8c6e457a663acc52b9074257bd11339f50d704b",
+        "name": "willyou-mail-work-assistant",
+        "owner": "WillYou",
+        "schema": 1
+      },
+      "resumeAdviceAfterResume": null,
+      "noticeAfterResume": false
+    }
+  },
+  "checks": [],
+  "status": "passed",
+  "cli": {
+    "codex": "codex-cli 0.166.0",
+    "claude": "2.1.318 (Claude Code)"
+  },
+  "upgradedApp": {
+    "path": "/private/tmp/willyou-m11-s7/r10-t40-upgrade/WillYou.app",
+    "asarSha256": "372991e78f9d3d0ff1cb75a521a5dd3103effac32d7cc37b61d566cb44e155da",
+    "mailVersions": [
+      "1.1.1"
+    ]
+  },
+  "homeRedirects": [
+    {
+      "home": "/private/tmp/willyou-m11-r10-8lMoRQ/home",
+      "at": "2026-11-05T09:22:27.706Z"
+    },
+    {
+      "home": "/private/tmp/willyou-m11-r10-8lMoRQ/home",
+      "at": "2026-11-05T09:22:36.365Z"
+    }
+  ],
+  "projects": {
+    "A": "339520e5-db3d-4383-b2b4-e70420310590"
+  },
+  "rendererErrorsA": [],
+  "rendererErrors": [],
+  "ownAppCleanupComplete": true,
+  "realHomeUnchanged": true,
+  "scenarios": {
+    "M11R10_T40A_8lMoRQ": {
+      "command": "/bin/cat \"/private/tmp/willyou-m11-r10-8lMoRQ/home/.agents/skills/willyou-mail-work-assistant/SKILL.md\"",
+      "issued": true,
+      "failure": null,
+      "outputBytes": 1854
+    },
+    "M11R10_T40B_8lMoRQ": {
+      "command": "/bin/cat \"/private/tmp/willyou-m11-r10-8lMoRQ/home/.agents/skills/willyou-mail-work-assistant/SKILL.md\"",
+      "issued": true,
+      "failure": null,
+      "outputBytes": 1882
+    }
+  },
+  "finishedAt": "2026-11-05T09:22:45.340Z"
+}
