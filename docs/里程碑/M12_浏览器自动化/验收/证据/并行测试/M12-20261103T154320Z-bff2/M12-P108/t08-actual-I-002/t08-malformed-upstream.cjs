@@ -1,0 +1,2 @@
+// Test-only parser fault: synthetic private credential only, no network.
+'use strict';const fs=require('node:fs');if(process.argv.includes('--version')){process.stdout.write('1.0.0\n');process.exit(0);}const value=JSON.parse(fs.readFileSync(process.env.WILLYOU_UPSTREAM_CREDENTIAL_FILE,'utf8')).credential;process.stderr.write('synthetic upstream stderr '+value+'\n');process.stdout.write('malformed upstream stdout '+value+'\n');

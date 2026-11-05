@@ -40,6 +40,6 @@
 
 最近完整收口：[T013与profile生命周期](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/attempt-003/coordinator-review.json)、[T079项目清理最终复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P083/coordinator-final-review.json)。暂停／停止组已有真实子段证据，剩余判据按原合同补齐；失败、失焦、夹具错误及恢复位置见[执行记录](验收/执行与缺陷记录.md)。
 
-真实Codex继续复用WillYou已有CLI登录，测试项目和数据独立。原T041已从实际Codex原生日志、完整Skill读取与宿主操作记录[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-041.json)；原T042由实际默认沙箱CLI成功记录及已核原生入口的环境变量必经检查[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-042.json)。前次计划摘要、Skill哈希、原生日志载体及额外点击门槛的驱动错误保留在执行记录，不重复发送已完成业务。已授权SOP G1下一轮保持原payload；初始焦点按本次隔离实例真实状态检查，运行中的失焦守卫仍保留。
+真实Codex继续复用WillYou已有CLI登录，测试项目和数据独立。原T041已从实际Codex原生日志、完整Skill读取与宿主操作记录[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-041.json)；原T042由实际默认沙箱CLI成功记录及已核原生入口的环境变量必经检查[独立闭合](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P082/coordinator-case-review-042.json)。前次计划摘要、Skill哈希、原生日志载体及额外点击门槛的驱动错误保留在执行记录，不重复发送已完成业务。同一授权payload的G1三条真实运行已结束，[T126两种项目组合I＋R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P098/t126-coordinator-review-001/coordinator-case-review.json)已完整通过；其余SOP判据从已保存原始日志补核，不重复发送。初始焦点按本次隔离实例真实状态检查，运行中的失焦守卫保留。
 
 当前本机安装／原生／包体核算的已验收范围见[P085复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/coordinator-case-review.json)；系统剪贴板仅[安全桥前置](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P084/attempt-003/native-gates-result.json)已验证。完整系统读写、用户／真实站点／硬件／x64等缺项以权威用例账为准，未因预览包存在补算完成。完整M12未交付。

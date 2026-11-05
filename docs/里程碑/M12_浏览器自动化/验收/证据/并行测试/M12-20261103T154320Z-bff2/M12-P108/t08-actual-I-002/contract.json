@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-05T13:21:13.600668+00:00",
+  "parent": "M12-T131",
+  "case": "M11-T08",
+  "layer": "I",
+  "original": {
+    "id": "M11-T08",
+    "originalAuthoritativeLine": "| M11-T08／R07、R08／I | 使用仅用于测试的可识别密钥，覆盖成功与失败 | 执行 CLI 帮助、查询、错误和诊断；检查 Agent 可见命令参数、Skill、普通日志与结果 | 三方测试密钥不出现在这些输出中；JSON stdout 与诊断 stderr 分离，无解析器泄密 | **通过（I）**；两种真实原生CLI/上游链和恶意解析负例3场景通过：合成业务密钥与run令牌分别核对，实际argv、投放Skill、JSON stdout、受控stderr、诊断/活动/审计/console均无泄漏；仅私有秘密存储不列公开通道。52通道原始旁证被后续runner覆盖，实际通过JSON及逐通道断言源码保留，限制已明示；未为旁证重跑绿矩阵。[结果与边界](证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-I-REDACTION/attempt-001/result.json) |",
+    "requirementAndLayers": "M11-T08／R07、R08／I",
+    "prerequisite": "使用仅用于测试的可识别密钥，覆盖成功与失败",
+    "steps": "执行 CLI 帮助、查询、错误和诊断；检查 Agent 可见命令参数、Skill、普通日志与结果",
+    "expected": "三方测试密钥不出现在这些输出中；JSON stdout 与诊断 stderr 分离，无解析器泄密",
+    "historicalActual": "**通过（I）**；两种真实原生CLI/上游链和恶意解析负例3场景通过：合成业务密钥与run令牌分别核对，实际argv、投放Skill、JSON stdout、受控stderr、诊断/活动/审计/console均无泄漏；仅私有秘密存储不列公开通道。52通道原始旁证被后续runner覆盖，实际通过JSON及逐通道断言源码保留，限制已明示；未为旁证重跑绿矩阵。[结果与边界](证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-I-REDACTION/attempt-001/result.json)"
+  },
+  "scenarios": [
+    "native managed CLI -> sample-kv MCP upstream, successful/help/scope/schema/auth cases and Agent-visible channels",
+    "native managed CLI -> sample-kv CLI upstream, same public channels",
+    "deliberately hostile parser stdout/stderr canary control -> sanitized public parser error"
+  ],
+  "testSourceByteIdentical": false,
+  "testSourceSha256": "2ca1f920d7e98332f1d417bcfe3643044409286164cb92c48860613635185b83",
+  "fixtureSourceSha256": "e6aec02a991d41568a6562b91bb717cbcad9070c463ddbd9a4e30675989f5d30",
+  "noModelOrLoginRequired": true,
+  "executionStarted": false,
+  "formalNewPasses": 0,
+  "assertionsAndOriginalFlowByteIdenticalAfterRemovingReadonlyCleanupRecorder": true,
+  "adaptation": "Readonly cleanup identities/fixture absence recorder only; original test source retained separately; no assertion/expected/call behavior changed"
+}

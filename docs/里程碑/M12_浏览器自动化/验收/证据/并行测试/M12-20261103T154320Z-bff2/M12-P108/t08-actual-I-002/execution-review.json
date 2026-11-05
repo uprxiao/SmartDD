@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-05T13:46:22.110280+00:00",
+  "parent": "M12-T131",
+  "case": "M11-T08",
+  "layer": "I",
+  "status": "environment-precondition-and-driver-cleanup-failed-no-rerun",
+  "rawVitest": {
+    "success": false,
+    "numTotalTests": 3,
+    "numFailedTests": 3,
+    "numPassedTests": 0,
+    "numPendingTests": 0
+  },
+  "classification": [
+    {
+      "cases": "mcp/cli",
+      "class": "precondition-error-errno-unknown",
+      "observed": "ApplicationCliGateway.start cannot establish CLI channel; current production catch does not retain listen errno/cause",
+      "sandboxPermissions": "use_default",
+      "inference": "Unix listen sandbox denial is consistent, not proven by retained errno. No product red claimed."
+    },
+    {
+      "cases": "all three afterEach",
+      "class": "driver-recorder-error",
+      "observed": "New readonly recorder called gateway.endpoint getter after failed/closed start; getter threw and prevented original afterEach cleanup",
+      "nextCorrection": "Capture endpoint only after successful start or try/catch; never bypass original cleanup. New attempt only."
+    }
+  ],
+  "originalJudgement": "result.json retained failed-or-partial 1/5, no pass credit",
+  "observationChannels": [
+    "mcp:published-skill",
+    "cli:published-skill",
+    "parser:negative-control-raw-upstream-channels",
+    "parser:public-error",
+    "parser:console-log-warn-error-info-debug"
+  ],
+  "originalThreeScenariosKept": true,
+  "frozenInputsUnchanged": true,
+  "readySha256": "e0923d1ab7bdc644e59a6fc3c321e13a570aaf8967ee2ce2b1e0ee737f49864d",
+  "leaseReleased": {
+    "exactRecordedPidsAbsent": true,
+    "allRootMatchedProcesses": 0,
+    "privateSockets": 0,
+    "globalCliTimeWindowCandidates": 0,
+    "signalsSent": [],
+    "privateFixtureRootsRetained": 3,
+    "retainedBoundary": "Only inert own private fixtures retained for diagnosis; do not claim original cleanup passed or count helper files gone."
+  },
+  "toolResults": [
+    {
+      "command": "run.mjs --execute",
+      "sandboxPermissions": "use_default",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "command": "verify-cleanup.mjs --verify first",
+      "sandboxPermissions": "use_default",
+      "error": "assert(!r.error), child process-query error detail/errno not emitted",
+      "originalOutputRetainedInToolTranscript": true
+    },
+    {
+      "command": "verify-cleanup.mjs --verify second",
+      "sandboxPermissions": "require_escalated",
+      "receiptCount": 0,
+      "exitCode": 0,
+      "businessPass": false
+    },
+    {
+      "command": "derived exact owned PID/root/Unix read-only check",
+      "sandboxPermissions": "require_escalated",
+      "evidence": "cleanup-derived-001.json",
+      "signals": []
+    }
+  ],
+  "formalNewPasses": 0,
+  "noModel": true,
+  "next": "New attempt with isolated Unix listen/close preflight under intended actual execution permission and safe cleanup metadata recorder; do not reuse/replay002"
+}
