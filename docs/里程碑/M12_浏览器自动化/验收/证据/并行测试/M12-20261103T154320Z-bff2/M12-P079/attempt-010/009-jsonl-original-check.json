@@ -1,0 +1,35 @@
+{
+  "sourceRoot": "/private/tmp/willyou-m12-p069-launchservices-probe-009",
+  "generatedExpression": "(()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(process.pid!==1234||E.app.getPath('userData')!==\"/private/tmp/willyou-m12-p069-launchservices-probe-010/runtime/userData\"||E.app.getAppPath()!==\"/private/tmp/willyou-m12-p069-launchservices-probe-010/app/WillYou.app/Contents/Resources/app.asar\")throw Error('ownApp required');const fs=process.getBuiltinModule('fs'),path=\"/private/tmp/willyou-m12-p069-launchservices-probe-010/test-only.jsonl\";const log=(kind,code)=>fs.appendFileSync(path,JSON.stringify({kind,pid:process.pid,atMs:Date.now(),code:typeof code==='number'?code:null})+'\\n');E.app.on('before-quit',()=>log('before-quit'));E.app.on('will-quit',()=>log('will-quit'));E.app.on('quit',(_event,code)=>log('quit',code));process.on('exit',code=>log('process-exit-event',code));return {observerInstalled:true}})()",
+  "actualBytes": "{\"kind\":\"before-quit\",\"pid\":1234,\"atMs\":1793853586073,\"code\":null}\n{\"kind\":\"will-quit\",\"pid\":1234,\"atMs\":1793853586073,\"code\":null}\n{\"kind\":\"quit\",\"pid\":1234,\"atMs\":1793853586073,\"code\":0}\n{\"kind\":\"process-exit-event\",\"pid\":1234,\"atMs\":1793853586073,\"code\":0}\n",
+  "literalBackslashNCount": 0,
+  "lineFeedCount": 4,
+  "records": [
+    {
+      "kind": "before-quit",
+      "pid": 1234,
+      "atMs": 1793853586073,
+      "code": null
+    },
+    {
+      "kind": "will-quit",
+      "pid": 1234,
+      "atMs": 1793853586073,
+      "code": null
+    },
+    {
+      "kind": "quit",
+      "pid": 1234,
+      "atMs": 1793853586073,
+      "code": 0
+    },
+    {
+      "kind": "process-exit-event",
+      "pid": 1234,
+      "atMs": 1793853586073,
+      "code": 0
+    }
+  ],
+  "error": null,
+  "passed": true
+}

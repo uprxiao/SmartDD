@@ -1,0 +1,1 @@
+export const accountExpression='({url:location.href,title:document.title,ready:document.readyState,account:document.querySelector("#account")?.textContent??null,result:document.querySelector("#result")?.textContent??null})';

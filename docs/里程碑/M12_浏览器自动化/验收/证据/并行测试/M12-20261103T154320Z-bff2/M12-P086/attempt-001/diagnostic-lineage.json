@@ -1,0 +1,17 @@
+{
+  "purpose": "Investigate observed largest main-process RSS growth with actual heap/external/space and passive GC timing; no proof of retention/leak from RSS alone.",
+  "basedOn": "/private/tmp/willyou-m12-p069-parked-resource-001/source018-preparation-004",
+  "originalSourceManifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
+  "asarSha256": "f1995c81a490d3c7e899e1e94358402d863b4cff8fef20f4eab10d5cb0727868",
+  "nativeExecuted": false,
+  "formalCaseCredit": 0,
+  "intervalSeconds": 60,
+  "changes": [
+    "Fresh private runtime/cache; same production/App and original five parked tasks/local fixture/nativeCLI",
+    "Original full 1800s branch and six original analysis/plot/receiver/sampler/cleanup scripts kept; only explicit short diagnostic mode extends to60s",
+    "Bounded passive Node GC observer and six additional read-only main memory samples; no forceGC/no audit clearing/no timer/threshold/sample-point edits for formal T111",
+    "Observer explicitly disconnected before normal App quit; all existing normal cleanup retained"
+  ],
+  "primaryReference": "https://nodejs.org/api/perf_hooks.html#garbage-collection-gc-details",
+  "uncertainty": "Actual Electron support/GC events/retained object causes not yet validated; no Native lease until root review."
+}

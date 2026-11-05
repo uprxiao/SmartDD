@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-05T01:28:07.165241+00:00",
+  "case": "M12-T077",
+  "layer": "I actualApp019TaskService/nativeCLI/M11/BrowserService; noA/modelRclaim",
+  "originalLine": "| M12-T077 | C1、R05.3、B12 | I＋A | T1 用项目 profile 登录 `qa`；T2 需要账号 `qa2` | 在 T2 用 `tab profile create` 新建任务独立 profile 并登录 `qa2` | T2 的页面显示 `qa2`；T1 仍是 `qa`，项目 profile 的登录没有被顶掉 | B12实际UI补充：T2新建/用于独立profile后登录qa2，回T1仍为qa。尚缺原tab profile create真实CLI I；本次UI创建补充不冒充该动作或整条通过。 | 部分通过 | [B12实际UI补充与边界](证据/并行测试/M12-20261103T154320Z-bff2/M12-P043/attempt-001/RESULT.md) |",
+  "requirements": "**R05.3 归属**\n- 每个项目一个项目 profile，在第一次打开网页时自动创建；同一项目的任务共用它，不同项目互相隔离。\n- 任务需要的账号与项目登录态不同时，Agent 为该任务新建独立 profile 登录，不改动项目登录态（C1）。\n- `use-default` 把页面切回当前项目的 profile。\n\n",
+  "AReusedByCoordinator": {
+    "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P043/attempt-001/RESULT.md",
+    "sha256": "cb7c3a401247be3b0c40421a7599b4bfb1d143a1ceea1172fa1fc1d227ce47ac",
+    "boundary": "AlreadygreenactualUIcreate/use/loginqa2andT1qa, notclaimedretestedhere"
+  },
+  "criteria": [
+    "T1actualCLIcreate/defaultprojectprofileandactualsitePOSTloginqa",
+    "T2sameproject/defaultprofileinitiallysharesqa andsameprofileId",
+    "T2originalnativeCLI tabprofilecreate --label --scope isolated returnsnewtask-ownedprofile",
+    "T2originalnativeCLI tabprofileset --page --profile changesonlyT2page",
+    "ActualnativeCLI fill/click onrealHTTPformlogsT2qa2 withrealHttpOnlyCookie/session",
+    "T1actualCLIreloadandnativeDOM+HTTPstillqa,projectprofileidentityunchanged",
+    "T2reloadstillqa2; distinctsameoriginCookieJar/scopedprofileownership; onePOSTeach,noreplay"
+  ],
+  "trustedPrep": "AppRPConlyproject/AIprofile/task/capabilityhealth. NoUIorRPCcreatesbrowserpage/profile/login. No store/DOMvalue mutation. ActualCLIwriteprecheckrefusalstopsdependencies, noapprovalfabrication.",
+  "resourcePolicy": "Staticonlyuntilrootlease; runtime/userData/home/PTY/cache/serverunique; onlyownsresourcesclosed",
+  "T013Boundary": "ExistingP009003/004Ialreadycoversprofiledeletepopuplifecycle; originalA stillmissing. Notrepeatedorclaimedhere."
+}

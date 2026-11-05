@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/willyou-m12-p069-cpu-analysis-006/original/cpu_judge.py", line 54, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/private/tmp/willyou-m12-p069-cpu-analysis-006/original/cpu_judge.py", line 44, in main
+    original=json.loads(cp.read_text());idle=Fraction(str(original['measuredCompleteIdleSeconds']));lower=original['idleWeightedOneCorePercent'];upper=100*total/idle if idle>0 else None
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/fractions.py", line 115, in __new__
+    raise ValueError('Invalid literal for Fraction: %r' %
+ValueError: Invalid literal for Fraction: 'None'

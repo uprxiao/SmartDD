@@ -1,0 +1,25 @@
+{
+  "case": "M12-T111",
+  "layers": [
+    "I",
+    "S"
+  ],
+  "originalRow": "| M12-T111 | R07.5 停放窗口 | I＋S | 5 个任务的页面同时停放 30 分钟 | 每 5 分钟执行一次命令并记录 App 全部进程的 RSS 与 CPU | 命令全部成功；第 30 分钟的总 RSS 不超过第 10 分钟的 110%，最后 4 次采样不是持续单调上升；空闲时 CPU 平均低于 5%。超出时先分析原因再判定，数值和曲线写入实际结果 | — | 待执行 | — |",
+  "requirementRevision": "R1.3",
+  "requirements": "**R07.5 切换任务与后台页面**\n- 页面由主进程持有，按任务常驻。切换任务、收起工作区、关闭文件面板都不销毁页面，也不中断在途命令。\n- 任务切到后台时，页面移入停放窗口：已显示但完全透明、不可聚焦、不接收鼠标、不出现在任务栏和窗口菜单。页面保持原尺寸继续绘制，切回时再挂回右侧工作区。这样做是因为页面不绘制时点击会变慢、截图会卡住。\n- 用户看不到、也点不到停放窗口。Agent 只能看到目标页面，看不到停放窗口和 WillYou 界面。\n\n",
+  "durationSeconds": 1800,
+  "checkpointsMinutes": [
+    0,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "taskCount": 5,
+  "rssCriterion": "RSS30*100 <= RSS10*110, exact integer bytes; sum resident memory over all owned App processes, shared pages are not deduplicated",
+  "lastFourCriterion": "RSS at15/20/25/30 not all three successive deltas strictly positive; raw values unchanged; any ambiguity or excess requires analysis",
+  "cpuCriterion": "Actual per-process user+system CPU cumulative differences over monotonic intervals;100%=one logical core, never divide by CPU count. Idle intervals must not overlap actual scheduled command activity; all idle samples retained, unexplained peaks not excluded. Unknown exited-process final counters explicitly flagged, not silently treated as zero.",
+  "formalRunDependency": "Await actualimmutable source018/App019/unit/types/build/native gates, fullnewpackage/source preflight then explicitNativelease; notREADY/no App018 fallback."
+}

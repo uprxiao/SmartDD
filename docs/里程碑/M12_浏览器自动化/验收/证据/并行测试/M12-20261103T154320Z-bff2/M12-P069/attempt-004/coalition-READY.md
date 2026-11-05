@@ -1,0 +1,9 @@
+Static READY — original T111 long004 + coalition supplement
+
+No App/Native/OS sampler started. Exact command is recorded in ready.json and static-preflight.json. Original six scripts retain their previous hashes; source023/App019 and normal directspawn/harness are unchanged. 36 pure-data checks passed; final static preflight covers32 top-level inputs plus pinned proof files,48 frozen driver files,151 private dependencies and original psutil/runtime resource inputs.
+
+Runtime initial Native permission/ABI/UID/birth/path/CID gate must finish before clock0. Source-defined ordinary child inheritance and actual Kernel dead/live cumulative ledger now cover unobserved detached descendants as a coalition superset, not exact App attribution. Distinct App CIDs are deduplicated; collector CID equality is unnecessary. Every capture rechecks anchors and membership. Native query windows and Node request windows prove initial-before-clock0/final-after-measurementEnd. All failed Native replies remain in cpu-rusage.jsonl, successful exact raw responses also in coalition-usage.jsonl.
+
+Original per-PID lifetime reference and policy are retained. New independent coalition-result.json is required for the broad-scope CPU candidate, with own lower/RSS/original idle denominator unchanged. Any API/identity/CID/layout/counter/cut/proof failure is incomplete. Entire coalition delta includes unrelated host work, busy commands and measurement overhead; upper>=5% is inconclusive, ownlower>5% definite failure, upper<5% only a coordinator-review candidate. No original threshold, original35+5commands,1800seconds,interval/peak/trend/RSS condition changes.
+
+After real execution: original analyze/check-analysis/plot, cpu_judge.py reference, coalition_judge.py, exact cleanup verification, finalize.mjs. Prior preparation source/hash snapshots remain under coalition-before-supplement-007/. No repeat of shortApp005 is planned.

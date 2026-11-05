@@ -1,0 +1,72 @@
+{
+  "source023ManifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
+  "readOnly": true,
+  "references": [
+    {
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/browser/operations.ts",
+      "sha256": "d9b2b4b846949af99426abb294f2c67ef0982a596915c886ce26377ebd9cfbf8",
+      "ranges": [
+        {
+          "start": 12,
+          "end": 28,
+          "text": "12: }\n13: export class BrowserOperations {\n14:   constructor(private readonly db: Database.Database) {}\n15:   recover(now = Date.now()): void {\n16:     this.db.transaction(() => {\n17:       this.db.prepare(\"UPDATE browser_operations SET state='unknown',effect_state='unknown',updated_at=? WHERE state IN ('accepted','running')\").run(now);\n18:       this.db.prepare('DELETE FROM browser_operations WHERE created_at < ?').run(now - 7 * 86400000);\n19:       // Older development builds may have persisted a compatibility result\n20:       // before the command-specific redaction was applied. Preserve identity,\n21:       // timing and status while replacing only valid sensitive summaries.\n22:       const update=this.db.prepare('UPDATE browser_operations SET summary=? WHERE run_id=? AND request_id=?');\n23:       // Finish the read before updating: better-sqlite3 forbids writes while\n24:       // an iterator on this connection is active.\n25:       for(const row of this.db.prepare('SELECT * FROM browser_operations WHERE summary IS NOT NULL').all() as BrowserOperation[]){\n26:         if(!sensitiveCommand(row.command))continue;\n27:         let summary:unknown;try{summary=JSON.parse(row.summary!);}catch{continue;}\n28:         try{const safe=JSON.stringify(protectBrowserSummary(row.command,summary,row.request_id.startsWith('audit:')));if(safe!==row.summary)update.run(safe,row.run_id,row.request_id);}catch{/* Preserve corrupt records for the read-only recovery error. */}"
+        },
+        {
+          "start": 53,
+          "end": 64,
+          "text": "53:       this.db.prepare(\"INSERT INTO browser_operations(run_id,request_id,task_id,page_id,command,state,effect_state,created_at,updated_at) VALUES(?,?,?,?,?,'accepted','not-started',?,?)\")\n54:         .run(runId, requestId, taskId, pageId, command, now, now);\n55:       return { operation: this.get(runId, requestId)!, replay: false };\n56:     })();\n57:   }\n58:   update(runId: string, requestId: string, state: BrowserOperation['state'], effect: string, detail: { progress?: unknown; summary?: unknown; code?: string } = {}): void {\n59:     const bounded = (value: unknown): string | null => {\n60:       if (value === undefined) return null;\n61:       const json = JSON.stringify(value), bytes = Buffer.byteLength(json);\n62:       return bytes <= 65536 ? json : JSON.stringify({ omitted: true, bytes, sha256: createHash('sha256').update(json).digest('hex') });\n63:     };\n64:     const command=this.get(runId,requestId)?.command;"
+        }
+      ],
+      "staticFact": "SQLite审计/operation记录按7天清理；每个summary/progress序列化上限65536B；不是JS对象保留原因证明"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/browser/references.ts",
+      "sha256": "c3ced875a05ffd677a51c39f661592408bbec79637b2081273cbb5368f286d80",
+      "ranges": [
+        {
+          "start": 110,
+          "end": 150,
+          "text": "110:   async snapshot(helper: BrowserHelper, signal?: AbortSignal): Promise<{origin?:string;snapshot:string;refs:{ref:string;role:string;name:string;available:boolean}[]}> {\n111:     this.invalidate();\n112:     for (let attempt = 0; ; attempt++) {\n113:       if (signal?.aborted) throw signal.reason ?? new BrowserError('BROWSER_ERROR', '快照已取消');\n114:       const epoch = this.generation, before = indexBrowserAXTrees(await this.readIdentityTrees());\n115:       const capture = this.proxy.captureSnapshot();\n116:       let raw: unknown;\n117:       try { raw = await helper.command(['snapshot'], { signal }); } finally { capture.finish(); }\n118:       const parsed = helperSnapshotSchema.safeParse(raw);\n119:       if (!parsed.success || !capture.trees.length)\n120:         throw new BrowserError('BROWSER_UNAVAILABLE', '固定helper未提供可核对的快照及原始无障碍树');\n121:       const trees: BrowserAXTree[] = [];\n122:       for (const tree of capture.trees) {\n123:         const frameId = tree.frameId ?? tree.nodes.find(node => node.frameId)?.frameId ??\n124:           (await this.proxy.send<{frameTree:FrameTree}>('Page.getFrameTree', {}, tree.sessionId)).frameTree.frame.id;\n125:         trees.push({ ...tree, frameId });\n126:       }\n127:       const captured = indexBrowserAXTrees(trees), after = indexBrowserAXTrees(await this.readIdentityTrees());\n128:       const candidates = new Map<string, NodeRef[]>();\n129:       for (const node of captured.ordered) {\n130:         const key = browserAXRoleKey(node.role, node.name), entries = candidates.get(key) ?? [];\n131:         entries.push(node); candidates.set(key, entries);\n132:       }\n133:       const counts = new Map<string, number>(), mapping = new Map<string, string>();\n134:       const refs: {ref:string;role:string;name:string;available:boolean}[] = [], bindings = new Map<string, NodeRef>();\n135:       for (const [internal, metadata] of Object.entries(parsed.data.refs).sort(([a], [b]) => Number(a.slice(1)) - Number(b.slice(1)))) {\n136:         const key = browserAXRoleKey(metadata.role, metadata.name), ordinal = counts.get(key) ?? 0;\n137:         counts.set(key, ordinal + 1);\n138:         const node = candidates.get(key)?.[ordinal], external = '@' + this.pageShort + 's' + epoch + internal;\n139:         const stable = Boolean(node && epoch === this.generation && browserAXIdentityMatches(before, node) && browserAXIdentityMatches(after, node));\n140:         mapping.set(internal, external);\n141:         if (node && stable) bindings.set(external, node);\n142:         refs.push({ ref: external, role: metadata.role, name: metadata.name, available: stable });\n143:       }\n144:       // Retries create fresh helper snapshots; an unstable earlier snapshot is never rebound to a later node.\n145:       if (attempt < 2 && refs.some(ref => !ref.available)) continue;\n146:       this.refs = bindings;\n147:       return { origin: parsed.data.origin, snapshot: parsed.data.snapshot.replace(/ref=(e\\d+)/g, (_match, id:string) => 'ref=' + (mapping.get(id) ?? id)), refs };\n148:     }\n149:   }\n150:   async arm(ref: string, options:{append?:boolean;locator?:boolean} = {}): Promise<ArmedReference> {"
+        }
+      ],
+      "staticFact": "每次snapshot使用局部candidates/counts/refs，最终this.refs替换为本次bindings，不是按每次snapshot持续append历史"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/browser/cdp-proxy.ts",
+      "sha256": "c95617008218f83d25e1257fd6760166a549bb1717f12f8043577633d0e487d1",
+      "ranges": [
+        {
+          "start": 35,
+          "end": 42,
+          "text": "35:   get sessions(): ReadonlyMap<string, CdpParams> { return this.frameSessions; }\n36:   onEvent(listener: (event: CdpEvent) => void): () => void { this.listeners.add(listener); return () => this.listeners.delete(listener); }\n37:   captureSnapshot(): { trees: BrowserAXTree[]; finish: () => void } {\n38:     if (this.capture) throw new BrowserError('BROWSER_ERROR', '快照读取已经在进行');\n39:     const trees: BrowserAXTree[] = []; this.capture = trees;\n40:     return { trees, finish: () => { if (this.capture === trees) this.capture = undefined; } };\n41:   }\n42:   initializeFrames(work: (sessionId: string) => Promise<void>): void { this.frameInitializer = work; }"
+        }
+      ],
+      "staticFact": "captureSnapshot添加捕获数组并由finish删除；references的finally调用finish"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/renderer/features/browser/store.ts",
+      "sha256": "2ac01a8c4127f745e2cd8896c962d6269c8dcef1cf76be912a9cfcea3552b0b9",
+      "ranges": [
+        {
+          "start": 5,
+          "end": 21,
+          "text": "5: export class BrowserWorkspaceStore {\n6:   private value:{state:BrowserWorkspaceState|null;error:string}={state:null,error:''};\n7:   private readonly listeners=new Set<()=>void>();\n8:   private request=0;\n9:   constructor(readonly taskId:string){}\n10:   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};\n11:   snapshot=()=>this.value;\n12:   private emit(){for(const fn of this.listeners)fn();}\n13:   async refresh(){const request=++this.request;try{const state=await rpc.browser.snapshot({taskId:this.taskId});if(request===this.request){this.value={state,error:''};this.emit();}}catch(error){if(request===this.request){this.value={...this.value,error:error instanceof Error?error.message:String(error)};this.emit();}}}\n14:   async run(action:()=>Promise<unknown>){try{await action();await this.refresh();}catch(error){this.value={...this.value,error:error instanceof Error?error.message:String(error)};this.emit();}}\n15:   create=()=>this.run(()=>rpc.browser.create({taskId:this.taskId}));\n16:   select=(tabId:string|null)=>this.run(()=>rpc.browser.select({taskId:this.taskId,tabId}));\n17:   close=(tabId:string)=>this.run(()=>rpc.browser.close({taskId:this.taskId,tabId}));\n18:   reopen=()=>this.run(()=>rpc.browser.reopen({taskId:this.taskId}));\n19: }\n20: const stores=new Map<string,BrowserWorkspaceStore>();\n21: export function browserWorkspaceFor(taskId:string){let store=stores.get(taskId);if(!store){store=new BrowserWorkspaceStore(taskId);stores.set(taskId,store);}return store;}"
+        }
+      ],
+      "staticFact": "每task一个store，refresh替换state；模块stores Map未见淘汰，但本轮固定5task，不能直接解释按命令数增长"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/renderer/views/task-view.tsx",
+      "sha256": "8b8147e84b5fbad00e5698f80092705d3f9c041b8a763139d80d86e094524f93",
+      "ranges": [
+        {
+          "start": 158,
+          "end": 170,
+          "text": "158:   const [terminalExited, setTerminalExited] = useState(false);\n159: \n160:   const fitAndSync = () => {\n161:     fitSync.current?.request();\n162:   };\n163: \n164:   useEffect(() => {\n165:     const term = new Terminal({\n166:       scrollback: 10_000,\n167:       // The PTY's termios owns newline translation; rewriting LF corrupts cursor-based TUIs.\n168:       convertEol: false,\n169:       fontFamily: buildTerminalFontFamily(terminalSettings?.fontFamily),\n170:       fontSize: terminalSettings?.fontSize ?? 13,"
+        }
+      ],
+      "staticFact": "终端scrollback配置10000行，有界；未取得本轮具体行数/对象数"
+    }
+  ],
+  "causalityProven": false
+}

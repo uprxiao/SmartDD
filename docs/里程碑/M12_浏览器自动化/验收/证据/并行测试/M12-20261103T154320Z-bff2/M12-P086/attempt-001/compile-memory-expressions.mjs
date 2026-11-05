@@ -1,0 +1,12 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const root='/private/tmp/willyou-m12-p086-rss-diagnostic-001';
+const source=await readFile(root+'/run.mjs','utf8');
+const start=source.indexOf("const memoryObserverKey="),end=source.indexOf('async function helperInventory()',start);assert(start>0&&end>start);
+const expressions=[],r={},app={mainEvaluate:async(expression,options)=>{assert.equal(options.synchronous,true);new Function(expression);expressions.push({label:options.label,bytes:Buffer.byteLength(expression),compiledOnly:true});return {staticOnly:true};}};
+const create=new Function('app','r','userData','root','appendFile',source.slice(start,end)+';return {installMemoryObserver,memoryObservation,removeMemoryObserver};');
+const f=create(app,r,root+'/runtime-001/userdata',root,async()=>{});
+await f.installMemoryObserver();await f.memoryObservation('compile-only');await f.removeMemoryObserver();
+assert.equal(expressions.length,4);
+const out={staticOnly:true,NativeExecuted:false,expressions,originalSixScriptsUnchanged:true,actualGCSupportOrEventsNotClaimed:true};
+await writeFile(root+'/memory-expressions-static.json',JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out));
