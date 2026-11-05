@@ -46,6 +46,7 @@ const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'
 export class ApplicationToolService {
   private readonly packages: PackageRegistry;
   private readonly validator = new AjvJsonSchemaValidator();
+  private readonly contracts = new Map<string,ReturnType<AjvJsonSchemaValidator['getValidator']>>();
   private readonly pending = new Map<string,{ hash: string;work: Promise<BridgeResponse> }>();
   private readonly cache = new Map<string,{ hash: string;response: BridgeResponse;bytes: number }>();
   private cacheBytes = 0;
@@ -56,6 +57,18 @@ export class ApplicationToolService {
   private snapshotContracts(context:RunContext){
     if(this.entry==='cli')return context.snapshot.schema===3?context.snapshot.packages.map(selection=>({selection,contracts:selection.capabilityContractMajors})):[];
     return context.snapshot.packages.map(selection=>({selection,contracts:selection.toolContractMajors}));
+  }
+  private contractValidator(selected: SelectedTool,kind: 'input' | 'output') {
+    // The package hash fixes these schemas. Fresh parsed objects otherwise make
+    // Ajv retain a new compiled environment for every call. Authorization and
+    // package integrity are still checked before this compiler lookup.
+    const key = canonicalJson([this.entry,selected.application.packageHash,selected.declaration.name,selected.declaration.contractMajor,kind]);
+    let validate = this.contracts.get(key);
+    if (!validate) {
+      validate = this.validator.getValidator((kind === 'input' ? selected.tool.inputSchema : selected.tool.outputSchema) as JsonSchemaType);
+      this.contracts.set(key,validate);
+    }
+    return validate;
   }
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   private schema(source: string): { type: 'object';[key: string]: unknown } {
@@ -148,7 +161,7 @@ export class ApplicationToolService {
         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
         if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');
         handler.authorize(context,call.connectionId);
-        if (!this.validator.getValidator(selected.tool.inputSchema as JsonSchemaType)(call.arguments).valid) throw new ApplicationError('INVALID_INPUT','参数不符合原工具输入契约');
+        if (!this.contractValidator(selected,'input')(call.arguments).valid) throw new ApplicationError('INVALID_INPUT','参数不符合原工具输入契约');
         const recorded = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
           this.runs.assertActive(runId); handler.authorize(context,call.connectionId);
           const old = this.store.sqlite.prepare('SELECT * FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined;
@@ -158,7 +171,7 @@ export class ApplicationToolService {
         }).immediate());
         if (recorded) { operationId = recorded.operation_id; attempts = recorded.attempt_count; effect = recorded.effect_state; throw new ApplicationError('REPLAY_UNAVAILABLE','已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行'); }
         const { signal,deadline,timeout } = control;
-        const outputValidator = this.validator.getValidator(selected.tool.outputSchema as JsonSchemaType), canRetry = handler.semantics === 'read' && handler.retry === 'safe-read';
+        const outputValidator = this.contractValidator(selected,'output'), canRetry = handler.semantics === 'read' && handler.retry === 'safe-read';
         while (true) {
           if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'调用已取消或到达本次时限');
           const fresh = this.runs.assertActive(runId); handler.authorize(fresh,call.connectionId); attempts++;
