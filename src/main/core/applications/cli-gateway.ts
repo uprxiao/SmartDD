@@ -15,7 +15,8 @@ interface Binding {runId:string;planHash:string;authorizationStamp:string|null;t
 interface Peer {socket:Socket;buffer:Buffer;controllers:Map<string,{runId:string;abort:AbortController}>;inFlight:number;authenticatedRun?:string}
 const rejected=(id:string,error:unknown):BridgeResponse=>({schema:1,id,status:'error',error:{code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:error instanceof ApplicationError?error.message:'本次应用调用未完成',layer:'auth',retryable:false,attemptCount:0,retryExhausted:false,effectState:'not-started',nextAction:'核对本次运行与应用状态；不要自动重发写操作'}});
 
-/** Independent host endpoint. Tokens never enter disk, argv, Skill or diagnostics. */
+/** Independent host endpoint. This gateway keeps tokens in memory and out of argv,
+ * Skill and diagnostics. Native CLI caches require their own launch-time protection. */
 export class ApplicationCliGateway {
   readonly generation=randomUUID();
   private server?:Server;

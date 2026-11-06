@@ -35,9 +35,12 @@ function sandboxArgument(args:readonly string[],index:number):{mode:string|undef
 /** Remove only a proved equivalent legacy selector while the private named policy is delivered.
  * Codex 0.166.0's ConfigOverrides.sandbox_mode otherwise overrides default_permissions.
  * Approval flags (including --approve-for-me) retain their native semantics and order.
+ * Called only for a CLI-bearing run: disable native shell snapshots for that run so
+ * its environment-only authorization cannot be copied into the shell snapshot cache.
  */
 export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSandboxPlan):string[]{
-  if(!policy.available||policy.kind!=='inherit')return [...args];
+  if(!policy.available)return [...args];
+  if(policy.kind!=='inherit')return [...args,'--disable','shell_snapshot'];
   const output:string[]=[];let selectors=0;
   for(let i=0;i<args.length;i++){
     const arg=args[i];
@@ -50,7 +53,7 @@ export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSan
   }
   if(selectors&&args.some(arg=>['--approve-for-me','--not-so-yolo','--full-auto','--dangerously-bypass-approvals-and-sandbox','--yolo','--'].includes(arg)))
     throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生参数组合尚未核验，不能改写sandbox参数');
-  return output;
+  return [...output,'--disable','shell_snapshot'];
 }
 
 /** Hash the complete security input. Named rules are inherited, never rebuilt from a mode label. */

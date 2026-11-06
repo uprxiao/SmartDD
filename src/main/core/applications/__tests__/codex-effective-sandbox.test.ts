@@ -14,15 +14,22 @@ describe('M11 exact Codex policy inheritance and fail-closed CLI delivery',()=>{
    const kept=['--profile','owned-profile','--model','owned-model','--ask-for-approval','never','-c','skills.config=[]'],args=[...kept,...selector],original=[...args];
    const policy=plan({sandbox_mode:mode==='read-only'?'workspace-write':'read-only'},args);
    expect(policy).toMatchObject({available:true,kind:'inherit',parent:mode==='read-only'?':read-only':':workspace'});
-   expect(codexProfileArgsForCli(args,policy)).toEqual(kept);expect(args).toEqual(original);
+   expect(codexProfileArgsForCli(args,policy)).toEqual([...kept,'--disable','shell_snapshot']);expect(args).toEqual(original);
   }
  });
- it('does not rewrite unverified/full-access argv, preserves approval shortcuts and rejects a mismatched policy proof',()=>{
+ it('leaves unverified argv alone and protects verified CLI runs without changing full-access or approval selectors',()=>{
   const args=['--sandbox','read-only','--ask-for-approval','never'];
   expect(codexProfileArgsForCli(args,{available:false,reason:'unverified',source:'test',digest:null})).toEqual(args);
-  const full=['--sandbox','danger-full-access'];expect(codexProfileArgsForCli(full,plan({},full))).toEqual(full);
-  const automatic=['--approve-for-me'];expect(codexProfileArgsForCli(automatic,plan({},automatic))).toEqual(automatic);
+  const full=['--sandbox','danger-full-access'];expect(codexProfileArgsForCli(full,plan({},full))).toEqual([...full,'--disable','shell_snapshot']);
+  const automatic=['--approve-for-me'];expect(codexProfileArgsForCli(automatic,plan({},automatic))).toEqual([...automatic,'--disable','shell_snapshot']);
   expect(()=>codexProfileArgsForCli(args,plan({sandbox_mode:'workspace-write'}))).toThrow('不等价');
+ });
+ it('adds the run-local snapshot protection after original feature arguments without mutating the profile',()=>{
+  const args=['--enable','shell_snapshot','-c','features.shell_snapshot=true','--ask-for-approval','on-request'],before=[...args];
+  const policy=plan({sandbox_mode:'workspace-write'},args);
+  expect(policy.available).toBe(true);
+  expect(codexProfileArgsForCli(args,policy)).toEqual([...args,'--disable','shell_snapshot']);
+  expect(args).toEqual(before);
  });
  it.each([
   ['--sandbox','read-only','--sandbox','workspace-write'],

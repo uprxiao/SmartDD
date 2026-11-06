@@ -1,0 +1,67 @@
+{
+  "case": "M12-T026",
+  "reviewOnly": true,
+  "originalRow": "| M12-T026 | R01.12 | A | T1 有网页标签；左侧终端在运行 | 依次打开基本认证、跨任务授权、登录态管理、Cookie 导入、浏览器设置弹框；每个弹框打开时点击左侧终端并输入一行；把右侧工作区拖窄到最小宽度再打开设置弹框 | 每个弹框的遮罩只覆盖浏览器区域、弹框在其中居中；终端可点击并收到输入；窄宽度下弹框随区域收缩、内容可滚动，不超出浏览器区域；网页视图在弹框打开期间显示为截图，关闭后恢复 | App009设置子集实际终端完整一行回执通过，App008全局dialog按键拦截已修复；遮罩/截图/居中通过；设置后续因焦点后置，其他弹框/窄宽仍缺 | 部分通过 | [修复复验与焦点后置](证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009/RESULT.md) |",
+  "fullReadyFound": false,
+  "searchBoundary": "Original T026 ledger/evidence links, original P010 settings and P022/P033 auth drivers, existing scripts/browser; no broad historical rebuild or new driver preparation.",
+  "existingFiles": [
+    {
+      "kind": "settings-subset-current-source",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s2-packaged-ui.mjs",
+      "exists": true,
+      "sha256": "7b174fd66091c7b0c70307b4a23692bb04ff51be94a96c2cc8a62cac2fd5425f"
+    },
+    {
+      "kind": "settings-subset-original-judge",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/adjudicate-s4-ui.mjs",
+      "exists": true,
+      "sha256": "328ce4f31774170ca0955e21d55a07552275802ce6367837b44d3337560536b3"
+    },
+    {
+      "kind": "settings-App009-actual",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009/RESULT.md",
+      "exists": true,
+      "sha256": "0e6b5badf7a23f6e8ccbf4b014b9b8a5269598355bb0a5cc0ed744e5cb6170d4"
+    },
+    {
+      "kind": "settings-App009-frozen-driver",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009/driver.source.mjs",
+      "exists": true,
+      "sha256": "7b174fd66091c7b0c70307b4a23692bb04ff51be94a96c2cc8a62cac2fd5425f"
+    },
+    {
+      "kind": "auth-only-original-driver",
+      "path": "/private/tmp/willyou-m12-p033-executor-001/run.mjs",
+      "exists": true,
+      "sha256": "bf52e89d530f2097e9bd35e9f8e7874705d6cd633fcf8363a201600c33de9984"
+    },
+    {
+      "kind": "auth-only-actual-boundary",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P033/attempt-001/handoff.md",
+      "exists": true,
+      "sha256": "bba6586da01eb4f82f7fce1432e45be8c2959c4cd44c1089ec73bfba445313b4"
+    }
+  ],
+  "usablePieces": [
+    {
+      "piece": "settings dialog scope/screenshot plus actual terminal full-line ACK",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s2-packaged-ui.mjs",
+      "historicalEvidence": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009/RESULT.md",
+      "scope": "Only App009 settings subset. Original remaining[] explicitly other dialogs and narrow drag. Does not prove current App024 all-five or close-restore. Existing legacy initial focus routine must not be launched unchanged under current passive guard rules."
+    },
+    {
+      "piece": "Basic auth modal triggering/geometry/receiver/one-line terminal input skeleton",
+      "path": "/private/tmp/willyou-m12-p033-executor-001/run.mjs:21",
+      "historicalEvidence": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P033/attempt-001/handoff.md",
+      "scope": "P033 App011 T016 green, optional T026 auth subset stopped at absent.xterm-screen after reload;0terminal actions,no marker/ACK. Must UI-bind existing taskPTY and verify exact identities before using terminal; originalT016 must not be rerun for this."
+    }
+  ],
+  "keyGaps": [
+    "No existing full READY covering Basic authentication,cross-task authorization,login-state management,Cookie import,browser settings in one original T026 flow.",
+    "Each five dialogs requires browser-only scrim/center,real terminal click+full-line ACK,actual original-page screenshot while open and real page restored on close; existing evidence only settings subset and auth precondition observation.",
+    "Actual UI drag right workspace to minimum and reopen settings; assert bounded dialog/content overflow scrolling and no browser-area escape. No located existing narrow-drag criterion/judge.",
+    "Current package/source/fixture health+once reload+UI terminal binding+passive Native/DOM focus guard and complete exact owned-resource cleanup must be frozen before new execution; old App009/App011 pins are not current READY."
+  ],
+  "action": "Report existing paths/gaps to Root; no thirdT132 window,newT026 driver or Native/App/PTY/HTTP/OS/model execution.",
+  "formalNewPasses": 0
+}

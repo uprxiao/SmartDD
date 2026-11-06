@@ -118,6 +118,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   expect(fixed.schema).toBe(3);expect(fixed.adapterBinding.version).toBe('1.3.0');expect(plan.allowed).toMatchObject([{appId:'mail',capabilityId:'mail.draft.list',entry:'cli'}]);expect(plan.sandbox).toEqual({source:policy.source,digest:policy.digest});
   const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(token).toMatch(/^[a-f0-9]{64}$/);expect(launch.env![VALUE_PREFIX+'WILLYOU_ENDPOINT']).toBe(managed.cli!.endpoint);expect(launch.env![VALUE_PREFIX+'PATH']).toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));
   expect(JSON.stringify(runtime)).not.toContain(token);expect(readFileSync(runtime.manifestPath,'utf8')).not.toContain(token);expect(JSON.stringify(launch.args)).not.toContain(token);
+  expect(launch.args).toEqual(expect.arrayContaining(['--disable','shell_snapshot']));expect(profiles.get(codexId).args).not.toContain('shell_snapshot');
   const skill=plan.skills[0];expect(skill.nativeName).not.toBe(fixed.packages[0].skills[0].nativeName);const text=readFileSync(join(home,'.agents/skills',skill.nativeName,'SKILL.md'),'utf8');expect(text).toContain('willyou-app mail draft list');expect(text).not.toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain(token);
   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.cli!.endpoint).slice(0,12)+'.extends=":read-only"');expect(launch.args!.join(' ')).toContain(managed.cli!.endpoint);expect(launch.args!.join(' ')).not.toContain('pending-bootstrap.json');
   expect(await request(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',data:{items:[]},operation:{origin:'cli'}}});
@@ -127,6 +128,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   cliPolicyAvailable=false;const running=await create(),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;
   expect(plan.allowed).toMatchObject([{entry:'mcp'}]);expect(plan.applications[0]).toMatchObject({fallback:true});expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_ENDPOINT');expect(launch.args!.join(' ')).not.toContain('wy_cli_');
   const text=readFileSync(join(home,'.agents/skills',plan.skills[0].nativeName,'SKILL.md'),'utf8');expect(text).toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain('willyou-app mail draft list');
+  expect(launch.args).not.toContain('shell_snapshot');
  });
 
  it.each([['--sandbox','read-only'],['--sandbox=read-only'],['-sread-only']])('replaces only the proved legacy selector at the actual task fork: %j',async(...selector)=>{
@@ -147,7 +149,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   profiles.update(codexId,{name:profile.name,runner:'codex',executable:profiles.resolve(codexId).command,args,env:[],color:null,isDefault:true});
   const original=managed.prepare.bind(managed);
   vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{
-   const launch=await original(input);expect(launch.profileArgs).toEqual(['--ask-for-approval','never']);
+   const launch=await original(input);expect(launch.profileArgs).toEqual(['--ask-for-approval','never','--disable','shell_snapshot']);
    return launch.nativeOnly!('managed_launch_payload_too_large');
   });
   const running=await create(),launch=ptys.launches[0];
