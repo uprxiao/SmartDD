@@ -1,0 +1,142 @@
+{
+  "schema": "m12-original-case-AI-coordinator-review-v1",
+  "at": "2026-11-06T13:39:42.340014+00:00",
+  "case": "M12-T017",
+  "decision": "accepted-original-complete-A-plus-current-I",
+  "requiredLayers": [
+    "A",
+    "I"
+  ],
+  "evidence": [
+    {
+      "path": "../current-App025-A-complete-001/manifest.json",
+      "sha256": "22a2c7e9d3b470ff4421a16fb388843e864c8026c834b8464e76f949c1027bb7"
+    },
+    {
+      "path": "../current-signed-App025-I-complete-003/manifest.json",
+      "sha256": "9536806b3ec81029ab0c3600e71021678f3ef586e91773767a08814632a4f8e3"
+    }
+  ],
+  "App": "App025",
+  "source": "source029",
+  "sourceInputsSHA256": "8a1211f2add9d0ed8e5ba30a041a75c9c2ab2162d1540069ad9e8d40e0fa497a",
+  "asarSHA256": "f5862da1743e14a488ab878c6a0a3d092743af0c636ceaf1a3599145d887e31c",
+  "A": {
+    "session": 58927,
+    "appPid": 74300,
+    "passed": 8,
+    "total": 8,
+    "RootVisual": [
+      "realpermissionbanner",
+      "actualprofile origin geolocation allow record/revoke"
+    ],
+    "NativePosition": {
+      "accuracy": 10,
+      "id": "ui-1",
+      "latitude": 1.2345,
+      "longitude": 2.3456,
+      "ok": true,
+      "origin": "https://m12-cert.test:52339"
+    },
+    "refreshNativePosition": {
+      "accuracy": 10,
+      "id": "ui-1",
+      "latitude": 1.2345,
+      "longitude": 2.3456,
+      "ok": true,
+      "origin": "https://m12-cert.test:52339"
+    },
+    "actualCLI": [
+      {
+        "capability": "browser.env.geolocation",
+        "numericExit": 0
+      },
+      {
+        "capability": "browser.interact.eval",
+        "numericExit": 0
+      }
+    ],
+    "normalExit": {
+      "pid": 74300,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "independentAllClear": true
+  },
+  "I": {
+    "session": 66134,
+    "appPid": 78734,
+    "segments": [
+      {
+        "name": "main-allow-reload",
+        "status": "executed",
+        "classification": null
+      },
+      {
+        "name": "profile-isolation",
+        "status": "executed",
+        "classification": null
+      },
+      {
+        "name": "revoke-and-navigation-cancel",
+        "status": "executed",
+        "classification": null
+      },
+      {
+        "name": "iframe-requester-origin",
+        "status": "executed",
+        "classification": null
+      },
+      {
+        "name": "close-cancels-pending",
+        "status": "executed",
+        "classification": null
+      },
+      {
+        "name": "renderer-crash-cancels-pending",
+        "status": "executed",
+        "classification": null
+      }
+    ],
+    "originalChecks": 18,
+    "currentBindingChecks": [
+      {
+        "id": "fresh-actual-App025-installed-signed-runtime-and-SQLite",
+        "pass": true
+      },
+      {
+        "id": "background-no-display-focus-or-input-and-original-hooks-restored",
+        "pass": true
+      },
+      {
+        "id": "normal-App-exit-and-exact-extra-cleanup",
+        "pass": true
+      }
+    ],
+    "actualFrameworkSHA256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+    "actualSQLiteSHA256": "823ff66e5f135a5c5fe6540e43f6fb8cd82596f13796d98e7379ec8100b6d559",
+    "normalExit": {
+      "pid": 78734,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "displayWorkerHooksRestored": true
+  },
+  "originalFailureBoundary": [
+    "oldRawElectron/signedruntime mismatch did not substitute currentI",
+    "I001 label driver failure0segments/SIGTERM notnormal",
+    "I002 constructorcapture timeout0segments/SIGKILL request withnull observedterminal remainsunknown",
+    "I003 removed unrelatedservicecapture; original6segments/18conditions unchanged"
+  ],
+  "limits": [
+    "Geolocation coordinates intentionally synthetic1.2345/2.3456/10; no physicalOS location claim",
+    "I own pre-entry display suppression/Workerdebug inheritance fixture declared; currentA separately realUI",
+    "HTTPS own resolver/certificate continuation onlyfixtureprecondition, no globaltruststore",
+    "No realmodel/auth or systempermission change"
+  ],
+  "newUniqueFormalCases": [
+    "M12-T017"
+  ]
+}
