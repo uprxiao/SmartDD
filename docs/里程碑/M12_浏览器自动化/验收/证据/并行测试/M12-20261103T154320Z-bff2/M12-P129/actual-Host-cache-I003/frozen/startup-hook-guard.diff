@@ -1,0 +1,32 @@
+--- I001/electron-harness.mjs
++++ I002/electron-harness.mjs
+@@ -10,6 +10,14 @@
+ 
+ const require = createRequire(import.meta.url);
+ export const pause = (ms) => new Promise((r) => setTimeout(r, ms));
++
++// Private I002 pre-entry hook: no M12 prefix wildcard and no other App/userData accepted.
++export function assertPrivateStartupHook({startupMainHook,inspectMain,executable,userData}) {
++  assert(!startupMainHook || (inspectMain === true &&
++    executable === "/private/tmp/willyou-m12-s2-package-025/mac-arm64/WillYou.app/Contents/MacOS/WillYou" &&
++    userData === "/private/tmp/willyou-m12-cache-fix-host-I-003/runtime-001/userdata"),
++    "Pre-entry hook requires exact App025/I002 inspected identity");
++}
+ 
+ export async function openElectron({
+   userData,
+@@ -53,13 +61,7 @@
+       !(nodeModeNegative && name === "ELECTRON_RUN_AS_NODE")
+     )
+       delete env[name];
+-  assert(
+-    !startupMainHook ||
+-      (inspectMain &&
+-        (executable?.startsWith("/private/tmp/willyou-m10-") ||
+-          executable?.startsWith("/private/tmp/willyou-m11-s7/"))),
+-    "Pre-entry hook requires this explicit private inspected App",
+-  );
++  assertPrivateStartupHook({startupMainHook,inspectMain,executable,userData});
+   const child = spawn(
+     executable ? resolve(executable) : require("electron"),
+     [
