@@ -35,6 +35,16 @@ describe('M11 native standalone CLI with real kernel peer identification (contro
   for(const args of [['mail','draft','list','--json','{"projectId":"foreign"}'],['mail','draft','list','--json','[]'],['mail','draft','delete']]){const result=await launch(args).done;expect(result.code).toBe(2);expect(JSON.parse(result.stdout).error.code).toMatch(/INVALID_INPUT|SCOPE_DENIED/);expect(result.timedOut).toBe(false);}
   expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:0});
  });
+ it('returns an honest local inactive-entry refusal without a token, endpoint or Host invocation',async()=>{
+  const inactive=await launch(['browser','tab','list'],{env:{WILLYOU_CLI_INACTIVE:'1'}}).done;
+  expect(inactive).toMatchObject({code:2,signal:null,timedOut:false});
+  const value=JSON.parse(inactive.stdout);expect(value).toMatchObject({error:{code:'ENTRY_NOT_ACTIVE',layer:'auth',effectState:'not-started',retryable:false,attemptCount:0}});
+  expect(value).not.toHaveProperty('operationId');expect(value).not.toHaveProperty('requestId');
+  expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({n:0});
+  const help=await launch(['--help'],{env:{WILLYOU_CLI_INACTIVE:'1'}}).done;expect(help.code).toBe(0);
+  const unset=await launch(['browser','tab','list'],{env:{}}).done;expect(unset.code).toBe(3);expect(JSON.parse(unset.stdout)).toMatchObject({error:{code:'AUTH_REQUIRED'}});
+  const active=await launch(['mail','draft','list']).done;expect(active.code).toBe(0);
+ });
  it('reads one field verbatim from stdin as text, minus one trailing newline (M12-D02)',async()=>{
   const execute=vi.spyOn(f.applications.data,'execute').mockResolvedValue({items:[],nextCursor:null} as never);
   const typed=await launch(['mail','draft','list','--cursor','123']).done;expect(typed.code).toBe(2);expect(JSON.parse(typed.stdout).error.code).toBe('INVALID_INPUT');

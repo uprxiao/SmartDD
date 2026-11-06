@@ -1,4 +1,5 @@
 import {BrowserService} from './core/browser/service';
+import {installBrowserProjectDefaults} from './core/applications/browser-project-defaults';
 import {existsSync,readFileSync} from 'node:fs';
 import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
@@ -204,6 +205,7 @@ async function main(): Promise<void> {
       await browser?.reconcile();
       applications=new ApplicationService(agentSupport.store,{browser,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>events.emit(applicationsChangedEvent,change)});
       await applications.recover();
+      if(browser)installBrowserProjectDefaults(projects,applications.selections,()=>events.emit(applicationsChangedEvent,undefined));
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),stopPty:id=>ptys.kill(id)});
         tasks.attachManagedCapabilities(managedTasks);

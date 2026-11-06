@@ -65,6 +65,7 @@ export interface TaskCapabilityLauncherOptions {
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly planningAgents=new Map<string,NativeLaunchContext>();
   private readonly planningCliPolicies=new Map<string,CodexCliSandboxPlan>();
+  private readonly planningInactiveCli=new Set<string>();
   readonly cli?:ApplicationCliGateway;
   private cliReady=false;
   readonly sessions:CapabilitySessionRegistry;
@@ -148,13 +149,20 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private requiresMcp(snapshot:CapabilitySessionSnapshot,scope?:readonly string[]){return snapshot.packages.filter(p=>scope===undefined||scope.includes(p.appId)).some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return builtinApplicationModules.capabilityViews(manifest).filter(c=>p.allowedOperations.includes(c.permission)).some(c=>selectCapabilityEntry(c,this.cliAvailability(snapshot.taskId)).entry==='mcp');});}
   private async configureCli(input:TaskLaunchInput,native:NativeLaunchContext|undefined,snapshot?:CapabilitySessionSnapshot){
     if(!native||!this.cliReady||!this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).entryDelivery('cli'))return;
-    const selected=snapshot?.packages??this.selectedApps(input.projectId),needs=selected.some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return manifest.schema==='smartdd-app-package-v2'&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);});if(!needs)return;
+    const selected=snapshot?.packages??this.selectedApps(input.projectId),needs=selected.some(p=>{const manifest=this.applications.builtin.retainedMetadata(p.packageHash).manifest;return manifest.schema==='smartdd-app-package-v2'&&manifest.capabilities.some(c=>!!c.binding.cli||!!c.binding.fallback&&'cli'in c.binding.fallback);});
+    const inactive=!needs&&this.inactiveBrowserProject(input.projectId);if(!needs&&!inactive)return;
     const adapter=snapshot?this.support.adapters.get(snapshot.adapterBinding.hash):this.currentAdapter(this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,native.version);if(!adapter)return;const metadata='metadata'in adapter?adapter.metadata:this.support.adapters.get(adapter.hash).metadata;if(metadata.cliEntry!=='supported')return;
     // §15.4: CLI is delivered only for a version whose declared levels include L0.cli; undeclared versions fail closed.
     if(!this.support.adapters.effective(adapter.hash,native.version).levels.includes('L0.cli'))return;
     const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner),inspect=this.options.inspectSandbox??delivery.effectiveSandbox;
     if(!inspect)return;
-    this.planningCliPolicies.set(input.taskId,await inspect.call(delivery,input,native));
+    const policy=await inspect.call(delivery,input,native);
+    if(inactive){if(policy.available)this.planningInactiveCli.add(input.taskId);}
+    else this.planningCliPolicies.set(input.taskId,policy);
+  }
+  private inactiveBrowserProject(projectId:string):boolean{
+    try{const selected=this.applications.selections.projectSettings(projectId,'browser');return selected.revision>0&&!selected.enabled;}
+    catch{return false;}
   }
   private cliAuthorizationStamp(context:import('./run-registry').RunContext):string{
     const apps=[...new Set(context.plan?.allowed.filter(c=>c.entry==='cli').map(c=>c.appId)??[])];return digest(canonicalJson(apps.map(name=>{const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)throw new ApplicationError('SCOPE_DENIED','CLI应用不在当前注册表');const policy=this.applications.selections.policyStamp(context.run.projectId,appId),bindings=builtinApplicationModules.module(appId).providers.map(provider=>{const slot=this.applications.connections.registry.provider(provider.id).id,binding=this.applications.selections.connectionSlot(context.run.projectId,appId,slot),connection=binding.connectionId?this.applications.connections.get(binding.connectionId):null;return{slot,...binding,connection:connection?{id:connection.id,identityRevision:connection.identityRevision,policyRevision:connection.policyRevision,enabled:connection.enabled,authorization:connection.authorization}:null};});return{appId,policy,bindings};})));
@@ -210,7 +218,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(!newFormat)return{...common,schema:2};
     return{...common,schema:3,packages:selectedSources.map(({manifest,selection})=>({...selection,entry:manifest.schema==='smartdd-app-package-v2'?manifest.entry:'mcp',capabilityContractMajors:Object.fromEntries(builtinApplicationModules.capabilityViews(manifest).map(c=>[c.id,c.contractMajor]))}))};
   }
-  prepare(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{const work=this.prepareOnce(input);this.pending.add(work);void work.finally(()=>{this.pending.delete(work);this.planningAgents.delete(input.taskId);this.planningCliPolicies.delete(input.taskId);}).catch(()=>{});return work;}
+  prepare(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{const work=this.prepareOnce(input);this.pending.add(work);void work.finally(()=>{this.pending.delete(work);this.planningAgents.delete(input.taskId);this.planningCliPolicies.delete(input.taskId);this.planningInactiveCli.delete(input.taskId);}).catch(()=>{});return work;}
   private async prepareOnce(input:TaskLaunchInput):Promise<TaskCapabilityLaunch>{
     if(this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','任务能力准备已取消');
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
@@ -349,7 +357,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(!unavailable&&native)try{this.applications.nativeMessages.register(run.runId,native.version,run.signal);}catch{/* Missing origin evidence grants nothing and must not stop the ordinary Agent. */}
       let effectiveApplications=!unavailable;
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared';
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,profileArgs:cliProfileArgs,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native?.command,
+      const inactiveCli=!unavailable&&!cliEnvironment&&this.planningInactiveCli.has(input.taskId)&&this.inactiveBrowserProject(input.projectId);
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args,profileArgs:cliProfileArgs,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:inactiveCli?{...runtime.env,WILLYOU_CLI_INACTIVE:'1',PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native?.command,
         assertBeforeFork:()=>{if(effectiveApplications){assertNoPendingApplicationSwitch(this.support.store,gateSnapshot);if(deliveryProof)this.claudeDelivery.assertRun(run.runId,deliveryProof);if(request?.catalogExclusions){const checked=this.support.adapters.plan(snapshot.adapterBinding.hash,request);if(canonicalJson(checked.args)!==canonicalJson(args))throw new ApplicationError('RESOURCE_STATE_CHANGED','原生加载参数在启动前已变化');}}},
         nativeOnly:async reason=>{
           if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');

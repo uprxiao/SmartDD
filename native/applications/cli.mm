@@ -42,6 +42,8 @@ int main(int argc,const char *argv[]){@autoreleasepool{
   signal(SIGPIPE,SIG_IGN);
   NSMutableArray<NSString*> *args=[NSMutableArray array];for(int i=1;i<argc;i++){NSString *arg=[[NSString alloc] initWithUTF8String:argv[i]];if(!arg)return failure(@"INVALID_INPUT",@"参数必须是完整UTF-8",2);[args addObject:arg];}
   if(args.count==1&&[args[0] isEqual:@"--help"]){output(@{@"command":@"willyou-app",@"usage":@[@"willyou-app --list",@"willyou-app <app> <command> [--field value]",@"willyou-app <app> <command> --json '<JSON object>'",@"printf '%s' \"$TEXT\" | willyou-app <app> <command> [--field value] --stdin <field>"],@"scope":@"当前WillYou终端已启用的应用能力",@"resultContractMajor":@2});return 0;}
+  const char *inactive=getenv("WILLYOU_CLI_INACTIVE");
+  if(inactive&&strcmp(inactive,"1")==0)return failure(@"ENTRY_NOT_ACTIVE",@"本次运行未选用CLI应用",2,@"auth");
   const char *rawToken=getenv("WILLYOU_RUN_TOKEN"),*rawEndpoint=getenv("WILLYOU_ENDPOINT");NSString *token=rawToken?[[NSString alloc] initWithUTF8String:rawToken]:nil;NSString *endpoint=rawEndpoint?[[NSString alloc] initWithUTF8String:rawEndpoint]:nil;
   if(!matches(token,@"^[a-f0-9]{64}$")||!endpoint||![endpoint hasPrefix:@"/"]||[endpoint rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location!=NSNotFound)return failure(@"AUTH_REQUIRED",@"请在WillYou受管终端中使用应用能力",3,@"auth");
   bool list=args.count==1&&[args[0] isEqual:@"--list"];NSMutableArray<NSString*> *command=[NSMutableArray array];NSMutableDictionary *arguments=[NSMutableDictionary dictionary];bool json=false;NSString *stdinField=nil;

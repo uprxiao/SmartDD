@@ -84,7 +84,7 @@ beforeEach(async({task})=>{
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
- capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
+ capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock',WILLYOU_CLI_INACTIVE:'1'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
  applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31001},{pid:31001,startedAt:'darwin-proc-v1:300:31001',ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
 });
 afterEach(async()=>{
@@ -117,12 +117,40 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   const running=await create(),launch=ptys.launches[0],runtime=running.task.runtimeSnapshot!,fixed=(await managed.sessions.get(running.task.id)).snapshot,plan=managed.runs.bridgePreparation(runtime.runId).plan!;
   expect(fixed.schema).toBe(3);expect(fixed.adapterBinding.version).toBe('1.3.0');expect(plan.allowed).toMatchObject([{appId:'mail',capabilityId:'mail.draft.list',entry:'cli'}]);expect(plan.sandbox).toEqual({source:policy.source,digest:policy.digest});
   const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(token).toMatch(/^[a-f0-9]{64}$/);expect(launch.env![VALUE_PREFIX+'WILLYOU_ENDPOINT']).toBe(managed.cli!.endpoint);expect(launch.env![VALUE_PREFIX+'PATH']).toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));
+  expect(launch.env).not.toHaveProperty('WILLYOU_CLI_INACTIVE');expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');
   expect(JSON.stringify(runtime)).not.toContain(token);expect(readFileSync(runtime.manifestPath,'utf8')).not.toContain(token);expect(JSON.stringify(launch.args)).not.toContain(token);
   expect(launch.args).toEqual(expect.arrayContaining(['--disable','shell_snapshot']));expect(profiles.get(codexId).args).not.toContain('shell_snapshot');
   const skill=plan.skills[0];expect(skill.nativeName).not.toBe(fixed.packages[0].skills[0].nativeName);const text=readFileSync(join(home,'.agents/skills',skill.nativeName,'SKILL.md'),'utf8');expect(text).toContain('willyou-app mail draft list');expect(text).not.toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain(token);
   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.cli!.endpoint).slice(0,12)+'.extends=":read-only"');expect(launch.args!.join(' ')).toContain(managed.cli!.endpoint);expect(launch.args!.join(' ')).not.toContain('pending-bootstrap.json');
   expect(await request(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',data:{items:[]},operation:{origin:'cli'}}});
   tasks.kill(running.task.id);await vi.waitFor(()=>expect(ptys.live.size).toBe(0));expect(await request(token)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+ });
+ async function deselectLastCliApp(){
+  await applications.selections.select({projectId,appId:'mail',enabled:false,expectedRevision:1,connections:{foxmail:null,smtp:null}});
+  await applications.selections.setAdded('browser',true,0);
+  await applications.selections.select({projectId,appId:'browser',enabled:false,expectedRevision:0,connections:{}});
+ }
+ it('keeps a cancelled last browser entry as local denial only, without a token, Skill, grant or sandbox exception',async()=>{
+  await deselectLastCliApp();const running=await create(),launch=ptys.launches[0],context=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId);
+  expect(context.snapshot.packages).toEqual([]);expect(context.plan?.allowed??[]).toEqual([]);
+  expect(launch.env![VALUE_PREFIX+'WILLYOU_CLI_INACTIVE']).toBe('1');expect(launch.env![VALUE_PREFIX+'PATH']).toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));
+  for(const name of ['WILLYOU_RUN_TOKEN','WILLYOU_ENDPOINT']){expect(launch.env).not.toHaveProperty(name);expect(launch.env).not.toHaveProperty(VALUE_PREFIX+name);}
+  expect(launch.args!.join(' ')).not.toContain('wy_cli_');expect(launch.args).not.toContain('shell_snapshot');
+  const deniedRun=running.task.runtimeSnapshot!.runId;
+  tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(deniedRun).state).toBe('stopped'));await vi.waitFor(()=>expect(consumers()).toEqual([]));
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:2,connections:{foxmail:null,smtp:null}});
+  const next=await create(),enabled=ptys.launches[1];expect(enabled.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']).toMatch(/^[a-f0-9]{64}$/);expect(enabled.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');
+  expect(()=>managed.runs.assertActive(deniedRun)).toThrow();expect(launch.env![VALUE_PREFIX+'WILLYOU_CLI_INACTIVE']).toBe('1');
+  tasks.kill(next.task.id);
+ });
+ it.each(['unverified-policy','unknown-version'] as const)('does not deliver the inactive CLI mode for %s',async fault=>{
+  await deselectLastCliApp();if(fault==='unverified-policy')cliPolicyAvailable=false;else writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');
+  const running=await create(),launch=ptys.launches[0];expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');
+  expect(launch.env![VALUE_PREFIX+'PATH']??'').not.toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));tasks.kill(running.task.id);
+ });
+ it('rejects an AI profile trying to inject the host inactive marker',async()=>{
+  const original=profiles.get(codexId);profiles.update(codexId,{name:original.name,runner:'codex',executable:profiles.resolve(codexId).command,args:[],env:[{name:'WILLYOU_CLI_INACTIVE',value:'1',secret:false}],color:null,isDefault:true});
+  await expect(create()).rejects.toThrow('保留变量');expect(ptys.launches).toEqual([]);
  });
  it('uses the declared MCP fallback without a token or policy injection when effective sandbox is unverified',async()=>{
   cliPolicyAvailable=false;const running=await create(),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;

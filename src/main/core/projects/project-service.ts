@@ -65,6 +65,8 @@ function lastTestOf(row: DbRow | ServerRow): LastTest | null {
 }
 
 export class ProjectService {
+  private readonly creationHooks = new Set<(projectId: string) => void>();
+
   constructor(
     private readonly db: AppDb,
     private readonly secrets: SecretsStore,
@@ -107,6 +109,12 @@ export class ProjectService {
     };
   }
 
+  /** Hooks share the new project's transaction; existing/imported projects are never replayed. */
+  onCreated(hook: (projectId: string) => void): () => void {
+    this.creationHooks.add(hook);
+    return () => { this.creationHooks.delete(hook); };
+  }
+
   createProject(input: ProjectInput, dirs: DirInput[] = []): ProjectDetail {
     const data = parse(projectInputSchema, input);
     const parsedDirs = dirs.map((d) => parse(dirInputSchema, d));
@@ -119,6 +127,7 @@ export class ProjectService {
         .values({ id, ...data, aliases: JSON.stringify(data.aliases), createdAt: ts, updatedAt: ts })
         .run();
       for (const d of parsedDirs) this.insertDir(id, d, ts);
+      for (const hook of this.creationHooks) hook(id);
     });
     return this.getProject(id);
   }
