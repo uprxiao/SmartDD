@@ -1,0 +1,143 @@
+{
+  "case": "M12-T015",
+  "requestedLayer": "U",
+  "status": "U-passed-pending-coordinator-review",
+  "formalNewPasses": 0,
+  "wholeCasePassed": false,
+  "remainingLayers": [
+    "A"
+  ],
+  "sourceBasis": "source027 immutable snapshot plus exactly Root two-file download-panel implementation/test fix recorded in changes.json; no current App023 A claim",
+  "checks": [
+    {
+      "id": "ordinary-destination-and-no-save-dialog-U",
+      "status": "passed",
+      "basis": "P015004 backend exact synchronous setSavePath to injected Downloads provider; user and Agent native will-download route same listener",
+      "remainingA": "Real system Downloads/no actual Save dialog including Agent click not executed here"
+    },
+    {
+      "id": "filename-rules-and-duplicate-naming",
+      "status": "passed",
+      "basis": "P015004 unchanged10 tests: final segment/control/invalid characters/trailing dots+spaces/empty fallback/1000 candidates/concurrent Unicode-case names/duplicate (1)"
+    },
+    {
+      "id": "progress-done-failed-cancelled",
+      "status": "passed",
+      "basis": "Reused backend events+cancel/interrupted; new actual panel four-state rendering"
+    },
+    {
+      "id": "toolbar-dot-auto-open-outside-Esc-close-and-reopen",
+      "status": "passed",
+      "basis": "Private workspace actual components and mocked scoped overlay/RPC; new download ACK only then expose, no-record absent, progress dot removal, outside/Esc/close and toolbar/menu reopens"
+    },
+    {
+      "id": "six-second-last-change-hover-and-old-record-reopen",
+      "status": "passed-after-product-fix",
+      "basis": "Original two toolbar/menu reds retained. Root panel mount-time fix: both red cases green, original3 timing/route tests and new official mount regression green"
+    },
+    {
+      "id": "cancel-open-reveal-remove-record-retains-file",
+      "status": "passed",
+      "basis": "Reused backend cancel+real downloaded synthetic bytes preserved by remove; new completed open/reveal mocked shell receives original saved path; new panel routes correct record identity"
+    },
+    {
+      "id": "overlay-not-document-layout",
+      "status": "passed-at-U-only",
+      "basis": "Actual copied CSS yields absolute panel; original viewport DOM/address retained and overlay ACK/close routes checked. ResizeObserver/RAF are declared jsdom fixtures.",
+      "remainingA": "Actual packaged native WebContents geometry/visual/non-push behavior remains A; jsdom CSS/DOM is not actual geometry"
+    }
+  ],
+  "oldEvidenceReused": {
+    "P015004BackendTests": 10,
+    "P015OriginalPanelTestsInitiallyApplicable": 3,
+    "originalPanel3ReexecutedAfterRootFix": true,
+    "notRepeated": "unchanged backend10"
+  },
+  "actualNewExecution": {
+    "initialTwoNewPassed": [
+      "opens and reveals the completed original record using its actual saved path",
+      "renders all original download states and routes open/reveal by completed record identity"
+    ],
+    "workspace002Passed": [
+      "shows no download entry without records, and opens a new download only after overlay acknowledgement"
+    ],
+    "workspace002Failures": [
+      {
+        "test": "dismisses outside/Escape/close and reopens through toolbar/menu without changing the address or viewport element",
+        "firstError": "AssertionError: expected 'static' to be 'absolute' // Object.is equality"
+      },
+      {
+        "test": "keeps an old completed record visible for six seconds when reopened via toolbar",
+        "firstError": "TestingLibraryElementError: Unable to find an accessible element with the role \"region\" and name \"下载\""
+      },
+      {
+        "test": "keeps an old completed record visible for six seconds when reopened via menu",
+        "firstError": "TestingLibraryElementError: Unable to find an accessible element with the role \"region\" and name \"下载\""
+      }
+    ],
+    "green002Passed": [
+      "renders all original download states and routes open/reveal by completed record identity",
+      "dismisses outside/Escape/close and reopens through toolbar/menu without changing the address or viewport element",
+      "keeps an old completed record visible for six seconds when reopened via toolbar",
+      "keeps an old completed record visible for six seconds when reopened via menu",
+      "dismisses six seconds after the last change and holds dismissal while hovered",
+      "uses actual progress changes as the dismissal deadline rather than the first download event",
+      "keeps old completed downloads available for six seconds after reopening",
+      "routes cancel and completed-file actions with the record identity, and closes on Escape"
+    ],
+    "green002Selected": 8,
+    "green002Unselected": 1,
+    "green002DurationSeconds": 1.76,
+    "commands": [
+      "001/inputs.json",
+      "001/inputs-002.json",
+      "001/inputs-003.json",
+      "001/inputs-004.json",
+      "002/inputs.json"
+    ]
+  },
+  "fixtureFailuresRetained": [
+    "001 actual first collection missing shared/ipc/events.ts; fixed by copying exact source027 dependency",
+    "002 computed CSS imported as mocked empty stylesheet; exact CSS fs loading used instead; original assertion retained",
+    "003 jsdom import.meta URL non-file; exact absolute private CSS path used in004, one selected test passed"
+  ],
+  "mockBoundary": "Electron shell and will-download/DownloadItem/Session are unit doubles; scoped browser RPC/file panel/unrelated dialogs/access store are mocked. Download panel and TaskBrowserWorkspace/BrowserView are actual production components. No real model/browser download/system file action.",
+  "resourceCloseout": {
+    "nodeSessions": [
+      {
+        "session": 49090,
+        "terminalExitCode": 1
+      },
+      {
+        "session": 50007,
+        "terminalExitCode": 0
+      }
+    ],
+    "otherRuns": "workspace002 exit1;003 exit1;004 exit0 from completed tool commands, no ongoing session",
+    "releasedToRoot": true,
+    "noProductResourcesCreated": [
+      "App",
+      "PTY",
+      "HTTP listener",
+      "model"
+    ],
+    "OSProbes": "Prohibited and not used; no independent PID/port scan claimed",
+    "maintenance003": {
+      "terminalExitCode": 0,
+      "toolDurationSeconds": 0.771,
+      "noOngoingSession": true,
+      "releasedToRoot": true
+    }
+  },
+  "at": "2026-11-06T04:46:18.716370+00:00",
+  "maintenanceRegression": {
+    "inputSHA256": "ffd4fd526f23d10c81fb524f45b99d78e8fc2d4377c092a80c58728795df34d5",
+    "path": "003/tests.maintenance.json",
+    "selectedPassed": 2,
+    "notSelected": 12,
+    "durationSeconds": 0.616,
+    "scope": "Root two existing tests now contain maintained open/reveal assertions; exact production bytes unchanged from002",
+    "exitCode": 0
+  },
+  "safeDeliveryBoundary": "Only synthetic/unit evidence and static source files; no DB, App/native binaries, auth/profile secrets, live debug endpoint, OS process snapshots, or node_modules/cache. Original private001/002/003 preserved. No A executed."
+}

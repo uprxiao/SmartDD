@@ -2,10 +2,10 @@ import {useEffect,useState} from 'react';
 import {Download,FolderOpen,FileDown,Ban,X} from 'lucide-react';
 import type {BrowserDownload} from '@shared/browser-downloads';
 export type DownloadAction='cancel'|'open'|'reveal'|'remove';
-/** B07 is an overlay. Its timer uses the last actual item change, so hovering
- * suspends dismissal without extending an old event's timestamp. */
+/** Opening the overlay starts a viewing interval; later item changes extend it.
+ * Hovering suspends dismissal without extending that interval. */
 export function BrowserDownloadPanel({items,onAction,onClose}:{items:BrowserDownload[];onAction:(id:string,action:DownloadAction)=>Promise<void>;onClose:()=>void}){
-  const [hover,setHover]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState<string|null>(null),changedAt=Math.max(0,...items.map(item=>item.updatedAt));
+  const [openedAt]=useState(()=>Date.now()),[hover,setHover]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState<string|null>(null),changedAt=Math.max(openedAt,...items.map(item=>item.updatedAt));
   useEffect(()=>{if(hover)return;const timer=setTimeout(onClose,Math.max(0,changedAt+6000-Date.now()));return()=>clearTimeout(timer);},[hover,changedAt,onClose]);
   const action=async(id:string,kind:DownloadAction)=>{setBusy(id);setError('');try{await onAction(id,kind);}catch(error){setError(error instanceof Error?error.message:String(error));}finally{setBusy(null);}};
   return <div className="bw-downloads" role="region" aria-label="下载" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();onClose();}}}>
