@@ -373,6 +373,7 @@ export const IMPORT_SOURCES = [
   { family: 'edge', label: 'Microsoft Edge', keychain: 'Microsoft Edge Safe Storage', profiles: ['Default'] }
 ];
 export function importOutcome(keychain) {
+  if (keychain === 'missing') return { ok: false, reason: '找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。' };
   if (keychain === 'denied') return { ok: false, reason: '钥匙串访问被拒绝，没有写入任何 Cookie。' };
   if (keychain === 'timeout') return { ok: false, reason: '等待钥匙串授权超时（30 秒），没有写入任何 Cookie。' };
   if (keychain === 'undecryptable') return { ok: true, summary: { totalCookies: 412, importedCookies: 0, skippedCookies: 412, googleCookiesSkipped: 0, partitionSkippedCookies: 0, domains: [], warning: '全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。' } };

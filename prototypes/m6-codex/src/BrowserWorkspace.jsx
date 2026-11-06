@@ -267,6 +267,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
       <button type="button" onClick={() => crossRequest('other-project')}>模拟跨项目请求</button>
       <button type="button" onClick={() => crossRequest('unattended')}>模拟无人值守跨任务请求</button>
       <button type="button" onClick={() => { setStore(current => markRecoveryFailed(current, profileId, 1)); setStatus('演示：导入恢复失败，当前登录态需要处理'); }}>模拟导入恢复失败</button>
+      <button type="button" disabled={needsAttention(store, profileId)} onClick={() => { setImportTarget(profileId); setDialog('import-missing'); }}>模拟找不到浏览器</button>
       <span role="status" className="bw-demo-status">{status}</span>
     </div>}
     {javascriptDialog && <JavascriptDialog key={javascriptDialog.id} dialog={javascriptDialog} onRespond={async (accept, value) => { if (javascriptDialog.fail && accept) throw new Error('演示：原提示已失效，请取消后重新打开。'); setJavascriptDialog(null); setStatus(accept ? '演示：JS 对话框已接受' + (value === undefined ? '' : ' · ' + JSON.stringify(value)) : '演示：JS 对话框已取消'); }} />}
@@ -284,7 +285,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
       onRetryRecovery={id => { setStore(current => resolveRecovery(current, id)); setStatus('已重试恢复：导入前的 Cookie 已恢复（合成）'); }}
       onClearLogin={id => { setStore(current => clearProfileLogin(current, id)); setStatus('已清空该登录态，需要重新登录（合成）'); }}
       onClose={() => setDialog(null)} />}
-    {dialog === 'import' && <ImportDialog store={store} targetProfile={importTarget} onImported={(id, browser, name) => { if (needsAttention(store, id)) { setStatus('导入被拒绝：目标登录态需要先处理'); return; } setStore(current => recordImport(current, id, browser, name, Date.now())); setStatus(`已从 ${browser} · ${name} 导入登录态（合成）`); }} onClose={() => setDialog(null)} />}
+    {(dialog === 'import' || dialog === 'import-missing') && <ImportDialog store={store} targetProfile={importTarget} sourceUnavailable={dialog === 'import-missing'} onImported={(id, browser, name) => { if (needsAttention(store, id)) { setStatus('导入被拒绝：目标登录态需要先处理'); return; } setStore(current => recordImport(current, id, browser, name, Date.now())); setStatus(`已从 ${browser} · ${name} 导入登录态（合成）`); }} onClose={() => setDialog(null)} />}
     {dialog === 'settings' && <SettingsDialog settings={settings} onChange={onSettings} onClose={() => setDialog(null)} />}
   </div>;
 }

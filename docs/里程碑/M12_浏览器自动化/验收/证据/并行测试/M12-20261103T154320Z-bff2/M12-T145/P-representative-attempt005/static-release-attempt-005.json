@@ -1,0 +1,40 @@
+{
+  "status": "pure-real-producer-release-return-shape-controls-passed",
+  "current": {
+    "sourceSHA256": "f3017e1fc4888e1653ea9f008cdd745f8fd84c181a228c9359b23a8c4e8a8bcb",
+    "collectorSource": "if(typeof release==='function')releases.push(release)",
+    "finalizerSource": "for(const release of releases.reverse())await release()"
+  },
+  "old": {
+    "sourceSHA256": "6e3c859a8130f585c62b0f606fbf8f604a12855c79d99c63c4b6e2d7250ccd09",
+    "collectorSource": "if(release)releases.push(release)",
+    "finalizerSource": "for(const release of releases.reverse())await release()"
+  },
+  "samples": [
+    {
+      "kind": "undefined",
+      "added": 0
+    },
+    {
+      "kind": "true",
+      "added": 0
+    },
+    {
+      "kind": "false",
+      "added": 0
+    },
+    {
+      "kind": "function",
+      "added": 1
+    }
+  ],
+  "functionReleaseCalls": 1,
+  "nonFunctionReleaseCalls": 0,
+  "oldTruthyWaitNegativeControl": {
+    "name": "TypeError",
+    "message": "release is not a function"
+  },
+  "unchangedPUI_SHA256": "c1f2d0fa4b72d807e0b0589760b5d182d2d35282db4a31e8fcf1825c036d0055",
+  "includesSHA256": "b47570914626f0056ae307ba933bb50b37886b620149d5efc54564933f9d5084",
+  "NativeOrHTTPOrOSExecution": false
+}

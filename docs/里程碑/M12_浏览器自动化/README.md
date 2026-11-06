@@ -27,6 +27,10 @@
 
 ## 最近闭合与当前缺项
 
+- [T080原完整I静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/App026-full-I-static-ready-001/manifest.json)已复核，等待实际桌面前置，尚未执行。[原型参照代表预检](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-representative-attempt005/manifest.json)已完成，完整矩阵继续；[原完整轮次失败及有效图链](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-full-attempt007/manifest.json)保留原红，不计作实际App验收。
+
+- [B13已确认缺失来源的合成演示入口修复与原型U](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/prototype-missing-source-U-ready-001/manifest.json)已形成可恢复源码；仅辅助原型增量，新状态实际P仍待，原不可变参照与App026生产包保持各自依据，详见[原型变更](原型/原型说明与变更.md)。
+
 - [T012证书例外原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T012/App025-complete-A001/manifest.json)已完成真实继续／重启保留／撤销再拦及CLI不能代为继续；当前App025复用，无生产重建。
 
 - [T132共存初始内容与两轮未完成原因](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P130/coexistence-A001-A002-partial/manifest.json)和[T125当前包未输入即失焦](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P121/App025-focus-deferred-006/manifest.json)已归档，仍保留原缺项；窗口为驱动失焦后正常收尾，原因未定，不写崩溃或用户主动切走。

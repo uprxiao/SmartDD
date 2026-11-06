@@ -1,0 +1,5 @@
+// Isolated serving/cache paths only; approved prototype source and design intact.
+import completeIncludes from './optimizer-includes-attempt-004.mjs';
+import original from './reference/source/prototypes/m6-codex/vite.config.mjs';
+const root='/private/tmp/willyou-m12-t145-visual-matrix-prep-001';
+export default {...original,cacheDir:root+'/cache/vite-attempt-004',optimizeDeps:{...original.optimizeDeps,include:[...(original.optimizeDeps?.include??[]),...completeIncludes]},server:{...original.server,host:'127.0.0.1',fs:{allow:[root+'/reference/source',root+'/deps/packages']}}};

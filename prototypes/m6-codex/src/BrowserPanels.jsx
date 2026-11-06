@@ -159,12 +159,12 @@ export function ProfilesDialog({ store, currentProfile, taskTitle, onUse, onCrea
 }
 
 /** B13 cookie import flow (D2, O11, R06.4). Keychain prompt and results are simulated. */
-export function ImportDialog({ store, targetProfile, onImported, onClose }) {
+export function ImportDialog({ store, targetProfile, onImported, onClose, sourceUnavailable = false }) {
   // R06.4: every import entry checks the target; a profile that needs attention cannot be imported into.
-  const [step, setStep] = useState('source');
+  const [step, setStep] = useState(() => sourceUnavailable ? 'result' : 'source');
   const [source, setSource] = useState('chrome:Default');
   const [target, setTarget] = useState(targetProfile);
-  const [outcome, setOutcome] = useState(null);
+  const [outcome, setOutcome] = useState(() => sourceUnavailable ? importOutcome('missing') : null);
   const [family, profileName] = source.split(':');
   const browser = IMPORT_SOURCES.find(item => item.family === family);
   const targetLabel = store.profiles.find(item => item.id === target)?.label;
