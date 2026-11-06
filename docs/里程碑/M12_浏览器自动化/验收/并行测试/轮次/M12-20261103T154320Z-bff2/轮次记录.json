@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-06T04:52:45.714858+00:00",
+  "updatedAt": "2026-11-06T05:05:43.371205+00:00",
   "status": "S2-S6 active acceptance closure; actual counts only in original121-case authority; no Native/UI/build resource held",
   "coordinator": "/root",
   "agents": [
@@ -26,45 +26,153 @@
   "requirements": "需求R1.4",
   "technicalDesign": "技术方案V1.3",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "App024 officialbuild complete/resources released; archive T015U/T1302U and current build. P127 installer file prep; actualUI still awaits new foreground availability.",
+  "currentGroup": "App024 current installer complete and archived/resources free. T015 actualA file preparation;frozenT099/T107/T004 foreground availability pending.",
   "resources": {
     "build": {
       "owner": "/root",
-      "group": "M12-P126-App024-build",
+      "group": "M12-P127-App024-current-installer-affected",
       "status": "complete/released",
-      "grantedAt": "2026-11-06T04:47:54.795758+00:00",
-      "privateRoot": "/private/tmp/willyou-m12-p126-app024-build-001",
-      "sourceManifestSha256": "548a789dfcb648ed3c8ee32b0096c9b6bbd8b8ab3eed120e24b72d868d309ec4",
+      "grantedAt": "2026-11-06T04:56:00.755831+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-p127-app024-installer-001",
+      "readySha256": "44b1f4e250c4caf8531b991f3c093858d79397dfbbe56b4e148897912a6504ca",
+      "scope": "Current App024 originalT140/T143 affected local wrapping/private install/native6/stockCLI3/size only. First6 stages stop beforeRoot installedpin review. No source rebuild/UI/model/dailydata/release. Peers files only.",
       "resources": [
         "build",
-        "Native"
+        "Native",
+        "App",
+        "PTY",
+        "TCP",
+        "Unix",
+        "hdiutil-owned-devices",
+        "OS-exact-owned-observation"
       ],
-      "scope": "One official arm64 current candidate build/native6 after actual download reopen red→green. No UI/model/daily data/install/publish; peers files only.",
-      "completedAt": "2026-11-06T04:51:21.564647+00:00",
-      "actualSession": 87277,
-      "buildPid": 81209,
-      "exitCode": 0,
-      "seconds": 58.55446350001148,
-      "outcome": "App024 officialbuild/native6 passed;source3684 pre/post match;two knownPIDs absent/exact ownpackageprocess0;Root resource release verified"
+      "actualSession": 17330,
+      "driverPid": 99040,
+      "phases": [
+        {
+          "id": "P127-01-private-copy",
+          "startedAt": "2026-11-06T04:56:19.718444+00:00",
+          "pid": 99041,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:56:29.216814+00:00"
+        },
+        {
+          "id": "P127-02-prepackaged-dmg",
+          "startedAt": "2026-11-06T04:56:29.217009+00:00",
+          "pid": 99084,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:04.746396+00:00"
+        },
+        {
+          "id": "P127-03-existing-gate-path-copy",
+          "startedAt": "2026-11-06T04:57:04.746578+00:00",
+          "pid": 99334,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:04.760799+00:00"
+        },
+        {
+          "id": "P127-04-install-payload-size",
+          "startedAt": "2026-11-06T04:57:04.760962+00:00",
+          "pid": 99336,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:35.951657+00:00"
+        },
+        {
+          "id": "P127-05-actual-installed-native",
+          "startedAt": "2026-11-06T04:57:35.952254+00:00",
+          "pid": 99485,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:39.531328+00:00"
+        },
+        {
+          "id": "P127-06-bind-current-startup-pins",
+          "startedAt": "2026-11-06T04:57:39.531540+00:00",
+          "pid": 99523,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:40.023257+00:00"
+        }
+      ],
+      "updatedAt": "2026-11-06T04:59:09.814535+00:00",
+      "firstSixAllPassed": true,
+      "currentStartupReadySha256": "40710d673263e2ed4a07035406ea2db8e68e34a128b0bfaf7419567478ef4bae",
+      "currentInstalledPinSha256": "c2be535370b454ead5075c40b25a42b08cd3e1cf8fc1022f5b123ccbd2a18439",
+      "startupSession": 45322,
+      "completedAt": "2026-11-06T05:01:01.637642+00:00",
+      "appPid": 99871,
+      "outcome": "Current App024 private DMG full20240payload/input=mount=installed/signature/native6;3actual stockCLI0/App0-null/signals[];originaljudge8-8;12PID5portUnixHelper independent clear;8wrapperphase PIDs/ownmounts0/installedAppprocess0 final Root clear"
     },
     "nativeUi": {
       "owner": "/root",
-      "group": "M12-P126-App024-build",
+      "group": "M12-P127-App024-current-installer-affected",
       "status": "complete/released",
-      "grantedAt": "2026-11-06T04:47:54.795758+00:00",
-      "privateRoot": "/private/tmp/willyou-m12-p126-app024-build-001",
-      "sourceManifestSha256": "548a789dfcb648ed3c8ee32b0096c9b6bbd8b8ab3eed120e24b72d868d309ec4",
+      "grantedAt": "2026-11-06T04:56:00.755831+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-p127-app024-installer-001",
+      "readySha256": "44b1f4e250c4caf8531b991f3c093858d79397dfbbe56b4e148897912a6504ca",
+      "scope": "Current App024 originalT140/T143 affected local wrapping/private install/native6/stockCLI3/size only. First6 stages stop beforeRoot installedpin review. No source rebuild/UI/model/dailydata/release. Peers files only.",
       "resources": [
         "build",
-        "Native"
+        "Native",
+        "App",
+        "PTY",
+        "TCP",
+        "Unix",
+        "hdiutil-owned-devices",
+        "OS-exact-owned-observation"
       ],
-      "scope": "One official arm64 current candidate build/native6 after actual download reopen red→green. No UI/model/daily data/install/publish; peers files only.",
-      "completedAt": "2026-11-06T04:51:21.564647+00:00",
-      "actualSession": 87277,
-      "buildPid": 81209,
-      "exitCode": 0,
-      "seconds": 58.55446350001148,
-      "outcome": "App024 officialbuild/native6 passed;source3684 pre/post match;two knownPIDs absent/exact ownpackageprocess0;Root resource release verified"
+      "actualSession": 17330,
+      "driverPid": 99040,
+      "phases": [
+        {
+          "id": "P127-01-private-copy",
+          "startedAt": "2026-11-06T04:56:19.718444+00:00",
+          "pid": 99041,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:56:29.216814+00:00"
+        },
+        {
+          "id": "P127-02-prepackaged-dmg",
+          "startedAt": "2026-11-06T04:56:29.217009+00:00",
+          "pid": 99084,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:04.746396+00:00"
+        },
+        {
+          "id": "P127-03-existing-gate-path-copy",
+          "startedAt": "2026-11-06T04:57:04.746578+00:00",
+          "pid": 99334,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:04.760799+00:00"
+        },
+        {
+          "id": "P127-04-install-payload-size",
+          "startedAt": "2026-11-06T04:57:04.760962+00:00",
+          "pid": 99336,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:35.951657+00:00"
+        },
+        {
+          "id": "P127-05-actual-installed-native",
+          "startedAt": "2026-11-06T04:57:35.952254+00:00",
+          "pid": 99485,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:39.531328+00:00"
+        },
+        {
+          "id": "P127-06-bind-current-startup-pins",
+          "startedAt": "2026-11-06T04:57:39.531540+00:00",
+          "pid": 99523,
+          "exitCode": 0,
+          "finishedAt": "2026-11-06T04:57:40.023257+00:00"
+        }
+      ],
+      "updatedAt": "2026-11-06T04:59:09.814535+00:00",
+      "firstSixAllPassed": true,
+      "currentStartupReadySha256": "40710d673263e2ed4a07035406ea2db8e68e34a128b0bfaf7419567478ef4bae",
+      "currentInstalledPinSha256": "c2be535370b454ead5075c40b25a42b08cd3e1cf8fc1022f5b123ccbd2a18439",
+      "startupSession": 45322,
+      "completedAt": "2026-11-06T05:01:01.637642+00:00",
+      "appPid": 99871,
+      "outcome": "Current App024 private DMG full20240payload/input=mount=installed/signature/native6;3actual stockCLI0/App0-null/signals[];originaljudge8-8;12PID5portUnixHelper independent clear;8wrapperphase PIDs/ownmounts0/installedAppprocess0 final Root clear"
     },
     "lightSoftware": {
       "status": "complete/released;file packaging only",
@@ -4216,26 +4324,25 @@
     }
   ],
   "candidateBaseline": {
-    "app": "App023",
-    "source": "source027",
-    "sourceManifestSha256": "2c43ae1ea0159ae480f9cb25b83b447a30ba0f6a44221df46b79fd93c5aa8b07",
-    "appPath": "/private/tmp/willyou-m12-s2-package-023/mac-arm64/WillYou.app",
-    "asarSha256": "8eb13133c8fc5a0db5fa99f0f50204af2a2877a95cb0eb533e05345665667507",
-    "status": "official build, native6, current DMG/private install/CLI3/normal exit/full inventory verified; original T099 A and other original case gaps remain",
+    "app": "App024",
+    "source": "source028",
+    "sourceManifestSha256": "548a789dfcb648ed3c8ee32b0096c9b6bbd8b8ab3eed120e24b72d868d309ec4",
+    "appPath": "/private/tmp/willyou-m12-s2-package-024/mac-arm64/WillYou.app",
+    "asarSha256": "2e90245d6b4b8aac7d4c0d61aae8dc974902ac8d1621f59ad7125f1bff380e25",
+    "implementationCommit": "e7e83f6698c80f036d6f9a8b03d3b513e322456c",
+    "status": "current official build/native6/localDMG/fullpayload/privateinstall/stockCLI3/normalexit/original8-8 and independentcleanup all verified;actual originalT015A and other gaps remain",
     "currentLocalInstaller": {
-      "path": "/private/tmp/willyou-m12-p125-app023-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
-      "sha256": "ca9fa0a2a89e4e80d69d8d10d13fdc6e9521b7a80b5d3a795b31731f884c1cee",
-      "bytes": 617179163,
-      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P125/app023-installer-001/manifest.json",
-      "scope": "local ad-hoc arm64 only; no release/x64/notarization"
+      "path": "/private/tmp/willyou-m12-p127-app024-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
+      "bytes": 617178727,
+      "sha256": "af627d2ba1d987e30ffbb22a92548792df66d0aa5d6095f2a699c5817d68dfe4",
+      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app024-installer-001/manifest.json",
+      "scope": "local ad-hoc arm64 only;no x64/notarization/release"
     },
-    "implementationCommit": "e6c2ecfbbe4c356c5d4a469275acc04fcad5be97",
     "postCommitVerification": {
-      "at": "2026-11-06T04:34:28.064824+00:00",
-      "frozenSourceFiles": 3684,
-      "currentSourceMismatches": 0,
-      "scope": "All source027 package inputs match committed worktree; no rebuild required after evidence/document-only commit",
-      "resourcesUsed": "files only"
+      "at": "2026-11-06T05:05:05.259925+00:00",
+      "sourceFiles": 3684,
+      "mismatches": 0,
+      "scope": "source028 all indexed bytes match committed worktree; documents/evidence only afterwards"
     }
   },
   "nextExecution": {
@@ -4249,11 +4356,12 @@
     "source": "source028",
     "sourceManifest": "/private/tmp/willyou-m12-p126-source-028/source-inputs.json",
     "sourceManifestSHA": "548a789dfcb648ed3c8ee32b0096c9b6bbd8b8ab3eed120e24b72d868d309ec4",
-    "status": "official build/native6 passed and archived;local installer/actualdownload A pending",
+    "status": "promoted current candidate: officialbuild/current privateinstaller/native6/stockCLI3/original8-8 verified;actualdownload A remains",
     "scope": "R01.7 old completed downloads must remain viewable after manual toolbar/menu reopening; initialize viewing interval on mount and preserve progress/hover timer semantics. One renderer production file and two maintained tests only.",
     "app": "/private/tmp/willyou-m12-s2-package-024/mac-arm64/WillYou.app",
     "asarSHA": "2e90245d6b4b8aac7d4c0d61aae8dc974902ac8d1621f59ad7125f1bff380e25",
-    "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P126/app024-build-001/manifest.json"
+    "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P126/app024-build-001/manifest.json",
+    "installerEvidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app024-installer-001/manifest.json"
   },
   "currentImplementationCheckpoint": {
     "commit": "91c85827f500446a81dff0e9c7cb90e0ded65f79",
@@ -4473,20 +4581,19 @@
   "currentParticipants": {
     "coordinator": {
       "agent": "/root",
-      "status": "contract and delivery review; no Native/UI resource held"
+      "status": "final archive/accounting;noNative/UI/build resource"
     },
     "executors": [
       {
-        "agent": "/root/t125_resume_ready",
-        "group": "T015 missing original U",
-        "status": "light-resource granted; await actual command receipt",
-        "privateRoot": "/private/tmp/willyou-m12-t015-U-closeout-001"
+        "agent": "/root/t092_upgrade_prep",
+        "group": "P127 safe archive",
+        "status": "delivered;idle;resources released"
       },
       {
-        "agent": "/root/t092_upgrade_prep",
-        "group": "T130 original U gap",
-        "status": "file audit; execute only demonstrated pure U gap",
-        "privateRoot": "/private/tmp/willyou-m12-t130-U-gap-closeout-001"
+        "agent": "/root/t125_resume_ready",
+        "group": "T015 originalA driver",
+        "status": "purefile delivery complete;idle;no resource held",
+        "privateRoot": "/private/tmp/willyou-m12-t015-App024-A-001"
       }
     ]
   },
@@ -4917,16 +5024,21 @@
     "currentKnownDisplay": "0online at22:45:21Z;originalUIdisplay/realfocus gates retained"
   },
   "lastCompletedBatch": {
-    "at": "2026-11-06T04:52:45.714858+00:00",
+    "at": "2026-11-06T05:05:05.259925+00:00",
     "uniqueFormalCasesAdded": [],
     "authority": "验收/测试用例.md",
     "originalLayerProgress": {
-      "M12-T015": "U complete, App A pending; stale-reopen product defect fixed with original red/green preserved",
-      "M12-T130": "two truly missing original U passed;parent partial"
+      "M12-T015": "original U now complete;reopen defect actual red→green;A pending",
+      "M12-T130": "2genuinely missing mapped U passed;parent partial"
     },
-    "build": "App024/source028 officialbuild/native6/source3684 beforeafter exact/scoped main167browser4helpers unchanged",
+    "evidence": [
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/download-U-closeout-current-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/nested-breadcrumb-U-gap-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P126/app024-build-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app024-installer-001/manifest.json"
+    ],
     "resourcesHeld": [],
-    "next": "P127 currentApp024 affected local installer prep; newforeground reply pending for frozenA/R groups;no old input replay"
+    "next": "T015 originalA frozen driver;new userforeground prerequisite forT099/T107/T004. No test or old input replay."
   },
   "preparedNextOriginalCases": [
     {
@@ -4960,6 +5072,16 @@
       "resourcesHeld": [],
       "actualAppStarted": false,
       "actualModelCalls": 0,
+      "formalIncrement": 0
+    },
+    {
+      "case": "M12-T015",
+      "root": "/private/tmp/willyou-m12-t015-App024-A-001",
+      "ready": "execution-ready.json",
+      "readySha256": "a0056d158f607651526ace50411534ad61280be6c184400f0b570de1a676a815",
+      "status": "executor frozen static delivery;Root execution review pending;requires fresh actual foreground and later system observations",
+      "resourcesHeld": [],
+      "actualAppStarted": false,
       "formalIncrement": 0
     }
   ],
