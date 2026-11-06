@@ -1,0 +1,92 @@
+{
+  "fromAttempt": "A005",
+  "toAttempt": "A006",
+  "classification": "A005 real drag minimum timeout after five modal terminal+restore flows; pointer cause unknown",
+  "actualA005AppPID": 35971,
+  "originalAppExit": {
+    "pid": 35971,
+    "code": 0,
+    "signal": null
+  },
+  "signals": [],
+  "completedModalFlows": [
+    {
+      "kind": "authentication",
+      "actualTerminalACK": "T026 ACK T026 UI authentication",
+      "restored": true
+    },
+    {
+      "kind": "access-request",
+      "actualTerminalACK": "T026 ACK T026 UI access-request",
+      "restored": true
+    },
+    {
+      "kind": "profiles",
+      "actualTerminalACK": "T026 ACK T026 UI profiles",
+      "restored": true
+    },
+    {
+      "kind": "cookie-import",
+      "actualTerminalACK": "T026 ACK T026 UI cookie-import",
+      "restored": true
+    },
+    {
+      "kind": "settings",
+      "actualTerminalACK": "T026 ACK T026 UI settings",
+      "restored": true
+    }
+  ],
+  "narrow": {
+    "before": {
+      "x": 768.7265625,
+      "y": 454,
+      "minimum": 420,
+      "value": 629,
+      "splitRight": 1396,
+      "innerWidth": 1400
+    }
+  },
+  "originalFailure": {
+    "stage": "real-drag-minimum-width",
+    "type": "Error",
+    "messageSHA256": "e7fc8e6a1e5cfb31d9b375a262f758b649fec777a5c9411f20df56b9154536d7"
+  },
+  "known": "Source onPointerDown setPointerCapture; onPointerMove updates width only if hasPointerCapture. Original CDP down had no buttons; moves buttons1; up no buttons.",
+  "hypothesis": "Missing down buttons1 may have prevented capture; not proved by A005 because no pointer event diagnostics were saved.",
+  "newOnlyFunctionalChange": "Explicit CDP down buttons1/up buttons0 with original five movements; passive trusted pointer/capture/aria diagnostics persisted before and after each real event and removed in finally.",
+  "originalA004CookieEnabledWaitRetained": true,
+  "sourceReference": {
+    "path": "/private/tmp/willyou-m12-cache-fix-source-029/source/src/renderer/lib/layout/workspace.tsx",
+    "sha256": "1ed1574bd5369f51984f446c941aa6555438ce72ebca988fa485fcc729d3dc2f",
+    "lines": "105-107"
+  },
+  "privateReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-005/execution-ready.json",
+      "sha256": "9011c301adc4b3a948fc0f690490bc780f8f4179daa768532954478a9d640ee1",
+      "bytes": 14466
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-005/run.mjs",
+      "sha256": "8faedb78f0abc14ec6bbd9cddfb48488fd19b99878e6ff7c51daa152b933bc85",
+      "bytes": 25076
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-005/raw.json",
+      "sha256": "ffa97ab3ab3cca7d95f97cc71615ff5465ad803bdb7b49fcaf79b228b768beb4",
+      "bytes": 362807
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-005/runtime-001/failure.private.log",
+      "sha256": "e7fc8e6a1e5cfb31d9b375a262f758b649fec777a5c9411f20df56b9154536d7",
+      "bytes": 218
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-005/cleanup.json",
+      "sha256": "1bbd5bf0205f3f05f74d044b19447d7bb74d947a4a27bb729d6895876886df6a",
+      "bytes": 4130
+    }
+  ],
+  "originalFilesModified": false,
+  "formalNewPasses": 0
+}

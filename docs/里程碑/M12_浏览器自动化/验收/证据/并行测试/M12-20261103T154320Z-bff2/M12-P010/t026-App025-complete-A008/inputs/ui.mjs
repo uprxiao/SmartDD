@@ -1,0 +1,7 @@
+import assert from'node:assert/strict';
+export function ui(app,record){
+ const evaluate=expression=>app.evaluate(expression);
+ const descriptor=(selector,text)=>evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getBoundingClientRect().width&&${text===undefined?'true':'e.textContent.trim()==='+JSON.stringify(text)});if(!e)return{missing:true};const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return{tag:e.tagName,role:e.getAttribute('role'),label:e.getAttribute('aria-label'),text:e.textContent.trim(),disabled:Boolean(e.disabled),x,y,width:r.width,height:r.height,unblocked:e.contains(document.elementFromPoint(x,y))}})()`);
+ async function click(selector,text){await app.checkInputFocus('M12.T015.SystemDownloads');let stable,prior,start=Date.now(),state;do{state=await descriptor(selector,text);assert(!state.missing&&!state.disabled&&state.unblocked,'Expected trusted UI control unavailable');const point=JSON.stringify([state.x,state.y,state.width,state.height]);if(point===prior)stable??=Date.now();else stable=undefined;prior=point;if(stable&&Date.now()-stable>=120)break;await new Promise(ok=>setTimeout(ok,40))}while(Date.now()-start<3000);assert(stable&&Date.now()-stable>=120,'Trusted UI geometry not stable');for(const type of['mouseMoved','mousePressed','mouseReleased'])await app.cdp('Input.dispatchMouseEvent',{type,x:state.x,y:state.y,...(type==='mouseMoved'?{}:{button:'left',clickCount:1})});await record({kind:'trusted-ui-click',selector,text,descriptor:state})}
+ return{click,descriptor};
+}

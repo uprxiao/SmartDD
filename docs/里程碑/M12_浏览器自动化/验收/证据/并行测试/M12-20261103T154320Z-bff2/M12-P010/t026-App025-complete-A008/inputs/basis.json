@@ -1,0 +1,123 @@
+{
+  "case": "M12-T026",
+  "layer": "A",
+  "originalCase": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md:64",
+  "originalRow": "| M12-T026 | R01.12 | A | T1 有网页标签；左侧终端在运行 | 依次打开基本认证、跨任务授权、登录态管理、Cookie 导入、浏览器设置弹框；每个弹框打开时点击左侧终端并输入一行；把右侧工作区拖窄到最小宽度再打开设置弹框 | 每个弹框的遮罩只覆盖浏览器区域、弹框在其中居中；终端可点击并收到输入；窄宽度下弹框随区域收缩、内容可滚动，不超出浏览器区域；网页视图在弹框打开期间显示为截图，关闭后恢复 | App009设置子集实际终端完整一行回执通过，App008全局dialog按键拦截已修复；遮罩/截图/居中通过；设置后续因焦点后置，其他弹框/窄宽仍缺 | 部分通过 | [修复复验与焦点后置](证据/并行测试/M12-20261103T154320Z-bff2/M12-P010/attempt-009/RESULT.md) |",
+  "originalContractUnchanged": true,
+  "App": "App025",
+  "source": "source029",
+  "entries": [
+    {
+      "kind": "authentication",
+      "entry": "UI address→local/auth401",
+      "selector": "[data-browser-panel=authentication]",
+      "close": "UI synthetic local user/password→登录"
+    },
+    {
+      "kind": "access-request",
+      "entry": "T2 actualstockCLI browser access request --task T1 --mode observe",
+      "selector": "[data-browser-panel=access-request]",
+      "close": "UI允许本次运行;actualCLI0"
+    },
+    {
+      "kind": "profiles",
+      "entry": "browser menu→登录态管理",
+      "selector": "[data-browser-panel=profiles]",
+      "close": "关闭"
+    },
+    {
+      "kind": "cookie-import",
+      "entry": "browser menu→导入Chrome／Edge登录态",
+      "selector": "[data-browser-panel=cookie-import]",
+      "close": "取消→profiles关闭; noimport"
+    },
+    {
+      "kind": "settings",
+      "entry": "browser menu→浏览器设置",
+      "selector": "[data-browser-panel=settings]",
+      "close": "完成"
+    },
+    {
+      "kind": "settings-narrow",
+      "entry": "realpointerdrag separator调整文件区域宽度 tocurrentaria-valuemin;menu→settings",
+      "selector": "[data-browser-panel=settings]",
+      "close": "完成"
+    }
+  ],
+  "terminalRequired": {
+    "expectedUILines": 6,
+    "sameT1PTYRunReceiver": true,
+    "actualReceiverAndPTYstdoutReceipts": true
+  },
+  "nonTestedSetup": "new API data/health/browser enabling + actualstockCLI pagecreate. No realmodel/auth. Setupreload exactlyonce before UI focusguard.",
+  "relatedSourceFiles": [
+    {
+      "path": "src/renderer/features/browser/workspace.tsx",
+      "sha256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018"
+    },
+    {
+      "path": "src/renderer/features/browser/auth-dialog.tsx",
+      "sha256": "1e5cc71922c0558af0a50c572bc147fdf69d3b58028b32f1726c58fe43e17244"
+    },
+    {
+      "path": "src/renderer/features/browser/access-dialog.tsx",
+      "sha256": "987fb29f7b94daf4118dd44924cdb60c821d1b96625982e88ddd07be1dc6d0cf"
+    },
+    {
+      "path": "src/renderer/features/browser/profile-site-states.tsx",
+      "sha256": "84d09c62a295349f5d305a92e8970d8530465f6d54f23ec813b94e3693762728"
+    },
+    {
+      "path": "src/renderer/features/browser/cookie-import-dialog.tsx",
+      "sha256": "e58c2de1a131d03cf4b21972078918a3b54455bde39a9ab9d4efe7144001560a"
+    },
+    {
+      "path": "src/renderer/features/browser/settings-dialog.tsx",
+      "sha256": "40f27b27aad672c9aa8a43a3a4c45c95d4bc25c98c32a0afbcd0b1808bb3a39b"
+    },
+    {
+      "path": "src/renderer/features/browser/workspace.css",
+      "sha256": "04469524c97d129a07c886534627fadb93ece88f72532ab8cc579dd2e08c536a"
+    },
+    {
+      "path": "src/renderer/lib/layout/workspace.tsx",
+      "sha256": "1ed1574bd5369f51984f446c941aa6555438ce72ebca988fa485fcc729d3dc2f"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/sources.ts",
+      "sha256": "c3b074c20149d72d7f767e81279a1866629fab96a19d5bf428d4dcdd7a873194"
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "sha256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f"
+    }
+  ],
+  "formalNewPasses": 0,
+  "attempt": "A007",
+  "imageObservationOnly": {
+    "acceptedFormats": [
+      "image/png",
+      "image/jpeg"
+    ],
+    "originalBytesAndCarrierSavedFirst": true,
+    "noTranscode": true,
+    "MIMEMagicNaturalDimensionsIndependentJudge": true,
+    "A001ProductionJPEGLostBeforeOldAssert": true,
+    "originalBusinessFlowUnchanged": true,
+    "originalBusinessJudgeUnchanged": true
+  },
+  "pointerObservationOnly": {
+    "CDPDownButtons": 1,
+    "CDPMoveButtons": 1,
+    "CDPUpButtons": 0,
+    "realMoves": 5,
+    "originalCoordinatesAndMinWidthUnchanged": true,
+    "passiveTrustedNativePointerObservation": true,
+    "diagnosticsBeforeDownMovesUpSaved": true,
+    "listenersRemovedInFinally": true,
+    "noDOMStoreCSSMutation": true,
+    "rootCauseStillHypothesis": true,
+    "CDPMoveButton": "left"
+  },
+  "originalFullFlowAndJudgeUnchanged": true
+}

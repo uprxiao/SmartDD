@@ -1,0 +1,1 @@
+let bytes=[];for await(const b of process.stdin)bytes.push(b);const all=Buffer.concat(bytes);console.log(JSON.stringify({bytes:all.length,matched:all.equals(Buffer.from('M12_SYNTHETIC_STDIN_001'))}));

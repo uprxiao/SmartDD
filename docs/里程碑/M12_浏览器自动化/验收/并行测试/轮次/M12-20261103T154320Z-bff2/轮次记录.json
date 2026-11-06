@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-06T09:35:23.772089+00:00",
+  "updatedAt": "2026-11-06T12:16:20.206001+00:00",
   "status": "S2-S6 active acceptance closure; actual counts only in original121-case authority; no Native/UI/build resource held",
   "coordinator": "/root",
   "agents": [
@@ -26,7 +26,7 @@
   "requirements": "需求R1.6",
   "technicalDesign": "技术方案V1.5",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "T125 originalR closed; T105 A002 real create succeeded but driver unknown-childcode and hidden right pane diagnosed; no UI currently active",
+  "currentGroup": "M12-T123-T124-App025-original-R003",
   "resources": {
     "build": {
       "owner": "/root",
@@ -86,34 +86,21 @@
     },
     "nativeUi": {
       "status": "complete/released",
-      "coordinator": "root",
       "owner": "/root",
-      "privateRoot": "/private/tmp/willyou-m12-t105-App025-A-R-002",
-      "executable": "/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+      "group": "M12-local-stdin-transport-preflight-001",
+      "privateRoot": "/private/tmp/willyou-m12-direct-stdin-preflight-001",
       "resources": [
-        "Native",
-        "UI",
-        "App",
         "PTY",
-        "HTTP",
-        "TCP",
-        "Unix",
-        "OS"
+        "OS-local-private-terminal"
       ],
-      "notBefore": "2026-11-06T09:25:14.442541+00:00",
-      "expiresAt": "2026-11-06T09:55:14.442541+00:00",
-      "revoked": false,
-      "initialFocusHook": null,
-      "executionReadySHA256": "69cdb311f166b53fb34cf30f76befdc7d43befbe9ea1220a6bda9cb0239a7e4e",
-      "scope": "Only original T105 actual create/login/snapshot two turns;one automatic health; installed App025; new isolated task/profile/userData; strict fresh passive focus guard; no retry/resend",
-      "group": "M12-T105-App025-original-A-R002",
-      "payloadAuthorizationReference": "call_37b4e54217d14450b2de5229dab907f7/0",
-      "completedAt": "2026-11-06T09:35:23.772089+00:00",
-      "actualToolSession": 38133,
-      "driverPid": 3451,
-      "appPid": 3460,
-      "outcome": "Actual real first prompt exactACK/create completed; original parser childExitnull rejected despite typedCommandExecution exit0. User correctly saw no page: right pane default closed and not selected by background tab create. Both diagnosed before rerun; App normal0/null/signals[]/10PID9TCP2Unix1helper clear. Original raw preserved, second prompt not sent.",
-      "resourcesHeld": []
+      "notBefore": "2026-11-06T12:11:48.734924+00:00",
+      "scope": "one synthetic stdin transport, ownTTY stty only; no App/model/auth/network/foreground/clipboard",
+      "completedAt": "2026-11-06T12:16:20.206001+00:00",
+      "sessions": [
+        84539,
+        32733
+      ],
+      "outcome": "Both own foreground localTTY pipelines completed0; exactnonsecret stdin/echooff; finalcatpipe24B/nonTTYtrue/newlineTrimtrue; no App/auth/model"
     },
     "lightSoftware": {
       "status": "complete/released;file packaging only",
@@ -142,9 +129,10 @@
     "nativeUiPrevious": {
       "status": "complete/released",
       "coordinator": "root",
-      "owner": "/root",
-      "privateRoot": "/private/tmp/willyou-m12-t105-App025-A-R-001",
+      "executionOwner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-t123-t124-real-R-003",
       "executable": "/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+      "executionReadySHA256": "97bc7c61af6e1574a32f5c9218de3ef4c69843fcd3eb16a656a83079a1523a8a",
       "resources": [
         "Native",
         "UI",
@@ -155,21 +143,34 @@
         "Unix",
         "OS"
       ],
-      "notBefore": "2026-11-06T09:17:32.501273+00:00",
-      "expiresAt": "2026-11-06T09:47:32.501273+00:00",
+      "notBefore": "2026-11-06T12:02:58.737369+00:00",
+      "expiresAt": "2026-11-06T13:07:58.737369+00:00",
       "revoked": false,
-      "initialFocusHook": null,
-      "executionReadySHA256": "3764fdba41bdf70dfc5b77efb808fb81682b8acaac2b10efa3be57247dcd933e",
-      "scope": "Only original T105 actual create/login/snapshot two turns;one automatic health; installed App025; new isolated task/profile/userData; strict fresh passive focus guard; no retry/resend",
-      "group": "M12-T105-App025-original-A-R001",
-      "payloadAuthorizationReference": "call_37b4e54217d14450b2de5229dab907f7/0",
-      "actualToolSession": 44198,
-      "dispatchStatus": "actual command started; awaiting private runtime observations",
-      "completedAt": "2026-11-06T09:23:46.030070+00:00",
-      "driverPid": 99933,
-      "appPid": 99934,
-      "outcome": "Original first canonicalACK deadline incorrectly includes cold launch. Native session appeared13.7s after Home click; only session_meta/task_started at cutoff, no user/tool/completion observed; delivered-to-model unknown. App normal0/null/signals[]; independent7PID/6TCP/2Unix clear. Original raw/judge retained. No same-task operation resend.",
-      "resourcesHeld": []
+      "oneBatch": true,
+      "boundary": "All resource allocation only by Root, no actual resource grant in this preparation.",
+      "owner": "/root",
+      "group": "M12-T123-T124-App025-original-R003",
+      "userApprovedInitialPreparation": {
+        "reference": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+        "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+        "oncePerNewPID": true
+      },
+      "payloadReview": {
+        "SHA256": "c205d863a77e92bf9bb4c93f66bc321d48c48f2f4cc1362605c190b39db60d7e",
+        "RootReviewed": true,
+        "scope": "same user goal, synthetic localhost/public Skill and owned test metadata to OpenAI gpt6.1sol; existingCLI login opaque authentication reuse; no realprojects or realcredentials in payload; actual workspacewrite/onrequest preserved",
+        "newVerbatimUserApprovalClaimed": false
+      },
+      "actualSession": 34451,
+      "driverPid": 52222,
+      "appPid": 52230,
+      "fixturePorts": [
+        51323,
+        51324
+      ],
+      "actualStage": "T124-peer-default-qa-precondition-real-model",
+      "completedAt": "2026-11-06T12:11:48.734924+00:00",
+      "outcome": "Initialdefaultqa login realAgent passed passwordliteral into shell printf despite stdinCLI; existing gate stopped; no T124main/T123;normal0null/noSignals;15PID11TCP2Unix1helper clear"
     }
   },
   "groups": [
@@ -4259,9 +4260,13 @@
     }
   },
   "nextExecution": {
-    "resourcesHeld": [],
-    "nextAutonomous": "Fix T105 producer from real typed exit evidence; open right workspace/select actual tab with trusted UI before login; prepare T026 full5modal A",
-    "pendingPlatform": "Original x64/system/realBug requirements remain"
+    "resourcesHeld": [
+      "M12-T026-App025-original-A003-initial-user-approved"
+    ],
+    "nextUI": "T105 A004 raw-first originalA+R;T026 all5modals; originalUI focus conditions required",
+    "nextSOP": "T123/T124 fixed6prompt+1health App025 shared setup/UI, Rootreview/actualtoolapproval then only actuallease",
+    "pendingUser": "Specific initial exact-PID AppleScript foreground method choice; prior T026 click request refers closed window",
+    "pendingPlatform": "Original x64/system/real Bug requirements retained"
   },
   "nextPackageCandidate": {
     "app": "App025",
@@ -4497,18 +4502,18 @@
   "currentParticipants": {
     "coordinator": {
       "agent": "/root",
-      "status": "Review/evidence/authority;Native resources released"
+      "status": "file-only archive/ready/new initial-focus proposal; no OS activation authorized"
     },
     "executors": [
       {
         "agent": "/root/t092_upgrade_prep",
-        "group": "T125007 original 8 predicates offline",
+        "group": "T123+T124 full original R/UI shared-window static",
         "status": "file-only"
       },
       {
         "agent": "/root/t125_resume_ready",
-        "group": "T026 original full5modals/terminal/narrow A",
-        "status": "file-only preparation; no Native grant"
+        "group": "actual Host cache I004 afterStop memory observations",
+        "status": "file-only,no Native grant"
       }
     ]
   },
@@ -4999,22 +5004,36 @@
     },
     {
       "case": "M12-T105",
-      "root": "/private/tmp/willyou-m12-t105-App025-A-R-001",
+      "root": "/private/tmp/willyou-m12-t105-App025-A-R-004",
       "ready": "execution-ready.json",
-      "readySha256": "3764fdba41bdf70dfc5b77efb808fb81682b8acaac2b10efa3be57247dcd933e",
-      "payloadReviewSHA256": "0f4335256181396bede5353ad155c1fa38b67d322847a6fd0ac73e7cb2551aee",
-      "status": "exact3send OpenAI new payload approval requested; no response, no execution",
-      "resourcesHeld": [],
+      "readySha256": "8ef5b5b6928101d967937a63a55ab675973d1a2b86127a1d1b30d847a833b88e",
+      "status": "frozen data-first; lease revoked before anyexecution; currentUI prerequisite pending",
       "actualAppStarted": false,
-      "actualModelCalls": 0
+      "resourcesHeld": []
+    },
+    {
+      "case": "M12-T026",
+      "root": "/private/tmp/willyou-m12-t026-App025-A-002",
+      "ready": "execution-ready.json",
+      "readySha256": "b267720c6cbb904058bedc8de201da9ff9fcb21315f2e7ef9b25b186d9022106",
+      "status": "executed initial-focus only,0UIbusiness; originalallClear; newattempt requires new currentfocus condition",
+      "resourcesHeld": []
+    },
+    {
+      "case": "M12-T123",
+      "sharedCase": "M12-T124",
+      "root": "/private/tmp/willyou-m12-t123-t124-real-R-001",
+      "ready": "execution-ready.json",
+      "readySha256": "b556ab4f25b06b7511d4d7f54636432843faabeabc3a487c10f406ca6664ac1c",
+      "payloadSHA256": "c205d863a77e92bf9bb4c93f66bc321d48c48f2f4cc1362605c190b39db60d7e",
+      "status": "static only;Rootreview/taskscope/auth reuse evidence and actualtoolreview required; no authread or execution",
+      "resourcesHeld": []
     }
   ],
   "foregroundPrerequisitePending": {
-    "requested": true,
-    "status": "awaiting new user availability reply; elapsed time is not a response",
-    "scope": "T099 A005 new labeled window only; old T130/A004 focus replies not reusable",
-    "notStarted": true,
-    "noRepeatedWindow": true
+    "status": "userconfirmed-unlocked-and-observed-iTerm2",
+    "at": "2026-11-06T11:32:59.257034+00:00",
+    "authorizationReference": "call_c9b05df4d90f4ca5bbd3efef4f1712e1/0"
   },
   "priorCandidateBaseline": {
     "app": "App024",

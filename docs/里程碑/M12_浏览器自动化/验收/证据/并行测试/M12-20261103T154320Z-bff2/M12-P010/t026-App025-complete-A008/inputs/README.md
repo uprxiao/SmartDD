@@ -1,0 +1,19 @@
+原M12-T026 A完整最小组，App025/source029；只文件准备，未执行。
+
+单一新App/userData、同项目T1/T2合成managed caller。非验收API只建project/profile/task/选用browser及健康前置；真实stockCLI只准备T1页面及T2跨任务请求。health/config由既有S6 receiver合成处理，绝不启动真实Codex/OpenAI或读authseed。受验五弹框全部在同一T1当前网页连续：Basic认证、本次运行跨任务访问请求、登录态管理、Cookie导入source表单、浏览器设置。再真pointer拖右工作区至本次separator aria-valuemin，重开settings第六次，检查收缩/边界/实际overflow滚动。
+
+前置完成后一次setup reload；按frozen harness文档，仅此时arm重建PTY输出collector（不是focusguard），然后被动Native+DOM连续3秒、一次focusguard。真实UI选择T1，若显示启动则UI绑定既有PTY，逐次核同task/PTY/run/receiverPID，没有重启或RPC替代界面输入。每框真实click左xterm→Input.insertText一整行→一组Enter keyDown/keyUp；六个独立marker由receiver真实stdin.readline保存，实际stdout ACK由新collector接收并保存完整private文本与SHA，modal必须仍开。T2的S6 eventSend只传一次控制调用给真实stockCLI来触发请求，明确不计为被验收terminalUI输入；其后实际UI允许observe本次运行，CLI收到真实成功结果。
+
+Basic只本机HTTP401合成账号，terminal回执后真实主页面字段输入/登录关闭，无真实账号/持久化auth/外部服务。Cookie表单会自动discover，因此App启动时强核os.homedir与envHOME都为本组全新privateHOME，真实sources.ts默认根即该HOME/Library/Application Support，空根不存在任何Chrome/Edge来源。准备及运行均不读真实Chrome目录/Cookie/Keychain。先等待source表单加载完成再terminal测试，断言0source radios、Next禁用、无ConfirmImport；只取消回profiles再关闭，绝不Next/导入。不是伪造RPC结果。
+
+每框先保存实际生产overlay dataURL与未经转码的原始PNG/JPEG字节、App模态截图及几何；scrim必须等于.bw-workspace，dialog在其中心且边界内，精确T1 terminal在scrim左外。实际native page需隐藏/停放，关闭后待同contentsId/URL/parent/main可见bounds稳定120ms和真实文档ready，再读已绑定debugger请求的截图原始字节；同page/profile/T1未变。异常保留精确阶段/原private错误，未知错误不视为权限拒绝、不盲重试。
+
+只用原UI可达入口；不改store/DOM值/SQL/产品，不复制旧DB或OSgate。最窄通过真实pointer drag（不是CSS/窗口替身）和当前aria min回执，scrollHeight溢出时真实wheel必须移动，内容全显示时记录无需滚动。原T026A判据完整，已有P010设置子集/P033认证缺终端旧结果均保留，不拿它们替代当前完整A。
+
+Root完整Native/UI/App/PTY/HTTP/TCP/Unix/OS租约后一次run.mjs --execute，随后原cleanup.mjs和judge.mjs；只停本App/task/caller/helper/listeners并核精确资源。没有系统键盘/IME、剪贴板、系统权限或外部App动作，不需要新模型发送授权。lease只有template，当前无runtime/receipt。首窗口ready会报告准确PID/title，不能激活、抢焦点、重arm守卫；失焦即保留partial并正常收尾。
+
+A002仅修正图像观察：按dataURL MIME、实际magic、header尺寸及DOM natural尺寸独立判定PNG/JPEG；先持久化原carrier与原bytes，再收集后续业务，格式错误交最终judge。A001原JPEG在旧PNG硬断言前未落盘，不能恢复；controls使用既有notebook真实编码JPEG及A001已保存的baseline PNG，均不是补造A001模态图。原六组业务流程及原业务judge逐字不变，App/source/权限不变；原A001失败、原始日志及清场证据只引用哈希，全部保留。
+
+A006仅修拖动输入按钮状态并加只读观察：mousePressed buttons=1，五次mouseMoved buttons=1，mouseReleased buttons=0；原起点/终点/最小宽/次数不变。drag阶段安装passive capture listeners记录真实pointer事件的pointerId/buttons/isTrusted/目标/hasPointerCapture/aria宽；每次实际CDP事件前后存本次原观察，finally移除监听。无合成DOM事件、无DOM/store/CSS改写、无主动setPointerCapture。A005未保存原pointer诊断，缺buttons造成capture未取仍是待实证假设。原五modal/Cookie取消等待enabled、图片、6次终端合同、judge以及用户已授权的一次准确PID初次前台helper全部保持，不能把五个已绿modal当整条T026已绿。
+
+A007仅在原五次held mouseMoved增加button:left，buttons:1/原坐标/五次数不变；down/up状态与A006只读pointer诊断全部保持。依据本机Playwright1.58.2、Puppeteer24.22.3实际move实现及本地CDP定义（省button默认none），sourceSHA见A006-lineage.safe.json。A006 down后capture已true，firstmovefalse且宽629的真实八事件原样保留；本次修法尚未实际证明因果，不改产品结论。为保持原judge和合并判定简单，继续原full6流程，不新增矩阵。

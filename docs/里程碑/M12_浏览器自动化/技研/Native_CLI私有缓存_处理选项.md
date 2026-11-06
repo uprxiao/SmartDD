@@ -1,6 +1,6 @@
 # Native CLI 私有缓存处理选项
 
-状态：最小本机技术对照已完成，用户已明确选择仅受管运行关闭快照（call_f99a728810f84864add1a486866164c6/0）；现行规则已合入需求R1.6、技术方案V1.5，生产修复、本机安装及实际Host机制实测已完成，业务续接回归独立核验。关联发现`M12-NATIVE-CACHE-01`，本文件不作为正式用例通过证据。
+状态：最小本机技术对照已完成，用户已明确选择仅受管运行关闭快照（call_f99a728810f84864add1a486866164c6/0）；现行规则已合入需求R1.6、技术方案V1.5，本机arm64生产修复、安装、实际Host机制及真实业务恢复／停止回归已完成；其他平台与剩余M12验收取原账。关联发现`M12-NATIVE-CACHE-01`，本文件不作为正式用例通过证据。
 
 原发现和证据见[冻结核查](../验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/native-token-cache-boundary-001/manifest.json)。真实Codex0.166.0曾将本次运行授权串写入自己的shell快照；这不是禅道、邮件或OpenAI账号密钥。外层0700限制不同系统用户访问，同UID仍可读取。停止后宿主撤销授权与磁盘副本是否保留是两项独立保证，不能混写；既有停止后旧身份拒绝证据不证明缓存被删除。
 
@@ -24,3 +24,6 @@
 
 
 2026-11-06 当前App025工程补证：[实际Host I003](../验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P129/actual-Host-cache-I003/manifest.json)、[Root限定复核](../验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P129/current-App025-coordinator-001/manifest.json)。生产Host确实以最后的关闭参数启动固定CLI，原生身份在同run/task被实际接受；活跃期扫描本次新私有CODEX_HOME的77文件、3,775,800字节，raw/base64/UTF16LE无命中、无扫描错误。一条实际identity命令child0。原90秒超时来自仅识别event_msg/user_message的观察器；离线原严格canonical读取恢复一次完整150B user ACK及一call/output/completion，原4/7判定保留。实际停止及只读完整DB行stopped/revoked有证据，但没有保存停止后tokenMap／AbortSignal观察，不能由DB补写内存结论。未连接真实OpenAI或复制认证；这层I不代替真实业务R／恢复，也不删除或证明历史缓存消失。
+
+
+2026-11-06 I004独立实际停止补证：[完整可恢复输入／原始安全数据／Root复核](../验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P129/actual-Host-cache-I004/manifest.json)。原I003的缺项与4/7历史判定保持；本次新执行修正严格canonical reader，只做一条真实readonly identity，本机合成provider，未读取认证或连接真实OpenAI。issue正常delegate后捕获原OwnedRun、其Signal及Gateway Map原引用；停止前后引用恒等均实测true，精确绑定由有到无、该run绑定数1→0、同Signal.aborted false→true，DB同run stopped/revoked。每份原始snapshot先落盘再独立判定，不从DB推断内存事实。活跃Native新私有CODEX_HOME扫描77文件／3,775,800B零命中、无错误；原judge7/7，App正常0/null/无signal，21项准确资源全清。测试观察器为匹配仍持有原值，随后记录已清；本结论是授权绑定回收，不能描述为进程堆值清零或历史缓存清除。真实恢复另见已接受T125，原沙箱、审批与全局配置保持。
