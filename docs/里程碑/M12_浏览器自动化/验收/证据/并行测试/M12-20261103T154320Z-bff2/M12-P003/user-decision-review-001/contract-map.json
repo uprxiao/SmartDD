@@ -1,0 +1,74 @@
+{
+  "case": "M12-T004",
+  "requirementsRevision": "R1.5",
+  "technicalRevision": "V1.4",
+  "testRevision": "V1.3",
+  "userDecision": "call_f1942c39fc1b4d35addbb00e53ad203f/0: delete project also deletes its tasks; do not turn into no-project tasks",
+  "criteria": [
+    {
+      "id": "C01",
+      "rule": "T0 has no webpage tabs/new-browser entry",
+      "layers": [
+        "A"
+      ],
+      "passed": true,
+      "source": "P003 A-T0-no-web, raw.t0Before, exact unchanged TaskChrome/browser shortcut gate"
+    },
+    {
+      "id": "C02",
+      "rule": "T0 file area remains usable",
+      "layers": [
+        "A"
+      ],
+      "passed": true,
+      "source": "P003 A-T0-file, raw.t0Before.files/fileHidden/fileText and original t0-file.png; unchanged FileService"
+    },
+    {
+      "id": "C03",
+      "rule": "T0 native terminal does not have willyou-app; original command not found",
+      "layers": [
+        "R"
+      ],
+      "passed": true,
+      "source": "P003 native10→13 one exact exec_command, actual127; UI resume+uniquePTY/private source/cwd+exactprompt; launch nativeSessionId null preserved"
+    },
+    {
+      "id": "C04",
+      "rule": "Delete project via actual UI and cascade remove owned tasks; do not reparent to no-project",
+      "layers": [
+        "A"
+      ],
+      "passed": true,
+      "source": "P083 A4-011 one delete+confirm; all-row SELECT tasks final[] and project[]"
+    },
+    {
+      "id": "C05",
+      "rule": "Remove task webpage labels/workspaces/pages; no task available for continued browser operation",
+      "layers": [
+        "A"
+      ],
+      "passed": true,
+      "source": "P083 A4 metadata workspaces/recent empty and original two nativeWCs closed, all tasks gone"
+    },
+    {
+      "id": "C06",
+      "rule": "R05.9 project/task profiles and login storage cleaned",
+      "layers": [
+        "A"
+      ],
+      "passed": true,
+      "source": "P083 A4 two original profiles absent; original native partitions Cookies empty/localStorage null/anonymous; source024→026 exact same cleanup modules"
+    }
+  ],
+  "supersededExpectations": [
+    "Old deleted-project task retained",
+    "Old deleted-project task file area remains usable"
+  ],
+  "originalRedNotRewritten": true,
+  "T0FileExpectationUnchanged": true,
+  "originalLayersComplete": [
+    "A",
+    "R"
+  ],
+  "formalCaseIncrement": 0
+}
