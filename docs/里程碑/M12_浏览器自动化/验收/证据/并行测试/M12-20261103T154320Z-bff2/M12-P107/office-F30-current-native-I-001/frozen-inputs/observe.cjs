@@ -1,0 +1,12 @@
+// Process/thread-local metadata observer. Original spawn, Worker, .node calls delegate unchanged.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),Module=require('node:module'),cp=require('node:child_process'),wt=require('node:worker_threads');
+const root=process.env.M12_F30_I_ROOT;if(root!=='/private/tmp/willyou-m12-t130-F30-native-prep-001')throw Error('observer root mismatch');
+const log=event=>fs.appendFileSync(path.join(root,'output',`process-${process.pid}.jsonl`),JSON.stringify({at:new Date().toISOString(),pid:process.pid,threadId:wt.threadId,isMainThread:wt.isMainThread,...event})+'\n');
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+log({event:'process-start',ppid:process.ppid,execPath:process.execPath,cwd:process.cwd(),versions:{electron:process.versions.electron??null,node:process.versions.node}});
+const originalSpawn=cp.spawn;
+cp.spawn=function(...args){const child=Reflect.apply(originalSpawn,this,args),executable=String(args[0]);log({event:'spawn',childPID:child.pid??null,executable,isExactBroker:executable===process.env.M12_F30_BROKER});child.on('error',e=>log({event:'child-error',childPID:child.pid??null,name:e.name,message:e.message}));child.on('close',(code,signal)=>log({event:'child-close',childPID:child.pid??null,code,signal}));return child;};
+const nativeLoader=Module._extensions['.node'];Module._extensions['.node']=function(module,filename){const before=hash(filename),result=Reflect.apply(nativeLoader,this,arguments);log({event:'native-addon-loaded',filename:fs.realpathSync(filename),sha256:before});return result;};
+const OriginalWorker=wt.Worker;
+wt.Worker=class extends OriginalWorker{constructor(...args){super(...args);const entry=String(args[0]),workerThreadId=this.threadId;let entrySHA256=null,hashError=null;try{entrySHA256=hash(entry);}catch(e){hashError=e.message;}log({event:'worker-created',workerThreadId,entry,entrySHA256,hashError});this.on('online',()=>log({event:'worker-online',workerThreadId}));this.on('message',m=>log({event:'worker-message',workerThreadId,requestId:m&&typeof m==='object'?m.id??null:null,resultPresent:!!m&&typeof m==='object'&&Object.hasOwn(m,'result'),errorCode:m&&typeof m==='object'?m.error?.code??null:null}));this.on('error',e=>log({event:'worker-error',workerThreadId,name:e.name,message:e.message}));this.on('exit',code=>log({event:'worker-exit',workerThreadId,code}));}};
+Module.syncBuiltinESMExports();process.on('exit',code=>log({event:wt.isMainThread?'process-exit':'thread-exit',code}));

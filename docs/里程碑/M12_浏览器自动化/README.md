@@ -27,7 +27,9 @@
 
 ## 最近闭合与当前缺项
 
-- [T080原完整I静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/App026-full-I-static-ready-001/manifest.json)已复核，等待实际桌面前置，尚未执行。[原型参照代表预检](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-representative-attempt005/manifest.json)已完成，完整矩阵继续；[原完整轮次失败及有效图链](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-full-attempt007/manifest.json)保留原红，不计作实际App验收。
+- [T130当前CSV、光栅原输入及Office交接的组件补验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/current-component-root-review-002/manifest.json)已形成实际Native／解析线程与清场证据；[CSV原观察器红及进程角色勘误](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/csv-F17-root-review-001/manifest.json)保留，不外推实际App A／完整T130。[关闭时序独立诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/Root-close-review-004/manifest.json)已区分RPC断连与原进程退出，旧补图技术红未改。
+
+- [T080原完整I静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/App026-full-I-static-ready-001/manifest.json)已复核，等待实际桌面前置，尚未执行。[原型参照支持态完整矩阵](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-full-attempt009/manifest.json)与[新增失败态补图](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/missing-source-P-attempt004/manifest.json)已取得；补图原关闭RPC技术红、此前夹具失败及旧图来源均保留，实际App对照仍待，不计正式整条通过。
 
 - [B13已确认缺失来源的合成演示入口修复与原型U](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/prototype-missing-source-U-ready-001/manifest.json)已形成可恢复源码；仅辅助原型增量，新状态实际P仍待，原不可变参照与App026生产包保持各自依据，详见[原型变更](原型/原型说明与变更.md)。
 
@@ -47,7 +49,7 @@
 - [T130当前D04/D06真实App补测](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/app-tabs-actual-005/manifest.json)已通过；[T130原缺组补测](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/final-two-native-UI-001/manifest.json)及[原映射补缺](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/mapped-unit-aspects-001/manifest.json)已有实际证据，完整App矩阵仍待；补充I不替代原App／原型／模型层级。
 - [真实T121未复现流程](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P119/t121-coordinator-final-001/manifest.json)已收口；[T120原真实复现](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P120/t120-coordinator-final-001/manifest.json)亦已收口；T125已完成同profile真实修复复验；Cookie恢复界面、授权与活动记录及其余原界面用例按权威账继续。原SOP红、修复来源和发送授权见执行记录；同一已授权payload继续复用现有CLI登录，不重复索取登录。
 - [桌面与真实焦点复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/desktop-wake-and-native-focus-002/manifest.json)已确认当前显示可用，并通过本轮隔离窗口的真实点击取得焦点；[此前合盖预检](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/current-desktop-readiness-001/manifest.json)作为历史环境记录保留。该次焦点仅对应原窗口；最近未取得焦点的独立实例见下方接续说明，不能沿用历史焦点。
-- [系统剪贴板T088](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P084/current-app022-006/manifest.json)已完成实际I＋S与原全部表示恢复；系统Keychain、双显示器、真实Bug、x64真机及产品合同冲突等未决项见原用例账与计划；未执行、失败、部分结果均不算完整通过。
+- [系统剪贴板T088](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P084/current-app022-006/manifest.json)已完成实际I＋S与原全部表示恢复；系统Keychain、双显示器、真实Bug入口和x64真机等未决项见原用例账与计划；未执行、失败、部分结果均不算完整通过。
 - [Native私有缓存运行token发现](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/native-token-cache-boundary-001/manifest.json)已按用户决定修复并取得当前Host机制实测，受影响回归及原发现边界见执行记录；[处理选项](技研/Native_CLI私有缓存_处理选项.md)已补最小本机开关对照，用户已确认仅受管运行关闭快照，当前安装及Host机制实测已完成，业务续接独立核验。
 
 ## 接续顺序

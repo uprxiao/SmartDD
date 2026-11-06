@@ -1,0 +1,33 @@
+{
+  "scope": "Fixed aboutblank only;2page+2browserRoot close calls plus1explicittransportFI, independent owned profiles",
+  "normalObservationMs": 5000,
+  "cases": [
+    {
+      "id": "page-1",
+      "endpoint": "page",
+      "fault": "none"
+    },
+    {
+      "id": "page-2",
+      "endpoint": "page",
+      "fault": "none"
+    },
+    {
+      "id": "browser-1",
+      "endpoint": "browser",
+      "fault": "none"
+    },
+    {
+      "id": "browser-2",
+      "endpoint": "browser",
+      "fault": "none"
+    },
+    {
+      "id": "browser-disconnect-fi-1",
+      "endpoint": "browser",
+      "fault": "disconnect-after-send",
+      "faultBoundary": "Explicit own-WebSocket transport fault injection only, no process signal; not an asserted reproduction of004"
+    }
+  ],
+  "noVitePrototypeAppModelAuthKeychain": true
+}

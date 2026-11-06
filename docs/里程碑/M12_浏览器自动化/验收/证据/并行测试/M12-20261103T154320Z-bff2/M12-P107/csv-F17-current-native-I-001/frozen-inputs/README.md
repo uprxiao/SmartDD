@@ -1,0 +1,13 @@
+M12-T130 / original M9 F17 CSV/TSV engineering I only.
+
+The unchanged original `csv/acceptance.test.ts` runs one test over the five original synthetic fixture/oracle cases. It verifies actual native source bytes, revision-bound reads, decoding/model behavior and source identity preservation. The separate original five model U tests are already passed and are not selected here. Full T130 A/P is still missing; formal increment is zero.
+
+Inputs are 142 runtime-import source files frozen from source030, all byte-identical to the prior T130 work. No SQLite runtime import is in this closure. The exact installed App026 FileBroker is executed. The exact packed App026 watcher JS loader is extracted as a private component fixture; its platform addon is linked directly to the current App026 unpacked native file. Ordinary Node runs this component I, with the original electron mock unchanged. This does not exercise production Electron main, current Electron signing policy, App UI or real Office applications.
+
+`observe.cjs` temporarily wraps Node spawn/native-addon loading in the test processes, delegates every original call unchanged, records only exact executable/PID/terminal/native-file hashes and exits with those processes. It does not change the original test, FileBroker, watcher, production package or native code. The child environment contains only listed public configuration and private HOME/TMP/cache paths. No model, auth, HTTP, focus, keyboard, clipboard or external data is used.
+
+Before any execution Root must grant `lease.receipt.json` for exact group `M12-T130-F17-current-native-I001`, owner `/root/t125_resume_ready`, this private root and the exact READY SHA. `run.mjs` checks the lease, all frozen hashes/modes/links, fresh outputs and private caches before starting the single original suite. Only maxWorkers1/no file parallelism is allowed.
+
+Commands are in READY.json. Run once, then independent `cleanup.mjs --verify`, then `judge.mjs`. Cleanup checks every observed own PID and surviving direct descendants with ps; it never signals daily or unknown processes. Any alive/unknown PID means resources remain held and must be reported, not silently treated as released. There is no App, listener, mount or system GUI process to clean. Preserve full private errors and first failures; no automatic rerun.
+
+Dependency proof pins the existing private T130 node_modules link, all original 39 named dependency manifests, the 17 resolved runtime bare entry files/owner manifests, watcher transitive entry files and exact native files. It does not claim every byte of the public dependency tree has been frozen. All local production/test execution source bytes are private snapshots.

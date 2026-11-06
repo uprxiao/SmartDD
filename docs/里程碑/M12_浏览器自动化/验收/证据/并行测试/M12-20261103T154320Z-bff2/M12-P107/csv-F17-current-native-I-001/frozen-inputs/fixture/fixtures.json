@@ -1,0 +1,116 @@
+{
+  "cases": [
+    {
+      "name": "matrix.csv",
+      "source": "name,quoted,multiline,empty,formula\r\n中文🙂,\"comma, plus\tTAB\",\"line 1\r\nline 2\",,=SUM(A1:A2)\n0012345678901234567,\"say \"\"Hello\"\"\",末行\rempty,,,,+literal_text\r\n",
+      "delimiter": ",",
+      "rows": [
+        [
+          "name",
+          "quoted",
+          "multiline",
+          "empty",
+          "formula"
+        ],
+        [
+          "中文🙂",
+          "comma, plus\tTAB",
+          "line 1\r\nline 2",
+          "",
+          "=SUM(A1:A2)"
+        ],
+        [
+          "0012345678901234567",
+          "say \"Hello\"",
+          "末行"
+        ],
+        [
+          "empty",
+          "",
+          "",
+          "",
+          "+literal_text"
+        ]
+      ]
+    },
+    {
+      "name": "matrix.tsv",
+      "source": "name\tquoted\tmultiline\tempty\tformula\r\n中文🙂\t\"comma, plus\tTAB\"\t\"line 1\r\nline 2\"\t\t=SUM(A1:A2)\n0012345678901234567\t\"say \"\"Hello\"\"\"\t末行\rempty\t\t\t\t+literal_text\r\n",
+      "delimiter": "\t",
+      "rows": [
+        [
+          "name",
+          "quoted",
+          "multiline",
+          "empty",
+          "formula"
+        ],
+        [
+          "中文🙂",
+          "comma, plus\tTAB",
+          "line 1\r\nline 2",
+          "",
+          "=SUM(A1:A2)"
+        ],
+        [
+          "0012345678901234567",
+          "say \"Hello\"",
+          "末行"
+        ],
+        [
+          "empty",
+          "",
+          "",
+          "",
+          "+literal_text"
+        ]
+      ]
+    },
+    {
+      "name": "bom.csv",
+      "source": "﻿name,quoted,multiline,empty,formula\r\n中文🙂,\"comma, plus\tTAB\",\"line 1\r\nline 2\",,=SUM(A1:A2)\n0012345678901234567,\"say \"\"Hello\"\"\",末行\rempty,,,,+literal_text\r\n",
+      "delimiter": ",",
+      "rows": [
+        [
+          "name",
+          "quoted",
+          "multiline",
+          "empty",
+          "formula"
+        ],
+        [
+          "中文🙂",
+          "comma, plus\tTAB",
+          "line 1\r\nline 2",
+          "",
+          "=SUM(A1:A2)"
+        ],
+        [
+          "0012345678901234567",
+          "say \"Hello\"",
+          "末行"
+        ],
+        [
+          "empty",
+          "",
+          "",
+          "",
+          "+literal_text"
+        ]
+      ],
+      "bom": true
+    },
+    {
+      "name": "empty.csv",
+      "source": "",
+      "delimiter": ",",
+      "rows": []
+    },
+    {
+      "name": "unclosed.tsv",
+      "source": "name\tvalue\r\n\"unclosed\t中文🙂",
+      "delimiter": "\t",
+      "invalid": true
+    }
+  ]
+}

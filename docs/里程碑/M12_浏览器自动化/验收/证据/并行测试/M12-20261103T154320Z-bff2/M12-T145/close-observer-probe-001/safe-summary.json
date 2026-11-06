@@ -1,0 +1,75 @@
+{
+  "case": "M12-T145-close-probe",
+  "status": "engineering-probe-completed-Root-review-required",
+  "actualExecution": "exec synchronous complete, no persistent session",
+  "driverPID": 84042,
+  "originalJudge": [
+    {
+      "id": "Exact-four-native-comparisons-plus-one-explicit-transport-FI",
+      "passed": true
+    },
+    {
+      "id": "One-actual-close-command-and-complete-private-event-traces",
+      "passed": true
+    },
+    {
+      "id": "Original-child-normal0-null-and-no-signals",
+      "passed": true
+    },
+    {
+      "id": "RPC-errors-never-bypass-full-five-second-child-observation",
+      "passed": true
+    },
+    {
+      "id": "Original-004-cause-unknown-and-independent-owned-resources-clear",
+      "passed": true
+    }
+  ],
+  "fourNormalComparisonsPlusOneExplicitFI": true,
+  "normal0NullSignalsEmpty": 5,
+  "fallback": 0,
+  "observedRPC": {
+    "page1": "transport-closed before realchild0exit",
+    "page2": "response",
+    "browser1": "response",
+    "browser2": "response",
+    "FI": "explicitownWS disconnect;transport-closed before realchild0exit"
+  },
+  "actualChildExitAfterSendMs": [
+    {
+      "id": "page-1",
+      "ms": 10.467082999999946
+    },
+    {
+      "id": "page-2",
+      "ms": 13.453875000000039
+    },
+    {
+      "id": "browser-1",
+      "ms": 12.036084000000074
+    },
+    {
+      "id": "browser-2",
+      "ms": 11.24979099999996
+    },
+    {
+      "id": "browser-disconnect-fi-1",
+      "ms": 10.32666600000016
+    }
+  ],
+  "observationBoundary": "Child actualexit permits earliernormal return; only stillaliveafterfull5000ms may fallback. Thisrun nofallback, no5s waitclaim when child alreadyexited.",
+  "engineeringConclusion": "Thislocalprobe observedRPC closure before actualchildexit without forcingprocess termination; two-phase observer retainednormal0/no-signals. No claim original004 exactcause proven.",
+  "original004CauseStillUnknown": true,
+  "original004RedUnchanged": true,
+  "privateRawTracesAndFullStacksRetained": true,
+  "safePayloadDisclosure": "Onlytime/status/length/hash; no fullrawdebugendpoint or auth content",
+  "independentCleanupAllClear": true,
+  "cleanupChecks": 27,
+  "exactPIDCount": 21,
+  "exactTCPCount": 5,
+  "resourcesReleased": true,
+  "noVitePrototypeAppModelAuthCookieKeychain": true,
+  "originalP8NotRepeated": true,
+  "formalNewPasses": 0,
+  "wholeT145Passed": false
+}

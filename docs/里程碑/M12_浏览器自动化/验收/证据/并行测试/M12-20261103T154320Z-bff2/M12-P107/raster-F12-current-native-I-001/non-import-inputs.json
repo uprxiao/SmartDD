@@ -1,0 +1,144 @@
+{
+  "selectedTestReads": [
+    "fixtures/fixtures.json",
+    "fixtures/project/valid.avif",
+    "fixtures/project/broken.avif",
+    "fixtures/project/valid.bmp",
+    "fixtures/project/broken.bmp",
+    "fixtures/project/valid.gif",
+    "fixtures/project/broken.gif",
+    "fixtures/project/valid.ico",
+    "fixtures/project/broken.ico",
+    "fixtures/project/valid.jpeg",
+    "fixtures/project/broken.jpeg",
+    "fixtures/project/valid.jpg",
+    "fixtures/project/broken.jpg",
+    "fixtures/project/valid.png",
+    "fixtures/project/broken.png",
+    "fixtures/project/valid.webp",
+    "fixtures/project/broken.webp",
+    "fixtures/project/animated.gif",
+    "fixtures/project/transparent.png"
+  ],
+  "RootControls": [
+    "execution-ready.json",
+    "lease.receipt.json"
+  ],
+  "runnerStatic": [
+    "pin.json",
+    "vitest.private.config.mjs",
+    "observe-child.cjs",
+    "electron-resolve-stub.mjs",
+    "dependency-layout.json"
+  ],
+  "runtimeReads": [
+    "runtime-001/vitest.json",
+    "runtime-001/raster-evidence.json",
+    "runtime-001/processes.private.jsonl",
+    "raw.json",
+    "cleanup.json"
+  ],
+  "runtimeOutputShape": [
+    "runtime-001/home",
+    "runtime-001/tmp",
+    "runtime-001/willyou-raster-native-<originalmkdtemp-viaTMPDIR>",
+    "runtime-001/vitest.json",
+    "runtime-001/raster-evidence.json",
+    "runtime-001/processes.private.jsonl",
+    "runtime-001/runner.private.log"
+  ],
+  "originalNativeRequestScope": "Onlyexplicit18privateprojectfiles + ownrecoverymkdtemp; brokerwriteconfinement onreadopsunchanged",
+  "sourcePotentialLazyFSCalls": [
+    {
+      "file": "src/main/core/files/engine-workspaces.ts",
+      "line": 16,
+      "expression": "await mkdir(path, { mode: 0o700 }).catch((error) => { if (error.code !== 'EEXIST') throw error; });",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/html/parser.ts",
+      "line": 11,
+      "expression": "this.worker = new Worker(file, { resourceLimits: { maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 } });",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/lsp/client.ts",
+      "line": 40,
+      "expression": "const child = spawn(command, configuration.args, { cwd: root, detached: process.platform !== 'win32', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { PATH: `${dirname(command)}:/usr/bin:/bin`, HOME: home, TMPDIR: home, XDG_CONFIG_HOME: home, PYTHONNOUSERSITE: '1', LANG: 'en_US.UTF-8', ELECTRON_RUN_AS_NODE: '1' } });",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/native-broker.ts",
+      "line": 57,
+      "expression": "const child = spawn(command.executable, command.args, { stdio: ['pipe', 'pipe', 'pipe'], detached: true, windowsHide: true, shell: false, env: { PATH: '/usr/bin:/bin', LANG: 'en_US.UTF-8' } });",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/office/engine-resources.ts",
+      "line": 37,
+      "expression": "manifest = manifestSchema.parse(JSON.parse(await manifestFile.readFile('utf8')));",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/office/libreoffice-resources.ts",
+      "line": 70,
+      "expression": "const bytes=await manifestFile.readFile(),current=await lstat(manifestPath,{bigint:true}),after=await manifestFile.stat({bigint:true});",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/office/worker-client.ts",
+      "line": 14,
+      "expression": "this.worker = new Worker(path, { resourceLimits: { maxOldGenerationSizeMb: OFFICE_LIMITS.workerHeapMiB, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 } });",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/tex/engine-resources.ts",
+      "line": 34,
+      "expression": "try { if ((await metadata.stat()).size > 16384) throw new Error('manifest'); manifest = JSON.parse(await metadata.readFile('utf8')); } finally { await metadata.close(); }",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/main/core/files/tex/parser.ts",
+      "line": 11,
+      "expression": "constructor(path: string) { this.worker = new Worker(path, { resourceLimits: { maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 } }); this.worker.on('error', (error) => this.close(error)); this.worker.on('exit', () => this.close(new FileError('IO', 'TeX 引用解析器已退出'))); }",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/renderer/features/files/raster-acceptance.test.ts",
+      "line": 16,
+      "expression": "const project=process.env.SMARTDD_RASTER_PROJECT!,oracle=JSON.parse(readFileSync(join(project,'../fixtures.json'),'utf8')) as {cases:{name:string;mime:string;sha256:string;decodeFailure?:boolean;probe?:{width:number;height:number;nb_read_frames?:string}}[]};",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    },
+    {
+      "file": "src/renderer/features/files/raster-acceptance.test.ts",
+      "line": 20,
+      "expression": "for(const item of oracle.cases){const path=join(project,item.name),original=readFileSync(path),before=statSync(path,{bigint:true}),document=await files.open('rasters',{lease:root.lease,generation:root.generation,relativePath:item.name});",
+      "status": "Originalsourceunchanged; currenttestexecutiononlyimageopen/chunk. Fullsource/package JSON/worker assets frozen; lazyOffice/LSP/MCP actions not invoked by originaltest."
+    }
+  ],
+  "database": "NoSQLite/migration input imported by141runtime graph. Fullsource copiedincludingallresources but noOffice GUI/action invoked.",
+  "sourceImportClosure": {
+    "files": 141,
+    "edges": 470,
+    "bare": [
+      "@codemirror/commands",
+      "@codemirror/state",
+      "@codemirror/view",
+      "@modelcontextprotocol/client",
+      "@modelcontextprotocol/client/stdio",
+      "@modelcontextprotocol/server",
+      "@parcel/watcher",
+      "electron",
+      "picomatch",
+      "saxes",
+      "ssf",
+      "vitest",
+      "vscode-jsonrpc/node",
+      "yauzl",
+      "yazl",
+      "zod"
+    ],
+    "dynamic": []
+  },
+  "actualExecutionPerformed": false
+}

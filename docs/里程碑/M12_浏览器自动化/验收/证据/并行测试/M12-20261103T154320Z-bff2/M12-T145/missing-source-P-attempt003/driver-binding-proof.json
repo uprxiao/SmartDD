@@ -1,0 +1,56 @@
+{
+  "unchangedBusinessAndObservationModules": [
+    {
+      "file": "run.mjs",
+      "oldSHA256": "9bfd003ac3ecbde7f431dd666401d3af3b2da101532893f7c1c2689d3de16d70",
+      "currentSHA256": "9bfd003ac3ecbde7f431dd666401d3af3b2da101532893f7c1c2689d3de16d70",
+      "bytesEqual": true
+    },
+    {
+      "file": "P-ui.mjs",
+      "oldSHA256": "447101c00115b5c07901acbb164ecb212789b590dde6390a2b0bf6b5f195be60",
+      "currentSHA256": "447101c00115b5c07901acbb164ecb212789b590dde6390a2b0bf6b5f195be60",
+      "bytesEqual": true
+    },
+    {
+      "file": "resources.mjs",
+      "oldSHA256": "ef18bafb992f33791ba60414d109004e111badd32699a3ec07b095d7c8deb07a",
+      "currentSHA256": "ef18bafb992f33791ba60414d109004e111badd32699a3ec07b095d7c8deb07a",
+      "bytesEqual": true
+    },
+    {
+      "file": "cleanup.mjs",
+      "oldSHA256": "3ea8ec21c47fbfa687db75150634cc44eb227f9d66f460bdecfaca21b6944880",
+      "currentSHA256": "3ea8ec21c47fbfa687db75150634cc44eb227f9d66f460bdecfaca21b6944880",
+      "bytesEqual": true
+    },
+    {
+      "file": "judge.mjs",
+      "oldSHA256": "14c562585b256ca183c9515bbe414ce6dd7cb73ce828f4c53ce1f6b3d6b18bdf",
+      "currentSHA256": "14c562585b256ca183c9515bbe414ce6dd7cb73ce828f4c53ce1f6b3d6b18bdf",
+      "bytesEqual": true
+    },
+    {
+      "file": "geometry.mjs",
+      "oldSHA256": "55e3bdf9d6965b028f3f41d2952c613613d3e0219a6972675386af5a28de59e7",
+      "currentSHA256": "55e3bdf9d6965b028f3f41d2952c613613d3e0219a6972675386af5a28de59e7",
+      "bytesEqual": true
+    }
+  ],
+  "onlyAdmissionChange": "permit imports+calls pure static resource gate before runtime; no lease or criteria change",
+  "permitDiff": "--- 002-permit\n+++ 003-permit\n@@ -1,2 +1,2 @@\n-import assert from'node:assert/strict';import{readFile,stat,readlink,realpath,lstat}from'node:fs/promises';import{ROOT,sha}from'./io.mjs';\n-export async function permit(){assert(process.argv.includes('--execute'));assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');const b=await readFile(ROOT+'/execution-ready.json'),ready=JSON.parse(b),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json'));assert.equal(lease.status,'granted');assert.equal(lease.coordinator,'root');assert.equal(lease.privateRoot,ROOT);assert.equal(lease.executionReadySHA256,sha(b));assert.equal(lease.authorizationScope,'M12-T145-B13-missing-P-eight');const check=()=>{assert(!lease.revoked&&Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt));for(const k of['Native','HTTP','TCP','Unix','OS'])assert(lease.resources.includes(k))};check();for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;assert.equal(sha(await readFile(p)),f.sha256,p);assert.equal((await stat(p)).mode&511,f.mode,p)}const layout=JSON.parse(await readFile(ROOT+'/dependency-layout.json'));for(const x of[...layout.links,...layout.rootLinks]){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/')||x.realTarget===ROOT+'/node_modules')}for(const n of['runtime-001','images','execution-started.json','raw.json']){try{await lstat(ROOT+'/'+n);throw Error('Execution-only destination already exists: '+n)}catch(e){if(e.code!=='ENOENT')throw e}}return{ready,check};}\n+import{assertStaticDriverInputs}from'./driver-file-access.mjs';import assert from'node:assert/strict';import{readFile,stat,readlink,realpath,lstat}from'node:fs/promises';import{ROOT,sha}from'./io.mjs';\n+export async function permit(){assert(process.argv.includes('--execute'));assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');const b=await readFile(ROOT+'/execution-ready.json'),ready=JSON.parse(b),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json'));assert.equal(lease.status,'granted');assert.equal(lease.coordinator,'root');assert.equal(lease.privateRoot,ROOT);assert.equal(lease.executionReadySHA256,sha(b));assert.equal(lease.authorizationScope,'M12-T145-B13-missing-P-eight');const check=()=>{assert(!lease.revoked&&Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt));for(const k of['Native','HTTP','TCP','Unix','OS'])assert(lease.resources.includes(k))};check();for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;assert.equal(sha(await readFile(p)),f.sha256,p);assert.equal((await stat(p)).mode&511,f.mode,p)}await assertStaticDriverInputs(ready);const layout=JSON.parse(await readFile(ROOT+'/dependency-layout.json'));for(const x of[...layout.links,...layout.rootLinks]){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/')||x.realTarget===ROOT+'/node_modules')}for(const n of['runtime-001','images','execution-started.json','raw.json']){try{await lstat(ROOT+'/'+n);throw Error('Execution-only destination already exists: '+n)}catch(e){if(e.code!=='ENOENT')throw e}}return{ready,check};}\n",
+  "rootBindingOnly": [
+    "io.mjs",
+    "vite-before.mjs",
+    "vite-after.mjs",
+    "P-runtime-pin.json",
+    "dependency-layout.json"
+  ],
+  "addedJSON": {
+    "source": "/private/tmp/willyou-m12-t145-missing-source-P-001/optimizer-includes.json",
+    "sha256": "b47570914626f0056ae307ba933bb50b37886b620149d5efc54564933f9d5084",
+    "currentSHA256": "b47570914626f0056ae307ba933bb50b37886b620149d5efc54564933f9d5084"
+  },
+  "sourceClosureReused": true,
+  "actualExecution": false
+}
