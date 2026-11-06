@@ -1,0 +1,45 @@
+{
+  "case": "M12-T091",
+  "requirementRevision": "R1.6",
+  "layers": [
+    "A",
+    "R"
+  ],
+  "originalRow": "| M12-T091 | R06.1、O13 | A＋R | 新建项目 P3；在 P3 的“项目选用”页取消浏览器应用 | 在新建后的 P3 任务里调用浏览器命令；取消选用后新开任务再调用 | 新项目默认选用，调用成功；取消选用后新运行的调用返回 `ENTRY_NOT_ACTIVE` 或 `SCOPE_DENIED`，Skill 中没有浏览器 | — | 待执行 | — |",
+  "requirements": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+    "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+    "R06.1": [
+      "项目选用该应用后，运行计划才放行；未选用时调用得到 ENTRY_NOT_ACTIVE／SCOPE_DENIED",
+      "新项目默认选用；升级前已有的项目不自动开启，提示用户自行开启"
+    ]
+  },
+  "sourceCase": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "sha256": "fd08cfebbb562454fd25c7752f152c159b11b411721d31743ebaa1a03df0eebe",
+    "bytes": 140500
+  },
+  "criteria": [
+    {
+      "id": "C1",
+      "criterion": "Real UI creates new P3; actual default browser project selection is enabled without driver selecting it or adding other apps."
+    },
+    {
+      "id": "C2",
+      "criterion": "Real UI starts first new OpenAI/gpt-6.1-sol run; all actual delivered browser Skill files are read in full; one real willyou-app browser tab list succeeds with native numeric0 and exact immutable plan/task/project/run/Host."
+    },
+    {
+      "id": "C3",
+      "criterion": "Real UI cancels browser in P3 project selection; persisted/readback disabled; do not change another application to keep a CLI alive."
+    },
+    {
+      "id": "C4",
+      "criterion": "Real UI starts a distinct second new run under P3; actual plan/delivery/discovery have no browser Skill; no prior run token, CLI path or Skill manual injection."
+    },
+    {
+      "id": "C5",
+      "criterion": "Second actual CLI call returns ENTRY_NOT_ACTIVE or SCOPE_DENIED with original numeric exit2 and original top-level error; unique Host denial if present or exact native predispatch refusal. No status-completed assumption; no business operation fabricated."
+    }
+  ],
+  "T004Invariant": "No-project T0 still has no willyou-app, actual shell127, no Host run/token/Skill. Do not generalize project empty-plan change into T0."
+}
