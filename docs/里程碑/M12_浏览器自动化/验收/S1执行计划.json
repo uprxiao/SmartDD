@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-06T01:54:37.196752+00:00",
+  "updatedAt": "2026-11-06T04:28:23.255010+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "技研/技术方案.md V1.4 §11",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T120 andT121 originalrealR complete;T125 sameprofile continuation andT088 minimaldriver repair preparing;shared desktop handoff pending",
+    "currentGroup": "T064/T092 full accepted; App023 current installer verified/archived; T099 A004 and T125004 focus deferred/cleaned. T004 real R and T107 A file preparation.",
     "groups": [
       {
         "id": "M12-P001",
@@ -4227,8 +4227,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-06T01:54:37.196752+00:00",
-    "independentNext": "No replay T121/T120. Finish T120 original evidence review and T125 originalprofile continuation after real UI handoff. T004 A evidence review done; original synthetic-model CLI probe not externalR, prepare narrow realR. User requested dailywindow reopened; no acceptance credit.",
+    "updatedAt": "2026-11-06T03:22:29.575344+00:00",
+    "independentNext": "Complete T064 I with actual stockCLI argv/real stdin/login/audit/diagnostic, reuse exact P120 R only by original criteria. T099 A uses actual P113002 records after source applicability check, no replay commands. T125003 timed out before insert; preserve unknown rejected viewport predicate and add narrow observations/probe before any resend.",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4274,15 +4274,18 @@
       "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P115/app022-build-001/manifest.json"
     },
     "candidateBaseline": {
-      "app": "App022",
-      "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
-      "source": "source026",
-      "status": "actual arm64 candidate built; current private installation, native6, actual managedCLI3, exact20240 payload, normalexit and independentcleanup verified; fullM12 not implied",
+      "app": "App023",
+      "source": "source027",
+      "sourceManifestSha256": "2c43ae1ea0159ae480f9cb25b83b447a30ba0f6a44221df46b79fd93c5aa8b07",
+      "appPath": "/private/tmp/willyou-m12-s2-package-023/mac-arm64/WillYou.app",
+      "asarSha256": "8eb13133c8fc5a0db5fa99f0f50204af2a2877a95cb0eb533e05345665667507",
+      "status": "official build, native6, current DMG/private install/CLI3/normal exit/full inventory verified; original T099 A and other original case gaps remain",
       "currentLocalInstaller": {
-        "path": "/private/tmp/willyou-m12-p118-app022-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
-        "sha256": "86bd95f3b19865faff95e46a421b520ffe075e6b9316733aaa5d0ee23df90ccf",
-        "scope": "local ad-hoc arm64 only; nox64/DeveloperID/notarization/distribution/release",
-        "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P118/app022-installer-001/manifest.json"
+        "path": "/private/tmp/willyou-m12-p125-app023-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
+        "sha256": "ca9fa0a2a89e4e80d69d8d10d13fdc6e9521b7a80b5d3a795b31731f884c1cee",
+        "bytes": 617179163,
+        "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P125/app023-installer-001/manifest.json",
+        "scope": "local ad-hoc arm64 only; no release/x64/notarization"
       }
     },
     "currentSourceInputs": {
@@ -4292,60 +4295,16 @@
       "evidence": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P115/app022-build-001/manifest.json"
     },
     "currentAutonomousBatch": {
-      "at": "2026-11-05T23:31:14.869734+00:00",
-      "productionBaseline": "App022/source026",
-      "P103": "原完整1800s及CPU独立闭合，T111通过；旧产品红、前置guard失败与计量判定错误均保留",
-      "RealCLI": "T041/T042从实际R010原始journal/Host与当前CLI必经getenv证据闭合；R012直接布尔值补充不同run不混用",
-      "G1": "原G1三真实模型回合已结束，原raw来源/Host/HTTP独立补核：T126两组合与T122缺失/矛盾两臂按原合同完整归账。旧额外顺序red单独留证，无新模型重发。",
-      "P067": "T113 original I15+A01-A12 complete by exact scoped 4-baseline source/actual evidence Root review; original driver/cleanup reds retained",
-      "CookieRecovery": "三阶段实际I10判据绿/33PID2TCP3Unix清场；原T080/T081全UI仍缺",
-      "T130": "253previousU plus90new original checks in9 formerlyexcluded examples (44U/46I);allgreen no skip. Original collection errors preserved. Do not claim full66case I/A from examples. Original App D04/D06 and full matrix remain. Original mapped gaps31done;outsideH46filterednotpass;no fullI/R expansion.",
-      "formalAuthority": "测试用例.md",
-      "externalActions": "不合并main/tag/push/release",
-      "T130A": "003新窗300s实际Native/DOM焦点未满足，1181样本false且0业务，原超时正常清场已归档；D04/D06后置新批，D12/D13绿保持，不重开旧窗。",
-      "T131": "原T08 I3/T06 I/T38原17绿及D01两支；T09完整I63、T37 I8、T07/T14 lifecycle I40已实际绿和Root独立复核；T01同App021 G1既有真实I+A+R经9条件17负控复用。原其余A/R缺项按执行记录九子项逐一保留，父仍部分。",
-      "T043": "完整U＋R已通过：当前原17U、一次真实wait2100.005s/同run CLI0/0/真实stop旧token HostAUTH_REQUIRED；原7/8解析红保留，37同wait链严格补判并由Root9条件26控重放，Skill12402B先读/13PID7TCP2Unix双独立清场。无重发/重跑。",
-      "overnightSelection": {
-        "instruction": "2026-11-06用户睡觉，优先自主可执行，不反复前台请求",
-        "current": "User returned and can assist; autonomous realSOP running; original overnight history retained",
-        "next": [
-          "Finish T120/T125 actualtwo phases and T121 finiteoriginalproof review",
-          "Batch original remaining UI/system steps with actual user assistance only as needed"
-        ],
-        "deferred": [
-          "T130004真实UI（静态35/36已核）",
-          "需真实用户的系统／站点／硬件／额外发送授权"
-        ]
-      },
-      "P111": "当前App021安装/fullinventory/native6/installedCLI3/normalExit/8gates/Root exactcleanup passed；001driver red preserved，不重复计正式数",
-      "P112": "双轮SOP002静态235输入经Root24+14+6+6独立重放，普通缓存误伤已修；两prompt不变，R/新发送/焦点/工具审批前置仍待",
-      "T38": "originalauthcontract currentI+A evidenced; additionalNativecachefinding open; no changedexpectations/originaloracleoverwritten",
-      "T29": "current original compatibility complete;Root real-source replay/213pins/40tools/33cleanup/declared-delta reverseexact; originaldriver/network/configredretained",
-      "next": "Observe original T121 session94531 (App80875,task09f92927,actualrun cd5f6e4e) to terminal; no new/duplicate model send; exactcleanup then originaljudge. Same approved payload. No rebuild/replay P118/T130 greens.",
-      "T37": "original currentI+A+R complete;originalpurejudge/rootreplay directpassed/202pins/6calls/6files/29cleanup",
-      "T131remaining": [
-        "T07 originalUI/R",
-        "T14 originalUI/restart/R"
+      "at": "2026-11-06T03:22:29.575344+00:00",
+      "authority": "验收/测试用例.md",
+      "newUniqueFormalPasses": [
+        "M12-T092",
+        "M12-T064"
       ],
-      "formalWholeCaseIncrement": 1,
-      "T09": "I63 plus A001 HTTP/cancel7/7, C003 CLI-hang original7/7, M005 realMCPdisconnect Root5/5 complete; original0/9/A5/7/Cexpandedred/M4/5 preserved; no extra KILL/list requirement; own App exits normal and independent resources clear",
-      "P116003": "CUAgetApp cgWindowNotFound/0inputs;targetclosed/exitnull/TERM+KILL/1of7red;exactstaleUnix17red→17clear;timeline+OSsleepfacts separate,no causeinvented",
-      "awakePrerequisite": {
-        "status": "UI-awaits-user-display/focus; backgroundmaycontinue-underverified-scoped-powerguard",
-        "observedAt": "2026-11-05T23:29:11.264037+00:00",
-        "observed": "single current readonly check: clamshellClosed false, CoreGraphics onlineDisplayCount0",
-        "requested": "One async request to openMac/keepawake/staydesktop;no credentials/site login;no response yet",
-        "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/manifest.json",
-        "continuing": "background M005 actual finished; T113 pure evidence review; original UI focus gate retained",
-        "noPowerSettingsChanged": true
-      },
-      "P118": "Current App022 arm64 localDMG86bd…/payload20240/privateinstall/native6/actualmanagedCLI3/normalexit and independentcleanup/T143 verified; original builder and fixture-path oracle red retained; no new case credit.",
-      "RealSOPCurrent": {
-        "T121": "OriginalApp022 realR complete, actual24 Host/fullresources/stdin/final5artifacts/44cleanup; two peer+Root proof archivedP119; originaljudge5/12 retained; formal+1",
-        "T120T125": "T120 currentApp022 originalrealR fullypassed after Root original29Host/105actualfiles/5artifacts/113cleanup verification; P120 archived. T125 no submission; freshUI originalprofile continuation preparing, no rerun T120.",
-        "userAvailableAt": "2026-11-06T01:21:11.497098+00:00"
-      },
-      "T088": "CurrentApp022005 actualread marker/write x0+OSx; strictbridge metadata driverred5/8, noCLIreadback; separate exact8quiescence/fulloriginalrestore success+backupremoved;16PID5TCP1Unix1helper allclear. Originalred retained;006 minimalbridge fix privateprep, waiting other browser UI resource handoff."
+      "T092": "Root original A verified, source delivery6969bfd8…,16PID8portclear, no rebuild",
+      "T064": "Root exact originalI7 replay+livePS/actualR P120 applicability complete, no new model",
+      "T099": "Original source taskID missing productbug fixed; unit18/18; officialApp023 ready, actualA pending",
+      "T125": "003 first readiness failed before insert/Enter; meta/freshsettings valid but specific viewport reason unknown;21clear; no fullcredit"
     },
     "awakePrerequisite": {
       "status": "satisfied-for-current-test-instance-only",
@@ -4373,6 +4332,40 @@
         "sha256": "6afb91ba60304ffa59b625d3fe107c933b291b7e473573be3032cbfb46826617",
         "scope": "currentApp021 originalT140/T143 passed localad-hoc arm64; nox64/DeveloperID/notarization/release"
       }
+    },
+    "nextPackageCandidate": {
+      "App": "App023",
+      "source": "source027",
+      "sourceManifest": "/private/tmp/willyou-m12-p123-source-027/source-inputs.json",
+      "sourceManifestSHA": "2c43ae1ea0159ae480f9cb25b83b447a30ba0f6a44221df46b79fd93c5aa8b07",
+      "app": "/private/tmp/willyou-m12-s2-package-023/mac-arm64/WillYou.app",
+      "asarSHA": "8eb13133c8fc5a0db5fa99f0f50204af2a2877a95cb0eb533e05345665667507",
+      "status": "promoted current candidate; officialbuild/native6 and current installer complete; T099 actual UI pending",
+      "scope": "Only requester taskID renderer and its regression; other3682 source files unchanged, main167browser/fourhelpers exact"
+    },
+    "nextExecution": {
+      "resourcesHeld": [],
+      "nextAutonomous": "Review minimal frozen T004 real R and T107 current A drivers; no repeat of completed tests",
+      "pendingUI": "New actual native/DOM focus required. T0998activity actual UI first when available; T125 readonly readiness observation retains original gap",
+      "pendingPlatform": "Original x64/system/real Bug requirements remain; no contract reduction"
+    },
+    "lastCompletedBatch": {
+      "at": "2026-11-06T04:28:23.255010+00:00",
+      "uniqueFormalCasesAdded": [
+        "M12-T092",
+        "M12-T064"
+      ],
+      "authority": "验收/测试用例.md",
+      "evidence": [
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P122/t092-coordinator-final-001/manifest.json",
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P124/t064-coordinator-final-001/manifest.json",
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P125/app023-installer-001/manifest.json",
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P113/activity-App023-startup-diagnostics-001/manifest.json",
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P113/activity-App023-focus-deferred-A004/manifest.json",
+        "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P121/focus-deferred-004/manifest.json"
+      ],
+      "resourcesHeld": [],
+      "engineeringOnly": "T099 requesterID fix/red17-18/green18-18/current App023 packaging+installation complete; no full T099 or T125 credit"
     }
   }
 }

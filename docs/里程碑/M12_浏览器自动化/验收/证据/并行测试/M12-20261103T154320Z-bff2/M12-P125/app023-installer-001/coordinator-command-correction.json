@@ -1,0 +1,42 @@
+{
+  "schema": "m12-p125-coordinator-command-correction-v1",
+  "at": "2026-11-06T04:16:05Z",
+  "classification": "execution-preparation-command-arguments-before-OS-not-product-failure",
+  "sourceReady": {
+    "path": "/private/tmp/willyou-m12-p125-app023-installer-001/execution-ready.json",
+    "sha256": "48781e95a7b69ae67d505064b0bbe4f0a92ff5cd163103667f14510ab36c6cfe",
+    "step": "P125-08-independent-startup-cleanup",
+    "unchanged": true
+  },
+  "script": {
+    "path": "/private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cleanup.mjs",
+    "sha256": "3550c0a62b465b94688975af86ea3f4dff5be50f66b3894483b68ef006036358",
+    "preamble": "assert(process.argv.includes('--verify')); assert.equal(process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED,'1');"
+  },
+  "originalCommand": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cleanup.mjs",
+  "originalFailure": {
+    "exitCode": 1,
+    "site": "Firstscript argvassert before rawload/anyps/lsof",
+    "missing": [
+      "--verify",
+      "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1"
+    ],
+    "OSOperations": 0,
+    "AppRestarted": false,
+    "CLIReplayed": false,
+    "evidenceBasis": "Root parenttask reported actual firstcall exit1 at argvassert; no standalone originalstderr file was supplied, so no fabricatedtrace/log."
+  },
+  "minimalCorrectedCommand": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-p125-app023-installer-001/installed-startup-001/cleanup.mjs --verify",
+  "onlyChanged": "Invocationenvflag+requiredargv; no script/business/assertion/frozenready/input changes",
+  "correctedActualResult": {
+    "cleanupJSON": "installed-startup-001/cleanup.json",
+    "allClear": true,
+    "pids": 12,
+    "ports": 5,
+    "unix": 1,
+    "helpers": 1,
+    "exitCode": 0,
+    "judgeChecks": "8/8"
+  },
+  "originalAppAndCLIReplayCount": 0
+}

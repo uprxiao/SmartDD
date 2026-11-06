@@ -1,0 +1,74 @@
+{
+  "at": "2026-11-06T03:11:57.943Z",
+  "status": "passed-pure-reference-contract-controls",
+  "actualSnapshotSource": {
+    "path": "/private/tmp/willyou-m12-t064-stdin-I-001/raw.json",
+    "sha256": "cfaef51a1aa4f0e014aeef6a0064a0c79563f8e2391971fc0abf41b07b5dbfac",
+    "selectedRef": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e1"
+  },
+  "driverPattern": "^@k[0-9a-f]{32}s[0-9]+e[0-9]+$",
+  "receiverASTParsedNotExecuted": true,
+  "receiverPattern": "@k[0-9a-f]{32}s[0-9]+e[0-9]+",
+  "controls": [
+    {
+      "name": "actual001-selected-password-ref",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e1",
+      "expected": true
+    },
+    {
+      "name": "actual001-login-ref",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e2",
+      "expected": true
+    },
+    {
+      "name": "old-internal-ref",
+      "value": "@e1",
+      "expected": false
+    },
+    {
+      "name": "short-page-scope",
+      "value": "@k12s5e1",
+      "expected": false
+    },
+    {
+      "name": "missing-epoch",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fse1",
+      "expected": false
+    },
+    {
+      "name": "missing-element",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e",
+      "expected": false
+    },
+    {
+      "name": "shell-semicolon",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e1;echo BAD",
+      "expected": false
+    },
+    {
+      "name": "shell-substitution",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e1$(echo BAD)",
+      "expected": false
+    },
+    {
+      "name": "newline-suffix",
+      "value": "@ka80d1e9344a24d93aa1ca86b23145f6fs5e1\n",
+      "expected": false
+    },
+    {
+      "name": "wrong-page-case",
+      "value": "@kA80d1e9344a24d93aa1ca86b23145f6fs5e1",
+      "expected": false
+    }
+  ],
+  "driverAndReceiverOnlyRegexDelta": true,
+  "quotedPrintfUnchanged": true,
+  "rootWindowLabelPreserved": true,
+  "Native": 0,
+  "App": 0,
+  "OS": 0,
+  "PTY": 0,
+  "CLI": 0,
+  "modelCalls": 0,
+  "wholeCasePasses": 0
+}

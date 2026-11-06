@@ -1,0 +1,21 @@
+{
+  "source": "source027 frozen local production source",
+  "indexSourceSHA": "3883f926cd473726bff24b0fc204154ebbce48e9b4f3bdeaa05fde4e1b1c9b03",
+  "coordinatorLockSourceSHA": "60a02f98ec095b5e18d6c65824ff71b8e1f76eef426f3460455ba2aeab10a9d0",
+  "facts": [
+    {
+      "kind": "source-explanation-only",
+      "file": "src/main/index.ts",
+      "lines": "73,121-127",
+      "explanation": "Before createMainWindow, startup calls openManagedDatabase. In its error catch SMARTDD_PROBE=1 writes the error message to stderr; default mode calls dialog.showErrorBox, then app.exit(1).",
+      "systemErrorBoxActuallyObserved": false
+    },
+    {
+      "kind": "source-explanation-only",
+      "file": "src/main/core/applications/coordinator-lock.ts",
+      "lines": "32-70",
+      "explanation": "coordinator_identity must exactly match current physical root path/dev/ino and gate dev/ino. Mismatch raises the same recovery-required message. Existing gate is not unlinked/replaced."
+    }
+  ],
+  "inferenceBoundary": "Default showErrorBox source path explains why stderr may contain only inspector notices; this packet does not claim anyone saw a system error box in A002/A003."
+}

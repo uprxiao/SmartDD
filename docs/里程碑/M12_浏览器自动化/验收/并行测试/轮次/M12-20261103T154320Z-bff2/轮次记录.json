@@ -1,8 +1,8 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-06T01:50:22.733063+00:00",
-  "status": "S4/S5 acceptance closure with S2/S3 pointer/dialog fixes; originalT062 partial reopened",
+  "updatedAt": "2026-11-06T04:28:23.255010+00:00",
+  "status": "S2-S6 active acceptance closure; actual counts only in original121-case authority; no Native/UI/build resource held",
   "coordinator": "/root",
   "agents": [
     {
@@ -26,62 +26,98 @@
   "requirements": "需求R1.4",
   "technicalDesign": "技术方案V1.3",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "T121 file-only strict review parallel; currentT120/T125 realR exactpayload starts next",
+  "currentGroup": "T064/T092 full accepted; App023 current installer verified/archived; T099 A004 and T125004 focus deferred/cleaned. T004 real R and T107 A file preparation.",
   "resources": {
     "build": {
       "owner": "/root",
-      "group": "M12-P118-App022-local-installer",
+      "group": "M12-P125-App023-current-installer-affected",
       "status": "complete/released",
-      "privateRoot": "/private/tmp/willyou-m12-p118-app022-installer-001",
-      "grantedAt": "2026-11-06T00:28:46.137274+00:00",
-      "preparedSha256": "9579afce25c010745e9e3233ce6d9b5406ba3dedb11cb2cb3db28d19c7836f71",
-      "scope": "Original P111 flow only current App022 wrapper/private install/native startup. No source rebuild/publish/daily install/OpenAI/auth. Build and all Native exclusivity held until exact cleanup.",
-      "attempt": {
-        "at": "2026-11-06T00:32:30.980484+00:00",
-        "firstSession": 98121,
-        "firstExitCode": 1,
-        "firstDriverPid": 43380,
-        "firstBuilderPid": 43430,
-        "firstOwnedProcessesGone": true,
-        "readySha256": "e31379e0f30b8f345c4989195b32862b88dcb45e7d5c0275585f69857f4ef17d",
-        "scriptSha256": "6273be2fa90ed9011c16fb272233d44d09dad316906de2ca2307c84e101a9d31",
-        "fix": "explicit packagedElectronVersion42.11.14;isolatedattempt2logs/output;no source rebuild"
-      },
-      "actualSession": 49343,
-      "driverPid": 47105,
-      "builderPid": 47133,
-      "buildExitCode": 0,
-      "dmgSha256": "86bd95f3b19865faff95e46a421b520ffe075e6b9316733aaa5d0ee23df90ccf",
-      "releasedAt": "2026-11-06T00:39:03.075338+00:00",
-      "outcome": "DMG attempt2 created, payload20240/install/signature passed, both own mounts detached, six installed native checks passed"
+      "grantedAt": "2026-11-06T03:58:11.500306+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-p125-app023-installer-001",
+      "readySha256": "48781e95a7b69ae67d505064b0bbe4f0a92ff5cd163103667f14510ab36c6cfe",
+      "scope": "Only acceptedP118 currentApp023 wrapper/privateDMGmount/fullpayload/privateinstall/native6/threeCLIstartup/size accounting originalT140/T143 affected supplement. Firstphases1-6 stopbeforestartup forRootpin review. No source rebuild/publish/userUI/model/dailydata. Root exclusive Native/build, peers filesonly.",
+      "resources": [
+        "build",
+        "Native",
+        "App",
+        "PTY",
+        "TCP",
+        "Unix",
+        "hdiutil-owned-devices",
+        "OS-exact-owned-observation"
+      ],
+      "actualSession": 14188,
+      "driverPid": 62991,
+      "firstSix": [
+        {
+          "id": "P125-01-private-copy",
+          "pid": 62993,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-02-prepackaged-dmg",
+          "pid": 63055,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-03-existing-gate-path-copy",
+          "pid": 63465,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-04-install-payload-size",
+          "pid": 63467,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-05-actual-installed-native",
+          "pid": 63810,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-06-bind-current-startup-pins",
+          "pid": 63863,
+          "exitCode": 0
+        }
+      ],
+      "firstSixAllPassed": true,
+      "updatedAt": "2026-11-06T04:01:45.948659+00:00",
+      "completedAt": "2026-11-06T04:12:25.779652+00:00",
+      "startupSession": 86792,
+      "outcome": "CurrentApp023 DMG/full20240payload/input=mount=installed/signature/native6 passed;3stockCLI0/normal0-null/noSignals/originaljudge8-8/12PID5portUnixHelperclear.8wrapperphasePIDs/ownmounts0/installedpathprocess0 final Rootclear; no newformal count."
     },
     "nativeUi": {
-      "owner": "/root",
-      "group": "M12-P084-current-App022-T088-general-clipboard",
+      "owner": "/root/t125_resume_ready",
+      "group": "M12-T099-App023-original-activity-A004",
       "status": "complete/released",
-      "grantedAt": "2026-11-06T01:42:56.885628+00:00",
-      "privateRoot": "/private/tmp/willyou-m12-t088-system-clipboard-app022-005",
-      "readySha256": "f75876d99eb8b954c4944f8131986216c958453a6f17dbcb611137013992e52e",
-      "userCooperation": "call_037d2989a9f84087ba52c7de8dc5d059/0:现在开始，我暂停复制粘贴和切换窗口",
-      "scope": "Original T088 I+S actual generalclipboard private fullsave/marker/read/write-x/readback/ownership+fullrestore;current App022; one real trusted UI permission if sourceexactclipboard. Swift owncache compile then originalnamed8 reused, no new model/dailycredentials/no policyoverride; own Native/UI/OS/PTY/HTTP exclusive",
-      "actualSession": 36263,
-      "driverPid": 47048,
-      "appPid": 47195,
-      "completedAt": "2026-11-06T01:50:22.733063+00:00",
-      "outcome": "Actual CLIread marker/write x completed0; original Swift rejects Chromium provenance metadata; no readback phase. Original failed history and16PID5TCP1Unix1helper allclear. Separate narrow recovery proved original ALLitems/types/data/order exact and removed backup after8exact processes absent. No testcase pass.",
-      "remainingExactApp022MainPids": []
+      "grantedAt": "2026-11-06T04:12:25.779652+00:00",
+      "expiresAt": "2026-11-06T04:14:25.779652+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-t099-activity-A-004",
+      "readySha256": "68fac30c6d6353f94b9a5dc851a5062918cefb5b36fe7097d0866a00b9cd0f21",
+      "scope": "Only original T099 remaining A: actual UI read-only view of byte-copied accepted002 original I records. No SQL row fabrication, old task/page start, CLI, PTY, HTTP, model, or business replay. Only fresh-copy precise host-local gate omission; all201durablefiles preserved. Short120s resourcelease prioritizes autonomous groups; if focus absent classifyenvironment and cleanup, no helperfocus rule weakened. Root/peer filesonly.",
+      "resources": [
+        "Native",
+        "UI",
+        "App",
+        "TCP",
+        "Unix",
+        "OS-exact-owned-observation"
+      ],
+      "completedAt": "2026-11-06T04:16:14+00:00",
+      "actualSession": 16756,
+      "driverPid": 68510,
+      "appPid": 68512,
+      "outcome": "A004 startup successful;307 initial focus samples false;no UI/guard input;resource lease expired;normal App0/null/signals[];5PID/2port/exactuserdata+App clear; independent release verified",
+      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P113/activity-App023-focus-deferred-A004/manifest.json"
     },
     "lightSoftware": {
-      "status": "two-independent-pure-file-reviews",
+      "status": "pure-files-only",
       "owners": [
-        "/root/s2_t004_test",
-        "/root/native_focus_prep"
+        "/root",
+        "/root/t092_upgrade_prep",
+        "/root/t125_resume_ready"
       ],
-      "privateRoots": [
-        "/private/tmp/willyou-m12-t121-native-carrier-review-001",
-        "/private/tmp/willyou-m12-t121-original-contract-review-001"
-      ],
-      "scope": "NoNative/OS/UI/model/CLI execution;own caches only;coordinator sole ledger"
+      "scope": "Root archives/docs/review; executor T004 realR and T107 A preparation; no Native/UI/model/build lease active"
     },
     "nativeUiInventory": {
       "owner": "/root",
@@ -98,6 +134,64 @@
       "scope": "Current lid is open, display0. One official caffeinate -u -t5 to wake idle display, observe actual display then wait original child terminal. No unlock/input/foreground/focus substitution/permanentpreferences.",
       "completedAt": "2026-11-06T00:57:45.363846+00:00",
       "outcome": "official5s useractivity assertion terminal0,actualonline displays3,noUnlock/input/permanentchange"
+    },
+    "nativeUiPrevious": {
+      "owner": "/root",
+      "group": "M12-P125-App023-current-installer-affected",
+      "status": "complete/released",
+      "grantedAt": "2026-11-06T03:58:11.500306+00:00",
+      "privateRoot": "/private/tmp/willyou-m12-p125-app023-installer-001",
+      "readySha256": "48781e95a7b69ae67d505064b0bbe4f0a92ff5cd163103667f14510ab36c6cfe",
+      "scope": "Only acceptedP118 currentApp023 wrapper/privateDMGmount/fullpayload/privateinstall/native6/threeCLIstartup/size accounting originalT140/T143 affected supplement. Firstphases1-6 stopbeforestartup forRootpin review. No source rebuild/publish/userUI/model/dailydata. Root exclusive Native/build, peers filesonly.",
+      "resources": [
+        "build",
+        "Native",
+        "App",
+        "PTY",
+        "TCP",
+        "Unix",
+        "hdiutil-owned-devices",
+        "OS-exact-owned-observation"
+      ],
+      "actualSession": 14188,
+      "driverPid": 62991,
+      "firstSix": [
+        {
+          "id": "P125-01-private-copy",
+          "pid": 62993,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-02-prepackaged-dmg",
+          "pid": 63055,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-03-existing-gate-path-copy",
+          "pid": 63465,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-04-install-payload-size",
+          "pid": 63467,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-05-actual-installed-native",
+          "pid": 63810,
+          "exitCode": 0
+        },
+        {
+          "id": "P125-06-bind-current-startup-pins",
+          "pid": 63863,
+          "exitCode": 0
+        }
+      ],
+      "firstSixAllPassed": true,
+      "updatedAt": "2026-11-06T04:01:45.948659+00:00",
+      "completedAt": "2026-11-06T04:12:25.779652+00:00",
+      "startupSession": 86792,
+      "outcome": "CurrentApp023 DMG/full20240payload/input=mount=installed/signature/native6 passed;3stockCLI0/normal0-null/noSignals/originaljudge8-8/12PID5portUnixHelperclear.8wrapperphasePIDs/ownmounts0/installedpathprocess0 final Rootclear; no newformal count."
     }
   },
   "groups": [
@@ -4131,7 +4225,7 @@
       "finishedAt": "2026-11-05T08:23:38.691745+00:00"
     }
   ],
-  "next": "Acquire only new exactowned window realfocus via CUA; observe original handle; no modelsend replay; T121 original data reviewed offline",
+  "next": "Review ready originalT004 realR and T107 A; no replay of stale user focus reply or any original completed business",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": {
     "commit": "70a54dcb0e45944cfa1551e370fb76ae75f737f6",
@@ -4167,26 +4261,35 @@
     }
   ],
   "candidateBaseline": {
-    "source": "source025",
-    "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
-    "app": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app",
-    "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
-    "status": "officialbuild/sixNative/strictlocalsignature/onlypackedmain delta green;162software andtypechecks0; originalfullperformance/remainingR/A/S notcomplete"
+    "app": "App023",
+    "source": "source027",
+    "sourceManifestSha256": "2c43ae1ea0159ae480f9cb25b83b447a30ba0f6a44221df46b79fd93c5aa8b07",
+    "appPath": "/private/tmp/willyou-m12-s2-package-023/mac-arm64/WillYou.app",
+    "asarSha256": "8eb13133c8fc5a0db5fa99f0f50204af2a2877a95cb0eb533e05345665667507",
+    "status": "official build, native6, current DMG/private install/CLI3/normal exit/full inventory verified; original T099 A and other original case gaps remain",
+    "currentLocalInstaller": {
+      "path": "/private/tmp/willyou-m12-p125-app023-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
+      "sha256": "ca9fa0a2a89e4e80d69d8d10d13fdc6e9521b7a80b5d3a795b31731f884c1cee",
+      "bytes": 617179163,
+      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P125/app023-installer-001/manifest.json",
+      "scope": "local ad-hoc arm64 only; no release/x64/notarization"
+    }
   },
   "nextExecution": {
-    "nativeResources": "all leases released;no newwrapper framework;M-only native lease afterfrozenREADY",
-    "nextAutonomousActual": "T09 CM-only002 afterreliableawake/freshlease, A notrerun",
-    "pendingOriginalUI": "SOP App022 exactpayloadready;freshNative/DOMforeground;T07/T14 and otherUI/system unchanged",
-    "pendingPlatform": "originalrealx64/otheruserpreconditions retained"
+    "resourcesHeld": [],
+    "nextAutonomous": "Review minimal frozen T004 real R and T107 current A drivers; no repeat of completed tests",
+    "pendingUI": "New actual native/DOM focus required. T0998activity actual UI first when available; T125 readonly readiness observation retains original gap",
+    "pendingPlatform": "Original x64/system/real Bug requirements remain; no contract reduction"
   },
   "nextPackageCandidate": {
-    "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
-    "sourceManifestSha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9",
-    "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
-    "browserVersion": "0.1.1",
-    "browserHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
-    "status": "build-smokes-resource-verifier-passed; originalR-retet-pending",
-    "packageResourceGateSha256": "28a0b91a7ff48c2c6567522f5269d38b049dea61ccb70eaf808506aa273284b9"
+    "App": "App023",
+    "source": "source027",
+    "sourceManifest": "/private/tmp/willyou-m12-p123-source-027/source-inputs.json",
+    "sourceManifestSHA": "2c43ae1ea0159ae480f9cb25b83b447a30ba0f6a44221df46b79fd93c5aa8b07",
+    "app": "/private/tmp/willyou-m12-s2-package-023/mac-arm64/WillYou.app",
+    "asarSHA": "8eb13133c8fc5a0db5fa99f0f50204af2a2877a95cb0eb533e05345665667507",
+    "status": "promoted current candidate; officialbuild/native6 and current installer complete; T099 actual UI pending",
+    "scope": "Only requester taskID renderer and its regression; other3682 source files unchanged, main167browser/fourhelpers exact"
   },
   "currentImplementationCheckpoint": {
     "commit": "91c85827f500446a81dff0e9c7cb90e0ded65f79",
@@ -4406,33 +4509,35 @@
   "currentParticipants": {
     "coordinator": {
       "agent": "/root",
-      "status": "T29/T38review committed cdef8537; ready to verify next executable group; no Native lease"
+      "status": "review/archive/docs; no Native/UI resource held"
     },
     "executors": [
       {
-        "agent": "/root/s2_t004_test",
-        "privateRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-002",
-        "group": "T09 CM-only",
-        "status": "preparationdelivered/idle;no Nativelease;awaitawake"
+        "agent": "/root/t092_upgrade_prep",
+        "group": "T004 real R",
+        "status": "pure-files-only",
+        "privateRoot": "/private/tmp/willyou-m12-t004-real-R-001"
       },
       {
-        "agent": "/root/native_focus_prep",
-        "privateRoot": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003",
-        "group": "P116003 completedfailedprobe",
-        "status": "delivered/released/idle;no newtestassigned"
+        "agent": "/root/t125_resume_ready",
+        "group": "T107 current A",
+        "status": "pure-files-only",
+        "privateRoot": "/private/tmp/willyou-m12-t107-parked-A-001"
       }
     ]
   },
   "parallelPreparationNext": [
     {
-      "owner": "/root/native_focus_prep",
-      "work": "G1newattempt002 actualfullplan read fix, sameauthorizedpayload; P103 purefile preparation paused",
-      "resourcesHeld": []
+      "agent": "/root/t092_upgrade_prep",
+      "group": "T004 real R",
+      "status": "pure-files-only",
+      "privateRoot": "/private/tmp/willyou-m12-t004-real-R-001"
     },
     {
-      "owner": "/root/s2_t004_test",
-      "work": "Cookie static draft saved; noNative; laststatic86048 handleowner mayfinishcheck afterGUI",
-      "resourcesHeld": []
+      "agent": "/root/t125_resume_ready",
+      "group": "T107 current A",
+      "status": "pure-files-only",
+      "privateRoot": "/private/tmp/willyou-m12-t107-parked-A-001"
     }
   ],
   "foregroundCoordination": {
@@ -4848,17 +4953,21 @@
     "currentKnownDisplay": "0online at22:45:21Z;originalUIdisplay/realfocus gates retained"
   },
   "lastCompletedBatch": {
-    "at": "2026-11-05T23:37:07.979994+00:00",
+    "at": "2026-11-06T04:28:23.255010+00:00",
     "uniqueFormalCasesAdded": [
-      "M12-T113"
+      "M12-T092",
+      "M12-T064"
     ],
     "authority": "验收/测试用例.md",
-    "T09": "original I+A faults complete, parent T131 remaining T07/T14",
     "evidence": [
-      "M12-P067/t113-coordinator-final-001/manifest.json",
-      "M12-P108/t09-M-root-review-001/manifest.json"
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P122/t092-coordinator-final-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P124/t064-coordinator-final-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P125/app023-installer-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P113/activity-App023-startup-diagnostics-001/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P113/activity-App023-focus-deferred-A004/manifest.json",
+      "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P121/focus-deferred-004/manifest.json"
     ],
     "resourcesHeld": [],
-    "next": "No replay of T113/T09. Resume frozen App022 T121 then T120/T125 original payload when new actual window/display/focus is available; original T131 T07/T14 and remaining UI/system/platform gates stay explicit."
+    "engineeringOnly": "T099 requesterID fix/red17-18/green18-18/current App023 packaging+installation complete; no full T099 or T125 credit"
   }
 }
