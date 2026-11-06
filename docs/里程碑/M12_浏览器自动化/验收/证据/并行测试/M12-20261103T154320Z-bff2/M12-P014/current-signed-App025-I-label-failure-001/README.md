@@ -1,0 +1,3 @@
+M12-T017 current App025 I001实际启动安全交付。session31223/driver71425/App71432。当前安装App原ApplicationService捕获与pre-entry后台抑制安装成功；组件主表达式被私有driver的大写检查label拦在执行前，0/6段，SQLite绑定与原断言未执行。普通退出表达式也被同规则拒绝，harness.close发送SIGTERM；虽App最终code0/null，signals非空，绝不记正常退出。原judge保留且因probe.raw.json不存在exit1，不把它计产品失败。独立5PID/2TCP/4Unix-helper路径11项全clear，资源已明确释放。
+
+原I001冻结输入不改。包含36个原本地输入快照与170个公共JS模块SHA/mode复用引用；原raw/完整startup/调试端点/userData/DB不归档。初始hook安装有证据，但未证明最终显示快照或原引用恢复；私有内存钩子随已消失的自有进程终止。当前I、App A及系统真实定位均未因此通过；正式新增0。

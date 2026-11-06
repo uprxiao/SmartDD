@@ -1,0 +1,57 @@
+{
+  "schema": "t123-t124-original-contract-v1",
+  "source": "docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "baseline": "V1.3; original T123/T124 unchanged",
+  "RDefinition": "打包 App 内由真实 UI 启动 Codex 0.166.0，Codex 读 Skill 后自己调用 willyou-app browser …",
+  "T123": {
+    "layers": [
+      "R",
+      "A"
+    ],
+    "preconditions": [
+      "synthetic F-BUG has no password",
+      "real model states login needed"
+    ],
+    "steps": [
+      "trusted UI pause Agent",
+      "real Agent one browser invocation receives BROWSER_PAUSED",
+      "no browser retry while paused",
+      "trusted same-page UI login qa while paused",
+      "trusted UI resume Agent",
+      "same real Agent/task/native/run/page/profile continues and uses existing qa login"
+    ],
+    "fullExpected": "Codex 收到 BROWSER_PAUSED 后不重试；用户恢复后继续，登录态沿用",
+    "evidence": [
+      "UI pause/resume actions, visible banner and screenshots",
+      "canonical ACK and actual paused CLI numeric2/error+Host denial",
+      "complete paused-turn no retry through resume",
+      "trusted UI login HTTP account qa, same page/profile",
+      "resumed actual Agent snapshot qa and same identities"
+    ]
+  },
+  "T124": {
+    "layers": [
+      "R"
+    ],
+    "preconditions": [
+      "same project default profile actually logged qa",
+      "synthetic Bug explicitly qa2 with demo password"
+    ],
+    "steps": [
+      "real UI launch main Codex task",
+      "Agent actually reads Bug/Skills",
+      "Agent creates task-owned isolated profile and logs qa2 through actual CLI --stdin",
+      "another real task confirms project default still qa"
+    ],
+    "fullExpected": "Codex 为任务新建独立 profile 登录 qa2；项目 profile 仍为 qa（另一任务确认）",
+    "evidence": [
+      "precondition peer actual Native/CLI qa login and project profile",
+      "main actual Host profile.create/use and qa2 login HTTP/snapshot",
+      "separate task/native/run peer final actual CLI snapshot qa",
+      "profile metadata owner/scope/partition plus same-origin independent Native sessions"
+    ]
+  },
+  "reuseBoundary": "T120/T121 fixture, delivery/Native/UI/sender/cleanup drivers only; prior passes do not replace new T123/T124 R/A. No original A/R evidence exists for these two rows.",
+  "UIContract": "R definition explicitly requires UI launch, including T124. APIs prepare projects/connections only, not R launch or accepted profile/account actions.",
+  "status": "file-preparation; zero business executed"
+}

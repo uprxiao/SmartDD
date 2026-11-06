@@ -1,0 +1,14 @@
+--- I002/judge.mjs
++++ I003/judge.mjs
+@@ -16,7 +16,10 @@
+ assert.equal(x.actualSQLiteCachePath,pin.sqliteNativeBinding);
+ assert.equal(x.pid,driver.appPid);
+ assert.equal(driver.startup.module.sha256,pin.packedMainSha256);
+-assert(driver.startup.breakpointRemoved&&driver.startup.resumedBeforeAdmission)});
++assert(driver.startup.ownerAndMainIdentityVerified&&driver.startup.resumedBeforeAdmission&&driver.startup.noServiceCapture);
++assert.equal(driver.startup.identity.pid,driver.appPid);
++assert.equal(driver.startup.identity.executable,pin.executable);
++assert.equal(driver.startup.identity.userDataEnvironment,driver.userData)});
+ test('background-no-display-focus-or-input-and-original-hooks-restored',()=>{const x=raw.currentRuntime;
+ for(const s of[x.displayAtStart,x.finalDisplay,...driver.stages.map(v=>v.display)]){assert.equal(s.policy,'prohibited');
+ assert(s.windows.every(w=>!w.visible&&!w.focused&&!w.focusable));

@@ -1,0 +1,211 @@
+{
+  "status": "all-driver-labels-and-controls-pass",
+  "actual": {
+    "pattern": "^[a-z0-9-]{1,64}$",
+    "files": [
+      "background.mjs",
+      "capture-main.mjs",
+      "check-labels.mjs",
+      "driver-source/scripts/lib/electron-harness.mjs",
+      "io.mjs",
+      "load-host.mjs",
+      "resources.mjs",
+      "run.mjs",
+      "startup-error.mjs"
+    ],
+    "calls": [
+      {
+        "file": "run.mjs",
+        "line": 1,
+        "column": 2677,
+        "offset": 2676,
+        "kind": "own",
+        "bodyArgument": 1,
+        "labelArgument": 2,
+        "label": "readonly-initial-owned-sockets"
+      },
+      {
+        "file": "run.mjs",
+        "line": 1,
+        "column": 3018,
+        "offset": 3017,
+        "kind": "own",
+        "bodyArgument": 1,
+        "labelArgument": 2,
+        "label": "load-owned-current-permission-i"
+      },
+      {
+        "file": "run.mjs",
+        "line": 1,
+        "column": 5184,
+        "offset": 5183,
+        "kind": "own",
+        "bodyArgument": 1,
+        "labelArgument": 2,
+        "label": "readonly-own-runtime-sockets"
+      },
+      {
+        "file": "run.mjs",
+        "line": 1,
+        "column": 5459,
+        "offset": 5458,
+        "kind": "own",
+        "bodyArgument": 1,
+        "labelArgument": 2,
+        "label": "normal-current-i-app-quit"
+      }
+    ],
+    "delegations": [
+      {
+        "file": "run.mjs",
+        "line": 1,
+        "column": 1099,
+        "offset": 1098,
+        "wrapper": "own(body,label)",
+        "bodyArgument": 1,
+        "labelArgument": 2,
+        "optionsArgument": 2,
+        "optionsProperty": "label",
+        "sourceParameter": 2
+      }
+    ],
+    "issues": []
+  },
+  "controls": [
+    {
+      "name": "original-I001-two-uppercase-labels-rejected",
+      "expectedIssues": 2,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 3021,
+          "offset": 3020,
+          "reason": "Label fails frozen harness pattern: load-owned-current-permission-I"
+        },
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 5527,
+          "offset": 5526,
+          "reason": "Label fails frozen harness pattern: normal-current-I-App-quit"
+        }
+      ]
+    },
+    {
+      "name": "own-uppercase-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 3061,
+          "offset": 3060,
+          "reason": "Label fails frozen harness pattern: load-owned-current-permission-I"
+        }
+      ]
+    },
+    {
+      "name": "own-label-65-characters-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 3061,
+          "offset": 3060,
+          "reason": "Label fails frozen harness pattern: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "own-dynamic-label-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 3018,
+          "offset": 3017,
+          "reason": "own argument 2 must be a fixed literal label"
+        }
+      ]
+    },
+    {
+      "name": "direct-literal-label-accepted",
+      "expectedIssues": 0,
+      "actualIssues": []
+    },
+    {
+      "name": "direct-uppercase-label-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 2,
+          "column": 30,
+          "offset": 6553,
+          "reason": "Label fails frozen harness pattern: direct-Invalid"
+        }
+      ]
+    },
+    {
+      "name": "direct-dynamic-label-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 2,
+          "column": 2,
+          "offset": 6525,
+          "reason": "Nonliteral direct mainEvaluate label is not the exact own parameter delegation"
+        }
+      ]
+    },
+    {
+      "name": "direct-missing-label-rejected",
+      "expectedIssues": 1,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 2,
+          "column": 2,
+          "offset": 6525,
+          "reason": "Direct mainEvaluate options argument 2 needs one explicit label and no spread"
+        }
+      ]
+    },
+    {
+      "name": "wrong-wrapper-parameter-forwarding-rejected",
+      "expectedIssues": 2,
+      "actualIssues": [
+        {
+          "file": "run.mjs",
+          "line": 1,
+          "column": 1099,
+          "offset": 1098,
+          "reason": "Nonliteral direct mainEvaluate label is not the exact own parameter delegation"
+        },
+        {
+          "reason": "Expected exactly one own -> mainEvaluate label delegation",
+          "actual": 0
+        }
+      ]
+    }
+  ],
+  "originalI001Run": {
+    "path": "/private/tmp/willyou-m12-t017-App025-I-001/run.mjs",
+    "sha256": "34fdb1642ef696bc3f33485975bf44022e7e39e64ccf261fd347cd35e445401d"
+  },
+  "harness": {
+    "path": "driver-source/scripts/lib/electron-harness.mjs",
+    "sha256": "c80f083ed995f6238fb80281aceedc8a15daeb57fcd234747fa67a6d637e7712",
+    "guardLines": [
+      411,
+      412,
+      413
+    ]
+  },
+  "runtimeOrder": "run imports verifier and awaits assertDriverLabels(ROOT) before permit and openElectron",
+  "NativeAppOSHTTPModelAuthExecution": false
+}

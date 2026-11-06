@@ -1,0 +1,1 @@
+R007: retain original T124 two prompts and five business predicates. R006 proved old session unavailable after restart; exact same default profile is now re-authenticated only by actual visible native page UI before main prompt, using synthetic qa. No Cookie insertion, no model precondition replay, no auth copy. R006 original red unchanged.

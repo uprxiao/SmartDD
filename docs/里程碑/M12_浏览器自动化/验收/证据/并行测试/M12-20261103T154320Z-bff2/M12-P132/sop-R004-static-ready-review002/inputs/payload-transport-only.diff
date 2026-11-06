@@ -1,0 +1,45 @@
+--- R003/payload-review.json
++++ R004/payload-review.json
+@@ -36,4 +36,4 @@
+   "fixedPrompts": {
+-    "T124-peer-precondition": "M12_SOP_a1271241230c6e8f_T124PREP 本轮先建立项目 qa 登录前置。这是隔离的原 M12 验收，只访问本轮合成本机站点、合成禅道和任务当前交付的 Skill/CLI/证据。不得读取认证文件、日常项目或其他服务，不覆盖 workspace-write/on-request，不自报批准、不永久批准；若真实工具按 on-request 请求本次已审本机范围的一次审批，保留真实请求并等待真实审批，不绕过。演示密码是非秘密测试数据，登录按 Skill 使用 --stdin，不放在 CLI 参数或最终报告；未知写结果不重发。先完整读取本任务实际交付的相关 Skill，入口由 Skill 决定，不猜工具名或切换账号。 只用项目默认 profile 在 http://127.0.0.1:51324/site 登录合成账号 qa，演示密码 Qa-Pass-1；不要创建/克隆/切换/删除 profile，不处理 qa2。用真实 snapshot 核页面账号为 qa 后报告当前 page/profile 身份并结束本轮，等待后续只读确认。",
+-    "T124-main": "M12_SOP_a1271241230c6e8f_T124MAIN 这是隔离的原 M12 验收，只访问本轮合成本机站点、合成禅道和任务当前交付的 Skill/CLI/证据。不得读取认证文件、日常项目或其他服务，不覆盖 workspace-write/on-request，不自报批准、不永久批准；若真实工具按 on-request 请求本次已审本机范围的一次审批，保留真实请求并等待真实审批，不绕过。演示密码是非秘密测试数据，登录按 Skill 使用 --stdin，不放在 CLI 参数或最终报告；未知写结果不重发。先完整读取本任务实际交付的相关 Skill，入口由 Skill 决定，不猜工具名或切换账号。 请处理本人列表中标题为“M12_SOP_a1271241230c6e8f T124 总价异常”的合成 Bug，按复现 Bug SOP 执行。当前项目默认 profile 已登录 qa；工单要求 qa2。按 Skill 为本任务新建独立 profile 登录 qa2，不在项目默认 profile 换号；snapshot 核账号和任务独立身份。保留证据并在本会话报告，不修改禅道。",
++    "T124-peer-precondition": "M12_SOP_a1271241230c6e8f_T124PREP 本轮先建立项目 qa 登录前置。这是隔离的原 M12 验收，只访问本轮合成本机站点、合成禅道和任务当前交付的 Skill/CLI/证据。不得读取认证文件、日常项目或其他服务，不覆盖 workspace-write/on-request，不自报批准、不永久批准；若真实工具按 on-request 请求本次已审本机范围的一次审批，保留真实请求并等待真实审批，不绕过。演示密码是非秘密测试数据，登录按 Skill 使用 --stdin，不放在 CLI 参数或最终报告；未知写结果不重发。先完整读取本任务实际交付的相关 Skill，入口由 Skill 决定，不猜工具名或切换账号。 只用项目默认 profile 在 http://127.0.0.1:51324/site 登录合成账号 qa，演示密码 Qa-Pass-1；不要创建/克隆/切换/删除 profile，不处理 qa2。用真实 snapshot 核页面账号为 qa 后报告当前 page/profile 身份并结束本轮，等待后续只读确认。 密码传输必须遵守本轮更严格的操作规范（不改变 Skill/Host 或任何业务预期）：即使是合成演示密码，也绝不能把密码值放进 shell cmd/argv、临时脚本、heredoc、环境变量赋值、printf/echo 字面量或最终报告；不要用 find/action fill 或 --stdin text 绕开。先从本次 snapshot/find 取得密码框的宿主完整不透明元素引用，只将下列命令的 ELEMENT_REF 替换为该公开引用，不要原样执行占位符。必须用 exec_command 的 tty:true 启动只含公共命令的交互会话，cmd 为 stty -echo; cat | willyou-app browser fill --element 'ELEMENT_REF' --stdin value; result=$?; stty echo; exit $result 。这里 CLI 的 stdin 必须来自 cat 的管道，因为真实 CLI 拒绝直接 TTY stdin；不要直接把 TTY 接给 CLI。exec_command 返回真实 session_id 后，仅一次 write_stdin 向该会话发送该合成密码紧接一个 LF 和一个 Ctrl-D，准确等价于 password + String.fromCharCode(10, 4)（password 仅指本次已获准合成值，绝不在 shell 定义或赋值密码变量）。不能双 Ctrl-D，也不能把密码传给 find --stdin text；该 CLI 会去掉一行尾换行。只可用空 chars 轮询同一会话，不能再次发送密码；核数字退出码和真实 fill 回执，保持 stty echo 恢复；未知写结果不重发，不改审批/sandbox/model，不自报批准。",
++    "T124-main": "M12_SOP_a1271241230c6e8f_T124MAIN 这是隔离的原 M12 验收，只访问本轮合成本机站点、合成禅道和任务当前交付的 Skill/CLI/证据。不得读取认证文件、日常项目或其他服务，不覆盖 workspace-write/on-request，不自报批准、不永久批准；若真实工具按 on-request 请求本次已审本机范围的一次审批，保留真实请求并等待真实审批，不绕过。演示密码是非秘密测试数据，登录按 Skill 使用 --stdin，不放在 CLI 参数或最终报告；未知写结果不重发。先完整读取本任务实际交付的相关 Skill，入口由 Skill 决定，不猜工具名或切换账号。 请处理本人列表中标题为“M12_SOP_a1271241230c6e8f T124 总价异常”的合成 Bug，按复现 Bug SOP 执行。当前项目默认 profile 已登录 qa；工单要求 qa2。按 Skill 为本任务新建独立 profile 登录 qa2，不在项目默认 profile 换号；snapshot 核账号和任务独立身份。保留证据并在本会话报告，不修改禅道。 密码传输必须遵守本轮更严格的操作规范（不改变 Skill/Host 或任何业务预期）：即使是合成演示密码，也绝不能把密码值放进 shell cmd/argv、临时脚本、heredoc、环境变量赋值、printf/echo 字面量或最终报告；不要用 find/action fill 或 --stdin text 绕开。先从本次 snapshot/find 取得密码框的宿主完整不透明元素引用，只将下列命令的 ELEMENT_REF 替换为该公开引用，不要原样执行占位符。必须用 exec_command 的 tty:true 启动只含公共命令的交互会话，cmd 为 stty -echo; cat | willyou-app browser fill --element 'ELEMENT_REF' --stdin value; result=$?; stty echo; exit $result 。这里 CLI 的 stdin 必须来自 cat 的管道，因为真实 CLI 拒绝直接 TTY stdin；不要直接把 TTY 接给 CLI。exec_command 返回真实 session_id 后，仅一次 write_stdin 向该会话发送该合成密码紧接一个 LF 和一个 Ctrl-D，准确等价于 password + String.fromCharCode(10, 4)（password 仅指本次已获准合成值，绝不在 shell 定义或赋值密码变量）。不能双 Ctrl-D，也不能把密码传给 find --stdin text；该 CLI 会去掉一行尾换行。只可用空 chars 轮询同一会话，不能再次发送密码；核数字退出码和真实 fill 回执，保持 stty echo 恢复；未知写结果不重发，不改审批/sandbox/model，不自报批准。",
+     "T124-peer-confirm": "M12_SOP_a1271241230c6e8f_T124VERIFY 这是隔离的原 M12 验收，只访问本轮合成本机站点、合成禅道和任务当前交付的 Skill/CLI/证据。不得读取认证文件、日常项目或其他服务，不覆盖 workspace-write/on-request，不自报批准、不永久批准；若真实工具按 on-request 请求本次已审本机范围的一次审批，保留真实请求并等待真实审批，不绕过。演示密码是非秘密测试数据，登录按 Skill 使用 --stdin，不放在 CLI 参数或最终报告；未知写结果不重发。先完整读取本任务实际交付的相关 Skill，入口由 Skill 决定，不猜工具名或切换账号。 另一任务刚完成 qa2 的独立登录。你仍是原 qa 前置任务；只在你原来的项目默认 profile/原页面执行一次真实 snapshot，确认当前账号仍为 qa，并报告 page/profile 与账号。不要登录、换号、创建/切换/删除 profile，不操作另一任务页面。",
+@@ -69,3 +69,3 @@
+     "futureSource": "/private/tmp/willyou-m12-t120-t125-app022-retest-001/runtime-001/codex/auth.json",
+-    "futureDestination": "/private/tmp/willyou-m12-t123-t124-real-R-001/runtime-001/codex/auth.json",
++    "futureDestination": "/private/tmp/willyou-m12-t123-t124-real-R-004/runtime-001/codex/auth.json",
+     "onlyOwnedAuthJSONCopy": true,
+@@ -76,3 +76,3 @@
+   "authorization": "Root binds this full reviewed payload to existing user goal/S2-S6/CLI-login authorization; no claim of verbatim user approval and no automatic requirement for per-prompt fresh consent; actual tool approval remains on-request",
+-  "execution": "not executed; awaits Root payload review plus explicit full resource lease",
++  "execution": "not executed; new full payload SHA differs from R003 c205, awaits Root review binding to existing authorized full test goal/local synthetic data/public Skills/OpenAI scope and fresh complete lease",
+   "syntheticBugs": {
+@@ -214,2 +214,25 @@
+     "noRealEndpoints": true
++  },
++  "passwordTransportReview": {
++    "scope": "Only T124 Agent password input; T123 remains trusted UI only with no password supplied to Agent",
++    "execCommandTTY": true,
++    "publicCommandTemplate": "stty -echo; cat | willyou-app browser fill --element 'ELEMENT_REF' --stdin value; result=$?; stty echo; exit $result",
++    "replaceOnlyElementReference": true,
++    "passwordInShellArgvScriptEnvForbidden": true,
++    "writeStdinNonemptyDeliveries": 1,
++    "charactersSuffixCodepoints": [
++      "U+000A",
++      "U+0004"
++    ],
++    "noDoubleCtrlD": true,
++    "pollingOnlyEmptyChars": true,
++    "operation": "browser.fill",
++    "stdinField": "value",
++    "restoreEcho": true,
++    "HostCLIModelActualRunNotYetExecuted": true,
++    "transportOnlyPreflight": {
++      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P132/local-stdin-transport-001/manifest.json",
++      "sha256": "49568644f8795fb8e57dbd34ab3170937293083cfe83c5224f5387bc0e522d23",
++      "boundary": "Real local private PTY pipe/noecho/LF+singleCtrlD preflight only; not Host/stockCLI/App/model business acceptance"
++    }
+   }

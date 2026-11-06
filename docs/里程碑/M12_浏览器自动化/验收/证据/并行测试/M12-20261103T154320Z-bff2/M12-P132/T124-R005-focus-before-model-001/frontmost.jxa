@@ -1,0 +1,3 @@
+ObjC.import('AppKit');
+var app = $.NSWorkspace.sharedWorkspace.frontmostApplication;
+JSON.stringify({pid:Number(app.processIdentifier),name:ObjC.unwrap(app.localizedName)});

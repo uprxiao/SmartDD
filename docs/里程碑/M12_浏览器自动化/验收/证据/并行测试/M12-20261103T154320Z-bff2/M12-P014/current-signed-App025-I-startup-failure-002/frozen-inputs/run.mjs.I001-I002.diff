@@ -1,0 +1,33 @@
+--- I001/run.mjs
++++ I002/run.mjs
+@@ -1,3 +1,4 @@
++import{assertDriverLabels}from'./check-labels.mjs';
+ import assert from'node:assert/strict';
+ import{mkdir,readFile,writeFile}from'node:fs/promises';
+ import{dirname}from'node:path';
+@@ -7,6 +8,7 @@
+ import{loadHostBody}from'./load-host.mjs';
+ import{resourceRecorder}from'./resources.mjs';
+ import{saveStartupError}from'./startup-error.mjs';
++await assertDriverLabels(ROOT);
+ const{pin,check}=await permit(),runtime=ROOT+'/runtime-001',userData=runtime+'/userdata',r={case:'M12-T017',layer:'I-only',scope:'Fresh actual installed App025 background signed runtime with exact frozen source029 components;
+  not App A/OS grant',startedAt:new Date().toISOString(),driverPid:process.pid,userData,resourceHistory:[],cleanupErrors:[],foregroundActions:0,UIInput:0,realModel:0,authReadOrCopied:false,status:'running-unjudged'},resources=resourceRecorder({userData,driverPid:process.pid});
+ r.resourceHistory=resources.history;
+@@ -30,7 +32,7 @@
+ r.exactGatewayPaths=await own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string").map(h=>h.address()).filter(p=>p.startsWith("/tmp/wy-")||p.startsWith("/private/tmp/wy-"));
+ ','readonly-initial-owned-sockets');
+ stage='load-current-components-and-current-SQLite';
+-r.loadedHost=await own(loadHostBody({root:ROOT,userData,pin}),'load-owned-current-permission-I');
++r.loadedHost=await own(loadHostBody({root:ROOT,userData,pin}),'load-owned-current-permission-i');
+ await save('live.json',r);
+ stage='six-original-technical-segments';
+ const deadline=Date.now()+155000;
+@@ -63,7 +65,7 @@
+ if(g)g.restore();
+ setTimeout(()=>E.app.quit(),100);
+ return true;
+-','normal-current-I-App-quit');
++','normal-current-i-app-quit');
+ r.hostExit=await app.waitForExit(30000);
+ r.appExit=r.hostExit}}catch(error){r.cleanupErrors.push({stage:'normal-App-cleanup',name:error.name});
+ await writeFile(runtime+'/cleanup.private.log',String(error.stack??error),{mode:0o600})}try{await writeFile(runtime+'/electron.private.log',app.logs(),{mode:0o600});

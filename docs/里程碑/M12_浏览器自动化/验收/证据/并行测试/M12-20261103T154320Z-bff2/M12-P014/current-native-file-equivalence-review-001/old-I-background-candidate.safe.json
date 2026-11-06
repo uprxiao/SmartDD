@@ -1,0 +1,43 @@
+{
+  "scope": "Static candidate inspection only; no new I runner prepared or executed",
+  "paths": [
+    {
+      "path": "/private/tmp/willyou-m12-p014-executor-001/run.mjs",
+      "sha256": "09885e6896a31660c9bc7fe60ef544475f34ba40acbcd32d5fe856cdd66bde59"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p014-executor-001/host.source.ts",
+      "sha256": "c0c662b8cdd131fe673a6b6200d3d45c3dc61499cea18a295c370d7a5c369a5f"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p014-executor-001/geo-fixture.cjs",
+      "sha256": "606c672acad572ecd4480f7f9348ad7ecbc6993ded68d67c36acf15dbb0efd01"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p014-executor-001/adjudicate.mjs",
+      "sha256": "1b9e36f5c66e3d832e5495a48e0d00ac50f10398d12bf80f0301b6519d191b97"
+    }
+  ],
+  "noForegroundInputRequiredBySource": true,
+  "evidence": [
+    "host.source.ts11 creates all BrowserWindow with show:false/focusable:false/skipTaskbar:true",
+    "No app.activate/focus, Input mouse/key, system events, clipboard or OS-location calls in host/fixture; production geolocation requests run via executeJavaScript",
+    "host.source.ts9 uses Emulation.setGeolocationOverride for position only, never Browser.grantPermissions",
+    "host.source.ts15 calls original production BrowserPermissions.respond as synthetic I precondition; not App user-A response",
+    "Original six technical segments and adjudicate predicates remain unchanged"
+  ],
+  "nativeResourcesStillNeededAtFutureExecution": [
+    "Electron/App process and renderer/helper children",
+    "two own loopback HTTP listeners",
+    "isolated SQLite/native addon, userData and fresh profile partitions",
+    "original owned renderer-crash injection and exact PID/listener cleanup"
+  ],
+  "limitations": [
+    "Old runner is pinned to raw Electron package executable and old compiled component source; cannot be claimed currentApp025 merely by passing packaged argv. A fresh explicit currentApp025 runtime/component binding is still required.",
+    "No real device or OS grant verified. A Native geolocation provider/privacy denial despite granted query remains blocked by original judge; never bypassed.",
+    "Hidden windows and absence of UI actions prove no input-focus dependency in source; no live locked-screen behavior was executed by this audit.",
+    "Parent ps/lsof resources are OS probes during future authorized Native run; none executed here.",
+    "Original six segments include only own pending-window close and own forcefullyCrashRenderer; no other process is targeted."
+  ],
+  "originalActualIResult": "passed-component-subset; historic only, not currentApp025 I or T017 App A"
+}

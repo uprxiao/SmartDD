@@ -1,0 +1,59 @@
+{
+  "status": "pure-stub-cleanup-lifecycle-controls-passed",
+  "controls": [
+    {
+      "id": "normal",
+      "passed": true,
+      "calls": [
+        "request",
+        "wait-45000",
+        "private-logs",
+        "close-owned",
+        "wait-10000",
+        "observed"
+      ],
+      "normalExitConfirmed": true,
+      "errorLabels": []
+    },
+    {
+      "id": "normal-wait-error",
+      "passed": true,
+      "calls": [
+        "request",
+        "wait-45000",
+        "saved-error-wait-own-normal-exit",
+        "private-logs",
+        "close-owned",
+        "wait-10000",
+        "observed"
+      ],
+      "normalExitConfirmed": false,
+      "errorLabels": [
+        "wait-own-normal-exit"
+      ]
+    },
+    {
+      "id": "close-error",
+      "passed": true,
+      "calls": [
+        "request",
+        "wait-45000",
+        "saved-error-wait-own-normal-exit",
+        "private-logs",
+        "close-owned",
+        "saved-error-close-exact-owned-harness",
+        "wait-10000",
+        "observed"
+      ],
+      "normalExitConfirmed": false,
+      "errorLabels": [
+        "wait-own-normal-exit",
+        "close-exact-owned-harness"
+      ]
+    }
+  ],
+  "passed": 3,
+  "total": 3,
+  "helperSHA256": "4c49dfb40a25040fc950fb4fbda401cc9f3e7044af2eb11469405811b5ca1fb9",
+  "actualNativeAppOSHTTPSecretOrModelExecution": false
+}

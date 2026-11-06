@@ -1,0 +1,29 @@
+{
+  "case": "M12-T017",
+  "originalLayer": [
+    "A",
+    "I"
+  ],
+  "thisPreparedLayer": [
+    "A"
+  ],
+  "caseRow": "| M12-T017 | R01.8、O4、B06 | A＋I | 权限请求页（定位） | 用户点允许；刷新后再次请求；在登录态管理里撤销；另由 Agent 执行任意命令尝试授权 | 首次弹提示；允许后按站点记在当前 profile，再次请求自动沿用；撤销后重新弹提示；没有任何 Agent 命令能授予站点权限 | — | 待执行 | — |",
+  "originalExpectations": [
+    "首次弹提示",
+    "允许后按站点记在当前 profile，再次请求自动沿用",
+    "登录态管理里撤销后重新弹提示",
+    "没有任何 Agent 命令能授予站点权限"
+  ],
+  "APath": "True packaged UI page button/permission allow/toolbar reload/page request/profile manager revoke/page request; actual managed native CLI geolocation and page-context UI-answer attempt cannot grant. No real model requirement for original A+I.",
+  "currentI": "pending independent current P014 runner prepared by other executor; old technical green is retained but not current-I-pass",
+  "contract": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "sha256": "b2e2fa45ada15a6cb7c169e38d781c376f0ca340c949606069f1ce6c82bdddda"
+  },
+  "requirement": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+    "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+    "rule": "R01.8: 允许或拒绝都按站点记在当前 profile 内，可查看和撤销。Agent 不能授予权限。"
+  },
+  "boundary": "Coordinates synthetic via existing per-page debugger only, not Browser.grantPermissions or OS permission; HTTPS trust continue is explicit local fixture prerequisite. No auth source read/copy, real model, physical device, global trust/proxy/hosts changes."
+}
