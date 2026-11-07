@@ -57,8 +57,23 @@ export class BrowserDownloads {
         // await filesystem work and accidentally open a native Save dialog.
         item.setSavePath(reservation.path);
       }catch(error){release();event.preventDefault();record.state='failed';record.error=error instanceof Error?error.message:String(error);this.changed(record);expected?.fail(error);return;}
-      const updated=()=>{record.receivedBytes=safe(()=>item.getReceivedBytes(),record.receivedBytes);record.totalBytes=Math.max(0,safe(()=>item.getTotalBytes(),record.totalBytes));this.changed(record);};
-      const done=(_event:Electron.Event,state:string)=>{updated();record.state=state==='completed'?'done':state==='cancelled'?'cancelled':'failed';record.error=state==='interrupted'?'下载连接被中断':null;record.path=safe(()=>item.getSavePath(),record.path??'')||record.path;release();item.off('updated',updated);this.live.delete(id);this.changed(record);if(record.state==='done')expected?.complete(record);else expected?.fail(new BrowserError('BROWSER_ERROR',record.state==='cancelled'?'下载已取消':'下载连接被中断'));};
+      let finished=false;
+      const readProgress=()=>{record.receivedBytes=safe(()=>item.getReceivedBytes(),record.receivedBytes);record.totalBytes=Math.max(0,safe(()=>item.getTotalBytes(),record.totalBytes));};
+      const finish=(state:string,cancelNative=false)=>{
+        if(finished)return;finished=true;readProgress();record.state=state==='completed'?'done':state==='cancelled'?'cancelled':'failed';record.error=state==='interrupted'?'下载连接被中断':null;record.path=safe(()=>item.getSavePath(),record.path??'')||record.path;
+        item.off('updated',updated);item.off('done',done);release();this.live.delete(id);
+        // Detach before cancellation: native done(cancelled) must not overwrite
+        // the interruption failure or cancel an explicit expectation twice.
+        if(cancelNative)try{item.cancel();}catch{/* The failed record remains usable. */}
+        this.changed(record);if(record.state==='done')expected?.complete(record);else expected?.fail(new BrowserError('BROWSER_ERROR',record.state==='cancelled'?'下载已取消':'下载连接被中断'));
+      };
+      const updated=(_event:Electron.Event,state:string)=>{
+        readProgress();this.changed(record);
+        // Like Orca's download manager, defer native cancellation until outside
+        // updated; resumable interruptions never emit terminal done by themselves.
+        if(state==='interrupted')setImmediate(()=>{if(!finished&&!this.closed&&this.live.get(id)?.item===item&&safe(()=>item.getState()==='interrupted'&&item.canResume(),false))finish('interrupted',true);});
+      };
+      const done=(_event:Electron.Event,state:string)=>finish(state);
       item.on('updated',updated);item.once('done',done);this.live.set(id,{item,detach:()=>{item.off('updated',updated);item.off('done',done);release();}});this.changed(record);
     };
     session.on('will-download',listener);this.sessions.set(session,listener);
