@@ -1,0 +1,21 @@
+--- source040-original-lines46-59
++++ facade-six-loop-body
+@@ -1,7 +1,7 @@
+- if(process.env.WILLYOU_ROUTING_PROBE!=='source-only')for(const theme of ['light','dark']){await app.invoke('appSettings.update','theme','y'+theme);for(const kind of ['md','html','pdf']){
++ for(const theme of ['light','dark']){await app.invoke('appSettings.update','theme','y'+theme);for(const kind of ['md','html','pdf']){
+   await mark(theme+':'+kind+':existing-viewer-choices');const name='route.'+kind;
+   if(await app.evaluate('document.querySelectorAll(".fw-tab").length>0')){const current=await app.evaluate("document.querySelector('.fw-tab-close')?.getAttribute('aria-label')");await app.click('[aria-label='+q(current)+']');await app.waitFor("document.querySelectorAll('.fw-tab').length===0");}
+-  const start=(await observeFileMethods(app)).length;await app.open(name);await extension();const automatic=await snapshot();await menu('内置文件查看器');await builtin(kind);const internal=await snapshot();await menu('A F01 本机只读资源');await extension();const explicit=await snapshot();await menu('自动选择查看器');await extension();const backAutomatic=await snapshot();
++  const start=(await trace()).length;await app.open(name);await extension();const automatic=await snapshot();await menu('内置文件查看器');await builtin(kind);const internal=await snapshot();await menu('A F01 本机只读资源');await extension();const explicit=await snapshot();await menu('自动选择查看器');await extension();const backAutomatic=await snapshot();
+   let sourceNavigation,toggleDocument,toggleSource;
+   if(kind!=='pdf'){
+    if(kind==='html'){await menu('内置文件查看器');await builtin(kind);await app.click('[aria-label=查看文档]');await documentView(kind);await menu('A F01 本机只读资源');await extension();}
+@@ -9,6 +9,6 @@
+    await menu('A F01 本机只读资源');await extension();await app.click('[aria-label=查看文档]');await documentView(kind);toggleDocument=await snapshot();
+    await menu('A F01 本机只读资源');await extension();await app.click('[aria-label=查看源码]');await builtin(kind);toggleSource=await snapshot();
+   }
+-  const calls=(await observeFileMethods(app)).slice(start),source=calls.find(x=>x.method==='open'&&x.delivered)?.output;assert(source);const sessions=calls.filter(x=>x.method==='openViewer'&&x.delivered);assert(sessions.length>=2);for(const s of sessions){assert.equal(s.args[0].ref.id,source.ref.id);assert.equal(s.args[0].baseHash,r.before[name].sha256);assert.equal(sha(Buffer.from(s.output.resource.base64,'base64')),r.before[name].sha256);assert.equal(s.output.writable,false);}assert.equal(calls.filter(x=>x.method==='open').length,1);r.checks.push({theme,kind,scenario:'actual viewer menu choices, validated search range and explicit source/document mode priority on same document',sourceId:source.ref.id,automatic,internal,explicit,backAutomatic,sourceNavigation,toggleDocument,toggleSource,sessionIds:sessions.map(x=>x.output.id),pass:true});
++  const calls=(await trace()).slice(start),source=calls.find(x=>x.method==='open'&&x.delivered)?.output;assert(source);const sessions=calls.filter(x=>x.method==='openViewer'&&x.delivered);assert(sessions.length>=2);for(const s of sessions){assert.equal(s.args[0].ref.id,source.ref.id);assert.equal(s.args[0].baseHash,r.before[name].sha256);assert.equal(sha(Buffer.from(s.output.resource.base64,'base64')),r.before[name].sha256);assert.equal(s.output.writable,false);}assert.equal(calls.filter(x=>x.method==='open').length,1);r.checks.push({theme,kind,scenario:'actual viewer menu choices, validated search range and explicit source/document mode priority on same document',sourceId:source.ref.id,automatic,internal,explicit,backAutomatic,sourceNavigation,toggleDocument,toggleSource,sessionIds:sessions.map(x=>x.output.id),pass:true});
+  }}
+- if(await app.evaluate('document.querySelectorAll(".fw-tab").length>0')){const close=await app.evaluate("document.querySelector('.fw-tab-close').getAttribute('aria-label')");await app.click('[aria-label='+q(close)+']');await app.waitFor("document.querySelectorAll('.fw-tab').length===0");}
++ }}

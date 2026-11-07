@@ -3,7 +3,7 @@
   "goal": "实现 M12 S1 并验证基础技术链路可行性",
   "authorization": "用户本轮明确要求先完成 S1 并验证可行；不进入 S2-S6",
   "branch": "feature/0.1.1",
-  "requirements": "R1.2",
+  "requirements": "R1.6",
   "createdAt": "2026-11-03T09:21:41.514478+00:00",
   "authority": "测试用例.md为唯一正式用例账；本文件只记录分组、原判据和调度，不维护第二份实际结果或通过率",
   "baseline": {
@@ -170,12 +170,12 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-07T19:22:24.978372+00:00",
+  "updatedAt": "2026-11-07T19:49:29.982611+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
-  "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
+  "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
   "pauseHandoff": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
-  "next": "先完成 M12-FILE-VIEWER-TITLE-PRIORITY 新源040/App036官方构建、最小受影响实际菜单验证及S6当前包验证。当前已验候选App035/source039保留；新接口补丁90唯一U/I和双TS已绿，未宣称新包A。原批准来源复核已收口F03/F04/F29现行适用检查，具体未落地A条件未触发；其余原9组仍保原范围，F01无豁免。红框5与夜间已后置分支不重放，用户/设备前置集中醒后。",
+  "next": "已完成本次修复工程检查/官方036构建与S6；当前实际菜单仅lightMD已得，lightHTML失焦停止，余5轮与原F01系统外开保留缺项。按既有夜间后置清单，先收归档/复核，不重放已绿/旧guard；有独立就绪组再执行。",
   "followupAgreement": {
     "document": "../技研/技术方案.md#11-开发顺序",
     "recordedAt": "2026-11-03",
@@ -186,14 +186,14 @@
     "schema": 1,
     "startedAt": "2026-11-03T15:43:20.637045+00:00",
     "authorization": "用户要求建立覆盖S2-S6全部剩余开发、测试和测试缺陷修复复验的总目标",
-    "status": "active;App035/source039 unchanged;originalremainingT130 U/A continues",
+    "status": "active;App036/source040S6green;currentaffectedmenuAfocusdeferred;nightremainingprerequisitesrecorded",
     "branch": "feature/0.1.1",
-    "sourceCommit": "a3a0c90d90fb9e844929af9859408c76187fd611",
+    "sourceCommit": "d238562bead267cb9f311f0317591b4ee08b4250",
     "requirements": "需求.md R1.6",
     "technicalDesign": "V1.6",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "Title explicitviewer interface fix U/I green; source040/App036 awaiting officialbuild",
+    "currentGroup": "App036 S6 complete; scopedviewer-menuA1of6focusdeferred; evidence handoff",
     "groups": [
       {
         "id": "M12-P001",
@@ -4228,7 +4228,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-07T17:32:30.135702+00:00",
+    "updatedAt": "2026-11-07T19:48:15.664643+00:00",
     "independentNext": "继续T130原剩余U/A：本轮D22、F07–F09、基础标签D01/D02/D03/D09/D14及F02完整A已归账；F03/F29仅MD/CSV子段完成，PDF/artifact/title仍保留。下一原task/PTY共前置组及PDF导航可执行子段；D19/D21、截图红框／系统设备项夜间后置，原121合同不改。",
     "pendingDecisions": [
       {
@@ -4264,29 +4264,31 @@
       }
     ],
     "currentSourceCheckpoint": {
-      "name": "source032",
-      "manifestSha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
-      "baseCommit": "e6fc1471020a79908ab134db487cb29a7bec13f7",
-      "implementationState": "Four exactsource/test/prototype deltas frozen; no requirement/case threshold change",
-      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json"
+      "name": "source040",
+      "manifestSha256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
+      "baseCommit": "d238562bead267cb9f311f0317591b4ee08b4250",
+      "implementationState": "Title explicitviewer fix/actual90U-I+bothTS/official036native6/S6green;affectedmenuApartial/no fullM12claim",
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/App036-official-build-001/manifest.json"
     },
     "candidateBaseline": {
-      "name": "App035/source039",
-      "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
-      "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
-      "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
-      "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
-      "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
-      "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
-      "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
-      "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
+      "name": "App036/source040",
+      "app": "/private/tmp/willyou-m12-s2-package-036/mac-arm64/WillYou.app",
+      "installedApp": "/private/tmp/willyou-m12-app036-installer-001/Installed Applications/WillYou.app",
+      "sourceManifest": "/private/tmp/willyou-m12-title-viewer-source-040/source-inputs.json",
+      "sourceSHA256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
+      "asarSHA256": "0160af576332dade251b3a6c4135b4db946554c00230e6fd19f1b6f26c794edb",
+      "executableSHA256": "2b7bea8247f18f76cf33b3a9973ed8c4ceae4d41f79e6cf6619ade3e488a9e23",
+      "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/App036-official-build-001/manifest.json",
+      "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app036-installer-001/manifest.json",
+      "status": "Actual official/native6 and arm64S6original9stages/8judges green; current no-title menuA1of6focusdeferred, no fullM12/x64/publish",
       "formalIncrement": 0,
-      "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
+      "menuEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A001-focus-partial/manifest.json"
     },
     "currentSourceInputs": {
-      "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source-inputs.json",
-      "sha256": "52aea3db113bbe1773c6ea3968dc54d516c7f9bcf706195773367d419a1b6dbe",
-      "scope": "Only downloads.ts and meaningful regression delta from033;13Ugreen/mainTS0/officialdirectory native6. RealApp failure recovery verification pending."
+      "path": "/private/tmp/willyou-m12-title-viewer-source-040/source-inputs.json",
+      "sha256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
+      "commit": "d238562bead267cb9f311f0317591b4ee08b4250",
+      "scope": "Exact3689 inputSHA/mode verifiedofficialbuild beforeafter;1production+1testdelta from039;90uniqueU/I+dualTSgreen;actual036S6green;affectedmenuApartial"
     },
     "currentAutonomousBatch": "Original10A groups complete thisbatch;F03MDCSV subcasespartialonly",
     "awakePrerequisite": {
@@ -4317,18 +4319,14 @@
       }
     },
     "nextPackageCandidate": {
-      "app": "App030",
-      "source": "source034",
-      "appPath": "/private/tmp/willyou-m12-s2-package-030/mac-arm64/WillYou.app",
-      "asarSha256": "0ca236ddab9cac65d1d57e93ed19a2476df266483a28cdc9878729cff8be0072",
-      "implementationCommit": "0c10174a9f0a17c96cbea70c54e0e1027dd3d8df",
-      "status": "officialdirectory/native6 passed; background actualfix verification and completeA pending; finalS6 pending"
+      "state": "App036 built/installed/verified; no further production change pending",
+      "candidate": "App036/source040"
     },
     "nextExecution": {
-      "status": "Native/UI released; source changed, newpackage required",
-      "nextAutonomous": "先完成 M12-FILE-VIEWER-TITLE-PRIORITY 新源040/App036官方构建、最小受影响实际菜单验证及S6当前包验证。当前已验候选App035/source039保留；新接口补丁90唯一U/I和双TS已绿，未宣称新包A。原批准来源复核已收口F03/F04/F29现行适用检查，具体未落地A条件未触发；其余原9组仍保原范围，F01无豁免。红框5与夜间已后置分支不重放，用户/设备前置集中醒后。",
-      "nextUI": "Only newApp036 after actualofficialbuild/pinreview; affectednormal viewer-menu path then S6",
-      "pendingUser": "Previously recorded redbox5/system/platform prerequisites; no new authorization pending"
+      "status": "All own Native/UI/build resources released; no blind retry tonight",
+      "nextAutonomous": "已完成本次修复工程检查/官方036构建与S6；当前实际菜单仅lightMD已得，lightHTML失焦停止，余5轮与原F01系统外开保留缺项。按既有夜间后置清单，先收归档/复核，不重放已绿/旧guard；有独立就绪组再执行。",
+      "nextUI": "Tomorrow fresh focus-coordinated remaining5localmenu observations and originaldeferred groups; no rearm/replay of ended instance",
+      "pendingUser": "Redbox5 and exact OS/desktop/platform prerequisites; no new authorization pending"
     },
     "lastCompletedBatch": {
       "at": "2026-11-07T02:02:33.045064+00:00",
@@ -4479,8 +4477,8 @@
       "policy": "No newauthorizationquestions; originaloncePIDactivation/strictguard maintained;do not reuse oldfocus"
     },
     "nextAutonomousGroup": {
-      "case": "M12-T130/App036-S6",
-      "status": "Ready to commit/freeze currentcheckedsource then officialbuild",
+      "case": "M12-current-handoff",
+      "status": "Actual batch archived; no ready foreground group dispatched, original independent technical items retained in queue; blocked prerequisites deferred",
       "owner": "/root",
       "resourcesHeld": []
     },
@@ -4603,7 +4601,9 @@
           "originalSteps": "对.md/.html/.pdf指定外部target/workspace/default viewer，抓取分派结果。",
           "originalExpected": "显式用户选择按批准优先级执行，不被扩展名默认覆盖；不触发M9内置浏览器。",
           "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。",
-          "nightDisposition": "原显式viewer/target真实入口与完整分派矩阵未齐，继续核实际集成；不凭局部local链接或自造宿主称完整。"
+          "nightDisposition": "原显式viewer/target真实入口与完整分派矩阵未齐，继续核实际集成；不凭局部local链接或自造宿主称完整。",
+          "receiverPreparation": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F01-AppKit-receiver-v2-preparation-001/manifest.json",
+          "receiverBoundary": "明确v2合成源码，非旧字节恢复；未编译/注册/发业务，无真实外开通过结论。"
         },
         {
           "case": "M9-T-F25",
@@ -4627,7 +4627,8 @@
           "originalSteps": "在搜索框/编辑器/确认弹层输入时切换布局可见性。",
           "originalExpected": "TaskTerminal visible effect不抢焦点；字符只进入目标控件。",
           "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。",
-          "nightDisposition": "原visibility/focus场景与已有效组件结果先核适用；实际窗口/控件保持缺项后置，禁止强制focus或重arm。"
+          "nightDisposition": "原hide→show会聚焦；现guard失焦后不可重arm。Root核原四控件/真实visibility/字符不误入PTY全部断言，今晚无新trial；待明日OS恢复条件，原P05仍待。",
+          "gapEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/P05-system-gap-001/manifest.json"
         },
         {
           "case": "M9-T-P09",
@@ -4885,7 +4886,9 @@
         "finding": "macOS getApp accepts name/path/bundleId; exact PID/windowId attachment absent. getApp may launch background instance; known duplicate-launch boundary from AGENTS applies. No attempt to select candidate by path or launch default daily data.",
         "handling": "T009/T024/T133 real system keys and T109 system inspection stay S gaps if no supported exact binding; continue independently runnable App/renderer checks, defer physical verification to tomorrow. T146 existing exact native screenshot identity gap retained.",
         "notEvidenceOfProductFailure": true,
-        "OSInputsSent": 0
+        "OSInputsSent": 0,
+        "T146CurrentEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-native-tool-gap-review-001/manifest.json",
+        "T146Finding": "Original002 already used same REA exactPID/CGWindow capability but launchTime identity unavailable; no diagnostic evidence limitremoved, no newPIDblind retry."
       },
       "additionalDeferredOriginalSubgroups": [
         {
@@ -4969,9 +4972,34 @@
     },
     "pendingImplementationFix": {
       "defect": "M12-FILE-VIEWER-TITLE-PRIORITY",
-      "state": "source fixed/90unique U-I+bothTS pass; source040/App036 build/S6/affectedA pending",
+      "state": "Source040 fixed/90uniqueU-I+bothTS+App036official/native6/S6 green; no-title affectedA1of6focusdeferred",
       "scope": "Consume explicitviewer even in fallbacktitle reuse; no newUI/source/businessrule",
-      "currentAcceptedPackage": "App035/source039 retained until newcandidate verified"
+      "currentAcceptedPackage": "App036/source040 accepted only observed engineering/arm64S6 boundary; wholeM12 pending"
+    },
+    "candidateBaselinePreviousApp035": {
+      "name": "App035/source039",
+      "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
+      "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
+      "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
+      "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
+      "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
+      "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
+      "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
+      "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
+      "formalIncrement": 0,
+      "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
+    },
+    "currentSourceInputsPrevious": {
+      "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source-inputs.json",
+      "sha256": "52aea3db113bbe1773c6ea3968dc54d516c7f9bcf706195773367d419a1b6dbe",
+      "scope": "Only downloads.ts and meaningful regression delta from033;13Ugreen/mainTS0/officialdirectory native6. RealApp failure recovery verification pending."
+    },
+    "previousSourceCheckpointBefore040": {
+      "name": "source032",
+      "manifestSha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
+      "baseCommit": "e6fc1471020a79908ab134db487cb29a7bec13f7",
+      "implementationState": "Four exactsource/test/prototype deltas frozen; no requirement/case threshold change",
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json"
     }
   },
   "currentAuthoritySHA256": "16cafcc8e01ebf80d74e2373e7d9a1aa5a55176d9fc33e3ba4dfa33f6ef15bf5",
@@ -5079,17 +5107,18 @@
     "boundary": "OriginalDocumentpresentation/fixturecomparedonly;notWordpixels/glyphfont/revisionwriteback/all9oldenhancedjudge/wholeT130"
   },
   "currentCandidate": {
-    "name": "App035/source039",
-    "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
-    "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
-    "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
-    "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
-    "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
-    "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
-    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
-    "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
+    "name": "App036/source040",
+    "app": "/private/tmp/willyou-m12-s2-package-036/mac-arm64/WillYou.app",
+    "installedApp": "/private/tmp/willyou-m12-app036-installer-001/Installed Applications/WillYou.app",
+    "sourceManifest": "/private/tmp/willyou-m12-title-viewer-source-040/source-inputs.json",
+    "sourceSHA256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
+    "asarSHA256": "0160af576332dade251b3a6c4135b4db946554c00230e6fd19f1b6f26c794edb",
+    "executableSHA256": "2b7bea8247f18f76cf33b3a9973ed8c4ceae4d41f79e6cf6619ade3e488a9e23",
+    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/App036-official-build-001/manifest.json",
+    "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app036-installer-001/manifest.json",
+    "status": "Actual official/native6 and arm64S6original9stages/8judges green; current no-title menuA1of6focusdeferred, no fullM12/x64/publish",
     "formalIncrement": 0,
-    "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
+    "menuEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A001-focus-partial/manifest.json"
   },
   "temporaryCleanup": {
     "at": "2026-11-07T14:55:48.413358+00:00",
@@ -5147,5 +5176,25 @@
     "formalIncrement": 0,
     "scope": "Positivehostsoftware/nativeI only,no AppA/fullT130"
   },
-  "independentNext": "继续T130原剩余U/A：本轮D22、F07–F09、基础标签D01/D02/D03/D09/D14及F02完整A已归账；F03/F29仅MD/CSV子段完成，PDF/artifact/title仍保留。下一原task/PTY共前置组及PDF导航可执行子段；D19/D21、截图红框／系统设备项夜间后置，原121合同不改。"
+  "independentNext": "继续T130原剩余U/A：本轮D22、F07–F09、基础标签D01/D02/D03/D09/D14及F02完整A已归账；F03/F29仅MD/CSV子段完成，PDF/artifact/title仍保留。下一原task/PTY共前置组及PDF导航可执行子段；D19/D21、截图红框／系统设备项夜间后置，原121合同不改。",
+  "currentCandidatePreviousApp035": {
+    "name": "App035/source039",
+    "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
+    "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
+    "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
+    "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
+    "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
+    "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
+    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
+    "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
+    "formalIncrement": 0,
+    "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
+  },
+  "originalS1Requirements": "R1.2",
+  "initialS1ResumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
+  "App036S6Actual": {
+    "status": "actual-complete/accepted-current-arm64-only",
+    "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app036-installer-001/manifest.json",
+    "formalIncrement": 0
+  }
 }
