@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-07T18:45:53.570907+00:00",
+  "accesses": [
+    {
+      "call": "admission/static/finalizer",
+      "paths": [
+        "READY.candidate.json",
+        "READY.json",
+        "pin.json",
+        "static-result.json",
+        "READY.inputs[*]"
+      ],
+      "kind": "frozen input/future actualproof"
+    },
+    {
+      "call": "lease",
+      "paths": [
+        "lease.receipt.json"
+      ],
+      "kind": "Root control exactSHA/scope/time"
+    },
+    {
+      "call": "activation/JXA",
+      "paths": [
+        "initial-activation-authorization.json",
+        "activate-initial-exact-pid.applescript",
+        "frontmost.jxa"
+      ],
+      "kind": "frozen input"
+    },
+    {
+      "call": "flow materialize/faults/protect",
+      "paths": [
+        "runtime-001/{removed-registration,missing-directory}/{A/a.md,B/b.md,B/a.md,A-held/a.md}"
+      ],
+      "kind": "fresh public synthetic source;BdeliberateUIwrite, A rename restoration only"
+    },
+    {
+      "call": "open-wrapper",
+      "paths": [
+        "runtime-001/{removed-registration,missing-directory}/{userdata,seed/{home,tmp,work,codex},restore/{home,tmp,work,codex}}"
+      ],
+      "kind": "fresh userdata reused only across original normalrestart within samefault;modeenvisolated"
+    },
+    {
+      "call": "registration helper",
+      "paths": [
+        "registration-fi.py",
+        "runtime-001/removed-registration/userdata/smartdd.db"
+      ],
+      "kind": "statichelper/future exactone-owned-row SQLite read/restore FI; only project_dirs table; input/stdout snapshot in raw"
+    },
+    {
+      "call": "outputs",
+      "paths": [
+        "runtime-001/{removed-registration,missing-directory}-{placeholder,late-B-retained}.png",
+        "runtime-001/{primary-failure.private.log,failure-electron.log,failure.png}",
+        "runtime-001/{removed-registration,missing-directory}/{seed,restore}/{electron.private.log,failure.private.png,*.private.log}",
+        "raw.json",
+        "live.json",
+        "mode-*.json",
+        "execution-started.json",
+        "initial-foreground-attempt-{actualPID}.json"
+      ],
+      "kind": "runtime outputs"
+    },
+    {
+      "call": "cleanup/judge",
+      "paths": [
+        "raw.json",
+        "cleanup.json",
+        "judgement.json"
+      ],
+      "kind": "runtime result I/O; exactPID/TCP/Unix readonly independent no kill/delete"
+    }
+  ],
+  "shape": "No runtime/userData/cache/DB/output precreated in file preparation."
+}

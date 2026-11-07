@@ -1,0 +1,55 @@
+{
+  "case": "M9-T-D24",
+  "parent": "M12-T130",
+  "layer": "A",
+  "originalRow": "| **M9-T-D24 active根失效不静默换根**<br>M9-R04.7、M9-R02.1 | 本期本机 | 组件／集成／安装端到端<br>U+I+A / D01+D04+D11 | 按D23设置，移除A登记/令A不可用，保留B同名a.md后重启；再恢复A并重试；延迟回包时手动选择B/b.md。 | A原route保留不可用占位并禁止读写/外开到B同名路径；恢复A重新取得合法root；迟到恢复不抢用户B选择，不清其草稿。<br>依据：R2 I02；R04.7/R08.2 | P03/P06/P16；已核对本用例实际App状态；完整Codex视觉按独立P/V验收<br>实际：DEV107完整U/I/A：U3登记仍缺失/路径已变/恢复A迟到时B草稿，I2及r59实际A2分别移除原登记、移动原物理A目录，保存A活动/B目录的checkpoint后正常退出重启。A原route占位且无编辑/外开，B同名a.md不被打开；精确恢复原登记id/path或原A目录后实际重试取得新A lease。原native metadata成功回执留到用户切B输入草稿后原样交付，不抢B选择/目录、不清dirty；明确保存B后A和B同名文件保持。修复缓存根重试缺口，原包真实超时及U红保留。 | 通过 | [记录](证据/m9-acceptance-alias-root-dev107-r59-20261019.json) |",
+  "originalDocument": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a"
+  },
+  "originalScript": {
+    "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/active-root-retry-ui.mjs",
+    "sha256": "586c64a42f2788e0632a102baf970f95ca37b4543a6a46e7cc4fdf4722175272"
+  },
+  "matrix": {
+    "faults": [
+      "removed registration",
+      "missing directory"
+    ],
+    "phases": [
+      "seed",
+      "restore"
+    ],
+    "Apps": 4,
+    "businessChecks": 2,
+    "theme": "Original script has no theme loop; retain actual default theme, Root explicitly confirmed original2fault/4App, no added theme."
+  },
+  "criteria": [
+    {
+      "id": "D24-A1",
+      "expected": "A原active route/B树根checkpoint正常保存；移除A登记或原目录不可用后正常退出重启，原A占位无CM/外开、B同名a.md不被读写。"
+    },
+    {
+      "id": "D24-A2",
+      "expected": "真实UI移除登记+确认；精确恢复同一自有row（明确外部配置FI）或原物理A目录，再真实Retry获得新合法root/ref，缺失时先Retry仍阻塞。"
+    },
+    {
+      "id": "D24-A3",
+      "expected": "原metadata/open成功回执只延后不改值；用户实际切B/b.md输入草稿后交付旧A，不抢选择/树根/不清dirty；显式保存B，A和B同名a.md不变。"
+    },
+    {
+      "id": "D24-A4",
+      "expected": "两fault各seed/restore共4正常App0/null/signals[]；各一次setupreload/exactPID一次/真实3s/单guard；0tasks/模型/auth，observer原handler恢复。"
+    },
+    {
+      "id": "D24-A5",
+      "expected": "精确记录各App和Native/helper PID/TCP/Unix、独立全清；正常业务退出和fallback信号分开。"
+    }
+  ],
+  "nonAcceptanceFixtureOnly": [
+    "API只建自有项目/两个roots；不替受验移除/重试/切B/编辑/保存",
+    "Only own project_dirs original row read/restore; no document/checkpoint/auth/secret table queries or writes",
+    "missing-directory actual own rename/restore, no same-name replacement invented"
+  ],
+  "validOldLayers": "Root权威账的有效U/I复用，本组仅当前A；不把D23clipboard/externalopen加入本条，也不计父T130通过。"
+}
