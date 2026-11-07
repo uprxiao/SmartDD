@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-07T17:16:59.507318+00:00",
+  "cases": [
+    {
+      "name": "target.md",
+      "bytes": 41,
+      "sha256": "6df20b1943f6dc5591e8c7f9a589d394407a4fe7b9cf93ee356c716571bd791e",
+      "normalized": "# First\n中文🙂 second\nThird\nLast\n"
+    },
+    {
+      "name": "target.csv",
+      "bytes": 36,
+      "sha256": "4de1e49f3cbdc454274edcadec3f9b7036fbf0f0a5af531e7b2d6caa1e998d3a",
+      "normalized": "A,B\n中文🙂,2\nTHREE,3\nLAST,4\n"
+    },
+    {
+      "name": "navigation.md",
+      "bytes": 140,
+      "sha256": "dc210bc14adc51f9f02fb545fe5cbf20205aab07a0fb34e175eaf8c54eb057e4",
+      "normalized": "# Navigation\n\n[MD point](target.md#L2C3)\n\n[MD range](target.md#L3-L4)\n\n[CSV point](target.csv#L2C3)\n\n[CSV range](target.csv#L3-L4)\n"
+    }
+  ],
+  "navigation": [
+    {
+      "name": "target.md",
+      "links": [
+        {
+          "name": "MD point",
+          "href": "target.md#L2C3",
+          "kind": "point",
+          "from": 10,
+          "to": 10,
+          "selected": ""
+        },
+        {
+          "name": "MD range",
+          "href": "target.md#L3-L4",
+          "kind": "range",
+          "from": 20,
+          "to": 30,
+          "selected": "Third\nLast"
+        }
+      ]
+    },
+    {
+      "name": "target.csv",
+      "links": [
+        {
+          "name": "CSV point",
+          "href": "target.csv#L2C3",
+          "kind": "point",
+          "from": 6,
+          "to": 6,
+          "selected": ""
+        },
+        {
+          "name": "CSV range",
+          "href": "target.csv#L3-L4",
+          "kind": "range",
+          "from": 11,
+          "to": 25,
+          "selected": "THREE,3\nLAST,4"
+        }
+      ]
+    }
+  ],
+  "partialOnly": true,
+  "originalAffectedCases": [
+    "M9-T-F03",
+    "M9-T-F29"
+  ],
+  "noThemeExpansion": true,
+  "deferredOriginal": [
+    "F29 PDF",
+    "artifact source A",
+    "filePreviewTitle source A"
+  ],
+  "fixtureOrigin": "MD exact original navigation-intent-acceptance raw; public validCSV and ordinary local Markdown links for reviewed #L/C parser. Not claimed legacy bytes for CSV/index."
+}
