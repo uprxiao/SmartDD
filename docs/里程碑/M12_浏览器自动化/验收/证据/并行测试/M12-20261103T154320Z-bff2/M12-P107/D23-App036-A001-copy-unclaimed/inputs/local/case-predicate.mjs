@@ -1,0 +1,1 @@
+export const EXPECTED=['light','dark'];export const exactCases=rows=>Array.isArray(rows)&&rows.length===2&&new Set(rows.map(x=>x.theme)).size===2&&EXPECTED.every(t=>rows.some(x=>x.theme===t&&x.caseId==='M9-T-D23'));

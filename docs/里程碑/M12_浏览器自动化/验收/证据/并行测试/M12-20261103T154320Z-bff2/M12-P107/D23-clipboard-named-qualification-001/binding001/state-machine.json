@@ -1,0 +1,52 @@
+{
+  "states": [
+    "uncaptured",
+    "owned-marker",
+    "armed-D23-copy",
+    "claimed-exact-owned-fixture",
+    "work-quiesced",
+    "restored",
+    "finished"
+  ],
+  "steps": [
+    {
+      "op": "capture-set-marker",
+      "input": "fresh marker matching original WILLYOU_M12_T088_[a-f0-9]{32}",
+      "guard": "Original bytes protected before mutation; backup exclusive0600 fully read back"
+    },
+    {
+      "op": "arm-owned-path-copy",
+      "input": {
+        "path": "Exactly current theme activeA/a.md from binding",
+        "sourceURL": "Root exact own webContents.getURL must equal fixed binding before this request"
+      },
+      "guard": "Original owned marker unchanged+fresh; path inside exact8, URL exactfixed; no App action before arm"
+    },
+    {
+      "op": "Actual trusted UI copy",
+      "actor": "D23 original real renderer navigator.clipboard.writeText(file.absolutePath), no helper source/origin write"
+    },
+    {
+      "op": "observe-owned-path-copy",
+      "output": "Only fixtureID/booleans. Own B accepted for safe restore but systemValueEqualsRequestedPath=false => failed business check."
+    },
+    {
+      "op": "stop actual App/clipboardwriter",
+      "actor": "Root exact owned normalcleanup; finish actual writes before markquiescent"
+    },
+    {
+      "op": "work-quiesced",
+      "guard": "Cannot claim before actual writer stopped"
+    },
+    {
+      "op": "restore",
+      "guard": "Original exact current ownedSnapshot+count; no changed-board overwrite, retainbackup on refusal"
+    },
+    {
+      "op": "finish",
+      "guard": "No touched board may finish before verified restore+backup deletion"
+    }
+  ],
+  "errors": "Any unrecognizedtype, wrong source, missing tokenpair, nonwhitelistpath, count race => no claim/no overwrite. Stop/quiesce and original restore only if still owned; otherwise privatebackup retained. No fallback general clipboard dump or force restoration.",
+  "sessions": "Use a fresh helper session per theme; the same unique fixed backup path must be absent before next session after real verified restore."
+}

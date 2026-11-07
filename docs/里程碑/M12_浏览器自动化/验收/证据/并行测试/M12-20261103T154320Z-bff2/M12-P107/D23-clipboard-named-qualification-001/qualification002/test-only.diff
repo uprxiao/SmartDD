@@ -1,0 +1,25 @@
+--- qualification001-preserved.swift
++++ qualification002.swift
+@@ -313,13 +313,21 @@
+     func begin() throws -> ClipboardSession {
+         try setNamed(pb, original)
+         let session = fresh(); _ = try session.captureSetMarker(marker)
++        guard let captured = session.original?.items else { throw Failure.safe("named-path-original-not-captured") }
++        try require(captured.count == original.count, "named-path-intended-item-coverage-missing")
++        for (actualItem, intendedItem) in zip(captured, original) {
++            for intendedRepresentation in intendedItem.representations {
++                try require(actualItem.representations.contains(intendedRepresentation), "named-path-intended-type-data-coverage-missing")
++            }
++        }
+         return session
+     }
+     func arm(_ session: ClipboardSession) throws { _ = try session.armOwnedPathCopy(A, d23RendererSourceURL) }
+     func roundtrip(_ session: ClipboardSession) throws {
++        guard let capturedOriginal = session.original?.items else { throw Failure.safe("named-path-original-not-captured") }
+         session.workQuiesced = true
+         let result = try session.restore()
+-        try require(result["allOriginalItemsTypesDataAndOrderEqual"] as? Bool == true && (try session.snapshot()) == original && !FileManager.default.fileExists(atPath: session.backupPath), "named-path-original-roundtrip-failed")
++        try require(result["allOriginalItemsTypesDataAndOrderEqual"] as? Bool == true && (try session.snapshot()) == capturedOriginal && !FileManager.default.fileExists(atPath: session.backupPath), "named-path-original-roundtrip-failed")
+     }
+     let matched = try begin(); try arm(matched); try setNamed(pb, text(A)); let match = try matched.observeOwnedPathCopy()
+     try require(match["ownedD23FixtureClaimed"] as? Bool == true && match["systemValueEqualsRequestedPath"] as? Bool == true && match["fixtureID"] as? Int == 0, "named-path-A-not-matched")
