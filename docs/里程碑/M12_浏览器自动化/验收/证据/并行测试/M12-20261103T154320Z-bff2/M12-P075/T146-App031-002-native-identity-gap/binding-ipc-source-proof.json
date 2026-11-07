@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-07T12:10:13.016156+00:00",
+  "source035ManifestSHA256": "88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da",
+  "findings": [
+    "openOnce live branch returns same existingPTY without launch; renderer resume calls rpc.tasks.open then terminals.set",
+    "TaskView without shownPTY renders real StoppedPanel/启动 even when service already has livePTY",
+    "createTaskController registers closeSession(e,id:string)→svc.closeSession(id); no stop handler",
+    "closeSession awaits originalPTY exit before returning TaskView, so cleanup must confirm ptyId null before app.quit"
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da",
+      "lines": [
+        244,
+        258
+      ]
+    },
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da",
+      "lines": [
+        343,
+        390
+      ]
+    },
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/main/core/tasks/controller.ts",
+      "sha256": "e40dcbb3bcb2e5c20fc9aeaae507ae91e198d2391d9b259703820b12c1f9c104",
+      "lines": [
+        9,
+        22
+      ]
+    },
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/renderer/core/tasks-store.ts",
+      "sha256": "7ff3529423574813d883f5e5882a4eeb5849392b356f98e70c018ee5842ba845",
+      "lines": [
+        108,
+        131
+      ]
+    },
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/renderer/views/task-view.tsx",
+      "sha256": "8b8147e84b5fbad00e5698f80092705d3f9c041b8a763139d80d86e094524f93",
+      "lines": [
+        49,
+        58
+      ]
+    }
+  ]
+}

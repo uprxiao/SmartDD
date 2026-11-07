@@ -31,6 +31,10 @@
 
 ## 最近闭合与当前缺项
 
+- [本地HTML原实际App两流程](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F24-App031-A001-complete/manifest.json)已完成，源码保护、真实Native文档交互及隔离安全边界均有证据。剩余Office预览与可自动Host视觉矩阵继续准备；[长标题原生截图能力缺项](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-App031-002-native-identity-gap/manifest.json)如实后置，不替代为通过。
+
+- [归档与二进制原实际App子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F26-F27-App031-A001-complete/manifest.json)已完成，原文件保护、错误载体及无编辑入口均核对；继续原HTML预览等剩余矩阵。
+
 - [M11网关兼容原全部子用例](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/coordinator-final-001/manifest.json)已完整通过；停止、停用、断开及正常重启均有实际界面／CLI／Host证据，旧驱动失败保留。继续原文件预览及视觉／系统／平台缺项。
 - [PDF及音视频实际App完整子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/PDF-media-App031-A-complete-001/manifest.json)已完成，[F15安全与特殊PDF](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F14-F15-App031-A001-partial/manifest.json)按原有效证据复用；父用例仍需其余原矩阵。
 
