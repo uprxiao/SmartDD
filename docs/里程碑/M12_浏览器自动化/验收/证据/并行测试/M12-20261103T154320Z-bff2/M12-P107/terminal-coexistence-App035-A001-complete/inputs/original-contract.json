@@ -1,0 +1,167 @@
+{
+  "parent": "M12-T130",
+  "layer": "A only original installation-acceptance cases, P in ID is original category not prototype layer",
+  "cases": [
+    {
+      "id": "M9-T-P01",
+      "group": "P",
+      "title": "持续输出不重建",
+      "requirements": [
+        "M9-R01.5"
+      ],
+      "level": "安装端到端",
+      "environments": [
+        "A"
+      ],
+      "data": [
+        "D14"
+      ],
+      "steps": "PTY运行单调编号heartbeat；开关树/文件/面板并拖宽30次。",
+      "expected": "ptyId/PID不变，输出序号连续；没有历史重放或缺失；文件操作不调用任务close。",
+      "source": "L§7",
+      "prototype": "PS-pty-regression",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-terminal-coexistence-dev086-r38-20261018.json"
+      ],
+      "actual_result": "DEV086 r38真实打包App：实际目录树/文件区域开关、文件切换与指针拖宽各30轮；同一xterm DOM、task/PTY/PID不变、无exit。真实receiver及原始native事件序号严格1–101，实际wheel向上直到1再向下逐屏读取，全部可见行连续且完整集合等于101个native序号，无遗漏/重放。原3源件hash/inode/mtime全不变，两个PTY均0字节/0执行。原一次大wheel未到首行、隐藏树仍点树的驱动失败均保留，未替换终端或缓冲。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R01",
+        "M9-R08",
+        "M9-R09"
+      ],
+      "prototype_pages": [
+        "P01"
+      ],
+      "prototype_status": "界面关联；真实服务／安装状态未实现",
+      "prototype_note": "关联页面只说明状态落点；原型不含真实文件授权、watch、多窗口、平台安装或生产 PTY，需开发后执行。 DEV086本条为仅A，沿用已有布局/入口；无新共享原型源码，组件focus与真实窗口行为分层。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R01.5"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-P02",
+      "group": "P",
+      "title": "输入等待不丢失",
+      "requirements": [
+        "M9-R01.5",
+        "M9-R01.6"
+      ],
+      "level": "安装端到端",
+      "environments": [
+        "A"
+      ],
+      "data": [
+        "D14"
+      ],
+      "steps": "终端等待read，输入半行，切文件搜索再回终端完成。",
+      "expected": "半行内容与焦点恢复按原有行为；文件快捷键未注入终端；无重复提交。",
+      "source": "L§7",
+      "prototype": "PS-pty-regression",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-terminal-coexistence-dev086-r38-20261018.json",
+        "证据/m9-acceptance-name-search-dev087-r39-20261019.json"
+      ],
+      "actual_result": "DEV086 r38真实打包App：终端真实read等待，先输入half-input-，在右侧全文搜索输入并Escape退出，再返回原终端完成complete-中文🙂及一次Enter；真实接收器只有一行half-input-complete-中文🙂、31字节、一次CR，无额外快捷键/搜索/确认字符，PTY/PID保持。完整后续焦点/项目/任务操作仍严格保持该唯一输入，第二终端0字节。 DEV087受影响回归按层通过：B09/B12/P02为r39实际App3项，C10/C11/R03/R07为当前TS加同哈希native的完整已启用U/I；原已验范围保留，不将技术替身或旧App结论写成新的完整A，不重复计数。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R01",
+        "M9-R08",
+        "M9-R09"
+      ],
+      "prototype_pages": [
+        "P01"
+      ],
+      "prototype_status": "界面关联；真实服务／安装状态未实现",
+      "prototype_note": "关联页面只说明状态落点；原型不含真实文件授权、watch、多窗口、平台安装或生产 PTY，需开发后执行。 DEV086本条为仅A，沿用已有布局/入口；无新共享原型源码，组件focus与真实窗口行为分层。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R01.5",
+          "M9-R01.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-P06",
+      "group": "P",
+      "title": "任务切换恢复",
+      "requirements": [
+        "M9-R04.1",
+        "M9-R01.5"
+      ],
+      "level": "安装端到端",
+      "environments": [
+        "A"
+      ],
+      "data": [
+        "D14"
+      ],
+      "steps": "T1输出，切T2编辑文件，再回T1。",
+      "expected": "各任务终端与文件scope恢复正确；不会用文件tab激活替代任务激活。",
+      "source": "L§7",
+      "prototype": "PS-pty-regression",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-terminal-coexistence-dev086-r38-20261018.json"
+      ],
+      "actual_result": "DEV086 r38真实打包App：T1持续编号输出，切T2实际编辑other.txt，再回T1恢复layout.txt及自己的文件scope/内容，再切T2内容保持；点击文件tab不替代当前任务，两个真实PTY/PID不变，T2没有误入字符。两文件按既有R07.3三秒自动保存后完整全文严格等于各自明确编辑，稳定源件身份/内容不变；不声称修改永久未保存。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R01",
+        "M9-R08",
+        "M9-R09"
+      ],
+      "prototype_pages": [
+        "P01",
+        "P03"
+      ],
+      "prototype_status": "界面关联；真实服务／安装状态未实现",
+      "prototype_note": "关联页面只说明状态落点；原型不含真实文件授权、watch、多窗口、平台安装或生产 PTY，需开发后执行。 DEV086本条为仅A，沿用已有布局/入口；无新共享原型源码，组件focus与真实窗口行为分层。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.1",
+          "M9-R01.5"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "excludedPendingOriginal": [
+    "P03/P04/P07 separate zero-input layout/stop-resume batch",
+    "P05 original hide/show+focus and confirmation batch, remains fully pending; no forced focus/guard rearm",
+    "P08/P09 adjacent not added to this batch"
+  ]
+}

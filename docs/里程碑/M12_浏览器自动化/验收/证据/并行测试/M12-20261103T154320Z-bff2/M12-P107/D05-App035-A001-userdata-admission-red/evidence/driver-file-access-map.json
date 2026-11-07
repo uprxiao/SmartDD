@@ -1,0 +1,88 @@
+{
+  "at": "2026-11-07T18:05:28.762805+00:00",
+  "accesses": [
+    {
+      "call": "admission/static check/finalizer",
+      "paths": [
+        "READY.candidate.json",
+        "READY.json",
+        "pin.json",
+        "static-result.json",
+        "READY.inputs[*]"
+      ],
+      "category": "frozen static; finalREADY/static-result only after actual pure green"
+    },
+    {
+      "call": "admission/lease",
+      "paths": [
+        "lease.receipt.json"
+      ],
+      "category": "Root generated matching scope/readySHA/time"
+    },
+    {
+      "call": "activation/JXA",
+      "paths": [
+        "initial-activation-authorization.json",
+        "activate-initial-exact-pid.applescript",
+        "frontmost.jxa"
+      ],
+      "category": "frozen static exactbytes"
+    },
+    {
+      "call": "fixture create/attach/probe/prepare/close",
+      "paths": [
+        "runtime-001/volumes/{insensitive,sensitive}.dmg",
+        "runtime-001/volumes/{insensitive,sensitive}-{attach,info}.plist",
+        "runtime-001/volumes/{insensitive,sensitive}/{d05-light-insensitive,d05-light-sensitive,d05-dark-insensitive,d05-dark-sensitive}/{A.txt,a.txt,inner/data.txt,link.txt,link-dir}",
+        "runtime-001/volumes/*-root-alias",
+        "runtime-001/volumes/environment.json"
+      ],
+      "category": "only fresh runtime output/readback; a.txtcreated separately only sensitive; correctkind slots only"
+    },
+    {
+      "call": "runMode output",
+      "paths": [
+        "runtime-001/d05-{light,dark}-{insensitive,sensitive}/{home,tmp,work,codex,userdata,*.private.log,*.png}",
+        "mode-d05-*.json",
+        "raw.json",
+        "live.json",
+        "execution-started.json",
+        "initial-foreground-attempt-*.json"
+      ],
+      "category": "runtime output absent before execute"
+    },
+    {
+      "call": "observer/source stat",
+      "paths": [
+        "exact paths returned environment.prepare for this mode"
+      ],
+      "category": "own runtime input; original fullstat/hash/target read only"
+    },
+    {
+      "call": "resources",
+      "paths": [
+        "exact own descendantPID/TCP/Unix"
+      ],
+      "category": "runtime readonly original observedchilds"
+    },
+    {
+      "call": "cleanup.py",
+      "paths": [
+        "raw.json",
+        "cleanup.json",
+        "hdiutil info ownimage-prefix/exactmount filtering"
+      ],
+      "category": "runtime readonly independent, no kill/detach/delete"
+    },
+    {
+      "call": "judge",
+      "paths": [
+        "raw.json",
+        "cleanup.json",
+        "judgement.json"
+      ],
+      "category": "runtime result input/output"
+    }
+  ],
+  "shape": "No runtime/cache/userData/image/mount paths pre-created by preparation."
+}

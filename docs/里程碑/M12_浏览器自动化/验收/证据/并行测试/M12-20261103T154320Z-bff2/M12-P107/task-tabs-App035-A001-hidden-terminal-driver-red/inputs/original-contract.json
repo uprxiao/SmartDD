@@ -1,0 +1,235 @@
+{
+  "parent": "M12-T130",
+  "layer": "A only, existing U/I not replayed",
+  "cases": [
+    {
+      "id": "M9-T-D08",
+      "group": "D",
+      "title": "关闭非活动",
+      "requirements": [
+        "M9-R04.5",
+        "M9-R01.6"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "打开A/B/C并激活B；关闭C。",
+      "expected": "B保持活动和焦点；C资源释放，不影响终端。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d08-20261018.json",
+        "证据/m9-dev037-tab-close-focus-20261018.json",
+        "证据/m9-acceptance-r3-app-regression-20261018.json",
+        "证据/m9-acceptance-terminal-handoff-r13-20261018.json"
+      ],
+      "actual_result": "r13真实App鼠标关闭非活动C后，B保持活动和编辑焦点；不重新聚焦直接输入到B并撤销恢复。原PTY ID、字节及心跳保持，后续输入仍到原PTY；原型同样保留焦点和终端画面，真实SQLite/原生集成验证C能力释放。DEV037原步骤复验通过。",
+      "defects": [
+        "M9-DEV-037"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "本条原型所需状态已在2026-10-18隔离浏览器复核；非完整像素结论",
+      "prototype_note": "本条P层按原始步骤核对，使用合成数据；R3.4-P1当前源码838文件基线核对无变更。实际App结果单独归档，不用原型替代。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.5",
+          "M9-R01.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D10",
+      "group": "D",
+      "title": "关闭最后标签",
+      "requirements": [
+        "M9-R04.5",
+        "M9-R01.6"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "关闭最后文件标签。",
+      "expected": "文件区按批准空态/隐藏处理；终端任务仍运行，主焦点合理恢复。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-task-files-dev092-r43-20261019.json"
+      ],
+      "actual_result": "DEV092完整P/I/A：r43实际关闭最后A，文件区空态、焦点回查找并打开文件；原T1 PTY/receiver PID不变、输出和heartbeat继续。I真实RPC/native/独立SQLite验证仅document ref释放为UNTRUSTED、scope/root仍可list且空routes持久化；P浅深真实关闭/空态/焦点通过，P任务运行仅合成props，不冒称PTY。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P01",
+        "P06"
+      ],
+      "prototype_status": "P04；完整共享P浅深6场景通过",
+      "prototype_note": "DEV092共享文件区，父级T1/T2 props及后台完成明确为合成；实际编辑/关闭/弹层/焦点可核，模型另覆盖重开和新draft上下文；不冒充真实task/PTY或native IO。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.5",
+          "M9-R01.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D11",
+      "group": "D",
+      "title": "异步关闭实例竞态",
+      "requirements": [
+        "M9-R04.5",
+        "M9-R08.2"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "dirty A关闭等保存/确认；期间替换内容实例或关闭重开A；再完成旧Promise。",
+      "expected": "旧contentInstance确认不能关闭新实例；旧回调不清掉新draft。",
+      "source": "L§3；V S18",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-task-files-dev092-r43-20261019.json"
+      ],
+      "actual_result": "DEV092完整P/I/A：原生I旧save已实际落盘后只延迟原成功回执，显式生命周期故障缝替换真实FileBuffer、创建独立native草稿；旧回执返回stale，新tab/正文/error/draft不变。U覆盖allowed/blocked/rejected，后两项有红绿；Store在blocked/异常前核对content instance。A实际dirty关闭保存成功后只延迟回执，显式让自有renderer崩溃并重开A，输入NEW/真实持久草稿，再放行旧回执；旧frame已断开，新ref/草稿和标签保持、两个实际PTY不断。P浅深旧任务close弹层不再跟随新任务，模型另覆盖同路径重开/新草稿保护。A不冒称同Store替换；之前重载被正常beforeunload取消和驱动未处理异常均保留，不当产品失败或通过。",
+      "defects": [
+        "M9-DEV-092-01",
+        "M9-DEV-092-02"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06",
+        "P09"
+      ],
+      "prototype_status": "P04；完整共享P浅深6场景通过",
+      "prototype_note": "DEV092共享文件区，父级T1/T2 props及后台完成明确为合成；实际编辑/关闭/弹层/焦点可核，模型另覆盖重开和新draft上下文；不冒充真实task/PTY或native IO。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.5",
+          "M9-R08.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D18",
+      "group": "D",
+      "title": "切任务恢复隔离",
+      "requirements": [
+        "M9-R04.1",
+        "M9-R08.2"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "恢复T1未完时切T2，再回T1。",
+      "expected": "token/disconnect保护；T1迟到恢复不插入T2；任务自己的文件状态恢复。",
+      "source": "L§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-task-files-dev092-r43-20261019.json"
+      ],
+      "actual_result": "DEV092完整P/I/A：T1原认证/native open A/B真实成功后延迟投递，实际切T2/C，再逆序释放原结果；等原read/drafts与两帧，T2仍C/同tab/同editor焦点/同独立checkpoint，返回T1恢复A/B activeB；实际两个任务PTY/PID不变且0输入。I同服务/独立SQLite/共享事件owner及attach断开重连验证，P浅深合成T1后台完成不改T2、返回T1正确。三条原回执hash不变，六原处理器身份恢复、任务/进程清理通过。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P03",
+        "P06"
+      ],
+      "prototype_status": "P04；完整共享P浅深6场景通过",
+      "prototype_note": "DEV092共享文件区，父级T1/T2 props及后台完成明确为合成；实际编辑/关闭/弹层/焦点可核，模型另覆盖重开和新draft上下文；不冒充真实task/PTY或native IO。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.1",
+          "M9-R08.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "originalDEV092SHA256": "f13ff44c551e9b4a6bcd64c4a17e0e7a2896806ee8d63a6f2d837313859d58fb",
+  "boundary": "Original D08 and DEV092 D10/D11/D18 only, not all T130. No P/I/R/S layer additions."
+}
