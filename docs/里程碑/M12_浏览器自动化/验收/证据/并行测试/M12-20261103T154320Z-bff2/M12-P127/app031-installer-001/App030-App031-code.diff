@@ -1,0 +1,195 @@
+--- App030/prepare-native-input.py
++++ App031/prepare-native-input.py
+@@ -2,7 +2,7 @@
+ assert_bound()
+ from pathlib import Path
+ import os,json,hashlib,subprocess,shutil,datetime,sys
+-ROOT=Path('/private/tmp/willyou-m12-app030-installer-001');SHARED=Path('/private/tmp/willyou-m12-s2-package-030/mac-arm64/WillYou.app');PRIVATE=ROOT/'installer-input/WillYou.app';OLD=Path('/private/tmp/willyou-m12-p125-app023-installer-001')
++ROOT=Path('/private/tmp/willyou-m12-app031-installer-001');SHARED=Path('/private/tmp/willyou-m12-s2-package-031/mac-arm64/WillYou.app');PRIVATE=ROOT/'installer-input/WillYou.app';OLD=Path('/private/tmp/willyou-m12-p125-app023-installer-001')
+ assert sys.argv[1:]==['--execute'] and os.environ.get('WILLYOU_M12_NATIVE_LEASE_CONFIRMED')=='1'
+ sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+ prepared=ROOT/'prepared-inputs.json';assert sha(prepared)==os.environ['WILLYOU_P111_PREPARED_SHA']
+--- App030/build-installer-002.py
++++ App031/build-installer-002.py
+@@ -8,9 +8,9 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-app030-installer-001')
+-SOURCE = Path('/private/tmp/willyou-m12-download-interrupt-source-034/source')
+-SHARED = Path('/private/tmp/willyou-m12-s2-package-030/mac-arm64/WillYou.app')
++ROOT = Path('/private/tmp/willyou-m12-app031-installer-001')
++SOURCE = Path('/private/tmp/willyou-m12-cookie-error-source-035/source')
++SHARED = Path('/private/tmp/willyou-m12-s2-package-031/mac-arm64/WillYou.app')
+ PRIVATE = ROOT / 'installer-input/WillYou.app'
+ NODE = Path('/Users/liubu/.hermes/node/bin/node')
+ BUILDER = Path('/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/electron-builder/cli.js')
+@@ -29,9 +29,9 @@
+ 
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+-source_manifest = json.loads(Path('/private/tmp/willyou-m12-download-interrupt-source-034/source-inputs.json').read_text())
++source_manifest = json.loads(Path('/private/tmp/willyou-m12-cookie-error-source-035/source-inputs.json').read_text())
+ assert digest(SOURCE / 'electron-builder.config.cjs') == source_manifest['files']['electron-builder.config.cjs']
+-assert digest(PRIVATE / 'Contents/Resources/app.asar') == '0ca236ddab9cac65d1d57e93ed19a2476df266483a28cdc9878729cff8be0072'
++assert digest(PRIVATE / 'Contents/Resources/app.asar') == 'cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea'
+ pins = json.loads((ROOT / 'evidence/attempt-002/prepackaged-input-pins.json').read_text())['files']
+ for row in pins:
+     assert digest(SHARED / row['path']) == row['sha256']
+@@ -56,7 +56,7 @@
+            '--config.directories.output=' + str(ROOT / 'installer-output-002'), '--config.electronVersion=42.11.14', '--publish', 'never']
+ record = {'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           'driverPid': os.getpid(), 'command': command, 'cwd': str(SOURCE),
+-          'scope': 'Local ad-hoc arm64 preview installer from private copy of exact tested App030; no source rebuild, publishing, daily app/data, model or credentials.',
++          'scope': 'Local ad-hoc arm64 preview installer from private copy of exact tested App031; no source rebuild, publishing, daily app/data, model or credentials.',
+           'envNames': sorted(env), 'nativeStarted': False}
+ save('installer-build-start.json', record)
+ with (ROOT / 'evidence/attempt-002/installer-build.stdout').open('wb') as stdout, (ROOT / 'evidence/attempt-002/installer-build.stderr').open('wb') as stderr:
+--- App030/install-and-compare.py
++++ App031/install-and-compare.py
+@@ -10,7 +10,7 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-app030-installer-001')
++ROOT = Path('/private/tmp/willyou-m12-app031-installer-001')
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+ PLAN = json.loads((ROOT / 'plan.json').read_text())
+@@ -79,7 +79,7 @@
+     assert sha(candidate_app / 'Contents/Resources/app.asar') == PLAN['currentAsarSha256']
+     before = inventory(ROOT / 'installer-input/WillYou.app')
+     payload = inventory(candidate_app)
+-    assert payload == before, 'DMG payload differs from exact tested private App030 input'
++    assert payload == before, 'DMG payload differs from exact tested private App031 input'
+     destination = ROOT / 'Installed Applications'
+     destination.mkdir(mode=0o700)
+     installed = destination / 'WillYou.app'
+--- App030/check-installed-native.py
++++ App031/check-installed-native.py
+@@ -9,9 +9,9 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-app030-installer-001')
++ROOT = Path('/private/tmp/willyou-m12-app031-installer-001')
+ APP = ROOT / 'Installed Applications/WillYou.app'
+-SOURCE = Path('/private/tmp/willyou-m12-download-interrupt-source-034/source')
++SOURCE = Path('/private/tmp/willyou-m12-cookie-error-source-035/source')
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+ installed = json.loads((ROOT / 'evidence/install-and-compare-result.json').read_text())
+--- App030/bind-installed-pins.py
++++ App031/bind-installed-pins.py
+@@ -12,13 +12,13 @@
+ import os
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-app030-installer-001')
++ROOT = Path('/private/tmp/willyou-m12-app031-installer-001')
+ START = ROOT / 'installed-startup-001'
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ.get('WILLYOU_M12_NATIVE_LEASE_CONFIRMED') == '1'
+ sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+ pin = json.loads((START / 'pin.template.json').read_text())
+-assert pin['finalReady'] is False and pin['role'] == 'App030-installed'
++assert pin['finalReady'] is False and pin['role'] == 'App031-installed'
+ install = json.loads((ROOT / 'evidence/install-and-compare-result.json').read_text())
+ native = json.loads((ROOT / 'evidence/installed-native-result.json').read_text())
+ candidate = json.loads((ROOT / 'evidence/candidate-installer.json').read_text())
+@@ -55,7 +55,7 @@
+ for row in ready['inputs']:
+     path = START / row['path']
+     row['sha256'], row['mode'] = sha(path), path.stat().st_mode & 511
+-ready.update(status='READY-current-installed-App030-await-fresh-startup-lease',
++ready.update(status='READY-current-installed-App031-await-fresh-startup-lease',
+              actualInstallationAndNativeBound=True, nativeExecuted=False,
+              at=datetime.datetime.now(datetime.timezone.utc).isoformat())
+ ready_path.write_text(json.dumps(ready, indent=2) + '\n')
+--- App030/binding_guard.py
++++ App031/binding_guard.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ import hashlib,json
+ ROOT=Path(__file__).parent
+-APP=Path('/private/tmp/willyou-m12-s2-package-030/mac-arm64/WillYou.app')
++APP=Path('/private/tmp/willyou-m12-s2-package-031/mac-arm64/WillYou.app')
+ def sha(p):
+     h=hashlib.sha256()
+     with Path(p).open('rb') as f:
+@@ -10,13 +10,13 @@
+     return h.hexdigest()
+ def assert_bound(verify_inputs=True):
+     b=json.loads((ROOT/'binding.json').read_text())
+-    assert b.get('ready') is True and b.get('app')==str(APP), 'PENDING actual App030/source034 binding; no OS/App operation allowed'
++    assert b.get('ready') is True and b.get('app')==str(APP), 'PENDING actual App031/source035 binding; no OS/App operation allowed'
+     receipt=json.loads((ROOT/'input-binding-receipt.json').read_text())
+     assert receipt['bindingSha256']==sha(ROOT/'binding.json'), 'Binding did not finalize; no phase execution allowed'
+     if not verify_inputs:return  # Resource-only final observation must remain usable after an input failure.
+-    assert sha(b['sourceManifest'])==b['sourceManifestSha256'], 'Current source034 manifest changed'
+-    assert sha(b['buildResult'])==b['buildResultSha256'], 'Current official App030 result changed'
++    assert sha(b['sourceManifest'])==b['sourceManifestSha256'], 'Current source035 manifest changed'
++    assert sha(b['buildResult'])==b['buildResultSha256'], 'Current official App031 result changed'
+     for row in json.loads((ROOT/'evidence/prepackaged-input-pins.json').read_text())['files']:
+         p=APP/row['path']
+         assert p.is_file() and not p.is_symlink(), 'Current critical file absent/link: '+str(p)
+-        assert sha(p)==row['sha256'] and p.stat().st_mode&511==row['mode'], 'Current App030 identity changed: '+str(p)
++        assert sha(p)==row['sha256'] and p.stat().st_mode&511==row['mode'], 'Current App031 identity changed: '+str(p)
+--- App030/installed-startup-001/run.mjs
++++ App031/installed-startup-001/run.mjs
+@@ -1,6 +1,6 @@
+ import { readFile as readBindingFile } from 'node:fs/promises';
+ const currentBinding=JSON.parse(await readBindingFile(new URL('../binding.json',import.meta.url)));
+-if(currentBinding.ready!==true||currentBinding.app!=="/private/tmp/willyou-m12-s2-package-030/mac-arm64/WillYou.app")throw Error('Pending actual App030 binding; no App spawn');
++if(currentBinding.ready!==true||currentBinding.app!=="/private/tmp/willyou-m12-s2-package-031/mac-arm64/WillYou.app")throw Error('Pending actual App031 binding; no App spawn');
+ const currentBindingReceipt=JSON.parse(await readBindingFile(new URL('../input-binding-receipt.json',import.meta.url)));
+ if(currentBindingReceipt.allInstalledOutputGatesStillPending!==true)throw Error('Missing completed input-binding receipt');
+ import{recordCleanupStep,finishWithRaw}from'./cleanup-protocol.mjs';
+@@ -11,10 +11,10 @@
+ assert(process.argv.includes('--execute'),'Explicit --execute required');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,root+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,root+'/cache/node');assert.equal(process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED,'1','Coordinator must grant this exact installedApp startup group resources');
+ const ready=JSON.parse(await readFile(root+'/execution-ready.json')),pin=JSON.parse(await readFile(root+'/pin.json'));
+ for(const f of ready.inputs){assert.equal(sha(await readFile(root+'/'+f.path)),f.sha256,f.path);assert.equal((await stat(root+'/'+f.path)).mode&511,f.mode,f.path)}
+-const installation=JSON.parse(await readFile('/private/tmp/willyou-m12-app030-installer-001/evidence/install-and-compare-result.json'));const staticProof=JSON.parse(await readFile(root+'/static-preparation.json'));for(const f of staticProof.privateDependencies){assert.equal(sha(await readFile(root+'/'+f.path)),f.sha256,f.path);assert.equal((await stat(root+'/'+f.path)).mode&511,f.mode,f.path)}
+-const native=JSON.parse(await readFile('/private/tmp/willyou-m12-app030-installer-001/evidence/installed-native-result.json'));const installedGates=validateInstallationGates(installation,native,pin);await save('execution-installation-gates.json',{at:new Date().toISOString(),...installedGates,installationSha256:sha(await readFile('/private/tmp/willyou-m12-app030-installer-001/evidence/install-and-compare-result.json')),nativeSha256:sha(await readFile('/private/tmp/willyou-m12-app030-installer-001/evidence/installed-native-result.json'))});await save('execution-pin-verification.json',await verifyPin(pin));await save('execution-started.json',{at:new Date().toISOString(),driverPid:process.pid,group:'T140-realCLI-I'},{exclusive:true});
++const installation=JSON.parse(await readFile('/private/tmp/willyou-m12-app031-installer-001/evidence/install-and-compare-result.json'));const staticProof=JSON.parse(await readFile(root+'/static-preparation.json'));for(const f of staticProof.privateDependencies){assert.equal(sha(await readFile(root+'/'+f.path)),f.sha256,f.path);assert.equal((await stat(root+'/'+f.path)).mode&511,f.mode,f.path)}
++const native=JSON.parse(await readFile('/private/tmp/willyou-m12-app031-installer-001/evidence/installed-native-result.json'));const installedGates=validateInstallationGates(installation,native,pin);await save('execution-installation-gates.json',{at:new Date().toISOString(),...installedGates,installationSha256:sha(await readFile('/private/tmp/willyou-m12-app031-installer-001/evidence/install-and-compare-result.json')),nativeSha256:sha(await readFile('/private/tmp/willyou-m12-app031-installer-001/evidence/installed-native-result.json'))});await save('execution-pin-verification.json',await verifyPin(pin));await save('execution-started.json',{at:new Date().toISOString(),driverPid:process.pid,group:'T140-realCLI-I'},{exclusive:true});
+ const runtime=root+'/runtime-001',userData=runtime+'/userdata',eventPath=runtime+'/agent-events.jsonl';
+-const r={group:'T140-realCLI-I',case:'M12-T140',layer:'A (installed startup) + I (managed CLI)',startedAt:new Date().toISOString(),driverPid:process.pid,sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,userData,tasks:[],commands:[],observations:[],resources:[],cleanupSteps:[],cleanupErrors:[],boundary:'Actual private installation copied from readonly candidate DMG, identical App030/source034 payload; installed App starts and actual managed nativeCLI creates/snapshots local synthetic page. Synthetic health/caller only, no model R/daily data/foreground UI input. No notarization, release or x64 claim.'};
++const r={group:'T140-realCLI-I',case:'M12-T140',layer:'A (installed startup) + I (managed CLI)',startedAt:new Date().toISOString(),driverPid:process.pid,sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,userData,tasks:[],commands:[],observations:[],resources:[],cleanupSteps:[],cleanupErrors:[],boundary:'Actual private installation copied from readonly candidate DMG, identical App031/source035 payload; installed App starts and actual managed nativeCLI creates/snapshots local synthetic page. Synthetic health/caller only, no model R/daily data/foreground UI input. No notarization, release or x64 claim.'};
+ const pids=new Set([process.pid]),ports=new Set(),sent=new Set(),pageIds=new Set();let app,fixture,stage='setup',interrupted,persistChain=Promise.resolve();
+ const persist=()=>{const value=JSON.parse(JSON.stringify({...r,stage}));persistChain=persistChain.catch(()=>{}).then(()=>save('live.json',value));return persistChain};
+ const guard=()=>{if(interrupted)throw Error(interrupted)};const pause=ms=>new Promise(ok=>setTimeout(ok,ms));
+--- App030/installed-startup-001/adjudicate.mjs
++++ App031/installed-startup-001/adjudicate.mjs
+@@ -4,8 +4,8 @@
+ export function adjudicate({r,cleanup,installation,native,pin}){
+  const checks=[],check=(name,fn)=>{try{fn();checks.push({name,passed:true})}catch(error){checks.push({name,passed:false,error:String(error)})}};
+  check('Root-full-byte-mode-install-and-actual-installed-native6-gates',()=>validateInstallationGates(installation,native,pin));
+- check('App030-source034-and-no-driver-business-failure',()=>{assert.equal(r.status,'executed-unjudged');assert(!r.failure);assert.deepEqual(r.recordingErrors??[],[]);assert.deepEqual(r.finalizerErrors??[],[]);assert.equal(r.sourceManifestSha256,'52aea3db113bbe1773c6ea3968dc54d516c7f9bcf706195773367d419a1b6dbe');assert.equal(r.asarSha256,'0ca236ddab9cac65d1d57e93ed19a2476df266483a28cdc9878729cff8be0072');});
+- check('Actual-installed-executable-resources-private-userData-and-loaded-App-DOM',()=>{assert.equal(r.actualInstalledRuntime.execPath,pin.executable);assert.equal(r.actualInstalledRuntime.resourcesPath,pin.app+'/Contents/Resources');assert.equal(r.actualInstalledRuntime.userData,r.userData);assert.equal(r.userData,'/private/tmp/willyou-m12-app030-installer-001/installed-startup-001/runtime-001/userdata');assert(r.actualStartupUi.ready==='complete'&&r.actualStartupUi.hasHome&&r.actualStartupUi.origin==='file:');});
++ check('App031-source035-and-no-driver-business-failure',()=>{assert.equal(r.status,'executed-unjudged');assert(!r.failure);assert.deepEqual(r.recordingErrors??[],[]);assert.deepEqual(r.finalizerErrors??[],[]);assert.equal(r.sourceManifestSha256,'88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da');assert.equal(r.asarSha256,'cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea');});
++ check('Actual-installed-executable-resources-private-userData-and-loaded-App-DOM',()=>{assert.equal(r.actualInstalledRuntime.execPath,pin.executable);assert.equal(r.actualInstalledRuntime.resourcesPath,pin.app+'/Contents/Resources');assert.equal(r.actualInstalledRuntime.userData,r.userData);assert.equal(r.userData,'/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/userdata');assert(r.actualStartupUi.ready==='complete'&&r.actualStartupUi.hasHome&&r.actualStartupUi.origin==='file:');});
+  check('Actual-managed-caller-and-fixed-native-CLI',()=>{assert.equal(r.tasks.length,1);const t=r.tasks[0];assert.equal(t.role,'t1');assert.equal(t.cliPlan.effectiveEntry,'cli');assert(t.receiver.hasCliToken&&t.receiver.hasCliEndpoint);assert.equal(t.receiver.binarySha256,'3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf');assert(t.taskId&&t.runId&&t.ptyId);});
+  check('Original-three-actual-CLI-commands-complete-once-with-distinct-receipts',()=>{assert.deepEqual(r.commands.map(x=>x.tag),['identity-preflight','installed-create-page','installed-snapshot']);assert(r.commands.every(x=>Number.isSafeInteger(x.actual.pid)&&x.actual.pid>1));assert.equal(new Set(r.commands.map(x=>x.parsed.operation.id)).size,3);assert.equal(new Set(r.commands.map(x=>x.parsed.operation.requestId)).size,3);for(const x of r.commands){assert.equal(x.role,'t1');assert.equal(x.taskId,r.tasks[0].taskId);assert.equal(x.runId,r.tasks[0].runId);assert.equal(x.actual.code,0);assert.equal(x.actual.signal,null);assert.equal(x.actual.timedOut,false);assert.deepEqual(x.actual.cleanupSignals,[]);assert.deepEqual(x.actual.argv,x.argv);extractOutput(x.argv,x.parsed);}});
+  check('Installed-helper-created-page-and-live-DOM-snapshot',()=>{const t=r.tasks[0],created=r.commands[1].parsed,snapshot=r.commands[2].parsed;assert.equal(created.data.pageId,t.pageId);assert.equal(snapshot.data.browserPageId,t.pageId);assert.equal(snapshot.data.url,t.url);assert(snapshot.data.snapshot.includes('Login'));assert(snapshot.data.refs.some(x=>x.available&&x.role==='button'&&x.name==='Login'));assert.equal(r.installedCliProof.actualPageId,t.pageId);assert.equal(r.installedCliProof.actualSnapshotOperation.id,snapshot.operation.id);});
+--- App030/installed-startup-001/io.mjs
++++ App031/installed-startup-001/io.mjs
+@@ -1,6 +1,6 @@
+ import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+-export const ROOT='/private/tmp/willyou-m12-app030-installer-001/installed-startup-001';
++export const ROOT='/private/tmp/willyou-m12-app031-installer-001/installed-startup-001';
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+ export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}
+-export async function verifyPin(pin){assert(pin.finalReady===true&&pin.role==='App030-installed');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,Number("3689"));for(const key of['buildGate','nativeGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
++export async function verifyPin(pin){assert(pin.finalReady===true&&pin.role==='App031-installed');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,Number("3689"));for(const key of['buildGate','nativeGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
+--- App030/installed-startup-001/judge.mjs
++++ App031/installed-startup-001/judge.mjs
+@@ -1,5 +1,5 @@
+ import {readFile}from'node:fs/promises';
+ import {ROOT,save}from'./io.mjs';
+ import {adjudicate}from'./adjudicate.mjs';
+-const parent='/private/tmp/willyou-m12-app030-installer-001',load=async p=>JSON.parse(await readFile(p)),r=await load(ROOT+'/raw.json'),cleanup=await load(ROOT+'/cleanup.json'),pin=await load(ROOT+'/pin.json'),installation=await load(parent+'/evidence/install-and-compare-result.json'),native=await load(parent+'/evidence/installed-native-result.json');
+-const verdict=adjudicate({r,cleanup,pin,installation,native});await save('result.json',{at:new Date().toISOString(),case:'M12-T140',scope:'Final installed App030 startup + original managedCLI3 and independent cleanup only; Root handles DMG/install/native6/T143',status:verdict.passed?'passed-installed-startup-managed-cli-root-review-required':'failed-or-partial',checks:verdict.checks,formalCaseIncrement:0,boundary:'No UI input/focus/screenshot/visual or model R, no daily data/login, no x64/notarization/DeveloperID/release. Existing original P085 green and extra screenshot failure stay retained.'});console.log(JSON.stringify({passed:verdict.checks.filter(x=>x.passed).length,total:verdict.checks.length,formalCaseIncrement:0}));
++const parent='/private/tmp/willyou-m12-app031-installer-001',load=async p=>JSON.parse(await readFile(p)),r=await load(ROOT+'/raw.json'),cleanup=await load(ROOT+'/cleanup.json'),pin=await load(ROOT+'/pin.json'),installation=await load(parent+'/evidence/install-and-compare-result.json'),native=await load(parent+'/evidence/installed-native-result.json');
++const verdict=adjudicate({r,cleanup,pin,installation,native});await save('result.json',{at:new Date().toISOString(),case:'M12-T140',scope:'Final installed App031 startup + original managedCLI3 and independent cleanup only; Root handles DMG/install/native6/T143',status:verdict.passed?'passed-installed-startup-managed-cli-root-review-required':'failed-or-partial',checks:verdict.checks,formalCaseIncrement:0,boundary:'No UI input/focus/screenshot/visual or model R, no daily data/login, no x64/notarization/DeveloperID/release. Existing original P085 green and extra screenshot failure stay retained.'});console.log(JSON.stringify({passed:verdict.checks.filter(x=>x.passed).length,total:verdict.checks.length,formalCaseIncrement:0}));
