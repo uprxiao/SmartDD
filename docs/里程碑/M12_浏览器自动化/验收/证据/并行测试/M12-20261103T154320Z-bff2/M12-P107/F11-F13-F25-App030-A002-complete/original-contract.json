@@ -1,0 +1,231 @@
+{
+  "parent": "M12-T130 original66 subset only",
+  "caseMapSHA256": "8cf48c9647e998d7b9b26f55cebc5af0999ce66a7a560f3b84f6a5b3268cb242",
+  "originalRows": [
+    {
+      "case": "M9-T-F11",
+      "title": "SVG探测边界",
+      "category": "viewer-dispatch-and-preview",
+      "originalEnvironments": [
+        "U",
+        "I",
+        "A"
+      ],
+      "originalSteps": "前512bytes内外分别放<svg；XML+svg；大小写/前导空白；.svg纯文本。",
+      "originalExpected": "扩展与嗅探优先级按基线测试；误分类有fallback；SVG以隔离img等安全路径呈现。",
+      "oldOriginalDriversToReuse": [
+        "static-viewers-ui.mjs",
+        "viewer-navigation-ui.mjs"
+      ],
+      "currentU": "Prepared selected pure source suites only; covers modeled/store/component predicates where mapped, not a complete original I/P/A case.",
+      "currentA": "Not executed / focus-safe current App driver adaptation remaining.",
+      "currentT130Credit": 0
+    },
+    {
+      "case": "M9-T-F13",
+      "title": "TIFF上层拒绝",
+      "category": "viewer-dispatch-and-preview",
+      "originalEnvironments": [
+        "I",
+        "A"
+      ],
+      "originalSteps": "打开tif和tiff，分别伪装image contentKind。",
+      "originalExpected": "按已批准状态处理；不能因底层image表存在便宣称可显示；提供明确fallback。",
+      "oldOriginalDriversToReuse": [
+        "static-viewers-ui.mjs",
+        "viewer-navigation-ui.mjs"
+      ],
+      "currentU": "Prepared selected pure source suites only; covers modeled/store/component predicates where mapped, not a complete original I/P/A case.",
+      "currentA": "Not executed / focus-safe current App driver adaptation remaining.",
+      "currentT130Credit": 0
+    },
+    {
+      "case": "M9-T-F25",
+      "title": "全部不支持Office分支",
+      "category": "viewer-dispatch-and-preview",
+      "originalEnvironments": [
+        "I",
+        "A"
+      ],
+      "originalSteps": "逐项打开doc/ppt/xls/key/numbers/pages/odp/ods/odt/rtf。",
+      "originalExpected": "每种展示对应清晰状态与合法外开；不能被通用乱码文本编辑器接管；不将docx等artifact支持误归否定。",
+      "oldOriginalDriversToReuse": [
+        "static-viewers-ui.mjs",
+        "viewer-navigation-ui.mjs"
+      ],
+      "currentU": "Prepared selected pure source suites only; covers modeled/store/component predicates where mapped, not a complete original I/P/A case.",
+      "currentA": "Not executed / focus-safe current App driver adaptation remaining.",
+      "currentT130Credit": 0
+    }
+  ],
+  "AOriginalDriver": {
+    "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source/scripts/files/format-boundaries-ui.mjs",
+    "sha256": "4597f28893a1bf7d1028adb0ad858cdb0e583e0918c2921797e25a460c22276f"
+  },
+  "all23Cases": [
+    {
+      "name": "svg-within-512.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "width": 40,
+      "height": 30
+    },
+    {
+      "name": "svg-last-prefix-byte.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "decodeFailure": true
+    },
+    {
+      "name": "svg-after-512.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "text"
+    },
+    {
+      "name": "svg-split-prefix.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "text"
+    },
+    {
+      "name": "svg-xml.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "width": 40,
+      "height": 30
+    },
+    {
+      "name": "svg-uppercase-whitespace.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "decodeFailure": true
+    },
+    {
+      "name": "svg-comment.unknown",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "width": 40,
+      "height": 30
+    },
+    {
+      "name": "plain-text.svg",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/svg+xml",
+      "decodeFailure": true,
+      "sourceFallback": true
+    },
+    {
+      "name": "png-signature.svg",
+      "caseId": "M9-T-F11",
+      "kind": "image",
+      "mime": "image/png",
+      "width": 1,
+      "height": 1
+    },
+    {
+      "name": "little-endian.tif",
+      "caseId": "M9-T-F13",
+      "kind": "unsupported",
+      "reason": "TIFF"
+    },
+    {
+      "name": "text-forged-image.tif",
+      "caseId": "M9-T-F13",
+      "kind": "unsupported",
+      "reason": "TIFF"
+    },
+    {
+      "name": "little-endian.tiff",
+      "caseId": "M9-T-F13",
+      "kind": "unsupported",
+      "reason": "TIFF"
+    },
+    {
+      "name": "text-forged-image.tiff",
+      "caseId": "M9-T-F13",
+      "kind": "unsupported",
+      "reason": "TIFF"
+    },
+    {
+      "name": "unsupported.doc",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "DOC"
+    },
+    {
+      "name": "unsupported.ppt",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "PPT"
+    },
+    {
+      "name": "unsupported.xls",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "XLS"
+    },
+    {
+      "name": "unsupported.key",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "KEY"
+    },
+    {
+      "name": "unsupported.numbers",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "NUMBERS"
+    },
+    {
+      "name": "unsupported.pages",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "PAGES"
+    },
+    {
+      "name": "unsupported.odp",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "ODP"
+    },
+    {
+      "name": "unsupported.ods",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "ODS"
+    },
+    {
+      "name": "unsupported.odt",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "ODT"
+    },
+    {
+      "name": "unsupported.rtf",
+      "caseId": "M9-T-F25",
+      "kind": "unsupported",
+      "reason": "RTF"
+    }
+  ],
+  "fullARequirements": [
+    "All23 actual UI opens, complete classification/render/error state before reads",
+    "F11 nine sniff/extension boundary cases: expected image actual dimensions or explicit decode error; after512/split source fulltext, no image; plain-text.svg explicit source exact and image error roundtrip; no inline rawSVG/script/foreignObject",
+    "F13 both tif/tiff with actual magic and forged text: explicit TIFF unsupported, no image/editor/Office preview",
+    "F25 all10 extensions: matching unsupported reason, no editor/image/Office preview",
+    "For each14unsupported, actual OpenWith menu: finish loading, no discovery error/retry, either real named targets+remember control or explicit no-app state; no launch",
+    "Actual FileMenu has visible/enabled/unblocked save-copy entry; no native save dialog or copy click",
+    "All23 bytes/inode/mtime/ctime unchanged, tasks0, rendererErrors0; ownApp normal0/null and exact independent cleanup"
+  ],
+  "oldIBoundary": "Native23 source/resource classification, forced image-hint TIFF rejection, outsideowner/unlisted app rejection, controlled copy exact bytes already passed separately; not system Office GUI",
+  "notClaimed": [
+    "FullT130/other63cases",
+    "External App launch/Office decoders",
+    "Real user data/auth/model/clipboard",
+    "P pixel equivalence"
+  ]
+}

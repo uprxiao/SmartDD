@@ -1,0 +1,114 @@
+{
+  "at": "2026-11-07T10:19:55.311249+00:00",
+  "case": "M12-T081",
+  "decision": "OriginalI+Awholecasepassed",
+  "originalFirst6ColumnsUnchanged": true,
+  "originalFirst6SHA256": "13f8eb17b7fd4c5d777f04f3cb194989b56dc59f3c589639a6f05dc227083452",
+  "criteria": [
+    {
+      "id": "A01",
+      "originalExpected": "前四失败：拒绝/超时/移走来源/错误口令，每次零Native目标写入及原Cookie不变",
+      "actualEvidenceGroups": "prefix",
+      "status": "passed"
+    },
+    {
+      "id": "A02",
+      "originalExpected": "真实确认UI提示暂卸载、未保存内容丢失",
+      "actualEvidenceGroups": "prefix/g1/g2/g3",
+      "status": "passed"
+    },
+    {
+      "id": "A03",
+      "originalExpected": "成功时2页+popup全占位、分区网络全取消、10ms写Cookie计数停止",
+      "actualEvidenceGroups": "g1",
+      "status": "passed"
+    },
+    {
+      "id": "A04",
+      "originalExpected": "写入期间真实CLI BROWSER_UNAVAILABLE",
+      "actualEvidenceGroups": "g1",
+      "status": "passed"
+    },
+    {
+      "id": "A05",
+      "originalExpected": "成功后三个原URL重载，未保存表单丢失，摘要重载3",
+      "actualEvidenceGroups": "g1",
+      "status": "passed"
+    },
+    {
+      "id": "A06",
+      "originalExpected": "写中失败/真实W写后丢ACK：原域Cookie全部恢复、导入全部撤销",
+      "actualEvidenceGroups": "g1",
+      "status": "passed"
+    },
+    {
+      "id": "A07",
+      "originalExpected": "durable原生X写后受控exit17，新App reconcile必须先于任何页面导航",
+      "actualEvidenceGroups": "g2",
+      "status": "passed"
+    },
+    {
+      "id": "A08",
+      "originalExpected": "恢复失败needsattention UI，两处导入不可用，真实CLI BROWSER_UNAVAILABLE",
+      "actualEvidenceGroups": "g3",
+      "status": "passed"
+    },
+    {
+      "id": "A09",
+      "originalExpected": "真实UI重试恢复后原Cookie恢复、profile可用",
+      "actualEvidenceGroups": "g3",
+      "status": "passed"
+    },
+    {
+      "id": "A10",
+      "originalExpected": "再造恢复失败→真实UI清空需确认→profile无Cookie且可用",
+      "actualEvidenceGroups": "g3",
+      "status": "passed"
+    },
+    {
+      "id": "A11",
+      "originalExpected": "journal密文/0600，成功恢复或清空后删除",
+      "actualEvidenceGroups": "g1/g2/g3",
+      "status": "passed"
+    }
+  ],
+  "publicReceiptsVerified": [
+    {
+      "group": "prefix",
+      "publicManifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/App030-prefixA003-four-failures-complete/manifest.json",
+      "sha256": "a760ebbfbd07f22f622bfce78588782072c85e0259ec0e4dd1404f078ffb1f71",
+      "verifiedMembers": 26
+    },
+    {
+      "group": "g1",
+      "publicManifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/App030-G1A004-contract-complete/manifest.json",
+      "sha256": "a7fb830285a923900a01ab393d175c22b25bf62d2d6cd7c6f0e0a815b836b616",
+      "verifiedMembers": 33
+    },
+    {
+      "group": "g2",
+      "publicManifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/App030-G2A002-crash-recovery-complete/manifest.json",
+      "sha256": "ab66f0e66f5bea66809c2fa07504bf1972137eab9e8cd60c34253ac98a92abe5",
+      "verifiedMembers": 30
+    },
+    {
+      "group": "g3",
+      "publicManifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/App030-G3A001-retry-clear-complete/manifest.json",
+      "sha256": "6a5e3b47a879a98ef0b1c61f053a2e3f044274324a54771e0936a849b0668bdd",
+      "verifiedMembers": 41
+    }
+  ],
+  "oldI": {
+    "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/actual-I-001/result.json",
+    "sha256": "39a7d433e06cf66f81abe37f2e9834653195762dd9cc84be9b83ae71001d5ab3",
+    "passed": 10,
+    "total": 10,
+    "scope": "ExactCookiecoreunchanged/currentfullAalsovalidatesoriginalIcomposition; oldboundarykept"
+  },
+  "baseline": "ActualApp030/source034. Source035onlycookieerrorformatter+test2delta;Cookiecore/mainunchanged. CurrentApp031errorformatregression/installerseparaterequired.",
+  "originalRedsPreserved": true,
+  "noUserCriteriaRemoved": true,
+  "formalIncrement": 1,
+  "separatePendingDefect": "M12-COOKIE-UI-ERROR-01 Ugreen/build031green;actual031UIpending",
+  "boundary": "OriginalF-COOKIE/keyProvider/cipherfaultfixtures; noactualKeychain/model/x64/milestonecompletion/releaseclaim"
+}

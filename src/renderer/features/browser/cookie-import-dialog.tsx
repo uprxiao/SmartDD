@@ -1,15 +1,16 @@
 import {useEffect,useRef,useState} from 'react';
 import {X,KeyRound} from 'lucide-react';
 import {rpc} from '@renderer/lib/ipc';
+import {rpcErrorMessage} from '@shared/ipc/rpc';
 import type {BrowserCookieSourceList} from '@shared/browser-cookie-import';
 import type {ProfileSiteStates} from './profile-site-states';
 type Summary=Awaited<ReturnType<typeof rpc.browser.importCookies>>;
 export function BrowserCookieImportDialog({taskId,records,initialTarget,onClose}:{taskId:string;records:ProfileSiteStates;initialTarget:string;onClose:()=>void}){
   const [sources,setSources]=useState<BrowserCookieSourceList|null>(null),[sourceId,setSourceId]=useState(''),[target,setTarget]=useState(initialTarget),[step,setStep]=useState<'source'|'confirm'|'running'|'result'>('source'),[summary,setSummary]=useState<Summary|null>(null),[error,setError]=useState(''),root=useRef<HTMLDivElement>(null);
-  useEffect(()=>{let active=true;void rpc.browser.importCookieSources({taskId}).then(value=>{if(active){setSources(value);setSourceId(value.browsers.flatMap(b=>b.profiles).find(p=>p.hasCookies)?.id??'');}},error=>{if(active)setError(error instanceof Error?error.message:String(error));});return()=>{active=false;};},[taskId]);
+  useEffect(()=>{let active=true;void rpc.browser.importCookieSources({taskId}).then(value=>{if(active){setSources(value);setSourceId(value.browsers.flatMap(b=>b.profiles).find(p=>p.hasCookies)?.id??'');}},error=>{if(active)setError(rpcErrorMessage(error));});return()=>{active=false;};},[taskId]);
   useEffect(()=>{root.current?.querySelector<HTMLElement>('input:checked,button:not(:disabled)')?.focus();},[step,sources]);
   const source=sources?.browsers.flatMap(b=>b.profiles).find(p=>p.id===sourceId),profile=records.find(r=>r.profile.id===target),blocked=profile?.importState!=='ready',busy=step==='running';
-  const submit=async()=>{if(!source||!profile||blocked)return;setStep('running');setError('');try{setSummary(await rpc.browser.importCookies({taskId,profileId:target,sourceId:source.id,confirmed:true}));}catch(error){setError(error instanceof Error?error.message:String(error));}finally{setStep('result');}};
+  const submit=async()=>{if(!source||!profile||blocked)return;setStep('running');setError('');try{setSummary(await rpc.browser.importCookies({taskId,profileId:target,sourceId:source.id,confirmed:true}));}catch(error){setError(rpcErrorMessage(error));}finally{setStep('result');}};
   const title=step==='source'?'导入 Chrome／Edge 登录态':step==='confirm'?'确认导入':step==='running'?'正在导入登录态':summary?'导入完成':'导入未完成';
   return <div className="bw-scrim" onMouseDown={event=>{if(event.target===event.currentTarget&&!busy)onClose();}}><div ref={root} className="bw-dialog" role="dialog" aria-modal="true" aria-label={title} data-browser-panel="cookie-import" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();if(!busy)onClose();}}}>
     <div className="bw-dialog-head"><h2>{title}</h2><button type="button" className="fw-icon" aria-label="关闭" disabled={busy} onClick={onClose}><X size={16}/></button></div>
