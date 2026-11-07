@@ -1,0 +1,93 @@
+{
+  "decision": "Within the specified original planned P03 A stimulus/recovery, controlled own-window restore/show may be tested under existing scope; no explicit must-human-restore requirement found. This does not authorize recovering from unexpected focus loss or an already-yielded guard.",
+  "originalContract": {
+    "path": "/private/tmp/willyou-m12-m9-regression-static-001/case-map.json",
+    "lines": [
+      1017,
+      1024
+    ],
+    "case": "M9-T-P03",
+    "environments": [
+      "A"
+    ],
+    "steps": "隐藏/最小化文件和终端区域，捕获resizeRPC。",
+    "expected": "不发送0×0；再次显示按真实尺寸fit；不重建PTY。",
+    "humanOrSystemLayerRequirement": false
+  },
+  "rules": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/AGENTS.md",
+      "lines": [
+        125,
+        130
+      ],
+      "meaning": "Real packaged App A and real input/business boundaries; system/human requirements apply where the case requires them, not a universal manual restore gate."
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/AGENTS.md",
+      "line": 165,
+      "quote": "运行中失焦仍停止，不再次激活或重新武装。",
+      "interpretation": "Binding rule for unexpected loss/yield recovery. The original planned minimize/restore sequence may not be used after such loss to activate/refocus or rearm."
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/AGENTS.md",
+      "line": 241,
+      "quote": "不得主动抢焦点、伪造手势或重置已yield的守卫",
+      "interpretation": "No extra w.focus, Page.bringToFront, repeated activation or yielded-guard reset. A planned own-window show/restore stimulus is not permission for additional focus recovery."
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/真实App自动验收流程.md",
+      "lines": [
+        25,
+        29
+      ],
+      "quote": "仍复用原sticky guard，中途失焦不自动重置或抢回。",
+      "interpretation": "Keep sticky failure; if actual focus is not restored naturally following the one planned window action, record/stop rather than compensating."
+    }
+  ],
+  "driverEvidence": {
+    "adaptedPath": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/layout-flow.mjs",
+    "line": 39,
+    "plannedActions": "w.minimize(); ... w.restore();w.show();",
+    "noExtraFocusActionsAtThisPoint": true,
+    "originalPath": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/original/terminal-layout-ui.mjs",
+    "historicalOriginalAlsoContains": "w.focus() and Page.bringToFront",
+    "historicalFocusCallsAreNotCurrentAuthorization": "Do not inherit those historical force-focus calls; the current requested restore/show-only boundary is narrower and preserves current guard."
+  },
+  "permittedBoundary": [
+    "Fresh isolated healthy task/own App with exact PID/exe/userData/window identity and unchanged initial activation+3s+single guard.",
+    "Before planned minimize, verify no prior yield or unexpected loss; the test stimulus is explicitly recorded before executing it.",
+    "One original planned minimize and one restore/show to the same exact own window; no Input events during this known window-state transition.",
+    "Never disable/reset/reinstall the guard, focus the window explicitly or reconnect to another instance.",
+    "Before any later input or screenshot requiring focus, verify same window/native focused+visible+notminimized and real main DOM focused/visible with original guard still live.",
+    "If the guard has yielded or unexpected focus loss occurs elsewhere, stop; if planned restore does not actually recover required real focus, stop without a second restore/activation.",
+    "Do not infer user/external cause from foreground name or state transition; record native/DOM sequence and original resizeRPC/samePTY identity."
+  ],
+  "scope": "Original P03 A only, not a new S layer, human hand-feel, permissions, arbitrary App focus recovery or pass before execution.",
+  "newPermissionAssumed": false,
+  "publicFilesChanged": false,
+  "newNodeAppNativeOSRuns": 0,
+  "resourcesHeld": false,
+  "sources": {
+    "agents": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/AGENTS.md",
+      "sha256": "6b7fb9e57ebd4fa2085a8fe7c397bda85df455ce3c67bf886ec4c10a6a8e5fbc"
+    },
+    "method": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/真实App自动验收流程.md",
+      "sha256": "02b3557329f21595a533aee2290d06b5b8076c7c20a84bb6175fc803832d1ca2"
+    },
+    "map": {
+      "path": "/private/tmp/willyou-m12-m9-regression-static-001/case-map.json",
+      "sha256": "8cf48c9647e998d7b9b26f55cebc5af0999ce66a7a560f3b84f6a5b3268cb242"
+    },
+    "adapted": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/layout-flow.mjs",
+      "sha256": "5d456310e8ee10ee84447981995cfff587c094d04c97a50dc0aea0ac00d2f017"
+    },
+    "original": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/original/terminal-layout-ui.mjs",
+      "sha256": "18682d8deb2415cf1d7dc7212aabb5bb1d9be74f2b3b671ce8fc56c3318a3aee"
+    }
+  }
+}

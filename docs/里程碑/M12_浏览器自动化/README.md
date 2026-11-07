@@ -33,6 +33,8 @@
 
 ## 最近闭合与当前缺项
 
+- [P03原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/P03-App036-A001-complete/manifest.json)、[P05原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/P05-App036-A002-complete/manifest.json)已在当前App036完成；原计划内窗口状态步骤与意外失焦严格区分，原错误前置及派生判断纠正保留。文件区其余原缺项继续，完整M12尚未交付。
+
 - [当前本地查看器菜单](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A003-five-complete/manifest.json)已补齐，原失败与当前正面观察分别保留；[外开接收器资格](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F01-native-qualification-015-failed/manifest.json)仍未通过，闲置临时App已清理。实际系统外开未计通过，完整M12尚未交付。
 
 - [D21原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/D21-App036-A001-complete/manifest.json)已在当前App036收口，原红保留；[P03原失败前置污染诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/P03-precondition-diagnosis-001/manifest.json)明确尚未到最小化，系统恢复条件仍待。文件区其余缺项按既有计划继续，完整M12尚未交付。

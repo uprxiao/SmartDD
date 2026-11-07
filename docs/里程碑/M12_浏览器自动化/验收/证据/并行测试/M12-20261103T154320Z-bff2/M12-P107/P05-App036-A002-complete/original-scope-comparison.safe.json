@@ -1,0 +1,163 @@
+{
+  "case": "M9-T-P05",
+  "originalSubcaseCompleted": true,
+  "scopePartial": false,
+  "source": {
+    "path": "/private/tmp/willyou-m12-title-viewer-source-040/source/scripts/files/terminal-coexistence-ui.mjs",
+    "sha256": "1b229dec1b1383885dc1c465a756e35c0b71eb0a28f69868c8bf2d3f93368cbf",
+    "originalLines60to76": [
+      {
+        "number": 60,
+        "text": " const keepFocus=async(selector,text,label)=>{"
+      },
+      {
+        "number": 61,
+        "text": "  await click(selector);const before=await receiver('T1');stage='P05-'+label;await ownWindow('const b=w.getBounds();w.setSize(b.width===1400?1450:1400,900,false);return w.getBounds()');await pause(70);await ownWindow('w.hide();return w.isVisible()');assert.equal(await ownWindow('return w.isVisible()'),false);await ownWindow('w.show();w.focus();return w.isVisible()');await cdp('Page.bringToFront');await waitFor(\"document.visibilityState==='visible'\");await waitFor(`document.activeElement?.matches(${JSON.stringify(selector)})`);await input(text);await pause(80);const after=await receiver('T1');assert.equal(after.rawHex,before.rawHex);const observation=await evaluate(`({active:document.activeElement?.outerHTML,doc:document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString(),value:document.querySelector(${JSON.stringify(selector)})?.value})`);p05.push({label,before,after,observation});return observation;"
+      },
+      {
+        "number": 62,
+        "text": " };"
+      },
+      {
+        "number": 63,
+        "text": " if(cases.includes('P05')){"
+      },
+      {
+        "number": 64,
+        "text": "  stage='P05-filter-editor-search-focus';await app.open('layout.txt');await keepFocus('[aria-label=\"筛选文件\"]','layout','file filter');await field('[aria-label=\"筛选文件\"]','');"
+      },
+      {
+        "number": 65,
+        "text": "  await click('.cm-content');await app.key('End','End',4);const old=await currentDoc();const editor=await keepFocus('.cm-content','Editor focus survives 中文🙂','CodeMirror');assert.equal(editor.doc,old+'Editor focus survives 中文🙂');r.expectedEdits['layout.txt']=source['layout.txt']+'Editor focus survives 中文🙂';"
+      },
+      {
+        "number": 66,
+        "text": "  await click('[aria-label=\"在文件中搜索\"]');await waitFor(exists('[aria-label=\"全文搜索内容\"]'));const search=await keepFocus('[aria-label=\"全文搜索内容\"]','Terminal','search dialog');assert.equal(search.value,'Terminal');await app.key('Escape','Escape');await waitFor('!document.querySelector(\"[aria-label=全文搜索内容]\")');"
+      },
+      {
+        "number": 67,
+        "text": " }"
+      },
+      {
+        "number": 68,
+        "text": " if(cases.includes('P06')){"
+      },
+      {
+        "number": 69,
+        "text": "  stage='P06-two-task-files';const firstDoc=await currentDoc();const firstSnapshot=await invoke('files.workspaceSnapshot',{kind:'task',taskId:task1.task.id});await control('T1','P06');await show(task2);task2={...task2,ptyId:(await invoke('tasks.get',task2.task.id)).ptyId};await app.open('other.txt');await waitFor(`document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()===${JSON.stringify(source['other.txt'])}`);await click('.cm-content');await app.key('End','End',4);await input('Task two edited 中文🙂');const secondDoc=await currentDoc();assert.equal(secondDoc,source['other.txt']+'Task two edited 中文🙂');r.expectedEdits['other.txt']=source['other.txt']+'Task two edited 中文🙂';const secondSnapshot=await invoke('files.workspaceSnapshot',{kind:'task',taskId:task2.task.id});await show(task1);await waitFor(`document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()===${JSON.stringify(firstDoc)}`);const restoredFirst=await currentDoc();await click('[role=tab][aria-selected=true]');assert(await evaluate(visible(task1)));assert(!await evaluate(visible(task2)));await show(task2);await waitFor(`document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()===${JSON.stringify(secondDoc)}`);const restoredSecond=await currentDoc();await checkTask(task1,'T1');await checkTask(task2,'T2');await control('T1','P06',true);await app.screenshot(join(scratch,'P06-task-two-restored.png'));await show(task1);r.checks.push({caseId:'M9-T-P06',firstDoc,secondDoc,restoredFirst,restoredSecond,firstSnapshot,secondSnapshot,t1:await receiver('T1'),t2:await receiver('T2')});"
+      },
+      {
+        "number": 70,
+        "text": " }"
+      },
+      {
+        "number": 71,
+        "text": " if(cases.includes('P08')||cases.includes('P05')){"
+      },
+      {
+        "number": 72,
+        "text": "  stage='P08-real-project-forms';await click('[data-testid=sidebar-new-project]');await click('[role=menuitem]','新建项目');await waitFor(exists('#project-name'));await field('#project-name','M9 P08 actual UI project');await field('#project-dir',uiRoot);await click('[role=dialog] button','创建');await waitFor('!document.querySelector(\"#project-name\")');const created=await poll(async()=>{const list=await invoke('projects.list',{includeArchived:true});return list.find(p=>p.name==='M9 P08 actual UI project')},'UI project persisted');"
+      },
+      {
+        "number": 73,
+        "text": "  await click('.tabbar button','代码目录');await click('[data-testid=section-add]');await waitFor(exists('#dir-path'));await field('#dir-path',uiExtra);await field('#dir-label','UI extra root');await click('[role=dialog] button','添加');await waitFor('!document.querySelector(\"#dir-path\")');const detail=await poll(async()=>{const p=await invoke('projects.get',created.id);return p.dirs.length===2?p:null},'two UI configured directories');await click('[data-testid=dir-card] button','编辑',1);await waitFor(exists('#dir-label'));await field('#dir-label','UI extra edited');await click('[role=dialog] button','保存');await waitFor('!document.querySelector(\"#dir-label\")');const edited=await invoke('projects.get',created.id);assert.deepEqual(edited.dirs.map(d=>d.path).sort(),[uiRoot,uiExtra].sort());assert(edited.dirs.some(d=>d.label==='UI extra edited'));assert.deepEqual(edited.databases,[]);assert.deepEqual(edited.servers,[]);"
+      },
+      {
+        "number": 74,
+        "text": "  await click('.tabbar button','概览');await click('.project-actions button','导出项目');await waitFor(exists('[data-testid=project-transfer-dialog]'));await waitFor(exists('[aria-label=\"设置导出口令\"]'));await field('[aria-label=\"设置导出口令\"]','Own-test-passphrase');await field('[aria-label=\"再次输入口令\"]','Own-test-passphrase');await waitFor(\"!document.querySelector('[data-testid=project-transfer-dialog] .button.primary').disabled\");await waitFor(\"document.querySelector('[data-testid=project-transfer-dialog]').getAnimations({subtree:true}).every(a=>a.playState!=='running')\");stage='P08-export-close-confirmation';await click('[aria-label=\"关闭项目迁移\"]');await waitFor(exists('.transfer-discard-dialog'));"
+      },
+      {
+        "number": 75,
+        "text": "  if(cases.includes('P05')){stage='P05-confirmation-focus';const before=await receiver('T1');await click('.transfer-discard-dialog button','继续编辑');await waitFor('!document.querySelector(\".transfer-discard-dialog\")');await click('[aria-label=\"关闭项目迁移\"]');await waitFor(exists('.transfer-discard-dialog'));await waitFor(\"document.activeElement?.textContent==='继续编辑'\");await ownWindow('w.hide();return w.isVisible()');assert.equal(await ownWindow('return w.isVisible()'),false);await ownWindow('w.show();w.focus();return w.isVisible()');await cdp('Page.bringToFront');await waitFor(\"document.visibilityState==='visible'\");assert(await evaluate(\"document.activeElement?.textContent==='继续编辑'\"));stage='P05-confirmation-space';await app.key(' ','Space');await waitFor('!document.querySelector(\".transfer-discard-dialog\")');assert.equal(await evaluate(\"document.querySelector('[aria-label=设置导出口令]').value\"),'Own-test-passphrase');const after=await receiver('T1');assert.equal(after.rawHex,before.rawHex);p05.push({label:'M8 real confirmation keyboard',before,after});await click('[aria-label=\"关闭项目迁移\"]');await waitFor(exists('.transfer-discard-dialog'));}"
+      },
+      {
+        "number": 76,
+        "text": "  await click('.transfer-discard-dialog button','放弃并关闭');await waitFor('!document.querySelector(\"[data-testid=project-transfer-dialog]\")');await click('[data-testid=sidebar-new-project]');await click('[role=menuitem]','导入项目');await waitFor(exists('[data-testid=project-transfer-dialog]'));assert(await evaluate(\"document.querySelector('[data-testid=project-transfer-dialog]').textContent.includes('选择项目文件')\"));await app.screenshot(join(scratch,'P08-import-entry.png'));await click('[aria-label=\"关闭项目迁移\"]');await waitFor('!document.querySelector(\"[data-testid=project-transfer-dialog]\")');await show(task1);assert(await evaluate(visible(task1)));await waitFor(exists('.cm-content'));const originalAfter=await invoke('projects.get',app.project.id);assert.deepEqual(originalAfter.dirs,originalProject.dirs);assert.deepEqual(originalAfter.databases,originalProject.databases);assert.deepEqual(originalAfter.servers,originalProject.servers);await checkTask(task1,'T1');await checkTask(task2,'T2');r.checks.push({caseId:'M9-T-P08',created,edited,originalProject,originalAfter,exportBoundary:'Entered real export form and nested unsaved confirmation only; cancelled before native save/export. Import choose page entered and closed without native file picker.'});if(cases.includes('P05'))r.checks.push({caseId:'M9-T-P05',observations:p05,visibleEffectBoundary:'Actual window/layout visibility tested for filter/editor/search/confirmation. Separate production TaskView component tests exercise its visible prop changing while other connected controls retain focus.'});"
+      }
+    ]
+  },
+  "actualCompleteKeepFocusSource": {
+    "path": "/private/tmp/willyou-m12-t130-P05-App036-A-prep-002/P05-flow.mjs",
+    "sha256": "7281a1bdb9ccf7603a45c90a17b4083ffd6ff874dd20167a38a0a46da26223e8",
+    "lineNumber": 14,
+    "line": " const keepFocus=async(selector,text,label)=>{await click(selector);const before=await ctx.receiver('T1');await mark('P05-'+label);await ownWindow('const b=w.getBounds();w.setSize(b.width===1400?1450:1400,900,false);return w.getBounds();','p05-original-owned-layout-size');await pause(70);await visibility(selector,undefined,label);await cdp('Input.insertText',{text});await pause(80);const after=await ctx.receiver('T1');assert.equal(after.rawHex,before.rawHex);const observation=await evaluate('({active:document.activeElement?.outerHTML,doc:document.querySelector(\".cm-content\")?.cmTile?.root?.view?.state.doc.toString(),value:document.querySelector('+JSON.stringify(selector)+')?.value})');p05.push({label,before,after,observation});await persist();return observation;};",
+    "callSites": [
+      {
+        "lineNumber": 15,
+        "text": " await mark('P05-filter-editor-search-focus');await keepFocus('[aria-label=\"筛选文件\"]','layout','file filter');await field('[aria-label=\"筛选文件\"]','');await click('.cm-content');await app.key('End','End',4);const oldText=await evaluate(\"document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()\");const editor=await keepFocus('.cm-content','Editor focus survives 中文🙂','CodeMirror');assert.equal(editor.doc,oldText+'Editor focus survives 中文🙂');r.expectedLayout=oldText+'Editor focus survives 中文🙂';"
+      },
+      {
+        "lineNumber": 16,
+        "text": " await click('[aria-label=\"在文件中搜索\"]');await waitFor(exists('[aria-label=\"全文搜索内容\"]'));const search=await keepFocus('[aria-label=\"全文搜索内容\"]','Terminal','search dialog');assert.equal(search.value,'Terminal');await app.key('Escape','Escape');await waitFor('!document.querySelector(\"[aria-label=全文搜索内容]\")');"
+      }
+    ]
+  },
+  "resizeOriginalStep": {
+    "present": true,
+    "position": "Outer keepFocus, before inner visibility",
+    "actualCompletedCalls": [
+      "file filter",
+      "CodeMirror",
+      "search dialog"
+    ],
+    "proof": "All three awaited keepFocus calls completed past exact own Native setSize toggle and70ms settle, continued through actual post-visibility Input and expected field/editor/search observations without exception.",
+    "numericBoundsSeparatelyPersisted": false,
+    "boundary": "Native getBounds returned but values were not separately stored; no invented geometry receipt or dimensions."
+  },
+  "currentOriginalJudge": {
+    "case": "M12-T130/P05",
+    "layer": "A",
+    "checks": [
+      {
+        "id": "four-original-controls-only",
+        "pass": true
+      },
+      {
+        "id": "single-planned-hide-show-no-transition-input-or-rearm",
+        "pass": true
+      },
+      {
+        "id": "exact-editor-search-confirmation-and-zero-PTY-input",
+        "pass": true
+      },
+      {
+        "id": "declared-edit-other-files-and-M8-source-protection",
+        "pass": true
+      },
+      {
+        "id": "single-guard-normal-App-and-independent-resource-clear",
+        "pass": true
+      }
+    ],
+    "passed": true,
+    "formalIncrement": 0,
+    "wholeT130Passed": false
+  },
+  "supersededWrongFinding": {
+    "source": "scripts/files/terminal-coexistence-ui.mjs:61",
+    "sourceHashReference": "Current source040 original driver, unchanged",
+    "step": "Before each first-three keepFocus Native hide/show, original w.setSize(b.width===1400?1450:1400,900,false) and70ms settle; confirmation control has no such resize",
+    "actual002": "P05-flow.visibility omitted this Native layout resize; original fullP05 not proved despite five current judge criteria green",
+    "classification": "Root analysis error: inspected inner visibility but missed outer keepFocus; not an actual omitted original step",
+    "next": "New fresh003 preserves original resize+allfour controls and actual dimensions, old002 raw/judge preserved; no formal credit yet"
+  },
+  "correction": {
+    "at": "2026-11-07T22:05:51.292520+00:00",
+    "actualSource": "P05-flow.mjs:14 keepFocus executes original Native setSize toggle1400/1450x900 and70ms before visibility(); three original callers retained",
+    "frozenFlowSHA256": "7281a1bdb9ccf7603a45c90a17b4083ffd6ff874dd20167a38a0a46da26223e8",
+    "actualContinuationProof": "All three keepFocus calls completed past awaited Native setSize/70ms and produced actual expected field/editor/search observations; no exception, correct target focus asserted after resize. Native bounds values were returned but not separately persisted, do not claim measured size receipt.",
+    "originalProcedureMissing": false,
+    "rerunNeeded": false,
+    "unexecuted003Preparation": "Stopped before any Node/App/Native; no new fullP05 attempt",
+    "documentVisibilityBoundary": "Four captured hiddenDOM values remain visible; evidence is real Native windowhide/show and controlfocus, not renderer document visibilitychange or TaskTerminal visible-prop toggle. Existing component evidence kept separate."
+  },
+  "oldSafe001": {
+    "root": "/private/tmp/willyou-m12-t130-P05-App036-A-prep-002/safe-delivery-001",
+    "manifestSHA256": "4974586970d95b9f8352f398aa09ab6b932e52ac0e5125238b3ecec40fe50098",
+    "frozen": true,
+    "usedForAccounting": false
+  },
+  "visibilityBoundary": "Native window hide/show was actual; every hidden DOM snapshot remained document.visibilityState=visible. No claim of renderer document visibility/TaskTerminal visible-prop transition.",
+  "inputTraceBoundary": "protocolInputs is a facade subset only, not a complete raw Input inventory. Four transition zero-Input proofs use unchanged sticky guard snapshots 45/45,67/67,79/79,206/206 and frozen Native-only transition source.",
+  "scope": "Original P05 real App A completed; component visible-prop/U evidence remains separate, no whole T130 or full visual claim. 003 cancelled without actual rerun."
+}
