@@ -1,0 +1,1 @@
+F18 v2输入准备：原合同未要求旧ZIP SHA；旧SHA仅用于声称旧证据／旧字节复用。官方SimpleMacro已同SHA真实恢复并按原字节冻结，绝不执行宏。独立生成器从原predev rich_xlsx固定定义复现全部已知rich特征，再加入原F18 driver/I明确的Data A5:B5中文merge；新XLSX/manifest明确新版本，不冒原8802B。原四A预期不改。Root可按fixture-generation-request.json隔离Python入口实际生成；当前只文件/AST未执行生成，不是完整AppA READY。

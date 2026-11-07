@@ -33,6 +33,8 @@
 
 ## 最近闭合与当前缺项
 
+- [TeX原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F16-App035-A002-complete/manifest.json)与[工作簿原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F18-App035-A003-complete/manifest.json)已在当前包完成；原红、夹具来源、只读宏与源保护均归档。T130继续按[原U/A合同勘误](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/original-U-A-layer-scope-correction-001/manifest.json)核其余原业务，原来源层级标签单列，不据子组计父通过。
+
 - [DOCX原六业务场景](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F19-original-six-coordinator-001/manifest.json)已复核完成；[原PPTX预览A子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F20-App031-A001-complete/manifest.json)完成；[窄终端实际界面红测](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/host-App031-A002-narrow-layout-red/manifest.json)与[原型一致性差异](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/launcher-settings-design-review-001/manifest.json)已形成，按新候选复验；DOCX的原红及旁路观察缺项保留，其他原矩阵不删减。
 
 - [本地HTML原实际App两流程](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F24-App031-A001-complete/manifest.json)已完成，源码保护、真实Native文档交互及隔离安全边界均有证据。剩余Office预览与可自动Host视觉矩阵继续准备；[长标题原生截图能力缺项](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-App031-002-native-identity-gap/manifest.json)如实后置，不替代为通过。

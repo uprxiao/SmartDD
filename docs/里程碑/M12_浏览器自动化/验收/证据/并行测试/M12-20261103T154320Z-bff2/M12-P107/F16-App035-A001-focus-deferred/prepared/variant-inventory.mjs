@@ -1,0 +1,4 @@
+import{readdir,lstat,readlink,readFile}from'node:fs/promises';
+import{sha}from'./io.mjs';
+export async function inventory(root){const rows={};async function visit(relative){const path=root+(relative?'/'+relative:''),s=await lstat(path),row={mode:s.mode&511};if(s.isSymbolicLink()){row.kind='symlink';row.target=await readlink(path);}else if(s.isFile()){row.kind='file';row.bytes=s.size;row.sha256=sha(await readFile(path));}else if(s.isDirectory()){row.kind='directory';}else throw Error('Unexpected App inventory type '+relative);rows[relative]=row;if(row.kind==='directory')for(const name of(await readdir(path)).sort())await visit(relative?relative+'/'+name:name);}await visit('');return rows;}
+export const withoutTex=rows=>Object.fromEntries(Object.entries(rows).filter(([p])=>p!=='Contents/Resources/native/tex'&&!p.startsWith('Contents/Resources/native/tex/')));

@@ -1,0 +1,513 @@
+{
+  "notAResultLedger": true,
+  "mapSource": {
+    "path": "/private/tmp/willyou-m12-m9-regression-static-001/case-map.json",
+    "sha256": "8cf48c9647e998d7b9b26f55cebc5af0999ce66a7a560f3b84f6a5b3268cb242",
+    "notANewResultLedger": true,
+    "scopeBoundary": "D01–24 and F01–30 are complete named original groups, P01–07 direct terminal coexistence. P08/P09 and A11/S09/Y40 are retained adjacent original-driver/dependency obligations for coordinator scope review, not silently passed or removed. P10 remains original deferred platform item; not newly authorized here. T145 separate browser visual matrix is untouched."
+  },
+  "M9source": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a"
+  },
+  "count": 20,
+  "allAlsoHaveM9A": true,
+  "cases": [
+    {
+      "case": "M9-T-D01",
+      "title": "预览替换",
+      "sourceLine": 145,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D01 预览替换**<br>M9-R04.2",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "单击A后单击B，均无修改。",
+        "只有一个预览位；B替换A并释放A状态；不是不断追加斜体标签。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "单击A后单击B，均无修改。",
+      "expectedFromFrozenMap": "只有一个预览位；B替换A并释放A状态；不是不断追加斜体标签。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D02",
+      "title": "双击固定",
+      "sourceLine": 146,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D02 双击固定**<br>M9-R04.3",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "单击A再双击A，然后单击B。",
+        "A固定且保留，B占预览位；不生成第二个A。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "单击A再双击A，然后单击B。",
+      "expectedFromFrozenMap": "A固定且保留，B占预览位；不生成第二个A。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D03",
+      "title": "固定标签不降级",
+      "sourceLine": 147,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D03 固定标签不降级**<br>M9-R04.2",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "固定A后再从树单击A。",
+        "激活原A，保持固定，不被下一预览替换。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "固定A后再从树单击A。",
+      "expectedFromFrozenMap": "激活原A，保持固定，不被下一预览替换。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D04",
+      "title": "跨根同名",
+      "sourceLine": 148,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D04 跨根同名**<br>M9-R04.4",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "rootA/a.txt和rootB/a.txt交替开。",
+        "两个独立标签，标题/tooltip可区分根；内容和草稿不串。<br>依据：L§2"
+      ],
+      "stepsFromFrozenMap": "rootA/a.txt和rootB/a.txt交替开。",
+      "expectedFromFrozenMap": "两个独立标签，标题/tooltip可区分根；内容和草稿不串。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D05",
+      "title": "去重规范化",
+      "sourceLine": 149,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D05 去重规范化**<br>M9-R04.4",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "同文件通过树、搜索、面包屑、合法相对路径别名打开。",
+        "canonical文件身份按规则复用；大小写敏感主机不错误合并不同文件。<br>依据：L§2"
+      ],
+      "stepsFromFrozenMap": "同文件通过树、搜索、面包屑、合法相对路径别名打开。",
+      "expectedFromFrozenMap": "canonical文件身份按规则复用；大小写敏感主机不错误合并不同文件。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D06",
+      "title": "dirty预览保护",
+      "sourceLine": 150,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D06 dirty预览保护**<br>M9-R04.2、M9-R07.9",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "预览A修改未存，再单击B。",
+        "A不会被静默丢弃；按批准策略固定A或先处理保存/关闭；B可独立查看。<br>依据：L§3；设计差异待确认"
+      ],
+      "stepsFromFrozenMap": "预览A修改未存，再单击B。",
+      "expectedFromFrozenMap": "A不会被静默丢弃；按批准策略固定A或先处理保存/关闭；B可独立查看。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D07",
+      "title": "拖动重排",
+      "sourceLine": 151,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D07 拖动重排**<br>M9-R04.3、M9-R08.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "将第1标签拖到末尾、拖回；刷新/重开。",
+        "顺序准确持久化；active身份不变；拖动不会触发误关闭/误外开。<br>依据：L§3/§4"
+      ],
+      "stepsFromFrozenMap": "将第1标签拖到末尾、拖回；刷新/重开。",
+      "expectedFromFrozenMap": "顺序准确持久化；active身份不变；拖动不会触发误关闭/误外开。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D08",
+      "title": "关闭非活动",
+      "sourceLine": 152,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D08 关闭非活动**<br>M9-R04.5、M9-R01.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "打开A/B/C并激活B；关闭C。",
+        "B保持活动和焦点；C资源释放，不影响终端。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "打开A/B/C并激活B；关闭C。",
+      "expectedFromFrozenMap": "B保持活动和焦点；C资源释放，不影响终端。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D09",
+      "title": "关闭活动",
+      "sourceLine": 153,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D09 关闭活动**<br>M9-R04.5",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "打开A/B/C激活B；关闭B。",
+        "按已批准邻接/opener规则激活目标；不存在悬空activeId。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "打开A/B/C激活B；关闭B。",
+      "expectedFromFrozenMap": "按已批准邻接/opener规则激活目标；不存在悬空activeId。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D10",
+      "title": "关闭最后标签",
+      "sourceLine": 154,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D10 关闭最后标签**<br>M9-R04.5、M9-R01.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "关闭最后文件标签。",
+        "文件区按批准空态/隐藏处理；终端任务仍运行，主焦点合理恢复。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "关闭最后文件标签。",
+      "expectedFromFrozenMap": "文件区按批准空态/隐藏处理；终端任务仍运行，主焦点合理恢复。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D11",
+      "title": "异步关闭实例竞态",
+      "sourceLine": 155,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D11 异步关闭实例竞态**<br>M9-R04.5、M9-R08.2",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "dirty A关闭等保存/确认；期间替换内容实例或关闭重开A；再完成旧Promise。",
+        "旧contentInstance确认不能关闭新实例；旧回调不清掉新draft。<br>依据：L§3；V S18"
+      ],
+      "stepsFromFrozenMap": "dirty A关闭等保存/确认；期间替换内容实例或关闭重开A；再完成旧Promise。",
+      "expectedFromFrozenMap": "旧contentInstance确认不能关闭新实例；旧回调不清掉新draft。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D12",
+      "title": "撤销关闭顺序",
+      "sourceLine": 156,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D12 撤销关闭顺序**<br>M9-R04.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "关闭A/B后逐次撤销；观察位置与激活项。",
+        "按栈顺序恢复原索引/route；不重复已开的同文件；失败保持可追踪条目。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "关闭A/B后逐次撤销；观察位置与激活项。",
+      "expectedFromFrozenMap": "按栈顺序恢复原索引/route；不重复已开的同文件；失败保持可追踪条目。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D13",
+      "title": "撤销关闭上限",
+      "sourceLine": 157,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D13 撤销关闭上限**<br>M9-R04.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "关闭26个可恢复固定文件再连续撤销。",
+        "参考最多25项；产品按批准上限；不把已被淘汰项伪装可恢复。<br>依据：L§3"
+      ],
+      "stepsFromFrozenMap": "关闭26个可恢复固定文件再连续撤销。",
+      "expectedFromFrozenMap": "参考最多25项；产品按批准上限；不把已被淘汰项伪装可恢复。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D14",
+      "title": "恢复排除preview",
+      "sourceLine": 158,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D14 恢复排除preview**<br>M9-R04.7",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "固定A，预览B；重启。",
+        "仅可持久route按规则恢复；参考preview排除；不把B草稿丢失与route排除混为一谈。<br>依据：L§4"
+      ],
+      "stepsFromFrozenMap": "固定A，预览B；重启。",
+      "expectedFromFrozenMap": "仅可持久route按规则恢复；参考preview排除；不把B草稿丢失与route排除混为一谈。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D15",
+      "title": "恢复顺序活动布局",
+      "sourceLine": 159,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D15 恢复顺序活动布局**<br>M9-R04.7、M9-R08.6",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "固定多标签、切active、改面板可见性后重启。",
+        "恢复顺序/active/布局与批准checkpoint一致；无临时rootLease、BlobURL被直接复用。<br>依据：L§4"
+      ],
+      "stepsFromFrozenMap": "固定多标签、切active、改面板可见性后重启。",
+      "expectedFromFrozenMap": "恢复顺序/active/布局与批准checkpoint一致；无临时rootLease、BlobURL被直接复用。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D16",
+      "title": "unrestored-route",
+      "sourceLine": 160,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D16 unrestored-route**<br>M9-R04.7",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "持久标签指向已删除文件或失效根，再重启。",
+        "保留可识别不可恢复状态/原route，提供重试/关闭；不静默丢记录或跳到别文件。<br>依据：L§4"
+      ],
+      "stepsFromFrozenMap": "持久标签指向已删除文件或失效根，再重启。",
+      "expectedFromFrozenMap": "保留可识别不可恢复状态/原route，提供重试/关闭；不静默丢记录或跳到别文件。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D17",
+      "title": "恢复期间用户选中",
+      "sourceLine": 161,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D17 恢复期间用户选中**<br>M9-R04.7、M9-R08.2",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "延迟恢复A/B；用户先手动打开C，再完成恢复。",
+        "selectionVersion保护用户C选择；后台恢复不抢焦点。<br>依据：L§4"
+      ],
+      "stepsFromFrozenMap": "延迟恢复A/B；用户先手动打开C，再完成恢复。",
+      "expectedFromFrozenMap": "selectionVersion保护用户C选择；后台恢复不抢焦点。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D18",
+      "title": "切任务恢复隔离",
+      "sourceLine": 162,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D18 切任务恢复隔离**<br>M9-R04.1、M9-R08.2",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "恢复T1未完时切T2，再回T1。",
+        "token/disconnect保护；T1迟到恢复不插入T2；任务自己的文件状态恢复。<br>依据：L§4"
+      ],
+      "stepsFromFrozenMap": "恢复T1未完时切T2，再回T1。",
+      "expectedFromFrozenMap": "token/disconnect保护；T1迟到恢复不插入T2；任务自己的文件状态恢复。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-D19",
+      "title": "位置与模式",
+      "sourceLine": 163,
+      "M9OriginalEnvironment": [
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-D19 位置与模式**<br>M9-R08.6、M9-R07.8",
+        "本期本机",
+        "组件／集成／安装端到端<br>P+I+A / D01+D04",
+        "A源码滚至200行，B Markdown预览滚动；切回/重启。",
+        "分别保存滚动、mode、selection；内容已变化时按批准策略重定位，不强套旧snapshot。<br>依据：L§4；V S23"
+      ],
+      "stepsFromFrozenMap": "A源码滚至200行，B Markdown预览滚动；切回/重启。",
+      "expectedFromFrozenMap": "分别保存滚动、mode、selection；内容已变化时按批准策略重定位，不强套旧snapshot。",
+      "mapDriverNamesHistoricalOnly": [
+        "tab-lifecycle-ui.mjs",
+        "tab-restore-ui.mjs",
+        "tab-title-close-ui.mjs",
+        "reading-restart-ui.mjs"
+      ]
+    },
+    {
+      "case": "M9-T-Y40",
+      "title": "标签拖动重排与拖到终端互不干扰",
+      "sourceLine": 647,
+      "M9OriginalEnvironment": [
+        "U",
+        "P",
+        "I",
+        "A"
+      ],
+      "originalColumns": [
+        "**M9-T-Y40 标签拖动重排与拖到终端互不干扰**<br>M9-R05.14、M9-R04.3、M9-R08.6",
+        "本期本机",
+        "单元／组件／集成／安装端到端<br>U+P+I+A / D01+D11+D14+D17",
+        "打开三个固定标签和一个预览标签，在标签条内拖动调整顺序并按原标签状态规则重开；再把一个真实文件标签拖到终端；重复一条dirty标签及一次取消拖动，核对标签顺序、激活项、buffer和PTY日志。",
+        "标签条内拖动保持原重排/持久化规则且不插入终端；标签拖到终端只插入完整绝对路径，不误重排/关闭标签、不清dirty或保存状态、不丢buffer；取消拖动两边均不提交动作。预览/固定语义与活动标签保持符合R04.3，已有标签拖排序功能不回归。<br>依据：需求 R05.14（R3.2 用户确认：真实文件拖入当前终端，完整绝对路径、不回车）"
+      ],
+      "stepsFromFrozenMap": "打开三个固定标签和一个预览标签，在标签条内拖动调整顺序并按原标签状态规则重开；再把一个真实文件标签拖到终端；重复一条dirty标签及一次取消拖动，核对标签顺序、激活项、buffer和PTY日志。",
+      "expectedFromFrozenMap": "标签条内拖动保持原重排/持久化规则且不插入终端；标签拖到终端只插入完整绝对路径，不误重排/关闭标签、不清dirty或保存状态、不丢buffer；取消拖动两边均不提交动作。预览/固定语义与活动标签保持符合R04.3，已有标签拖排序功能不回归。",
+      "mapDriverNamesHistoricalOnly": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "notExecutionREADY": true,
+  "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/tab-lifecycle-prototype.mjs",
+  "sha256": "53693e6d7677ad9c6a3a216fb1b570516f0ee854ae04eae87206a7ce5f21fb00",
+  "facts": [
+    {
+      "line": 4,
+      "text": "import {openElectron} from '../lib/electron-harness.mjs';"
+    },
+    {
+      "line": 16,
+      "text": " app=await openElectron({executable:process.env.WILLYOU_FILES_APP,userData:join(scratch,'userdata')});await app.cdp('Page.navigate',{url:'http://127.0.0.1:5179/?preview=m9'});await wait(()=>!!document.querySelector('.file-workspace'));"
+    },
+    {
+      "line": 31,
+      "text": "finally{if(app){await writeFile(join(scratch,'electron.log'),app.logs());await app.close()}r.finishedAt=new Date().toISOString();await writeFile(join(scratch,'result.json'),JSON.stringify(r,null,2)+'\\n');console.log(JSON.stringify({status:r.status,checks:r.checks.length,failedStage:r.failedStage,error:r.error,artifacts:scratch}))}"
+    }
+  ],
+  "originalCasesObservedInLiteral": [
+    "D12",
+    "D13",
+    "D04",
+    "D06"
+  ],
+  "scope": "Original P synthetic complete sharedFileWorkspace; not real filesystem or App business evidence",
+  "whyNotAlreadyHeadlessReady": "Uses openElectron(WILLYOU_FILES_APP) and an existing127.0.0.1:5179 page; no explicit headless flag, privateVite/cache/lease or current oncePID/strictfocus lifecycle in this original entry. Headless adaptation could be separate engineering P if Root explicitly needs it; source presence is not ready/executed evidence.",
+  "decision": "No new P producer prepared or executed in this scope audit."
+}

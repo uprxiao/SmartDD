@@ -1,0 +1,11 @@
+9: **测试层级**
+10: 
+11: | 代号 | 层级 | 说明 |
+12: | --- | --- | --- |
+13: | U | 单元 | vitest。覆盖主进程纯逻辑、原生 CLI 参数解析、Skill 渲染、映射表生成器 |
+14: | I | 集成 | 主进程浏览器模块＋固定版本 agent-browser＋测试站点＋真实构建的 `willyou-app`（沿用 M11 `cliFixture` 方式），非打包 |
+15: | A | 打包 App | 用 `scripts/lib/electron-harness.mjs` 经 CDP 驱动真实打包界面，独立 `userData` |
+16: | R | 真实 Agent | 打包 App 内由真实 UI 启动 Codex 0.166.0，Codex 读 Skill 后自己调用 `willyou-app browser …` |
+17: | S | 系统层／人工 | 钥匙串弹窗、真实键盘快捷键、多显示器、调度中心、x64 真机等 CDP 无法证明的项目 |
+18: 
+19: 一条用例列出多个层级时，**所有层级都通过才计通过**。
