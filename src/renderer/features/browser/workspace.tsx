@@ -75,6 +75,17 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
   const closeMenu=(after?:()=>void)=>{settingsGeneration.current++;run(async()=>{await rpc.browser.overlay({taskId,tabId,open:false});setMenu(false);setPageImage(null);after?.();});};
   const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setDownloadsOpen(false);setMenu(true);});};
   const closeSettings=()=>{settingsGeneration.current++;run(async()=>{try{await rpc.browser.overlay({taskId,tabId,open:false});}finally{setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setPageImage(null);}});};
+  useEffect(()=>{
+    if(!downloadsOpen)return;
+    // Removing the focused menu item leaves focus on body. Keep Escape working
+    // without taking keyboard focus away when a download opens automatically.
+    const escape=(event:KeyboardEvent)=>{
+      if(event.key!=='Escape'||event.defaultPrevented||event.isComposing||event.target instanceof Element&&event.target.closest('[role="dialog"]'))return;
+      event.preventDefault();closeSettings();
+    };
+    document.addEventListener('keydown',escape);
+    return()=>document.removeEventListener('keydown',escape);
+  },[downloadsOpen,taskId,tabId]);
   const showSettings=()=>run(async()=>{
     const generation=++settingsGeneration.current;
     try{const value=await rpc.browser.preferences({taskId});if(generation!==settingsGeneration.current)return;setMenu(false);setPreferences(value);}

@@ -186,14 +186,14 @@
     "schema": 1,
     "startedAt": "2026-11-03T15:43:20.637045+00:00",
     "authorization": "用户要求建立覆盖S2-S6全部剩余开发、测试和测试缺陷修复复验的总目标",
-    "status": "active; T132 App027 fullA actualexecution, T091 partial actualR parser correction fileonly; T080 complete accepted",
+    "status": "active; T080/T091/T132 complete; T095 valid15+readyC9/C10, T015 actualEsc productfix in officialApp028. Actuallockscreen blocksUI; continue independentS6.",
     "branch": "feature/0.1.1",
     "sourceCommit": "31ada9477ab7dea1fa5140747d54255bd377e811",
     "requirements": "需求.md R1.6",
     "technicalDesign": "V1.6",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T095 current fullAR static-format green→businessReady; T015 completeA fileprep",
+    "currentGroup": "App028 S6 backgroundprepare→originalninephases; pendingunlocked T095C9/C10 then T015fullA",
     "groups": [
       {
         "id": "M12-P001",
@@ -4228,8 +4228,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-07T02:02:33.045064+00:00",
-    "independentNext": "Execute originalT095 fullA/R once reviewed; continue T015A; retain real system/device/ZenTao original gates",
+    "updatedAt": "2026-11-07T03:44:27.933526+00:00",
+    "independentNext": "Execute App028 originalS6 background install/native/hiddenstartup without realUI input when ready; preserve original121requirements. On unlock execute reviewedC9C10 then completeT015A.",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4264,10 +4264,11 @@
       }
     ],
     "currentSourceCheckpoint": {
-      "name": "source030",
-      "manifestSha256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
-      "implementationCommit": "31ada9477ab7dea1fa5140747d54255bd377e811",
-      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/App026-coordinator-current-001/manifest.json"
+      "name": "source032",
+      "manifestSha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
+      "baseCommit": "e6fc1471020a79908ab134db487cb29a7bec13f7",
+      "implementationState": "Four exactsource/test/prototype deltas frozen; no requirement/case threshold change",
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json"
     },
     "candidateBaseline": {
       "app": "App027",
@@ -4289,10 +4290,10 @@
       "evidencePrivate": "/private/tmp/willyou-m12-app027-installer-001/installed-startup-001/result.json"
     },
     "currentSourceInputs": {
-      "path": "/private/tmp/willyou-m12-t091-source-030/source-inputs.json",
-      "sha256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
-      "scope": "Full3686 source030 frozen officialbuild source, previous029 plusT091 ninechanged+twoadded, sourceunchangedbeforeafter",
-      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/App026-official-build-001/manifest.json"
+      "path": "/private/tmp/willyou-m12-download-Esc-source-032/source-inputs.json",
+      "sha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
+      "scope": "3689SHA/modes checked each officialbuild phase; onlyfour deltafilesvs031",
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json"
     },
     "currentAutonomousBatch": {
       "scope": "P-referenceoriginal456keys+original43software/componenttests+independentcloseprobe",
@@ -4307,12 +4308,15 @@
       "sourceProductionChangesAfterApp026": false
     },
     "awakePrerequisite": {
-      "status": "satisfied-for-current-test-instance-only",
-      "observedAt": "2026-11-06T01:21:11.497098+00:00",
-      "observed": "Lidopened then official5s useractivity wake yielded3online; actual ownT121 Native+DOM3s focus confirmed by unchanged guard",
-      "requested": "User explicitly now available; no additional login requested",
-      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P116/desktop-wake-and-native-focus-002/manifest.json",
-      "continuing": "T120/T125 fresh ownedApp12340 after realCUAclick; original passive Native+DOM3s satisfied, original guard unchanged",
+      "status": "waiting-actual-user-unlock",
+      "observedAt": "2026-11-07T03:44:27.933526+00:00",
+      "observed": {
+        "name": "loginwindow",
+        "pid": 401,
+        "tool": "546d5e"
+      },
+      "requested": "One current async unlock prerequisite, no repeatedpermission/login/send request",
+      "continuing": "App028 S6 background and independentfilepreparations",
       "noPowerSettingsChanged": true
     },
     "backgroundExecutionGate": {
@@ -4345,28 +4349,27 @@
       }
     },
     "nextPackageCandidate": {
-      "app": "App026",
-      "source": "source030",
-      "sourceManifestSha256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
-      "implementationCommit": "31ada9477ab7dea1fa5140747d54255bd377e811",
-      "status": "Current actual officialApp026/source030 localarm64 completeinstallation/native6/stockCLI3/normalexit/original8-8/independentcleanup accepted; no originalT091 A/R yet",
-      "appPath": "/private/tmp/willyou-m12-s2-package-026/mac-arm64/WillYou.app",
-      "asarSha256": "49c38b61f6ed48eddf79aa639af881d7bba7e9eaf881950ffd70f2a76ded5c73",
-      "currentLocalInstaller": {
-        "path": "/private/tmp/willyou-m12-app026-installer-001/installer-output-002/WillYou-0.1.1-mac-arm64.dmg",
-        "bytes": 617182565,
-        "sha256": "0fd1e1683e389165cb2530dcfaf6115f819db6bd7a452b8260564e52770e1bf4",
-        "scope": "Local ad-hoc arm64;no x64/notarization/release",
-        "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app026-installer-001/manifest.json"
-      },
-      "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/App026-coordinator-current-001/manifest.json"
+      "app": "App028",
+      "source": "source032",
+      "sourceManifestSha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
+      "status": "Officialdirectory complete, twoTypeScripts0/sevenrelatedmodules34pass/native6green; installer/installedstartup/fullT015A pending",
+      "appPath": "/private/tmp/willyou-m12-s2-package-028/mac-arm64/WillYou.app",
+      "asarSha256": "59f659c39cb2663eca00465014182c7ce971840b4657e65eb416f36f2d0174a8",
+      "executableSha256": "79396930218d83407652a61a582a98a9cd41dc04904c924e41dbd34b34600405",
+      "currentLocalInstaller": null,
+      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json"
     },
     "nextExecution": {
-      "resourcesHeld": [],
-      "nextAutonomous": "Complete concrete originalT130viewerA/T095AR frozenready; actualUI waitsrealDesktopAvailable, do not rerunacceptedgroups",
-      "nextUI": "Lastauthorizedread-onlyfrontmost loginwindow401; T091/T080/T132 andotheroriginalforegroundgates deferred. Userrest alone not a ban, freshactualavailability afterNativeclear",
-      "pendingUser": "AllremainingM12 operations/model sends uniformlyauthorized; actualmanual/device prerequisites last",
-      "pendingPlatform": "Originalx64/dualdisplay/Keychain/realZentao hostentry remain"
+      "resourcesHeld": "No UI/Native afterreadonlyforeground check; purefileagents active",
+      "nextAutonomous": "S6 App028 install/native/hiddenstartup",
+      "nextUI": [
+        "T095 C9/C10 exactready66fc9a31",
+        "T015 App028 originalfullA exactready28cea6e7",
+        "T081 remainingA",
+        "Other originalremainingcases per authority"
+      ],
+      "pendingUser": "ActualMacunlock only currently requested; no newauthorization",
+      "pendingPlatform": "OriginalrealKeychain/systemUI/dualmonitor/x64/realZenTao data gates remain"
     },
     "lastCompletedBatch": {
       "at": "2026-11-07T02:02:33.045064+00:00",
@@ -4513,14 +4516,13 @@
       }
     ],
     "foregroundPrerequisitePending": {
-      "status": "available-confirmed-and-used",
-      "latestUser": "已解锁，可以继续界面测试",
-      "policy": "Actual once initialactivation/stablefocus/oneguard; no rearm, actual lock stops dependent UI"
+      "status": "waiting-actual-user-unlock",
+      "policy": "No newUI/AppA/input/activation until actualunlock; exactPIDinitialactivation authorization remains. C9/T015ready notexecuted."
     },
     "nextAutonomousGroup": {
-      "case": "M12-T130-viewerA andT095AR",
-      "status": "fileonly preparation; noNativelease/model/auth",
-      "next": "RootreviewcompleteReady/actualDesktopAvailable thennewlease"
+      "case": "T140/T143 affectedApp028 S6",
+      "status": "purefilepreparing, no currentinstallation claimed",
+      "next": "Originalninephases includinghiddenAppCLI, allsharedNative/heavy exclusive. No focus/UI/model actions."
     },
     "documentationSavedLocally": {
       "productionCommit": "31ada9477ab7dea1fa5140747d54255bd377e811",
@@ -4546,9 +4548,8 @@
         "status": "fileonly actualApp originalF12/F17 viewer-driver preparation; OSlocked noexecution"
       },
       "T095AR": {
-        "owner": "/root/t125_resume_ready",
-        "root": "/private/tmp/willyou-m12-t095-App026-A-R-prep-001",
-        "status": "fileonly fulloriginalscope preparation; noauth/copy/model/Native"
+        "status": "Original15actualpassed; reviewedC9/C10ready but lockscreen notdispatched",
+        "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/C9-C10-cont002-static-ready/manifest.json"
       },
       "T091": {
         "root": "/private/tmp/willyou-m12-t091-App026-A-R-001",
@@ -4562,7 +4563,11 @@
         "root": "/private/tmp/willyou-m12-t132-App025-A-003",
         "status": "frozenoriginalA; recheckAppbaseline fixturedefaults applicability beforeexecution"
       },
-      "resources": "AllNative/compiler/Node/App resourcesexplicitlyreleased; fileonly preparation"
+      "resources": "AllNative/compiler/Node/App resourcesexplicitlyreleased; fileonly preparation",
+      "T015A": {
+        "status": "OriginalApp027Escproductred, correctedsource032/App028; fullAstaticgreen waitingunlockedNativelease",
+        "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-fullA-static-ready/manifest.json"
+      }
     },
     "candidateBaselinePreviousApp025": {
       "app": "App025",

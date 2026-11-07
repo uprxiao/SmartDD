@@ -1,0 +1,22 @@
+{
+  "firstError": "T015 bounded condition timeout old-record-reopen-six-seconds",
+  "actualFailurePoint": "After menu reopened download panel, sent real CDP Escape down/up; panel did not close within original3s. Old-record and hover timing had already passed.",
+  "actualTimingsMs": {
+    "newAutoHide": 6020,
+    "oldRecordReopenHide": 5975,
+    "hoverHold": 6537,
+    "hoverLeaveHide": 46
+  },
+  "source031RelevantHandler": "workspace.tsx109-110 handles Escape on .bw-workspace bubbling;84/122 menu item is unmounted by showDownloads. No explicit focus handover found there.",
+  "actualKeyboardArgs": {
+    "types": [
+      "keyDown",
+      "keyUp"
+    ],
+    "key": "Escape",
+    "code": "Escape"
+  },
+  "unknownBoundary": "No actual DOM keyboard-event capture or activeElement/main/child focus snapshot was recorded at the Esc point. Cannot yet distinguish CDP delivery/focus driver problem from body event not bubbling through workspace. No product bug or sole cause is asserted.",
+  "nextMinimalEvidence": "Readonly exact-main key capture + activeDescriptor and actual main/child focus; verify full Escape VK27/native53 arguments; no DOM focus or dispatchEvent. Further Native run requires new Root lease and explicit treatment of retained own system file.",
+  "prestartRefusal": "First tool exit1 was exact executable gate mismatch from Root wrong installed-path lease;0App/0Downloads. Root preserved/corrected that lease before this first business run."
+}

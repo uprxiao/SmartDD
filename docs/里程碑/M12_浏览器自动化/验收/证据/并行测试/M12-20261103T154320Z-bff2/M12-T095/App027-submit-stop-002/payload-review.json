@@ -1,0 +1,44 @@
+{
+  "case": "M12-T095",
+  "destination": {
+    "provider": "openai",
+    "model": "gpt-6.1-sol",
+    "CLI": "Existing Root-verified Codex0.166.0"
+  },
+  "sandbox": "workspace-write",
+  "approval": "on-request",
+  "authority": "Root assignment references existing unified user goal/send/login-reuse authorization; no fabricated new verbatim approval; no dispatch in preparation.",
+  "templates": {
+    "bootstrap": "T095_BOOTSTRAP Reply exactly T095_BOOTSTRAP_READY. Do not use any tools. Wait for my next message.",
+    "observeControl": "T095_OBSERVE_CONTROL 本机合成验收；A={{T1_TASK_ID}}，T={{T2_TASK_ID}}，P={{T2_PAGE_ID}}。A/T/P是文字占位，执行时写真实ID，不定义shell变量。先cat完整公开Skill {{SKILL_PATHS}}，输出上限至少30000 tokens。只用当前原生willyou-app browser前缀执行下面各一次：1 tab list --task A应成功；2 tab list --task T应SCOPE_DENIED/exit2；3 access request --task T --mode observe，等真实UI允许；4 snapshot --task T --page P，从真实refs记下唯一name=T095 increment的完整不透明ref；5 click --element 该完整ref --task T --page P应SCOPE_DENIED/2；6 wait fn --fn false --timeout 1000 --task T --page P应SCOPE_DENIED/2；7 access request --task T --mode control，等UI允许；8 click同ref/同T/P一次应成功。拒绝是预期，不重试不换命令。保留所有真实全文和数值退出。禁止读env/auth/Cookie/config/history/quota或其他文件，禁止HTTP/CDP/JS替代CLI。完成后仅短答T095_CONTROL_READY并结束当前回答，保持当前运行，等下一条消息。",
+    "revokeDenyTimeout": "T095_REVOKE A={{T1_TASK_ID}}，T={{T2_TASK_ID}}，P={{T2_PAGE_ID}}，R={{T2_REF}}，均为本轮真实公开元数据，命令里用实际文字不定义shell变量。当前同一运行已有control。只用willyou-app browser各一次：1 snapshot --task T --page P，exec_command yield_time_ms=1000；本机门闩仅持有已真实完成的只读返回。该命令仍running时不要先等待结束；2-4 通过三个独立exec_command并发各发click --element R --task T --page P，禁止串行等待第一条，禁止合并shell、&或辅助脚本。UI将撤销授权，三个原session都须SCOPE_DENIED/真实exit2，poll同一session到终态绝不重发，再poll第1条真实终态。5 access request --task T --mode control，UI会拒绝，保留SCOPE_DENIED/2；6 同一申请再发一次，本次60秒无人处理，耐心poll原session到SCOPE_DENIED/2；7 再申请control，UI将允许，这是结束旧运行前保持活授权的必要继承检查前置，不再写入。禁止env/auth/Cookie/config/history/quota、HTTP/CDP/JS或其他文件。只保留真实输出，结束当前回答，等待测试UI停止运行。",
+    "sameTaskNewRun": "T095_NEWRUN 这是同一任务 {{T1_TASK_ID}} 的真实新运行，目标仍为 {{T2_TASK_ID}}。保持当前gpt-6.1-sol/on-request/workspace-write，不读取旧运行凭据/环境/token。先完整读取本次新交付公开浏览器Skill {{SKILL_PATHS}}。仅执行当前宿主 willyou-app browser tab list --task {{T1_TASK_ID}} 一次，应成功；再执行 willyou-app browser tab list --task {{T2_TASK_ID}} 一次，应SCOPE_DENIED/真实数值2。不能申请新授权、不能重试、不能借旧CLI路径、不能读取auth/其他配置或历史。保存实际全文输出后结束回答。"
+  },
+  "substitutionAllowlist": {
+    "T1_TASK_ID": "Exact this-test TaskService T1 actual UUID only",
+    "T2_TASK_ID": "Exact own same-project synthetic idle target task UUID only",
+    "T2_PAGE_ID": "Actual pre-created owned target browser page ID only",
+    "SKILL_PATHS": "Only exact current actual plan/delivered browser public SKILL.md paths; validate bundle hash, regular files and under test projection root",
+    "T2_REF": "Exact full opaque ref from phase1 actual native snapshot, unique name=T095 increment; no internal @e substitution or invented ref."
+  },
+  "mandatoryRendering": "Single-line strings; strict JSON/string quoting for public IDs/paths; rendered complete bytes+SHA recorded before once actual terminal insertion. No unrelated runtime/auth/DB data substitutions.",
+  "publicSyntheticData": [
+    "localhost counter page; no login/account/auth",
+    "task/project/page/plan/CLI metadata",
+    "actual delivered public browser Skill source"
+  ],
+  "modelSent": false,
+  "authReadOrCopied": false,
+  "NativeExecuted": false,
+  "formalNewPasses": 0,
+  "deliveryShape": "Bootstrap no-tools precondition, two bounded user turns in the same original T1 run (8+7 commands), then two commands in same-task new run. Each followup one actual insert+one Enter+15s exact canonical ACK. All17 original/necessary fixture commands occur once; no repeated business step. Split avoids oversized current visible composer while preserving same run and original sequence.",
+  "staticLineage": {
+    "previousPayloadSHA256": "9c0e991efd4a9c8dd151da84f918f01061a993860b87b4fd155d1f01a707f425",
+    "reason": "Before any READY/lease/dispatch, split unexecuted long main template into 8+7 commands in same run; content/authorization and original predicates unchanged; complete old bytes retained under static-review-001.",
+    "noNativeOrModelAttempt": true
+  },
+  "metadataPolicy": {
+    "optional": "At most one direct actual willyou-app browser identity get per phase, numeric0 JSON only; public CLI metadata within original send scope, not one of17business commands. No env/config/auth/file alternatives.",
+    "skillReads": "Exact full stdout of cat current delivered public SKILL paths; required phases need >=1 complete read. Every repeated readonly Skill cat must independently match exact entire public contents; it is not a business CLI retry. Unknown non-V2 typed commands remain rejected."
+  }
+}

@@ -148,6 +148,11 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
   function endDemoRun() { clearTimeout(commandTimer.current); onChange(current => ({ ...endRun(current), grants: [] })); setStatus('演示：运行已结束，暂停状态、活动标记与跨任务授权已清除'); }
 
   const [downloadsOpen, setDownloadsOpen] = useState(false), [downloadsHover, setDownloadsHover] = useState(false);
+  function dismissDownloads(event) {
+    if (!downloadsOpen || event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.target.closest?.('[role="dialog"]')) return;
+    event.preventDefault();
+    setDownloadsOpen(false);
+  }
   // R0.8: downloads live behind a toolbar button; a new download pops the list open, and it folds away 6 s after the last change unless hovered.
   useEffect(() => {
     if (!downloadsOpen || downloadsHover) return undefined;
@@ -158,7 +163,11 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
     if (!downloadsOpen) return undefined;
     const outside = event => { if (!event.target.closest?.('.bw-downloads, .bw-dl-anchor')) setDownloadsOpen(false); };
     document.addEventListener('pointerdown', outside, true);
-    return () => document.removeEventListener('pointerdown', outside, true);
+    document.addEventListener('keydown', dismissDownloads);
+    return () => {
+      document.removeEventListener('pointerdown', outside, true);
+      document.removeEventListener('keydown', dismissDownloads);
+    };
   }, [downloadsOpen]);
   function startDownload(name, fail = false) {
     setDownloadsOpen(true);
@@ -206,7 +215,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
   const SecurityIcon = security.icon;
   const holdSeconds = Math.ceil(agentHoldRemaining(state, now) / 1000);
 
-  return <div ref={rootRef} className="bw-root" onKeyDown={event => { shortcut(event); event.stopPropagation(); }}>
+  return <div ref={rootRef} className="bw-root" onKeyDown={event => { dismissDownloads(event); shortcut(event); event.stopPropagation(); }}>
     <div className="fw-toolbar bw-toolbar">
       <div className="bw-nav">
         <ToolButton icon={ArrowLeft} label="后退" onClick={() => history(-1)} disabled={!canGoBack(tab)} />

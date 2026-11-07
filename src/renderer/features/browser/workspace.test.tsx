@@ -19,6 +19,18 @@ it('shows an initial failed navigation rather than hiding it behind the blank st
 it('offers no certificate approval for an ordinary failed navigation',()=>{
   f.value.state.tabs[0].certificate=null;render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.queryByRole('button',{name:'我了解风险，继续访问'})).toBeNull();expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();
 });
+it('closes downloads with Escape after the focused menu item is removed, without moving focus',async()=>{
+  f.value.state.downloads=[{id:'d1',taskId:'t1',pageId:'page1',url:'https://fixture.example/orders',name:'订单.csv',path:'/synthetic/Downloads/订单.csv',destination:'downloads',state:'done',receivedBytes:24,totalBytes:24,updatedAt:Date.now(),error:null}];
+  render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  fireEvent.click(screen.getByRole('button',{name:'浏览器菜单'}));
+  const item=await screen.findByRole('menuitem',{name:'下载'});item.focus();fireEvent.click(item);
+  await screen.findByRole('region',{name:'下载'});expect(document.activeElement).toBe(document.body);
+  fireEvent.keyDown(document.body,{key:'Escape',code:'Escape',keyCode:27});
+  await waitFor(()=>expect(screen.queryByRole('region',{name:'下载'})).toBeNull());
+  expect(f.api.overlay).toHaveBeenLastCalledWith({taskId:'t1',tabId:'page1',open:false});
+  expect(document.activeElement).toBe(document.body);
+  expect(fireEvent.keyDown(document.body,{key:'Escape',code:'Escape'})).toBe(true);
+});
 it('renders activity and routes pause/resume as trusted user actions without blocking manual navigation',async()=>{
   f.value.state.tabs[0].agentActive=true;f.value.state.tabs[0].agentRunning=true;const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText('Agent 正在操作此页面')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'暂停 Agent'}));expect(f.api.pause).toHaveBeenCalledWith({taskId:'t1',paused:true});
   f.value={...f.value,state:{...f.value.state,paused:true}};view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText(/已暂停 Agent 的浏览器操作/)).toBeTruthy();expect(screen.queryByRole('button',{name:'暂停 Agent'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'恢复 Agent'}));expect(f.api.pause).toHaveBeenLastCalledWith({taskId:'t1',paused:false});expect((screen.getByLabelText('网页地址') as HTMLInputElement).disabled).toBe(false);

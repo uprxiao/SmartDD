@@ -1,0 +1,220 @@
+--- App027/io.mjs
++++ App028/io.mjs
+@@ -1,6 +1,6 @@
+ import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+-export const ROOT='/private/tmp/willyou-m12-t015-App027-A-001';
++export const ROOT='/private/tmp/willyou-m12-t015-App028-A-001';
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+ export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}
+-export async function verifyPin(pin){assert(pin.finalReady===true&&pin.role==='App027');assert.equal(pin.app,'/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3688);for(const key of['buildGate','nativeGate','resourceGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
++export async function verifyPin(pin){assert.equal(await realpath(ROOT+'/node_modules'),"/private/tmp/willyou-m12-t015-App027-A-001/node_modules");assert(pin.finalReady===true&&pin.role==='App028');assert.equal(pin.app,'/private/tmp/willyou-m12-s2-package-028/mac-arm64/WillYou.app');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3689);for(const key of['buildGate','nativeGate','resourceGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
+--- App027/check-static.mjs
++++ App028/check-static.mjs
+@@ -1,3 +1,3 @@
+ // Prospective pure static checker only. No App/provider/fixture/system process is executed.
+ import assert from'node:assert/strict';import fs from'node:fs';import path from'node:path';import{spawnSync}from'node:child_process';import{createRequire}from'node:module';import{createHash}from'node:crypto';import{assertDriverLabels}from'./check-labels.mjs';import{installObservation,readObservation,restoreObservation}from'./observe.mjs';
+-const ROOT='/private/tmp/willyou-m12-t015-App027-A-001',sha=b=>createHash('sha256').update(b).digest('hex'),r={PID:process.pid,scope:'Only sequential node--check/TS AST/generated-expression compilation/JSON-file hashes and string boundary controls. No actual App/Nativeaddon/HTTP/fixture/model/auth/OS probe or external app operation.',startedAt:new Date().toISOString(),syntax:[],generated:[]};assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node-static');console.log(JSON.stringify({checkerPID:process.pid,stage:'t015-pure-static-only'}));try{const ts=createRequire(ROOT+'/package.json')('typescript'),files=[];for(const name of fs.readdirSync(ROOT))if(name.endsWith('.mjs'))files.push(ROOT+'/'+name);for(const name of fs.readdirSync(ROOT+'/driver-source/scripts/lib'))if(name.endsWith('.mjs'))files.push(ROOT+'/driver-source/scripts/lib/'+name);for(const file of files.sort()){const x=spawnSync(process.execPath,['--check',file],{encoding:'utf8',env:{PATH:'/usr/bin:/bin',NODE_COMPILE_CACHE:process.env.NODE_COMPILE_CACHE}});r.syntax.push({path:path.relative(ROOT,file),pid:x.pid,code:x.status,signal:x.signal,sha256:sha(fs.readFileSync(file)),stderr:x.stderr});assert.equal(x.status,0,file+' '+x.stderr);assert.equal(x.signal,null);const source=fs.readFileSync(file,'utf8'),ast=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);assert.equal(ast.parseDiagnostics.length,0);function visit(n){if(ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='setPath'&&n.arguments[0]&&ts.isStringLiteralLike(n.arguments[0]))assert.notEqual(n.arguments[0].text,'downloads','Downloads setter forbidden');if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='own'&&n.arguments[0]&&ts.isStringLiteralLike(n.arguments[0])){new Function('return (async()=>{'+n.arguments[0].text+'})()');r.generated.push({path:path.relative(ROOT,file),line:ast.getLineAndCharacterOfPosition(n.pos).line+1,kind:'literal-main-expression-parsed-only'});}ts.forEachChild(n,visit);}visit(ast);}r.labels=await assertDriverLabels(ROOT);for(const[name,body]of[['install',installObservation(123)],['read',readObservation],['restore',restoreObservation]]){new Function('E',body);r.generated.push({kind:'serialized-private-observer-'+name+'-compiled-only',sha256:sha(Buffer.from(body))});}const phase=fs.readFileSync(ROOT+'/run-phase.mjs','utf8');assert(phase.includes("const runtime=ROOT+'/runtime-'+PHASE"));assert(phase.includes("r.systemAction.finishedAt=Date.now();r.frontmostAfter=frontmost()"));assert(phase.includes("r.noFurtherAppInputAfterExternal=true"));assert(!phase.includes("r.human),'打开'"));assert(phase.includes("r.agent)+'[aria-label='"));assert(phase.includes("pin.packageFiles.find(x=>x.path==='native/willyou-app').sha256"));const activation=fs.readFileSync(ROOT+'/activate-initial-exact-pid.mjs','utf8');for(const phase of['core','open'])assert(activation.includes("privateRoot+'/runtime-"+phase+"/userdata'"));r.twoExactActivationRoots=true;r.noDownloadsSetter=true;r.receiverRuntimeBoundarySource=sha(fs.readFileSync(ROOT+'/receiver.py'));const pin=JSON.parse(fs.readFileSync(ROOT+'/pin.json'));assert.equal(sha(fs.readFileSync(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(fs.readFileSync(pin.sourceManifest)).files).length,3688);for(const key of['buildGate','nativeGate','resourceGate'])assert.equal(sha(fs.readFileSync(pin[key].path)),pin[key].sha256);for(const x of[{path:pin.executable,sha256:pin.executableSha256,mode:493},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))]){assert.equal(sha(fs.readFileSync(x.path)),x.sha256);assert.equal(fs.statSync(x.path).mode&511,x.mode);}for(const name of['runtime-core','runtime-open','home','raw.json'])assert(!fs.existsSync(ROOT+'/'+name));r.passed=true;}catch(error){r.passed=false;r.error={name:error.name,message:error.message,stack:error.stack};process.exitCode=1;}r.finishedAt=new Date().toISOString();fs.writeFileSync(ROOT+'/static-check.json',JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify({passed:r.passed,syntax:r.syntax.length,labels:r.labels?.calls?.length,generated:r.generated.length,error:r.error?.message??null}));
++const ROOT='/private/tmp/willyou-m12-t015-App028-A-001',sha=b=>createHash('sha256').update(b).digest('hex'),r={PID:process.pid,scope:'Only sequential node--check/TS AST/generated-expression compilation/JSON-file hashes and string boundary controls. No actual App/Nativeaddon/HTTP/fixture/model/auth/OS probe or external app operation.',startedAt:new Date().toISOString(),syntax:[],generated:[]};assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node-static');assert.equal(fs.realpathSync(ROOT+'/node_modules'),"/private/tmp/willyou-m12-t015-App027-A-001/node_modules");console.log(JSON.stringify({checkerPID:process.pid,stage:'t015-pure-static-only'}));try{const ts=createRequire(ROOT+'/package.json')('typescript'),files=[];for(const name of fs.readdirSync(ROOT))if(name.endsWith('.mjs'))files.push(ROOT+'/'+name);for(const name of fs.readdirSync(ROOT+'/driver-source/scripts/lib'))if(name.endsWith('.mjs'))files.push(ROOT+'/driver-source/scripts/lib/'+name);for(const file of files.sort()){const x=spawnSync(process.execPath,['--check',file],{encoding:'utf8',env:{PATH:'/usr/bin:/bin',NODE_COMPILE_CACHE:process.env.NODE_COMPILE_CACHE}});r.syntax.push({path:path.relative(ROOT,file),pid:x.pid,code:x.status,signal:x.signal,sha256:sha(fs.readFileSync(file)),stderr:x.stderr});assert.equal(x.status,0,file+' '+x.stderr);assert.equal(x.signal,null);const source=fs.readFileSync(file,'utf8'),ast=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);assert.equal(ast.parseDiagnostics.length,0);function visit(n){if(ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='setPath'&&n.arguments[0]&&ts.isStringLiteralLike(n.arguments[0]))assert.notEqual(n.arguments[0].text,'downloads','Downloads setter forbidden');if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='own'&&n.arguments[0]&&ts.isStringLiteralLike(n.arguments[0])){new Function('return (async()=>{'+n.arguments[0].text+'})()');r.generated.push({path:path.relative(ROOT,file),line:ast.getLineAndCharacterOfPosition(n.pos).line+1,kind:'literal-main-expression-parsed-only'});}ts.forEachChild(n,visit);}visit(ast);}r.labels=await assertDriverLabels(ROOT);for(const[name,body]of[['install',installObservation(123)],['read',readObservation],['restore',restoreObservation]]){new Function('E',body);r.generated.push({kind:'serialized-private-observer-'+name+'-compiled-only',sha256:sha(Buffer.from(body))});}const phase=fs.readFileSync(ROOT+'/run-phase.mjs','utf8');assert(phase.includes("const runtime=ROOT+'/runtime-'+PHASE"));assert(phase.includes("r.systemAction.finishedAt=Date.now();r.frontmostAfter=frontmost()"));assert(phase.includes("r.noFurtherAppInputAfterExternal=true"));assert(!phase.includes("r.human),'打开'"));assert(phase.includes("r.agent)+'[aria-label='"));assert(phase.includes("pin.packageFiles.find(x=>x.path==='native/willyou-app').sha256"));const activation=fs.readFileSync(ROOT+'/activate-initial-exact-pid.mjs','utf8');for(const phase of['core','open'])assert(activation.includes("privateRoot+'/runtime-"+phase+"/userdata'"));r.twoExactActivationRoots=true;assert(phase.includes('windowsVirtualKeyCode:27,nativeVirtualKeyCode:53'));assert(phase.includes('utilityResourceBirthCaptured=true'));r.actualEscProtocolAndUtilityBirth=true;r.noDownloadsSetter=true;r.receiverRuntimeBoundarySource=sha(fs.readFileSync(ROOT+'/receiver.py'));const pin=JSON.parse(fs.readFileSync(ROOT+'/pin.json'));assert.equal(sha(fs.readFileSync(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(fs.readFileSync(pin.sourceManifest)).files).length,3689);for(const key of['buildGate','nativeGate','resourceGate'])assert.equal(sha(fs.readFileSync(pin[key].path)),pin[key].sha256);for(const x of[{path:pin.executable,sha256:pin.executableSha256,mode:493},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))]){assert.equal(sha(fs.readFileSync(x.path)),x.sha256);assert.equal(fs.statSync(x.path).mode&511,x.mode);}for(const name of['runtime-core','runtime-open','home','raw.json'])assert(!fs.existsSync(ROOT+'/'+name));r.passed=true;}catch(error){r.passed=false;r.error={name:error.name,message:error.message,stack:error.stack};process.exitCode=1;}r.finishedAt=new Date().toISOString();fs.writeFileSync(ROOT+'/static-check.json',JSON.stringify(r,null,2)+'\n');console.log(JSON.stringify({passed:r.passed,syntax:r.syntax.length,labels:r.labels?.calls?.length,generated:r.generated.length,error:r.error?.message??null}));
+--- App027/activate-initial-exact-pid.mjs
++++ App028/activate-initial-exact-pid.mjs
+@@ -8,7 +8,7 @@
+ export async function activateInitialExactTestPid({app,pin,userData,privateRoot,authorization,scriptPath}){
+  assert.equal(process.platform,'darwin');
+  assert(authorization?.status==='explicitly-authorized'&&authorization.scope==='M12-isolated-initial-foreground-only'&&authorization.userMessageReference);
+- assert.equal(privateRoot,'/private/tmp/willyou-m12-t015-App027-A-001');assert([privateRoot+'/runtime-core/userdata',privateRoot+'/runtime-open/userdata'].includes(userData));
++ assert.equal(privateRoot,'/private/tmp/willyou-m12-t015-App028-A-001');assert([privateRoot+'/runtime-core/userdata',privateRoot+'/runtime-open/userdata'].includes(userData));
+  assert(pin.executable.startsWith('/private/tmp/willyou-m12-')&&pin.executable.endsWith('/WillYou.app/Contents/MacOS/WillYou'));
+  assert(Number.isInteger(app.processId)&&app.processId>1);
+  const script=await readFile(scriptPath);assert.equal(sha(script),authorization.scriptSHA256);
+--- App027/run-phase.mjs
++++ App028/run-phase.mjs
+@@ -2,7 +2,7 @@
+ import{settleOwnedApp}from'./cleanup-owned-app.mjs';import{activateInitialExactTestPid}from'./activate-initial-exact-pid.mjs';import{execFileSync}from'node:child_process';
+ export async function runPhase(PHASE,{pin,lease,check}){assert(['core','open'].includes(PHASE));
+ const frontmost=()=>{const text=execFileSync('/usr/bin/osascript',['-l','JavaScript',ROOT+'/frontmost.jxa'],{encoding:'utf8',timeout:5000});const row=JSON.parse(text);assert(Number.isSafeInteger(row.pid)&&typeof row.name==='string');return{at:new Date().toISOString(),pid:row.pid,name:row.name};};
+-const runtime=ROOT+'/runtime-'+PHASE,userData=runtime+'/userdata',resources=resourceRecorder({userData,driverPid:process.pid}),pages=new Set();let app,site,ui,stage='setup';const r={case:'M12-T015',layer:'A',phase:PHASE,driverPid:process.pid,App:'App027',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',tasks:{},actions:[],commands:[],files:[],cleanupErrors:[],boundary:'Fresh API data, real system Downloads from app.getPath; no setPath/temporary substitute. Controlled managed caller uses actual stockCLI click, no model R. Pass-through event/shell observations restore in finally. Actual external open/reveal requires Root OS resources; focus loss yields, never activate/rearm.'};
++const runtime=ROOT+'/runtime-'+PHASE,userData=runtime+'/userdata',resources=resourceRecorder({userData,driverPid:process.pid}),pages=new Set();let app,site,ui,stage='setup';const r={case:'M12-T015',layer:'A',phase:PHASE,driverPid:process.pid,App:'App028',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',tasks:{},actions:[],commands:[],files:[],cleanupErrors:[],boundary:'Fresh API data, real system Downloads from app.getPath; no setPath/temporary substitute. Controlled managed caller uses actual stockCLI click, no model R. Pass-through event/shell observations restore in finally. Actual external open/reveal requires Root OS resources; focus loss yields, never activate/rearm.'};
+ const persist=()=>save('live-'+PHASE+'.json',{...r,stage}),poll=async(f,ms=20000)=>{const end=Date.now()+ms;do{check();const v=await f();if(v)return v;await new Promise(ok=>setTimeout(ok,40))}while(Date.now()<end);throw Error('T015 bounded condition timeout '+stage)};const unwrap=x=>{assert(x?.ok,'Actual host RPC failed');return x.value};
+ const own=(body,label)=>app.mainEvaluate(`(async()=>{const E=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');if(process.pid!==${app.processId}||process.execPath!==${JSON.stringify(pin.executable)}||E.app.getPath('userData')!==${JSON.stringify(userData)})throw Error('Exact T015 App required');${body}})()`,{label});
+ const events=async()=>{try{return(await readFile(runtime+'/agent-events.jsonl','utf8')).split('\n').filter(Boolean).map(JSON.parse)}catch(e){if(e.code==='ENOENT')return[];throw e}};
+@@ -25,15 +25,15 @@
+ 
+ const chrome=()=>app.evaluate('(()=>{const r=document.querySelector("[data-testid=browser-viewport]").getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()');
+ try{
+- await mkdir(runtime,{mode:0o700});for(const n of['userdata','codex','tmp','project','jobs-t1'])await mkdir(runtime+'/'+n,{mode:0o700});await writeFile(runtime+'/codex/config.toml','sandbox_mode="workspace-write"\napproval_policy="on-request"\n',{flag:'wx',mode:0o600});site=fixture();await new Promise((ok,no)=>{site.server.once('error',no);site.server.listen(0,'127.0.0.1',ok)});r.port=site.server.address().port;resources.ports.add(r.port);r.url='http://127.0.0.1:'+r.port+'/page';
++ await resources.capture({processId:process.pid},new Set());r.utilityResourceBirthCaptured=true;await mkdir(runtime,{mode:0o700});for(const n of['userdata','codex','tmp','project','jobs-t1'])await mkdir(runtime+'/'+n,{mode:0o700});await writeFile(runtime+'/codex/config.toml','sandbox_mode="workspace-write"\napproval_policy="on-request"\n',{flag:'wx',mode:0o600});site=fixture();await new Promise((ok,no)=>{site.server.once('error',no);site.server.listen(0,'127.0.0.1',ok)});r.port=site.server.address().port;resources.ports.add(r.port);r.url='http://127.0.0.1:'+r.port+'/page';
+  app=await openElectron({executable:pin.executable,userData,cwd:runtime+'/project',inspectMain:true,env:{HOME:ROOT+'/home',ZDOTDIR:ROOT+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache'}});r.appPid=app.processId;resources.pids.add(app.processId);await actualDownloadsPrecondition();const catalog=await poll(async()=>unwrap(await app.invoke('applications.catalog')).find(x=>x.appId==='browser'),30000);if(!catalog.added)unwrap(await app.invoke('applications.setAdded','browser',true,catalog.revision));const project=await app.invoke('projects.create',{name:'[A] T015 system downloads',aliases:[],description:'Original T015 actual system downloads',rulesPath:null},[{label:'fixture',path:runtime+'/project'}]);r.projectId=project.id;const selected=unwrap(await app.invoke('applications.projectSettings',project.id,'browser'));if(!selected.enabled)unwrap(await app.invoke('applications.select',{projectId:project.id,appId:'browser',enabled:true,expectedRevision:selected.revision,connections:{}}));
+  for(const role of['t1']){const ai=await app.invoke('aiProfiles.create',{name:'T015 controlled '+role,runner:'codex',executable:ROOT+'/receiver.py',args:[],env:[{name:'HOME',value:ROOT+'/home',secret:false},{name:'CODEX_HOME',value:runtime+'/codex',secret:false},{name:'T015_ROOT',value:ROOT,secret:false},{name:'T015_RUNTIME',value:runtime,secret:false},{name:'T015_ROLE',value:role,secret:false}],color:null,isDefault:role==='t1'});await poll(async()=>{const p=await app.invoke('aiProfiles.get',ai.id);if(p.checking)return null;assert.equal(p.check.status,'ok');return p},45000);const made=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:ai.id,firstMessage:'T015 controlled '+role+' waiting for file jobs'});await app.invoke('tasks.rename',made.task.id,'[A] T015 '+role);const session=unwrap(await app.invoke('applications.session',made.task.id));assert.equal(session.currentRun.runPlan.applications.find(x=>x.appId==='browser').effectiveEntry,'cli');const e=await poll(async()=>(await events()).find(e=>e.kind==='receiver-ready'&&e.role===role));assert(e.hasCliToken&&e.hasCliEndpoint);assert.equal(e.binarySha256,pin.packageFiles.find(x=>x.path==='native/willyou-app').sha256);resources.pids.add(e.pid);r.tasks[role]={taskId:made.task.id,ptyId:made.ptyId,runId:session.currentRun.id,receiverPid:e.pid};}
+  await cli('identity',['browser','identity','get']);const created=await cli('create',['browser','tab','create','--url',r.url]);r.pageId=created.data.pageId;pages.add(r.pageId);const before=await cli('initial-snapshot',pageArgs(['snapshot']));r.currentRef=fullRef(before.data);r.contentsId=await own(`const all=E.webContents.getAllWebContents().filter(w=>w.getURL()===${JSON.stringify(r.url)});if(all.length!==1)throw Error('Exact T015 page required');return all[0].id;`,'readonly-t015-initial-contents');
+- r.observationInstalled=await own(installObservation(r.contentsId),'install-t015-pass-through-observation');const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');r.setupReloadCount=1;await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&Boolean(document.querySelector('[data-testid=nav-new-task]'))`,20000,{navigation:true});await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().startsWith("file:"))w.setTitle("[A]T015 App027系统下载");return true;','set-t015-title');r.initialFocus={};await persist();console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T015 App027系统下载'}));r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-t015-native-focus')})});installAppFocusGuard(app,r,{allowOwnedViews:true});ui=makeUi(app,async action=>{r.actions.push({at:new Date().toISOString(),...action});await persist()});
++ r.observationInstalled=await own(installObservation(r.contentsId),'install-t015-pass-through-observation');const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');r.setupReloadCount=1;await app.waitFor(`performance.timeOrigin!==${origin}&&document.readyState==='complete'&&Boolean(document.querySelector('[data-testid=nav-new-task]'))`,20000,{navigation:true});await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().startsWith("file:"))w.setTitle("[A]T015 App028系统下载");return true;','set-t015-title');r.initialFocus={};await persist();console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T015 App028系统下载'}));r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-t015-native-focus')})});installAppFocusGuard(app,r,{allowOwnedViews:true});ui=makeUi(app,async action=>{r.actions.push({at:new Date().toISOString(),...action});await persist()});
+ 
+  if(PHASE==='open'){stage='open-phase-real-precondition';await select('t1');await pageClick('normal');r.openRecord=await row(r.expectedName,'done');await disk(r.openRecord,normal);await poll(panel);await finalExternal(r.openRecord,'open');}else{
+  stage='ordinary-human-normal';await select('t1');r.before=await pageState();r.beforeChrome=await chrome();await pageClick('normal');r.human=await row(names.normal,'done');await disk(r.human,normal);await poll(panel);r.downloadButtonObserved=await app.evaluate('Boolean(document.querySelector("button[aria-label=下载]"))');r.newOverlay={shownAt:Date.now(),geometry:await pageState(),chrome:await chrome()};await app.screenshot(ROOT+'/normal-overlay.png');await until(r.newOverlay.shownAt+5500);assert(await panel());await poll(async()=>!await panel(),2500);r.newOverlay.hiddenAt=Date.now();
+- stage='old-record-reopen-six-seconds';r.reopened={shownAt:await show()};await until(r.reopened.shownAt+5500);assert(await panel());await poll(async()=>!await panel(),2500);r.reopened.hiddenAt=Date.now();const hoverAt=await show(),hover=await ui.descriptor('[role=region][aria-label=下载]');await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:hover.x,y:hover.y});await until(hoverAt+6500);assert(await panel());r.hover={shownAt:hoverAt,heldAt:Date.now()};await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:5,y:5});await poll(async()=>!await panel(),3000);r.hover.hiddenAt=Date.now();await show();await outside();r.outsideClosed=true;await ui.click('button[aria-label="浏览器菜单"]');await app.waitFor('Boolean(document.querySelector("[role=menu]"))',3000);await ui.click('[role=menuitem]','下载');await poll(panel);r.menuReopened=true;await app.cdp('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape'});await app.cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape'});await poll(async()=>!await panel(),3000);r.escapeClosed=true;await show();await ui.click('button[aria-label=收起下载列表]');await poll(async()=>!await panel(),3000);r.closeButtonClosed=true;
++ stage='old-record-reopen-six-seconds';r.reopened={shownAt:await show()};await until(r.reopened.shownAt+5500);assert(await panel());await poll(async()=>!await panel(),2500);r.reopened.hiddenAt=Date.now();const hoverAt=await show(),hover=await ui.descriptor('[role=region][aria-label=下载]');await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:hover.x,y:hover.y});await until(hoverAt+6500);assert(await panel());r.hover={shownAt:hoverAt,heldAt:Date.now()};await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:5,y:5});await poll(async()=>!await panel(),3000);r.hover.hiddenAt=Date.now();await show();await outside();r.outsideClosed=true;await ui.click('button[aria-label="浏览器菜单"]');await app.waitFor('Boolean(document.querySelector("[role=menu]"))',3000);await ui.click('[role=menuitem]','下载');await poll(panel);r.menuReopened=true;await app.cdp('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27,nativeVirtualKeyCode:53});await app.cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27,nativeVirtualKeyCode:53});await poll(async()=>!await panel(),3000);r.escapeClosed=true;await show();await ui.click('button[aria-label=收起下载列表]');await poll(async()=>!await panel(),3000);r.closeButtonClosed=true;
+  stage='agent-normal-same-name';const s=await cli('agent-snapshot',['browser','snapshot','--page',r.pageId]),ref=fullRef(s.data);r.agentFullRef=ref;await cli('agent-click',['browser','click','--element',ref,'--page',r.pageId]);r.agent=await row(names.duplicate,'done');await disk(r.agent,normal);await show();await outside();stage='illegal-name';await pageClick('illegal');r.illegal=await row(names.cleanIllegal,'done');await disk(r.illegal,illegal);await show();await outside();
+  stage='slow-10MB-cancel';await pageClick('slow');r.slow=await poll(async()=>{const x=(await snapshot()).downloads.find(x=>x.name===names.slow&&x.state==='progress'&&x.receivedBytes>0&&x.receivedBytes<10*1024*1024);return x});await show();r.progressDot=await app.evaluate('Boolean(document.querySelector("button[aria-label=下载] i[aria-label=下载进行中]"))');r.progressVisible=await app.evaluate('document.querySelector("[role=region][aria-label=下载]").textContent.includes("正在下载")');await ui.click(selector(r.slow),'取消');r.cancelled=await row(names.slow,'cancelled');await app.screenshot(ROOT+'/cancelled.png');await outside();stage='interrupted-failure';await pageClick('fail');r.failed=await row(names.fail,'failed');await show();r.states=await app.evaluate('[...document.querySelectorAll(".bw-download")].map(e=>({text:e.textContent,state:[...e.classList].find(x=>x.startsWith("bw-download-"))}))');await app.screenshot(ROOT+'/failed-and-completed.png');r.geometryAfter=await pageState();r.coreCompletedAt=Date.now();await persist();
+  stage='record-remove-before-external';r.beforeRemoveFile=await disk(r.agent,normal);await ui.click(selector(r.agent)+'[aria-label='+JSON.stringify('移除下载记录 '+r.agent.name)+']');await poll(async()=>!(await snapshot()).downloads.some(x=>x.id===r.agent.id));r.afterRemoveFile=await disk(r.agent,normal);r.recordRemoved={id:r.agent.id,path:r.agent.path};r.final=await snapshot();stage='actual-system-reveal-last';await finalExternal(r.human,'reveal');}
+--- App027/pin.json
++++ App028/pin.json
+@@ -1,19 +1,19 @@
+ {
+   "finalReady": true,
+-  "role": "App027",
+-  "app": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app",
+-  "executable": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+-  "sourceRoot": "/private/tmp/willyou-m12-header-source-031/source",
+-  "sourceManifest": "/private/tmp/willyou-m12-header-source-031/source-inputs.json",
+-  "sourceManifestSha256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
+-  "sourceFileCount": 3688,
+-  "asarSha256": "8cacf6c30aea4791b6f79940f1352918d75f517d22cea40ebd27aaf29d0d1093",
+-  "executableSha256": "ad6faa66e930e2f323968491347644be1d41dde0a7db78c43431e0b210ab935e",
++  "role": "App028",
++  "app": "/private/tmp/willyou-m12-s2-package-028/mac-arm64/WillYou.app",
++  "executable": "/private/tmp/willyou-m12-s2-package-028/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
++  "sourceRoot": "/private/tmp/willyou-m12-download-Esc-source-032/source",
++  "sourceManifest": "/private/tmp/willyou-m12-download-Esc-source-032/source-inputs.json",
++  "sourceManifestSha256": "8806e09dc1c10322c0a2efc7399aacdf08f143bc36cc3fbd1698f17838e97452",
++  "sourceFileCount": 3689,
++  "asarSha256": "59f659c39cb2663eca00465014182c7ce971840b4657e65eb416f36f2d0174a8",
++  "executableSha256": "79396930218d83407652a61a582a98a9cd41dc04904c924e41dbd34b34600405",
+   "frameworkSha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+   "packageFiles": [
+     {
+       "path": "app.asar",
+-      "sha256": "8cacf6c30aea4791b6f79940f1352918d75f517d22cea40ebd27aaf29d0d1093",
++      "sha256": "59f659c39cb2663eca00465014182c7ce971840b4657e65eb416f36f2d0174a8",
+       "mode": 420
+     },
+     {
+@@ -38,7 +38,7 @@
+     },
+     {
+       "path": "capability-bundles/index.json",
+-      "sha256": "d56b1f59b279d66650176673ae274f38e5a947942e24e8ed341f7d3c88e8e894",
++      "sha256": "ed185e2ff441dc19fd2f11f2629f16c4f9c07735b49e1b354d9d0f4dec142bd3",
+       "mode": 420
+     },
+     {
+@@ -70,20 +70,21 @@
+     }
+   ],
+   "buildGate": {
+-    "path": "/private/tmp/willyou-m12-header-App027-build-001/result.json",
+-    "sha256": "3fabcb5bbf0a6ceb094fd6664363c088b9d2290212063c0871413a0d19363069"
++    "path": "/private/tmp/willyou-m12-download-Esc-App028-build-001/result.json",
++    "sha256": "12de10587281dfe28a740c0d5d1bda26281dfa00098ebc4943118c925b394988"
+   },
+   "nativeGate": {
+-    "path": "/private/tmp/willyou-m12-app027-installer-001/evidence/installed-native-result.json",
+-    "sha256": "17564796dde32ba58909269adf68ac02c436cffcb6f41fc155dab05ca00b4381"
++    "path": "/private/tmp/willyou-m12-t015-App028-A-001/official-directory-native-gate.json",
++    "sha256": "5ff8fa1567e9320ef63ae8baa4bb19d7976ba44565e49cd29fcc0c6d7aefbaa1"
+   },
+   "resourceGate": {
+-    "path": "/private/tmp/willyou-m12-app027-installer-001/evidence/install-and-compare-result.json",
+-    "sha256": "d5f18bd639498b71584deab9e3c3294dedc94ecae55663b963014f61a3d991c5"
++    "path": "/private/tmp/willyou-m12-t015-App028-A-001/directory-package-identity.json",
++    "sha256": "daaea55449c19ff475c08c6c4d27c7f8c3b4d4a4030318ecb7622ff2c0a410ec"
+   },
+   "browserPackageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+   "browserVersion": "0.1.1",
+   "newSopSha256": "26917bfc2bc4b1c9bed2e1799f288e6f5014c05281a34a6feaa10cdf66562dd3",
+   "pending": null,
+-  "basis": "Actual packagedApp027/source031; current installed six-native/payload-equivalence evidence applies by exact package hashes. All7 original download sources unchanged from029/028, accepted U reused only. No A run yet."
++  "basis": "Actual official directory App028/source032. Genuine native6 official build proof applies to this directory; S6 installation not claimed. Accepted unchanged U reused; affected Esc workspace/prototype regression actual34/34 proof separately bound. New complete A still unexecuted.",
++  "packedMainSha256": "09413365f20d571bee5a7022a8e22219a54aa9ca1600662e85eb2cf9b41250c5"
+ }
+--- App027/lease.template.json
++++ App028/lease.template.json
+@@ -1,8 +1,8 @@
+ {
+   "status": "pending-root-review-and-complete-exclusive-grant",
+   "coordinator": "root",
+-  "privateRoot": "/private/tmp/willyou-m12-t015-App027-A-001",
+-  "executable": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
++  "privateRoot": "/private/tmp/willyou-m12-t015-App028-A-001",
++  "executable": "/private/tmp/willyou-m12-s2-package-028/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+   "executionReadySHA256": "Root binds final ready SHA",
+   "resources": [
+     "Native",
+--- App027/accepted-U-applicability.json
++++ App028/accepted-U-applicability.json
+@@ -7,51 +7,63 @@
+     "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/download-U-closeout-current-001/result.json",
+     "sha256": "0d09fed543b9509662f520d7e4c27ad16fa8d0de7251162ffa17f295d168f7f0"
+   },
+-  "all7RelevantBytesUnchanged": [
++  "UReexecuted": false,
++  "oldRedAndFixGreenPreserved": true,
++  "limits": "Original backend/panel/U proofs retained only for byte-identical relevant code; workspace Esc behavior changed and is backed by actual new affected U, with real packaged A still pending. No whole-App/source equivalence claim.",
++  "source031To032": [
+     {
+       "path": "src/main/core/browser/downloads.ts",
+-      "source029SHA256": "a0472792a345b514eb641e7c4fee3cf6ae0a263618bbb8a1d53684258abf0869",
+       "source031SHA256": "a0472792a345b514eb641e7c4fee3cf6ae0a263618bbb8a1d53684258abf0869",
++      "source032SHA256": "a0472792a345b514eb641e7c4fee3cf6ae0a263618bbb8a1d53684258abf0869",
+       "same": true
+     },
+     {
+       "path": "src/shared/browser-downloads.ts",
+-      "source029SHA256": "35bbe5cd9c48e729fe36f1a8dfe9668e8905e13f4654631018ed4324c281b978",
+       "source031SHA256": "35bbe5cd9c48e729fe36f1a8dfe9668e8905e13f4654631018ed4324c281b978",
++      "source032SHA256": "35bbe5cd9c48e729fe36f1a8dfe9668e8905e13f4654631018ed4324c281b978",
+       "same": true
+     },
+     {
+       "path": "src/renderer/features/browser/download-panel.tsx",
+-      "source029SHA256": "11863beef02926d7cc331343582aaa5f10452c26440562c3bcd7e79e192c87ae",
+       "source031SHA256": "11863beef02926d7cc331343582aaa5f10452c26440562c3bcd7e79e192c87ae",
++      "source032SHA256": "11863beef02926d7cc331343582aaa5f10452c26440562c3bcd7e79e192c87ae",
+       "same": true
+     },
+     {
+       "path": "src/renderer/features/browser/download-panel.test.tsx",
+-      "source029SHA256": "69a287e6c4087a541db1d4243ce8c843fcf186659d652d1cc4a5e9a56d96ca8d",
+       "source031SHA256": "69a287e6c4087a541db1d4243ce8c843fcf186659d652d1cc4a5e9a56d96ca8d",
++      "source032SHA256": "69a287e6c4087a541db1d4243ce8c843fcf186659d652d1cc4a5e9a56d96ca8d",
+       "same": true
+     },
+     {
+       "path": "src/main/core/browser/__tests__/downloads.test.ts",
+-      "source029SHA256": "329ae1c1f04a641a9bec654c5f974a73021b39989ec37ab759e8a024b000f1af",
+       "source031SHA256": "329ae1c1f04a641a9bec654c5f974a73021b39989ec37ab759e8a024b000f1af",
++      "source032SHA256": "329ae1c1f04a641a9bec654c5f974a73021b39989ec37ab759e8a024b000f1af",
+       "same": true
+     },
+     {
+       "path": "src/renderer/features/browser/workspace.tsx",
+-      "source029SHA256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018",
+       "source031SHA256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018",
+-      "same": true
++      "source032SHA256": "40041c88e83de3ffead18248e8d317c0248f7ea22bbe3fa00a84f3b8bbc22599",
++      "same": false
+     },
+     {
+       "path": "src/renderer/features/browser/workspace.css",
+-      "source029SHA256": "04469524c97d129a07c886534627fadb93ece88f72532ab8cc579dd2e08c536a",
+       "source031SHA256": "04469524c97d129a07c886534627fadb93ece88f72532ab8cc579dd2e08c536a",
++      "source032SHA256": "04469524c97d129a07c886534627fadb93ece88f72532ab8cc579dd2e08c536a",
+       "same": true
+     }
+   ],
+-  "UReexecuted": false,
+-  "oldRedAndFixGreenPreserved": true,
+-  "limits": "Accepted backend10 + original panel3/reopen fix8 + maintenance2 actual receipts retain their original U boundaries. System Downloads/native geometry/real shell delegation are new A requirements, not inferred from U."
++  "unchangedRelevantFiles": 6,
++  "workspaceChanged": true,
++  "oldUReexecuted": false,
++  "affectedWorkspaceRegression": {
++    "path": "/private/tmp/willyou-m12-download-Esc-App028-build-001/browser-tests.json",
++    "sha256": "538721032dd814c73254a473671f7965fcedbb43566283dbbef49c7f9e54f492",
++    "suites": 7,
++    "passedTests": 34,
++    "failed": 0,
++    "pending": 0,
++    "boundary": "Coordinator actual current-source tests; not executed by this file-preparation agent. Includes new Esc/body regression and prototype counterpart."
++  }
+ }

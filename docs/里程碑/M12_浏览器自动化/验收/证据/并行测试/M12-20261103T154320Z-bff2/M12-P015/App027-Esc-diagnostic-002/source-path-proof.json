@@ -1,0 +1,27 @@
+{
+  "path": "/private/tmp/willyou-m12-header-source-031/source/src/renderer/features/browser/workspace.tsx",
+  "sha256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018",
+  "sourceManifest": "/private/tmp/willyou-m12-header-source-031/source-inputs.json",
+  "sourceManifestSHA256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
+  "points": [
+    {
+      "lines": "84,122",
+      "fact": "Actual menu download button calls showDownloads; showDownloads sets menu false and downloadsOpen true."
+    },
+    {
+      "lines": "109-111",
+      "fact": "Escape downloads/menu handlers are on bubbling onKeyDown of descendant .bw-workspace."
+    }
+  ],
+  "actualFacts": [
+    "Before menu download click, activeElement is browser-menu BUTTON within workspace.",
+    "Before and after actual Escape, activeElement and event target are BODY outside workspace; real main document focused, child not focused.",
+    "Trusted keydown and keyup Escape27 are recorded by passive document capture; defaultPrevented remains false; overlay visible after original3s."
+  ],
+  "inference": "BODY-target events have no descendant .bw-workspace in their ancestor path, so this existing descendant bubbling handler cannot receive that Escape route. This is supported by actual event target and frozen source, without forcing focus or replaying the full group.",
+  "notClaimed": [
+    "No instrumentation of actual React callback invocation.",
+    "No claim whole T015 A passed.",
+    "No claim missing VK was original A001 sole cause; full VK/native keys still reproduced missing dismissal here."
+  ]
+}
