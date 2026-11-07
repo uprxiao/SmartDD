@@ -1,0 +1,241 @@
+{
+  "parent": "M12-T130",
+  "currentLayer": "A only",
+  "cases": [
+    {
+      "id": "M9-T-D07",
+      "group": "D",
+      "title": "拖动重排",
+      "requirements": [
+        "M9-R04.3",
+        "M9-R08.6"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "将第1标签拖到末尾、拖回；刷新/重开。",
+      "expected": "顺序准确持久化；active身份不变；拖动不会触发误关闭/误外开。",
+      "source": "L§3/§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-tab-restore-dev091-r42-20261019.json"
+      ],
+      "actual_result": "DEV091完整P/I/A：r41真实pointer dragstart+Chromium原DragData投递，首标签拖末尾停在倒数第二有红测；修复先取目标槽位再移除源项，与已确认P一致。r42前后双向实际拖放、活动B、刷新及正常退出/同userData重启顺序保持；2个trusted dragstart/drop均为浏览器原数据，没有制造UUID/直接业务回调。I真实native/独立SQLite和P浅深真实拖放/Page.reload通过；不是物理OS拖放证明。",
+      "defects": [
+        "M9-DEV-091-01"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "P04；完整共享P浅深10场景通过",
+      "prototype_note": "DEV091文件区域共享原型，真实拖放/Page.reload保留scope；丢失/根不可用/初始loading为合成配置，新后台完成演示明确标注且不抢选中/焦点。未冒充外侧完整App或真实IO时序。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.3",
+          "M9-R08.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D15",
+      "group": "D",
+      "title": "恢复顺序活动布局",
+      "requirements": [
+        "M9-R04.7",
+        "M9-R08.6"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "固定多标签、切active、改面板可见性后重启。",
+      "expected": "恢复顺序/active/布局与批准checkpoint一致；无临时rootLease、BlobURL被直接复用。",
+      "source": "L§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-tab-restore-dev091-r42-20261019.json"
+      ],
+      "actual_result": "DEV091完整P/I/A：补v1可选treeVisible，旧记录默认true、按scope持久化；原先字段缺失有U红测。r42实际改树宽、隐藏目录及外侧文件区，正常退出后文件区仍隐藏；实际重新打开后树仍隐藏，order/active/宽度及显式显示恢复一致。只读checkpoint无临时ref/lease/Blob，独立进程新ref/lease已核对。I真SQLite/native/旧记录兼容，P浅深文件区目录可见性/顺序/active重载通过；P不冒充外侧完整App。",
+      "defects": [
+        "M9-DEV-091-02"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "P04；完整共享P浅深10场景通过",
+      "prototype_note": "DEV091文件区域共享原型，真实拖放/Page.reload保留scope；丢失/根不可用/初始loading为合成配置，新后台完成演示明确标注且不抢选中/焦点。未冒充外侧完整App或真实IO时序。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.7",
+          "M9-R08.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D16",
+      "group": "D",
+      "title": "unrestored-route",
+      "requirements": [
+        "M9-R04.7"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "持久标签指向已删除文件或失效根，再重启。",
+      "expected": "保留可识别不可恢复状态/原route，提供重试/关闭；不静默丢记录或跳到别文件。",
+      "source": "L§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-tab-restore-dev091-r42-20261019.json"
+      ],
+      "actual_result": "DEV091完整P/I/A：正常退出后真实删除持久B，再重启保留原B路由/错误/三标签；恢复B文件并点重试只打开新B内容。再次退出、真实挪走整个ownroot再重启，仍保留原路由/错误、无相邻或他根跳转；还原root点重试目录后成功。I独立SQLite/native两失败恢复及P浅深标注合成丢失/根不可用重载通过，A/C指纹保持。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06",
+        "P16"
+      ],
+      "prototype_status": "P04；完整共享P浅深10场景通过",
+      "prototype_note": "DEV091文件区域共享原型，真实拖放/Page.reload保留scope；丢失/根不可用/初始loading为合成配置，新后台完成演示明确标注且不抢选中/焦点。未冒充外侧完整App或真实IO时序。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.7"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D17",
+      "group": "D",
+      "title": "恢复期间用户选中",
+      "requirements": [
+        "M9-R04.7",
+        "M9-R08.2"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "延迟恢复A/B；用户先手动打开C，再完成恢复。",
+      "expected": "selectionVersion保护用户C选择；后台恢复不抢焦点。",
+      "source": "L§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-tab-restore-dev091-r42-20261019.json"
+      ],
+      "actual_result": "DEV091完整P/I/A：A/B原认证open完成真实native后才延后成功投递，用户实际打开C，再逆序放行A/B。原结果SHA不变、原read/drafts均完成并过两帧后C仍active；虚拟树焦点同role/完整C路径（旧行已替换），独立编辑器场景保持同一编辑节点和C文档。3原处理器身份恢复，正常退出0/null。U/I真实迟到成功及P浅深标注初始loading/后台完成演示通过；P非真实IO时序，首轮过严DOM身份断言错误保留。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "P04；完整共享P浅深10场景通过",
+      "prototype_note": "DEV091文件区域共享原型，真实拖放/Page.reload保留scope；丢失/根不可用/初始loading为合成配置，新后台完成演示明确标注且不抢选中/焦点。未冒充外侧完整App或真实IO时序。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.7",
+          "M9-R08.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "originalDriver": "source039/scripts/files/tab-restore-ui.mjs",
+  "originalEditorVariant": "WILLYOU_RESTORE_ONLY_D17=1+WILLYOU_RESTORE_FOCUS_EDITOR=1, explicitly accepted DEV091 independenteditor branch",
+  "currentPlannedAppInstances": 8,
+  "currentChecks": [
+    "D07-forward",
+    "D07-back",
+    "D07-refresh-restart",
+    "D15-layout",
+    "D16-missing-file",
+    "D16-root-unavailable",
+    "D17-tree-focus",
+    "D17-editor-focus"
+  ],
+  "noNewCaseIds": true,
+  "noPOrIRerun": true,
+  "formalIncrement": 0
+}

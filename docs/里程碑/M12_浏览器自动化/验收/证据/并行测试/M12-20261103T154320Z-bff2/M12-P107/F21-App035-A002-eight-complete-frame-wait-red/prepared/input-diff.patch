@@ -1,0 +1,88 @@
+--- 001/notebook-flow.mjs
++++ 002/notebook-flow.mjs
+@@ -2,6 +2,7 @@
+ import{access,readFile}from'node:fs/promises';
+ import{notebookReadinessExpression}from'./notebook-readiness.mjs';
+ import{observeOriginalNotebookFrame}from'./notebook-frame-observer.mjs';
++import{inputDecorativeRun}from'./decorative-run-input.mjs';
+ 
+ export async function runNotebookCases({app,ui,mode,oracle,project,ready,persist,screenshot,fingerprints,trace,resources,setStage,requests,canary,poll}){
+  const notebookClick=async(selector,text)=>{for(let i=0;i<20;i++){const d=await app.evaluate(`(()=>{const p=document.querySelector('.fa-notebook-scroll'),xs=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>${text===undefined?'true':'e.textContent.trim()==='+JSON.stringify(text)}),e=xs.length===1?xs[0]:null,r=e?.getBoundingClientRect(),b=p?.getBoundingClientRect();return{count:xs.length,target:r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right}:null,scroll:b?{x:b.x+b.width/2,y:Math.min(innerHeight-50,b.y+b.height/2),top:b.top,bottom:Math.min(innerHeight,b.bottom)}:null}})()`);mode.actions.push({kind:'notebook-control-viewport',selector,text,descriptor:d});await persist();if(d.count!==1||!d.target||!d.scroll)break;if(d.target.top>=d.scroll.top&&d.target.bottom<=d.scroll.bottom)break;const delta=d.target.top<d.scroll.top?d.target.top-d.scroll.top-50:d.target.bottom-d.scroll.bottom+50;await app.cdp('Input.dispatchMouseEvent',{type:'mouseWheel',x:d.scroll.x,y:d.scroll.y,deltaX:0,deltaY:delta});await app.evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))))');}await ui.click(selector,text);};
+@@ -23,7 +24,7 @@
+      c.html=await ready.wait(item,'html-frame-ready',x=>!!x.frame?.visible&&x.frame.sandbox==='',20000);assert.equal(c.html.parentSentinel,null);c.frameProof=await observeOriginalNotebookFrame(app,poll);await persist();await notebookClick('.fa-notebook-raw','Raw output');const attack=JSON.parse(await readFile(item.path,'utf8')).cells[0].outputs[0].data['text/html'];c.rawHTML=await ready.wait(item,'raw-html-actual',x=>x.text.includes(attack),15000);assert.equal(c.rawHTML.parentSentinel,null);assert.deepEqual(requests,[]);c.opaqueSandboxActual=true;c.noTrapRequestsAtCompletion=true;
+     }
+     if(item.name==='cell-code.ipynb'){
+-     assert(initial.run?.visible);assert.equal(initial.run.title,'Running is disabled in read-only preview');assert.equal(initial.run.tabIndex,-1);assert.equal(initial.run.buttonAncestor,false);await notebookClick('.fw-notebook-run');for(const [key,code]of[['Enter','Enter'],[' ','Space']])for(const type of['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key,code});
++     assert(initial.run?.visible);assert.equal(initial.run.title,'Running is disabled in read-only preview');assert.equal(initial.run.tabIndex,-1);assert.equal(initial.run.buttonAncestor,false);c.decorativeRunInput=await inputDecorativeRun({app,mode,poll,persist,expectedPath:item.path});
+      c.afterRunInput=await app.evaluate(notebookReadinessExpression);assert.equal((await app.invoke('tasks.list')).length,0);await assert.rejects(access(canary),e=>e.code==='ENOENT');c.actualClickAndKeysNoKernelCanary=true;
+     }
+    }
+--- 001/judge.mjs
++++ 002/judge.mjs
+@@ -8,7 +8,7 @@
+ test('F21-A1',()=>{assert.deepEqual(actual,expected);assert(all.every(c=>c.complete&&c.defaultNotebook.notebook&&c.defaultNotebook.visible&&c.defaultNotebook.cmCount===0&&c.actualCloseNoNotebook));});
+ test('F21-A2',()=>{for(const c of all.filter(x=>['valid','empty','outputs'].includes(x.kind))){const o=oracle.cases.find(x=>x.name===c.file);assert(o.markers.every(t=>c.visibleContent.text.includes(t)));assert(!c.visibleContent.alert);}});
+ test('F21-A3',()=>{for(const c of all.filter(x=>x.kind==='error')){assert(oracle.cases.find(x=>x.name===c.file).markers.every(t=>c.actualError.includes(t)));assert(c.retryEntryVisible);}for(const c of all.filter(x=>x.kind==='unknown')){assert(c.sourceCellRetainedWithoutFabricatedOutput);assert.equal(c.visibleContent.outputCount,0);assert(!c.visibleContent.text.includes('MUST_NOT_FAKE'));}});
+-test('F21-A4',()=>{const c=all.filter(x=>x.file==='cell-code.ipynb');assert.equal(c.length,2);assert(c.every(x=>x.actualClickAndKeysNoKernelCanary&&x.defaultNotebook.run.tabIndex===-1&&!x.defaultNotebook.run.buttonAncestor));assert.deepEqual(m.tasksBefore,[]);assert.deepEqual(m.tasksAfter,[]);assert.equal(r.modelCalls,0);assert.equal(r.authReads,0);});
++test('F21-A4',()=>{const c=all.filter(x=>x.file==='cell-code.ipynb');assert.equal(c.length,2);assert(c.every(x=>{const d=x.decorativeRunInput;return x.actualClickAndKeysNoKernelCanary&&x.defaultNotebook.run.tabIndex===-1&&!x.defaultNotebook.run.buttonAncestor&&d?.guarded&&d.mouseInputSent&&d.geometryStableMsAtLeast>=120&&d.actual.pointerEvents==='none'&&d.actual.effectiveOpacity>=0.99&&d.actual.inViewport&&d.actual.sameParents&&['execution','summary'].includes(d.actual.hit.relation)&&d.actual.hit.cellIndex===d.actual.cellIndex&&d.keysSent.join(',')==='Enter,Space';}));assert.deepEqual(m.tasksBefore,[]);assert.deepEqual(m.tasksAfter,[]);assert.equal(r.modelCalls,0);assert.equal(r.authReads,0);});
+ test('F21-A5',()=>{for(const c of all.filter(x=>x.kind==='html')){assert(c.opaqueSandboxActual&&c.noTrapRequestsAtCompletion);assert.equal(c.frameProof.frame.sandbox,'');assert.equal(c.frameProof.frame.parentCanRead,false);assert(c.frameProof.childObservation.parentBlocked);assert(c.frameProof.childObservation.images[0].complete&&c.frameProof.childObservation.images[0].width>0);for(const k of['electronAPI','require','process'])assert.equal(c.frameProof.childObservation[k],'undefined');assert(c.frameProof.transportDetached);}assert.deepEqual(r.trapRequests,[]);assert(r.trapClosed);});
+ test('F21-A6',()=>{for(const o of oracle.cases){assert.equal(m.before[o.name].sha256,sha(generated.fixtures[o.name]));}assert.deepEqual(m.after,m.before);for(const c of all){const bytes=Buffer.from(generated.fixtures[c.file]);assert(c.actualInputRead.some(x=>x.offset===0&&x.size===bytes.length&&x.revisionHash===sha(bytes)&&Buffer.from(x.base64,'base64').equals(bytes)&&x.sourceBefore===x.sourceAfter&&x.input===x.inputAfter));assert(c.noSaveOrCheckpoint);assert.deepEqual(c.after,m.before);}});
+ test('F21-A7',()=>{assert(contract.approvedAttachmentBoundary.includes('A条件未触发不伪造UI'));assert(contract.originalM9RowFull.includes('按用户批准前置完整通过'));assert(contract.originalM9RowFull.includes('Notebook附件业务来源未落地'));});
+--- 001/cleanup.py
++++ 002/cleanup.py
+@@ -1,13 +1,13 @@
+-"""Verify only exact resources recorded by this F16 run; never kill or delete."""
++"""Verify only exact resources recorded by this F21 run; never kill or delete."""
+ from pathlib import Path
+ import datetime, hashlib, json, os, re, subprocess, sys
+ 
+ root = Path(sys.argv[1]).resolve()
+-assert root == Path('/private/tmp/willyou-m12-t130-F16-App035-A-cont-002')
++assert root == Path('/private/tmp/willyou-m12-t130-F21-App035-A-cont-002')
+ raw = json.loads((root/'raw.json').read_text())
+ target = root/'cleanup.json'
+ assert not target.exists(), 'Keep previous cleanup; use a fresh receipt for a repeated audit'
+-result = {'at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'scope': 'Read-only exact self-owned F16 recorded PID/TCP/Unix resources; no kill/delete and no daily data', 'rawSHA256': hashlib.sha256((root/'raw.json').read_bytes()).hexdigest(), 'processes': [], 'ports': [], 'unix': [], 'helpers': []}
++result = {'at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'scope': 'Read-only exact self-owned F21 recorded PID/TCP/Unix resources; no kill/delete and no daily data', 'rawSHA256': hashlib.sha256((root/'raw.json').read_bytes()).hexdigest(), 'processes': [], 'ports': [], 'unix': [], 'helpers': []}
+ 
+ def command(args):
+     r = subprocess.run(args, capture_output=True, text=True, timeout=8)
+--- 001/check-static.mjs
++++ 002/check-static.mjs
+@@ -3,6 +3,8 @@
+ import{resolve,dirname}from'node:path';
+ import{createHash}from'node:crypto';
+ import ts from'/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/typescript/lib/typescript.js';
++import{decorativeRunExpression,decorativeRunRejectReasons}from'./decorative-run-input.mjs';
++import{assertCleanupRootBinding}from'./cleanup-root-binding.mjs';
+ const ROOT='/private/tmp/willyou-m12-t130-F21-App035-A-cont-002';assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/static-cache/node');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/static-cache');
+ const sha=x=>createHash('sha256').update(x).digest('hex'),read=async n=>JSON.parse(await readFile(ROOT+'/'+n,'utf8')),ready=await read('READY.candidate.json'),oracle=await read('oracle.json'),contract=await read('original-contract.json'),checks=[],negative=[];const check=(id,fn)=>{fn();checks.push({id,passed:true})};
+ const files=[];async function walk(p){for(const d of await readdir(p,{withFileTypes:true})){if(['history','static-cache','runtime-001','cache'].includes(d.name))continue;const n=p+'/'+d.name;if(d.isDirectory())await walk(n);else if(d.isFile()&&d.name.endsWith('.mjs'))files.push(n);}}await walk(ROOT);
+@@ -15,5 +17,10 @@
+ check('original-f21-oracle-and-no-cm-assumption',()=>{assert.deepEqual(oracle.themes,['light','dark']);assert.equal(oracle.cases.length,9);assert.equal(new Set(oracle.cases.map(x=>x.name)).size,9);assert(!/源码可见|完整CM/.test(contract.criteria[2].expected));assert(contract.approvedAttachmentBoundary.includes('A条件未触发不伪造UI'));assert((awaitString(ROOT+'/notebook-flow.mjs')).includes('x.method===\'chunk\''));});
+ function awaitString(path){return asts.get(path).text;}
+ const exprAst=asts.get(ROOT+'/notebook-readiness.mjs');let generated=0;function literals(n){if(ts.isVariableDeclaration(n)&&n.name.getText()==='notebookReadinessExpression'){assert(ts.isNoSubstitutionTemplateLiteral(n.initializer));const a=ts.createSourceFile('readiness-expression.js',n.initializer.text,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);assert.deepEqual(a.parseDiagnostics,[]);generated++;}ts.forEachChild(n,literals);}literals(exprAst);assert.equal(generated,1);checks.push({id:'readonly-notebook-body-syntax',passed:true,generatedBodies:generated,remainingInheritedBodyBoundary:'Same F16 mature lifetime expressions retained; newframe original notebook-content-ui42-50 and dynamic viewport expression are source-reviewed, not executed by this checker.'});
++const d={count:1,tag:'SPAN',title:'Running is disabled in read-only preview',ariaHidden:'true',tabIndex:-1,buttonAncestor:false,pointerEvents:'none',effectiveOpacity:1,boxVisible:true,inViewport:true,focused:true,visibility:'visible',expectedFileMatches:true,sameParents:true,cellIndex:'0',cellHovered:true,rect:{x:1092,y:175,width:12,height:12},hit:{relation:'execution',cellIndex:'0'}};
++check('decorative-positive-and-strict-negative-controls',()=>{assert.deepEqual(decorativeRunRejectReasons(d,{afterHover:true}),[]);assert.deepEqual(decorativeRunRejectReasons({...d,hit:{relation:'summary',cellIndex:'0'}},{afterHover:true}),[]);for(const[id,delta]of[['external-overlay',{hit:{relation:'other',cellIndex:null}}],['other-cell',{hit:{relation:'execution',cellIndex:'1'}}],['interactive-pointer',{pointerEvents:'auto'}],['invisible-after-hover',{effectiveOpacity:0}],['outside-viewport',{inViewport:false}],['wrong-file',{expectedFileMatches:false}],['lost-focus',{focused:false}]]){assert(decorativeRunRejectReasons({...d,...delta},{afterHover:true}).length,id);negative.push({id:'decorative-'+id+'-rejected',passed:true});}});
++check('decorative-readonly-generated-expression-syntax',()=>{for(const path of[ROOT+'/runtime-001/normal/project/cell-code.ipynb',ROOT+'/quote-"-control.ipynb']){const body=decorativeRunExpression(path),ast=ts.createSourceFile('decorative-expression.js',body,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);assert.deepEqual(ast.parseDiagnostics,[]);}const flow=awaitString(ROOT+'/notebook-flow.mjs');assert(flow.includes('inputDecorativeRun({app,mode,poll,persist,expectedPath:item.path})'));assert(!flow.includes("notebookClick('.fw-notebook-run')"));});
++const reference=await readFile('/private/tmp/willyou-m12-f21-coordinator-actual-001/cleanup-current.py','utf8'),cleanup=await readFile(ROOT+'/cleanup.py','utf8'),priorRoot='/private/tmp/willyou-m12-t130-F21-App035-A-prep-001';
++check('exact-python-root-and-binding-negative-controls',()=>{assertCleanupRootBinding(cleanup,ROOT,reference,priorRoot);for(const[id,body]of[['wrong-root',cleanup.replaceAll(ROOT,priorRoot)],['missing-root-guard',cleanup.replace("assert root == Path('"+ROOT+"')",'')],['uncanonical-arg',cleanup.replace('root = Path(sys.argv[1]).resolve()','root = Path(sys.argv[1])')]]){assert.throws(()=>assertCleanupRootBinding(body,ROOT,reference,priorRoot));negative.push({id:'cleanup-'+id+'-rejected',passed:true});}});
+ for(const x of ready.inputs){const b=await readFile(x.path);assert.equal(sha(b),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}for(const path of ready.outputsMustBeAbsent)assert(!(await lstat(path).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;})),path);checks.push({id:'complete-frozen-inputs-and-output-shape',passed:true,inputs:ready.inputs.length});
+ const result={at:new Date().toISOString(),scope:'Pure FS/AST/finite predicate controls only; no producer/UI factory import/body execution,App,Native,OS,HTTP,auth ormodel',pid:process.pid,checks,negative,passed:true,modules:files.length,formalIncrement:0};await mkdir(ROOT+'/static-cache',{recursive:true});await writeFile(ROOT+'/static-result.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({passed:true,checks:checks.length,negative:negative.length,modules:files.length}));
+--- 001/finalize-ready.py
++++ 002/finalize-ready.py
+@@ -2,12 +2,12 @@
+ import json,hashlib,stat,datetime
+ R=Path('/private/tmp/willyou-m12-t130-F21-App035-A-cont-002')
+ sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+-s=json.loads((R/'static-result.json').read_text());assert s['passed'] and len(s['checks'])==8
++s=json.loads((R/'static-result.json').read_text());assert s['passed'] and len(s['checks'])==11
+ r=json.loads((R/'READY.candidate.json').read_text())
+ for x in r['inputs']:
+  p=Path(x['path']);assert sha(p)==x['sha256'] and stat.S_IMODE(p.stat().st_mode)==x['mode'],str(p)
+ assert not (R/'runtime-001').exists()
+-r['at']=datetime.datetime.now(datetime.timezone.utc).isoformat();r['status']='execution-ready';r['actualExecution']=False;r['staticProof']={'path':str(R/'static-result.json'),'sha256':sha(R/'static-result.json'),'checks':8,'actualPID':s['pid']};r['inputs'].append({'path':str(R/'static-result.json'),'sha256':sha(R/'static-result.json'),'mode':stat.S_IMODE((R/'static-result.json').stat().st_mode)})
++r['at']=datetime.datetime.now(datetime.timezone.utc).isoformat();r['status']='execution-ready';r['actualExecution']=False;r['staticProof']={'path':str(R/'static-result.json'),'sha256':sha(R/'static-result.json'),'checks':11,'actualPID':s['pid']};r['inputs'].append({'path':str(R/'static-result.json'),'sha256':sha(R/'static-result.json'),'mode':stat.S_IMODE((R/'static-result.json').stat().st_mode)})
+ (R/'READY.json').write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n')
+ files=[]
+ for p in sorted(R.rglob('*')):

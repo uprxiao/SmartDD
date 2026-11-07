@@ -1,0 +1,83 @@
+--- 002/run.mjs
++++ 003/run.mjs
+@@ -12,10 +12,10 @@
+ import{resourceRecorder}from'./resources.mjs';
+ import{installFileMethodObserver,observeFileMethods,restoreFileMethodObserver}from'./file-method-observer.upstream.mjs';
+ import{notebookReadiness,notebookReadinessExpression}from'./notebook-readiness.mjs';
+-import{runNotebookCases}from'./notebook-flow.mjs';
++import{runNotebookCases}from'./notebook-flow.mjs';import{loadAcceptedEight}from'./reused-eight.mjs';
+ 
+ assert(process.argv.includes('--execute'));assert.equal(process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED,'1');assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');
+-const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ROOT+'/runtime-001/normal/project',runtime=ROOT+'/runtime-001';
++const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ready.reuse.project,runtime=ROOT+'/runtime-001';
+ assert.equal(ready.status,'execution-ready');assert.equal(sha(await readFile(ROOT+'/static-result.json')),ready.staticProof.sha256);
+ const check=()=>{assert.equal(lease.coordinator,'root');assert.equal(lease.scope,'M12-T130-F21-App035-A');assert.equal(lease.readySHA256,sha(readyBytes));assert(Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt));};check();
+ for(const x of ready.inputs){assert.equal(sha(await readFile(x.path)),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}assert.equal(pin.status,'bound-actual-App035-source039');
+@@ -26,17 +26,16 @@
+ const watchdog=setTimeout(()=>{interrupt='OWN_F21_15MIN_WATCHDOG';},15*60000);for(const signal of['SIGINT','SIGTERM'])process.on(signal,()=>{interrupt='OWN_F21_'+signal;r.interruption={at:new Date().toISOString(),signal};});
+ async function fingerprints(){const out={};for(const x of oracle.cases){const p=project+'/'+x.name,s=await stat(p,{bigint:true});out[x.name]={sha256:sha(await readFile(p)),size:String(s.size),device:String(s.dev),inode:String(s.ino),mode:Number(s.mode&511n),mtimeNs:String(s.mtimeNs),ctimeNs:String(s.ctimeNs)};}return out;}
+ async function stack(mode,label,error){const value=String(error.stack??error),path=mode.runtime+'/'+label+'.private.log';await writeFile(path,value,{mode:0o600});return{label,path,name:error.name,code:error.code??null,message:error.message,sha256:sha(value)};}
+-let server,canary,requests=[];
++let server,canary,requests=[],acceptedEight;
+ async function materializeOriginalFixtures(){
+- await mkdir(runtime+'/normal/project',{recursive:true,mode:0o700});canary=runtime+'/must-not-execute';
+- server=createServer((req,res)=>{requests.push({at:new Date().toISOString(),method:req.method,url:req.url});res.writeHead(200,{'Content-Type':'text/plain'});res.end('UNEXPECTED_NOTEBOOK_REQUEST');});await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
+- r.knownPorts.push(server.address().port);const generated=notebookFixtures({canary,trap:'http://127.0.0.1:'+server.address().port+'/trap'});const rows=[];
+- for(const item of oracle.cases){const bytes=generated.fixtures[item.name];assert.equal(typeof bytes,'string');assert(Buffer.byteLength(bytes)<262144,'Original fixtures fit one bounded chunk');await writeFile(project+'/'+item.name,bytes,{mode:0o600});item.sha256=sha(bytes);rows.push({name:item.name,kind:item.kind,sha256:item.sha256,bytes:Buffer.byteLength(bytes)});}
+- r.fixtureMaterialization={generatorSHA256:sha(await readFile(ROOT+'/notebook-fixtures.upstream.mjs')),rows,canary,trapPort:server.address().port,onlyOriginalSelectedNine:true};await save('fixture-materialization.private.json',r.fixtureMaterialization);await persist();
++ acceptedEight=await loadAcceptedEight(ready.reuse,pin,oracle);const original=acceptedEight.raw.fixtureMaterialization;canary=original.canary;
++ server=createServer((req,res)=>{requests.push({at:new Date().toISOString(),method:req.method,url:req.url});res.writeHead(200,{'Content-Type':'text/plain'});res.end('UNEXPECTED_NOTEBOOK_REQUEST');});await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(original.trapPort,'127.0.0.1',resolve);});
++ r.knownPorts.push(server.address().port);for(const item of oracle.cases)item.sha256=acceptedEight.mode.before[item.name].sha256;
++ r.fixtureMaterialization={...original,reusedUnmodifiedProject:project,trapReboundExactOriginalPort:true};r.reusedEvidence={...ready.reuse,AppExit:acceptedEight.mode.appExit,normalExitConfirmed:acceptedEight.mode.appCleanup.normalExitConfirmed,oldGuard:acceptedEight.mode.focusGuard,oldIndependentCleanupAllClear:acceptedEight.cleanup.allClear,originalCompleteCases:8,remainingCurrentCases:10};await persist();
+ }
+ 
+ async function runMode(kind){
+- const mode={kind,runtime:runtime+'/'+kind,userData:runtime+'/'+kind+'/userdata',executable:pin.executable,startedAt:new Date().toISOString(),status:'running-unjudged',checks:[],actions:[],screenshots:[],cleanupErrors:[]};r.modes.push(mode);await mkdir(mode.runtime,{recursive:true,mode:0o700});for(const n of['home','tmp','work','codex'])await mkdir(mode.runtime+'/'+n,{mode:0o700});
++ const mode={kind,runtime:runtime+'/'+kind,userData:runtime+'/'+kind+'/userdata',executable:pin.executable,startedAt:new Date().toISOString(),status:'running-unjudged',checks:acceptedEight.checks.map(c=>({...structuredClone(c),reusedFrom:ready.reuse.root})),reusedCaseKeys:acceptedEight.keys,actions:[],screenshots:[],cleanupErrors:[]};r.modes.push(mode);await mkdir(mode.runtime,{recursive:true,mode:0o700});for(const n of['home','tmp','work','codex'])await mkdir(mode.runtime+'/'+n,{mode:0o700});
+  const resources=resourceRecorder({userData:mode.userData,driverPid:process.pid});let app,observerInstalled=false;const own=(body,label)=>app.mainEvaluate('(async()=>{const E=process.getBuiltinModule("module").createRequire(process.resourcesPath+"/app.asar/package.json")("electron");if(process.pid!=='+app.processId+'||process.execPath!=='+JSON.stringify(mode.executable)+'||E.app.getPath("userData")!=='+JSON.stringify(mode.userData)+')throw Error("Exact own F21 App required");'+body+'})()',{label});
+  const trace=()=>observeFileMethods({mainEvaluate:expression=>own('return ('+expression+');','readonly-owned-f21-file-observer')});
+  try{
+--- 002/notebook-flow.mjs
++++ 003/notebook-flow.mjs
+@@ -9,6 +9,7 @@
+  for(const theme of oracle.themes){
+   setStage(theme+':original-follow-system-theme');await app.cdp('Emulation.setEmulatedMedia',{features:[{name:'prefers-color-scheme',value:theme}]});await app.waitFor('document.documentElement.classList.contains('+JSON.stringify(theme==='dark'?'ydark':'ylight')+')',15000);mode.themes??=[];mode.themes.push({theme,actualClass:await app.evaluate('document.documentElement.className'),mechanism:'Original F20 media preference precondition, App theme follows system; no DOM/style writes'});await persist();
+   for(const original of oracle.cases){
++   if(mode.reusedCaseKeys?.includes(theme+':'+original.name))continue;
+    const item={...original,path:project+'/'+original.name},c={file:item.name,kind:item.kind,theme,startedAt:new Date().toISOString(),complete:false};mode.checks.push(c);setStage(theme+':'+item.name+':real-open');await persist();
+    const start=(await trace()).length;await ui.insert('[aria-label="筛选文件"]',item.name);await ui.click('.fw-name-results [role=option][title='+JSON.stringify(item.path)+']');
+    const initial=await ready.wait(item,'default-complete-notebook',x=>!x.loading&&(item.kind==='error'?!!x.alert:!x.alert&&(item.kind==='empty'?x.text.includes(item.markers[0]):x.cellCount>0)),20000);c.defaultNotebook=initial;assert.equal(initial.cmCount,0,'Notebook is original readonly artifact, no raw JSON editor');
+@@ -21,7 +22,7 @@
+     if(item.kind!=='html'){c.visibleContent=await ready.wait(item,'original-markers-complete',x=>item.markers.every(m=>x.text.includes(m)),15000);}
+     if(item.kind==='unknown'){assert.equal(c.visibleContent.outputCount,0);assert(!c.visibleContent.text.includes('MUST_NOT_FAKE'));c.sourceCellRetainedWithoutFabricatedOutput=true;}
+     if(item.kind==='html'){
+-     c.html=await ready.wait(item,'html-frame-ready',x=>!!x.frame?.visible&&x.frame.sandbox==='',20000);assert.equal(c.html.parentSentinel,null);c.frameProof=await observeOriginalNotebookFrame(app,poll);await persist();await notebookClick('.fa-notebook-raw','Raw output');const attack=JSON.parse(await readFile(item.path,'utf8')).cells[0].outputs[0].data['text/html'];c.rawHTML=await ready.wait(item,'raw-html-actual',x=>x.text.includes(attack),15000);assert.equal(c.rawHTML.parentSentinel,null);assert.deepEqual(requests,[]);c.opaqueSandboxActual=true;c.noTrapRequestsAtCompletion=true;
++     c.html=await ready.wait(item,'html-frame-ready',x=>!!x.frame?.visible&&x.frame.sandbox==='',20000);assert.equal(c.html.parentSentinel,null);c.frameReadiness=[];c.frameProof=await observeOriginalNotebookFrame(app,poll,async value=>{c.frameReadiness.push(value);await persist();});await persist();await notebookClick('.fa-notebook-raw','Raw output');const attack=JSON.parse(await readFile(item.path,'utf8')).cells[0].outputs[0].data['text/html'];c.rawHTML=await ready.wait(item,'raw-html-actual',x=>x.text.includes(attack),15000);assert.equal(c.rawHTML.parentSentinel,null);assert.deepEqual(requests,[]);c.opaqueSandboxActual=true;c.noTrapRequestsAtCompletion=true;
+     }
+     if(item.name==='cell-code.ipynb'){
+      assert(initial.run?.visible);assert.equal(initial.run.title,'Running is disabled in read-only preview');assert.equal(initial.run.tabIndex,-1);assert.equal(initial.run.buttonAncestor,false);c.decorativeRunInput=await inputDecorativeRun({app,mode,poll,persist,expectedPath:item.path});
+--- 002/notebook-frame-observer.mjs
++++ 003/notebook-frame-observer.mjs
+@@ -1,7 +1,7 @@
+ import assert from'node:assert/strict';
+ // Reuses notebook-content-ui.mjs42-50: readonly same-App frame observation.
+-export async function observeOriginalNotebookFrame(app,poll){
+- const frame=await app.evaluate(`(()=>{const f=document.querySelector('iframe[title="Notebook HTML output"]');return f?{sandbox:f.getAttribute('sandbox'),referrerPolicy:f.referrerPolicy,srcdoc:f.srcdoc,parentCanRead:f.contentDocument!==null,mainSentinel:window.__notebookAttack??null}:null})()`);
++export async function observeOriginalNotebookFrame(app,poll,record=async()=>{}){
++ const frame=await poll(async()=>{const value=await app.evaluate(`(()=>{const xs=[...document.querySelectorAll('.fa-notebook iframe[title="Notebook HTML output"]')],f=xs.length===1?xs[0]:null,d=f?.contentDocument;return{at:new Date().toISOString(),count:xs.length,connected:!!f?.isConnected,sandbox:f?.getAttribute('sandbox')??null,referrerPolicy:f?.referrerPolicy??null,srcdoc:f?.srcdoc??'',srcdocHasSafeHTML:!!f?.srcdoc.includes('SAFE_HTML_'),parentCanRead:!!d,readableDocumentURL:d?.URL??null,readableReadyState:d?.readyState??null,mainSentinel:window.__notebookAttack??null}})()`);await record(value);return value.count===1&&value.connected&&value.srcdocHasSafeHTML&&value.parentCanRead===false?value:null;},20000);
+  assert(frame);assert.equal(frame.sandbox,'');assert.equal(frame.referrerPolicy,'no-referrer');assert.equal(frame.parentCanRead,false);assert.equal(frame.mainSentinel,null);for(const policy of["script-src 'none'","connect-src 'none'","frame-src 'none'","object-src 'none'","form-action 'none'"])assert(frame.srcdoc.includes(policy));assert(!/<script|<iframe|<form|onerror=|onload=|<foreignObject|127\.0\.0\.1/i.test(frame.srcdoc));assert(frame.srcdoc.includes('SAFE_HTML_'));
+  const tree=(await app.cdp('Page.getFrameTree')).frameTree,find=node=>node.frame.url==='about:srcdoc'?node.frame:(node.childFrames??[]).map(find).find(Boolean),child=find(tree);
+  const expression="(()=>{let parentBlocked=false;try{parent.document.body}catch{parentBlocked=true}return{images:[...document.images].filter(e=>e.hasAttribute('src')).map(e=>({complete:e.complete,width:e.naturalWidth,height:e.naturalHeight,src:e.getAttribute('src')})),electronAPI:typeof window.electronAPI,require:typeof require,process:typeof process,parentBlocked}})()";
+--- 002/judge.mjs
++++ 003/judge.mjs
+@@ -2,8 +2,10 @@
+ import{readFile}from'node:fs/promises';
+ import{ROOT,sha,save}from'./io.mjs';
+ import{notebookFixtures}from'./notebook-fixtures.upstream.mjs';
++import{loadAcceptedEight}from'./reused-eight.mjs';
+ const read=async name=>JSON.parse(await readFile(ROOT+'/'+name,'utf8')),r=await read('raw.json'),cleanup=await read('cleanup.json'),oracle=await read('oracle.json'),contract=await read('original-contract.json');
+ const checks=[],test=(id,fn)=>{try{fn();checks.push({id,passed:true})}catch(e){checks.push({id,passed:false,error:String(e.stack??e)})}};
++const ready=await read('READY.json'),pin=await read('pin.json'),accepted=await loadAcceptedEight(ready.reuse,pin,oracle);assert.equal(r.reusedEvidence.originalCompleteCases,8);assert.deepEqual(r.reusedEvidence.keys,accepted.keys);for(const old of accepted.checks){const now=r.modes[0].checks.find(c=>c.theme===old.theme&&c.file===old.file);assert(now);const{reusedFrom,...same}=now;assert.equal(reusedFrom,ready.reuse.root);assert.deepEqual(same,old);}
+ assert.equal(r.case,'M12-T130/F21');assert.equal(r.status,'executed-unjudged');assert.equal(r.modes.length,1);const m=r.modes[0],all=m.checks,expected=oracle.themes.flatMap(theme=>oracle.cases.map(x=>theme+':'+x.name)),actual=all.map(x=>x.theme+':'+x.file),generated=notebookFixtures({canary:r.fixtureMaterialization.canary,trap:'http://127.0.0.1:'+r.fixtureMaterialization.trapPort+'/trap'});
+ test('F21-A1',()=>{assert.deepEqual(actual,expected);assert(all.every(c=>c.complete&&c.defaultNotebook.notebook&&c.defaultNotebook.visible&&c.defaultNotebook.cmCount===0&&c.actualCloseNoNotebook));});
+ test('F21-A2',()=>{for(const c of all.filter(x=>['valid','empty','outputs'].includes(x.kind))){const o=oracle.cases.find(x=>x.name===c.file);assert(o.markers.every(t=>c.visibleContent.text.includes(t)));assert(!c.visibleContent.alert);}});

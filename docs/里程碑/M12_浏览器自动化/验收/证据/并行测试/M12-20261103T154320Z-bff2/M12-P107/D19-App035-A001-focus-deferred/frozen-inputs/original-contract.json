@@ -1,0 +1,70 @@
+{
+  "case": {
+    "id": "M9-T-D19",
+    "group": "D",
+    "title": "位置与模式",
+    "requirements": [
+      "M9-R08.6",
+      "M9-R07.8"
+    ],
+    "level": "组件／集成／安装端到端",
+    "environments": [
+      "P",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D01",
+      "D04"
+    ],
+    "steps": "A源码滚至200行，B Markdown预览滚动；切回/重启。",
+    "expected": "分别保存滚动、mode、selection；内容已变化时按批准策略重定位，不强套旧snapshot。",
+    "source": "L§4；V S23",
+    "prototype": "PS-tabs",
+    "basis": "参考事实＋迁移设计",
+    "status": "通过",
+    "evidence": [
+      "证据/m9-development-reading-restart-dev143-r87-20261019.json",
+      "证据/m9-acceptance-reading-prototype-dev144-r87-20261019.json",
+      "证据/m9-acceptance-reading-prototype-dev144-r87-verified-20261019.json"
+    ],
+    "actual_result": "DEV144原P/I/A完整通过。新增共享P浅深6：A源码实际跳至200行、非空range与双轴滚动，B实际共享CM Markdown非空选区/滚动，切回与真实Page.reload各自保持；标签fixture等长改写A正文后原位置/选区丢弃，source模式保留。原P切回A丢选区的0检查红保留，首次实现误用::而非既有NUL文件键的0检查红保留并修正。纯数值读位按既有task+roots scope及文件route隔离，记录方向性anchor/head和每mode top/left；序列化排除preview/附件，无字段旧记录保留原形状。P沿用合成textFingerprint＋normalized长度核对内容版本，不充当native SHA256/权限证据。文件工作区Markdown在blur后保留编辑视图，避免选区销毁；其它调用保持原blur默认。重载恢复不抢焦点。88相关P模型（9新）、原完整P模式保存回归12、Sites4及P构建/prepareSites通过。生产源码/native/deps/config未改，当前82运行文件仍逐字节匹配r87，DEV143报告及156项原artifact重核不变；其真实nativeSQLite I与正常r87浅深A5明确沿用，非本轮重跑。由本轮P6加原I/A满足本条原层级，原范围/步骤/预期/419分母未变。1279工程输入经1273父链加10文件delta（4P改6新）可恢复，无新生产打包/类型/全套App测试声明。4自有P浏览器壳已闭，原P回归1次正常退出0/null，新Pdriver.close仅清理；既有Vite服务复用未重启。正式254/419（60.62%），163未执行+2阻塞，162含A。未新增完整R/V像素、物理IME/系统剪贴板/外部/模型或其它平台结果；DEV139-OBS01/DEV111等仍保留，未完成/发布。 历史部分阶段（DEV143，P缺项已由上述DEV144补齐）：DEV143部分I/A补证，原P/I/A范围、步骤、预期和419分母不变，P尚未同步/完整验收，整条仍未执行。原r83真实App切换内存位置正确，但正常退出重开后选区归0；新增U2/nativeSQLite I2共4项原始全红证实无持久text位置。现strict可选route.text只存实际查看过、clean且native SHA256/normalized长度匹配的数值选区及每mode源锚点/视口偏移/双轴；新租约授权重开后仅相同内容应用，等长改写丢弃旧位置并保留模式。旧v1无字段仍兼容，未查看route不新增metadata-only写，dirty草稿仍独立，不宣称其位置恢复全部覆盖。原CM内存snapshot及编辑映射保留，跨重启用公开scrollIntoView先建立虚拟源码viewport，再公开lineBlockAt/requestMeasure/scrollDOM至4帧对齐稳定或24次封顶；恢复期间保留原数字hint，用户wheel/pointer/key/beforeinput或文档/选区变化取消，ShadowRoot按composedPath归属。最终无只读CM内部对象改写。最终r87浅深真实A5：A源码200行后双轴与真实非空选区、B Markdown文档独立滚动/选区，切回/正常退出重开保持原源锚点、2px内偏移/横轴及mode；同长度改写后旧选区/滚动归初始。4次正常退出0/null、3次新进程重启；A仅在App闭后按夹具改字，B完整指纹保持。70位置/工作区/SQLite/模式代码＋12作用域=82唯一通过，13新，零失败/跳过；真实r87模式保存回归14与scope回归12，两真实input-only PTY输入0/执行0、原观察器恢复。类型/完整编译原配置打包/六smoke/82运行比较通过。1273工程输入由1271父链加8文件delta恢复，最终与r87构建全同、无构建后修改。r84/r86仅候选未作为验收，r85 A真实锚点漂移、D初次19px偏移与最终D5（非A）、中间64过3失败的旧CAS/精确状态回归及类型/签名沙箱失败全部保留；旧断言未放宽，修生产未查看hint写入后回归通过。7组/16自有UI实例全闭，最终6次选定正常退出。原型P读写位置/选区与真实reload/等长改写是下一必经项，未完成前不计D19通过；正式253/419（60.38%），164未执行+2阻塞，163含A；系统/人工/参考V/其它平台、DEV139-OBS01/DEV111仍保留，未完成/发布。 DEV144追加直接正文补证：同6个P场景强化复跑，真实timeOrigin变化、旧textarea完整等于原夹具、新textarea完整等于替换夹具、两次长度77483相同但SHA256不同均通过，位置归零不再仅用于间接推断正文已变化。只增强外部driver，无P实现或生产变更；追加9项artifact/1文件驱动delta，1279工程输入，正式254不重复增加。",
+    "defects": [
+      "DEV143-01 重启位置缺项及虚拟Markdown漂移已修，r87 I/A通过；共享P同步与验收仍欠，整条未结案（历史P缺项已由DEV144补齐）",
+      "DEV144-P01 选区/阅读状态缺项及文件键适配已修，完整P6与模型/回归通过"
+    ],
+    "legacy_parent_requirements": [
+      "M9-R04",
+      "M9-R08"
+    ],
+    "prototype_pages": [
+      "P06",
+      "P08"
+    ],
+    "prototype_status": "P06/P08；本条位置/模式/选区与等长正文变化的共享原型浅深色已核对，完整R/V边界仍独立验收",
+    "prototype_note": "DEV144共享P6及直接正文补证为合成数据/存储；生产native I与App来自已核验的DEV143，P不代替真实磁盘或完整像素结果。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R08.6",
+        "M9-R07.8"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "executedLayer": "A only",
+  "originalDriver": "original/reading-restart-ui.mjs",
+  "currentOriginalObservations": 5,
+  "plannedAppProcesses": 4,
+  "plannedNormalRestarts": 3,
+  "remainingPAndI": "Existing original evidence separately scoped; no new P/I rerun or automatic wholeT130 pass",
+  "lifecycleAdaptation": "Frozen App035 ownuserdata/project, API prepares project only, one setupreload then exactPIDactivation/real3s/oneguard pernewApp. Per-case actualmodel/checkpoint/PNG persisted.",
+  "completionConditionAdaptation": "Strict actualreadonlyCM state stable5frames, expected mode/selection/sourceanchor and original2px boundaries with bounded15s. No DOM/store/scroll setters or focus calls."
+}

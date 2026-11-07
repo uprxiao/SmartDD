@@ -1,0 +1,88 @@
+{
+  "sourceRawSHA256": "ac97072d255ec358319d3342578a845f74c4fb88f6c55cd328792bc350d0449f",
+  "actualAssert": "notebook-frame-observer.mjs5:103 assert.equal(frame.parentCanRead,false); actualtrue",
+  "earlierAssertionsPassed": [
+    "sandbox empty",
+    "referrerPolicy no-referrer"
+  ],
+  "observedHTMLFrameSnapshots": {
+    "file": "html-sandbox.ipynb",
+    "kind": "html",
+    "theme": "light",
+    "startedAt": "2026-11-07T16:17:45.985Z",
+    "complete": false,
+    "defaultNotebook": {
+      "at": "2026-11-07T16:17:46.665Z",
+      "focused": true,
+      "visibility": "visible",
+      "tabTitle": "/private/tmp/willyou-m12-t130-F21-App035-A-cont-002/runtime-001/normal/project/html-sandbox.ipynb",
+      "notebook": true,
+      "visible": true,
+      "text": "HTML sandbox fixture1 个单元Code cell 1Cell 1 of 1Run 7Empty code cellRaw output",
+      "loading": false,
+      "alert": null,
+      "retry": false,
+      "cellCount": 1,
+      "outputCount": 2,
+      "cmCount": 0,
+      "cellCode": [],
+      "run": {
+        "title": "Running is disabled in read-only preview",
+        "tag": "SPAN",
+        "tabIndex": -1,
+        "buttonAncestor": false,
+        "visible": true
+      },
+      "frame": {
+        "title": "Notebook HTML output",
+        "sandbox": "",
+        "visible": true
+      },
+      "parentSentinel": null
+    },
+    "html": {
+      "at": "2026-11-07T16:17:46.667Z",
+      "focused": true,
+      "visibility": "visible",
+      "tabTitle": "/private/tmp/willyou-m12-t130-F21-App035-A-cont-002/runtime-001/normal/project/html-sandbox.ipynb",
+      "notebook": true,
+      "visible": true,
+      "text": "HTML sandbox fixture1 个单元Code cell 1Cell 1 of 1Run 7Empty code cellRaw output",
+      "loading": false,
+      "alert": null,
+      "retry": false,
+      "cellCount": 1,
+      "outputCount": 2,
+      "cmCount": 0,
+      "cellCode": [],
+      "run": {
+        "title": "Running is disabled in read-only preview",
+        "tag": "SPAN",
+        "tabIndex": -1,
+        "buttonAncestor": false,
+        "visible": true
+      },
+      "frame": {
+        "title": "Notebook HTML output",
+        "sandbox": "",
+        "visible": true
+      },
+      "parentSentinel": null
+    }
+  },
+  "unrecordedAtFailedAssert": [
+    "complete localframeobject/srcdoc",
+    "documentURL/readystate",
+    "committedchildframeURL"
+  ],
+  "originalReference": {
+    "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/notebook-content-ui.mjs",
+    "sha256": "ecb5933f23f3a48574d7fa81329f463ead4f6d197070cff3d4792790f2ec4086",
+    "line": 42,
+    "source": " await openFile('html-sandbox.ipynb');await waitFor(exists('iframe[title=\"Notebook HTML output\"]'));await waitFor(\"(()=>{const f=document.querySelector('iframe[title=\\\"Notebook HTML output\\\"]');return f?.srcdoc.includes('SAFE_HTML_')&&f.contentDocument===null})()\");const frame=await evaluate(\"(()=>{const f=document.querySelector('iframe[title=\\\"Notebook HTML output\\\"]');return {sandbox:f.getAttribute('sandbox'),referrerPolicy:f.referrerPolicy,srcdoc:f.srcdoc,parentCanRead:f.contentDocument!==null,mainSentinel:window.__notebookAttack??null}})()\");assert.equal(frame.sandbox,'');assert.equal(frame.referrerPolicy,'no-referrer');assert.equal(frame.parentCanRead,false);assert.equal(frame.mainSentinel,null);for(const policy of [\"script-src 'none'\",\"connect-src 'none'\",\"frame-src 'none'\",\"object-src 'none'\",\"form-action 'none'\"])assert(frame.srcdoc.includes(policy));assert(!/<script|<iframe|<form|onerror=|onload=|<foreignObject|127\\.0\\.0\\.1/i.test(frame.srcdoc));assert(frame.srcdoc.includes('SAFE_HTML_'));await app.screenshot(join(scratch,'html-sandbox-safe-output.png'));"
+  },
+  "difference": "OriginalwaitFor srcdocSAFE_HTML andcontentDocument===null before reading/asserting. Currenthelper onlywaitedpresent/visible/emptysandbox thenreadonce.",
+  "classification": "Confirmed missing originaldrivercompletiongate. Whether true wasinitialaboutblank orcommittedsrcdoc isunknown; no genuineproductsecurityfailure proved.",
+  "nextMinimalAction": "Only restoreoriginalboundedloadwait+descriptor; preservefalseassert. Reuse8, supplementlightHTML+dark9. No productionchange/newmatrix.",
+  "failurePNGDoesNotProveOrigin": true
+}
