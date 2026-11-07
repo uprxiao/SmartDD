@@ -100,6 +100,10 @@
 
 - [终端共存原三组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/terminal-coexistence-App035-A001-complete/manifest.json)、[任务标签原两项](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/task-tabs-App035-A002-two-complete-D18-baseline-red/manifest.json)及[面板尺寸恢复原A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/A11-App035-A001-complete/manifest.json)已完成；[普通PDF定位](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F29-PDF-App035-A001-partial-complete/manifest.json)仅原子段。其它原矩阵、系统和设备缺项继续按[现有计划](验收/S1执行计划.json)，完整阶段尚未验收。
 
+- [原文件身份与别名验证](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/D05-App035-A002-complete-independent-review/manifest.json)及[拖动性能／停止恢复原组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/terminal-layout-App035-A002-P04-P07-complete-P03-red/manifest.json)已收口；独立复核、原判定红和未完成窗口恢复均分列保留。
+
+- [文件独立读取原完整矩阵](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/S09-App035-A002-complete/manifest.json)已完成，原终端状态／外写／迟到返回边界及首轮适配红均保留；其余入口和系统缺项按现有计划继续。
+
 ## 接续顺序
 
 先核当前分支、轮次资源、实际构建和权威账。App035已完成本机arm64安装与启动复验；有效旧证据按未受影响范围复用。统一测试与发送授权持续；每次沿已有准确PID首次激活、真实焦点稳定及原guard继续，不再逐项询问。T081等已按原合同归账；T130已补齐图片、CSV、SVG、TIFF及不支持格式提示／菜单入口的实际A子组，T131原运行生命周期已收口，继续其余原矩阵及系统／设备缺项。App031错误文案实际回归与安装复验均已完成，不重跑未受影响的已绿业务。

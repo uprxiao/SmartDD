@@ -1,0 +1,85 @@
+{
+  "case": "M9-T-S09",
+  "parent": "M12-T130",
+  "layer": "A",
+  "originalRow": "| **M9-T-S09 右侧独立读取最新磁盘与终端状态无关**<br>M9-R07.19、M9-R07.5、M9-R08.2、M9-R01.5 | 本期本机 | 单元／集成／安装端到端<br>U+I+A / D04+D11 | 准备磁盘A版本；分别在终端闲置、忙碌、停止、无投递记录时，由CLI或普通外部写入者将其改为B；从树打开、关闭后重开、重新激活或显式刷新文件。另替换文件后迟到返回旧读取结果。 | 右侧按当前真实文件身份/revision读取最新B，clean buffer更新；磁盘未变化时不重复构造冲突。旧代际读取不能覆盖新内容。文件浏览/刷新不等CLI完成或投递回执，不推断改动由哪次指令产生，不出现CLI专门审批或自动还原；无终端时仍可浏览有授权的文件。<br>依据：需求 R07.19、R07.5、R08.2（R3.2 用户确认） | P03/P08/P16；已核对本用例实际App状态；完整Codex视觉按独立P/V用例验收<br>实际：DEV105完整U/I/A：U2较新load排除旧成功/错误；I10真实Service/Store/buffer覆盖两writer×四触发和新inode替换两迟到结果。r57实际A32：无当前终端/空闲/持续前台输出/真实停止×树开/关闭重开/重新激活/显式刷新×普通writer/独立Python CLI，完整B、真实revision、clean且无重复冲突；16条原watch通知留到读取后原样交付。另A2物理新inode替换并显式重开后交付原read成功/真实chmod000 PERMISSION，新B不被覆盖。busy是隔离实际PTY输出非模型计算；停止ptyId=null且显示退出，不等待投递/CLI结果、不自动还原，PTY bytes=0。 | 通过 | [记录](证据/m9-acceptance-content-disk-dev105-r57-20261019.json) |",
+  "originalDocument": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a"
+  },
+  "originalScript": {
+    "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/terminal-disk-read-ui.mjs",
+    "sha256": "43d04dcac808f2e9a2a0e944403188821dc04e6c7f8981a94622082fc8bc758f"
+  },
+  "criteria": [
+    {
+      "id": "S09-A1",
+      "expected": "四原终端状态×四真实触发×两外写者32个完整B模型/clean/无重复冲突。"
+    },
+    {
+      "id": "S09-A2",
+      "expected": "普通fs与独立Python真实写，逐次完整Native读取/revision与磁盘B一致；没有从终端输入写文件。"
+    },
+    {
+      "id": "S09-A3",
+      "expected": "无当前终端project文件区可用；idle counter不变/busy持续真实输出counter递增/stopped ptyId=null且显示退出；所有receiver bytes/executedCommands=0。"
+    },
+    {
+      "id": "S09-A4",
+      "expected": "reactivate/refresh原watch只延后，读取B后原包不变交付；不等CLI完成或投递回执。"
+    },
+    {
+      "id": "S09-A5",
+      "expected": "物理替换新inode、原旧成功读取晚交付不能覆盖新B。"
+    },
+    {
+      "id": "S09-A6",
+      "expected": "实际chmod000产生原PERMISSION，再物理替换；原旧错误晚交付不能覆盖新B。"
+    },
+    {
+      "id": "S09-A7",
+      "expected": "未改sentinel，原34个完整case；真实输入/当前完整CM，不注入store/模型，不增加handoff/model/auth/系统前置。"
+    },
+    {
+      "id": "S09-A8",
+      "expected": "原观察器/held watches/权限恢复，真实taskclose与Appnormal0/null/signals[]，独立PID/TCP/Unix清场。"
+    }
+  ],
+  "matrix": {
+    "states": [
+      "no current terminal",
+      "idle",
+      "continuous output",
+      "stopped"
+    ],
+    "triggers": [
+      "tree open",
+      "close/reopen",
+      "reactivate",
+      "explicit refresh"
+    ],
+    "writers": [
+      "ordinary external",
+      "separate CLI"
+    ],
+    "normal": 32,
+    "late": [
+      "success",
+      "actual permission error"
+    ],
+    "total": 34
+  },
+  "priorValidLayers": "Root权威账中的旧U/I复用，不额外重跑本组I；原P标签不是新增M12 P合同。",
+  "systemPrerequisites": [
+    "Desktop unlocked and original Native+DOM focus stable3s",
+    "Current exactApp035/nativeFileBroker; own writable privateRoot",
+    "Python interactive PTYs/chmod/atomic rename; no actual human login/keychain/Office/model or external service"
+  ],
+  "outOfScope": [
+    "模型计算忙碌/真实OpenAI",
+    "任何真实密码/认证/日常数据",
+    "剪贴板/外部App/native file picker/fullvisual",
+    "推断某次CLI指令导致改动"
+  ],
+  "noInventedHost": true
+}
