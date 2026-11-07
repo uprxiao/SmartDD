@@ -4228,7 +4228,7 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-07T22:52:33.317741+00:00",
+    "updatedAt": "2026-11-07T22:55:20.190103+00:00",
     "independentNext": "D23 UI恢复/编辑保存已完成；停止General/接收器驱动改造。剩F01实际外开/F25外开和系统副本/P09原系统语音/D23复制及外开，具备工具或人工前置后补验；不重跑已绿。",
     "pendingDecisions": [
       {
@@ -5099,8 +5099,57 @@
       "businessObservations": 3,
       "judgementChecks": 7,
       "formalIncrement": 0,
-      "T0Prerequisite": "Current normal tasks.create requires projectId; original F-PROJ says UI-create T0; valid UI entry not yet established. Do not directDBseed or drop criterion.",
-      "PagesPrerequisite": "PPTX Pages presentation editing, selectedelement ShiftCommandB layer-to-back; not .pages unsupported branch"
+      "T0Prerequisite": "Confirmed current UI+RPC cannot create T0 through the inspected standard creation/import/delete paths. Nullable DB only supports representing history, not UI creation. Original F-PROJ prerequisite needs clarification; no directDB substitute.",
+      "PagesPrerequisite": "PPTX Pages presentation editing, selectedelement ShiftCommandB layer-to-back; not .pages unsupported branch",
+      "T0SourcePrerequisiteCheck": {
+        "at": "2026-11-07T22:55:20.190103+00:00",
+        "kind": "source-only prerequisite verification, not a new App test",
+        "source040Unchanged": true,
+        "inputs": [
+          {
+            "path": "src/renderer/views/home-view.tsx",
+            "sha256": "318a53db2142c0fa11b138c54c3161f2abb6b4b8b563b3768e520250518b6458"
+          },
+          {
+            "path": "src/shared/tasks.ts",
+            "sha256": "fda7f219f8376530b5c518598231f834cbc71ec8faab471adc90eeb835147427"
+          },
+          {
+            "path": "src/main/core/tasks/task-service.ts",
+            "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+          },
+          {
+            "path": "src/main/core/tasks/controller.ts",
+            "sha256": "e40dcbb3bcb2e5c20fc9aeaae507ae91e198d2391d9b259703820b12c1f9c104"
+          },
+          {
+            "path": "src/main/core/projects/transfer-format.ts",
+            "sha256": "3340424f58da0d760891dec11f79aac87ed3cc621db99c0a638716d6af0f8c03"
+          },
+          {
+            "path": "src/main/core/projects/transfer-service.ts",
+            "sha256": "f70250c4fb35323ead335f776348527f86b647d9054e4f7827478ce873c3d40b"
+          },
+          {
+            "path": "src/main/core/projects/project-service.ts",
+            "sha256": "db533370f423ef9b11a1fdc0dc7a9e8843bc763aaa85551db79cea4238e206f9"
+          },
+          {
+            "path": "src/main/db/schema.ts",
+            "sha256": "06c862251b7e2ba60cb99bfbb365681833d89bd0e68ec783dc433122713bb878"
+          }
+        ],
+        "facts": [
+          "home-view.tsx91,94,157 requires projectId and disables launch otherwise",
+          "CreateTaskRequest.projectId string; task-service.ts183-211 resolves project and inserts that project.id",
+          "Task RPC controller exposes no transfer-to-project/null-project or import-task operation",
+          "PortableProject strict payload contains project/config/profiles/credentials, not task/session records",
+          "project-service.ts170-185 deletes project; schema tasks.projectId onDelete cascade",
+          "Task DB type remains nullable, so null historical rows can be represented; this is not a supported current UI creation path"
+        ],
+        "conclusion": "Original F-PROJ requires UI creation of T0, but inspected current UI/RPC/import/delete paths do not produce it. Retain pending, do not seed DB or remove criterion. User decision after sleep: identify valid legacy UI route or clarify legacy-data preparation while preserving negative browser behavior.",
+        "formalIncrement": 0
+      }
     }
   },
   "currentAuthoritySHA256": "563d0e9d9b9b588ac45b1fd6e1ea40128a5014f93d37635d31004b1f45dcf2fa",

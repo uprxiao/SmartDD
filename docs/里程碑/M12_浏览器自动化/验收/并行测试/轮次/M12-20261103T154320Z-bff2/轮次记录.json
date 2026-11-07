@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-07T22:52:33.317741+00:00",
+  "updatedAt": "2026-11-07T22:55:20.190103+00:00",
   "status": "active;App036/source040 arm64S6complete; originalremaining scopes/prerequisites retained",
   "coordinator": "/root",
   "agents": [
@@ -24,7 +24,7 @@
   "requirements": "需求R1.6",
   "technicalDesign": "技术方案V1.6",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "T024 titlebar/project A subset complete; pending original system and T0/Pages preconditions",
+  "currentGroup": "No UI lease held; T024 T0 UI-creation prerequisite conflict confirmed, other original system/external prerequisites deferred",
   "resources": {
     "build": {
       "status": "complete/released",
@@ -10319,6 +10319,55 @@
     "wholeCasePassed": false,
     "formalIncrement": 0,
     "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T024/App036-A001-titlebar-subset/manifest.json",
-    "formalState": "部分通过; no wholecase credit"
+    "formalState": "部分通过; no wholecase credit",
+    "T0PrerequisiteCheck": {
+      "at": "2026-11-07T22:55:20.190103+00:00",
+      "kind": "source-only prerequisite verification, not a new App test",
+      "source040Unchanged": true,
+      "inputs": [
+        {
+          "path": "src/renderer/views/home-view.tsx",
+          "sha256": "318a53db2142c0fa11b138c54c3161f2abb6b4b8b563b3768e520250518b6458"
+        },
+        {
+          "path": "src/shared/tasks.ts",
+          "sha256": "fda7f219f8376530b5c518598231f834cbc71ec8faab471adc90eeb835147427"
+        },
+        {
+          "path": "src/main/core/tasks/task-service.ts",
+          "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+        },
+        {
+          "path": "src/main/core/tasks/controller.ts",
+          "sha256": "e40dcbb3bcb2e5c20fc9aeaae507ae91e198d2391d9b259703820b12c1f9c104"
+        },
+        {
+          "path": "src/main/core/projects/transfer-format.ts",
+          "sha256": "3340424f58da0d760891dec11f79aac87ed3cc621db99c0a638716d6af0f8c03"
+        },
+        {
+          "path": "src/main/core/projects/transfer-service.ts",
+          "sha256": "f70250c4fb35323ead335f776348527f86b647d9054e4f7827478ce873c3d40b"
+        },
+        {
+          "path": "src/main/core/projects/project-service.ts",
+          "sha256": "db533370f423ef9b11a1fdc0dc7a9e8843bc763aaa85551db79cea4238e206f9"
+        },
+        {
+          "path": "src/main/db/schema.ts",
+          "sha256": "06c862251b7e2ba60cb99bfbb365681833d89bd0e68ec783dc433122713bb878"
+        }
+      ],
+      "facts": [
+        "home-view.tsx91,94,157 requires projectId and disables launch otherwise",
+        "CreateTaskRequest.projectId string; task-service.ts183-211 resolves project and inserts that project.id",
+        "Task RPC controller exposes no transfer-to-project/null-project or import-task operation",
+        "PortableProject strict payload contains project/config/profiles/credentials, not task/session records",
+        "project-service.ts170-185 deletes project; schema tasks.projectId onDelete cascade",
+        "Task DB type remains nullable, so null historical rows can be represented; this is not a supported current UI creation path"
+      ],
+      "conclusion": "Original F-PROJ requires UI creation of T0, but inspected current UI/RPC/import/delete paths do not produce it. Retain pending, do not seed DB or remove criterion. User decision after sleep: identify valid legacy UI route or clarify legacy-data preparation while preserving negative browser behavior.",
+      "formalIncrement": 0
+    }
   }
 }
