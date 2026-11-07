@@ -1,0 +1,4 @@
+D11 only, current installed App036/source040. Original D08/D10/D18 not replayed.
+Private instance app.waitFor is replaced only after verified original own renderer fault. Raw app helpers show/task-open/ui therefore all use the same finite readonly wait. Same existing CDP connection; no target reset/reattach, guard rearm, focus forcing, store mutation or forged replies.
+Only frozen trusted driver readonly conditions are polled. Native main identity is checked by existing own guard on each query plus original window/WC/CDP target id/type/url. Changed timeOrigin required. All actual input still traverses unchanged single focus guard. Unexpected CDP errors or target replacement abort. Original IO save gate/draft/UI assertions kept.
+No Node/App/Native/OS execution performed; Root must run static, bind requiredStaticSHA256, then sign exact lease.

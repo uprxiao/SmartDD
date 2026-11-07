@@ -1,0 +1,4 @@
+D19 App036/source040 original five A observations, four normal App processes and three normal restarts.
+All four PNGs and two original synthetic Markdown inputs retain exact source bytes. inputs/ preserves the frozen executable driver closure; external-inputs.json retains external dependency/binary hashes without copying payloads.
+raw.safe.json preserves all fields needed for the original ten judge blocks. Original raw/cleanup are referenced by path+SHA; live endpoint inventories are excluded. No App, DMG, userData, home, database, auth, sockets or full private logs are archived.
+Old App035 focus-yield/zero-observation attempt is preserved by original hashes, not relabeled as a product defect. This safe projection performs no new Node/App/Native/OS test and gives no whole-T130 or visual-parity pass. Resources were released before projection.
