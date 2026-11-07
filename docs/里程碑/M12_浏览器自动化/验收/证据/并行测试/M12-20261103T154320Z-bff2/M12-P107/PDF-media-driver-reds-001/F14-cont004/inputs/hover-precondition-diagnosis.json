@@ -1,0 +1,102 @@
+{
+  "previousRoot": "/private/tmp/willyou-m12-t130-F14-App031-A-cont-003",
+  "previousRaw": {
+    "path": "/private/tmp/willyou-m12-t130-F14-App031-A-cont-003/raw.json",
+    "sha256": "f009f5581810f451a34765c3a2cbc9eb282883c2dc1e621ce363a0d7ed511691"
+  },
+  "previousJudge": {
+    "path": "/private/tmp/willyou-m12-t130-F14-App031-A-cont-003/judgement.json",
+    "sha256": "95f53c8a11baa51aee10dfdb1f99ad3d540c334a1e8e6f83410d794bdb79d9da",
+    "passed": false
+  },
+  "previousCleanup": {
+    "path": "/private/tmp/willyou-m12-t130-F14-App031-A-cont-003/cleanup.json",
+    "sha256": "4699d0bf5be3bde96e1009a75c06da7e0388fc5d3ae428b8017bfeb5d7a4efb0",
+    "allClear": true
+  },
+  "actualFailure": {
+    "stage": "actual-ui-project-files",
+    "label": "primary-failure",
+    "path": "/private/tmp/willyou-m12-t130-F14-App031-A-cont-003/runtime-001/primary-failure.private.log",
+    "name": "Error",
+    "sha256": "f2cd17bac8b9b2904f486f0b73fb5f25845598b9ff7c9de1b50a5d2eeae38340"
+  },
+  "actualReadiness": {
+    "selector": "[data-project-id=\"0850632b-6825-44b6-8278-90a9bfa69b67\"] [data-testid=sidebar-project-more]",
+    "timeoutMs": 15000,
+    "sampleCount": 353,
+    "first": {
+      "at": "2026-11-07T11:13:59.609Z",
+      "descriptor": {
+        "matchedCount": 1,
+        "visibleCount": 0,
+        "eligibleCount": 0,
+        "target": null,
+        "visible": []
+      }
+    },
+    "last": {
+      "at": "2026-11-07T11:14:14.582Z",
+      "descriptor": {
+        "matchedCount": 1,
+        "visibleCount": 0,
+        "eligibleCount": 0,
+        "target": null,
+        "visible": []
+      }
+    }
+  },
+  "sourceRules": [
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/renderer/lib/layout/sidebar-projects.tsx",
+      "sha256": "c36b97ef65eb79bb977d4c60e7136cedef29374bba747b106a20690e61a92723",
+      "lines": [
+        28,
+        31
+      ],
+      "fact": "Ownprojectrow contains More within row-actions."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-cookie-error-source-035/source/src/renderer/m6.css",
+      "sha256": "c7a310e4baa2b979a5dd8e902e8eb0687c062f3221f806fae78e4bd8bd4aef48",
+      "lines": [
+        273,
+        274
+      ],
+      "rules": [
+        ".row-actions opacity0",
+        ".reference-project-row:hover/focus-within/expanded sets row-actions opacity1"
+      ]
+    }
+  ],
+  "boundary": "Previous descriptors did not recordactual ancestoropacity; source defines hover precondition and actual buttonmatched1/notvisible0. No productdefect or uniqueenginecause claim. Newtest records actualparentopacity before realhover.",
+  "fix": "Only exact ownproject More selector gets real mousemove over visible/hit-ready ownrow, then originalstrictvisible/enabled/hit predicate and realclick. Both initial/reload paths share this helper. Otherhidden items are not loosened.",
+  "businessByteProof": [
+    {
+      "file": "run.mjs",
+      "oldSHA256": "5342cb74bffbb7d7bfc3704ee6ba506a0ca5ae2a50a3486d02649dbda43ccfa5",
+      "newSHA256": "5342cb74bffbb7d7bfc3704ee6ba506a0ca5ae2a50a3486d02649dbda43ccfa5",
+      "rootNormalizedByteExact": true
+    },
+    {
+      "file": "f14-flow.mjs",
+      "oldSHA256": "2208c201123153e4f9d2c8ecb44bf53a2ed1d52365751b477861228eaecda9ef",
+      "newSHA256": "2208c201123153e4f9d2c8ecb44bf53a2ed1d52365751b477861228eaecda9ef",
+      "rootNormalizedByteExact": true
+    },
+    {
+      "file": "ready-predicate.mjs",
+      "oldSHA256": "2a76dae5a8db99c71c10cb35136d755e46bcf1daa2d7b06328684d180a2d6747",
+      "newSHA256": "2a76dae5a8db99c71c10cb35136d755e46bcf1daa2d7b06328684d180a2d6747",
+      "rootNormalizedByteExact": true
+    },
+    {
+      "file": "judge.mjs",
+      "oldSHA256": "1212fff2d569614a0385e8951c1c16f28000542ba95ed8adf693a1cd1e6a328d",
+      "newSHA256": "1212fff2d569614a0385e8951c1c16f28000542ba95ed8adf693a1cd1e6a328d",
+      "rootNormalizedByteExact": true
+    }
+  ],
+  "implementationExecuted": false,
+  "formalIncrement": 0
+}

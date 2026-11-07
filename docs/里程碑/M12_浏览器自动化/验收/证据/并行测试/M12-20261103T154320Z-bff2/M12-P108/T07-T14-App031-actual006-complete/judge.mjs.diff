@@ -1,0 +1,16 @@
+--- 005-normalized/judge.mjs
++++ 006/judge.mjs
+@@ -1,7 +1,11 @@
+ // Original M11 T07/T14 predicates, independently rechecked on actual current records. No new formal credit here.
+-import assert from'node:assert/strict';import{readFile,writeFile}from'node:fs/promises';import{ROOT}from'./io.mjs';import{verifyPlanRecord,canonical}from'./driver/lib/plan-reader.mjs';
++import assert from'node:assert/strict';import{readFile,writeFile}from'node:fs/promises';import{ROOT,sha}from'./io.mjs';import{verifyPlanRecord,canonical}from'./driver/lib/plan-reader.mjs';
+ const checks=[];const check=(id,fn)=>{try{fn();checks.push({id,passed:true})}catch(e){checks.push({id,passed:false,error:e.message})}};const records={};
+-for(const mode of['ui-stop-replay','ui-disable-replay','ui-disconnect-replay','app-restart']){try{const path=(await readFile(ROOT+'/runs/'+mode+'/latest-result.txt','utf8')).trim();assert(path.startsWith(ROOT+'/runs/'+mode+'/attempt-')&&path.endsWith('/result.json'));records[mode]=JSON.parse(await readFile(path));}catch(e){checks.push({id:mode+'-executed',passed:false,error:e.message})}}
++const reused=JSON.parse(await readFile(ROOT+'/reuse-completed-modes.json'));
++for(const mode of['ui-stop-replay','ui-disable-replay','ui-disconnect-replay','app-restart']){try{
++ let path;if(reused.sources[mode]){const fixed=reused.sources[mode];path=fixed.path;assert(['ui-disable-replay','ui-disconnect-replay'].includes(mode));assert(path.startsWith(fixed.oldRoot+'/runs/'+mode+'/attempt-')&&path.endsWith('/result.json'));assert.equal(sha(await readFile(path)),fixed.sha256);assert.equal(sha(await readFile(fixed.cleanupPath)),fixed.cleanupSHA256);assert.equal(sha(await readFile(fixed.producerPath)),fixed.producerSHA256);assert(JSON.parse(await readFile(fixed.cleanupPath)).allClear);}else{path=(await readFile(ROOT+'/runs/'+mode+'/latest-result.txt','utf8')).trim();assert(path.startsWith(ROOT+'/runs/'+mode+'/attempt-')&&path.endsWith('/result.json'));}
++ records[mode]=JSON.parse(await readFile(path));
++}catch(e){checks.push({id:mode+'-executed',passed:false,error:e.message})}}
+ const normal=x=>x?.code===0&&x?.signal===null;
+ for(const[mode,r]of Object.entries(records)){
+  check(mode+'-original-producer-checks',()=>{assert(r.status.startsWith('passed'));assert(r.checks.length>0&&r.checks.every(x=>x.passed));assert(!r.fixtureFailure);assert.equal(r.sourceManifestSha256,'88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da');assert.equal(r.asarSha256,'cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea');});

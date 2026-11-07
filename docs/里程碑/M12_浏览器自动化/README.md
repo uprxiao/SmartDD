@@ -31,6 +31,9 @@
 
 ## 最近闭合与当前缺项
 
+- [M11网关兼容原全部子用例](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/coordinator-final-001/manifest.json)已完整通过；停止、停用、断开及正常重启均有实际界面／CLI／Host证据，旧驱动失败保留。继续原文件预览及视觉／系统／平台缺项。
+- [PDF及音视频实际App完整子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/PDF-media-App031-A-complete-001/manifest.json)已完成，[F15安全与特殊PDF](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F14-F15-App031-A001-partial/manifest.json)按原有效证据复用；父用例仍需其余原矩阵。
+
 - [Cookie导入失败恢复原完整I＋A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/coordinator-final-001/manifest.json)已收口，包含恢复失败、两处禁用、真实界面重试与确认清空；旧失败及合成故障边界均保留。[独立错误文案缺陷的App031实际回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/Cookie-error-App031-A001-complete/manifest.json)及[当前arm64安装复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app031-installer-001/manifest.json)已完成；当前已安装候选为App031。
 
 - [T130原F12/F17实际App子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-App030-A003-complete/manifest.json)已完成；[原失败与协调复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-coordinator-004/manifest.json)保留。[F11/F13/F25实际App子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F11-F13-F25-coordinator-003/manifest.json)亦已完成；父用例的其余原矩阵仍待。

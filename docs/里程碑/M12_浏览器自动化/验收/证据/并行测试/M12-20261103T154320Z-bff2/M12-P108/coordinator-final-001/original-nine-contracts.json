@@ -1,0 +1,119 @@
+{
+  "at": "2026-11-07T11:32:02.548974+00:00",
+  "parent": "M12-T131",
+  "originalNine": [
+    "T01",
+    "T06",
+    "T07",
+    "T08",
+    "T09",
+    "T14",
+    "T29",
+    "T37",
+    "T38"
+  ],
+  "rows": [
+    {
+      "case": "M11-T01",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 22,
+      "requirementAndLayer": "M11-T01／R02、R03／I＋A＋R",
+      "prerequisite": "A 已选禅道 Bug 只读能力；新 Skill 与 CLI 已交付",
+      "steps": "由真实 UI 启动 Codex，要求读取 Skill、发现能力并通过 CLI 查询本人 Bug；核对宿主回执与选用连接",
+      "expected": "CLI 调用实际完成；结果、连接、项目与权限对应；只有交付记录不算 Agent 已发现或已调用",
+      "originalRowPreserved": "| M11-T01／R02、R03／I＋A＋R | A 已选禅道 Bug 只读能力；新 Skill 与 CLI 已交付 | 由真实 UI 启动 Codex，要求读取 Skill、发现能力并通过 CLI 查询本人 Bug；核对宿主回执与选用连接 | CLI 调用实际完成；结果、连接、项目与权限对应；只有交付记录不算 Agent 已发现或已调用 | **通过（I＋A＋R）**；复用attempt-008原证据（ASAR `24e5188c…`，源`3b33e5b2`）：真实UI→Codex 0.166.0→读取按运行投放Skill→包内CLI/内核对端核验→v2只读结果，项目/连接/权限一致；两个Skill发现及bug-analysis读取已核验。模型和HTTP为合成，按用户2026-11-01确认计R层；不声明真实模型自主调用或真实禅道数据验证。D04已修复。本次仅复核归账，未重跑。[逐判据与确认](证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-DECISION/attempt-001/result.json) |"
+    },
+    {
+      "case": "M11-T06",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 27,
+      "requirementAndLayer": "M11-T06／R07／I＋A＋R",
+      "prerequisite": "A／B 项目、不同连接；A 仅有有限动作",
+      "steps": "在 A 会话提交 B 的项目／连接标识、额外动作和自报审批参数，再正常查询 A",
+      "expected": "越权请求拒绝且无外部副作用；合法 A 查询仍可用，参数不产生授权",
+      "originalRowPreserved": "| M11-T06／R07／I＋A＋R | A／B 项目、不同连接；A 仅有有限动作 | 在 A 会话提交 B 的项目／连接标识、额外动作和自报审批参数，再正常查询 A | 越权请求拒绝且无外部副作用；合法 A 查询仍可用，参数不产生授权 | **通过（I＋A＋R）**；当前冻结I合同实跑7越权＋最后合法A；最终包真实UI选择A→Codex→包内CLI，5类伪B项目/B真实连接/approved/额外写命令/保留身份参数逐项拒绝（INVALID_INPUT或SCOPE_DENIED），每次HTTP计数保持2个连接前置测试、业务增量0，最后A合法查询才增加身份/列表两次且仅用A连接。B无业务请求。模型合成按确认计R，无真实三方外发。[I七拒绝](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-I-SCOPE/attempt-001/result.json)、[真实A/R五类](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-A-SCOPE/attempt-001/result.json)。 |"
+    },
+    {
+      "case": "M11-T07",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 28,
+      "requirementAndLayer": "M11-T07／R07、R09／I＋A＋R",
+      "prerequisite": "A 受管会话有效；保留本次身份和待执行请求",
+      "steps": "正常调用后经 UI 停止／停用／撤销，再使用原身份调用；建立合法新运行作对照",
+      "expected": "原身份失效，不能复活；新运行只能获得当前允许权限；记录与真实进程收尾对应",
+      "originalRowPreserved": "| M11-T07／R07、R09／I＋A＋R | A 受管会话有效；保留本次身份和待执行请求 | 正常调用后经 UI 停止／停用／撤销，再使用原身份调用；建立合法新运行作对照 | 原身份失效，不能复活；新运行只能获得当前允许权限；记录与真实进程收尾对应 | **通过（I＋A＋R，精确复用组合）**；C6实际UI stop/恢复及新operation归新run、旧token前后拒绝与当前6份认证/生命周期源码同hash。C7真实全局停用→原受管CLI SCOPE_DENIED/原token撤销，UI重新启用后仍AUTH_REQUIRED；实际断开确认清掉secret_ref，原CLI拒绝/业务增量0。I原stop精确断言复用，不计过滤项。C7前三命令的引号/原生select/额外恢复菜单过渡失败保留，必需新运行正控沿用C6而非伪称重跑；全部自有进程/端口/观察钩子收尾，明文token0。[组合逐项审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T07/review-002/result.json)。 |"
+    },
+    {
+      "case": "M11-T08",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 29,
+      "requirementAndLayer": "M11-T08／R07、R08／I",
+      "prerequisite": "使用仅用于测试的可识别密钥，覆盖成功与失败",
+      "steps": "执行 CLI 帮助、查询、错误和诊断；检查 Agent 可见命令参数、Skill、普通日志与结果",
+      "expected": "三方测试密钥不出现在这些输出中；JSON stdout 与诊断 stderr 分离，无解析器泄密",
+      "originalRowPreserved": "| M11-T08／R07、R08／I | 使用仅用于测试的可识别密钥，覆盖成功与失败 | 执行 CLI 帮助、查询、错误和诊断；检查 Agent 可见命令参数、Skill、普通日志与结果 | 三方测试密钥不出现在这些输出中；JSON stdout 与诊断 stderr 分离，无解析器泄密 | **通过（I）**；两种真实原生CLI/上游链和恶意解析负例3场景通过：合成业务密钥与run令牌分别核对，实际argv、投放Skill、JSON stdout、受控stderr、诊断/活动/审计/console均无泄漏；仅私有秘密存储不列公开通道。52通道原始旁证被后续runner覆盖，实际通过JSON及逐通道断言源码保留，限制已明示；未为旁证重跑绿矩阵。[结果与边界](证据/并行测试/M11-C1-20261101T154227Z-f04f/M11-C1-I-REDACTION/attempt-001/result.json) |"
+    },
+    {
+      "case": "M11-T09",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 30,
+      "requirementAndLayer": "M11-T09／R09／I＋A",
+      "prerequisite": "可控读超时、上游 CLI 卡住、MCP 断连与写效果未知夹具",
+      "steps": "分别取消、等待截止时间及模拟外部已接受后断连；查询原操作回执",
+      "expected": "有界结束；取消／失败／未知可区分；写动作不自动重发；仅收尾本次自有进程",
+      "originalRowPreserved": "| M11-T09／R09／I＋A | 可控读超时、上游 CLI 卡住、MCP 断连与写效果未知夹具 | 分别取消、等待截止时间及模拟外部已接受后断连；查询原操作回执 | 有界结束；取消／失败／未知可区分；写动作不自动重发；仅收尾本次自有进程 | 通过（C21，证据 `证据/并行测试/M11-C21-20261102T0159Z-t09/M11-C21-A-T09-FAULT/attempt-001/`）：基线 `feature/0.1.0` 提交 `64b93db4`、工作区干净、冻结包 `b87809c7…` 未重建；真实打包 App＋真实 Codex 0.166.0＋回环合成禅道上游（真实 HTTP 传输、按需注入故障，`result.upstream` 已声明，不代表真实站点数据）。挂起读由产品自身结束为 `TIMEOUT`(provider, retryable, attemptCount 3)，断连报 `TRANSIENT_FAILURE`，取消后无输出且会话已结束（`CANCELED`／gone 可区分）；会话只下发 3 条只读能力，无写能力可重发，全部尝试 `effectState=read-only`；写效果未知与不重发另由 I 层 `mail-effect-boundary.test.ts` 覆盖；`ownAppCleanupComplete:true` 仅收尾本轮自有 App/PTY。未覆盖：真实禅道故障时的同类行为、Windows／Linux 平台 |"
+    },
+    {
+      "case": "M11-T14",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 35,
+      "requirementAndLayer": "M11-T14／R09、R10、R12／I＋A＋R",
+      "prerequisite": "A 正常受管运行，已有持久配置；未授权外部终端",
+      "steps": "退出并重启 App，恢复原会话、检查配置；在无有效授权上下文中直接调用 CLI",
+      "expected": "持久配置按原服务保持；恢复与固定权限一致；无授权调用明确拒绝，不因可执行文件可见就获权",
+      "originalRowPreserved": "| M11-T14／R09、R10、R12／I＋A＋R | A 正常受管运行，已有持久配置；未授权外部终端 | 退出并重启 App，恢复原会话、检查配置；在无有效授权上下文中直接调用 CLI | 持久配置按原服务保持；恢复与固定权限一致；无授权调用明确拒绝，不因可执行文件可见就获权 | **通过**；A 层原生退出由 AX 执行器完成（`kAXMenuBar`→菜单项「退出 WillYou」→独立 `AXDialog`「有 1 个任务正在运行」→「退出」；`signalsSent=false`、`syntheticPointerEvents=false`），`normalExit` code 0、原 CLI 消失、旧 run `stopped`／`revoked`；重开同 userData 后经真实侧栏选择恢复同 `nativeId`，新 PTY／run 按原命名权限档完成真实 Codex CLI 读（`origin=cli`），base 配置未变、原 snapshot 指针哈希不变；外部无身份 CLI `AUTH_REQUIRED`。C5 的 I 层夹具红与 CUA `cgWindowNotFound` 缺项、本次前三个失败轮次（相对路径、按到 Apple 菜单、未激活时 `AXWindows` 为空）均保留为历史失败。[本次结果](证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/result.json)、[退出回执](证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/quit-receipt.json)、[C5 原生工具缺项](证据/并行测试/M11-C5-20261101T175140Z-cccc/M11-C5-A-RESTART/attempt-001/)。 |"
+    },
+    {
+      "case": "M11-T29",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 68,
+      "requirementAndLayer": "M11-T29／R07、R15、R02／I＋A＋R",
+      "prerequisite": "真实打包 App、受管 Codex（交互式、沿用用户配置）；两类用户策略：默认配置、自定义具名档案（含拒读目录与允许域名）",
+      "steps": "启动后核对运行计划中的沙箱注入摘要；会话内执行 CLI、写工作区、读拒读目录、访问允许域名与未允许域名、连接 MCP 桥 socket；并行第二个会话；对比用户 `~/.codex/config.toml`",
+      "expected": "仅 CLI 端点被追加放行，MCP 桥 socket 不可达；**原允许的仍允许、原拒绝的仍拒绝**（工作区写入、拒读、允许域名、未允许域名均与不注入时一致）；无法证明等价的策略不注入并降级；两个会话令牌隔离；用户配置未改",
+      "originalRowPreserved": "| M11-T29／R07、R15、R02／I＋A＋R | 真实打包 App、受管 Codex（交互式、沿用用户配置）；两类用户策略：默认配置、自定义具名档案（含拒读目录与允许域名） | 启动后核对运行计划中的沙箱注入摘要；会话内执行 CLI、写工作区、读拒读目录、访问允许域名与未允许域名、连接 MCP 桥 socket；并行第二个会话；对比用户 `~/.codex/config.toml` | 仅 CLI 端点被追加放行，MCP 桥 socket 不可达；**原允许的仍允许、原拒绝的仍拒绝**（工作区写入、拒读、允许域名、未允许域名均与不注入时一致）；无法证明等价的策略不注入并降级；两个会话令牌隔离；用户配置未改 | 通过（C22，2026-11-02）。真实包 `b87809c7…` + 真实 Codex 0.166.0，两类用户策略各一轮：default（`sandbox_mode=\"workspace-write\"`）计划摘要 `source=equivalent-simple-legacy-policy`（digest `82eafde1…`），named（`default_permissions=\"wy_t29\"` + `--profile`）摘要 `source=inherited-named-permissions`（digest `997e284e…`）；两轮都只有 CLI 端点被追加放行（能力面 3 条只读能力、`willyou-app` 连得上），诱饵 socket 零命中，工作区外写入 `/Users/Shared` 被拒，非白名单域名仍拒，用户策略块未被应用改动。具名档案里声明的 allowlist 域名在继承后不可达（codex 报 domain is not on the allowlist），方向为收窄，按用户 2026-11-02 决定接受并记录。两会话令牌隔离由 I 层网关用例覆盖（每 run 随机令牌、仅环境变量下发、8 种拒绝矩阵），本批无第二会话的 A 层运行 | [default](证据/并行测试/M11-C22-20261102T0205Z-t29/M11-C22-A-T29-DEFAULT/attempt-001/result.json)、[named](证据/并行测试/M11-C22-20261102T0205Z-t29/M11-C22-A-T29-NAMED/attempt-001/result.json)；驱动 `scripts/applications/m11-t29-sandbox-ui.mjs`；commit `b8204606` |"
+    },
+    {
+      "case": "M11-T37",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 84,
+      "requirementAndLayer": "M11-T37／R10、R02／I＋A＋R",
+      "prerequisite": "禅道运行计划生效入口为 CLI（或降级为 MCP）的两个会话",
+      "steps": "在生效入口为 CLI 的会话中直接调用该能力的 MCP 工具；反之亦然",
+      "expected": "非生效入口的调用**不得交付、不得执行**（`ENTRY_NOT_ACTIVE` 或 `AUTH_REQUIRED` 均可，须记录实际码与原因）；运行计划记录的 Skill 渲染哈希与实际交付一致",
+      "originalRowPreserved": "| M11-T37／R10、R02／I＋A＋R | 禅道运行计划生效入口为 CLI（或降级为 MCP）的两个会话 | 在生效入口为 CLI 的会话中直接调用该能力的 MCP 工具；反之亦然 | 非生效入口的调用**不得交付、不得执行**（`ENTRY_NOT_ACTIVE` 或 `AUTH_REQUIRED` 均可，须记录实际码与原因）；运行计划记录的 Skill 渲染哈希与实际交付一致 | **通过（I＋A＋R）**；2026-11-02 C19：以真实包＋真实 Codex 0.166.0 的真实会话补齐“运行计划 Skill 渲染哈希与实交付一致”——两个 Skill（`bug-analysis`／`story-review`）各 2 个文件，按 `run-plan.ts:26` 的 `skillFilesHash` 同一公式重算，`renderedHash` 逐一相等（产品自身在 `agent-adapter-registry.ts:133` 用同一校验，不一致即 `HASH_MISMATCH`）；[A](证据/并行测试/M11-C19-20261102T0128Z-t37/M11-C19-A-T37-RENDER/attempt-001/result.json) `status=passed-skill-render-hash`、6 项断言、`sourceCommit 37ccc59f` 干净树。此前 C12 结果：C12 同一数据根两会话：运行计划 mail=`mcp`／zentao=`cli`，会话一实际下发 14 个邮件 v2 工具、禅道 0 个；停用邮件后新会话邮件工具 0、禅道 0，不继承上一会话工具；两方向对未下发工具的实际调用均被拒（`unsupported call: smartdd_zentao_work_list_v2`／`smartdd_mail_draft_list_v2`），无业务结果。宿主级 `ENTRY_NOT_ACTIVE` 由 I 层双向单测精确断言（`run-plan.test.ts:30,58`、`cli-gateway.test.ts:33`，24 用例全绿）；仍缺“运行计划 Skill 渲染哈希与实交付一致”的 A 证据。[A](证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-A-T37/attempt-001/result.json)、[I](证据/并行测试/M11-C12-20261101T225059Z-t37/M11-C12-I-T37/attempt-001/unit-run.txt)。**2026-11-02 用户确认预期口径 A**：不要求改实现去统一错误码（MCP 会话本就不签发 CLI token，为凑码值而发 token 会扩大凭据面）；以“不交付、业务未执行”为硬判据，两方向各一次真实证据，允许码值为 `ENTRY_NOT_ACTIVE`（CLI→MCP 方向）或 `AUTH_REQUIRED`（MCP→CLI 方向，因先撞身份认证）。R10 原文只要求“服务端拒绝非生效入口的调用”，未规定错误码，故不改需求。 |"
+    },
+    {
+      "case": "M11-T38",
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 85,
+      "requirementAndLayer": "M11-T38／R07／I＋A",
+      "prerequisite": "WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写",
+      "steps": "分别发起调用并统计业务执行次数",
+      "expected": "全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过）",
+      "originalRowPreserved": "| M11-T38／R07／I＋A | WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写 | 分别发起调用并统计业务执行次数 | 全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过） | **通过（I＋A）**；独立I18唯一软件场景，含真实registry另一合法run/token与直接host合法写拒绝；另有命名夹具红保留。C7实际App/Codex六负例业务0、恢复合法CLI读成功；另一真实并发Task拿仍active原Task token→PEER_MISMATCH。三身份故障只替换原native读出的事实、不改认证规则，原native10次身份均存在。A未选写在原CLI命令发现阶段SCOPE拒绝，I直接call另证宿主拒绝，层级不混。App/两Codex/3端口关闭，276私有文件约14.8MB明文token0。[A审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T38/attempt-001/review.json)、[I](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-I-T38/attempt-001/result.json)。 |"
+    }
+  ],
+  "M12ApprovedAdjustments": {
+    "T38": "M12-D01 active lease renewal and real stop branches per accepted d01-coordinator-review001. Retain original expired-red; no M11 ledger rewrite."
+  }
+}

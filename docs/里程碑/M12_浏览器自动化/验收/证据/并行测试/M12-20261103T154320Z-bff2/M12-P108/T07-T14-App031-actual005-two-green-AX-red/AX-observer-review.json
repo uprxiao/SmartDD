@@ -1,0 +1,20 @@
+{
+  "classification": "observed fixture sequencing defect, not established product failure",
+  "actualEvidence": {
+    "AXReceiptSHA256": "7eb1624029585c15981f7b7334fcf155b088ef8700354e6efaca839cb8f4c86e",
+    "exactQuitItem": "退出 WillYou",
+    "confirmationPressResult": 0,
+    "signalsSentByAX": false,
+    "processExitedWithinSwift30s": false,
+    "AppPrivateLogSHA256": "8bf24073b5518c25df7ab0695e0fc3efe1f77b947d0092a24b423ff64bbbca6d",
+    "AppLogExactRelevantLine": "Waiting for the debugger to disconnect...",
+    "firstInspectorDetachAtMs": 1794049814720,
+    "cleanupSIGTERMAtMs": 1794049814720
+  },
+  "sourceOrder": {
+    "Swift": "after actual confirmation, wait30s for exact PID exit before final receipt/return",
+    "Node": "producer1463 await runNativeQuit; only afterward producer1483 waitForExit(60000), whose harness517 detaches main inspector"
+  },
+  "conclusionBoundary": "The producer did not release its main inspector until after the AX helper process-exit deadline. This observer loop explains a test obstacle; no successful detach-only natural exit was measured in005. SIGTERM cannot be retroactively removed.",
+  "minimumNextFix": "Persist strict native menu+confirmation success progress, then release only own inspector and wait the same ChildProcess normal0/null/signals[]; keep final native receipt and all original restart assertions."
+}

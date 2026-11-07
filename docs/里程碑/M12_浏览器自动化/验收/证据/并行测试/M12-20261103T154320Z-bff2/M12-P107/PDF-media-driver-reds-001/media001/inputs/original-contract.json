@@ -1,0 +1,120 @@
+{
+  "parent": "M12-T130",
+  "layer": "A only",
+  "authority": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json",
+  "authoritySHA256": "c6e241d28fcfaaa5354d18e6f69d687ff4b684c660a5ebef399aa085a7a2ccdd",
+  "notANewResultLedger": true,
+  "cases": [
+    {
+      "id": "M9-T-F22",
+      "group": "F",
+      "title": "音频扩展全集",
+      "requirements": [
+        "M9-R06.12"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "data": [
+        "D09"
+      ],
+      "steps": "逐个打开aac/flac/m4a/mp3/mp4a/oga/ogg/opus/wav；播放/暂停/seek。",
+      "expected": "每项记录实际codec结果；支持可操作，失败明确；后缀可识别不算已能播放。",
+      "source": "V F13",
+      "prototype": "PS-viewer",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-media-dev066-r19-20261018.json"
+      ],
+      "actual_result": "r19真实App九种音频AAC/FLAC/M4A/MP3/MP4A/OGA/OGG/OPUS/WAV逐个实际播放、暂停、0.1 step定位和拖动恢复；各真实codec/container由独立ffprobe留证。隐藏audio无native controls，真实时长约8秒；损坏WAV明确错误/重试。15样本原生I按真实FileService/媒体能力/分块完整hash核对，跨owner与关闭后读取拒绝；源身份/bytes不变。未宣称每后缀所有codec或系统输出保真。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R06",
+        "M9-R05"
+      ],
+      "prototype_pages": [
+        "P15"
+      ],
+      "prototype_status": "本条I/A完整核对；不扩为独立R/P/V或完整像素结论",
+      "prototype_note": "无新页面/布局，复用既有媒体控件与错误重试；原型P未新增执行。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R06.12"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-F23",
+      "group": "F",
+      "title": "视频扩展全集",
+      "requirements": [
+        "M9-R06.12"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "data": [
+        "D09"
+      ],
+      "steps": "逐个打开mp4/ogv/webm；播放/暂停/seek/关闭。",
+      "expected": "记录video/audio codec、尺寸、时间轴；关闭停止播放与资源；unsupported codec明确。",
+      "source": "V F14",
+      "prototype": "PS-viewer",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-media-dev066-r19-20261018.json"
+      ],
+      "actual_result": "r19真实MP4 H.264/AAC、OGV Ogg VP8/Opus、WebM VP9/Opus三种逐个播放/暂停/seek/关闭，320×180、实际时间轴/视频帧计数及合成器彩色像素通过。有效MPEG4-Part2/AAC MP4暴露DEV066旧包0视频尺寸假就绪，修复后明确视频编码错误并停音/释放；损坏MP4也独立错误。15项关闭后实际节点脱离、paused且src移除，原生I另证能力不可再读，源身份/bytes不变。OGV不冒充Theora或所有codec组合。",
+      "defects": [
+        "M9-DEV-066（已修复并r19原步骤复验）"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R06",
+        "M9-R05"
+      ],
+      "prototype_pages": [
+        "P15"
+      ],
+      "prototype_status": "本条I/A完整核对；不扩为独立R/P/V或完整像素结论",
+      "prototype_note": "无新页面/布局，复用既有媒体控件与错误重试；原型P未新增执行。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R06.12"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "requiredCurrentSamples": 15,
+  "counts": {
+    "playableAudio": 9,
+    "brokenAudio": 1,
+    "playableVideo": 3,
+    "validUnsupportedVideo": 1,
+    "brokenVideo": 1
+  },
+  "boundary": "Original full F22/F23 A. No R/P/full visual/systemoutput/all-codecs/externalApp/nativeSave or wholeT130 completion. Existing U/I stays at original layer; no Native I rerun."
+}
