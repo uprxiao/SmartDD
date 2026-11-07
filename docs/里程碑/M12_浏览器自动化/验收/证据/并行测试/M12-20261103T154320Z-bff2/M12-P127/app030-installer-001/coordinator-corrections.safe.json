@@ -1,0 +1,49 @@
+{
+  "rootAdmission": {
+    "at": "2026-11-07T06:26:15.189993+00:00",
+    "classification": "file-preparation admission only; neverexecuted",
+    "originalReadySHA256": "d1a8a60183903c0b036812350d7049bbe27eda817f2eb05febb2352ce543051a",
+    "wrongLiteralPhase01PreparedSHA256": "965836ef3596cf50588a5b1f03f1908a010584d30ca4829823019dbd3ad580d2",
+    "actualPreparedSHA256": "521ad0a82690c438bcfcbc6f10f28b56fe44cffb3f1a65e2c15a462d4ed6742a",
+    "fix": "Only phase01 expected input SHA and dependent admission wrapper hash. All233controlledinput bytes/modes and13businessmodules unchanged; no stage/criterion bypass.",
+    "reason": "Clonedalreadyboundliteral was not a pending marker; finalpreparedchanged but originalcommands retained oldliteral"
+  },
+  "rootCurrentAdmissionManifest": {
+    "originalPreparedManifestSHA256": "390863c71b8776d7891db9aa58c3b65c038183830ddfab831db72df72ce6ce2d",
+    "unchangedPreparedSHA256": "521ad0a82690c438bcfcbc6f10f28b56fe44cffb3f1a65e2c15a462d4ed6742a",
+    "changedAdmissionFiles": [
+      {
+        "path": "execution-ready.json",
+        "sha256": "546177739da1221f49e23c678f92c0e4b6827e3b4046e145324707618a9e10a4"
+      },
+      {
+        "path": "run-first-six.py",
+        "sha256": "bd2a61f0f73c377c49dfe04d42bdebcc42f31063d979c2f32dfa927edb93a29b"
+      },
+      {
+        "path": "runner-manifest.json",
+        "sha256": "b9c7a4f5860a54c15deac4cbb235dffe4b2012c689f7735567e66433e0743051"
+      },
+      {
+        "path": "root-admission-correction.json",
+        "sha256": "f4d05d487b41fafd273a06193b6f2bac87feca255112b87144723fc3a54c1a37"
+      }
+    ]
+  },
+  "startupReadiness": {
+    "classification": "Pre-startup driver readiness correction, no product/App/criterion change",
+    "beforeRun": {
+      "path": "/private/tmp/willyou-m12-app030-installer-001/installed-startup-001/root-readiness-correction-001/run.mjs",
+      "sha256": "6ac07c3ab9c14bb9b3d1c88572009435fcd39595425f815c5b4629066adaf9fb"
+    },
+    "beforeReady": {
+      "path": "/private/tmp/willyou-m12-app030-installer-001/installed-startup-001/root-readiness-correction-001/execution-ready.json",
+      "sha256": "2fdefe1286885bcfbccc9bba3ede505bf0a67a1d77e4a0544f3f6f02c52f703d"
+    },
+    "actualRunSHA256": "e5ba9b223e793fe97c5937d19669b46dd729132d5ae3b3ac3bcc43ad47e363ae",
+    "actualStartupReadySHA256": "f08d78882dbb7aec370d68b73d3508b0c29fa290366e6e3c42105ed9a895d3cb",
+    "onlyChange": "Original immediate applications.session.currentRun access replaced with existing20s bounded poll; tasks.get verifies original task samePTY; waits actual currentRun. Original3CLI/8business predicates preserved."
+  },
+  "noBusinessReplayForCorrections": true,
+  "noProductionAppMutation": true
+}

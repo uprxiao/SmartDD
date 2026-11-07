@@ -1,0 +1,25 @@
+{
+  "actualFailure": {
+    "path": "/private/tmp/willyou-m12-t015-App030-A-003/runtime-open/failure.private.log",
+    "sha256": "3580a90e514aadbd6a4ef8f5e3fa6fce947307d678a3e443a0fc34789dbd22b5"
+  },
+  "known": "Old driver dereferenced session.currentRun without observing its readiness. No old task/session descriptor was retained. Exact currentRun-null subcondition unknown.",
+  "source": [
+    {
+      "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source/src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da",
+      "lines": "183-229;435-437"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source/src/main/core/applications/session-diagnostics.ts",
+      "sha256": "318f6b48ce02abb0f7c62cfde195dee064ecd0b6ffd95ff32e157ba4b43b7754",
+      "lines": "114;263-265"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-interrupt-source-034/source/src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "lines": "372-379"
+    }
+  ],
+  "newBoundary": "One task create, then <=20000ms polling same actual task/PTY, run/effectiveCLI/receiver. Every descriptor recorded before next sample; actual failure/timeout stops without reopen/recreate/retry. Fresh open-only App, no old DB/cookies/auth copied."
+}

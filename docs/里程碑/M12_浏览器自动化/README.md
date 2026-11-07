@@ -20,20 +20,30 @@
 
 ## 当前生产与验收候选
 
-- 当前统一候选为[App027/source031官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App027-official-build-001/manifest.json)，继承已完成的T091生产修复，并接入标题栏测宽布局修复。[当前arm64安装、原生、受管CLI启动与体积核验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app027-installer-001/manifest.json)已完成；[受影响原型交互复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/header-observer-P-003/manifest.json)通过，实际App标题栏视觉矩阵仍待。[T091原A／R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/coordinator-final-002/manifest.json)已完整通过；未正式分发或发布。
+- 当前本机arm64已安装复验候选为[App030/source034](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app030-installer-001/manifest.json)，源码提交`0c10174a`。完整下载及授权已按各自原合同收口；其它原用例与x64仍待，不代表完整M12交付或发布。
+
+- 此前完成安装回归的候选为[App027/source031官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App027-official-build-001/manifest.json)，继承已完成的T091生产修复，并接入标题栏测宽布局修复。[当前arm64安装、原生、受管CLI启动与体积核验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app027-installer-001/manifest.json)已完成；[受影响原型交互复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/header-observer-P-003/manifest.json)通过，实际App标题栏视觉矩阵仍待。[T091原A／R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/coordinator-final-002/manifest.json)已完整通过；未正式分发或发布。
 - App025原[实际Host与Native缓存机制实测](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P129/actual-Host-cache-I003/manifest.json)已取得当前修复的直接证据；原I003解析器失败与当时缺项保留；[I004实际停止补证](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P129/actual-Host-cache-I004/manifest.json)已直接验证原Map／Signal及DB转换。不扩大为全部缓存或历史文件清除保证。[真实T125同任务修复复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P121/t125-coordinator-final-007/manifest.json)已完整收口。
 - App025／App024此前安装事实及App023／App022的真实SOP等结果仅按未受影响范围复用。当前变更、源码及二进制身份核对见上述构建与Root复核；旧证据保留原时点结论。
 - [原性能验收](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P103/coordinator-case-review.json)、[真实长运行与停止后身份失效](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P109/real35min-coordinator-001/coordinator-case-review.json)按未受影响范围复用，不重复执行或计数。
 
 ## 最近闭合与当前缺项
 
-- [Esc修复后的App028官方目录包](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json)已通过相关工程检查，安装与完整下载验收待；App027仍保留其已验证结果与固定T095续接依据。
+- [T130原F12/F17实际App子组](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-App030-A003-complete/manifest.json)已完成；[原失败与协调复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-coordinator-004/manifest.json)保留。父用例的其余原矩阵仍待，继续Cookie恢复及其它原缺项。
+
+- [T095原完整A／真实R](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/coordinator-final-009/manifest.json)已完成。全部原业务及历史授权来源实际可见，旧失败与独立清场保留；App030本机安装复验已完成，继续原文件预览与Cookie恢复等缺项。
+
+- [下载中断实际定位](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App029-interrupt-background-red-001/manifest.json)已确认可恢复中断未收尾；[修复回归及App030官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App030-interrupt-fix-build-001/manifest.json)通过，[后台真实中断复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App030-interrupt-background-green-002/manifest.json)亦通过；[完整下载U／A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/coordinator-final-005/manifest.json)已收口，[App030本机arm64安装／原生／启动复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app030-installer-001/manifest.json)已完成；x64与其余原用例保持待验边界。
+
+- [App029/source033官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App029-official-build-001/manifest.json)及[原严格下载几何复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App029-geometry-green-002/manifest.json)通过；下载Esc已在App028真实复验。[原完整下载A002部分结果](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App029-A002-partial/manifest.json)的中断缺口已由App030实际复验及完整A收口；原红保留。全部测试与发送沿用用户统一授权，不再逐项询问。
+
+- [Esc修复后的App028官方目录包](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P015/App028-official-build-001/manifest.json)保留中间工程检查与真实Esc复验事实；完整下载已在App030收口，App027仍保留其已验证安装结果和T095固定验收依据。
 
 - [T091默认选用／取消后真实拒绝](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T091/coordinator-final-002/manifest.json)和[T132网页／HTML／MCP共存回切](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P130/coordinator-final-003/manifest.json)已完整收口，原解析／夹具红及边界保留；[T080导入](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/coordinator-final-003/manifest.json)同批已归账。
 
 - [T130当前CSV、光栅原输入及Office交接的组件补验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/current-component-root-review-002/manifest.json)已形成实际Native／解析线程与清场证据；[CSV原观察器红及进程角色勘误](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/csv-F17-root-review-001/manifest.json)保留，不外推实际App A／完整T130。[关闭时序独立诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/Root-close-review-004/manifest.json)已区分RPC断连与原进程退出，旧补图技术红未改。
 
-- [原文件预览App验收静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-App026-A-static-ready-001/manifest.json)已完整复核，待桌面前置后执行；[标题栏遮挡调查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/header-overlap-static-001/manifest.json)确认原型问题，现已形成测宽布局修复及受影响P绿测；当前App A仍须原判据实测。
+- [原文件预览App验收静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F12-F17-App026-A-static-ready-001/manifest.json)保留其当时准备事实，现已在上述App030实际完成F12/F17子组；[标题栏遮挡调查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/header-overlap-static-001/manifest.json)确认原型问题，现已形成测宽布局修复及受影响P绿测；当前App A仍须原判据实测。
 - [T080原完整I静态交接](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/App026-full-I-static-ready-001/manifest.json)已复核；[App027完整I及Root复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/coordinator-final-003/manifest.json)已完成，原驱动红与判定字段错误均保留，不重跑业务。[原型参照支持态完整矩阵](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-full-attempt009/manifest.json)与[新增失败态补图](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/missing-source-P-attempt004/manifest.json)已取得；补图原关闭RPC技术红、此前夹具失败及旧图来源均保留，实际App对照仍待，不计正式整条通过。
 
 - [B13已确认缺失来源的合成演示入口修复与原型U](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/prototype-missing-source-U-ready-001/manifest.json)已形成可恢复源码；[新状态实际P补图](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/missing-source-P-attempt004/manifest.json)已取得，原关闭技术红保留，[“完成”后的返回／重开交互](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/header-return-P-001/manifest.json)已补验。原不可变参照与App026生产包保持各自依据，详见[原型变更](原型/原型说明与变更.md)。
@@ -61,7 +71,7 @@
 
 ## 接续顺序
 
-先核当前分支、轮次资源、实际构建和权威账。App027已完成本机arm64安装与启动回归；有效旧证据按未受影响范围复用。最近开窗前实际又见锁屏，当前一次解锁前置待；后台S6和文件准备继续。解锁后沿既有准确PID首次激活、真实焦点稳定及原guard继续，不重复请求测试或发送授权。T080已完整归账；T091及T132现已完成原全部层级；继续T095完整A／R与T015完整下载A；真实系统／设备前置仍独立登记。
+先核当前分支、轮次资源、实际构建和权威账。App030已完成本机arm64安装与启动复验；有效旧证据按未受影响范围复用。统一测试与发送授权持续；每次沿已有准确PID首次激活、真实焦点稳定及原guard继续，不再逐项询问。T080、T091、T132、T095和T015已按原合同归账；T130已补齐F12/F17实际A子组，继续其余原矩阵、T081恢复及系统／设备缺项。
 
 标题栏修复已通过受影响八组合原型交互，原容器候选菜单遮挡红保留。当前源和包身份见上方官方构建，旧原型参照只复用未变范围，受影响标题状态使用新基线；实际App矩阵、系统及外部条件缺项不因工程检查通过而收口。
 

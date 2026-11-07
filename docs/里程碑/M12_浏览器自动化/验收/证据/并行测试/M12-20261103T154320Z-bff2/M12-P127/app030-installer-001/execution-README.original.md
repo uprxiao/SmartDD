@@ -1,0 +1,7 @@
+App030/source034 成熟原S6九阶段，仅文件准备，正式新增0。Root生产commit0c10174a9f0a17c96cbea70c54e0e1027dd3d8df。App027原完整S6结果在原路径；App028仅prepared未执行。当前ASAR 0ca236ddab9cac65d1d57e93ed19a2476df266483a28cdc9878729cff8be0072；实际main 92178f5de560fca79ccfb9e474849d5e979557d642efcc3000097838ae116d91不同旧028/027，不沿用旧22main/preload等价。
+
+原9phase/8judge/完整payload与尺寸分账合同不变。当前176criticalpins/Info.plist42.11.14按实际包读取；installed pin finalReady=false，buildGate/nativeGate SHA=null。必须本轮04 input=DMG=installed全部bytes/mode/symlink、ownmounts detached，05 installed六原生全passed，06绑定当前安装pins，Root复核新startup READY后才07隐藏App执行三stockCLI，08独立cleanup --verify且WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1，09原8judge。
+
+01–06精确命令见execution-ready.json firstSixExecute；全部九命令、最终准确资源检查和recheck-size.py独立重新加总均在READY。Root独占所有实际执行，本执行者无Node/包装器/Native/App/OS/CLI/HTTP/模型/挂载/编译。
+
+baseline仅只读复用既存精确trusted DMG，阶段01再私有复制并核hash/独立inode；不重新下载、不读凭据。只prepackaged当前包，不重建生产、不发布、不装日常Applications。Installed Applications、mounts/baseline/candidate、privateApp/output/native-home/tmp及startup runtime都未预建；目录shape完整准入保留。历史静态控制原时间/字节显式继承，不冒充当前Node/native绿。
