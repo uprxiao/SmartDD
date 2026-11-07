@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-07T17:05:37.203383+00:00",
+  "actualRootTool": "9ed065",
+  "outcome": "Pure static failed before App/runtime; 0App and no business execution",
+  "badFixture": {
+    "name": "metadata-gfm.md",
+    "actual": "10f9800bd6533aa46eb3bb1d6949e888a6a0b8342c2fb7a99b8e6a6c5df2c023",
+    "expected": "ca90b8fafec7746e347777aeb7594d74934ba2f835de050cadc13e6e2716f887"
+  },
+  "rootCause": "Continuation path-retarget used Path.read_text/write_text for all .md files, including original CRLF fixture; universal-newline normalized CRLF to LF. No root string was present in that fixture.",
+  "repair": "Restore raw bytes from already frozen original001 fixture and verify original oracle, never change oracle/complex contract. Future retarget only driver text, copy all fixture bytes verbatim."
+}

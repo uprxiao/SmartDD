@@ -1,0 +1,24 @@
+--- 001/format-flow.mjs
++++ 002/format-flow.mjs
+@@ -1,5 +1,6 @@
+ import assert from'node:assert/strict';
+ import{readFile}from'node:fs/promises';
++import{formatReadinessExpression}from'./format-readiness.mjs';
+ export async function runFormatCases({app,ui,mode,oracle,project,ready,persist,screenshot,fingerprints,trace,resources,setStage,poll}){
+  mode.actualTheme=await app.evaluate('document.documentElement.className');
+  for(const original of oracle.cases){
+@@ -10,10 +11,11 @@
+   await ui.click('.fw-name-results [role=option][title='+JSON.stringify(item.path)+']');
+   if(item.kind==='markdown'){
+    c.initial=await ready.wait(item,'markdown-default');
+-   // Original rich-view check moves selection out of metadata through actual input.
+-   // TAIL is a plain CM line, never a task checkbox or a document mutation.
+-   await ui.click('.cm-content .cm-line','TAIL_metadata');
++   // Restore the exact original static-viewers-ui.mjs real editor click; rich paragraph DOM is virtual.
++   c.beforeEditorClick=await app.evaluate(formatReadinessExpression);await persist();
++   await ui.click('.cm-content');c.afterEditorClick=await app.evaluate(formatReadinessExpression);await persist();
+    for(const type of['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40,modifiers:4});
++   c.afterMetaArrowDown=await app.evaluate(formatReadinessExpression);await persist();
+    c.rich=await ready.wait(item,'markdown-rich');setStage(item.name+':source-roundtrip');await persist();await ui.click('[aria-label="查看源码"]');c.source=await ready.wait(item,'source');assert.equal(c.source.editor.model,item.normalized);await ui.click('[aria-label="查看文档"]');c.returned=await ready.wait(item,'markdown-rich');c.sourceRoundTripExact=true;
+   }else if(item.kind==='binary'){
+    c.initial=await ready.wait(item,'binary');assert.equal(c.initial.cmCount,0);c.binaryNeverText=true;

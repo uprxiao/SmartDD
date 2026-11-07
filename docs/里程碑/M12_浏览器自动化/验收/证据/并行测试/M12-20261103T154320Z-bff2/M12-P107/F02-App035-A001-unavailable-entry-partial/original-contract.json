@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-07T17:01:49.992047+00:00",
+  "scope": "M12-T130 U+A mapping; original F02 current A only",
+  "originalSource": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a"
+  },
+  "originalRow": "| **M9-T-F02 元数据非文件与失败**<br>M9-R08.1 | 本期本机 | 单元／集成／安装端到端<br>I+A / D04+D05 | 对目录路径和metadata失败分别打开文件入口。 | 目录按策略reveal；失败明确或按已批准fallback；不把异常猜成可编辑文本。<br>依据：V R04–R06 | P16；F02约定I/A完整核验；既有原型状态未改，未新增P/V结论<br>实际：2026-10-20 9de5完整I/A通过，复用正常r118。3真实native/FileService集成零skip：目录作为document明确NOT_REGULAR但可list，实际chmod000 PERMISSION→恢复后精确原字节，实际unlink MISSING→重建可开。真实App浅深六组：目录在内部树按既有策略展开，不发文件open/不创建目录文本tab，子文件正确；实际权限失败有明确错误/重试且无文本编辑器，恢复后点原重试加载完整源并清错。42原RPC输入输出hash同、四handler恢复、零save，四文件hash/inode/mtime/full-mode相同，App正常0/null且PID结束。仅外部driver退出观察有界180s，生产/P/依赖/包未变；2048输入仅该非生产driver差异，包/broker哈希相同，沿用r118六native smoke/339运行+两来源一致及类型检查。无系统Finder/原生选择器/P/R/V或其他平台结论；事后审计mode位计算错误已明示修正。 | 通过 | [记录](证据/m9-acceptance-metadata-open-20261020-9de5.json) |",
+  "originalDriver": {
+    "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/metadata-open-ui.mjs",
+    "sha256": "636d86816a32857400725ee8b067538c9b3517e69212ab90959bf0db295d6b61"
+  },
+  "criteria": [
+    {
+      "id": "F02-A1",
+      "expected": "目录通过当前真实树节点展开，不发files.open、不创建目录文本tab；真实子文件打开，当前CM完整正文与原Native read一致。"
+    },
+    {
+      "id": "F02-A2",
+      "expected": "真实chmod000精确私有metadata文件后，经真实树打开得到Native PERMISSION；界面明确错误/真实重试按钮，无猜测文本编辑器。"
+    },
+    {
+      "id": "F02-A3",
+      "expected": "恢复该文件精确原mode后真实点原重试，完整当前CM原文与真实Native read正确且清错。"
+    },
+    {
+      "id": "F02-A4",
+      "expected": "原两theme各三分支共6检查，不增参数；私有chmod全部恢复，全部源hash/inode/mode/mtime保持，仅两故障文件ctime明确由实际chmod/restored stat分账，不称全stat未变。"
+    },
+    {
+      "id": "F02-A5",
+      "expected": "被动IPC原输入输出保持、0save/checkpoint、无task/model/auth；一次reload/oncePID/真实3s/原guard，App正常0/null/signals[]与精确独立资源清场分别通过。"
+    }
+  ],
+  "existingI": "原行3真实native/FileService集成已通过；本组不重复有效I，不把本A输出作整T130通过。",
+  "formalIncrement": 0
+}

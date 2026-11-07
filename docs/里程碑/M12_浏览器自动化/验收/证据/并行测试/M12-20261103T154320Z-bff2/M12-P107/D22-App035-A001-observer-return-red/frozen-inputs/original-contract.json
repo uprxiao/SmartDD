@@ -1,0 +1,78 @@
+{
+  "case": {
+    "id": "M9-T-D22",
+    "group": "D",
+    "title": "别名迁移冲突与host隔离",
+    "requirements": [
+      "M9-R04.4",
+      "M9-R07.6"
+    ],
+    "level": "组件／集成／安装端到端",
+    "environments": [
+      "U",
+      "I",
+      "A"
+    ],
+    "data": [
+      "D01",
+      "D04",
+      "D11"
+    ],
+    "steps": "准备旧checkpoint中两个同物理文件别名：内容相同/不同；再给不同host相同绝对路径。升级恢复。",
+    "expected": "相同内容可确定性归一；不同内容保留冲突或人工恢复入口，不以最后写覆盖；不同host绝不合并；main校验root，不信renderer绝对路径。 本期对非本地host旧记录仅保留隔离不可用状态，不建立远程连接或验证远程恢复。",
+    "source": "R2 I01；R04.4；迁移设计",
+    "prototype": "PS-tabs",
+    "basis": "R2静态事实＋明确标注的迁移设计；正式运行未执行",
+    "status": "通过",
+    "evidence": [
+      "证据/m9-acceptance-alias-root-dev107-r59-20261019.json"
+    ],
+    "actual_result": "DEV107完整U/I/A：U2两种metadata完成顺序下canonical去重且foreign host保留占位，I2真实SQLite/ProjectService/恢复日志/Store同/不同两份别名草稿。r59实际A2正常全进程重启后本机归一、foreign同路径不open；两份真实原文从保存恢复材料入口逐条可查看，明确恢复保存其中一份后另一份原文仍可人工恢复，源只受明确保存影响。保留原路径/scope直接草稿授权，不要求两项inline按钮；初轮窄断言、已释放ref和旧预览等待失败保留。",
+    "defects": [],
+    "legacy_parent_requirements": [
+      "M9-R04",
+      "M9-R08"
+    ],
+    "prototype_pages": [
+      "P03",
+      "P06",
+      "P09"
+    ],
+    "prototype_status": "已核对本用例实际App状态；完整Codex视觉按独立P/V验收",
+    "prototype_note": "沿用确认的占位/重试/恢复材料设计，本批原型源码未变；真实持久化/授权由U/I/A分别取证。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-nonlocal-rejection",
+      "current_branch": "本机别名迁移与手工冲突保护；非本地host的旧记录隔离不可用，不合并到本机同名路径。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R04.4",
+        "M9-R07.6"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "currentLayer": "A only",
+  "currentExecuted": false,
+  "originalDriver": "original/alias-draft-restore-ui.mjs",
+  "originalScenarios": [
+    "same",
+    "different"
+  ],
+  "plannedAppProcesses": 4,
+  "APIOnlyPreconditions": "Own project/roots, actual native file identities+2checkpoints, legacyduplicatealias+foreignhost workspace serialized bypublicAPI, before fullnormalquit/restart. No directSQL/store/DOM injection.",
+  "actualUI": "Two originalrecoverymaterials readable; foreignplaceholder noNativeopen; realRestoreDraft/explicitSave; otheroriginal remains manualrecoverable andsource notoverwritten.",
+  "observer": "Original5handlers passiveonly; same this/args/return/throw delegated, fixedlabels; restored before ownquit.",
+  "privateUICompletion": "Strict originalpoint equality notrelaxed. If finalpreinput geometry changes before firstmouseevent, remaininsideoriginal5s boundedwait. No globalhelper/guard modification or inputreplay.",
+  "otherGroupsNotCovered": [
+    "D21",
+    "D24",
+    "S09",
+    "D23"
+  ],
+  "formalIncrement": 0
+}

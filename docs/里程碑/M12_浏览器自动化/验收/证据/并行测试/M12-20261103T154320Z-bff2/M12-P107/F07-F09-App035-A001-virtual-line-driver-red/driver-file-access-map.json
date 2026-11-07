@@ -1,0 +1,121 @@
+{
+  "at": "2026-11-07T16:58:30.012428+00:00",
+  "accesses": [
+    {
+      "call": "run/admission",
+      "paths": [
+        "READY.json",
+        "pin.json",
+        "oracle.json",
+        "static-result.json",
+        "READY.inputs[*]"
+      ],
+      "kind": "static frozen; READY final Root-reviewed artifact",
+      "source": "this root + explicit external inputs"
+    },
+    {
+      "call": "run/admission check",
+      "paths": [
+        "lease.receipt.json"
+      ],
+      "kind": "coordinator Root generated control",
+      "source": "fresh matching readySHA/scope/expiry"
+    },
+    {
+      "call": "run/materialize",
+      "paths": [
+        "fixtures-input/{metadata-gfm.markdown,metadata-gfm.md,metadata-gfm.mdown,metadata-gfm.mdx,metadata-gfm.mkd,UTF-8.txt,valid.wasm,Makefile,Dockerfile,empty,unknown.ext}"
+      ],
+      "kind": "static frozen",
+      "source": "oracle.cases exact enumeration"
+    },
+    {
+      "call": "run/activation and foreground",
+      "paths": [
+        "initial-activation-authorization.json",
+        "activate-initial-exact-pid.applescript",
+        "frontmost.jxa"
+      ],
+      "kind": "static frozen",
+      "source": "local exact SHA"
+    },
+    {
+      "call": "run/fingerprints/native reads",
+      "paths": [
+        "runtime-001/normal/project/{oracle cases}"
+      ],
+      "kind": "runtime owned synthetic files",
+      "source": "only materialized from frozen inputs"
+    },
+    {
+      "call": "run/output",
+      "paths": [
+        "runtime-001/{normal/{home,tmp,work,codex,userdata,electron.private.log,*.png,*.private.log},group-failure.private.log}",
+        "execution-started.json",
+        "initial-foreground-attempt-{newAppPid}.json",
+        "mode-normal.json",
+        "raw.json",
+        "live.json"
+      ],
+      "kind": "runtime output",
+      "source": "fresh absent paths; no copy of prior runtime/auth"
+    },
+    {
+      "call": "resources inherited exact ps/lsof",
+      "paths": [
+        "exact App child PID/loopback TCP/own gateway Unix paths"
+      ],
+      "kind": "runtime read-only observation",
+      "source": "original owned ChildProcess descendant observation; no arbitrary file enumeration"
+    },
+    {
+      "call": "cleanup.py",
+      "paths": [
+        "raw.json",
+        "cleanup.json"
+      ],
+      "kind": "runtime input/output",
+      "source": "exact ROOT guard, no kill/delete"
+    },
+    {
+      "call": "judge.mjs",
+      "paths": [
+        "raw.json",
+        "cleanup.json",
+        "oracle.json",
+        "original-contract.json",
+        "judgement.json"
+      ],
+      "kind": "runtime result + frozen input/output",
+      "source": "original eight criteria"
+    },
+    {
+      "call": "pure checker",
+      "paths": [
+        "READY.candidate.json",
+        "oracle.json",
+        "private *.mjs graph",
+        "cleanup.py",
+        "sourceRoot/{selected source refs}",
+        "prior F21 cleanup.py",
+        "static-result.json",
+        "static-cache"
+      ],
+      "kind": "static frozen input + own static output",
+      "source": "AST/FS/predicate only; no producer/DOMfactory"
+    },
+    {
+      "call": "finalize-ready.py",
+      "paths": [
+        "READY.candidate.json",
+        "static-result.json",
+        "READY.inputs[*]",
+        "READY.json",
+        "manifest.json"
+      ],
+      "kind": "file-only finalization",
+      "source": "actual static green required; no replacing prior READY"
+    }
+  ],
+  "staticRuntimeShape": "No runtime/userData/output precreation. Only fixtures-input and history are static directories."
+}
