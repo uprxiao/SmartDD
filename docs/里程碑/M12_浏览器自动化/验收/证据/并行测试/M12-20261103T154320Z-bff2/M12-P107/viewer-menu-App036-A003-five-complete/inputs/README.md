@@ -1,0 +1,4 @@
+Existing no-title viewer menu continuation003: five missing original loops only, first001 lightMD remains separately referenced. Same installed App036/source040 and exact CRLF fixture bytes.
+Native ownership.allowed remains original raw membership proof. Wrapper effectiveAllowed separately permits exact native window+visible+notminimized and literal focusedWC=null only if this main DOM is focused and visible; foreign is always denied. No arbitrary-window, foreground-name-only or DOM-only pass.
+Private inherited guard08bf unchanged, once installation, no rearm/refocus. Diagnostic native query remains exact own fixed-label delegation and is read before guard decision even if DOM hidden. All rejected input records retain full same-check DOM/native snapshot without sampling cap; sticky guard never performs new input or accepts regained focus.
+No business judge/oracle/flow change, no actual Node/Native/App/OS execution. Root static+fresh lease required.

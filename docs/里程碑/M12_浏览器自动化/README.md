@@ -20,7 +20,7 @@
 
 ## 当前生产与验收候选
 
-- 当前候选为[App036/source040官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/App036-official-build-001/manifest.json)，源码提交`d238562b`，修复预览标题复用时遗漏显式查看器选择。[相关工程红绿与类型检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/title-viewer-priority-unit-fix-001/manifest.json)和[当前包安装／原生／受管CLI启动](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app036-installer-001/manifest.json)已完成。[受影响的实际查看器菜单回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A001-focus-partial/manifest.json)因失焦部分执行，完整视觉／系统及设备验收仍待；原App035等证据仅按未受影响范围保留，不据新包存在宣称完整交付。
+- 当前候选为[App036/source040官方构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/App036-official-build-001/manifest.json)，源码提交`d238562b`，修复预览标题复用时遗漏显式查看器选择。[相关工程红绿与类型检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/title-viewer-priority-unit-fix-001/manifest.json)和[当前包安装／原生／受管CLI启动](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app036-installer-001/manifest.json)已完成。[受影响本地查看器菜单回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A003-five-complete/manifest.json)已收口，原失焦历史保留；实际外开、完整视觉／系统及设备验收仍待；原App035等证据仅按未受影响范围保留，不据新包存在宣称完整交付。
 
 - 此前已安装验收源码提交`a3a0c90d`对应App031/source035，[官方构建及组件复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/Cookie-error-App031-build-001/manifest.json)和[受影响实际界面复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/Cookie-error-App031-A001-complete/manifest.json)完成；[当前arm64安装／原生／启动复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app031-installer-001/manifest.json)已完成，其余原缺项继续。
 
@@ -33,13 +33,15 @@
 
 ## 最近闭合与当前缺项
 
+- [当前本地查看器菜单](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A003-five-complete/manifest.json)已补齐，原失败与当前正面观察分别保留；[外开接收器资格](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F01-native-qualification-015-failed/manifest.json)仍未通过，闲置临时App已清理。实际系统外开未计通过，完整M12尚未交付。
+
 - [D21原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/D21-App036-A001-complete/manifest.json)已在当前App036收口，原红保留；[P03原失败前置污染诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/P03-precondition-diagnosis-001/manifest.json)明确尚未到最小化，系统恢复条件仍待。文件区其余缺项按既有计划继续，完整M12尚未交付。
 
 - [D11原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/D11-App036-A001-complete/manifest.json)、[D19原完整A](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/D19-App036-A001-complete/manifest.json)已在当前App036定点收口；原失败与保护边界保留，未重复构建或已绿组。文件回归其余缺项仍见既有计划，完整M12尚未交付。
 
 - [外开接收器技术预检与清场](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F01-native-receiver-preflight-001/manifest.json)已归档；系统候选注册前置未就绪，未执行产品外开流程，未增加完整通过用例。已停止反复夹具试验并删除该自有临时App；系统实按与红框后置项见既有计划。
 
-- [当前菜单的自有HTML子视图焦点诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A002-owned-view-diagnostic/manifest.json)已取得真实归属快照，但后续拒绝条件未完整留证，菜单仍未完整通过。这是待处理的技术驱动缺项；不把它都归给用户，也不因诊断补证增加原用例通过数。
+- [当前菜单的自有HTML子视图焦点诊断](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/viewer-menu-App036-A002-owned-view-diagnostic/manifest.json)已取得真实归属快照，但当时后续拒绝条件未完整留证；该旧负条件原因仍未知。当前本地菜单结果见上方新证据，不据旧诊断增加原用例通过数。
 
 - [来源前置组合复核](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/navigation-applicable-closeout-001/manifest.json)已按原用户确认修正条件适用性；[接口查看器优先级修复](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/title-viewer-priority-unit-fix-001/manifest.json)已通过相应U/I和类型检查，source040／App036官方构建与本机安装验收已完成；受影响菜单的实际App回归部分执行后失焦停止。当前候选见上方，完整M12尚未交付。
 
