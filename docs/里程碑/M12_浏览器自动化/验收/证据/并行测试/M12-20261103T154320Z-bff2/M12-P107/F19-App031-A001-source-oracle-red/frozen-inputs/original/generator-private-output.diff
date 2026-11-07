@@ -1,0 +1,22 @@
+--- original-j11-generator
++++ private-j11-output
+@@ -12,7 +12,7 @@
+   except(UnicodeDecodeError,csv.Error):out['utf8']=False
+  return out
+ if len(sys.argv)>1 and sys.argv[1]=='verify':print(json.dumps(inspect(sys.argv[2]),ensure_ascii=False));sys.exit()
+-base=Path(tempfile.mkdtemp(prefix='willyou-office-writeback-fixtures-',dir='/private/tmp'));root=base/'project';root.mkdir();rows=[['name','quoted','multiline','empty','formula'],['中文🙂','comma, plus\tTAB','line 1\r\nline 2','','=SUM(A1:A2)'],['0012345678901234567','say "Hello"','末行'],['empty','','','',"+literal_text"]];cases=[]
++base=Path('/private/tmp/willyou-m12-t130-F19-App031-A-prep-001/fixtures/j11');root=base/'project';root.mkdir();rows=[['name','quoted','multiline','empty','formula'],['中文🙂','comma, plus\tTAB','line 1\r\nline 2','','=SUM(A1:A2)'],['0012345678901234567','say "Hello"','末行'],['empty','','','',"+literal_text"]];cases=[]
+ for delimiter,extension in[(',','csv'),('\t','tsv')]:
+  source=''.join(delimiter.join('"'+v.replace('"','""')+'"'if any(c in v for c in ['"',',','\t','\r','\n'])else v for v in row)+['\r\n','\n','\r','\r\n'][i]for i,row in enumerate(rows))
+  for bom in[False,True]:
+--- original-docx-generator
++++ same-original-variants-private-original-template
+@@ -35,7 +35,7 @@
+    elif role=='smask':assert set(pixels)=={255};masks.append({'file':p.name,'allAlpha':255})
+  assert green,'Source green image missing/corrupted in actual PDF'
+  result={'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':str(source),'sourceInfo':info,'pdf':str(pdf),'pdfSha256':sha(pdf.read_bytes()),'pages':pages,'fonts':font_rows,'fontDetails':font_text,'imageDetails':images,'greenImages':green,'alphaMasks':masks,'comparisons':{'pagesA4':True,'allTableCellsAndChinese':True,'columns225pt':True,'headerFooterBothPages':True,'revisionTextMatchesSource':True,'originalGreenPNGExact':True},'limits':['No MSWord/Codex pixel equivalence','Declared font names versus actual embedded PDF names recorded; substitution may occur','Comments and revision XML untouched, not acceptance/rejection or editable writeback claim']};(out/'result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False));sys.exit()
+-base=Path(tempfile.mkdtemp(prefix='willyou-docx-preview-',dir='/private/tmp'));project=base/'project';project.mkdir();template=json.loads(subprocess.check_output([sys.executable,'scripts/files/text-writeback-fixtures.py'],text=True));original=Path(template['project'])/'complex.docx'
++base=Path('/private/tmp/willyou-m12-t130-F19-App031-A-prep-001/fixtures/base');project=base/'project';project.mkdir();template=json.loads(Path('/private/tmp/willyou-m12-t130-F19-App031-A-prep-001/fixtures/j11/fixtures.json').read_text());original=Path(template['project'])/'complex.docx'
+ with zipfile.ZipFile(original)as z:entries=[(x,z.read(x.filename))for x in z.infolist()]
+ cases=[]
+ for name,mode in [('revisions.docx','source-revisions'),('font-fallback.docx','missing-font'),('clean.docx','generated-clean-comparison')]:

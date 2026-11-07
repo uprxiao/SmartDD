@@ -1,0 +1,47 @@
+{
+  "sourceRoot": "/private/tmp/willyou-m12-t130-F19-App031-A-prep-001",
+  "originalContractSHA256": "7ed83e48aa6bdc37da1305bc57210cf46bedc499e5f815a6be16faa7f7c26f85",
+  "judgeSHA256": "587464a88cf6d823736838d7eade9f621c88548c4284b3c299a8abc1a9956672",
+  "flowSHA256": "d2f161f03d83f4f1c590b504684d1b6457f9857923e80a502273311a20bb52ee",
+  "DOMObserverSHA256": "ad172c93ec15a505dc9f241bc18beaecab61489fd04fee00fbac405f5ef9755e",
+  "originalSteps": "表格/图片/页眉/中文字体/修订docx打开并查看。",
+  "originalExpected": "Document渲染结果与fixture参照逐项记录；不宣称未验证版式/修订/写回等价。",
+  "currentFinalOriginalScope": "Original final r167 current-defaultlegacy3complexDOCX×light/dark6:2pages,table4cells,decoded64x32image,header/footerChinese,revisions/fontfallback,real scroll2→1,fullsourceZIP/stat unchanged. Original older nativePDFI separate, not replayed/misrepresented as currentdefaultA.",
+  "coverage": [
+    {
+      "original": "三原DOCX/浅深6/两页正文与原第2页保留",
+      "judge": "original-F19-six-exact-DOCX-theme-cases + actual-default-legacy-two-page-readonly-scriptless-frame + original-table-image-header-footer-Chinese-revisions-fonts",
+      "gate": "exact6/unique6 + sourceSHA + actual2pages, full actualpage text/geometry recorded and original marker tokens checked"
+    },
+    {
+      "original": "表4格/已解码64×32图片/页眉页脚中文/修订内容/缺字体实际差异",
+      "judge": "original-table-image-header-footer-Chinese-revisions-fonts",
+      "gate": "4exactcell tokens, image64×32+2048exactdecoded pixels, everypage header/footer+Chinese+insertion/deletion/sourcehasRevisions; actualcomputedCSS fontfamilies and declaredfontnames retained"
+    },
+    {
+      "original": "只读/真实滚动2→1/源内容保护",
+      "judge": "real-wheel-page2-to-page1-and-stable-geometry-completion + original-eight-RPC-six-Worker-delegation-release-and-restore + all-six-original-source-stat-hash-mode-no-tasks",
+      "gate": "actualtrusted scroll + target page2→1/500ms stable page&geometry; zero save/checkpoint/tasks; before=after6fullsourcehash/stat/mode; original8RPC/sixWorker delegation restore"
+    },
+    {
+      "original": "原生读取同份真实源/无旧PDF投影替代",
+      "judge": "actual-original-validated-Native-OOXML-source-receipts-and-fullchunks",
+      "gate": "currentactualopenDocxSource+fullactualsourcechunks SHA match6frozenOOXML; legacyactualDOM; oldnativePDFI separate"
+    },
+    {
+      "original": "正常生命周期/图/清场",
+      "judge": "current-App031-source035-once-setup-reload-initial3s-single-guard + normal-App-exit-independentclear-twelve-original-windowPNGs",
+      "gate": "exactsourceApp identity, oneinitialfocus+guard,12actualPNGs, normal0/null/noAppsignals, independentallclear"
+    }
+  ],
+  "newUnrequiredNoticeAssertions": false,
+  "notClaimed": [
+    "Actual glyph font identity",
+    "Word/Codex pixel/font/layout equivalence",
+    "Revision accept/reject/writeback",
+    "Old PDF route as current defaultA",
+    "Whole T130 passed"
+  ],
+  "materialJudgeGapFound": false,
+  "reviewBoundary": "Only frozen contract/judge/flow/source observation fields; no in-progress raw/runtime/App/Native/auth/model/OS read. Root already confirmed no revision or missing-font notice requirement."
+}

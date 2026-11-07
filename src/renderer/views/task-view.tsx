@@ -109,9 +109,9 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
         <p className="text-foreground-muted">{task.recoveryReason || t('task.resumeHint')}</p>
         {task.recovery !== 'unrecoverable' && (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
-                <SelectTrigger className="w-56" data-testid="task-resume-profile">
+                <SelectTrigger className="w-56 min-w-0 max-w-full" data-testid="task-resume-profile">
                   <SelectValue placeholder={t('task.pickProfile')} />
                 </SelectTrigger>
                 <SelectContent>

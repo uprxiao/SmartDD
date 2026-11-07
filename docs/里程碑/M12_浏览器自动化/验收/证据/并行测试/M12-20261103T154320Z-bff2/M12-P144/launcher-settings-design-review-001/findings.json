@@ -1,0 +1,64 @@
+{
+  "at": "2026-11-07T13:04:31.911123+00:00",
+  "findings": [
+    {
+      "id": "launcher-layout",
+      "class": "actual-design-divergence",
+      "basis": "P BrowserWorkspace blank branch+browser.css162–177 vs A workspace blank branch+workspace.css7",
+      "facts": "P top-aligned sections/no separate visible new-tab headline; A centered margin:auto/max560 with extra22pxheadline; static emptyhint shortened; icon Files stroke1.65 vs FolderOpen default2;44pxhovercard/10radius/kbdbackground missing",
+      "recommendation": "Root change App to approved P launcher content/layout, omit P-only demo section; preserve business semantics."
+    },
+    {
+      "id": "settings-footer",
+      "class": "actual-design-divergence",
+      "basis": "P PanelDialog fw-dialog-actions + file-workspace.css5; A settings-dialog footer only bw-dialog-actions and workspace.css18",
+      "facts": "P footer button padding8/12,border,radius8,lastchildprimary fill; A no equivalent rule => bare text. Both button declarations12px; no verified different footer font size.",
+      "recommendation": "Root add narrow/shared production footer styling equivalent to confirmed P; do not modify P to match unstyled App."
+    },
+    {
+      "id": "settings-radio-CSS",
+      "class": "actual-design-divergence",
+      "basis": "P browser.css132–135; A workspace.css19 and later88–89",
+      "facts": "A later unscoped bw-radios rule overrides to grid/margin14px0/gap10; P flex/margin0/gap7. P label13px, A12px; A legend600 vs P inherited430; A kv88px fixed leadingcol vs P auto, gap8 vs6.",
+      "recommendation": "Root consolidate conflicting CSS and align intended P rules, keep disabled/input semantics unchanged; scope if necessary to avoid unrelated regressions."
+    },
+    {
+      "id": "settings-hint-copy",
+      "class": "static-design-copy-divergence",
+      "basis": "P SettingsDialog pendingIdentity paragraph vs A corresponding paragraph",
+      "facts": "P includes Agent browser identity set note; A only restart sentence. P hint12/18; A11/17. P fw-dialog p inheritance may create extra paragraph margin.",
+      "recommendation": "Root align approved user-facing static copy/style; final geometry needs actual newpackage verification, not blanket height matching."
+    },
+    {
+      "id": "fixture-values",
+      "class": "fixture-difference-not-product-bug",
+      "facts": "P qa login demo backdrop vs A real local T026 page; P12.4MB synthetic and enabled clean vs A0MB and correctly disabled; P~/Downloads vs actual app.getPath path. Dynamic project/task/terminal/filetabs differ.",
+      "recommendation": "Preserve actual data, do not fake/enforce incorrect enable state; align future owned fixture where visual comparison requires same content."
+    },
+    {
+      "id": "P-only-controls",
+      "class": "explicit-prototype-only",
+      "facts": "R0.7 says original synthetic examples moved to bottom and only kept in prototype; demo/Flask controls have no production counterpart by design.",
+      "recommendation": "Do not add these to App, do not hide/edit original reference image; document regions as P-only."
+    },
+    {
+      "id": "capture-focus",
+      "class": "interaction-state-mismatch-not-yet-design-failure",
+      "facts": "Saved P metadata active BUTTON aria-label新建网页标签 focusVisiblefalse; A active INPUT aria-label网页地址. The blue address focus ring is an observed interaction-state mismatch, not alone a CSS/product defect.",
+      "recommendation": "Compare saved focus descriptors; do not remove functional App autofocus only to fake screenshot. Any future equivalent focus state must use real UI."
+    },
+    {
+      "id": "parent-region-centering",
+      "class": "mixed-parent-layout-boundary",
+      "facts": "P pane y4/h892, browser y44/h852; A pane y0/h864,browser y40/h824. P settings dialog480x458 center986.5/470; A480x505 center986.5/452. Each is centered in its own browser region. Difference is not only4px: fullwidth App RuntimeBar32px also affects availableheight.",
+      "recommendation": "Do not move dialog away from correct browser centering. Separate legacy frame/header/RuntimeBar lineage and current approved shell before broad parent-layout change; do not use4px excuse for launcher/footer/radio differences."
+    },
+    {
+      "id": "Codex-reference",
+      "class": "source-availability-limit",
+      "facts": "R01.11 records user-supplied Codex screenshot; original supplement files retain prototype images only. F22-B earlier report explicitly says original user image showed file area and no browser runtime pages. No archived original Codex launcher/settings image path found in these specific authoritative entrypoints.",
+      "recommendation": "Use confirmed P as T145 current visual reference; do not relabel P images as Codex or promise Codex pixel equivalence. No new screenshot/account/OS access requested."
+    }
+  ],
+  "sourceBoundary": "Only current unique documents and frozen035/immutable029code plus actual saved images/metrics, no movingproduction source read, noNode/Native/UI/OS/model operations, no candidate prepared."
+}

@@ -1,0 +1,128 @@
+
+FILE src/renderer/features/browser/workspace.css SHA 4e27480aee80b7de8ac08f96d3229bf36ff28a0dcb8736ce7547308880426095
+7: .bw-start{padding:40px 28px;width:min(560px,100%);margin:auto}.bw-start h2{font-size:22px;font-weight:550;margin:0 0 26px}.bw-start section{margin:0 0 22px}.bw-start h3{font-size:12px;color:var(--secondary);font-weight:500;margin:0 0 8px}.bw-start button{display:flex;align-items:center;gap:10px;width:100%;min-width:0;text-align:left;padding:8px;border-radius:7px;font-size:13px}.bw-start button:hover{background:var(--hover)}.bw-start button span{flex:1;min-width:0}.bw-start strong,.bw-start small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bw-start strong{font-weight:500}.bw-start small,.bw-start p,.bw-start kbd{font-size:11px;color:var(--secondary)}
+18: .bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}.bw-dialog-actions{display:flex;justify-content:flex-end;gap:12px;padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}.bw-dialog-actions button{font-size:12px}
+19: .bw-radios{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}.bw-radios legend{font-size:12px;font-weight:600;padding:0;margin-bottom:8px}.bw-radios label{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:18px}.bw-radios input{margin-top:3px;accent-color:var(--accent)}
+20: .bw-kv{display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px 14px;font-size:12px;line-height:18px}.bw-kv>span{color:var(--secondary)}.bw-kv strong{font-weight:500;overflow-wrap:anywhere}.bw-hint{font-size:11px;line-height:17px;color:var(--secondary);margin:0}.bw-restart{color:var(--accent)}
+88: .bw-access-floating{position:fixed;z-index:90;right:10px;top:52px;bottom:10px;width:min(52vw,660px);min-width:min(300px,50vw);pointer-events:none;border-radius:12px}.bw-access-floating>.bw-scrim{pointer-events:auto}
+89: .bw-radios{border:0;padding:0;margin:14px 0;display:grid;gap:10px;font-size:12px}.bw-radios legend{padding:0;margin-bottom:8px;color:var(--secondary)}.bw-radios label{display:flex;gap:8px;align-items:center}.bw-radios input{accent-color:var(--accent)}.bw-kv strong{overflow-wrap:anywhere}
+90: /* Native WebContentsView is inset inside this border; renderer pseudo-elements
+
+FILE src/renderer/features/browser/settings-dialog.tsx SHA 40f27b27aad672c9aa8a43a3a4c45c95d4bc25c98c32a0afbcd0b1808bb3a39b
+12:     <div ref={root} role="dialog" aria-modal="true" aria-label="浏览器设置" data-browser-panel="settings" className="bw-dialog" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();if(!busy)onClose();}}}>
+13:       <div className="bw-dialog-head"><h2>浏览器设置</h2><button type="button" className="fw-icon" aria-label="关闭" disabled={busy} onClick={onClose}><X size={16}/></button></div>
+14:       <div className="bw-dialog-body">
+15:         {error&&<p role="alert" className="bw-danger-text">{error}</p>}
+16:         <fieldset className="bw-radios" disabled={busy}><legend>默认搜索引擎（地址栏输入非网址时使用）</legend>
+17:           {Object.entries(SEARCH_ENGINES).map(([id,item])=><label key={id}><input type="radio" name="browser-engine" checked={settings.searchEngine===id} onChange={()=>void change(()=>rpc.browser.settings({taskId,searchEngine:id as BrowserSearchEngine}))}/>{item.label}</label>)}
+18:         </fieldset>
+19:         <fieldset className="bw-radios" disabled={busy}><legend>浏览器身份（整个应用生效，重启后生效）</legend>
+20:           <label><input type="radio" name="browser-identity" checked={(settings.pendingIdentity??settings.identity)==='clean'} onChange={()=>void change(()=>rpc.browser.settings({taskId,identity:'clean'}))}/>清理后的身份（兼容导入的登录态）</label>
+21:           <label><input type="radio" name="browser-identity" checked={(settings.pendingIdentity??settings.identity)==='native'} onChange={()=>void change(()=>rpc.browser.settings({taskId,identity:'native'}))}/>Electron 原生身份（部分站点需要；Google 登录不可用）</label>
+22:           {settings.pendingIdentity&&<p className="bw-hint bw-restart" role="status">已更改，重启 WillYou 后生效。</p>}
+23:         </fieldset>
+24:         <div className="bw-kv"><span>下载位置</span><strong title={settings.downloadDirectory}>系统下载目录（{settings.downloadDirectory}），不弹保存对话框</strong></div>
+25:         <div className="bw-kv"><span>浏览器文件</span><strong aria-label="浏览器文件占用">{settings.artifactBytes?(settings.artifactBytes/1048576).toFixed(1)+' MB（截图、PDF、HAR 与超限结果）':'0 MB'}</strong></div>
+26:         <div className="bw-row-actions">{confirmClean?<><span className="bw-danger-text">将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。</span><button type="button" className="bw-mini bw-mini-danger" disabled={busy} onClick={()=>void change(async()=>{const value=await rpc.browser.clearArtifacts({taskId,confirmed:true});setConfirmClean(false);return value;})}>确认清理</button><button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmClean(false)}>取消</button></>:<button type="button" className="bw-mini" disabled={busy||!settings.artifactBytes} onClick={()=>setConfirmClean(true)}>清理全部浏览器文件</button>}</div>
+27:       </div><div className="bw-dialog-actions"><button type="button" disabled={busy} onClick={onClose}>完成</button></div>
+28:     </div>
+29:   </div>;
+
+FILE prototypes/m6-codex/src/BrowserPanels.jsx SHA 8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e
+7: /** Shared modal shell; reuses the M9 right-workspace dialog classes. */
+8: export function PanelDialog({ title, subtitle, onClose, children, footer, wide, dismissOnBackdrop = true, closeDisabled = false }) {
+9:   const ref = useRef(null);
+10:   useEffect(() => { ref.current?.querySelector('input, button:not([aria-label="关闭"])')?.focus(); }, []);
+11:   return <div className="fw-modal-scrim bw-scrim" onMouseDown={event => { if (dismissOnBackdrop && event.target === event.currentTarget) onClose(); }}>
+12:     <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={'fw-dialog bw-dialog' + (wide ? ' bw-dialog-wide' : '')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
+13:       <div className="bw-dialog-head"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button type="button" className="fw-icon" aria-label="关闭" disabled={closeDisabled} onClick={onClose}><X size={16} /></button></div>
+14:       <div className="bw-dialog-body">{children}</div>
+15:       {footer && <div className="fw-dialog-actions bw-dialog-actions">{footer}</div>}
+16:     </div>
+17:   </div>;
+18: }
+208: export function SettingsDialog({ settings, onChange, onClose }) {
+209:   const [confirmClean, setConfirmClean] = useState(false);
+210:   const bytes = settings.artifactBytes ?? 13002342;
+211:   return <PanelDialog title="浏览器设置" onClose={onClose} footer={<button type="button" onClick={onClose}>完成</button>}>
+212:     <fieldset className="bw-radios"><legend>默认搜索引擎（地址栏输入非网址时使用）</legend>
+213:       {Object.entries(SEARCH_ENGINES).map(([id, item]) => <label key={id}><input type="radio" name="engine" checked={settings.engine === id} onChange={() => onChange(current => ({ ...current, engine: id }))} />{item.label}</label>)}
+214:     </fieldset>
+215:     <fieldset className="bw-radios"><legend>浏览器身份（整个应用生效，重启后生效）</legend>
+216:       <label><input type="radio" name="identity" checked={(settings.pendingIdentity ?? settings.identity) === 'clean'} onChange={() => onChange(current => ({ ...current, pendingIdentity: current.identity === 'clean' ? null : 'clean' }))} />清理后的身份（兼容导入的登录态）</label>
+217:       <label><input type="radio" name="identity" checked={(settings.pendingIdentity ?? settings.identity) === 'native'} onChange={() => onChange(current => ({ ...current, pendingIdentity: current.identity === 'native' ? null : 'native' }))} />Electron 原生身份（部分站点需要；Google 登录不可用）</label>
+218:       {settings.pendingIdentity && <p className="bw-hint bw-restart" role="status">已更改，重启 WillYou 后生效。Agent 也可以用 <code>browser identity set</code> 改这一项。</p>}
+219:     </fieldset>
+220:     <div className="bw-kv"><span>下载位置</span><strong>系统下载目录（~/Downloads），不弹保存对话框</strong></div>
+221:     <div className="bw-kv"><span>浏览器文件</span><strong aria-label="浏览器文件占用">{bytes ? (bytes / 1048576).toFixed(1) + ' MB（截图、PDF、HAR 与超限结果，合成）' : '0 MB'}</strong></div>
+222:     <div className="bw-row-actions">{confirmClean
+223:       ? <><span className="bw-danger-text">将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。</span><button type="button" className="bw-mini bw-mini-danger" onClick={() => { onChange(current => ({ ...current, artifactBytes: 0 })); setConfirmClean(false); }}>确认清理</button><button type="button" className="bw-mini" onClick={() => setConfirmClean(false)}>取消</button></>
+224:       : <button type="button" className="bw-mini" disabled={!bytes} onClick={() => setConfirmClean(true)}>清理全部浏览器文件</button>}</div>
+225:   </PanelDialog>;
+226: }
+
+FILE prototypes/m6-codex/src/BrowserWorkspace.jsx SHA 363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536
+337:   if (page.kind === 'blank') return <div className="bw-launcher" aria-label="新标签页">
+338:     <section>
+339:       <h2>工具</h2>
+340:       <div className="bw-launcher-tools">
+341:         <button type="button" className="bw-launcher-tool" disabled={!onOpenFiles} onClick={onOpenFiles}><Files size={17} strokeWidth={1.65} /><span>文件</span><kbd>⌘P</kbd></button>
+342:       </div>
+343:     </section>
+344:     <section>
+345:       <h2>推荐</h2>
+346:       {recentSites.length
+347:         ? <div className="bw-launcher-sites">{recentSites.map(site => <button key={site.host} type="button" className="bw-launcher-site" title={site.title + ' · ' + site.host} onClick={() => onGo(site.url)}><span className="bw-launcher-icon"><Globe size={26} strokeWidth={1.4} /></span><span className="bw-launcher-name">{site.title}</span></button>)}</div>
+348:         : <p className="bw-launcher-empty">本项目还没有访问记录。在上方地址栏输入网址或搜索内容，访问过的网站会出现在这里。</p>}
+349:     </section>
+350:     <section className="bw-launcher-demo">
+351:       <h2>原型示例（合成，不访问网络）</h2>
+352:       <div className="bw-examples">{EXAMPLES.map(item => <button key={item.url} type="button" onClick={() => onGo(item.url)}><span>{item.label}</span><code>{hostLabel(item.url)}</code></button>)}</div>
+353:     </section>
+354:   </div>;
+
+FILE prototypes/m6-codex/src/browser.css SHA 2b14f152969fc4021a38a2a70f83f481ed794e5bc09111832892d54112e8167b
+120: .bw-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 8px 22px}
+121: .bw-dialog-head h2{font-size:16px;line-height:22px;font-weight:600;margin:0;color:var(--text)}
+122: .bw-dialog-head p{margin:4px 0 0;font-size:12px;line-height:18px;color:var(--secondary)}
+123: .bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}
+124: .bw-dialog-actions{padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}
+125: .bw-dialog-actions button{font-size:12px}
+126: .bw-form{display:flex;flex-direction:column;gap:10px}
+127: .bw-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--secondary)}
+128: .bw-form input{height:32px;border:1px solid var(--border-strong);border-radius:7px;padding:0 10px;font-size:13px;background:var(--surface);color:var(--text)}
+129: .bw-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}
+130: .bw-kv>span{color:var(--secondary)}
+131: .bw-kv>strong{font-weight:500;overflow-wrap:anywhere}
+132: .bw-radios{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+133: .bw-radios legend{font-size:12px;color:var(--secondary);margin-bottom:6px;padding:0}
+134: .bw-radios label{display:flex;align-items:center;gap:8px;font-size:13px}
+135: .bw-radios input{margin:0}
+162: .bw-launcher{flex:1;overflow:auto;display:flex;flex-direction:column;gap:28px;padding:28px 28px 32px;color:var(--text)}
+163: .bw-launcher h2{margin:0 0 14px;font-size:14px;line-height:20px;font-weight:600;color:var(--text)}
+164: .bw-launcher-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+165: .bw-launcher-tool{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--hover);color:var(--text);font-size:13px;text-align:left}
+166: .bw-launcher-tool:hover:not(:disabled){filter:brightness(.97)}
+167: .bw-launcher-tool span{flex:1}
+168: .bw-launcher-tool kbd{font:11px var(--mono);color:var(--secondary);padding:1px 6px;border-radius:6px;background:var(--bg)}
+169: .bw-launcher-sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px 8px}
+170: .bw-launcher-site{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 6px;border:0;border-radius:12px;background:none;color:var(--text);min-width:0}
+171: .bw-launcher-site:hover{background:var(--hover)}
+172: .bw-launcher-icon{display:grid;place-items:center;width:48px;height:48px;color:var(--secondary)}
+173: .bw-launcher-name{max-width:100%;font-size:13px;line-height:18px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+174: .bw-launcher-empty{margin:0;font-size:13px;line-height:20px;color:var(--secondary)}
+175: .bw-launcher-demo{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+176: .bw-launcher-demo h2{font-size:12px;font-weight:500;color:var(--secondary)}
+177: .bw-launcher-demo .bw-examples{width:100%;margin-top:0}
+
+FILE src/renderer/lib/layout/workspace.tsx SHA 1ed1574bd5369f51984f446c941aa6555438ce72ebca988fa485fcc729d3dc2f
+103:       <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>
+104:     </div>
+105:     {navigation.filePanelOpen && fileScope && <><div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
+106:       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
+107:       onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />
+108:       {fileScope.kind==='task'&&task?.projectId?<TaskBrowserWorkspace key={fileScope.taskId} taskId={fileScope.taskId} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
+109:     </div>
+110:     {task && <RuntimeBar task={task} />}
+111:   </main>;
+112: });

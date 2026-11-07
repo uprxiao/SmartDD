@@ -1,0 +1,15 @@
+--- original-generator
++++ private-output-only
+@@ -28,10 +28,10 @@
+  assert green,'Missing or changed original source PNG'
+  fonts=command(['pdffonts',str(pdf)]);(out/'fonts.txt').write_text(fonts)
+  result={'sourceInfo':info,'pdf':str(pdf),'pdfSha256':sha(pdf.read_bytes()),'pages':pages,'fonts':fonts,'imageDetails':images,'greenImages':green,'comparisons':{'twoPages16by9':True,'textAndTableContent':True,'imageExactRGB':True,'animationAndTransitionRemainInSource':info['hasAnimation']and info['hasTransition']},'limits':['PDF is static; animation/transition not executed','No PowerPoint or Codex pixel-equivalence claim']};(out/'result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps(result,ensure_ascii=False));sys.exit()
+-base=Path(tempfile.mkdtemp(prefix='willyou-pptx-preview-',dir='/private/tmp'));project=base/'project';project.mkdir()
++base=Path('/private/tmp/willyou-m12-t130-F20-App031-A-prep-001/fixtures/base');project=base/'project';project.mkdir()
+ def chunk(kind,data):return struct.pack('!I',len(data))+kind+data+struct.pack('!I',zlib.crc32(kind+data)&0xffffffff)
+ png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',64,32,8,6,0,0,0))+chunk(b'IDAT',zlib.compress((b'\0'+bytes([25,150,110,255])*64)*32))+chunk(b'IEND',b'')
+-template=Path('docs/里程碑/M9_文件浏览工作区/验收/证据/predev-office/final/rich-source.pptx')
++template=Path('/private/tmp/willyou-m12-t130-F20-App031-A-prep-001/original/rich-source.pptx')
+ with zipfile.ZipFile(template)as z:entries=[(x,z.read(x.filename))for x in z.infolist()]
+ pic='<p:pic><p:nvPicPr><p:cNvPr id="20" name="F20 original green image"/><p:cNvPicPr/><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rIdF20Image"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="5943600" y="3429000"/><a:ext cx="1828800" cy="914400"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>'
+ animation='<p:transition spd="slow"><p:fade/></p:transition><p:timing><p:tnLst><p:par><p:cTn id="1"><p:childTnLst><p:set><p:cBhvr><p:cTn id="2"/><p:tgtEl><p:spTgt spid="20"/></p:tgtEl></p:cBhvr><p:to><p:strVal val="visible"/></p:to></p:set></p:childTnLst></p:cTn></p:par></p:tnLst></p:timing>'

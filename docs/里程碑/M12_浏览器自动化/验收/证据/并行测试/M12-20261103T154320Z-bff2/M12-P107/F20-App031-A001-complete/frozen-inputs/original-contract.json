@@ -1,0 +1,58 @@
+{
+  "parent": "M12-T130",
+  "originalCase": {
+    "id": "M9-T-F20",
+    "group": "F",
+    "title": "PPTX预览",
+    "requirements": [
+      "M9-R06.10"
+    ],
+    "level": "单元／集成／安装端到端",
+    "environments": [
+      "I",
+      "A"
+    ],
+    "data": [
+      "D07"
+    ],
+    "steps": "含文字、图片、图表、多页pptx打开并翻页。",
+    "expected": "Presentation页面完整；编辑能力按flag/来源分离；动画未支持则明确差异。",
+    "source": "V F11",
+    "prototype": "PS-viewer",
+    "basis": "参考事实＋迁移设计",
+    "status": "通过",
+    "evidence": [
+      "证据/m9-acceptance-pptx-preview-dev167-r98-20261020.json"
+    ],
+    "actual_result": "DEV167完整I/A：新组件U1/真实I3与21原回归共25代码全过0skip，最终I3复跑及类型过；新r98全量编译/打包、六原native smoke和81实际运行JS/CSS/HTML与ASAR哈希比较过。真实FileService/retained PPTX Worker/包内LibreOffice：可写、实际chmod444只读、readOnly来源flag三条件，2页16:9源文字/表格/图表/图片模型和原PDF独立Poppler参照通过，后两条件真实edit拒绝PERMISSION。实际r98普通页面可写/只读×浅深4组，默认只读预览、可写编辑/完成编辑切换和插入工具显隐、只读禁用控件真实指针点击均正确；实际100%/点击缩略页翻2/2，8正文canvas非空，第二页原64x32图RGB25/150/110及alpha255、green18432像素，图表独立原PDF栅格列高149/199为3:4共同基线，内容完整。DEV167-01动画/切换不播放缺少说明已修：共享文案同步App/P并可见；P浅深PPTX编辑前后/DOCX无该提示四组、P构建/Sites4过。原PDF回执/chunks hash相同，open/openPptx原文件hash准确；renderPptx.sourceHash为重打包候选hash不混用。28原RPC输入/交付结果JSON及48原Worker请求/消息V8哈希、4线程退出/10handler与Worker构造恢复；4源bytes/inode/mtime全同、零save、实际权限复原；A/P最终各正常0/null，5已知自有App父进程消失。1369恢复输入/10delta、完整1367构建前快照；构建后仅验证源码/guide变化，生产/P/native/依赖/版本与构建前一致。首A误选缩略canvas、次A混用候选/源hash、首P回首页却等待编辑页均为驱动问题，保留失败和修正后完整复验。source-readOnly仅真实I不伪造附件业务宿主；不宣称PowerPoint/Codex全像素、动画播放、写回全场景或其它平台通过。",
+    "defects": [
+      "DEV167-01"
+    ],
+    "legacy_parent_requirements": [
+      "M9-R06",
+      "M9-R05"
+    ],
+    "prototype_pages": [
+      "P13"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "仅本次新增PPTX静态预览说明同步共享原型，浅深PPTX编辑前后和DOCX不显示该提示四组已核验。原型为明确合成文件区域，不充当真实I/A或完整像素等价。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R06.10"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "currentLayer": "A only",
+  "currentGroup": "Original F20 four source/theme cases only; source-readOnly flag remains original I, no I replay; no whole parent pass",
+  "notANewResultLedger": true
+}
