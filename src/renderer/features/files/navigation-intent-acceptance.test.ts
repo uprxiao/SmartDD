@@ -48,6 +48,45 @@ it.each(['md', 'csv', 'pdf'])('title alone reuses an existing %s viewer and phys
   expect(api.open).toHaveBeenCalledTimes(1); expect(api.save).not.toHaveBeenCalled(); expect(api.checkpoint).not.toHaveBeenCalled();
 });
 
+it.each(['md', 'csv', 'pdf'])('honors an explicit builtin choice alongside an existing %s fallback title', async suffix => {
+  const { root, api, store } = fixture(); await store.initialize(); await store.open(root, 'target.' + suffix, true);
+  const tab = store.active!, buffer = tab.buffer!, mode = buffer.mode, ref = buffer.file.ref;
+  chooseFileViewer(buffer, 'remembered-viewer');
+  await store.open(root, 'target.' + suffix, true, { filePreviewTitle: 'Fallback title', fileViewer: 'default' });
+  expect(fileViewerChoice(buffer)).toBeNull();
+  expect(store.active).toBe(tab); expect(buffer.file.ref).toBe(ref); expect(buffer.mode).toBe(mode);
+  expect(buffer.navigationView).toBeNull(); expect(buffer.previewTitle).toBeNull();
+  expect(api.open).toHaveBeenCalledTimes(1); expect(api.save).not.toHaveBeenCalled(); expect(api.checkpoint).not.toHaveBeenCalled();
+});
+
+it('protects dirty text before an explicit builtin choice with fallback title metadata', async () => {
+  const { root, api, store } = fixture(); await store.initialize(); await store.open(root, 'target.md', true);
+  const buffer = store.active!.buffer!; buffer.pauseAutosave(); chooseFileViewer(buffer, 'remembered-viewer');
+  const change = buffer.editor!.update({ changes: { from: 0, insert: 'LOCAL ' } }); buffer.acceptTransactions(change.state, [change]);
+  await expect(store.open(root, 'target.md', true, { filePreviewTitle: 'Fallback title', fileViewer: 'default' })).rejects.toThrow(/保存/);
+  expect(fileViewerChoice(buffer)).toBe('remembered-viewer'); expect(buffer.raw).toBe('LOCAL ' + raw); expect(buffer.dirty).toBe(true);
+  expect(api.save).not.toHaveBeenCalled(); expect(api.checkpoint).not.toHaveBeenCalled();
+});
+
+it('can restore automatic viewer selection while reusing a titled file', async () => {
+  const { root, store } = fixture(); await store.initialize(); await store.open(root, 'target.md', true);
+  const buffer = store.active!.buffer!; chooseFileViewer(buffer, 'remembered-viewer');
+  await store.open(root, 'target.md', true, { filePreviewTitle: 'Fallback title', fileViewer: null });
+  expect(fileViewerChoice(buffer)).toBeUndefined(); expect(store.active!.buffer).toBe(buffer); expect(buffer.previewTitle).toBeNull();
+});
+
+it('does not apply an older titled viewer choice after navigation changes during refresh', async () => {
+  const { root, api, store } = fixture(); await store.initialize(); await store.open(root, 'target.md', true);
+  const buffer = store.active!.buffer!; chooseFileViewer(buffer, 'remembered-viewer');
+  let finish!: (document: FileDocument) => void;
+  api.refresh.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  const pending = store.open(root, 'target.md', true, { filePreviewTitle: 'Fallback title', fileViewer: 'default' });
+  await store.open(root, 'newer.md', true); const newer = store.active;
+  finish(buffer.file); await pending;
+  expect(store.active).toBe(newer); expect(fileViewerChoice(buffer)).toBe('remembered-viewer');
+  expect(api.save).not.toHaveBeenCalled(); expect(api.checkpoint).not.toHaveBeenCalled();
+});
+
 it.each(['csv', 'pdf'])('a fresh %s title takes its mapped artifact instead of forcing text review', async suffix => {
   const { root, store } = fixture(); await store.initialize();
   await store.open(root, 'target.' + suffix, true, { filePreviewTitle: 'Fallback-only title' } as never);

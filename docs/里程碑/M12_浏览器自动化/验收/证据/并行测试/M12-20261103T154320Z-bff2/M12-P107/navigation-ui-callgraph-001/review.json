@@ -1,0 +1,240 @@
+{
+  "at": "2026-11-07T19:01:20.012760+00:00",
+  "group": "F01-F03-F04-F29-current-UI-callgraph",
+  "git": {
+    "branch": "feature/0.1.1",
+    "head": "ed1d4adb7c1bd73fca812833963a50083774a073",
+    "workingTreePorcelain": "",
+    "verificationTools": [
+      "a51687",
+      "ed0a96"
+    ]
+  },
+  "pins": [
+    {
+      "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
+      "sha256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+      "sha256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "sha256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4"
+    }
+  ],
+  "reviewedSourceWindows": 39,
+  "allSearchedProductionRendererFilesSource039ByteEqual": 223,
+  "callchains": [
+    {
+      "id": "mount",
+      "state": "connected",
+      "chain": [
+        "src/renderer/lib/layout/workspace.tsx:108 chooses TaskBrowserWorkspace or FileWorkspacePanel",
+        "src/renderer/features/browser/workspace.tsx:49-53 wraps same FileWorkspacePanel for task",
+        "src/renderer/features/files/workspace-panel.tsx:48-51 obtains fileWorkspaceFor(scope)"
+      ],
+      "meaning": "M9 file panel is actually mounted in current task/project UI, even when shared with M12 web tabs."
+    },
+    {
+      "id": "ordinary-tree",
+      "cases": [
+        "F04"
+      ],
+      "state": "connected",
+      "chain": [
+        "src/renderer/features/files/workspace-tree.tsx:196/238 real file click/doubleclick",
+        "workspace-store.ts:495-501 open(root,path,pin,{reveal:false}), csv/tex source mode",
+        "workspace-store.ts:566-580 route reuse/open",
+        "workspace-store.ts:450-465 loadTab -> rpc.files.open",
+        "src/main/core/files/controller.ts:114 -> FileService.open:344-364",
+        "src/main/core/files/file-service.ts:618-619 -> NativeFileBroker.request",
+        "src/main/core/files/native-broker.ts:53-57 -> actual native executable; native/files/broker.mm:757 readOperation"
+      ],
+      "options": "No artifact/title/viewer supplied by tree."
+    },
+    {
+      "id": "explicit-viewer",
+      "cases": [
+        "F01"
+      ],
+      "state": "connected",
+      "chain": [
+        "src/renderer/features/files/workspace-panel.tsx:146/161-164 file menu",
+        "src/renderer/features/files/mcp/viewer.tsx:19-26 adapter/builtin/auto selection callback",
+        "workspace-panel.tsx:164 -> store.open(...,{fileViewer:id/default/null,reveal:false})",
+        "workspace-store.ts:518-555 validates registered adapter, reuse same route/ref, chooseFileViewer",
+        "mcp/viewer.tsx:41-57 actual select/openViewer/closeViewer RPC",
+        "src/main/core/files/controller.ts:92-100 -> service.viewers (local-resource or sandboxed stdio provider)"
+      ],
+      "caveat": "A registered legal adapter ID default is selected directly in viewer.tsx:23 to preserve reserved-navigation-token distinction; other choices use onChoose/store.open."
+    },
+    {
+      "id": "explicit-external-file",
+      "cases": [
+        "F01"
+      ],
+      "state": "connected",
+      "chain": [
+        "workspace-panel.tsx:169 FileOpenButton document ref",
+        "file-actions.tsx:13-20 applications(target); :40/:46 chosen discovered appId",
+        "src/main/core/files/controller.ts:164-165 -> service.actions.applications/open",
+        "src/main/core/files/actions.ts:34-56 validates discovered native grant; broker applications/open-external",
+        "native/files/desktop-actions.inc.mm:61-77 verified App + NSWorkspace.openURLs"
+      ],
+      "meaning": "FileActionTarget/document ref and discovered appId; not artifactNavigationTarget and not a file-workspace target string."
+    },
+    {
+      "id": "workspace-external-directory",
+      "cases": [
+        "F01"
+      ],
+      "state": "connected",
+      "chain": [
+        "src/renderer/features/files/breadcrumb.tsx:33-40 root path context menu",
+        "file-actions.tsx:57-76 FileContextActions target {kind:path,directory:true}",
+        "controller.ts:164-165 -> FileActions.applications/open",
+        "actions.ts:31-56 broker preserves directory context -> same native desktopOperation"
+      ],
+      "meaning": "Original workspace intent has a real root-directory opening path. No need to invent a FileOpenOptions.target=workspace API."
+    },
+    {
+      "id": "markdown-location",
+      "cases": [
+        "F03",
+        "F29"
+      ],
+      "state": "connected",
+      "chain": [
+        "src/renderer/features/files/markdown/editor.ts:127/210 trusted eligible link handler -> host.link(href)",
+        "text-editor.tsx:47-49 -> current onLink",
+        "workspace-panel.tsx:187-195 local href -> store.openRelated",
+        "workspace-store.ts:651-666 parses fileLinkLocation, api.related validates native root, then open(...location)",
+        "src/shared/file-link-location.mjs:7-15 accepts :line:column or #LxCy-LzCw",
+        "workspace-store.ts:502-515/558-564 same route + precise raw/CM source/review navigation",
+        "main controller.ts:213 -> FileService.related:366-374 -> open/read broker"
+      ],
+      "meaning": "Carries line/column/endLine/endColumn only. Does not turn link text or Markdown title attribute into filePreviewTitle."
+    },
+    {
+      "id": "lsp-location",
+      "cases": [
+        "F03",
+        "F29"
+      ],
+      "state": "connected",
+      "chain": [
+        "src/renderer/features/files/lsp/workspace.ts:84-98 real result/history -> workspace.open with point line/column",
+        "lsp/workspace.ts:99-104 nonpoint revealSourceRange after same buffer check"
+      ],
+      "meaning": "Existing language UI entry. Range is direct source reveal rather than passing endLine or artifact options."
+    },
+    {
+      "id": "terminal-osc8",
+      "state": "connected-to-system-not-M9",
+      "chain": [
+        "src/renderer/views/task-view.tsx:179 xterm linkHandler.activate",
+        "src/main/rpc.ts:76-79 rpc.app.openExternal allows http(s) only -> shell.openExternal"
+      ],
+      "meaning": "No file-workspace callback; file:// links refused here. OSC8 display label cannot supply filePreviewTitle/artifact target."
+    },
+    {
+      "id": "markdown-image-attachment",
+      "state": "connected-image-only",
+      "chain": [
+        "text-editor.tsx:36/47-49 actual Markdown image host",
+        "markdown/image-host.tsx:109-125 task context image menu -> :90 onOpen(href)",
+        "workspace-panel.tsx:187 onOpenImage -> openRelated(...,{readOnlyImage:true})",
+        "workspace-store.ts:659-661 validates image, then openAttachment(root,path,{key,mimeType})",
+        "workspace-store.ts:583-618 separate source key/session-only readonly attachment",
+        "workspace-store.ts:456 -> native open readOnly:true/attachment hint"
+      ],
+      "meaning": "Real M9 attachment seed for images only. No title/target argument. Existing attachment links :663 preserve attachment route but require an already originating attachment. Cannot seed CSV/TeX attachments from this entry."
+    },
+    {
+      "id": "mail-attachments",
+      "state": "connected-separate-M10-not-M9",
+      "chain": [
+        "applications/workspace.tsx:44 mounts ActivityWorkspace; activity.tsx:42/53 mounts selected MailAttachmentsDialog",
+        "applications/mail-attachments.tsx:9-15 real 查看附件文字/attachmentSave UI",
+        "rpc.applications.attachment / attachmentResource -> ResourceView, not FileWorkspaceStore"
+      ],
+      "meaning": "Mounted mail attachment text and save actions exist; no M9 LocalAttachment key/callback/root mapping or display options passed. A saved file later selected in tree is ordinary source, not an attachment-source proof."
+    },
+    {
+      "id": "artifact-target-title",
+      "cases": [
+        "F03",
+        "F04",
+        "F29"
+      ],
+      "state": "consumer-implemented-no-current-production-UI-producer-found",
+      "chain": [
+        "src/shared/file-navigation.ts:5-15/33-48 typed target/title validation",
+        "workspace-store.ts:497-516/545-564 consumes target/title and preserves same route/protected buffer",
+        "workspace-store.ts:583-618 conditional attachment consumer",
+        "file-buffer.ts:49-56 binds target to documentId/sourceHash",
+        "csv/preview.tsx:54-65 actual range consumer; pdf/preview.tsx:136-146 actual page consumer"
+      ],
+      "meaning": "Consumers are live product code, not proof of a real triggering UI. Whole-production-renderer search plus every store/workspace.open caller found no artifactNavigationTarget/filePreviewTitle producer. No FilePreview component exists/mounts in current src. Do not label all consumer code dead; label current source-A condition untriggered."
+    },
+    {
+      "id": "M12-browser-artifacts",
+      "state": "separate-result-storage",
+      "chain": [
+        "src/main/core/browser/service.ts:121 new BrowserArtifacts(userData/browser/artifacts)",
+        "src/main/core/browser/artifacts.ts:16-27 file receipts; :35-42 large JSON result/truncatedPreview"
+      ],
+      "meaning": "M12 command output file receipt/storage. No renderer bridge to FileDisplayOptions, LocalAttachment or M9 artifact target/title. Same English artifact name does not establish a producer."
+    }
+  ],
+  "narrowConclusion": {
+    "connected": [
+      "explicit registered/builtin/auto viewer menu",
+      "file/root-directory explicit OS app menu",
+      "ordinary tree/source",
+      "Markdown point/range",
+      "LSP point/range",
+      "task Markdown image readonly attachment"
+    ],
+    "untriggered": [
+      "F03 artifact source A",
+      "F04 CSV/TeX attachment and explicit artifact source A",
+      "F29 artifact title source A"
+    ],
+    "notM9": [
+      "OSC8 HTTP external links",
+      "M10 mail ResourceView",
+      "M12 browser/artifacts storage"
+    ],
+    "deadCodeClaim": false,
+    "actualUIExecutionThisReview": false
+  },
+  "shortestNext": [
+    {
+      "priority": 1,
+      "scope": "Current F01 MD/HTML/PDF explicit adapter/builtin/auto + existing same-tab/source navigation",
+      "reuse": "scripts/files/viewer-navigation-ui.mjs:17-18/43-58; current mature oncePID/stable3s/guard/cleanup wrapper",
+      "necessary": "Use existing actual menu/config controls, current source039 original synthetic files; no new host. Reuse already valid MD/CSV current checks instead of replaying them."
+    },
+    {
+      "priority": 2,
+      "scope": "F03/F29 remaining actual PDF local Markdown point/range",
+      "reuse": "Existing Markdown href parser and original PDF routing fixture/flow, not fabricated artifact target; same tab/ref/buffer, correct review and no save/checkpoint/source change. Full known current MD/CSV proof remains reused."
+    },
+    {
+      "priority": 3,
+      "scope": "F01 actual external file/root-directory only if current accepted evidence truly lacks applicability",
+      "necessary": "Separate authorized OS resources/discovered controlled receiver, no simulated opens. Do last because external focus changes. No execution proposed for postponed redbox groups."
+    },
+    {
+      "priority": 4,
+      "scope": "No invented source A for target/title/CSV-TeX attachment",
+      "necessary": "Retain approved source preconditions and existing consumer U/I evidence, state conditional A untriggered. Do not use app.evaluate(store.open/openAttachment), new FilePreview host, raw browser result directories or M10 text view as A substitute."
+    }
+  ],
+  "boundary": "Static files/hash/git metadata only; no Node/App/Native/PTY/OS probe/HTTP/auth/DB, no tests or source changes. Original M12 U+A and all original steps retained. No formal result update; resourcesHeld=false.",
+  "formalIncrement": 0,
+  "resourcesHeld": false
+}

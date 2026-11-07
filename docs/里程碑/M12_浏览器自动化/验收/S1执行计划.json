@@ -170,12 +170,12 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-07T18:53:46.812722+00:00",
+  "updatedAt": "2026-11-07T19:22:24.978372+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
   "pauseHandoff": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
-  "next": "本批14个原T130完整A组已归档，所有本轮App/PTY/监听/helper清场，Native/UI无占用。原剩12个业务组的具体缺项见T130RemainingOriginalUAPlan.remainingDirectA[].nightDisposition；实际artifact/title入口与D11等技术缺口可独立继续定位，D19/D21/P03本夜不重放旧输入/盲重跑；系统动作集中用户醒后补验。红框T083/T127/T110/T141/T145按用户指令后置。目标保持active，未声明完整M12/发布通过。",
+  "next": "先完成 M12-FILE-VIEWER-TITLE-PRIORITY 新源040/App036官方构建、最小受影响实际菜单验证及S6当前包验证。当前已验候选App035/source039保留；新接口补丁90唯一U/I和双TS已绿，未宣称新包A。原批准来源复核已收口F03/F04/F29现行适用检查，具体未落地A条件未触发；其余原9组仍保原范围，F01无豁免。红框5与夜间已后置分支不重放，用户/设备前置集中醒后。",
   "followupAgreement": {
     "document": "../技研/技术方案.md#11-开发顺序",
     "recordedAt": "2026-11-03",
@@ -193,7 +193,7 @@
     "technicalDesign": "V1.6",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "Night original14A batch archived; no activeexecutor/NativeUIlease; remaining scopedgaps recorded",
+    "currentGroup": "Title explicitviewer interface fix U/I green; source040/App036 awaiting officialbuild",
     "groups": [
       {
         "id": "M12-P001",
@@ -4325,10 +4325,10 @@
       "status": "officialdirectory/native6 passed; background actualfix verification and completeA pending; finalS6 pending"
     },
     "nextExecution": {
-      "status": "All actualsessions terminal; Native/UIreleased; no readybatch awaiting launch",
-      "nextAutonomous": "核原真实artifact/title调用入口及安全renderer重附着缺口，按原12组恢复位置推进，不写新业务宿主冒实际入口",
-      "nextUI": "Onlynew originalbatch after scopedfix/ready; user-nightdeferred batches remain deferred",
-      "pendingUser": "Userawake batch: originalsystemkeys/windowobservations/clipboard-external/voice asneeded; redbox5 conditions per plan; no authorization pending"
+      "status": "Native/UI released; source changed, newpackage required",
+      "nextAutonomous": "先完成 M12-FILE-VIEWER-TITLE-PRIORITY 新源040/App036官方构建、最小受影响实际菜单验证及S6当前包验证。当前已验候选App035/source039保留；新接口补丁90唯一U/I和双TS已绿，未宣称新包A。原批准来源复核已收口F03/F04/F29现行适用检查，具体未落地A条件未触发；其余原9组仍保原范围，F01无豁免。红框5与夜间已后置分支不重放，用户/设备前置集中醒后。",
+      "nextUI": "Only newApp036 after actualofficialbuild/pinreview; affectednormal viewer-menu path then S6",
+      "pendingUser": "Previously recorded redbox5/system/platform prerequisites; no new authorization pending"
     },
     "lastCompletedBatch": {
       "at": "2026-11-07T02:02:33.045064+00:00",
@@ -4479,8 +4479,9 @@
       "policy": "No newauthorizationquestions; originaloncePIDactivation/strictguard maintained;do not reuse oldfocus"
     },
     "nextAutonomousGroup": {
-      "case": "M12-T130",
-      "status": "No currentlyfrozen executable group outstanding; exact12originalscopes recorded",
+      "case": "M12-T130/App036-S6",
+      "status": "Ready to commit/freeze currentcheckedsource then officialbuild",
+      "owner": "/root",
       "resourcesHeld": []
     },
     "documentationSavedLocally": {
@@ -4553,7 +4554,7 @@
       "closeObserver": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/close-observer-probe-001/manifest.json",
       "formalIncrement": 0
     },
-    "currentAuthoritySHA256": "1f10165bd20d2b184fc3f0154333d0cb8137112e6ca54bea77e5522af3492d24",
+    "currentAuthoritySHA256": "16cafcc8e01ebf80d74e2373e7d9a1aa5a55176d9fc33e3ba4dfa33f6ef15bf5",
     "latestCaseCloseout": {
       "at": "2026-11-07T11:34:27.327295+00:00",
       "result": "原九条I/A/R按原要求完整通过；正式新增1；旧红及合成provider边界保留",
@@ -4605,36 +4606,12 @@
           "nightDisposition": "原显式viewer/target真实入口与完整分派矩阵未齐，继续核实际集成；不凭局部local链接或自造宿主称完整。"
         },
         {
-          "case": "M9-T-F03",
-          "title": "已有tab先复用",
-          "originalSteps": "同路径已开普通tab，再以line/column/artifact目标打开。",
-          "originalExpected": "根据指定目标复用/定位，实例身份正确；不会仅按扩展名建重复标签。",
-          "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。",
-          "nightDisposition": "普通MD/CSV/PDF链接子段已有有效A；artifact/同tab完整入口仍缺，保原整组未完成。"
-        },
-        {
-          "case": "M9-T-F04",
-          "title": "附件优先artifact",
-          "originalSteps": "同csv/tex从树、附件、显式artifactNavigationTarget各打开。",
-          "originalExpected": "树可源码；附件/显式artifact按相应富预览；可写性遵守来源；route差异有标识。",
-          "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。",
-          "nightDisposition": "树预览有效结果按原记录；原附件/显式artifact真实入口仍待核和补测，不能由普通树打开替代。"
-        },
-        {
           "case": "M9-T-F25",
           "title": "全部不支持Office分支",
           "originalSteps": "逐项打开doc/ppt/xls/key/numbers/pages/odp/ods/odt/rtf。",
           "originalExpected": "每种展示对应清晰状态与合法外开；不能被通用乱码文本编辑器接管；不将docx等artifact支持误归否定。",
           "nextAction": "保留已绿10不支持提示/14打开方式和副本入口；仅补原实际外开、选择记忆/实际副本保存的系统前置，不能把入口可见写成动作完成。",
           "nightDisposition": "原不支持格式菜单/预览与系统外开、保存副本边界分开；后两系统层集中补验，按原合同补齐才收组。"
-        },
-        {
-          "case": "M9-T-F29",
-          "title": "line/endLine/标题分支",
-          "originalSteps": "同一.md/.csv/.pdf分别携line、column、endLine、filePreviewTitle。",
-          "originalExpected": "逐一按R12/R13限制选择viewer；定位到正确行列；范围请求不误当默认artifact。",
-          "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。",
-          "nightDisposition": "普通MD/CSV/PDF定位子段完成；原filePreviewTitle/artifact目标仍缺，继续核真实入口，不能将子段当整组。"
         },
         {
           "case": "M9-T-P03",
@@ -4763,13 +4740,29 @@
           "M9-T-S09",
           "M9-T-P08",
           "M9-T-Y40",
-          "M9-T-D24"
+          "M9-T-D24",
+          "M9-T-F03",
+          "M9-T-F04",
+          "M9-T-F29"
         ],
         "basis": "Original App035/source039 tabrestore/Notebook/D22/staticviewers/basic-tabs complete A archived and original independent judges passed; originalD08/D10 scoped Rootreview and P01/P02/P06 original10judge archived, App035/source039 unchanged",
         "notFormalM12Increment": true,
         "note": "Only removes completed original business groups from dispatch queue; formal121 remains authority测试用例.md, no second result ledger"
       },
-      "updatedAt": "2026-11-07T18:53:08.655617+00:00"
+      "updatedAt": "2026-11-07T19:21:55.014362+00:00",
+      "reviewedApplicableConditionClosures": {
+        "at": "2026-11-07T19:21:55.014362+00:00",
+        "caseIds": [
+          "M9-T-F03",
+          "M9-T-F04",
+          "M9-T-F29"
+        ],
+        "basis": "Original explicit user20261023 approval receipt; exact currentUIproducer absence, currentordinaryA + applicable U/I composite",
+        "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/navigation-applicable-closeout-001/manifest.json",
+        "newAppRuns": 0,
+        "untriggeredBranchNotPassed": true,
+        "originalPartialSafesUnchanged": true
+      }
     },
     "remainingParticipationSplit": {
       "updatedAt": "2026-11-07T18:34:07.885806+00:00",
@@ -4973,9 +4966,15 @@
       "originalObservations": 6,
       "judgePassed": 5,
       "formalIncrement": 0
+    },
+    "pendingImplementationFix": {
+      "defect": "M12-FILE-VIEWER-TITLE-PRIORITY",
+      "state": "source fixed/90unique U-I+bothTS pass; source040/App036 build/S6/affectedA pending",
+      "scope": "Consume explicitviewer even in fallbacktitle reuse; no newUI/source/businessrule",
+      "currentAcceptedPackage": "App035/source039 retained until newcandidate verified"
     }
   },
-  "currentAuthoritySHA256": "1f10165bd20d2b184fc3f0154333d0cb8137112e6ca54bea77e5522af3492d24",
+  "currentAuthoritySHA256": "16cafcc8e01ebf80d74e2373e7d9a1aa5a55176d9fc33e3ba4dfa33f6ef15bf5",
   "latestT081Complete": {
     "at": "2026-11-07T10:20:24.747521+00:00",
     "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P105/coordinator-final-001/manifest.json",

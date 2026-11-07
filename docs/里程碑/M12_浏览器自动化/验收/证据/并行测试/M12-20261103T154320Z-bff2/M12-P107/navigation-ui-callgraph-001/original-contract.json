@@ -1,0 +1,103 @@
+{
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json",
+  "sourceSHA256": "c6e241d28fcfaaa5354d18e6f69d687ff4b684c660a5ebef399aa085a7a2ccdd",
+  "cases": [
+    {
+      "id": "M9-T-F01",
+      "title": "显式目标覆盖默认",
+      "requirements": [
+        "M9-R06.15",
+        "M9-R06.16"
+      ],
+      "environments": [
+        "I",
+        "A"
+      ],
+      "steps": "对.md/.html/.pdf指定外部target/workspace/default viewer，抓取分派结果。",
+      "expected": "显式用户选择按批准优先级执行，不被扩展名默认覆盖；不触发M9内置浏览器。"
+    },
+    {
+      "id": "M9-T-F03",
+      "title": "已有tab先复用",
+      "requirements": [
+        "M9-R04.4"
+      ],
+      "environments": [
+        "I",
+        "A"
+      ],
+      "steps": "同路径已开普通tab，再以line/column/artifact目标打开。",
+      "expected": "根据指定目标复用/定位，实例身份正确；不会仅按扩展名建重复标签。",
+      "source_preconditions": {
+        "approvedAt": "2026-10-23T00:42:37.773702+00:00",
+        "source": "当前用户异步明确回复：同意按提案补充前置（推荐）",
+        "requirementBasis": "需求 R3.4 §1.2 范围表及 R06.16；业务范围和P1不变",
+        "conditionForA": "指定 artifact 目标的 A 分支，以真实来源提供该目标为前置；没有对应来源时保留目标接口与条件行为设计。",
+        "retainedChecks": "普通文件点／范围定位、同 tab/ref/buffer/编辑器身份、不同来源不误合并。",
+        "reporting": "只限制所列来源 A 分支的触发前置；真实来源存在即按原步骤验收。未落地分支记“条件未触发”，不记该分支通过；接口／条件设计及适用 U/I 仍须完成。来源落地后补该分支真实 A；不改变原层级、步骤、预期和419本期分母。",
+        "proposal": "未落地扩展来源的用例前置澄清提案_20261023.md",
+        "approvalReceipt": "并行测试/轮次/M9-20261021T005835Z-9de5-12b28f/扩展来源前置_用户确认_20261023.json"
+      }
+    },
+    {
+      "id": "M9-T-F04",
+      "title": "附件优先artifact",
+      "requirements": [
+        "M9-R06.16"
+      ],
+      "environments": [
+        "I",
+        "A"
+      ],
+      "steps": "同csv/tex从树、附件、显式artifactNavigationTarget各打开。",
+      "expected": "树可源码；附件/显式artifact按相应富预览；可写性遵守来源；route差异有标识。",
+      "source_preconditions": {
+        "approvedAt": "2026-10-23T00:42:37.773702+00:00",
+        "source": "当前用户异步明确回复：同意按提案补充前置（推荐）",
+        "requirementBasis": "需求 R3.4 §1.2 范围表及 R06.16；业务范围和P1不变",
+        "conditionForA": "CSV/TeX 的附件及显式 artifact 来源 A 分支，以对应来源实际落地且具有可信本机映射为前置。",
+        "retainedChecks": "普通 CSV/TeX 源码及现有文档预览；适用接口的来源路由、只读与原件保护。",
+        "reporting": "只限制所列来源 A 分支的触发前置；真实来源存在即按原步骤验收。未落地分支记“条件未触发”，不记该分支通过；接口／条件设计及适用 U/I 仍须完成。来源落地后补该分支真实 A；不改变原层级、步骤、预期和419本期分母。",
+        "proposal": "未落地扩展来源的用例前置澄清提案_20261023.md",
+        "approvalReceipt": "并行测试/轮次/M9-20261021T005835Z-9de5-12b28f/扩展来源前置_用户确认_20261023.json"
+      }
+    },
+    {
+      "id": "M9-T-F29",
+      "title": "line/endLine/标题分支",
+      "requirements": [
+        "M9-R06.1",
+        "M9-R06.16"
+      ],
+      "environments": [
+        "I",
+        "A"
+      ],
+      "steps": "同一.md/.csv/.pdf分别携line、column、endLine、filePreviewTitle。",
+      "expected": "逐一按R12/R13限制选择viewer；定位到正确行列；范围请求不误当默认artifact。",
+      "source_preconditions": {
+        "approvedAt": "2026-10-23T00:42:37.773702+00:00",
+        "source": "当前用户异步明确回复：同意按提案补充前置（推荐）",
+        "requirementBasis": "需求 R3.4 §1.2 范围表及 R06.16；业务范围和P1不变",
+        "conditionForA": "artifact 标题的 A 分支，以真实来源提供该标题为前置。",
+        "retainedChecks": "普通 MD/CSV/PDF 的行列与范围；标题／目标条件设计，不凭空生成标题。",
+        "reporting": "只限制所列来源 A 分支的触发前置；真实来源存在即按原步骤验收。未落地分支记“条件未触发”，不记该分支通过；接口／条件设计及适用 U/I 仍须完成。来源落地后补该分支真实 A；不改变原层级、步骤、预期和419本期分母。",
+        "proposal": "未落地扩展来源的用例前置澄清提案_20261023.md",
+        "approvalReceipt": "并行测试/轮次/M9-20261021T005835Z-9de5-12b28f/扩展来源前置_用户确认_20261023.json"
+      }
+    }
+  ],
+  "requirementSource": {
+    "path": "docs/里程碑/M9_文件浏览工作区/需求.md",
+    "sha256": "1cb38336f780d16cd8744f1e057e23b46fc45ae8c63a6093279100e1ca4d6066",
+    "lines": {
+      "extensionScope": 37,
+      "routeIdentity": 119,
+      "viewer": 165,
+      "attachment": 166,
+      "approvedSourceACondition": 343
+    }
+  },
+  "parent": "M12-T130 originalU+A; oldM9 I/source status not a new M12 result",
+  "formalIncrement": 0
+}

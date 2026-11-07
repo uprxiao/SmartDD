@@ -1,0 +1,99 @@
+{
+  "at": "2026-11-07T19:05:50.217678+00:00",
+  "scope": "Read-only original M9 F01/F03/F04/F29; current M12 T130 remains U+A, no added layer mandate",
+  "documents": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/需求.md",
+      "sha256": "1cb38336f780d16cd8744f1e057e23b46fc45ae8c63a6093279100e1ca4d6066",
+      "bytes": 82576
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+      "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a",
+      "bytes": 1183593
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/未落地扩展来源的用例前置澄清提案_20261023.md",
+      "sha256": "d54fe5fdcf9dee083e20c5249b5bd894a8f130d529a046dd5a8bf9eabdb8e16f",
+      "bytes": 4757
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/并行测试/轮次/M9-20261021T005835Z-9de5-12b28f/扩展来源前置_用户确认_20261023.json",
+      "sha256": "f46873c59736d0057ac2319d9cabd5530e7eed6dfb87a4be86edc40578c1fb7e",
+      "bytes": 19722
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/调研/M9_文件类型与编辑状态全集.md",
+      "sha256": "0ffcbe7a04b4c3af7d6c447c450c6798cf2b05d3ee2adf2d9645c5104b167894",
+      "bytes": 58757
+    }
+  ],
+  "rows": [
+    {
+      "line": 200,
+      "id": "F01",
+      "contractCells": [
+        "**M9-T-F01 显式目标覆盖默认**<br>M9-R06.15、M9-R06.16",
+        "本期本机",
+        "单元／集成／安装端到端<br>I+A / D04+D05",
+        "对.md/.html/.pdf指定外部target/workspace/default viewer，抓取分派结果。",
+        "显式用户选择按批准优先级执行，不被扩展名默认覆盖；不触发M9内置浏览器。<br>依据：V R01–R03"
+      ],
+      "historicalResultCellNotRewritten": true
+    },
+    {
+      "line": 202,
+      "id": "F03",
+      "contractCells": [
+        "**M9-T-F03 已有tab先复用**<br>M9-R04.4",
+        "本期本机",
+        "单元／集成／安装端到端<br>I+A / D04+D05",
+        "同路径已开普通tab，再以line/column/artifact目标打开。",
+        "根据指定目标复用/定位，实例身份正确；不会仅按扩展名建重复标签。<br>依据：V R08/R11"
+      ],
+      "historicalResultCellNotRewritten": true
+    },
+    {
+      "line": 203,
+      "id": "F04",
+      "contractCells": [
+        "**M9-T-F04 附件优先artifact**<br>M9-R06.16",
+        "本期本机",
+        "单元／集成／安装端到端<br>I+A / D04+D05",
+        "同csv/tex从树、附件、显式artifactNavigationTarget各打开。",
+        "树可源码；附件/显式artifact按相应富预览；可写性遵守来源；route差异有标识。<br>依据：V R09"
+      ],
+      "historicalResultCellNotRewritten": true
+    },
+    {
+      "line": 228,
+      "id": "F29",
+      "contractCells": [
+        "**M9-T-F29 line/endLine/标题分支**<br>M9-R06.1、M9-R06.16",
+        "本期本机",
+        "单元／集成／安装端到端<br>I+A / D04+D05",
+        "同一.md/.csv/.pdf分别携line、column、endLine、filePreviewTitle。",
+        "逐一按R12/R13限制选择viewer；定位到正确行列；范围请求不误当默认artifact。<br>依据：V R12–R14"
+      ],
+      "historicalResultCellNotRewritten": true
+    }
+  ],
+  "approvedCondition": {
+    "requirementLine": 343,
+    "proposalLines": [
+      3,
+      21,
+      22,
+      25,
+      40
+    ],
+    "cases": [
+      "F03",
+      "F04",
+      "F29"
+    ],
+    "F01Excluded": true,
+    "wording": "真实具体来源触发才执行其A；缺来源保接口/条件设计/适用U或I，记条件未触发，不记该分支已过；不删普通A。",
+    "oldSafeWholeFalseAndKeptMissingPreserved": true
+  }
+}

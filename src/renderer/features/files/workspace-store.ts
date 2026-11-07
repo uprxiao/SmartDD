@@ -504,18 +504,28 @@ export class FileWorkspaceStore {
       && (options.endLine == null || options.endLine >= (options.line ?? 1))
       && (options.fileViewer == null || options.fileViewer === 'default');
     const previous = this.tabs.find(tab => !tab.attachment && routeKey(tab.route) === routeKey(route));
+    const hasViewer = Object.prototype.hasOwnProperty.call(options, 'fileViewer');
     // A title alone does not replace an eligible existing view. It is fallback
     // metadata, distinct from a request to rename the file or its ordinary tab.
     if (titled && !location && options.artifactNavigationTarget == null && previous?.buffer) {
+      const buffer = previous.buffer;
+      const protect = () => { if (buffer.dirty || buffer.saving) throw new Error('请先保存当前修改，再切换文件查看器'); };
+      if (hasViewer) protect();
       route.navigationView = previous.route.navigationView;
-      await this.openRoute(route, pin, options.reveal !== false, treeIntent); return;
+      const opening = this.openRoute(route, pin, options.reveal !== false, treeIntent), intent = this.intent;
+      await opening;
+      if (hasViewer && !this.disposed && this.intent === intent && this.active === previous && previous.buffer === buffer) {
+        protect();
+        chooseFileViewer(buffer, options.fileViewer === 'default' ? null : options.fileViewer ?? undefined);
+        this.changed();
+      }
+      return;
     }
     const titleArtifact = titled && !location && !previous && /\.(?:csv|tsv|pdf)$/i.test(relativePath);
     if (display.target || titleArtifact) route.mode = 'document';
     else if (location || titled) route.navigationView = titled || options.endLine != null || /\.pdf$/i.test(relativePath) ? 'review' : 'source';
     if ((display.target || titleArtifact) && (previous?.buffer?.dirty || previous?.buffer?.saving)) throw new Error('请先保存当前修改，再切换文件预览');
     const format = this.officePage && officeHandoffFormat(relativePath, options), registered = this.rootFor(route);
-    const hasViewer = Object.prototype.hasOwnProperty.call(options, 'fileViewer');
     let viewerConfiguration: ViewerConfiguration | undefined;
     if (hasViewer) {
       const own = ++this.intent, epoch = this.epoch;
