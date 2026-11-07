@@ -19,7 +19,7 @@ export function BrowserSettingsDialog({taskId,initial,onClose}:{taskId:string;in
         <fieldset className="bw-radios" disabled={busy}><legend>浏览器身份（整个应用生效，重启后生效）</legend>
           <label><input type="radio" name="browser-identity" checked={(settings.pendingIdentity??settings.identity)==='clean'} onChange={()=>void change(()=>rpc.browser.settings({taskId,identity:'clean'}))}/>清理后的身份（兼容导入的登录态）</label>
           <label><input type="radio" name="browser-identity" checked={(settings.pendingIdentity??settings.identity)==='native'} onChange={()=>void change(()=>rpc.browser.settings({taskId,identity:'native'}))}/>Electron 原生身份（部分站点需要；Google 登录不可用）</label>
-          {settings.pendingIdentity&&<p className="bw-hint bw-restart" role="status">已更改，重启 WillYou 后生效。</p>}
+          {settings.pendingIdentity&&<p className="bw-hint bw-restart" role="status">已更改，重启 WillYou 后生效。Agent 也可以用 <code>browser identity set</code> 改这一项。</p>}
         </fieldset>
         <div className="bw-kv"><span>下载位置</span><strong title={settings.downloadDirectory}>系统下载目录（{settings.downloadDirectory}），不弹保存对话框</strong></div>
         <div className="bw-kv"><span>浏览器文件</span><strong aria-label="浏览器文件占用">{settings.artifactBytes?(settings.artifactBytes/1048576).toFixed(1)+' MB（截图、PDF、HAR 与超限结果）':'0 MB'}</strong></div>

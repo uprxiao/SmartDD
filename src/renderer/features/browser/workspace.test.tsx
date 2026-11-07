@@ -4,13 +4,13 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import type {BrowserWorkspaceState} from '@shared/browser-workspace';
 import {TaskBrowserWorkspace} from './workspace';
 import {browserAccess} from './access-store';
-const f=vi.hoisted(()=>({value:null as unknown as {state:BrowserWorkspaceState;error:string},api:{continueCertificate:vi.fn(),focusChrome:vi.fn(),placement:vi.fn(),overlay:vi.fn(),find:vi.fn(),pause:vi.fn(),accessState:vi.fn()},store:{subscribe:()=>()=>{},snapshot:()=>f.value,refresh:vi.fn(),run:async(work:()=>Promise<unknown>)=>work()}}));
+const f=vi.hoisted(()=>({value:null as unknown as {state:BrowserWorkspaceState;error:string},api:{profileSiteStates:vi.fn(),continueCertificate:vi.fn(),focusChrome:vi.fn(),placement:vi.fn(),overlay:vi.fn(),find:vi.fn(),pause:vi.fn(),accessState:vi.fn()},store:{subscribe:()=>()=>{},snapshot:()=>f.value,refresh:vi.fn(),run:async(work:()=>Promise<unknown>)=>work()}}));
 vi.mock('@renderer/lib/ipc',()=>({events:{on:()=>()=>{}},rpc:{browser:f.api}}));
 vi.mock('./store',()=>({browserWorkspaceFor:()=>f.store,openNewBrowserTab:vi.fn()}));
 vi.mock('@renderer/features/files/workspace-panel',()=>({FileWorkspacePanel:({web}:{web:{view:unknown}})=>web.view}));
 vi.mock('@renderer/core/navigation',()=>({navigation:{}}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{}}));
-beforeEach(()=>{vi.clearAllMocks();f.api.placement.mockResolvedValue(null);f.api.overlay.mockResolvedValue(null);f.api.focusChrome.mockResolvedValue(null);f.value={error:'',state:{taskId:'t1',projectId:'p1',activeId:'page1',recent:[],notice:null,external:null,find:{active:0,total:0},tabs:[{id:'page1',url:'about:blank',title:'新标签页',profileId:'project-p1',favicon:null,loading:false,canGoBack:false,canGoForward:false,failure:{kind:'other',url:'https://outside.example.test/',host:'outside.example.test',title:'无法访问 outside.example.test',errorName:'ERR_CERT_AUTHORITY_INVALID',recovery:null},certificate:{url:'https://outside.example.test/',host:'outside.example.test',error:'ERR_CERT_AUTHORITY_INVALID',challengeId:'nonce1'}}]}};});
+beforeEach(()=>{vi.clearAllMocks();f.api.profileSiteStates.mockResolvedValue([{importState:"ready",profile:{id:"project-p1",scope:"project",label:"项目登录态",source:null,owner:{kind:"project",id:"p1"},partition:"persist:wy-browser-project-p1"},state:{schemaVersion:1,certificates:[],permissions:[]}}]);f.api.placement.mockResolvedValue(null);f.api.overlay.mockResolvedValue(null);f.api.focusChrome.mockResolvedValue(null);f.value={error:'',state:{taskId:'t1',projectId:'p1',activeId:'page1',recent:[],notice:null,external:null,find:{active:0,total:0},tabs:[{id:'page1',url:'about:blank',title:'新标签页',profileId:'project-p1',favicon:null,loading:false,canGoBack:false,canGoForward:false,failure:{kind:'other',url:'https://outside.example.test/',host:'outside.example.test',title:'无法访问 outside.example.test',errorName:'ERR_CERT_AUTHORITY_INVALID',recovery:null},certificate:{url:'https://outside.example.test/',host:'outside.example.test',error:'ERR_CERT_AUTHORITY_INVALID',challengeId:'nonce1'}}]}};});
 afterEach(async()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();f.api.accessState.mockResolvedValue({requests:[],grants:[]});await browserAccess.refresh();browserAccess.closeGrants();});
 it('shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce',async()=>{
   render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.queryByRole('heading',{name:'新标签页'})).toBeNull();expect(screen.getByRole('heading',{name:'此连接不受信任'})).toBeTruthy();expect((screen.getByLabelText('网页地址') as HTMLInputElement).value).toBe('https://outside.example.test/');
@@ -44,4 +44,22 @@ it('keeps native page geometry constant when activity starts or expires',async()
   f.value.state.tabs[0]={...f.value.state.tabs[0],url:'https://fixture.example/',failure:null,certificate:null};const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);const placed={taskId:'t1',tabId:'page1',rect:{x:12,y:22,width:496,height:396}};await waitFor(()=>expect(f.api.placement).toHaveBeenCalledWith(placed));const count=f.api.placement.mock.calls.length;
   f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],agentActive:true}]}};view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByTestId('browser-viewport').classList.contains('bw-agent-glow')).toBe(true);expect(f.api.placement.mock.calls.length).toBe(count);
   f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],agentActive:false}]}};view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByTestId('browser-viewport').classList.contains('bw-agent-glow')).toBe(false);expect(f.api.placement.mock.calls.filter(([input])=>input.rect!==null).every(([input])=>JSON.stringify(input)===JSON.stringify(placed))).toBe(true);
+});
+
+it('shows the current host profile and opens its management through the badge after parking the native page',async()=>{
+  render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  const badge=await screen.findByRole('button',{name:'项目登录态'});expect(badge.title).toBe('当前页面的登录态：项目登录态');
+  fireEvent.click(badge);await waitFor(()=>expect(f.api.overlay).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',open:true}));
+});
+it('does not display an obsolete profile response after switching the active profile',async()=>{
+  let resolveOld!:(value:unknown[])=>void;f.api.profileSiteStates.mockImplementationOnce(()=>new Promise(resolve=>{resolveOld=resolve;}));
+  const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],profileId:'isolated-new'}]}};
+  f.api.profileSiteStates.mockResolvedValueOnce([{profile:{id:'isolated-new',scope:'isolated',label:'独立账号'}}]);view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect((await screen.findByRole('button',{name:'独立登录态'})).title).toBe('当前页面的登录态：独立账号');
+  await act(async()=>resolveOld([{profile:{id:'project-p1',scope:'project',label:'过期账号'}}]));expect(screen.queryByTitle('当前页面的登录态：过期账号')).toBeNull();expect(screen.getByRole('button',{name:'独立登录态'}).title).toBe('当前页面的登录态：独立账号');
+});
+it('keeps an unavailable profile unknown and recovers through explicit management',async()=>{
+  f.api.profileSiteStates.mockRejectedValueOnce(Error('temporarily unavailable'));render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  const badge=await screen.findByTitle('无法读取当前登录态，点击管理');expect(badge.textContent).toBe('登录态');expect(screen.queryByRole('button',{name:'项目登录态'})).toBeNull();
+  fireEvent.click(badge);await waitFor(()=>expect(f.api.overlay).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',open:true}));
 });

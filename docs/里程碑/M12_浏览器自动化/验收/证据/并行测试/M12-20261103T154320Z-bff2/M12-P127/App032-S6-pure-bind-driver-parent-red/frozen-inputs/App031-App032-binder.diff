@@ -1,0 +1,109 @@
+--- App031/purebinder
++++ App032/purebinder
+@@ -1,10 +1,10 @@
+ #!/usr/bin/python3
+-"""Pure files: bind actual official App031 identity, never start tools or App."""
++"""Pure files: bind actual official App032 identity, never start tools or App."""
+ from pathlib import Path
+ import argparse,datetime,hashlib,json,os,plistlib,re,stat
+ 
+ ROOT=Path(__file__).parent
+-APP=Path('/private/tmp/willyou-m12-s2-package-031/mac-arm64/WillYou.app')
++APP=Path('/private/tmp/willyou-m12-s2-package-032/mac-arm64/WillYou.app')
+ START=ROOT/'installed-startup-001'
+ def sha(p):
+     h=hashlib.sha256()
+@@ -17,11 +17,13 @@
+     ap=argparse.ArgumentParser();ap.add_argument('--execute',action='store_true',required=True)
+     for k in ['source-manifest','source-sha','build-result','build-sha']:ap.add_argument('--'+k,required=True)
+     a=ap.parse_args()
+-    assert os.environ.get('WILLYOU_APP027_INPUT_BINDING_CONFIRMED')=='1', 'Root must review exact official build before binding'
++    assert os.environ.get('WILLYOU_APP032_INPUT_BINDING_CONFIRMED')=='1', 'Root must review exact official build before binding'
++    from binding_static import check_prebinding
++    current_static=check_prebinding()
+     assert json.loads((ROOT/'binding.json').read_text())['ready'] is False
+     assert not (ROOT/'first-six-state.json').exists() and not (START/'execution-started.json').exists(), 'Never rebind an executed attempt'
+     manifest=ROOT/'manifest.json'; prepared_manifest_sha=sha(manifest); frozen=json.loads(manifest.read_text())['files']
+-    for rel,proof in frozen.items():assert sha(ROOT/rel)==proof['sha256'], 'Prepared input changed before binding: '+rel
++    for rel,proof in frozen.items():assert sha(ROOT/rel)==proof['sha256'] and (ROOT/rel).stat().st_mode&511==proof['mode'], 'Prepared input changed before binding: '+rel
+     source_manifest=Path(a.source_manifest);build_result=Path(a.build_result)
+     assert sha(source_manifest)==a.source_sha and sha(build_result)==a.build_sha
+     source=json.loads(source_manifest.read_text());original_build=json.loads(build_result.read_text());adapter=json.loads((ROOT/'official-build-input-adapter.json').read_text());assert adapter['officialResult']=={'path':str(build_result),'sha256':a.build_sha};assert sha(Path(adapter['fieldSources']['nativeSmoke']['path']))==adapter['fieldSources']['nativeSmoke']['sha256'];build=adapter['oldShape'];assert build['sourceManifestSha256']==original_build['sourceManifestSHA256'];source_root=Path(source['source'])
+@@ -54,20 +56,21 @@
+     index=json.loads((APP/'Contents/Resources/capability-bundles/index.json').read_text())
+     browsers=[x for x in index['apps'] if x['appId']=='browser'];assert len(browsers)==1
+     assert browsers[0]==pending['browserPackageExpectedUnchanged'], 'Browser manifest changed; Root must review applicability, do not silently rewrite original business expected'
+-    replacements={'__PENDING_SOURCE035_MANIFEST__':str(source_manifest),'__PENDING_SOURCE035_ROOT__':str(source_root),
+-        '__PENDING_SOURCE035_SHA__':a.source_sha,'__PENDING_SOURCE035_COUNT__':str(len(source['files'])),'/private/tmp/willyou-m12-browser-visual-App032-build-001/result.json':str(build_result),'6ccb688caaa05a7fe33d825e063947b643a2ee18a33afd5270f3eaef704e210c':a.build_sha}
++    replacements={'/private/tmp/willyou-m12-browser-visual-source-036/source-inputs.json':str(source_manifest),'/private/tmp/willyou-m12-browser-visual-source-036/source':str(source_root),
++        'e48ad7cbc572f855ad58ebcb38e420ad1ff00ed7b021ee3dc96ee0cf991db0a7':a.source_sha,'3689':str(len(source['files'])),'/private/tmp/willyou-m12-browser-visual-App032-build-001/result.json':str(build_result),'6ccb688caaa05a7fe33d825e063947b643a2ee18a33afd5270f3eaef704e210c':a.build_sha}
+     for marker,names in pending['markers'].items():
+         values={bypath[n]['sha256'] for n in names};assert len(values)==1, 'Previously shared identity diverged; review exact references before binding'
+         replacements[marker]=next(iter(values))
+     before={'outerReady':sha(ROOT/'execution-ready.json'),'startupReady':sha(START/'execution-ready.json'),'pin':sha(START/'pin.json')}
+     # Only copied static text inputs are substituted; no App/runtime/credential file is written.
+-    managed=[ROOT/p for p in frozen if p not in ['binding.json','pending-pin-map.json','bind-App031-inputs.py','binding_guard.py','input-boundary.json'] and '/node_modules/' not in '/'+p and not p.startswith('binding-schema-review-001/') and p not in ['official-build-input-adapter.json','source035-inventory.projection.json']]
++    historical={row['path'] for row in json.loads((ROOT/'inherited-proof-references.json').read_text())['files']}
++    managed=[ROOT/p for p in frozen if p not in ['binding.json','pending-pin-map.json','bind-App032-inputs.py','binding_guard.py','input-boundary.json','official-build-input-adapter.json','source036-inventory.projection.json','inherited-proof-references.json','parameter-only-proof.App031-reference.json'] and '/node_modules/' not in '/'+p and p not in historical and not p.startswith('binding-schema-review-001/')]
+     for f in managed:
+         try:text=f.read_text()
+         except UnicodeDecodeError:continue
+         for old,new in replacements.items():text=text.replace(old,new)
+         f.write_text(text)
+-    pins=json.loads((ROOT/'evidence/prepackaged-input-pins.json').read_text());pins.update(source=str(APP),files=critical,binding='actual-App031-official-result-bound')
++    pins=json.loads((ROOT/'evidence/prepackaged-input-pins.json').read_text());pins.update(source=str(APP),files=critical,binding='actual-App032-official-result-bound')
+     for name in ['evidence/prepackaged-input-pins.json','evidence/attempt-002/prepackaged-input-pins.json']:save(ROOT/name,pins)
+     # Installation gates remain pending after input binding. Phase06 alone may finalize them.
+     pin=json.loads((START/'pin.template.json').read_text());assert pin['finalReady'] is False
+@@ -76,10 +79,10 @@
+     ready=json.loads((START/'execution-ready.json').read_text())
+     for f in ready['inputs']:
+         p=START/f['path'];f['sha256']=sha(p);f['mode']=p.stat().st_mode&511
+-    ready.update(status='App031-inputs-bound-await-actual-installation-native6-phase06',sourceManifestSha256=a.source_sha,actualInstallationAndNativeBound=False)
++    ready.update(status='App032-inputs-bound-await-actual-installation-native6-phase06',sourceManifestSha256=a.source_sha,actualInstallationAndNativeBound=False)
+     save(START/'execution-ready.json',ready)
+     # Root must review this receipt before original phase01; it is no installation green.
+-    binding={'schema':'App031-S6-input-binding-v1','ready':True,'app':str(APP),'sourceManifest':str(source_manifest),'sourceManifestSha256':a.source_sha,
++    binding={'schema':'App032-S6-input-binding-v1','ready':True,'app':str(APP),'sourceManifest':str(source_manifest),'sourceManifestSha256':a.source_sha,
+         'buildResult':str(build_result),'buildResultSha256':a.build_sha,'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+         'actualPins':actual_pins,'criticalFiles':len(critical),'preparedManifestSha256':prepared_manifest_sha,'installationOrStartupAccepted':False}
+     save(ROOT/'binding.json',binding)
+@@ -89,29 +92,32 @@
+         
+         for marker,value in replacements.items():name=name.replace(marker,value)
+         external.append(row(Path(name)))
+-    local=[ROOT/p for p in frozen if p not in ['prepared-inputs.json','execution-ready.json','run-first-six.py']]
++    local=[ROOT/p for p in frozen if p not in ['prepared-inputs.json','execution-ready.json','run-first-six.py','runner-manifest.json','input-binding-receipt.json','bound-input-manifest.json']]+[ROOT/'current-static-App032.json']
+     inputs={x['path']:x for x in external+[row(p) for p in local]}
+-    prepared={'at':binding['at'],'scope':'Original App025 nine-stage workflow rebound to actual App031/source035, before any installer execution','nativeExecuted':False,
++    prepared={'at':binding['at'],'scope':'Original App025 nine-stage workflow rebound to actual App032/source036, before any installer execution','nativeExecuted':False,
+         'currentPackagePins':len(critical),'startupFrozenInputs':len(ready['inputs']),'sourceManifestSha256':a.source_sha,'inputs':list(inputs.values())}
+     save(ROOT/'prepared-inputs.json',prepared);prepared_sha=sha(ROOT/'prepared-inputs.json')
+-    outer=json.loads((ROOT/'execution-ready.json').read_text());outer.update(status='READY-App031-bound-inputs-await-Root-full-installer-lease',sourceManifestSha256=a.source_sha,
++    outer=json.loads((ROOT/'execution-ready.json').read_text());outer.update(status='READY-App032-bound-inputs-await-Root-full-installer-lease',sourceManifestSha256=a.source_sha,
+         asarSha256=actual_pins['app.asar'],executableSha256=actual_pins['executable'],currentCriticalPins=len(critical))
+     outer['verification']['currentAppBinding']=True
++    outer['staticCurrentProof']='CurrentpurePythonAST/valuecontrols only; inheritedNodecontrols not reexecuted'
++    outer['pureChecks']['currentPythonAST']={'path':str(ROOT/'current-static-App032.json'),'sha256':sha(ROOT/'current-static-App032.json')}
++    outer['currentMain']=current_static['actualCurrentMain']
+     outer['preparedInputs'].update(sha256=prepared_sha,files=len(inputs))
+     for c in outer['commandsSequential']:c['shell']=c['shell'].replace('__PENDING_PREPARED_SHA__',prepared_sha)
+     save(ROOT/'execution-ready.json',outer);ready_sha=sha(ROOT/'execution-ready.json')
+     wrapper=ROOT/'run-first-six.py';wrapper.write_text(wrapper.read_text().replace('__PENDING_READY_SHA__',ready_sha))
+     save(ROOT/'runner-manifest.json',{'at':binding['at'],'readySHA256':ready_sha,'preparedSHA256':prepared_sha,
+-        'wrapper':{'path':str(wrapper),'sha256':sha(wrapper)},'leaseMarker':'Root-App031-exclusive','resourcesHeld':False,
++        'wrapper':{'path':str(wrapper),'sha256':sha(wrapper)},'leaseMarker':'Root-App032-exclusive','resourcesHeld':False,
+         'scope':'Original sequential01-06 only; actual inputs bound, no installer/native execution'})
+     # No identity placeholder may reach an executable input; descriptive pending messages are retained.
+     for f in [ROOT/'build-installer-002.py',START/'io.mjs',START/'run.mjs',START/'adjudicate.mjs',START/'pin.json']:
+         assert not re.search(r'__PENDING_[A-Z0-9_]+__',f.read_text()), 'Unbound executable field: '+str(f)
+-    receipt={'at':binding['at'],'scope':'Pure-file actual App031 input binding only; no installer/native/App execution','before':before,
++    receipt={'at':binding['at'],'scope':'Pure-file actual App032 input binding only; no installer/native/App execution','before':before,
+         'after':{'outerReady':ready_sha,'startupReady':sha(START/'execution-ready.json'),'pin':sha(START/'pin.json'),'prepared':prepared_sha},'bindingSha256':sha(ROOT/'binding.json'),
+         'installedPinFinalReady':False,'allInstalledOutputGatesStillPending':True}
+     save(ROOT/'input-binding-receipt.json',receipt)
+-    bound={p:{'sha256':sha(ROOT/p),'bytes':(ROOT/p).stat().st_size} for p in frozen}
++    bound={p:{'sha256':sha(ROOT/p),'bytes':(ROOT/p).stat().st_size,'mode':(ROOT/p).stat().st_mode&511} for p in frozen}
+     save(ROOT/'bound-input-manifest.json',{'originalPreparedManifestSha256':prepared_manifest_sha,'files':bound,'receiptSha256':sha(ROOT/'input-binding-receipt.json')})
+     print(json.dumps({'outerReadySha256':ready_sha,'preparedSha256':prepared_sha,'bindingReceipt':str(ROOT/'input-binding-receipt.json'),'installedFinalReady':False}))
+ if __name__=='__main__':main()

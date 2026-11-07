@@ -1,0 +1,225 @@
+{
+  "at": "2026-11-07T13:34:14.161731+00:00",
+  "staticInputAndRootControlRuntimeOutputSeparated": true,
+  "entries": [
+    {
+      "callpoint": "run:admission",
+      "operation": "readFile",
+      "pathExpression": "ROOT/{group,package-pin,READY}.json",
+      "classification": "static",
+      "source": "local frozen JSON"
+    },
+    {
+      "callpoint": "run:lease",
+      "operation": "readFile",
+      "pathExpression": "ROOT/lease.receipt.json",
+      "classification": "Root-generated-control",
+      "source": "fresh coordinatorroot exactREADY/scope/time; never copied"
+    },
+    {
+      "callpoint": "run:input-loop",
+      "operation": "readFile/lstat",
+      "pathExpression": "ready.inputs[*].path",
+      "classification": "static",
+      "source": "every exact absolute frozen file andmode"
+    },
+    {
+      "callpoint": "run:package",
+      "operation": "readFile",
+      "pathExpression": "pin.executable; pin.app/Contents/Resources/app.asar; pin.packageFiles[*]",
+      "classification": "static",
+      "source": "current031 exact package bytes"
+    },
+    {
+      "callpoint": "run:initial-activation",
+      "operation": "readFile",
+      "pathExpression": "ROOT/initial-activation-authorization.json + activate-initial-exact-pid.applescript",
+      "classification": "static",
+      "source": "originaluser call7fa/exact script481e"
+    },
+    {
+      "callpoint": "run:runtime-shape",
+      "operation": "lstat/mkdir",
+      "pathExpression": "ROOT/runtime-001 and fixed private subdirs; project-{4selectedoriginalcomboids}",
+      "classification": "runtime-output",
+      "source": "runtime must not exist beforeexecute; only run creates"
+    },
+    {
+      "callpoint": "run:config",
+      "operation": "writeFile",
+      "pathExpression": "runtime-001/receiver-codex/config.toml",
+      "classification": "runtime-output",
+      "source": "workspace-write/on-request noauth"
+    },
+    {
+      "callpoint": "task-open-ui",
+      "operation": "appendFile/writeFile",
+      "pathExpression": "runtime-001/task-open-{4selectedcomboids}.private.jsonl[.failure.private.png]",
+      "classification": "runtime-output",
+      "source": "once actualUI descriptors before each decision"
+    },
+    {
+      "callpoint": "run:save",
+      "operation": "writeFile",
+      "pathExpression": "ROOT/live.json,raw.json",
+      "classification": "runtime-output",
+      "source": "unjudged original raw preserved"
+    },
+    {
+      "callpoint": "run:capture",
+      "operation": "writeFile/readFile",
+      "pathExpression": "ROOT/A-{4selectedcomboids}-{5originalstateids}.{png,json}",
+      "classification": "runtime-output",
+      "source": "20new actual renderer screenshots+metadata; no image editing/compositing"
+    },
+    {
+      "callpoint": "run:failure",
+      "operation": "writeFile",
+      "pathExpression": "ROOT/{primary-failure.private.log,failure-descriptor.private.json,failure.private.png}",
+      "classification": "runtime-output",
+      "source": "firsterror fullstack/readonlyDOM/image no retry"
+    },
+    {
+      "callpoint": "run:finally",
+      "operation": "writeFile",
+      "pathExpression": "runtime-001/cleanup-task-{4newtaskUUIDs}.private.log; ROOT/cleanup-{fixedsettlelabel}.private.log; electron.private.log",
+      "classification": "runtime-output",
+      "source": "owned errors preserve stacks; precise closedTasks needed for normalquit"
+    },
+    {
+      "callpoint": "receiver",
+      "operation": "read/write",
+      "pathExpression": "runtime-001/agent-events.jsonl",
+      "classification": "runtime-output",
+      "source": "synthetic idle health/config only, no T140 RUN submitted"
+    },
+    {
+      "callpoint": "resources",
+      "operation": "readdir/readFile",
+      "pathExpression": "/private/tmp/wy-ab-{sha256(userData+ownedPageID)[:24]}/*.pid",
+      "classification": "runtime-owned-observation",
+      "source": "exact own4page IDs only"
+    },
+    {
+      "callpoint": "cleanup",
+      "operation": "readFile/lstat",
+      "pathExpression": "ROOT/raw.json; exact knownPID/TCP/Unix/helperpaths",
+      "classification": "runtime-owned-observation",
+      "source": "independentverify only; no unknown deletion"
+    },
+    {
+      "callpoint": "judge",
+      "operation": "readFile",
+      "pathExpression": "ROOT/{raw,cleanup}.json and selected20new A PNG",
+      "classification": "runtime-output",
+      "source": "mechanical evidence, separate visualreview remains"
+    },
+    {
+      "callpoint": "judge",
+      "operation": "readFile",
+      "pathExpression": "ROOT/{group,package-pin,references}.json",
+      "classification": "static",
+      "source": "same original40keys andcurrentpin"
+    },
+    {
+      "callpoint": "static-check",
+      "operation": "readFile/realpath/lstat",
+      "pathExpression": "relative module graph; ROOT/{group,original-state-catalog,references}.json;20 selected reference PNG; expectedabsent runtime/control",
+      "classification": "static-plus-shape",
+      "source": "no imported producer/lifecycle/UIbody executed"
+    },
+    {
+      "callpoint": "native-own-read",
+      "operation": "SQLite readonly",
+      "pathExpression": "runtime-001/userdata/smartdd.db capability_runs exact task/run row",
+      "classification": "runtime-owned-observation",
+      "source": "same task/PTY/PID/kernel/run only, no auth/Cookie/secret"
+    },
+    {
+      "callpoint": "afterSidebarSelected callback",
+      "operation": "readonlyDOM + realUI clicks/drag",
+      "pathExpression": "row.resumeGeometrySamples in ROOT/live.json/raw.json, per-task task-open*.private.jsonl",
+      "classification": "runtime-output",
+      "source": "actualtask-area/StoppedPanel/control rect/centerOwned, trueUI theme and width beforeonce-resume; no store/DOM mutation"
+    },
+    {
+      "callpoint": "mechanicaljudge",
+      "operation": "readFile/writeFile",
+      "pathExpression": "ROOT/references.json with frozenPgeometry; ROOT/visual-evidence-index.json",
+      "classification": "static-input/runtime-output",
+      "source": "All20P rawPNG+metadata paths/SHA frozen; index stores actualA originalPNG plus relativeCSS解释 only"
+    },
+    {
+      "callpoint": "optionalpostrunjudgevisual",
+      "operation": "readFile/writeFile",
+      "pathExpression": "ROOT/{raw,group,READY,visual-evidence-index,visual-review}.json; A20PNG/P20PNG; declaredexplanationbasis exactREADY.inputs only; ROOT/visual-judgement.json",
+      "classification": "post-run-Root-review-control/runtime-output",
+      "source": "No visual-review.json beforeactual; missing=>pending/exit2, noautoGreen; originalrawDPR retained"
+    },
+    {
+      "callpoint": "run native blank proof",
+      "operation": "ownMain readonly Ewindow/webcontents metadata",
+      "pathExpression": "r.blankNativeObservations in live/raw; fullcurrentlogical/uniquevisiblelauncher/allowncontents/ownedwindows/mainchildviews",
+      "classification": "runtime-output",
+      "source": "values persist before assert; exactmain placements + transparentnonfocusableexactdata park; no globalURLblank assertion"
+    },
+    {
+      "callpoint": "run prior+offlinejudge",
+      "operation": "readFile",
+      "pathExpression": "ROOT/prior-current-App032-five.json; prior.sourceRoot/references.json; exactprior5A PNG/metadata paths",
+      "classification": "static original-current-package-evidence",
+      "source": "currentApp032source036same; prior5notreplayed; no originalfailedarray fabrication"
+    }
+  ],
+  "dynamicBranchesEnumerated": {
+    "comboIds": [
+      {
+        "id": "light-rw900-win1440x900",
+        "theme": "light",
+        "rightWidth": 900,
+        "windowWidth": 1440,
+        "windowHeight": 900,
+        "PDeviceScaleFactor": 1
+      },
+      {
+        "id": "dark-rw480-win1440x900",
+        "theme": "dark",
+        "rightWidth": 480,
+        "windowWidth": 1440,
+        "windowHeight": 900,
+        "PDeviceScaleFactor": 1
+      },
+      {
+        "id": "dark-rw900-win1440x900",
+        "theme": "dark",
+        "rightWidth": 900,
+        "windowWidth": 1440,
+        "windowHeight": 900,
+        "PDeviceScaleFactor": 1
+      }
+    ],
+    "stateIds": [
+      "R01-11-launcher-empty",
+      "B11-grants-empty",
+      "B12-profiles-default",
+      "B14-settings",
+      "B14-settings-restart"
+    ]
+  },
+  "cacheRoots": {
+    "execute": "ROOT/cache/node",
+    "static": "ROOT/static-cache/node",
+    "cleanup": "ROOT/cleanup-cache/node",
+    "judge": "ROOT/judge-cache/node"
+  },
+  "doNotPrecreate": [
+    "runtime-001",
+    "lease.receipt.json",
+    "live.json",
+    "raw.json",
+    "cleanup.json",
+    "judgement.json",
+    "40A PNG/JSON"
+  ],
+  "current": "A004 remaining3x5+exact currentA003first5 union20"
+}

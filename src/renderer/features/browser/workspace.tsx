@@ -3,6 +3,7 @@ import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,UserRound,Download,KeyRound,Pause,Play,Bot} from 'lucide-react';
 import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
 import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
+import type {BrowserProfile} from '@shared/browser-profiles';
 import {BROWSER_BLANK_URL} from '@shared/browser-navigation';
 import {events,rpc} from '@renderer/lib/ipc';
 import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';
@@ -57,6 +58,15 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
   const input=useRef<HTMLInputElement>(null),searchInput=useRef<HTMLInputElement>(null),viewport=useRef<HTMLDivElement>(null),[query,setQuery]=useState('');
   const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[initialImport,setInitialImport]=useState(false),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),[javascriptOpenId,setJavascriptOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
   const taskId=state.taskId,tabId=tab.id;
+  const [badgeProfile,setBadgeProfile]=useState<BrowserProfile|null>(null),[badgeLoading,setBadgeLoading]=useState(true);
+  useEffect(()=>{
+    let active=true;setBadgeProfile(null);setBadgeLoading(true);
+    void rpc.browser.profileSiteStates({taskId}).then(records=>{if(active){setBadgeProfile(records.find(item=>item.profile.id===tab.profileId)?.profile??null);setBadgeLoading(false);}}).catch(()=>{if(active){setBadgeProfile(null);setBadgeLoading(false);}});
+    return()=>{active=false;};
+  },[taskId,tab.profileId]);
+  const activeBadge=badgeProfile?.id===tab.profileId?badgeProfile:null;
+  const badgeLabel=activeBadge?(activeBadge.scope==='project'?'项目登录态':'独立登录态'):'登录态';
+  const badgeTitle=activeBadge?'当前页面的登录态：'+activeBadge.label:badgeLoading?'正在读取当前页面的登录态':'无法读取当前登录态，点击管理';
   useEffect(()=>{setAddress((state.auth?.pageId===tabId?state.auth.url:state.authCancelled?.pageId===tabId?state.authCancelled.url:undefined)??tab.failure?.url??(tab.url===BROWSER_BLANK_URL?'':tab.url));},[tabId,tab.url,tab.failure,state.auth?.url,state.authCancelled?.url]);
   const run=(work:()=>Promise<unknown>)=>void store.run(work);
   const action=(value:'reload'|'hard-reload'|'stop'|'back'|'forward')=>run(()=>rpc.browser.action({taskId,tabId,action:value}));
@@ -91,7 +101,7 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
     try{const value=await rpc.browser.preferences({taskId});if(generation!==settingsGeneration.current)return;setMenu(false);setPreferences(value);}
     catch(error){await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}
   });
-  const showProfiles=(importNow=false)=>run(async()=>{const generation=++settingsGeneration.current;try{const records=await rpc.browser.profileSiteStates({taskId});if(generation!==settingsGeneration.current)return;setMenu(false);setInitialImport(importNow);setProfileRecords(records);}catch(error){await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}});
+  const showProfiles=(importNow=false,capture=false)=>run(async()=>{const generation=++settingsGeneration.current;try{const image=capture?await rpc.browser.overlay({taskId,tabId,open:true}):null;if(generation!==settingsGeneration.current)return;const records=await rpc.browser.profileSiteStates({taskId});if(generation!==settingsGeneration.current)return;if(capture)setPageImage(image);setBadgeProfile(records.find(item=>item.profile.id===tab.profileId)?.profile??null);setBadgeLoading(false);setMenu(false);setInitialImport(importNow);setProfileRecords(records);}catch(error){if(generation!==settingsGeneration.current)return;await rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});throw error;}});
   const showDownloads=()=>run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setMenu(false);setPageImage(image);setDownloadsOpen(true);});
   useEffect(()=>{const latest=state.downloads?.[0]?.id;if(latest&&latest!==seenDownload.current&&!preferences&&!profileRecords&&!menu&&!state.auth){seenDownload.current=latest;showDownloads();}if(downloadsOpen&&!state.downloads?.length)closeSettings();},[state.downloads?.[0]?.id,preferences,profileRecords,menu,downloadsOpen,state.auth?.id]);
   useEffect(()=>{setMenu(false);setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setAuthOpenId(null);setJavascriptOpenId(null);setPageImage(null);return()=>{settingsGeneration.current++;void rpc.browser.overlay({taskId,tabId,open:false}).catch(()=>{});};},[taskId,tabId]);
@@ -126,7 +136,7 @@ function BrowserView({state,store,error}:{state:BrowserWorkspaceState;store:Brow
     if(command){event.preventDefault();event.stopPropagation();shortcut(command);}
   }}>
     <div className="fw-toolbar bw-toolbar"><div className="bw-nav"><button className="fw-icon" aria-label="后退" disabled={!tab.canGoBack} onClick={()=>action('back')}><ArrowLeft size={16}/></button><button className="fw-icon" aria-label="前进" disabled={!tab.canGoForward} onClick={()=>action('forward')}><ArrowRight size={16}/></button><button className="fw-icon" aria-label={tab.loading?'停止加载':'刷新网页'} onClick={()=>action(tab.loading?'stop':'reload')}>{tab.loading?<X size={16}/>:<RotateCw size={16}/>}</button></div>
-      <form className="fw-breadcrumb bw-address" onSubmit={event=>{event.preventDefault();run(()=>rpc.browser.navigate({taskId,tabId,address}));input.current?.blur();}}><span className={tab.certificate?'bw-security bw-certificate':'bw-security'} title={tab.certificate?'证书不受信任':undefined}>{tab.certificate?<ShieldAlert size={14} aria-label="证书不受信任"/>:<Globe size={14}/>}</span><input ref={input} aria-label="网页地址" value={address} placeholder="搜索或输入网址" onChange={event=>setAddress(event.target.value)} onFocus={event=>event.currentTarget.select()} onKeyDown={event=>{if(event.key==='Escape'){setAddress(blank?'':tab.url);event.currentTarget.blur();}}}/></form>
+      <form className="fw-breadcrumb bw-address" onSubmit={event=>{event.preventDefault();run(()=>rpc.browser.navigate({taskId,tabId,address}));input.current?.blur();}}><span className={tab.certificate?'bw-security bw-certificate':'bw-security'} title={tab.certificate?'证书不受信任':undefined}>{tab.certificate?<ShieldAlert size={14} aria-label="证书不受信任"/>:<Globe size={14}/>}</span><input ref={input} aria-label="网页地址" value={address} placeholder="输入网址或搜索内容" spellCheck={false} onChange={event=>setAddress(event.target.value)} onFocus={event=>event.currentTarget.select()} onKeyDown={event=>{if(event.key==='Escape'){setAddress(blank?'':tab.url);event.currentTarget.blur();}}}/><button type="button" className="bw-profile" title={badgeTitle} aria-busy={badgeLoading} onClick={()=>showProfiles(false,true)}><UserRound size={12}/>{badgeLabel}</button></form>
       {state.paused?<button type="button" className="fw-pill bw-resume" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:false}))}><Play size={13}/>恢复 Agent</button>:state.tabs.some(item=>item.agentActive)&&<button type="button" className="fw-pill bw-pause" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:true}))}><Pause size={13}/>暂停 Agent</button>}
       <>{!!state.downloads?.length&&<button className="fw-icon bw-download-trigger" aria-label="下载" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={16}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label="下载进行中"/>}</button>}</><button className="fw-icon" aria-label="浏览器菜单" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={16}/></button>
     </div>
