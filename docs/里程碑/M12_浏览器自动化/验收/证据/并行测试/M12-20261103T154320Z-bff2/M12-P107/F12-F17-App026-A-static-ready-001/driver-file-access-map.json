@@ -1,0 +1,198 @@
+{
+  "allKnownFSCallSitesReviewed": true,
+  "rows": [
+    {
+      "caller": "run.mjs",
+      "call": "raster/csv readFile",
+      "paths": "ROOT/fixtures/{raster,csv}.oracle.json",
+      "class": "static",
+      "source": "both exact original oracle bytes in READY"
+    },
+    {
+      "caller": "run.mjs",
+      "call": "readFile/stat",
+      "paths": "ROOT/fixtures/project/{18 raster +5 CSV fixed names}",
+      "class": "static",
+      "source": "all23 enumerated in fixture-provenance.json; frozen bytes+mode; before/after inode/times sampled at execution"
+    },
+    {
+      "caller": "run.mjs",
+      "call": "readFile",
+      "paths": "ROOT/initial-foreground-authorization.receipt.json",
+      "class": "static",
+      "source": "exact call7fa authorization receipt"
+    },
+    {
+      "caller": "run.mjs",
+      "call": "mkdir",
+      "paths": "ROOT/runtime-001/{.,home,tmp,work}",
+      "class": "runtime-output",
+      "source": "must all be absent except root/cache/fixtures before actual admission; sequential mkdir no recursive recreation"
+    },
+    {
+      "caller": "run.mjs",
+      "call": "private log/writeFile/screenshots/save",
+      "paths": "ROOT/{live,raw,execution-started}.json; runtime-001/*.private.log,*.png; animation-frame-0..15.png",
+      "class": "runtime-output",
+      "source": "exclusive execution-started; not frozen outputs"
+    },
+    {
+      "caller": "run.mjs",
+      "call": "App generated files",
+      "paths": "ROOT/runtime-001/userdata/**",
+      "class": "runtime-output",
+      "source": "new isolated profile only; no daily App or auth"
+    },
+    {
+      "caller": "permit.mjs",
+      "call": "readFile",
+      "paths": "ROOT/execution-ready.json",
+      "class": "static",
+      "source": "frozen ready; lease binds complete bytes SHA"
+    },
+    {
+      "caller": "permit.mjs",
+      "call": "readFile",
+      "paths": "ROOT/pin.json",
+      "class": "static",
+      "source": "actual App026 and source030, not old pins"
+    },
+    {
+      "caller": "permit.mjs",
+      "call": "readFile",
+      "paths": "ROOT/lease.receipt.json",
+      "class": "Root-generated-lease",
+      "source": "scope/exactRoot/executable/time/resources/foreground; absent now, never copied"
+    },
+    {
+      "caller": "permit.mjs",
+      "call": "readFile/stat",
+      "paths": "each execution-ready.inputs local or external path",
+      "class": "static",
+      "source": "finite fully enumerated list; no dynamic secret/cache reading"
+    },
+    {
+      "caller": "permit.mjs",
+      "call": "lstat",
+      "paths": "ROOT/{runtime-001,execution-started.json,raw.json}",
+      "class": "runtime-shape-gate",
+      "source": "all absent before execution"
+    },
+    {
+      "caller": "io.mjs",
+      "call": "readFile/stat",
+      "paths": "pin.sourceManifest, pin.buildResult, pin.files[*]",
+      "class": "static",
+      "source": "paths explicitly enumerated by pin.json +READY"
+    },
+    {
+      "caller": "io.mjs",
+      "call": "realpath/writeFile",
+      "paths": "ROOT and bounded relative save(name)",
+      "class": "runtime-output",
+      "source": "no traversal; self-owned output only"
+    },
+    {
+      "caller": "activate-initial-exact-pid.mjs",
+      "call": "readFile",
+      "paths": "ROOT/activate-initial-exact-pid.applescript",
+      "class": "static",
+      "source": "authorization scriptSHA481e exact original"
+    },
+    {
+      "caller": "activate-initial-exact-pid.mjs",
+      "call": "writeFile wx",
+      "paths": "ROOT/initial-foreground-attempt-<actualAppPID>.json",
+      "class": "runtime-output",
+      "source": "once; no focus rearm"
+    },
+    {
+      "caller": "check-labels.mjs",
+      "call": "readFile",
+      "paths": "ROOT/run.mjs relative import/export literal graph +frozen harness",
+      "class": "static",
+      "source": "AST checks every own/directmainEvaluate call incl cleanup branches"
+    },
+    {
+      "caller": "resources.mjs",
+      "call": "readdir/readFile",
+      "paths": "/private/tmp/wy-ab-<sha(userData+pageId)[0:24]>/*.pid",
+      "class": "runtime-observation",
+      "source": "this batch pages=[] so zero helper directory reads; no external browser"
+    },
+    {
+      "caller": "cleanup.mjs",
+      "call": "readFile",
+      "paths": "ROOT/raw.json",
+      "class": "runtime-output",
+      "source": "produced by same run; no DB"
+    },
+    {
+      "caller": "cleanup.mjs",
+      "call": "lstat/readdir",
+      "paths": "raw.exactGatewayPaths socket/parent and raw.knownPageIds helper dirs",
+      "class": "runtime-observation",
+      "source": "actual owned exact resources only; pages=[]; no arbitrary process cleanup"
+    },
+    {
+      "caller": "judge.mjs",
+      "call": "readFile",
+      "paths": "ROOT/{raw,cleanup}.json",
+      "class": "runtime-output",
+      "source": "original actual evidence only, never prefilled"
+    },
+    {
+      "caller": "electron-harness.mjs",
+      "call": "spawn/ports/readFile",
+      "paths": "pin.executable; ROOT/runtime-001/userdata; localhost owned CDP",
+      "class": "future-Native",
+      "source": "original harness exact process with envallowlist; only afterlease"
+    },
+    {
+      "caller": "static-review.mjs",
+      "call": "readFile/stat/lstat",
+      "paths": "driver graph; oracle/project23/provenance/renderer/pin.files and original fixture rows",
+      "class": "static",
+      "source": "pure file-byte+AST; no run/helper body executed"
+    },
+    {
+      "caller": "Node import resolution",
+      "call": "readFile",
+      "paths": "ROOT/node_modules/{typescript,ws}/**",
+      "class": "static",
+      "source": "private copied public dependency packages; entire tree frozen; no cache/auth/runtime"
+    },
+    {
+      "caller": "startup-error.mjs",
+      "call": "writeFile",
+      "paths": "ROOT/runtime-001/startup-*.private.log",
+      "class": "runtime-output",
+      "source": "full startup failure evidence; no restart"
+    }
+  ],
+  "staticJSON": [
+    "pin.json",
+    "fixtures/raster.oracle.json",
+    "fixtures/csv.oracle.json",
+    "initial-foreground-authorization.receipt.json",
+    "execution-ready.json"
+  ],
+  "outputShape": {
+    "mustNotExist": [
+      "runtime-001",
+      "raw.json",
+      "live.json",
+      "execution-started.json",
+      "lease.receipt.json"
+    ],
+    "mayExist": [
+      "fixtures/project exact23files",
+      "cache/*",
+      "node_modules/*",
+      "driver-source/*",
+      "original-drivers/*"
+    ],
+    "noPrecreatedRuntimeOrInstallDestination": true
+  },
+  "nonImportedJSONAllEnumerated": true
+}

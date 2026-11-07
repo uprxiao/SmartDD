@@ -1,0 +1,161 @@
+{
+  "schema": "App027-official-build-to-original-S6-binder-adapter-v1",
+  "officialResult": {
+    "path": "/private/tmp/willyou-m12-header-App027-build-001/result.json",
+    "sha256": "3fabcb5bbf0a6ceb094fd6664363c088b9d2290212063c0871413a0d19363069"
+  },
+  "fieldSources": {
+    "sourceManifestSha256": "originalResult.sourceManifestSHA256 (same64hex)",
+    "sourceShaModeBeforeAfterMatched": "same original field, no change",
+    "nativeSmoke": {
+      "path": "/private/tmp/willyou-m12-header-App027-build-001/official-App027-directory.private.log",
+      "sha256": "ffaae81d164e8bcf4240b216b9c86a032992acef9602f3f61f1f03ba9b19a787",
+      "line": 284,
+      "lineSHA256": "8f4cd39de7764f5d7f23bd1c8338caab0be563fbaf24bb32dc5e90eae412c77b",
+      "uniqueMatchingJSONCount": 1
+    },
+    "extraPins": [
+      {
+        "key": "stockCLI",
+        "path": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/Resources/native/willyou-app",
+        "sha256": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+        "mode": 493,
+        "source": "Actual App027 file bytes only; no execution, not copied into original official result"
+      },
+      {
+        "key": "agent-browser",
+        "path": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/Resources/agent-browser/arm64/agent-browser",
+        "sha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+        "mode": 493,
+        "source": "Actual App027 file bytes only; no execution, not copied into original official result"
+      },
+      {
+        "key": "identity",
+        "path": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/Resources/native/willyou-process-identity",
+        "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+        "mode": 493,
+        "source": "Actual App027 file bytes only; no execution, not copied into original official result"
+      }
+    ]
+  },
+  "oldShape": {
+    "startedAt": "2026-11-06T20:05:02.053443+00:00",
+    "sourceManifestSHA256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
+    "sourceFiles": 3688,
+    "actualBuildCwd": "/Users/liubu/hx/4.uprxiao/SmartDD",
+    "phases": [
+      {
+        "label": "node-typecheck",
+        "command": [
+          "/Users/liubu/.hermes/node/bin/node",
+          "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "-p",
+          "tsconfig.node.json"
+        ],
+        "startedAt": "2026-11-06T20:05:02.125951+00:00",
+        "pid": 12699,
+        "exitCode": 0,
+        "seconds": 7.16389262501616,
+        "finishedAt": "2026-11-06T20:05:09.289908+00:00",
+        "sourceAfter": {
+          "files": 3688,
+          "mismatches": []
+        }
+      },
+      {
+        "label": "web-typecheck",
+        "command": [
+          "/Users/liubu/.hermes/node/bin/node",
+          "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "-p",
+          "tsconfig.web.json"
+        ],
+        "startedAt": "2026-11-06T20:05:09.359634+00:00",
+        "pid": 12722,
+        "exitCode": 0,
+        "seconds": 9.464740165974945,
+        "finishedAt": "2026-11-06T20:05:18.824456+00:00",
+        "sourceAfter": {
+          "files": 3688,
+          "mismatches": []
+        }
+      },
+      {
+        "label": "task-header-original-three-tests",
+        "command": [
+          "/Users/liubu/.hermes/node/bin/node",
+          "scripts/run-tests.mjs",
+          "src/renderer/views/task-project-version.test.tsx",
+          "--maxWorkers=1",
+          "--no-file-parallelism",
+          "--reporter=json",
+          "--outputFile=/private/tmp/willyou-m12-header-App027-build-001/header-tests.json"
+        ],
+        "startedAt": "2026-11-06T20:05:18.897685+00:00",
+        "pid": 12756,
+        "exitCode": 0,
+        "seconds": 1.4664445830276236,
+        "finishedAt": "2026-11-06T20:05:20.364156+00:00",
+        "sourceAfter": {
+          "files": 3688,
+          "mismatches": []
+        }
+      },
+      {
+        "label": "official-App027-directory",
+        "command": [
+          "/Users/liubu/.hermes/node/bin/node",
+          "scripts/release/build.mjs",
+          "--dir",
+          "--platform",
+          "mac",
+          "--arch",
+          "arm64",
+          "--output-dir",
+          "/private/tmp/willyou-m12-s2-package-027"
+        ],
+        "startedAt": "2026-11-06T20:05:20.438354+00:00",
+        "pid": 12761,
+        "exitCode": 0,
+        "seconds": 55.79277208301937,
+        "finishedAt": "2026-11-06T20:06:16.231599+00:00",
+        "sourceAfter": {
+          "files": 3688,
+          "mismatches": []
+        }
+      }
+    ],
+    "boundary": "Official local arm64 directory build after exact current prototype P003 and observer I004; no installer/notarization/x64/release or actual foreground AppA claim",
+    "formalIncrement": 0,
+    "before": {
+      "files": 3688,
+      "mismatches": []
+    },
+    "actualApp": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app",
+    "pins": {
+      "app.asar": "8cacf6c30aea4791b6f79940f1352918d75f517d22cea40ebd27aaf29d0d1093",
+      "executable": "ad6faa66e930e2f323968491347644be1d41dde0a7db78c43431e0b210ab935e",
+      "stockCLI": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+      "agent-browser": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+      "identity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
+    },
+    "exitCode": 0,
+    "sourceShaModeBeforeAfterMatched": true,
+    "finishedAt": "2026-11-06T20:06:16.352634+00:00",
+    "sourceManifestSha256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
+    "nativeSmoke": {
+      "version": "0.1.1",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sqlite": "passed",
+      "pty": "passed",
+      "voiceBridge": "passed",
+      "fileBroker": "passed",
+      "officeRenderer": "passed",
+      "fileWatcher": "passed"
+    }
+  },
+  "boundary": "Compatibility projection only. Original result/source not modified; actual file-derivedCLI/agent/identity are not falsely claimed as original result fields. No Native/App/OS/Node executed."
+}

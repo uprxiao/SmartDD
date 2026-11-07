@@ -1,0 +1,98 @@
+{
+  "rows": [
+    {
+      "caller": "permit.mjs",
+      "operation": "readFile",
+      "targets": "execution-ready.json,lease.receipt.json,dependency-links.json plus ready.inputs",
+      "classification": "static plus Root lease"
+    },
+    {
+      "caller": "run.mjs",
+      "operation": "readFile",
+      "targets": "P-runtime-pin.json,matrix.json,optimizer-includes.json",
+      "classification": "static"
+    },
+    {
+      "caller": "run.mjs",
+      "operation": "readFile",
+      "targets": "cache/vite-after/deps/_metadata.json",
+      "classification": "runtime optimizer output"
+    },
+    {
+      "caller": "run.mjs",
+      "operation": "mkdir",
+      "targets": "runtime-001/{.,home,tmp,profiles,project}; profiles/<8fixedcombo>",
+      "classification": "runtime-only, absent before execution"
+    },
+    {
+      "caller": "run.mjs",
+      "operation": "writeFile/appendFileSync/save",
+      "targets": "live/raw/execution-started.json; runtime-001/*.private.{log,jsonl,json,png}",
+      "classification": "runtime-only exact own results"
+    },
+    {
+      "caller": "cleanup.mjs",
+      "operation": "readFile",
+      "targets": "raw.json,P-runtime-pin.json",
+      "classification": "runtime results plus static pin"
+    },
+    {
+      "caller": "judge.mjs",
+      "operation": "readFile",
+      "targets": "raw.json,cleanup.json,matrix.json",
+      "classification": "runtime plus static"
+    },
+    {
+      "caller": "vite-after.mjs",
+      "operation": "imports",
+      "targets": "optimizer-includes.mjs,reference/after/source/prototypes/m6-codex/vite.config.mjs + full immutable closure",
+      "classification": "static, original P004 after bytes"
+    },
+    {
+      "caller": "Node resolution",
+      "operation": "readFile/readlink",
+      "targets": "deps/packages/**,node_modules/** + reference after source symlink",
+      "classification": "static, exact hashes/realpaths"
+    },
+    {
+      "caller": "resourceRecorder/cleanup",
+      "operation": "ps/lsof/helper refs",
+      "targets": "exact recorded PID/TCP and birth-bound private Native helper prefixes",
+      "classification": "future OS only after Root lease"
+    }
+  ],
+  "requiredStaticReadTargets": [
+    "P-runtime-pin.json",
+    "matrix.json",
+    "optimizer-includes.json",
+    "optimizer-includes.mjs",
+    "dependency-links.json",
+    "vite-after.mjs",
+    "source-overlay-proof.json",
+    "ui-contract-proof.json",
+    "Root-prototype-patch.json"
+  ],
+  "runtimeAbsent": [
+    "runtime-001",
+    "raw.json",
+    "live.json",
+    "execution-started.json"
+  ],
+  "rootGeneratedOnly": [
+    "lease.receipt.json"
+  ],
+  "additionalUIInputs": {
+    "theme": "Actual More/theme twice after final original target width, no fit480; window/right remain unchanged",
+    "newTab": "Actual header new; exact newTab/startpage/count+1; actualselected unique close; original tabs/currentURL restored before unchanged original16missingcycles"
+  },
+  "sourceOnlyStaticContractReads": [
+    "reference/after/source/prototypes/m6-codex/src/FileWorkspace.jsx:999",
+    "reference/after/source/prototypes/m6-codex/src/browser-prototype-model.mjs:4,177-190",
+    "reference/after/source/prototypes/m6-codex/src/BrowserWorkspace.jsx:328",
+    "header-expression.mjs",
+    "source-overlay-proof.json",
+    "ui-contract-proof.json",
+    "Root-prototype-patch.json"
+  ],
+  "sourceDelta": "Exactly one approved prototype CSS overlay; all source/dependency imports unchanged"
+}

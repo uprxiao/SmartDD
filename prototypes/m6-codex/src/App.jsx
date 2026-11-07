@@ -3,7 +3,8 @@ import { createPathPreviewDelivery } from './file-path-delivery.mjs';
 import { createImagePreviewDelivery } from './file-image-input-preview.mjs';
 import { FILE_DRAG_TYPE, resolveFileDrag, buildFilePathInsertion } from './file-drag-model.mjs';
 import { buildInsertion } from './file-reference-model.mjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { observeTaskHeaderLayout } from '../../../src/shared/task-header-layout.mjs';
 import { filePanelBounds, normalizedFilePanelWidth, readFilePanelWidthPreference, resolveFilePanelWidth } from '../../../src/shared/file-panel-layout.mjs';
 import { ArrowDown, Archive, ArchiveRestore, ArrowRight, ArrowUp, Check, CheckCheck, ChevronDown, ChevronRight, Code2, Database, Ellipsis, Folder, FolderOpen, Info, Keyboard, LoaderCircle, Monitor, Moon, PanelLeft, Plus, Search, Server, Settings2, ShieldCheck, SlidersHorizontal, Sparkles, Square, SquarePlus, SquarePen, SquareTerminal, Sun, X, Zap } from 'lucide-react';
 import { Terminal } from '@xterm/xterm';
@@ -242,6 +243,8 @@ export function App() {
   useEffect(() => { try { localStorage.setItem(BROWSER_STORAGE, JSON.stringify(serializeBrowser(browserByTask))); } catch { /* storage unavailable: keep in memory */ } }, [browserByTask]);
   useEffect(() => { if (!Object.values(browserByTask).some(item => item.agent)) return undefined; const timer = setInterval(() => setBrowserTick(value => value + 1), 1000); return () => clearInterval(timer); }, [browserByTask]);
   const fileFrame = useRef(null), fileArea = useRef(null);
+  const taskHeaderRef = useRef(null);
+  const [taskHeaderLayout, setTaskHeaderLayout] = useState('default');
   const [fileAvailable, setFileAvailable] = useState(1000), [filePreference, setFilePreference] = useState(() => readFilePanelWidthPreference(localStorage.getItem('willyou-m9-prototype-panel-width')));
   const [theme, setTheme] = useState(['m9', 'm10', 'm12'].includes(new URLSearchParams(location.search).get('preview')) ? 'light' : 'dark'), [fontSize, setFontSize] = useState(13), [collapsed, setCollapsed] = useState(false), [sidebarWidth, setSidebarWidth] = useState(240);
   const [integrationReference, setIntegrationReference] = useState(null);
@@ -262,6 +265,7 @@ export function App() {
   const profile = profiles.find(p => p.id === profileId) ?? profiles.find(p => p.isDefault) ?? profiles[0];
   const dir = project.dirs.find(d => d.id === dirId) ?? project.dirs.find(d => d.isDefault) ?? project.dirs[0];
   const taskId = route.startsWith('task/') ? route.split('/')[1] : null, task = tasks.find(t => t.id === taskId);
+  useLayoutEffect(() => observeTaskHeaderLayout(taskHeaderRef.current, setTaskHeaderLayout), [taskId]);
   const isSettings = route.startsWith('settings'), section = route.split('/')[1] || 'ai';
   const isProject = route.startsWith('project/'), projectTab = route.split('/')[2] || 'overview';
   const isApps = route === 'apps' || route.startsWith('apps/');
@@ -372,7 +376,7 @@ export function App() {
   const webTabs = webAllowed ? taskBrowser.tabs.map(item => ({ id: item.id, url: webUrl(item), title: item.invalid ? '无效地址' : resolveWebPage(webUrl(item)).title, marked: agentMarked(taskBrowser, item.id, Date.now()) || (taskBrowser.paused && taskBrowser.agent?.tabId === item.id), paused: taskBrowser.paused })) : [];
   return <div ref={fileFrame} className={'app codex-frame ' + (isApps ? 'apps-mode ' : isSettings ? 'settings-mode ' : route === 'scheduled' ? 'scheduled-mode ' : route === 'home' ? 'home-mode ' : '') + (collapsed ? 'sidebar-collapsed ' : '') + (task && fileWorkspace ? 'm9-active' : '')} style={{ '--sidebar-width': sidebarWidth + 'px', '--prototype-file-width': fileWidth + 'px' }}>
     <div className="window-navigation"><IconButton icon={ArrowLeft} label="返回工作台" onClick={() => nav('home')} /><IconButton icon={ArrowRight} label="前进" onClick={() => history.forward()} />{!isSettings && <IconButton icon={PanelLeft} label={collapsed ? '展开侧栏' : '收起侧栏'} onClick={() => setCollapsed(!collapsed)} />}{!task && <><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); nav("task/build"); }}><FolderOpen size={13} />M9 · 文件工作区</button><button className="m7-preview-entry" onClick={() => { setFileWorkspace(true); setBrowserByTask(all => (all.build?.tabs.length ? all : { ...all, build: openWebTab(emptyTaskBrowser(), "https://qa.example.test/") })); setWebShown(shown => ({ ...shown, build: true })); nav("task/build"); }}><M12Globe size={13} />M12 · 浏览器</button><button className="m7-preview-entry" onClick={() => setModal({ type: 'project-transfer', mode: 'import' })}><Folder size={13} />M8 · 项目迁移</button><button className="m7-preview-entry" onClick={() => { voice.clear(); setModal({ type: 'voice-demo' }); }}><Mic size={13} />M7 · 语音预览</button>{voice.notice?.kind === 'sent' && <button className="m7-preview-entry" onPointerDown={e => e.preventDefault()} onClick={voice.fillExample}>演示文字回填</button>}</>}</div>
-    {task && <header className="task-window-header" aria-label="当前会话">
+    {task && <header ref={taskHeaderRef} className="task-window-header" data-header-layout={taskHeaderLayout} aria-label="当前会话">
       <div className="task-window-title" title={taskProject.name + ' / ' + task.title}><Folder size={17} /><span>{task.title}</span></div>
       <div className="task-window-actions">
         <button className="m10-session-trigger" aria-label="会话应用" onClick={() => setModal({ type: 'session-apps' })}><Link2 size={16} /><span>应用</span><span>{projectPackages(integration.data, task.project).length}</span>{!snapshotCurrent(task.integrationSnapshot, integration.data, task.project) && projectPackages(integration.data, task.project).length > 0 && <i />}</button><IconButton icon={FolderOpen} label="文件工作区" onClick={() => setFileWorkspace(!fileWorkspace)} />{webAllowed && <IconButton icon={M12NewTab} label="新建标签页（⇧⌘B）" onClick={openNewWebTab} />}

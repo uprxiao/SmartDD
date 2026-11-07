@@ -1,0 +1,5 @@
+T080 App027/source031 actual attempt002 completed original real UI import and ten real stockCLI reads. Original attempt001 driver failure retained. Attempt002 original judge stays 5/6: it read packageHash from session display diagnostic, which intentionally omits it. Independent offline judge retains all six original checks and ten numericExit/uniqueHost/operation/request/run/task/project/package assertions, correcting only the package lookup to the immutable stored current-run plan. Canonical planHash and actual bundled manifest SHA/canonical packageHash are checked; independent result is 6/6 pending Root review.
+
+App2148 normal0/null/signals[], independent18PID/4TCP/2Unix/1helper all clear. Resources released before safe projection. No App/business rerun. Formal increment0; Root alone accepts and updates public ledger.
+
+Three synthetic screenshots show source/target, risk and completion notice. Public F-COOKIE values are synthetic. No actual auth/Keychain/daily data/model, DB/App/cache/runtime/dependency trees or whole main bundle copied. Code is evidence; execute pure offline judge at original private root path from offline-package-judge-001 proof.

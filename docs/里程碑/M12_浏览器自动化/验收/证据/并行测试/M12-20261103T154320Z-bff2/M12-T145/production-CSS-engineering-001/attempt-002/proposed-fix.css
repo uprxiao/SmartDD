@@ -1,0 +1,20 @@
+/* Compact only the task title bar when the adjacent workspace leaves little room. */
+.task-window-header { container:task-header / inline-size; z-index:7; }
+@container task-header (max-width:420px) {
+  .task-window-title { min-width:0; }
+  .task-window-title > span,
+  .task-window-actions .task-entry-label {
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+  }
+  .task-window-actions { gap:2px; }
+  .task-window-actions .m9-file-entry {
+    width:29px; height:29px; flex:0 0 29px; padding:0; gap:0; justify-content:center;
+  }
+}
+@container task-header (max-width:235px) {
+  .task-window-title { display:none; }
+  .task-window-actions { gap:0; }
+  .task-window-actions button { width:25px; flex:0 0 25px; }
+  .task-window-divider { display:none; }
+}

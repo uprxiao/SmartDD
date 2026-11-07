@@ -1,0 +1,57 @@
+{
+  "case": "M12-T080",
+  "normalOnly": true,
+  "real": [
+    "packagedApp027 renderer/trusted UI controller",
+    "BrowserService public original constructor and all actual import methods",
+    "BrowserCookieSources discovery/read/decrypt/validate original class",
+    "NativeBrowserCookieStore/coordinator/page pause/gate/reload",
+    "TaskService managed PTY/native stockCLI/M11 Host/SQLite audit"
+  ],
+  "faultInjection": [
+    {
+      "point": "pre-entry BrowserService options.cookieImport.sources",
+      "fixture": "Original class with exact private applicationSupport and temporaryRoot; known synthetic Chrome PBKDF2 keyProvider; rejects nonchrome/revoked",
+      "restoration": "Revoke provider, zero all returned key Buffers; restore original options property; already constructed process-local references remain revoked until owned App disposal/exit",
+      "realKeychain": false
+    },
+    {
+      "point": "options.cookieImport.cipher",
+      "fixture": "Private memory randomAES256GCM journal cipher; no real safeStorage credential",
+      "restoration": "Revoke, zero key; constructed journal reference ends at own App exit; no disk package/global changes"
+    },
+    {
+      "point": "exact own App commandLine before readiness",
+      "fixture": "use-mock-keychain avoids real OS credential prompts/read; not OS Keychain acceptance",
+      "restoration": "Only own process flag, lifetime ends with exact App exit"
+    },
+    {
+      "point": "worker_threads.Worker only exact bundled m10-mail-reader.js and undefined execArgv",
+      "fixture": "Use emptyexecArgv to prevent test inspect-brk inheritance; retain resourceLimits/all other options; original main debugger stays active",
+      "restoration": "Restore exact original constructor, no external replacement tolerated"
+    },
+    {
+      "point": "exact actual BrowserService constructor inspector breakpoint",
+      "fixture": "ASAR main SHA/class/line/ownedpid/exe/userData must match",
+      "restoration": "Remove breakpoint/resume/close temporary inspector before normal admission; actual application business methods are never invoked from inspector"
+    },
+    {
+      "point": "non-tested private fixture baseline",
+      "fixture": "Private Chrome Default4 valid rows+unselected Profile1 invalid, actual native targetXYZ, decoy targetprofile, local readonly fixture page",
+      "restoration": "Retain owned private files as evidence; never touch daily browser/App or realCookie data"
+    }
+  ],
+  "keychainRead": 0,
+  "authCopy": 0,
+  "realModel": 0,
+  "dangerousNativeStoreMethodPatch": false,
+  "runtimeMethodsPatched": false,
+  "guardChanges": false,
+  "UIImportViaRPC": false,
+  "boundaries": [
+    "Original T080 complete I only; neither T083 realKeychain nor R",
+    "No new T081 multi-page/failure matrix",
+    "Known key/password and allCookie values are public synthetic fixture; no production auth/runToken disclosure",
+    "Only exact owned App runtime/global dependencies; complete termination is required restoration boundary"
+  ]
+}

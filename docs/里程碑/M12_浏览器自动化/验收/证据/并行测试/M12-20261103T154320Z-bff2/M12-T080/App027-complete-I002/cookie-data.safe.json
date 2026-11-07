@@ -1,0 +1,295 @@
+{
+  "before": {
+    "qa": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-old-Y",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Y"
+          },
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-old-X",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "X"
+          }
+        ]
+      }
+    },
+    "other": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "other.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-Z",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Z"
+          }
+        ]
+      }
+    },
+    "google": {
+      "result": {
+        "cookies": []
+      }
+    },
+    "youtube": {
+      "result": {
+        "cookies": []
+      }
+    }
+  },
+  "after": {
+    "qa": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-new-W",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "W"
+          },
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-new-X",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "X"
+          }
+        ]
+      }
+    },
+    "other": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "other.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-Z",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Z"
+          }
+        ]
+      }
+    },
+    "google": {
+      "result": {
+        "cookies": []
+      }
+    },
+    "youtube": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "youtube.com",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 13,
+            "value": "P045-new-YT",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "YT"
+          }
+        ]
+      }
+    }
+  },
+  "nativeAfter": [
+    {
+      "name": "Z",
+      "value": "P045-keep-Z",
+      "domain": "other.example.test",
+      "hostOnly": true,
+      "path": "/",
+      "secure": false,
+      "httpOnly": true,
+      "session": true,
+      "sameSite": "lax"
+    },
+    {
+      "name": "X",
+      "value": "P045-new-X",
+      "domain": "qa.example.test",
+      "hostOnly": true,
+      "path": "/",
+      "secure": false,
+      "httpOnly": true,
+      "session": true,
+      "sameSite": "lax"
+    },
+    {
+      "name": "W",
+      "value": "P045-new-W",
+      "domain": "qa.example.test",
+      "hostOnly": true,
+      "path": "/",
+      "secure": false,
+      "httpOnly": true,
+      "session": true,
+      "sameSite": "lax"
+    },
+    {
+      "name": "YT",
+      "value": "P045-new-YT",
+      "domain": "youtube.com",
+      "hostOnly": true,
+      "path": "/",
+      "secure": false,
+      "httpOnly": true,
+      "session": true,
+      "sameSite": "lax"
+    }
+  ],
+  "sourceUnchanged": true,
+  "faultAfter": {
+    "keyCalls": [
+      {
+        "family": "chrome",
+        "at": "2026-11-07T01:23:33.816Z"
+      }
+    ],
+    "returnedKeysAllCleared": true,
+    "encryptCalls": 2,
+    "decryptCalls": 3,
+    "revoked": false
+  },
+  "fixture": {
+    "sources": {
+      "valid": {
+        "path": "/private/tmp/willyou-m12-t080-App027-full-I-002/runtime-001/chrome-support/Google/Chrome/Default/Network/Cookies",
+        "rows": [
+          {
+            "domain": "qa.example.test",
+            "name": "X",
+            "invalid": false
+          },
+          {
+            "domain": "qa.example.test",
+            "name": "W",
+            "invalid": false
+          },
+          {
+            "domain": "google.com",
+            "name": "G",
+            "invalid": false
+          },
+          {
+            "domain": "youtube.com",
+            "name": "YT",
+            "invalid": false
+          }
+        ]
+      },
+      "unselectedInvalid": {
+        "path": "/private/tmp/willyou-m12-t080-App027-full-I-002/runtime-001/chrome-support/Google/Chrome/Profile 1/Network/Cookies",
+        "rows": [
+          {
+            "domain": "broken.example.test",
+            "name": "bad",
+            "invalid": true
+          }
+        ]
+      }
+    },
+    "target": [
+      {
+        "name": "X",
+        "value": "P045-old-X",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Y",
+        "value": "P045-old-Y",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Z",
+        "value": "P045-keep-Z",
+        "domain": "other.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "keyCallsBeforeUI": 0,
+    "sourceHashes": {
+      "/private/tmp/willyou-m12-t080-App027-full-I-002/runtime-001/chrome-support/Google/Chrome/Default/Network/Cookies": "9beea3327a738ed0f4c3ee2538aa75d36a32ee2e4dc1898db81dbd4f4ce65e7c",
+      "/private/tmp/willyou-m12-t080-App027-full-I-002/runtime-001/chrome-support/Google/Chrome/Profile 1/Network/Cookies": "2607681a871c0af2a1d523ef6ef26591f522a7b3ba4b305354c9a194216d9558"
+    }
+  },
+  "scope": "All Cookie values are public synthetic original F-COOKIE test data, not account data. No actual AES key/password/journal material."
+}

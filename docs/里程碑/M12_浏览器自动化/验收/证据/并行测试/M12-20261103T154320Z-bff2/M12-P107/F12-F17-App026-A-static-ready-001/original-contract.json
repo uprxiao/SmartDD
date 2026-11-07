@@ -1,0 +1,43 @@
+{
+  "case": "M12-T130 original66 map F12/F17 A only",
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+  "sourceSHA256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a",
+  "originalRows": [
+    {
+      "line": 211,
+      "text": "| **M9-T-F12 全部光栅格式**<br>M9-R06.3 | 本期本机 | 单元／集成／安装端到端<br>I+A / D04+D05 | 逐一打开avif/bmp/gif/ico/jpeg/jpg/png/webp及损坏版本。 | 支持项真实显示与尺寸正确；失败明确，不留无限loading；动图行为单独记录。<br>依据：V F03 | P10；本条要求的U/I/A或I/A已核对；不扩大为原型全状态/像素结论<br>实际：r17真实App逐一解码avif/bmp/gif/ico/jpeg/jpg/png/webp并核对尺寸；八种损坏样本均明确错误、可重试且无文本编辑器。GIF用16张实际合成器截图观察到红/绿帧交替，透明PNG的alpha为0/255。18个真实编码/损坏样本经原生文件服务逐字节核对；ffprobe独立确认尺寸/双帧，原文件保持。初次Canvas固定首帧的错误测试判据已纠正，失败/重试均留档，不记产品缺陷。 | 通过 | [记录](证据/m9-acceptance-formats-dev063-dev064-r17-20261018.json) |"
+    },
+    {
+      "line": 216,
+      "text": "| **M9-T-F17 CSV/TSV解析**<br>M9-R06.7 | 本期本机 | 单元／集成／安装端到端<br>I+A / D07 | 含引号、分隔符、换行、Unicode、空cell、公式文本各CSV/TSV打开。 | 源码原bytes不变；富预览按CSV/TAB规则解析；不得仅凭Workbook预览保证CSV无损写回。<br>依据：V F08 | P12；本条I/A要求已核对；无独立P层或完整像素结论<br>实际：r17实际App五组：CSV/TSV/BOM CSV均从默认源码显式切表格，以真实键盘选中60个单元格，完整grid文本核对引号、分隔符/嵌入CRLF、Unicode、空值/缺字段、公式文字及长前导零ID；空CSV显示空表格、引号未闭合TSV明确错误。源码往返后五个文件原hash/inode/mtime/ctime不变；I通过真实原生服务/完整资源读取/严格UTF-8与生产CsvModel逐字节及完整字符串核对。13项相关代码通过，无复制或原文件编辑/保存。单行值栏与完整多行grid文本分开验证，不宣称CSV写回无损。 | 通过 | [记录](证据/m9-acceptance-csv-r17-20261018.json) |"
+    }
+  ],
+  "F12": [
+    "Open all18 original encoded/broken image files via actual UI",
+    "10 valid files actual browser decoding/dimensions/visible; no text editor",
+    "8 broken formats explicit error+available retry; one real retry click then bounded error (no infinite loading)",
+    "16 real compositor samples demonstrate both red and green GIF frames; not canvas GIF oracle",
+    "Transparent PNG decoded alpha0/255",
+    "All18 original SHA/inode/mtimeNs/ctimeNs unchanged; no renderer error/no tasks"
+  ],
+  "F17": [
+    "5 exact original CSV/TSV/BOM/empty/unclosed files open via actual UI, default source then explicit table switch",
+    "3 valid matrices: actual A1 click+native Home/Arrow keys traverse60cells; quoted text/comma/tab/embeddedCRLF/Unicode/empty/missing/formula literal/leadingzero ID exact",
+    "Readonly singleline value bar excludes CR/LF while full selected grid cell preserves them; no executable script/iframe preview",
+    "Empty CSV explicit empty status; unclosed quote explicit error",
+    "Actual complete editor model source read before/after table, normalized BOM/EOL; original bytes and filesystem identities separately exact",
+    "Table/source/table roundtrip; no clipboard/source edit/save/lossless writeback claim"
+  ],
+  "notCovered": [
+    "Whole T130/other64 mappings",
+    "OfficeGUI",
+    "System clipboard",
+    "CSV writeback",
+    "New U/I/model/R"
+  ],
+  "priorValidI": {
+    "F12": "/private/tmp/willyou-m12-t130-F12-native-safe-001/manifest.json",
+    "F12SHA256": "e2a11bc5ba1088d0a42fd774859c9a93a4f2b55311091e6a918f86c9788c0d12",
+    "F17": "Root reports original current F17 I green; runner Rollup/fsevents are toolchain, watcher business binding independent. Root authoritative I evidence remains separate, this A does not recount/re-run I."
+  }
+}
