@@ -1,0 +1,81 @@
+{
+  "startedAt": "2026-11-07T20:11:43.973332+00:00",
+  "driverPid": 6221,
+  "steps": [
+    {
+      "name": "compile",
+      "pid": 6222,
+      "command": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx",
+        "clang++",
+        "-std=c++17",
+        "-fobjc-arc",
+        "-O2",
+        "-Wno-deprecated-declarations",
+        "-Werror=implicit-function-declaration",
+        "-Werror=return-type",
+        "-mmacosx-version-min=12.0",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-framework",
+        "Foundation",
+        "-framework",
+        "AppKit",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-003/receiver.mm",
+        "-o",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app/Contents/MacOS/F01ReceiverV2"
+      ],
+      "exitCode": 0,
+      "seconds": 0.40881049999734387
+    },
+    {
+      "name": "adhoc-sign",
+      "pid": 6225,
+      "command": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "-",
+        "--timestamp=none",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app"
+      ],
+      "exitCode": 0,
+      "seconds": 0.01150379201862961
+    },
+    {
+      "name": "verify-signature",
+      "pid": 6226,
+      "command": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "--verbose=2",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app"
+      ],
+      "exitCode": 0,
+      "seconds": 0.005046707985457033
+    },
+    {
+      "name": "defaults-before",
+      "pid": 6227,
+      "command": [
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app/Contents/MacOS/F01ReceiverV2",
+        "--snapshot"
+      ],
+      "exitCode": 0,
+      "seconds": 0.03367999999318272
+    }
+  ],
+  "scope": "Fixture compile/sign/read-only default queries, no registration or documentdispatch",
+  "sourceSHA256": "d62bf40145f273b53988da4664e27585dd9a81086ac29ea604cfe1ce1517bba6",
+  "formalIncrement": 0,
+  "exitCode": 0,
+  "executableSHA256": "cb24ea0a97c2c6548df28cf58983148b769f2c21a10991a02a9e51756c09e1d7",
+  "registered": false,
+  "finishedAt": "2026-11-07T20:11:44.438653+00:00"
+}

@@ -1,0 +1,1 @@
+F01真实AppKit夹具技术预检安全交付，非产品A。原001/002编译红、003编译签名/默认快照绿、004观察器错误、005–010/013/014注册发现失败、011唯一无文档后台启动与012未执行均保留。0documentevents/0receipts/0新用例/0productionbuild；100是已记录技术PID数量，不能当App数。011 actual10810 inactive/policy2/launchTime有效；窗口数未采、receiver数值exit未观察。Root closeout原100PID清场、ownrunning/BIDlookup空、四默认/三个合成文件及目录fullstat/SHA不变。两Apple链接仅原假设，不是原因证明。私有App未动，Root复核后另清。
