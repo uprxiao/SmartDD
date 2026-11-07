@@ -1,0 +1,42 @@
+--- A002/view-observer.mjs
++++ A003/view-observer.mjs
+@@ -81,27 +81,31 @@
+   return{status:'captured',stage:'capture-complete',child:{...before.target,frames,png}};
+ 
+  }catch(error){
+-  const failedStage=stage,detail=safe(error);
+-if(original){try{if(original.w.isDestroyed())return{status:'transition',stage:'target-destroyed',failedStage,error:detail};
++  const failedStage=stage,detail=safe(error),privateStack=String(error.stack??error);
++if(original){try{if(original.w.isDestroyed())return{status:'transition',stage:'target-destroyed',failedStage,error:detail,privateStack};
+ const current=inventory();
+-if(current.status!=='candidate'||!same(current.target,before?.target)||binding.w!==original.w||binding.view!==original.view)return{status:'transition',stage:'exception-with-observed-target-change',failedStage,error:detail,before:before?.target,current};
+-}catch(verificationError){return{status:'error',stage:failedStage,error:detail,targetVerificationError:safe(verificationError)}}}
+-  return{status:'error',stage:failedStage,error:detail,target:before?.target??null};
++if(current.status!=='candidate'||!same(current.target,before?.target)||binding.w!==original.w||binding.view!==original.view)return{status:'transition',stage:'exception-with-observed-target-change',failedStage,error:detail,privateStack,before:before?.target,current};
++}catch(verificationError){return{status:'error',stage:failedStage,error:detail,privateStack,privateVerificationStack:String(verificationError.stack??verificationError),targetVerificationError:safe(verificationError)}}}
++  return{status:'error',stage:failedStage,error:detail,privateStack,target:before?.target??null};
+ 
+  }
+ }
+ export const makeViewObservationBody=input=>'return ('+nativeViewObservation.toString()+')(E,'+JSON.stringify(input)+');
+ ';
+ 
+-export async function observeStableView({own,kind,browser,childExpression,record,persist,poll,now=Date.now}){
++export async function observeStableView({own,kind,browser,childExpression,record,persist,poll,savePrivateError=async()=>null,now=Date.now}){
+  const deadline=now()+20000;
+ Object.assign(record,{kind,startedAt:new Date().toISOString(),timeoutMs:20000,stableMs:120,samples:[]});
+ let previous,stableAt;
+ 
+  const inspect=async(mode,target)=>{let value;
+-try{value=await own(makeViewObservationBody({mode,kind,browser,childExpression,target}),mode==='inventory'?'t132-view-enumeration':'t132-view-capture',{timeoutMs:Math.max(1,deadline-now())})}catch(error){record.samples.push({at:new Date().toISOString(),status:'error',stage:'main-inspection-transport',error:{name:error.name,message:String(error.message).slice(0,500)}});
++try{value=await own(makeViewObservationBody({mode,kind,browser,childExpression,target}),mode==='inventory'?'t132-view-enumeration':'t132-view-capture',{timeoutMs:Math.max(1,deadline-now())})}catch(error){const privateStackProof=await savePrivateError({stage:'main-inspection-transport',name:error.name,stack:String(error.stack??error)});
++record.samples.push({at:new Date().toISOString(),status:'error',stage:'main-inspection-transport',privateStackProof,error:{name:error.name,message:String(error.message).slice(0,500)}});
+ await persist();
+-throw error}const summary=value?.status==='captured'?{...value,child:{...value.child,png:undefined}}:value;
++throw error}const{privateStack,privateVerificationStack,...publicValue}=value??{};
++const summary=value?.status==='captured'?{...publicValue,child:{...value.child,png:undefined}}:publicValue;
++if(privateStack)summary.privateStackProof=await savePrivateError({stage:value.stage,name:value.error?.name??'Error',stack:privateStack});
++if(privateVerificationStack)summary.privateVerificationStackProof=await savePrivateError({stage:value.stage+'-verification',name:value.targetVerificationError?.name??'Error',stack:privateVerificationStack});
+ record.samples.push({at:new Date().toISOString(),...summary});
+ record.last=summary;
+ await persist();

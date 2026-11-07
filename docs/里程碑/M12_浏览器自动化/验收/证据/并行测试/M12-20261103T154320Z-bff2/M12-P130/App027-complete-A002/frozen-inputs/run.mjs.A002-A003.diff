@@ -1,0 +1,164 @@
+--- A002/run.mjs
++++ A003/run.mjs
+@@ -1,3 +1,6 @@
++import{assertDriverLabels}from'./check-labels.mjs';
++import{settleOwnedApp}from'./cleanup-owned-app.mjs';
++import{activateInitialExactTestPid}from'./activate-initial-exact-pid.mjs';
+ import assert from'node:assert/strict';
+ import{readFile,writeFile,mkdir,copyFile,stat,realpath}from'node:fs/promises';
+ import{pathToFileURL}from'node:url';
+@@ -11,6 +14,7 @@
+ import{resourceRecorder}from'./resources.mjs';
+ import{observeStableView}from'./view-observer.mjs';
+ 
++await assertDriverLabels(ROOT);
+ assert(process.argv.includes('--execute'));
+ assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');
+ assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');
+@@ -20,13 +24,14 @@
+ assert(['Native','UI','App','PTY','HTTP','TCP','Unix','OS'].every(x=>lease.resources.includes(x)));
+ assert(Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt)&&!lease.revoked)};
+ check();
++assert.equal(lease.executionReadySHA256,sha(await readFile(ROOT+'/execution-ready.json')));
+ for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;
+ assert.equal(sha(await readFile(p)),f.sha256);
+ assert.equal((await stat(p)).mode&511,f.mode)}await verifyPin(pin);
+ 
+ const runtime=ROOT+'/runtime-001',userData=runtime+'/userdata',projectPath=runtime+'/project',resources=resourceRecorder({userData,driverPid:process.pid}),pages=new Set();
+ let app,ui,stage='setup',esbuild;
+-const r={case:'M12-T132',layer:'A',App:'App024',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',actions:[],observations:[],cleanupErrors:[],boundary:'One ordinary task;
++const r={driverPid:process.pid,case:'M12-T132',layer:'A',App:'App025',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',actions:[],observations:[],cleanupErrors:[],boundary:'One ordinary task;
+  three tabs remain open simultaneously, select each in normal one-active-pane UI. Existing HTML document/native MCP Apps providers and actual browser are used;
+  no split-pane invention, store/DOM business mutation, RPC opens, production patch, model, external network or daily data. MCP adapter setup is non-tested API precondition;
+  actual page/file/document opens and tab changes use real UI.'};
+@@ -39,10 +44,19 @@
+ throw Error('Bounded T132 condition timeout '+stage)},unwrap=x=>{assert(x?.ok);
+ return x.value};
+ 
+-const own=(code,label,options={})=>app.mainEvaluate('(async()=>{const E=process.getBuiltinModule("module").createRequire(process.cwd()+"/package.json")("electron");
++const own=(body,label,options={})=>app.mainEvaluate('(async()=>{const E=process.getBuiltinModule("module").createRequire(process.cwd()+"/package.json")("electron");
+ if(process.pid!=='+app.processId+'||process.execPath!=='+JSON.stringify(pin.executable)+'||E.app.getPath("userData")!=='+JSON.stringify(userData)+')throw Error("Exact T132 App required");
+-'+code+'})()',{...options,label});
+-
++'+body+'})()',{timeoutMs:options.timeoutMs,label});
++
++let privateErrorSequence=0;
++async function recordPrivateError(label,error){const path=runtime+'/error-'+String(++privateErrorSequence).padStart(3,'0')+'-'+label.replace(/[^a-z0-9-]/g,'-')+'.private.log',text=String(error.stack??error),row={label,at:new Date().toISOString(),name:error.name,errorSHA256:sha(text),privateStackPath:path};
++try{await mkdir(runtime,{recursive:true,mode:0o700});
++await writeFile(path,text,{flag:'wx',mode:0o600});
++row.privateStackSaved=true;
++}catch(sink){row.privateStackSaved=false;
++row.privateStackWriteError=sink.code??sink.name;
++}return row;
++}
+ const tabs=()=>app.evaluate('[...document.querySelectorAll("[aria-label=文件标签] [role=tab]")].map(e=>({title:e.title,text:e.textContent.trim(),selected:e.getAttribute("aria-selected"),pinned:!e.closest(".fw-tab")?.classList.contains("preview")}))');
+ 
+ async function mainProbe(){const x=await app.evaluate('({url:location.href,timeOrigin:performance.timeOrigin,api:typeof window.electronAPI?.invoke,task:document.querySelector("[data-testid=sidebar-task][aria-current=page]")?.dataset.taskId})');
+@@ -74,7 +88,7 @@
+  r.viewObservations??=[];
+ const diagnostic={phase};
+ r.viewObservations.push(diagnostic);
+-const child=await observeStableView({own,kind,browser:r.browserURL,childExpression,record:diagnostic,persist,poll});
++const child=await observeStableView({own,kind,browser:r.browserURL,childExpression,record:diagnostic,persist,poll,savePrivateError:({stage,name,stack})=>recordPrivateError('view-'+phase+'-'+stage,{name,stack})});
+ const bytes=Buffer.from(child.png,'base64');
+ delete child.png;
+ assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+@@ -98,7 +112,7 @@
+  // Same existing M9 SDK fixture bundling, deferred until this full resource lease.
+  process.env.TMPDIR=runtime+'/tmp';
+ const req=createRequire(ROOT+'/package.json'),modules=await realpath(ROOT+'/node_modules');
+-esbuild=createRequire(req.resolve('vite'))('esbuild');
++esbuild=req('esbuild');
+ const build=esbuild.buildSync({entryPoints:[ROOT+'/fixtures/manual-app-fixture.js'],bundle:true,nodePaths:[modules],platform:'browser',format:'iife',write:false});
+ const html='<!doctype html><body><script>'+build.outputFiles[0].text.replaceAll('</script','<\\/script')+'</script>';
+ await writeFile(runtime+'/assets/mcp.html',html,{mode:0o600});
+@@ -108,7 +122,7 @@
+ r.fixtureBundle.compilerStopped=true;
+ esbuild=null;
+ 
+- app=await openElectron({executable:pin.executable,userData,cwd:projectPath,inspectMain:true,env:{HOME:runtime+'/home',ZDOTDIR:runtime+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache'}});
++ app=await openElectron({executable:pin.executable,userData,cwd:projectPath,inspectMain:true,env:{HOME:runtime+'/home',ZDOTDIR:runtime+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache',NODE_COMPILE_CACHE:ROOT+'/cache/node',XDG_CACHE_HOME:ROOT+'/cache/xdg'}});
+ r.appPid=app.processId;
+ resources.pids.add(app.processId);
+ const cat=await poll(async()=>unwrap(await app.invoke('applications.catalog')).find(x=>x.appId==='browser'));
+@@ -136,12 +150,14 @@
+ await app.cdp('Page.reload');
+ await app.waitFor('performance.timeOrigin!=='+origin+'&&document.readyState==="complete"&&Boolean(document.querySelector("[data-testid=nav-new-task]"))',20000,{navigation:true});
+ r.reloadCount=1;
+-await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().includes("/out/renderer/index.html"))w.setTitle("[A]T132 App024 网页 HTML MCP共存");
++await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().includes("/out/renderer/index.html"))w.setTitle("[A]T132 App025 网页 HTML MCP共存");
+ return true;
+ ','set-t132-title');
+ r.initialFocus={};
+ await persist();
+-console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T132 App024 网页 HTML MCP共存'}));
++r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});
++await persist();
++console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T132 App025 网页 HTML MCP共存'}));
+ await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());
+ ','readonly-t132-native-focus')})});
+ installAppFocusGuard(app,r,{allowOwnedViews:true});
+@@ -192,25 +208,50 @@
+ r.rendererErrors=app.rendererErrors;
+ r.status='executed-unjudged';
+ 
+-}catch(e){r.status=e.code==='APP_FOCUS_YIELDED'?'deferred-focus-loss':'failed-or-partial';
+-r.failure={stage,type:e.name};
++ }catch(e){r.status=e.code==='APP_FOCUS_YIELDED'?'deferred-focus-loss':'failed-or-partial';
++r.failure={stage,type:e.name,...await recordPrivateError('business-'+stage,e)};
+ await mkdir(runtime,{recursive:true,mode:0o700});
++await writeFile(runtime+'/failure.private.log',String(e.stack??e),{mode:0o600});
++await persist();
+ if(e.electronStartupLogs!==undefined||e.electronStartupProcess!==undefined){if(Number.isInteger(e.electronStartupProcess?.pid))resources.pids.add(e.electronStartupProcess.pid);
+ r.startupFailure=await saveStartupError(runtime,e,{executable:pin.executable,userData});
+-for(const p of r.startupFailure.observedLoopbackDebugPorts)resources.ports.add(p)}await writeFile(runtime+'/failure.private.log',String(e.stack??e),{mode:0o600})}
+-finally{if(esbuild)try{await esbuild.stop()}catch(e){r.cleanupErrors.push({stage:'fixture-compiler',type:e.name})}if(app)try{await resources.capture(app,pages);
+-r.exactGatewayPaths=await own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string"&&h.address().startsWith("/private/tmp/wy-cli-")).map(h=>h.address())','readonly-t132-unix');
+-if(r.task&&(await app.invoke('tasks.get',r.task.taskId)).ptyId)await app.invoke('tasks.kill',r.task.taskId);
+-await own('setTimeout(()=>E.app.quit(),100);
++for(const p of r.startupFailure.observedLoopbackDebugPorts)resources.ports.add(p)}}
++finally{
++ const clean=async(label,fn)=>{try{return await fn()}catch(error){r.cleanupErrors.push(await recordPrivateError(label,error));
++return null}};
++
++ if(esbuild)await clean('fixture-compiler-stop',()=>esbuild.stop());
++
++ if(app){
++  await clean('inventory-own-resources',()=>resources.capture(app,pages));
++
++  r.exactGatewayPaths=await clean('readonly-own-gateways',()=>own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string"&&["/private/tmp/wy-cli-","/tmp/wy-cli-","/private/tmp/wy-"+process.getuid()+"-","/tmp/wy-"+process.getuid()+"-"].some(prefix=>h.address().startsWith(prefix))).map(h=>h.address());
++','readonly-t132-unix'))??[];
++
++  if(r.task)await clean('stop-own-idle-task',async()=>{const view=await app.invoke('tasks.get',r.task.taskId);
++assert.equal(view.projectId,r.projectId);
++if(view.ptyId)await app.invoke('tasks.kill',r.task.taskId);
++const end=Date.now()+15000;
++while((await app.invoke('tasks.get',r.task.taskId)).ptyId){if(Date.now()>=end)throw Error('Own task stop deadline');
++await new Promise(ok=>setTimeout(ok,40))}});
++
++  try{r.appCleanupLifecycle=await settleOwnedApp({app,requestNormalQuit:()=>own('setTimeout(()=>E.app.quit(),100);
+ return true;
+-','normal-t132-quit');
+-r.appExit=await app.waitForExit(45000);
+-r.electronLogs=app.logs();
+-await app.close();
+-r.observedProcess=await app.observedProcess()}catch(e){r.cleanupErrors.push({stage:'app',type:e.name})}r.knownPids=[...resources.pids];
++','normal-t132-quit'),writePrivateLogs:()=>writeFile(runtime+'/electron.private.log',app.logs(),{mode:0o600}),onError:async(label,error)=>{r.cleanupErrors.push(await recordPrivateError(label,error))}});
++r.appExit=r.appCleanupLifecycle.normalWaitExit;
++r.cleanupTerminalExit=r.appCleanupLifecycle.finalWaitExit;
++r.normalExitConfirmed=r.appCleanupLifecycle.normalExitConfirmed;
++}
++  finally{try{r.observedProcess=await app.observedProcess()}catch(error){r.cleanupErrors.push(await recordPrivateError('outermost-owned-process-observation',error));
++r.observedProcess=null}r.finalObservedProcessSavedAt=new Date().toISOString();
++await clean('persist-final-observed-process',persist)}
++ }
++ r.knownPids=[...resources.pids];
+ r.knownPorts=[...resources.ports];
+ r.knownPageIds=[...pages];
+ r.resources=resources.history;
+ r.finishedAt=new Date().toISOString();
+ await save('raw.json',r);
+-console.log(JSON.stringify({case:r.case,status:r.status,observations:r.observations.length,cleanupErrors:r.cleanupErrors.length,formalNewPasses:0}))}
++console.log(JSON.stringify({case:r.case,status:r.status,driverPID:process.pid,appPID:r.appPid,observations:r.observations.length,cleanupErrors:r.cleanupErrors.length,formalNewPasses:0}));
++
++}

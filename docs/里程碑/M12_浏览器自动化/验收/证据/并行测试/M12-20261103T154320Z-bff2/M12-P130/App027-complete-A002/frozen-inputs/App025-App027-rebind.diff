@@ -1,0 +1,520 @@
+--- App025/activate-initial-exact-pid.mjs
++++ App027/activate-initial-exact-pid.mjs
+@@ -8,7 +8,7 @@
+ export async function activateInitialExactTestPid({app,pin,userData,privateRoot,authorization,scriptPath}){
+  assert.equal(process.platform,'darwin');
+  assert(authorization?.status==='explicitly-authorized'&&authorization.scope==='M12-isolated-initial-foreground-only'&&authorization.userMessageReference);
+- assert.equal(privateRoot,'/private/tmp/willyou-m12-t132-App025-A-003');assert.equal(userData,'/private/tmp/willyou-m12-t132-App025-A-003/runtime-001/userdata');
++ assert.equal(privateRoot,'/private/tmp/willyou-m12-t132-App027-A-001');assert.equal(userData,'/private/tmp/willyou-m12-t132-App027-A-001/runtime-001/userdata');
+  assert(pin.executable.startsWith('/private/tmp/willyou-m12-')&&pin.executable.endsWith('/WillYou.app/Contents/MacOS/WillYou'));
+  assert(Number.isInteger(app.processId)&&app.processId>1);
+  const script=await readFile(scriptPath);assert.equal(sha(script),authorization.scriptSHA256);
+--- App025/freeze-dependencies.mjs
++++ App027/freeze-dependencies.mjs
+@@ -4,7 +4,7 @@
+ import {createRequire} from 'node:module';
+ import {dirname,join,relative,resolve} from 'node:path';
+ import {createHash} from 'node:crypto';
+-const root='/private/tmp/willyou-m12-t132-App025-A-003',old='/private/tmp/willyou-m12-t132-App024-A-002',req=createRequire(old+'/package.json'),sha=b=>createHash('sha256').update(b).digest('hex'),packages=new Map(),links=[],files=[],skipped=[];
++const root='/private/tmp/willyou-m12-t132-App027-A-001',old='/private/tmp/willyou-m12-t132-App024-A-002',req=createRequire(old+'/package.json'),sha=b=>createHash('sha256').update(b).digest('hex'),packages=new Map(),links=[],files=[],skipped=[];
+ async function locate(name,from){for(const base of createRequire(from+'/package.json').resolve.paths(name)??[]){const path=join(base,name,'package.json');try{await stat(path);return await realpath(dirname(path))}catch(error){if(error.code!=='ENOENT')throw error}}return null}
+ async function link(path,target){await mkdir(dirname(root+'/'+path),{recursive:true});const text=relative(dirname(root+'/'+path),target);await symlink(text,root+'/'+path);links.push({path,target:text,realTarget:target})}
+ async function copyTree(source,dest){await mkdir(dest,{recursive:true});for(const e of await readdir(source,{withFileTypes:true})){if(e.name==='node_modules')continue;const a=source+'/'+e.name,b=dest+'/'+e.name;if(e.isDirectory())await copyTree(a,b);else{const actual=await realpath(a),s=await stat(actual);if(!s.isFile())throw Error('Unexpected non-file dependency entry');await copyFile(actual,b);await chmod(b,s.mode&511);files.push({path:relative(root,b),sha256:sha(await readFile(b)),mode:s.mode&511,bytes:s.size})}}}
+--- App025/io.mjs
++++ App027/io.mjs
+@@ -1,6 +1,6 @@
+ import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,readlink,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+-export const ROOT='/private/tmp/willyou-m12-t132-App025-A-003';
++export const ROOT='/private/tmp/willyou-m12-t132-App027-A-001';
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+ export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}
+-export async function verifyPin(pin){const layout=JSON.parse(await readFile(ROOT+'/dependency-layout.json'));for(const x of layout.links){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/'))}assert(pin.finalReady===true&&pin.role==='App025-installed');assert.equal(pin.app,'/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3684);for(const key of['buildGate','nativeGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
++export async function verifyPin(pin){const layout=JSON.parse(await readFile(ROOT+'/dependency-layout.json'));for(const x of layout.links){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/'))}assert(pin.finalReady===true&&pin.role==='App027-installed');assert.equal(pin.app,'/private/tmp/willyou-m12-app027-installer-001/Installed Applications/WillYou.app');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3688);for(const key of['buildGate','nativeGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);const records=[{path:pin.executable,sha256:pin.executableSha256,mode:0o755},...pin.packageFiles.map(x=>({...x,path:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,path:pin.app+'/'+x.path}))];for(const f of records){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,Number(f.mode),f.path)}return{at:new Date().toISOString(),sourceManifestSha256:pin.sourceManifestSha256,asarSha256:pin.asarSha256,checkedCriticalFiles:records,boundary:'Readonly critical PIN checks; prior coordinator whole-package verification reused, no shared writer.'};}
+--- App025/run.mjs
++++ App027/run.mjs
+@@ -1,7 +1,7 @@
+ import{assertDriverLabels}from'./check-labels.mjs';import{settleOwnedApp}from'./cleanup-owned-app.mjs';import{activateInitialExactTestPid}from'./activate-initial-exact-pid.mjs';import assert from'node:assert/strict';import{readFile,writeFile,mkdir,copyFile,stat,realpath}from'node:fs/promises';import{pathToFileURL}from'node:url';import{createRequire}from'node:module';import{ROOT,sha,save,verifyPin}from'./io.mjs';import{openElectron}from'./driver-source/scripts/lib/electron-harness.mjs';import{installAppFocusGuard}from'./driver-source/scripts/lib/app-focus-guard.mjs';import{waitPassiveInitialFocus}from'./initial-focus.mjs';import{saveStartupError}from'./startup-error.mjs';import{ui as makeUi}from'./ui.mjs';import{resourceRecorder}from'./resources.mjs';import{observeStableView}from'./view-observer.mjs';
+ await assertDriverLabels(ROOT);assert(process.argv.includes('--execute'));assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');const ready=JSON.parse(await readFile(ROOT+'/execution-ready.json')),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json'));
+ const check=()=>{assert(lease.status==='granted'&&lease.coordinator==='root'&&lease.privateRoot===ROOT&&lease.executable===pin.executable);assert(['Native','UI','App','PTY','HTTP','TCP','Unix','OS'].every(x=>lease.resources.includes(x)));assert(Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt)&&!lease.revoked)};check();assert.equal(lease.executionReadySHA256,sha(await readFile(ROOT+'/execution-ready.json')));for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;assert.equal(sha(await readFile(p)),f.sha256);assert.equal((await stat(p)).mode&511,f.mode)}await verifyPin(pin);
+-const runtime=ROOT+'/runtime-001',userData=runtime+'/userdata',projectPath=runtime+'/project',resources=resourceRecorder({userData,driverPid:process.pid}),pages=new Set();let app,ui,stage='setup',esbuild;const r={driverPid:process.pid,case:'M12-T132',layer:'A',App:'App025',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',actions:[],observations:[],cleanupErrors:[],boundary:'One ordinary task; three tabs remain open simultaneously, select each in normal one-active-pane UI. Existing HTML document/native MCP Apps providers and actual browser are used; no split-pane invention, store/DOM business mutation, RPC opens, production patch, model, external network or daily data. MCP adapter setup is non-tested API precondition; actual page/file/document opens and tab changes use real UI.'};
++const runtime=ROOT+'/runtime-001',userData=runtime+'/userdata',projectPath=runtime+'/project',resources=resourceRecorder({userData,driverPid:process.pid}),pages=new Set();let app,ui,stage='setup',esbuild;const r={driverPid:process.pid,case:'M12-T132',layer:'A',App:'App027',sourceManifestSHA:pin.sourceManifestSha256,asarSHA:pin.asarSha256,userData,startedAt:new Date().toISOString(),status:'running-unjudged',actions:[],observations:[],cleanupErrors:[],boundary:'One ordinary task; three tabs remain open simultaneously, select each in normal one-active-pane UI. Existing HTML document/native MCP Apps providers and actual browser are used; no split-pane invention, store/DOM business mutation, RPC opens, production patch, model, external network or daily data. MCP adapter setup is non-tested API precondition; actual page/file/document opens and tab changes use real UI.'};
+ const persist=()=>save('live.json',{...r,stage}),poll=async(fn,ms=20000)=>{const end=Date.now()+ms;do{check();const v=await fn();if(v)return v;await new Promise(ok=>setTimeout(ok,40))}while(Date.now()<end);throw Error('Bounded T132 condition timeout '+stage)},unwrap=x=>{assert(x?.ok);return x.value};
+ const own=(body,label,options={})=>app.mainEvaluate('(async()=>{const E=process.getBuiltinModule("module").createRequire(process.cwd()+"/package.json")("electron");if(process.pid!=='+app.processId+'||process.execPath!=='+JSON.stringify(pin.executable)+'||E.app.getPath("userData")!=='+JSON.stringify(userData)+')throw Error("Exact T132 App required");'+body+'})()',{timeoutMs:options.timeoutMs,label});
+ let privateErrorSequence=0;async function recordPrivateError(label,error){const path=runtime+'/error-'+String(++privateErrorSequence).padStart(3,'0')+'-'+label.replace(/[^a-z0-9-]/g,'-')+'.private.log',text=String(error.stack??error),row={label,at:new Date().toISOString(),name:error.name,errorSHA256:sha(text),privateStackPath:path};try{await mkdir(runtime,{recursive:true,mode:0o700});await writeFile(path,text,{flag:'wx',mode:0o600});row.privateStackSaved=true;}catch(sink){row.privateStackSaved=false;row.privateStackWriteError=sink.code??sink.name;}return row;}
+@@ -19,7 +19,7 @@
+  process.env.TMPDIR=runtime+'/tmp';const req=createRequire(ROOT+'/package.json'),modules=await realpath(ROOT+'/node_modules');esbuild=req('esbuild');const build=esbuild.buildSync({entryPoints:[ROOT+'/fixtures/manual-app-fixture.js'],bundle:true,nodePaths:[modules],platform:'browser',format:'iife',write:false});const html='<!doctype html><body><script>'+build.outputFiles[0].text.replaceAll('</script','<\\/script')+'</script>';await writeFile(runtime+'/assets/mcp.html',html,{mode:0o600});r.fixtureBundle={source:'existing M9 manual-app-fixture.js',sha256:sha(Buffer.from(html)),bytes:Buffer.byteLength(html)};await resources.capture({processId:process.pid},new Set());await esbuild.stop();r.fixtureBundle.compilerStopped=true;esbuild=null;
+  app=await openElectron({executable:pin.executable,userData,cwd:projectPath,inspectMain:true,env:{HOME:runtime+'/home',ZDOTDIR:runtime+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache',NODE_COMPILE_CACHE:ROOT+'/cache/node',XDG_CACHE_HOME:ROOT+'/cache/xdg'}});r.appPid=app.processId;resources.pids.add(app.processId);const cat=await poll(async()=>unwrap(await app.invoke('applications.catalog')).find(x=>x.appId==='browser'));if(!cat.added)unwrap(await app.invoke('applications.setAdded','browser',true,cat.revision));const project=await app.invoke('projects.create',{name:'[A] T132 coexistence',aliases:[],description:'Original browser/HTML/MCP compatibility',rulesPath:null},[{label:'T132 fixture',path:projectPath}]);r.projectId=project.id;const selected=unwrap(await app.invoke('applications.projectSettings',project.id,'browser'));if(!selected.enabled)unwrap(await app.invoke('applications.select',{projectId:project.id,appId:'browser',enabled:true,expectedRevision:selected.revision,connections:{}}));const ai=await app.invoke('aiProfiles.create',{name:'T132 controlled idle task',runner:'codex',executable:ROOT+'/receiver.py',args:[],env:[{name:'HOME',value:runtime+'/home',secret:false},{name:'CODEX_HOME',value:runtime+'/codex',secret:false}],color:null,isDefault:true});await poll(async()=>{const x=await app.invoke('aiProfiles.get',ai.id);if(x.checking)return null;assert.equal(x.check.status,'ok');return x},45000);const made=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:ai.id,firstMessage:'T132 local controlled idle fixture, no model'});await app.invoke('tasks.rename',made.task.id,'[A] T132 browser HTML MCP');r.task={taskId:made.task.id,ptyId:made.ptyId,runId:unwrap(await app.invoke('applications.session',made.task.id)).currentRun.id};
+  const configuration={adapters:[{id:'T132-app',name:'T132 MCP UI',enabled:true,suffixes:['.mcp.txt'],sources:['task-cwd','project-directory'],provider:{kind:'stdio',command:await realpath('/Users/liubu/.hermes/node/bin/node'),args:[ROOT+'/fixtures/provider.mjs','${file}','willyou-t132://${session}/resource',runtime+'/assets/mcp.html'],runtimePaths:[modules,ROOT+'/fixtures',runtime+'/assets'],resourceUri:'willyou-t132://${session}/resource',presentation:'mcp-app',uiResourceUri:'ui://fixture/view.html',initialTool:'initial',initialArguments:{uri:'willyou-t132://${session}/resource'},appTools:[{name:'slice',arguments:{uri:'willyou-t132://${session}/resource'},numericArguments:{offset:{min:0,max:1024,integer:true},length:{min:1,max:256,integer:true}}}]}}],preferred:{}};await app.invoke('files.configureViewers',configuration);assert.deepEqual(await app.invoke('files.viewerConfiguration'),configuration);r.viewerPrecondition={actualAPI:true,adapter:'T132-app',scope:'not-tested registered adapter setup; actual document opens remain UI'};
+- const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor('performance.timeOrigin!=='+origin+'&&document.readyState==="complete"&&Boolean(document.querySelector("[data-testid=nav-new-task]"))',20000,{navigation:true});r.reloadCount=1;await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().includes("/out/renderer/index.html"))w.setTitle("[A]T132 App025 网页 HTML MCP共存");return true;','set-t132-title');r.initialFocus={};await persist();r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});await persist();console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T132 App025 网页 HTML MCP共存'}));await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-t132-native-focus')})});installAppFocusGuard(app,r,{allowOwnedViews:true});ui=makeUi(app,async x=>{r.actions.push({at:new Date().toISOString(),...x});await persist()});await ui.click('[data-testid=sidebar-task][data-task-id="'+r.task.taskId+'"]');await app.waitFor('document.querySelector("[data-testid=sidebar-task][aria-current=page]")?.dataset.taskId==='+JSON.stringify(r.task.taskId),10000);if(await app.evaluate('!!document.querySelector("[data-testid=task-resume]")&&!document.querySelector("[data-testid=task-resume]").disabled'))await ui.click('[data-testid=task-resume]');assert.equal((await app.invoke('tasks.get',r.task.taskId)).ptyId,r.task.ptyId);assert.equal(unwrap(await app.invoke('applications.session',r.task.taskId)).currentRun.id,r.task.runId);r.mainDocument=await app.evaluate('({url:location.href,timeOrigin:performance.timeOrigin})');
++ const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor('performance.timeOrigin!=='+origin+'&&document.readyState==="complete"&&Boolean(document.querySelector("[data-testid=nav-new-task]"))',20000,{navigation:true});r.reloadCount=1;await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().includes("/out/renderer/index.html"))w.setTitle("[A]T132 App027 网页 HTML MCP共存");return true;','set-t132-title');r.initialFocus={};await persist();r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});await persist();console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T132 App027 网页 HTML MCP共存'}));await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-t132-native-focus')})});installAppFocusGuard(app,r,{allowOwnedViews:true});ui=makeUi(app,async x=>{r.actions.push({at:new Date().toISOString(),...x});await persist()});await ui.click('[data-testid=sidebar-task][data-task-id="'+r.task.taskId+'"]');await app.waitFor('document.querySelector("[data-testid=sidebar-task][aria-current=page]")?.dataset.taskId==='+JSON.stringify(r.task.taskId),10000);if(await app.evaluate('!!document.querySelector("[data-testid=task-resume]")&&!document.querySelector("[data-testid=task-resume]").disabled'))await ui.click('[data-testid=task-resume]');assert.equal((await app.invoke('tasks.get',r.task.taskId)).ptyId,r.task.ptyId);assert.equal(unwrap(await app.invoke('applications.session',r.task.taskId)).currentRun.id,r.task.runId);r.mainDocument=await app.evaluate('({url:location.href,timeOrigin:performance.timeOrigin})');
+  stage='browser-real-new-tab';await ui.click('[data-testid=task-new-browser]');await app.waitFor('Boolean(document.querySelector("[aria-label=网页地址]"))',10000);r.browserURL=pathToFileURL(projectPath+'/browser.html').href;await ui.click('[aria-label=网页地址]');await app.cdp('Input.insertText',{text:r.browserURL});for(const type of['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:36,...(type==='keyDown'?{text:'\r',unmodifiedText:'\r'}:{})});r.browser=await poll(async()=>{const w=await app.invoke('browser.snapshot',{taskId:r.task.taskId});return w.tabs.find(t=>t.url===r.browserURL)});pages.add(r.browser.id);await capture('browser','browser-initial');
+  stage='html-real-tree-and-document';await selectFile('doc.html');await app.waitFor('Boolean(document.querySelector(".cm-content"))',15000);await ui.click('[aria-label=查看文档]');await capture('html','html-initial');
+  stage='mcp-real-tree-and-SDK';await selectFile('panel.mcp.txt');await capture('mcp','mcp-three-open');r.threeOpen=true;
+--- App025/pin.json
++++ App027/pin.json
+@@ -1,26 +1,26 @@
+ {
+   "finalReady": true,
+-  "role": "App025-installed",
+-  "app": "/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app",
+-  "executable": "/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+-  "sourceRoot": "/private/tmp/willyou-m12-cache-fix-source-029/source",
+-  "sourceManifest": "/private/tmp/willyou-m12-cache-fix-source-029/source-inputs.json",
+-  "sourceManifestSha256": "8a1211f2add9d0ed8e5ba30a041a75c9c2ab2162d1540069ad9e8d40e0fa497a",
+-  "asarSha256": "f5862da1743e14a488ab878c6a0a3d092743af0c636ceaf1a3599145d887e31c",
++  "role": "App027-installed",
++  "app": "/private/tmp/willyou-m12-app027-installer-001/Installed Applications/WillYou.app",
++  "executable": "/private/tmp/willyou-m12-app027-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
++  "sourceRoot": "/private/tmp/willyou-m12-header-source-031/source",
++  "sourceManifest": "/private/tmp/willyou-m12-header-source-031/source-inputs.json",
++  "sourceManifestSha256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
++  "asarSha256": "8cacf6c30aea4791b6f79940f1352918d75f517d22cea40ebd27aaf29d0d1093",
+   "buildGate": {
+-    "path": "/private/tmp/willyou-m12-app025-installer-001/evidence/candidate-installer.json",
+-    "sha256": "302b348a5c32c43abdf4fa0ee232527ec26bdd1d97dc44237ef9c8d950fbd425",
+-    "scope": "Future actual current App025 own-root gate; no old install/native outcome reuse"
++    "path": "/private/tmp/willyou-m12-app027-installer-001/evidence/candidate-installer.json",
++    "sha256": "7aa389a1f81f9a6c38181b36902b9f57e0502c4840d27adfdefbe608c4d52974",
++    "scope": "CurrentApp027 prepackaged artifact identity; no publication"
+   },
+   "nativeGate": {
+-    "path": "/private/tmp/willyou-m12-app025-installer-001/evidence/installed-native-result.json",
+-    "sha256": "aeb259c05993231c494bdb7b75a7c7e299ea67b09173128f44af120d9d69f5bb",
+-    "scope": "Future actual current App025 own-root gate; no old install/native outcome reuse"
++    "path": "/private/tmp/willyou-m12-app027-installer-001/evidence/installed-native-result.json",
++    "sha256": "17564796dde32ba58909269adf68ac02c436cffcb6f41fc155dab05ca00b4381",
++    "scope": "Actual current installed027 sixNative checks, bound to directory=DMG=installed payload"
+   },
+   "packageFiles": [
+     {
+       "path": "app.asar",
+-      "sha256": "f5862da1743e14a488ab878c6a0a3d092743af0c636ceaf1a3599145d887e31c",
++      "sha256": "8cacf6c30aea4791b6f79940f1352918d75f517d22cea40ebd27aaf29d0d1093",
+       "mode": 420
+     },
+     {
+@@ -35,7 +35,7 @@
+     },
+     {
+       "path": "native/willyou-app",
+-      "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
++      "sha256": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+       "mode": 493
+     },
+     {
+@@ -47,11 +47,16 @@
+       "path": "capability-bundles/apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6/skills/browser/SKILL.md",
+       "sha256": "933fb325f6a78633b1806365c6a71b2a281e3b78bda82eb978885befe1e203f7",
+       "mode": 420
++    },
++    {
++      "path": "native/willyou-files",
++      "sha256": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736",
++      "mode": 493
+     }
+   ],
+   "pending": null,
+   "nativeTooltipStrategy": "deferred-no-extra-OS-tool",
+-  "executableSha256": "97f074363bf45a035178f88f694c9074256f66deb558c934accbca92196312d6",
++  "executableSha256": "ad6faa66e930e2f323968491347644be1d41dde0a7db78c43431e0b210ab935e",
+   "frameworkSha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+   "runtimeCoreFiles": [
+     {
+@@ -60,6 +65,13 @@
+       "mode": 493
+     }
+   ],
+-  "finalPinVerifiedAt": "2026-11-06T08:18:30.676707+00:00",
+-  "installedPayloadRequired": "Coordinator exact full byte/mode input=DMG=installed and all own mounts detached before startup"
++  "finalPinVerifiedAt": "2026-11-07T01:28:42.758613+00:00",
++  "installedPayloadRequired": "CurrentApp027 Root receipt: directory input=DMG=installed20240 entries; all own mounts detached. Package identity only, never T132 UI credit.",
++  "payloadEquivalenceGate": {
++    "path": "/private/tmp/willyou-m12-app027-installer-001/evidence/install-and-compare-result.json",
++    "sha256": "d5f18bd639498b71584deab9e3c3294dedc94ecae55663b963014f61a3d991c5",
++    "mode": 420,
++    "bytes": 1484,
++    "external": true
++  }
+ }
+--- App025/source-applicability.json
++++ App027/source-applicability.json
+@@ -1,257 +1,289 @@
+ {
+-  "scope": "T132 browser/HTML/MCP/view workspace implementation and existing fixture source only; no old current Native outcome inferred",
+-  "source028": {
+-    "root": "/private/tmp/willyou-m12-p126-source-028/source",
+-    "manifestSHA256": "548a789dfcb648ed3c8ee32b0096c9b6bbd8b8ab3eed120e24b72d868d309ec4"
+-  },
++  "scope": "Original six real-content observations, three-tab return/isolation/mainCDP unchanged; complete current A required",
+   "source029": {
+     "root": "/private/tmp/willyou-m12-cache-fix-source-029/source",
+     "manifestSHA256": "8a1211f2add9d0ed8e5ba30a041a75c9c2ab2162d1540069ad9e8d40e0fa497a"
+   },
++  "source031": {
++    "root": "/private/tmp/willyou-m12-header-source-031/source",
++    "manifestSHA256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293"
++  },
+   "files": [
+     {
+       "path": "package.json",
+-      "oldSHA256": "abc8e619ea50ac99db79b57c98b7f77e0e2ce6f038cb36202b5e4427e7c4d4b0",
+-      "currentSHA256": "abc8e619ea50ac99db79b57c98b7f77e0e2ce6f038cb36202b5e4427e7c4d4b0",
++      "source029SHA256": "abc8e619ea50ac99db79b57c98b7f77e0e2ce6f038cb36202b5e4427e7c4d4b0",
++      "source031SHA256": "abc8e619ea50ac99db79b57c98b7f77e0e2ce6f038cb36202b5e4427e7c4d4b0",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "pnpm-lock.yaml",
+-      "oldSHA256": "73578b89cd61dd6df7b3f76979a9d7c5dd975a7a5b8887b11d9a48ab0befe479",
+-      "currentSHA256": "73578b89cd61dd6df7b3f76979a9d7c5dd975a7a5b8887b11d9a48ab0befe479",
++      "source029SHA256": "73578b89cd61dd6df7b3f76979a9d7c5dd975a7a5b8887b11d9a48ab0befe479",
++      "source031SHA256": "73578b89cd61dd6df7b3f76979a9d7c5dd975a7a5b8887b11d9a48ab0befe479",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "scripts/files/html-acceptance-ui.mjs",
+-      "oldSHA256": "859a84e1dab1280afac0478e31a9f5800d850766a7fd0d9d2022e17d92aaf0db",
+-      "currentSHA256": "859a84e1dab1280afac0478e31a9f5800d850766a7fd0d9d2022e17d92aaf0db",
++      "source029SHA256": "859a84e1dab1280afac0478e31a9f5800d850766a7fd0d9d2022e17d92aaf0db",
++      "source031SHA256": "859a84e1dab1280afac0478e31a9f5800d850766a7fd0d9d2022e17d92aaf0db",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "scripts/files/mcp-contract-ui.mjs",
+-      "oldSHA256": "88732c7c718d57ec2dbed20cca2f3575d0f36c7a3092433baafdb37eec2d7ae2",
+-      "currentSHA256": "88732c7c718d57ec2dbed20cca2f3575d0f36c7a3092433baafdb37eec2d7ae2",
++      "source029SHA256": "88732c7c718d57ec2dbed20cca2f3575d0f36c7a3092433baafdb37eec2d7ae2",
++      "source031SHA256": "88732c7c718d57ec2dbed20cca2f3575d0f36c7a3092433baafdb37eec2d7ae2",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "scripts/files/mcp-ui/manual-app-fixture.js",
+-      "oldSHA256": "2b69cdf0fbae6d7dcc983e6fd882c563952cbd4f7da32ded8fac0f69956442a8",
+-      "currentSHA256": "2b69cdf0fbae6d7dcc983e6fd882c563952cbd4f7da32ded8fac0f69956442a8",
++      "source029SHA256": "2b69cdf0fbae6d7dcc983e6fd882c563952cbd4f7da32ded8fac0f69956442a8",
++      "source031SHA256": "2b69cdf0fbae6d7dcc983e6fd882c563952cbd4f7da32ded8fac0f69956442a8",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "scripts/files/mcp-ui/provider.mjs",
+-      "oldSHA256": "bd345c838c367a7ac62d1c88858559d1d717a18527c80a7d8f51d287095c06b4",
+-      "currentSHA256": "bd345c838c367a7ac62d1c88858559d1d717a18527c80a7d8f51d287095c06b4",
++      "source029SHA256": "bd345c838c367a7ac62d1c88858559d1d717a18527c80a7d8f51d287095c06b4",
++      "source031SHA256": "bd345c838c367a7ac62d1c88858559d1d717a18527c80a7d8f51d287095c06b4",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/browser/page-registry.ts",
+-      "oldSHA256": "73edbef9d2e4adf44dba06424ed78f777f211689c7122b2d9218b3569a6845a2",
+-      "currentSHA256": "73edbef9d2e4adf44dba06424ed78f777f211689c7122b2d9218b3569a6845a2",
++      "source029SHA256": "73edbef9d2e4adf44dba06424ed78f777f211689c7122b2d9218b3569a6845a2",
++      "source031SHA256": "73edbef9d2e4adf44dba06424ed78f777f211689c7122b2d9218b3569a6845a2",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/browser/service.ts",
+-      "oldSHA256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f",
+-      "currentSHA256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f",
++      "source029SHA256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f",
++      "source031SHA256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/browser/workspace.ts",
+-      "oldSHA256": "2da04d30c6d6d4a18b31e838eb770be17558e8ed6e58bf4b75230bdf9aceb6e9",
+-      "currentSHA256": "2da04d30c6d6d4a18b31e838eb770be17558e8ed6e58bf4b75230bdf9aceb6e9",
++      "source029SHA256": "2da04d30c6d6d4a18b31e838eb770be17558e8ed6e58bf4b75230bdf9aceb6e9",
++      "source031SHA256": "2da04d30c6d6d4a18b31e838eb770be17558e8ed6e58bf4b75230bdf9aceb6e9",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/parser.ts",
+-      "oldSHA256": "47958be535ffe31ac3d7015ca0b44387394bd5a50fd43349518a5987c59b86f6",
+-      "currentSHA256": "47958be535ffe31ac3d7015ca0b44387394bd5a50fd43349518a5987c59b86f6",
++      "source029SHA256": "47958be535ffe31ac3d7015ca0b44387394bd5a50fd43349518a5987c59b86f6",
++      "source031SHA256": "47958be535ffe31ac3d7015ca0b44387394bd5a50fd43349518a5987c59b86f6",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/policy.ts",
+-      "oldSHA256": "1b052bcdf651722968ce593f2d83af7549a8988bc6150d59f0cdc9d3b8f56563",
+-      "currentSHA256": "1b052bcdf651722968ce593f2d83af7549a8988bc6150d59f0cdc9d3b8f56563",
++      "source029SHA256": "1b052bcdf651722968ce593f2d83af7549a8988bc6150d59f0cdc9d3b8f56563",
++      "source031SHA256": "1b052bcdf651722968ce593f2d83af7549a8988bc6150d59f0cdc9d3b8f56563",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/references.ts",
+-      "oldSHA256": "4317edc54f75fc4e4668ede158250b258d8f9665b25ba6d6c961847359a95696",
+-      "currentSHA256": "4317edc54f75fc4e4668ede158250b258d8f9665b25ba6d6c961847359a95696",
++      "source029SHA256": "4317edc54f75fc4e4668ede158250b258d8f9665b25ba6d6c961847359a95696",
++      "source031SHA256": "4317edc54f75fc4e4668ede158250b258d8f9665b25ba6d6c961847359a95696",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/resources.ts",
+-      "oldSHA256": "9d236e85b17c50117bc19fdb1ed5ec41f8225feeaa9742e14c7a3c5317206e1d",
+-      "currentSHA256": "9d236e85b17c50117bc19fdb1ed5ec41f8225feeaa9742e14c7a3c5317206e1d",
++      "source029SHA256": "9d236e85b17c50117bc19fdb1ed5ec41f8225feeaa9742e14c7a3c5317206e1d",
++      "source031SHA256": "9d236e85b17c50117bc19fdb1ed5ec41f8225feeaa9742e14c7a3c5317206e1d",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/service.ts",
+-      "oldSHA256": "bb0e488443c9a6c4c3451e55b1e234f80fc7a4f146da415663100d1125992527",
+-      "currentSHA256": "bb0e488443c9a6c4c3451e55b1e234f80fc7a4f146da415663100d1125992527",
++      "source029SHA256": "bb0e488443c9a6c4c3451e55b1e234f80fc7a4f146da415663100d1125992527",
++      "source031SHA256": "bb0e488443c9a6c4c3451e55b1e234f80fc7a4f146da415663100d1125992527",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/html/worker.ts",
+-      "oldSHA256": "b4210795d8efb66b63c66eb23a64187561c45d9de03377133c1f61aea76c4339",
+-      "currentSHA256": "b4210795d8efb66b63c66eb23a64187561c45d9de03377133c1f61aea76c4339",
++      "source029SHA256": "b4210795d8efb66b63c66eb23a64187561c45d9de03377133c1f61aea76c4339",
++      "source031SHA256": "b4210795d8efb66b63c66eb23a64187561c45d9de03377133c1f61aea76c4339",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/fixtures/provider.mjs",
+-      "oldSHA256": "f9181d0c54b743f592e48fdab0d680957ef4ffef563d374b319e7d99ecac7cd0",
+-      "currentSHA256": "f9181d0c54b743f592e48fdab0d680957ef4ffef563d374b319e7d99ecac7cd0",
++      "source029SHA256": "f9181d0c54b743f592e48fdab0d680957ef4ffef563d374b319e7d99ecac7cd0",
++      "source031SHA256": "f9181d0c54b743f592e48fdab0d680957ef4ffef563d374b319e7d99ecac7cd0",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/local-provider.ts",
+-      "oldSHA256": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca",
+-      "currentSHA256": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca",
++      "source029SHA256": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca",
++      "source031SHA256": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/policy.ts",
+-      "oldSHA256": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8",
+-      "currentSHA256": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8",
++      "source029SHA256": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8",
++      "source031SHA256": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/service.ts",
+-      "oldSHA256": "ac443098db55ad545a7d10e8d8e0c6bf7dd103abfb5ee33a5ea50c12ac1c5ea0",
+-      "currentSHA256": "ac443098db55ad545a7d10e8d8e0c6bf7dd103abfb5ee33a5ea50c12ac1c5ea0",
++      "source029SHA256": "ac443098db55ad545a7d10e8d8e0c6bf7dd103abfb5ee33a5ea50c12ac1c5ea0",
++      "source031SHA256": "ac443098db55ad545a7d10e8d8e0c6bf7dd103abfb5ee33a5ea50c12ac1c5ea0",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/stdio-provider.ts",
+-      "oldSHA256": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798",
+-      "currentSHA256": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798",
++      "source029SHA256": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798",
++      "source031SHA256": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/ui-document.ts",
+-      "oldSHA256": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
+-      "currentSHA256": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
++      "source029SHA256": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
++      "source031SHA256": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/main/core/files/mcp/ui-view.ts",
+-      "oldSHA256": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
+-      "currentSHA256": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
++      "source029SHA256": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
++      "source031SHA256": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/html/preview.tsx",
+-      "oldSHA256": "66551804709343fcb0d532a657af0c4f02778c7bae78eb461faf4560eb530b3c",
+-      "currentSHA256": "66551804709343fcb0d532a657af0c4f02778c7bae78eb461faf4560eb530b3c",
++      "source029SHA256": "66551804709343fcb0d532a657af0c4f02778c7bae78eb461faf4560eb530b3c",
++      "source031SHA256": "66551804709343fcb0d532a657af0c4f02778c7bae78eb461faf4560eb530b3c",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/html/style.css",
+-      "oldSHA256": "a41bc93105ec09d7dc0ec6368460cd63291f90d3e8b530b075e85b4eb587908f",
+-      "currentSHA256": "a41bc93105ec09d7dc0ec6368460cd63291f90d3e8b530b075e85b4eb587908f",
++      "source029SHA256": "a41bc93105ec09d7dc0ec6368460cd63291f90d3e8b530b075e85b4eb587908f",
++      "source031SHA256": "a41bc93105ec09d7dc0ec6368460cd63291f90d3e8b530b075e85b4eb587908f",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/mcp/apps.tsx",
+-      "oldSHA256": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
+-      "currentSHA256": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
++      "source029SHA256": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
++      "source031SHA256": "baec209f945b2b347f3c3937730beb4dff5e2bda983096dc0f76fda59fa6146f",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/mcp/bridge.ts",
+-      "oldSHA256": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79",
+-      "currentSHA256": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79",
++      "source029SHA256": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79",
++      "source031SHA256": "0c1fffd88c0487b2913e89a5b416453f1b2f7f1e19204d09f5a85f3c04399d79",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/mcp/viewer.tsx",
+-      "oldSHA256": "a939952fd96d58bdac1b461137caf63e3d3152fab4af4be4645a001836e54882",
+-      "currentSHA256": "a939952fd96d58bdac1b461137caf63e3d3152fab4af4be4645a001836e54882",
++      "source029SHA256": "a939952fd96d58bdac1b461137caf63e3d3152fab4af4be4645a001836e54882",
++      "source031SHA256": "a939952fd96d58bdac1b461137caf63e3d3152fab4af4be4645a001836e54882",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/workspace-panel.tsx",
+-      "oldSHA256": "be21fa822b4eaa839a8d567a1657b886780fc4f067ff137a347a6835156a0196",
+-      "currentSHA256": "be21fa822b4eaa839a8d567a1657b886780fc4f067ff137a347a6835156a0196",
++      "source029SHA256": "be21fa822b4eaa839a8d567a1657b886780fc4f067ff137a347a6835156a0196",
++      "source031SHA256": "be21fa822b4eaa839a8d567a1657b886780fc4f067ff137a347a6835156a0196",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/workspace-store.ts",
+-      "oldSHA256": "f8c2f098100e07b64461c6dc918cebcd977e4ae13505755c56a853b04a7124da",
+-      "currentSHA256": "f8c2f098100e07b64461c6dc918cebcd977e4ae13505755c56a853b04a7124da",
++      "source029SHA256": "f8c2f098100e07b64461c6dc918cebcd977e4ae13505755c56a853b04a7124da",
++      "source031SHA256": "f8c2f098100e07b64461c6dc918cebcd977e4ae13505755c56a853b04a7124da",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     },
+     {
+       "path": "src/renderer/features/files/workspace-tree.tsx",
+-      "oldSHA256": "c595dc9d1cf28a5ba109409e477357522c2796f984c637afefc60bb8c4e96a22",
+-      "currentSHA256": "c595dc9d1cf28a5ba109409e477357522c2796f984c637afefc60bb8c4e96a22",
++      "source029SHA256": "c595dc9d1cf28a5ba109409e477357522c2796f984c637afefc60bb8c4e96a22",
++      "source031SHA256": "c595dc9d1cf28a5ba109409e477357522c2796f984c637afefc60bb8c4e96a22",
+       "sameBytes": true,
+       "oldMode": 420,
+       "currentMode": 420
+     }
+   ],
+-  "allRelevantBytesAndModesIdentical": true,
+-  "explicitProjectSelectionPrecondition": "This driver explicitly selects browser via API before task; does not test T091 new-project default selection or revoke-last-app behavior. App025 remains pin; no App026 claim.",
++  "all30OriginalRelevantBytesAndModesIdentical": true,
++  "changedGlobalUIAndPreconditions": [
++    {
++      "path": "src/renderer/m6.css",
++      "source029SHA256": "4c45d01c8143bee767d143a3dab1dda26f97acacaa68384d11a76235e1c2560c",
++      "source031SHA256": "c7a310e4baa2b979a5dd8e902e8eb0687c062f3221f806fae78e4bd8bd4aef48",
++      "sameBytes": false
++    },
++    {
++      "path": "src/renderer/views/task-chrome.tsx",
++      "source029SHA256": "4dde2a61d3b9a7ba35c52c38d746af5f3f6ef48291abf3db1fcd2b6af8f448af",
++      "source031SHA256": "3ddafd1be4d8ff133859d6115647692aa1f2e7f6808e61b50f61b8991e95a8ca",
++      "sameBytes": false
++    },
++    {
++      "path": "src/main/core/projects/project-service.ts",
++      "source029SHA256": "6d7aa36ac4d3ea6a0570ed17bbea404a18d5c19132aa6e893bb0815e2a78847d",
++      "source031SHA256": "db533370f423ef9b11a1fdc0dc7a9e8843bc763aaa85551db79cea4238e206f9",
++      "sameBytes": false
++    },
++    {
++      "path": "src/main/core/applications/selection-service.ts",
++      "source029SHA256": "5060089431f916160b790a1aed172126b6e45c3e1877dc2ae1999584622a1d12",
++      "source031SHA256": "f9d19c73cc56a01698454a602f559ed0a07fbceaa5a49809314f0df9fea8ce8f",
++      "sameBytes": false
++    }
++  ],
++  "headerLayoutNewModules": [
++    "src/shared/task-header-layout.mjs",
++    "src/shared/task-header-layout.d.mts"
++  ],
++  "rendererByteEqualityClaimed": false,
++  "explicitProjectSelectionPrecondition": "Original API prepares/adds/selects browser before tested UI; original select-if-disabled preserved. T091 default/last-selected CLI changes are outside tested T132 actions. Actual target is installedApp027.",
++  "currentAppARequired": true,
+   "RootChangingProductionSourcesNotRead": true,
+-  "dependencyBoundary": "Published immutable package bytes were copied into the new private dependency snapshot during preparation; no changing workspace production source used. Runtime graph uses only private snapshot files."
++  "dependencyBoundary": "23 packages1492 original files31links frozen privately; no live repo imports."
+ }
+--- App025/lease.template.json
++++ App027/lease.template.json
+@@ -1,8 +1,8 @@
+ {
+   "status": "pending-root-exclusive-resource-grant",
+   "coordinator": "root",
+-  "privateRoot": "/private/tmp/willyou-m12-t132-App025-A-003",
+-  "executable": "/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
++  "privateRoot": "/private/tmp/willyou-m12-t132-App027-A-001",
++  "executable": "/private/tmp/willyou-m12-app027-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+   "resources": [
+     "Native",
+     "UI",
+@@ -16,6 +16,6 @@
+   "notBefore": null,
+   "expiresAt": null,
+   "revoked": false,
+-  "scope": "Only original T132 A single browser/HTML/MCP coexistence flow, including private existing-M9 SDK fixture compiler/provider. No model/external network/daily data/activation/rearm.",
++  "scope": "Original T132 A six observations, private SDK compiler/provider under full lease; one existing-authorized exactPID initial activation with NativeDOM3s; no running refocus/rearm, model/external network/auth/daily data.",
+   "executionReadySHA256": "Root fills exact READY SHA"
+ }

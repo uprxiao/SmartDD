@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-07T01:32:49.581604+00:00",
+  "updatedAt": "2026-11-07T02:02:33.045064+00:00",
   "status": "S1门槛完成；S2-S6总目标active，已实现范围持续分层验收与缺陷复验",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T092732Z-s1a/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -193,7 +193,7 @@
     "technicalDesign": "V1.6",
     "authority": "测试用例.md仍是唯一正式结果账；本字段仅维护后续分组与调度",
     "runRecord": "并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
-    "currentGroup": "T132 App027 A001 actual t125 soleUI/Native; Root T080 complete104/121 archive; t092 T091 C2 offline+negative continuation",
+    "currentGroup": "T095 current fullAR static-format green→businessReady; T015 completeA fileprep",
     "groups": [
       {
         "id": "M12-P001",
@@ -4228,8 +4228,8 @@
       }
     ],
     "systemAutomationNote": "S层不等于全部需要用户：真实键盘/窗口检查优先使用已授权本机原生工具；剪贴板测试保留并恢复原内容；30分钟资源测试可在隔离实例自主执行。仅确需本人/设备/指定数据的子步骤后置。",
-    "updatedAt": "2026-11-07T01:32:49.581604+00:00",
-    "independentNext": "After T132 currentfullA, prioritize T091 actualnegative continuation and T095fullAR; no repeat of T080 or acceptedS6.",
+    "updatedAt": "2026-11-07T02:02:33.045064+00:00",
+    "independentNext": "Execute originalT095 fullA/R once reviewed; continue T015A; retain real system/device/ZenTao original gates",
     "pendingDecisions": [
       {
         "id": "M12-DOWNLOAD-PATH-CONTRACT",
@@ -4274,7 +4274,7 @@
       "source": "source031",
       "sourceManifestSha256": "bf3af451b853283bdbc229cbf46bbff041bd644db850d8db3f82b6ac7348f293",
       "sourceBaseCommit": "b94f3c5cee2ecbc2191f13eaab0761a147ed3e1b",
-      "implementationCommit": null,
+      "implementationCommit": "d64dfc0c5c923f6f0f02e48e64520067365700e5",
       "implementationState": "Frozen source031 matches current implementation; local checkpoint pending, do not use prior31ada as fullheader implementation",
       "status": "Currentlocalarm64 officialbuild/native6/fullpayload/privateinstall/stockCLI3+8judgeverified;original remaining actualUI/R stillpending; nox64/notarization/release",
       "appPath": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app",
@@ -4369,19 +4369,20 @@
       "pendingPlatform": "Originalx64/dualdisplay/Keychain/realZentao hostentry remain"
     },
     "lastCompletedBatch": {
-      "at": "2026-11-07T01:32:49.581604+00:00",
-      "originalCases": [
-        "M12-T080"
+      "at": "2026-11-07T02:02:33.045064+00:00",
+      "cases": [
+        "M12-T080",
+        "M12-T091",
+        "M12-T132"
       ],
-      "newCompleteUniqueCases": 1,
-      "currentOriginalCounts": {
-        "通过": 104,
-        "待执行": 10,
-        "部分通过": 7
+      "newCompleteUniqueCases": 3,
+      "counts": {
+        "通过": 106,
+        "待执行": 9,
+        "部分通过": 6
       },
-      "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T080/coordinator-final-003/manifest.json",
-      "noBusinessRerunForJudgeCorrection": true,
-      "S6CurrentCandidateRegressionNoNewCount": true
+      "candidate": "App027/source031",
+      "noBusinessReplayForJudgeCorrections": true
     },
     "preparedNextOriginalCases": [
       {
@@ -4587,6 +4588,6 @@
       "closeObserver": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/close-observer-probe-001/manifest.json",
       "formalIncrement": 0
     },
-    "currentAuthoritySHA256": "572290fdf3010c6f25cf1561a2934577729df6eaa7729f46a77388af8be2bfb6"
+    "currentAuthoritySHA256": "4be466ab5a0491dce5cbf17170b57ae71d1752d45d970523744d14672fcf9097"
   }
 }
