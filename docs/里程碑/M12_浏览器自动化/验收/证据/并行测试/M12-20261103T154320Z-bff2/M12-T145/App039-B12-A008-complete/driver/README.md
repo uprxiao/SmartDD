@@ -1,0 +1,1 @@
+T145 App039 A008原4个1440组合B12-only续接。原57×8=456不变；本轮4A待执行，其1920所选4仍缺，A007另16按Root有限CSS适用性组合而不重跑/注入本raw。P依据为本轮source046 P8中四1440原图。代码只裁无关4状态及身份，原guard/真实UI/TaskPTY/nativepark/close/restore/normalcleanup保持。只读profileGeometry先落盘再判所有row action在content/body/dialog/browser/column内、无横向overflow、wide26与Clone同行。Rootstatic/Native lease前不执行，视觉七标准仍须原图独立审核。
