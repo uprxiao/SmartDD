@@ -1,0 +1,16 @@
+import json,hashlib
+from pathlib import Path
+R=Path(__file__).resolve().parent
+r=json.loads((R/'raw.json').read_text());c=json.loads((R/'cleanup.json').read_text());p=r.get('phases',[])
+by={x['id']:x for x in p};external=lambda x:x.get('state')=='external-dispatch-and-user-target-confirmed'
+criteria={
+ 'F25-ten-original-states-and-legal-actions-reused':json.loads((R/'original-evidence-and-scope.json').read_text())['priorF25']['allTenActionsAndStatesComplete'] is True,
+ 'F01-html-pdf-directory-received':all(external(by.get('f01-'+n,{})) for n in ['valid.html','valid.pdf','directory']),
+ 'F01-three-current-exact-user-target-receipts':all(by.get('f01-'+n,{}).get('userReceipt',{}).get('exactTarget') is True for n in ['valid.html','valid.pdf','directory']),
+ 'F25-one-positive-native-savecopy-original-bytes':by.get('f25-positive-savecopy',{}).get('state')=='positive-savecopy-complete',
+ 'all-source-identities-unchanged':r.get('finalSourceProtection',{}).get('protectedFieldsUnchanged') is True and all(x.get('sourceUnchanged') for x in p if x.get('state') not in ['deferred-user']),
+ 'no-automatic-input-after-handoff-or-clipboard':r.get('automaticInputsAfterHumanHandoff')==0 and r.get('directClipboardAPIs')==0,
+ 'actual-app-normal-exit':r.get('appCleanup',{}).get('normalExitConfirmed') is True and r.get('appExit',{}).get('code')==0 and r.get('appExit',{}).get('signal') is None and not r.get('observedProcess',{}).get('signals'),
+ 'exact-resources-all-clear':c.get('allClear') is True}
+out={'scope':'Only new actual external and NativeSaveDialog subbranches; original F01 viewer6/F25 ten-state23matrix/U evidence must be independently combined by Root; not wholeT130','rawSHA256':hashlib.sha256((R/'raw.json').read_bytes()).hexdigest(),'criteria':criteria,'passed':all(criteria.values()),'ctimeChanges':r.get('finalSourceProtection',{}).get('ctimeChanges',[]),'MDActualAndExistingICombineByRootOnly':True,'formatErrorDoesNotClaimDecoding':True,'formalIncrement':0}
+(R/'judgement.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n');print(json.dumps(out,ensure_ascii=False))
