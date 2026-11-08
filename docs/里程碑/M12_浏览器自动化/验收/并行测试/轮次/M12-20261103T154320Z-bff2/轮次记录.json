@@ -1,21 +1,21 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-08T01:08:43.558085+00:00",
+  "updatedAt": "2026-11-08T01:27:47.202959+00:00",
   "status": "active;App036/source040 arm64S6complete; originalremaining scopes/prerequisites retained",
   "coordinator": "/root",
   "agents": [
     {
       "agent": "/root/t092_upgrade_prep",
-      "role": "file-only test evidence executor",
-      "group": "App036S6safeprojection",
-      "status": "completed/idle;resources0"
+      "role": "file-only evidence executor",
+      "group": "T146 software/build and App037 A safe projection",
+      "status": "completed/resources0"
     },
     {
       "agent": "/root/t125_resume_ready",
-      "role": "file-only test evidence executor",
-      "group": "App036viewer-menu partialsafeprojection",
-      "status": "completed/idle;resources0"
+      "role": "file-only test preparation",
+      "group": "App037 original S6 clone preparation",
+      "status": "preparing/no resources allocated/no App or Native execution"
     }
   ],
   "branch": "feature/0.1.1",
@@ -24,7 +24,7 @@
   "requirements": "需求R1.6",
   "technicalDesign": "技术方案V1.6",
   "plan": "../../../S1执行计划.json#continuation",
-  "currentGroup": "T009/T024/T133 complete; resources released",
+  "currentGroup": "T146 complete/released; App037 S6 file-only preparation, not execution",
   "resources": {
     "build": {
       "status": "complete/released",
@@ -76,11 +76,12 @@
       "formalIncrement": 0
     },
     "nativeUi": {
+      "status": "complete/released",
       "owner": "/root",
       "coordinator": "root",
-      "status": "released/actual-human-negative",
-      "privateRoot": "/private/tmp/willyou-m12-t146-App036-human-003",
-      "scope": "T146003 samebusiness; prompt only after actual hover; hold window until immediate useranswer then normalcleanup.002 humanforgot remainsunknown",
+      "readySHA256": "6fe3fce871f2d6122dd5c230d8fc5d33263c1c50b8cecbfbda7edc412feacb03",
+      "notBefore": "2026-11-08T01:22:20.333570+00:00",
+      "expiresAt": "2026-11-08T01:31:20.333570+00:00",
       "resources": [
         "Native",
         "UI",
@@ -91,18 +92,18 @@
         "Unix",
         "OS"
       ],
-      "notBefore": "2026-11-08T00:44:20.528104+00:00",
-      "readySHA256": "b507acfc79a3774447179dcbb2f8e5457582caee69c6115af511a658b034dc7c",
-      "expiresAt": "2026-11-08T01:05:01.821087+00:00",
-      "releasedAt": "2026-11-08T01:08:43.558085+00:00",
-      "normalExit": true,
+      "scope": "App037 original T146 controlled hover UI and native view lifecycle regression",
+      "privateRoot": "/private/tmp/willyou-m12-t146-App037-A003",
+      "releasedAt": "2026-11-08T01:25:01.463526+00:00",
+      "actualSession": 6987,
       "cleanup": {
         "allClear": true,
         "PID": 12,
         "TCP": 4,
         "Unix": 2,
         "helper": 1
-      }
+      },
+      "normalExit": true
     },
     "lightSoftware": {
       "owner": "/root",
@@ -2806,6 +2807,82 @@
       "cleanup": {
         "allClear": true
       }
+    },
+    "nativeUiPreviousT146003": {
+      "owner": "/root",
+      "coordinator": "root",
+      "status": "released/actual-human-negative",
+      "privateRoot": "/private/tmp/willyou-m12-t146-App036-human-003",
+      "scope": "T146003 samebusiness; prompt only after actual hover; hold window until immediate useranswer then normalcleanup.002 humanforgot remainsunknown",
+      "resources": [
+        "Native",
+        "UI",
+        "App",
+        "PTY",
+        "HTTP",
+        "TCP",
+        "Unix",
+        "OS"
+      ],
+      "notBefore": "2026-11-08T00:44:20.528104+00:00",
+      "readySHA256": "b507acfc79a3774447179dcbb2f8e5457582caee69c6115af511a658b034dc7c",
+      "expiresAt": "2026-11-08T01:05:01.821087+00:00",
+      "releasedAt": "2026-11-08T01:08:43.558085+00:00",
+      "normalExit": true,
+      "cleanup": {
+        "allClear": true,
+        "PID": 12,
+        "TCP": 4,
+        "Unix": 2,
+        "helper": 1
+      }
+    },
+    "nativeUiPreviousT146App037001": {
+      "status": "released/pre-App localhost EPERM",
+      "owner": "/root",
+      "coordinator": "root",
+      "readySHA256": "ac6cd9a43a4af3e8b818d3261bd723a71bb25093b6eb6e0b0ca619ac797b9b8e",
+      "notBefore": "2026-11-08T01:20:35.424962+00:00",
+      "expiresAt": "2026-11-08T01:29:35.424962+00:00",
+      "resources": [
+        "Native",
+        "UI",
+        "App",
+        "PTY",
+        "HTTP",
+        "TCP",
+        "Unix",
+        "OS"
+      ],
+      "scope": "App037 original T146 controlled hover UI and native view lifecycle regression",
+      "privateRoot": "/private/tmp/willyou-m12-t146-App037-A001"
+    },
+    "nativeUiPreviousT146App037002": {
+      "status": "released/pre-activation whitelist driver error",
+      "owner": "/root",
+      "coordinator": "root",
+      "readySHA256": "b805ecd3caff6d5860ede2e9e78c6a1633a72999948acba83a2fdd5e40b57b48",
+      "notBefore": "2026-11-08T01:21:05.540215+00:00",
+      "expiresAt": "2026-11-08T01:30:05.540215+00:00",
+      "resources": [
+        "Native",
+        "UI",
+        "App",
+        "PTY",
+        "HTTP",
+        "TCP",
+        "Unix",
+        "OS"
+      ],
+      "scope": "App037 original T146 controlled hover UI and native view lifecycle regression",
+      "privateRoot": "/private/tmp/willyou-m12-t146-App037-A002",
+      "cleanup": {
+        "allClear": true,
+        "PID": 8,
+        "TCP": 3,
+        "Unix": 2
+      },
+      "appNormalExit": true
     }
   },
   "groups": [
@@ -6839,7 +6916,7 @@
       "finishedAt": "2026-11-05T08:23:38.691745+00:00"
     }
   ],
-  "next": "先完成 M12-FILE-VIEWER-TITLE-PRIORITY 新源040/App036官方构建、最小受影响实际菜单验证及S6当前包验证。当前已验候选App035/source039保留；新接口补丁90唯一U/I和双TS已绿，未宣称新包A。原批准来源复核已收口F03/F04/F29现行适用检查，具体未落地A条件未触发；其余原9组仍保原范围，F01无豁免。红框5与夜间已后置分支不重放，用户/设备前置集中醒后。",
+  "next": "App037现有安装S6自动组；T109原系统窗口观察，T130原外开/副本/语音/复制缺项。T146已通过不重跑；用户延后五项维持。",
   "countAuthority": "验收/测试用例.md；本记录不另维护通过率",
   "implementationCheckpoint": {
     "commit": "70a54dcb0e45944cfa1551e370fb76ae75f737f6",
@@ -6875,17 +6952,16 @@
     }
   ],
   "candidateBaseline": {
-    "name": "App035/source039",
-    "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
-    "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
-    "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
-    "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
-    "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
-    "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
-    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
-    "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
-    "formalIncrement": 0,
-    "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
+    "name": "App037/source044",
+    "app": "/private/tmp/willyou-m12-s2-package-037/mac-arm64/WillYou.app",
+    "installedApp": null,
+    "sourceManifest": "/private/tmp/willyou-m12-tab-tooltip-source-044/source-inputs.json",
+    "sourceSHA256": "8043ded1ca880410f64d8acd243d17191069abd82452f4635ddf0afaa198001b",
+    "asarSHA256": "d3e1803a0fdc6af2fb79dea4f34906d9155b27a445540a1a056b2b6781a9a21d",
+    "executableSHA256": "cecb6dc7a8a21f5cc13a76348a3b580e6b56d854004b827a283751e9a78ff49e",
+    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-tooltip-software-App037-build-001/manifest.json",
+    "status": "official arm64 directory/native6 and original T146 A passed; installed S6 pending; no fullM12/x64/publish",
+    "formalIncrement": 0
   },
   "nextExecution": "Remaining original T130 F01 actual external/F25/P09/D23; no running test processes. Original redbox/hardware/system prerequisites unchanged.",
   "nextPackageCandidate": {
@@ -8049,7 +8125,7 @@
     "actualToolChunk": "fe62ee",
     "actualToolExitCode": 0
   },
-  "currentAuthoritySHA256": "81a7040224b68d7242e1dffa99a38479789af134fcdb330bc84f522140c0f7b6",
+  "currentAuthoritySHA256": "7776f6ee1e77a803f8826265b7541e1ec9f54a0ed2d503411c0e3b51a797cb6f",
   "T130F12NativeI": {
     "root": "/private/tmp/willyou-m12-t130-F12-native-prep-001",
     "readySHA256": "2eddccc7beb5b76af46e01d76ac3edd3832a70a0ada0e9774c770f52a6f79132",
@@ -10730,5 +10806,87 @@
       "helper": 1
     },
     "next": "Narrow source/event diagnosis before any production fix; no repeated user operation or new capture driver"
+  },
+  "T146TooltipRepair041": {
+    "at": "2026-11-08T01:13:53.328073+00:00",
+    "status": "software043 complete; build044/037 granted",
+    "owner": "/root",
+    "sourceManifest": "/private/tmp/willyou-m12-tab-tooltip-source-044/source-inputs.json",
+    "manifestSHA256": "8043ded1ca880410f64d8acd243d17191069abd82452f4635ddf0afaa198001b",
+    "cache": "/private/tmp/willyou-m12-tab-tooltip-source-041/cache",
+    "resources": "root exclusive test native module; no App/OS/foreground/clipboard",
+    "scope": "T146 selectable tooltip + owned parking lifecycle; no whole-case pass",
+    "next": "software, prototype regression, web/node typecheck; then one shared build and actual A",
+    "software": {
+      "testFiles": 14,
+      "tests": 73,
+      "prototypeM9": 297,
+      "nodeWebTypes": true,
+      "old041RaceRedRetained": true,
+      "wholeCasePassed": false
+    }
+  },
+  "App037OfficialBuild001": {
+    "status": "failed/released",
+    "coordinator": "root",
+    "owner": "/root",
+    "sourceManifestSHA256": "8043ded1ca880410f64d8acd243d17191069abd82452f4635ddf0afaa198001b",
+    "notBefore": "2026-11-08T01:17:29.893827+00:00",
+    "expiresAt": "2026-11-08T01:32:29.893827+00:00",
+    "resources": [
+      "build",
+      "Native",
+      "ElectronNode"
+    ],
+    "scope": "one official arm64 App037 directory; no App GUI/model/general",
+    "privateRoot": "/private/tmp/willyou-m12-tab-tooltip-App037-build-001",
+    "runnerSHA256": "3795602648c560f40770a37a2c5bc914648206821ab21070cf09833207781b79",
+    "reason": "Sandbox signature service: original vendor codesign failed in sandbox and passed unchanged outside; original result retained"
+  },
+  "App037OfficialBuild002": {
+    "status": "complete/released",
+    "privateRoot": "/private/tmp/willyou-m12-tab-tooltip-App037-build-002",
+    "scope": "actual official directory0/native6, source3691 before/after same; no installedS6/fullcase yet",
+    "actualSession": 18479
+  },
+  "latestT146Complete": {
+    "at": "2026-11-08T01:25:01.463526+00:00",
+    "case": "M12-T146",
+    "formalIncrement": 1,
+    "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-App037-current-A001-003/manifest.json",
+    "softwareBuildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P075/T146-tooltip-software-App037-build-001/manifest.json",
+    "source": "source044/App037 official directory",
+    "actual": "A003 actual UI + Root9judge/2PNG review; no OS-native popup positive claim",
+    "remainingBoundary": "App037 installed S6 pending; T083/T110/T127/T141/T145 stay user deferred; T109 system and T130 original outstanding",
+    "software": {
+      "uniqueLatestTests": 73,
+      "prototypeModels": 297,
+      "nodeWebTypes": true
+    },
+    "builds": {
+      "001": "sandbox signature red retained",
+      "002": "official0/native6 green55.907sec"
+    },
+    "AppAttempts": {
+      "001": "localhost listen EPERM pre-App",
+      "002": "preactivation old path whitelist driver red, normalexit,8PID3TCP2Unixclear",
+      "003": "five UI checks and9 independent judgement green, normalexit12PID4TCP2Unix/helperclear"
+    },
+    "manifestSHA256": "fb1c51a2e54a236ddcab66014ca55bf75cb9bc396ba48745f0ebbf6c3d61821c",
+    "softwareBuildManifestSHA256": "285e275c28e94d6bf9b7b14a2e0d1e96fe15d018ee4bd5e4ca4d550970375f77"
+  },
+  "currentTechnicalDesign": "V1.7",
+  "candidateBaselinePreviousApp035": {
+    "name": "App035/source039",
+    "app": "/private/tmp/willyou-m12-s2-package-035/mac-arm64/WillYou.app",
+    "installedApp": "/private/tmp/willyou-m12-app035-installer-002/Installed Applications/WillYou.app",
+    "sourceManifest": "/private/tmp/willyou-m12-browser-code-style-source-039/source-inputs.json",
+    "sourceSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
+    "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
+    "executableSHA256": "a636e54e30e652d64c834df7b87f22d9f471f4f7103e9b1185bfb56708bd3fc4",
+    "buildEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P144/App035-official-build-001/manifest.json",
+    "status": "arm64 private installer/payload/native6/3managed stock CLI/startup8/8 passed;current host UI A006 focus-yield 0captures;not fullM12/x64/publish",
+    "formalIncrement": 0,
+    "installerEvidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app035-installer-002/manifest.json"
   }
 }

@@ -31,7 +31,7 @@ export class BrowserWorkspace {
   private readonly finds=new Map<string,{requestId:number;active:number;total:number}>();
   private readonly agentActive=new Map<string,string>();
   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
-  private readonly overlays=new Set<string>();
+  private readonly overlays=new Map<string,Set<string>>();
   private reconciling?:Promise<void>;
   constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};javascriptDialog?:(taskId:string,pageId:string)=>BrowserJavascriptDialog|null;downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
     this.unobserve=options.pages.observe(event=>{
@@ -142,17 +142,20 @@ export class BrowserWorkspace {
     const tab=this.load(taskId).tabs.find(t=>t.id===id);if(!tab||tab.url===BROWSER_BLANK_URL||this.runtime.get(id)?.failure||this.options.profileState?.(tab.profileId)!==undefined&&this.options.profileState(tab.profileId)!=='ready')return;
     const page=await this.ensure(taskId,id);if(this.shuttingDown||version!==this.placementVersion||this.overlays.has(id))return;await this.options.pages.placement(taskId,page.id,rect);
   }
-  async overlay(taskId:string,id:string,open:boolean,capture=true):Promise<string|null>{
+  async overlay(taskId:string,id:string,open:boolean,capture=true,owner='surface'):Promise<string|null>{
     if(!this.load(taskId).tabs.some(tab=>tab.id===id))throw new BrowserError('BROWSER_TAB_NOT_FOUND','网页标签已关闭');
-    if(!open){this.overlays.delete(id);return null;}
-    this.overlays.add(id);this.placementVersion++;const page=this.options.pages.list(taskId).find(page=>page.id===id);if(!page)return null;
-    // A JavaScript dialog can block renderer capture. Park the native view
-    // first and show the trusted reply surface without waiting for pixels.
+    const release=()=>{const owners=this.overlays.get(id);owners?.delete(owner);if(!owners?.size)this.overlays.delete(id);};
+    if(!open){release();return null;}
+    const owners=this.overlays.get(id)??new Set<string>();owners.add(owner);this.overlays.set(id,owners);
+    this.placementVersion++;const page=this.options.pages.list(taskId).find(page=>page.id===id);if(!page)return null;
+    // Each independently dismissed surface releases only its own parking hold.
+    // A cancelled capture must not park a page after its caller has gone away.
     if(!capture){await this.placement(taskId,id,null);return null;}
     try{
       const image=await page.contents.capturePage(),size=image.getSize(),thumbnail=size.width>1920?image.resize({width:1920}):image;
+      if(!this.overlays.get(id)?.has(owner))return null;
       await this.placement(taskId,id,null);return'data:image/jpeg;base64,'+thumbnail.toJPEG(80).toString('base64');
-    }catch(error){this.overlays.delete(id);throw error;}
+    }catch(error){release();throw error;}
   }
   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
     this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}this.options.available?.(page.profileId);const wc=page.contents;

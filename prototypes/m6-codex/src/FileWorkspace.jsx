@@ -1,3 +1,4 @@
+import { useTreePathTooltip } from '../../../src/renderer/features/files/tree-path-tooltip';
 import { breadcrumbSelectionText } from '../../../src/shared/file-breadcrumb-copy.mjs';
 import { FileEditorStatus } from '../../../src/shared/file-editor-status';
 import { ReviewTextModel } from '../../../src/renderer/features/files/review-text/model.mjs';
@@ -290,6 +291,7 @@ function LocalFileWorkspace({
   // M12 (optional): web tabs share this strip. Omitted props keep M9 behaviour unchanged.
   webTabs = [], webActiveId = null, onWebSelect, onWebClose, onWebNew, webView
 }) {
+  const webTip=useTreePathTooltip(JSON.stringify([task.id,webActiveId,webTabs.map(tab=>[tab.id,tab.title,tab.url])]));
   const officeResources=useRef(new Map());
   const registerOfficeResource=(root,path,resource)=>{const key=fileKey(root,path);if(!resource){officeResources.current.delete(key);return;}officeResources.current.set(key,resource);return()=>{if(officeResources.current.get(key)===resource)officeResources.current.delete(key);};};
   const [store, setStore] = useState(load),
@@ -979,6 +981,7 @@ function LocalFileWorkspace({
     locateFind((currentFind+delta+findResults.matches.length)%findResults.matches.length);
   }
   return <aside ref={host} className={'file-workspace ' + (full ? 'fw-full' : '') + (dock === 'bottom' ? ' fw-bottom' : '')} aria-label="M9 文件工作区原型" onKeyDown={keys} onKeyUpCapture={captureReading} onPointerDownCapture={e=>{captureReading();pointerRef.current={x:e.clientX,y:e.clientY,time:performance.now()};}}>
+  <div className="bw-tab-tooltip">{webTip.element}</div>
   <div className="fw-tabs" role="tablist" aria-label="文件标签" onKeyDown={e=>{if(imeComposing(e)||!e.target.matches('[role=tab]'))return;const tabs=[...e.currentTarget.querySelectorAll('[role=tab]')],i=tabs.indexOf(e.target);if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next]?.click();tabs[next]?.focus();}}}>{state.tabs.map(t => {
         const key = fileKey(t.root, t.path);
         return <div key={key} className={'fw-tab ' + (key === state.active && !webActiveId ? 'selected ' : '') + (t.preview ? 'preview' : '')} draggable onDragStart={e => { dragged.current = key; e.dataTransfer.setData('application/x-willyou-prototype-tab', key); dragFile(e, t.root, t.path, true); }} onDragEnd={finishFileDrag} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); reorder(key); }} onContextMenu={e => {
@@ -996,7 +999,7 @@ function LocalFileWorkspace({
             }));
             setRich(null);
           }} onDoubleClick={() => open(t.path, true, t.root)} title={roots.find(r => r.id === t.root)?.path + '/' + t.path}><Icon file={t.path} /><span>{key===state.active&&rich?'格式演示 · '+rich.toUpperCase():t.path.split('/').pop()}</span>{state.drafts[key] && <span className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={'关闭 ' + t.path} onMouseDown={event => { if (event.button === 0) event.preventDefault(); }} onClick={event => close(key, event.currentTarget)}><X size={14} /></button></div>;
-      })}{webTabs.map(w => <div key={w.id} className={'fw-tab fw-web-tab ' + (w.id === webActiveId ? 'selected' : '')}><button role="tab" tabIndex={w.id === webActiveId ? 0 : -1} aria-selected={w.id === webActiveId} title={[w.title,w.url].filter(Boolean).join('\n')} onClick={() => onWebSelect?.(w.id)}><WebGlobe size={14} strokeWidth={1.7} /><span>{w.title}</span>{w.marked && <span className={'bw-tab-agent' + (w.paused ? ' paused' : '')} aria-label={w.paused ? 'Agent 已暂停' : 'Agent 正在操作'} />}</button><button className="fw-tab-close" aria-label={'关闭网页 ' + w.title} onMouseDown={event => { if (event.button === 0) event.preventDefault(); }} onClick={() => onWebClose?.(w.id)}><X size={14} /></button></div>)}<Button icon={Plus} label="查找并打开文件" onClick={() => {
+      })}{webTabs.map(w => <div key={w.id} className={'fw-tab fw-web-tab ' + (w.id === webActiveId ? 'selected' : '')}><button role="tab" tabIndex={w.id === webActiveId ? 0 : -1} aria-selected={w.id === webActiveId} {...webTip.bind([w.title||'新标签页',w.url].filter(Boolean).join('\n'))} onClick={() => onWebSelect?.(w.id)}><WebGlobe size={14} strokeWidth={1.7} /><span>{w.title}</span>{w.marked && <span className={'bw-tab-agent' + (w.paused ? ' paused' : '')} aria-label={w.paused ? 'Agent 已暂停' : 'Agent 正在操作'} />}</button><button className="fw-tab-close" aria-label={'关闭网页 ' + w.title} onMouseDown={event => { if (event.button === 0) event.preventDefault(); }} onClick={() => onWebClose?.(w.id)}><X size={14} /></button></div>)}<Button icon={Plus} label="查找并打开文件" onClick={() => {
         onWebSelect?.(null);
         set(s => ({
           ...s,

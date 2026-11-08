@@ -1,0 +1,13 @@
+--- source042/src/renderer/features/browser/workspace.tsx
++++ source043/src/renderer/features/browser/workspace.tsx
+@@ -53,8 +53,8 @@
+   useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,event=>{if(event.taskId===taskId)void store.refresh();});},[store,taskId]);
+   const titleTip=useTreePathTooltip(JSON.stringify([taskId,state?.activeId,state?.tabs.map(tab=>[tab.id,tab.title,tab.url])]));
+   const titleTooltip:BrowserTabTooltip|null=titleTip.target?{target:titleTip.target,element:titleTip.element,dismiss:titleTip.dismiss}:null;
+-  const web={tabTooltip:titleTip.bind,tabs:state?.tabs??[],activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
+-  return <><FileWorkspacePanel scope={{kind:'task',taskId}} onClose={onClose} web={web}/>{!state?.activeId&&titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>}</>;
++  const web={tabTooltip:titleTip.bind,inactiveTooltip:titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>,tabs:state?.tabs??[],activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
++  return <FileWorkspacePanel scope={{kind:'task',taskId}} onClose={onClose} web={web}/>;
+ }
+ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
+   const access=useSyncExternalStore(browserAccess.subscribe,browserAccess.snapshot),accessOpen=!!access.state.requests.length||access.grantsOpen,[accessReady,setAccessReady]=useState(false);

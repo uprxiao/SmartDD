@@ -23,7 +23,7 @@ export function createBrowserController(service:BrowserService|undefined,trusted
     reopen:(event,input:{taskId:string})=>ui(event).reopen(browserTaskInput.parse(input).taskId),
     find:(event,input:{taskId:string;tabId:string;text:string;forward:boolean;next:boolean})=>{const w=ui(event),v=browserTabInput.extend({text:z.string(),forward:z.boolean(),next:z.boolean()}).strict().parse(input);return w.find(v.taskId,v.tabId,v.text,v.forward,v.next);},
     external:(event,input:{taskId:string;id:string;allow:boolean})=>{const w=ui(event),v=browserTaskInput.extend({id:z.string().uuid(),allow:z.boolean()}).strict().parse(input);return w.confirmExternal(v.taskId,v.id,v.allow);},
-    overlay:(event,input:{taskId:string;tabId:string;open:boolean;capture?:boolean})=>{const w=ui(event),v=browserTabInput.extend({open:z.boolean(),capture:z.boolean().optional()}).strict().parse(input);return w.overlay(v.taskId,v.tabId,v.open,v.capture);},
+    overlay:(event,input:{taskId:string;tabId:string;open:boolean;capture?:boolean;owner?:string})=>{const w=ui(event),v=browserTabInput.extend({open:z.boolean(),capture:z.boolean().optional(),owner:z.string().min(1).max(128).optional()}).strict().parse(input);return w.overlay(v.taskId,v.tabId,v.open,v.capture,v.owner);},
     preferences:(event,input:{taskId:string})=>host(event).preferences(browserTaskInput.parse(input).taskId),
     settings:(event,input:{taskId:string;searchEngine?:'bing'|'google'|'duckduckgo'|'kagi';identity?:'clean'|'native'})=>{
       const s=host(event),v=browserTaskInput.extend({searchEngine:browserSettingsSchema.shape.searchEngine.optional(),identity:browserSettingsSchema.shape.identity.optional()}).strict().parse(input);s.workspace.snapshot(v.taskId);

@@ -1,7 +1,7 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import Database from 'better-sqlite3';
 import {BrowserWorkspace} from '../workspace';
-import {BrowserPageRegistry,browserProjectProfile} from '../page-registry';
+import {BrowserPageRegistry,browserProjectProfile,type BrowserPage} from '../page-registry';
 describe('browser workspace persistence and startup pages (software only)',()=>{
   const stores:Database.Database[]=[];
   afterEach(()=>{for(const db of stores.splice(0))db.close();});
@@ -44,4 +44,30 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
     const f=fixture(),id=savedPage(f),before=f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1');f.create.mockRejectedValue(new Error('Native allocation must not be reached'));
     await f.workspace.dispose();await expect(f.workspace.target('t1',id)).rejects.toMatchObject({code:'BROWSER_UNAVAILABLE'});expect(f.create).not.toHaveBeenCalled();expect(f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1')).toEqual(before);
   });
+  it('keeps a dialog parked when an independent tab tooltip closes',async()=>{
+    const f=fixture(),id=savedPage(f),image={getSize:()=>({width:800,height:600}),toJPEG:()=>Buffer.from('page')};
+    const page={id,contents:{capturePage:vi.fn().mockResolvedValue(image)}} as unknown as BrowserPage;
+    vi.spyOn(f.pages,'list').mockReturnValue([page]);const place=vi.spyOn(f.pages,'placement').mockResolvedValue();
+    try{
+      await f.workspace.overlay('t1',id,true,true,'tab-tooltip:1');await f.workspace.overlay('t1',id,true);
+      await f.workspace.overlay('t1',id,false,true,'tab-tooltip:1');place.mockClear();
+      await f.workspace.placement('t1',id,{x:1,y:1,width:800,height:600});expect(place).not.toHaveBeenCalled();
+      await f.workspace.overlay('t1',id,false);await f.workspace.placement('t1',id,{x:1,y:1,width:800,height:600});
+      expect(place).toHaveBeenCalledWith('t1',id,{x:1,y:1,width:800,height:600});
+    }finally{await f.workspace.dispose();}
+  });
+  it('does not park after an obsolete tooltip capture resolves, or release a dialog when capture fails',async()=>{
+    const f=fixture(),id=savedPage(f);let resolve!:(image:unknown)=>void,reject!:(error:Error)=>void;
+    const capturePage=vi.fn().mockImplementationOnce(()=>new Promise(r=>{resolve=r;})).mockImplementationOnce(()=>new Promise((_,r)=>{reject=r;}));
+    const page={id,contents:{capturePage}} as unknown as BrowserPage;
+    vi.spyOn(f.pages,'list').mockReturnValue([page]);const place=vi.spyOn(f.pages,'placement').mockResolvedValue();
+    try{
+      const cancelled=f.workspace.overlay('t1',id,true,true,'tab-tooltip:1');await f.workspace.overlay('t1',id,false,true,'tab-tooltip:1');
+      resolve({getSize:()=>({width:800,height:600}),toJPEG:()=>Buffer.from('page')});expect(await cancelled).toBeNull();expect(place).not.toHaveBeenCalled();
+      await f.workspace.overlay('t1',id,true,false);place.mockClear();
+      const failed=f.workspace.overlay('t1',id,true,true,'tab-tooltip:2');reject(new Error('capture failed'));await expect(failed).rejects.toThrow('capture failed');
+      await f.workspace.placement('t1',id,{x:1,y:1,width:800,height:600});expect(place).not.toHaveBeenCalled();
+    }finally{await f.workspace.dispose();}
+  });
+
 });

@@ -1,0 +1,19 @@
+--- source042/src/renderer/features/files/workspace-panel.tsx
++++ source043/src/renderer/features/files/workspace-panel.tsx
+@@ -45,7 +45,7 @@
+     if (event.button === 0 && preserveEditorFocus && document.activeElement?.closest('.cm-editor')) event.preventDefault();
+   }} onClick={onClick}>{children}</button>;
+ }
+-export interface WebWorkspaceExtension {tabs:{id:string;title:string;url:string;favicon:string|null;agentActive?:boolean}[];activeId:string|null;onSelect:(id:string)=>void;onFiles:()=>void;onClose:(id:string)=>void;onNew:()=>void;tabTooltip?:ReturnType<typeof useTreePathTooltip>['bind'];view:ReactNode}
++export interface WebWorkspaceExtension {tabs:{id:string;title:string;url:string;favicon:string|null;agentActive?:boolean}[];activeId:string|null;onSelect:(id:string)=>void;onFiles:()=>void;onClose:(id:string)=>void;onNew:()=>void;tabTooltip?:ReturnType<typeof useTreePathTooltip>['bind'];inactiveTooltip?:ReactNode;view:ReactNode}
+ export function FileWorkspacePanel({ scope, onClose,web }: { scope: FileScope; onClose: () => void;web?:WebWorkspaceExtension }) {
+   const key = fileScopeKey(scope), store = useMemo(() => fileWorkspaceFor(scope), [key]);
+   useSyncExternalStore(store.subscribe, store.snapshot);
+@@ -138,6 +138,7 @@
+       {web?.tabs.map(tab=><div key={tab.id} className={`fw-tab fw-web-tab ${tab.id===web.activeId?'selected':''}`}><button role="tab" aria-selected={tab.id===web.activeId} {...web.tabTooltip?.([tab.title||'新标签页',tab.url].filter(Boolean).join('\n'))} onClick={()=>web.onSelect(tab.id)}>{tab.favicon?<img className="bw-tab-icon" src={tab.favicon} alt=""/>:<Globe size={14}/>}<span>{tab.title||'新标签页'}</span>{tab.agentActive&&<i className="bw-agent-dot" aria-label="Agent 活动"/>}</button><button className="fw-tab-close" aria-label={`关闭网页 ${tab.title||'新标签页'}`} onClick={()=>web.onClose(tab.id)}><X size={13}/></button></div>)}
+       <Tool label="查找并打开文件" onClick={() => {web?.onFiles();setTreeVisible(true); requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus()); }}><Plus size={16} /></Tool>{web&&<Tool label="新建网页标签" onClick={web.onNew}><Plus size={16}/></Tool>}<span className="fw-push" /><Tool label={full ? '退出文件全屏' : '文件全屏'} onClick={() => setFull((value) => !value)}>{full ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</Tool><Tool label="隐藏文件区域" onClick={onClose}><PanelRight size={16} /></Tool>
+     </div>
++    {!web?.activeId&&web?.inactiveTooltip}
+     {web?.activeId&&web.view}
+     <div className="fw-file-main" hidden={Boolean(web?.activeId)}>
+     <div className="fw-toolbar">{buffer?.previewTitle != null ? <span className="fw-breadcrumb">{buffer.previewTitle}</span> : <FileBreadcrumb store={store} run={action} repository={fileGit.data?.state === 'ready' ? fileGit.data.repository : undefined} />}<div className="fw-tools">

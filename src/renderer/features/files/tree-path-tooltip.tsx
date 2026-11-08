@@ -3,7 +3,7 @@ import type { FocusEvent, PointerEvent } from 'react';
 
 const ignored = '.fw-git-state,input,textarea,[data-tooltip-ignore],[data-slot=context-menu-trigger] [role=menuitem]';
 const ignoredEvent = (event: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>) => event.nativeEvent.composedPath().some(target => target instanceof Element && target.closest(ignored));
-type Tooltip = { element: HTMLElement; path: string; x: number; y: number };
+type Tooltip = { model: unknown; element: HTMLElement; path: string; x: number; y: number };
 
 /** File paths belong to the tree model, not the browser's native title timer. */
 export function useTreePathTooltip(model: unknown) {
@@ -39,14 +39,16 @@ export function useTreePathTooltip(model: unknown) {
       timer.current = null;
       if (!element.isConnected || candidate.current !== element) return;
       const box = element.getBoundingClientRect();
-      setTooltip({ element, path, x: Math.max(8, Math.min(box.left, innerWidth - 328)), y: Math.max(8, Math.min(box.bottom + 5, innerHeight - 112)) });
+      setTooltip({ model, element, path, x: Math.max(8, Math.min(box.left, innerWidth - 328)), y: Math.max(8, Math.min(box.bottom + 5, innerHeight - 112)) });
     };
     if (keyboard) show(); else timer.current = setTimeout(show, 500);
   };
+  const current = tooltip?.model === model ? tooltip : null;
   return {
     dismiss,
+    target: current,
     bind: (path: string) => ({
-      'aria-describedby': tooltip?.path === path ? id : undefined,
+      'aria-describedby': current?.path === path ? id : undefined,
       onPointerEnter: (event: PointerEvent<HTMLElement>) => schedule(event, path),
       onPointerMove: (event: PointerEvent<HTMLElement>) => { if (event.buttons || event.pointerType === 'touch' || ignoredEvent(event)) dismiss(); },
       onPointerLeave: (event: PointerEvent<HTMLElement>) => { if (!inPopup(event.relatedTarget)) dismiss(); },
@@ -56,6 +58,6 @@ export function useTreePathTooltip(model: unknown) {
     }),
     // The transparent padding is hit-testable, so crossing the five-pixel
     // visual gap enters this popup instead of the next directory row.
-    element: tooltip && <div ref={popup} className="fw-path-tooltip-host" style={{ position: 'fixed', zIndex: 45, left: tooltip.x, top: tooltip.y - 5, paddingTop: 5, maxWidth: 320 }} onPointerLeave={dismiss} onBlur={event => { if (event.relatedTarget !== tooltip.element && !inPopup(event.relatedTarget)) dismiss(); }}><div id={id} className="fw-path-tooltip" role="tooltip" tabIndex={-1} style={{ position: 'relative' }}>{tooltip.path}</div></div>,
+    element: current && <div ref={popup} className="fw-path-tooltip-host" style={{ position: 'fixed', zIndex: 45, left: current.x, top: current.y - 5, paddingTop: 5, maxWidth: 320 }} onPointerLeave={dismiss} onBlur={event => { if (event.relatedTarget !== current.element && !inPopup(event.relatedTarget)) dismiss(); }}><div id={id} className="fw-path-tooltip" role="tooltip" tabIndex={-1} style={{ position: 'relative' }}>{current.path}</div></div>,
   };
 }
