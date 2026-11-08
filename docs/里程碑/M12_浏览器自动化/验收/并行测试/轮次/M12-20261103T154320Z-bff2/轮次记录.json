@@ -1,7 +1,7 @@
 {
   "runId": "M12-20261103T154320Z-bff2",
   "createdAt": "2026-11-03T15:43:20.637045+00:00",
-  "updatedAt": "2026-11-08T02:47:04.709718+00:00",
+  "updatedAt": "2026-11-08T03:00:19.266349+00:00",
   "status": "active;App036/source040 arm64S6complete; originalremaining scopes/prerequisites retained",
   "coordinator": "/root",
   "agents": [
@@ -28,52 +28,34 @@
   "resources": {
     "build": {
       "status": "complete/released",
-      "coordinator": "root",
       "owner": "/root",
-      "privateRoot": "/private/tmp/willyou-m12-app036-installer-001",
-      "scope": "App036 original installed startup07 then independent08 and originaljudge09",
+      "privateRoot": "/private/tmp/willyou-m12-app038-installer-001",
+      "readySHA256": "7038c84aef114cf93d22be3811cb1cc0237b57f4635abcd3139ac0c2eedb9108",
       "resources": [
-        "Native",
-        "App",
-        "PTY",
-        "OS",
-        "TCP/Unix"
+        "single heavy background build/native check",
+        "private filesystem",
+        "own disk mount"
       ],
-      "readySHA256": "7aed54423dd0c03d8496b4248bc5e8a601906e9f0d2d6a23b1cff9da089a646c",
-      "preparedSHA256": "8dd3c81ca4b7247780ac9838b9cd1c22ff17eae76d77bc28dbd3bae4e249a993",
-      "notBefore": "2026-11-07T19:38:11.358241+00:00",
-      "expiresAt": "2026-11-07T19:53:11.358241+00:00",
-      "sourceManifestSHA256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
-      "actualSession": 10421,
-      "actualTool": "1ce5e9",
-      "processes": {
-        "wrapperPid": 94651,
-        "firstChildPid": 94655
+      "scope": "Original02prepackagedDMG,03receiptcopy,04readonlyownmount/privateinstall,05native6,06bind actual installed pins; no UI automation/model/PTY/App launch. Root runs phases sequentially, current manual D23 owns all UI/clipboard. Phase07 App startup remains ungranted.",
+      "notBefore": "2026-11-08T02:53:20.749167+00:00",
+      "stage01AlreadyCompleted": true,
+      "actualSession": 65012,
+      "driverPid": 50139,
+      "builderPid": 50149,
+      "currentPhase": "Original01-06 actualcomplete;07App launch ungranted",
+      "phase02": {
+        "session": 85995,
+        "driverPid": 50139,
+        "builderPid": 50149,
+        "exit": 0,
+        "dmgBytes": 617154856,
+        "dmgSHA256": "d25bc289f275c651f2c0dfe9c6f58eca431571ea373e31bc811a97ef3c18e692"
       },
-      "rootActualPinReview": {
-        "at": "2026-11-07T19:38:11.357684+00:00",
-        "readySHA256": "7aed54423dd0c03d8496b4248bc5e8a601906e9f0d2d6a23b1cff9da089a646c",
-        "pinSHA256": "e5b54339fb0c7c77888db020457bdcd574314516f6a3bf78a136fe4488026b93",
-        "inputRowsVerified": 186,
-        "installedFiles": 20240,
-        "actualNative6": {
-          "version": "0.1.1",
-          "platform": "darwin",
-          "arch": "arm64",
-          "sqlite": "passed",
-          "pty": "passed",
-          "voiceBridge": "passed",
-          "fileBroker": "passed",
-          "officeRenderer": "passed",
-          "fileWatcher": "passed"
-        },
-        "scope": "Actual01-06green and new installed startupinputs/currentpins independently verified;07notyet run"
+      "phase03": {
+        "actualCopyExit": 0
       },
-      "actualStartupSession": 57311,
-      "actualStartupTool": "53e693",
-      "completedAt": "2026-11-07T19:40:10.606925+00:00",
-      "outcome": "Actual036original9stages/8judgegreen;20240payloadinputDMGinstalledidentical/actualnative6/3stockCLI; Appnormal0/null/noSignals; 12PID5TCP1Unix1helperclear8b2184; final8phasePIDs/0mount/0App0d8dab;196sizeentriesindependentlymatched122cb5",
-      "formalIncrement": 0
+      "completedAt": "2026-11-08T02:58:00.718567+00:00",
+      "outcome": "20240payloadidentical/native6green/176privatepins/7knownPID0mount0Appclear; actualinstalledstartup186pins bound and Rootverified"
     },
     "nativeUi": {
       "status": "granted",
@@ -96,7 +78,18 @@
         "driverPid": 44878,
         "appPid": 44880
       },
-      "currentStage": "dark:WAIT-USER-COPY-PASTE-CLEAR"
+      "currentStage": "dark:WAIT-USER-COPY-PASTE-CLEAR",
+      "currentStageResourceScope": {
+        "stage": "manual copy wait: passive CDP equality loop only",
+        "held": [
+          "UI focus",
+          "manual system clipboard",
+          "existing App44880/CDP"
+        ],
+        "heavyNativeWorker": false,
+        "initialActivationCompleted": true,
+        "noNewAutomaticInputWhileHumanResponseMissing": true
+      }
     },
     "lightSoftware": {
       "owner": "/root",
@@ -3120,6 +3113,73 @@
       "completedAt": "2026-11-08T02:36:14.921200+00:00",
       "outcome": "Light real user copy+TextEdit exact target/body and actual dispatch observed; original driver stopped at ctime-only fingerprint assertion. Normal0/null, independent5PID2TCP2Unix clear. Dark not run. Preserve original red; continue dark only.",
       "formalIncrement": 0
+    },
+    "buildPreviousApp036": {
+      "status": "complete/released",
+      "coordinator": "root",
+      "owner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-app036-installer-001",
+      "scope": "App036 original installed startup07 then independent08 and originaljudge09",
+      "resources": [
+        "Native",
+        "App",
+        "PTY",
+        "OS",
+        "TCP/Unix"
+      ],
+      "readySHA256": "7aed54423dd0c03d8496b4248bc5e8a601906e9f0d2d6a23b1cff9da089a646c",
+      "preparedSHA256": "8dd3c81ca4b7247780ac9838b9cd1c22ff17eae76d77bc28dbd3bae4e249a993",
+      "notBefore": "2026-11-07T19:38:11.358241+00:00",
+      "expiresAt": "2026-11-07T19:53:11.358241+00:00",
+      "sourceManifestSHA256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e",
+      "actualSession": 10421,
+      "actualTool": "1ce5e9",
+      "processes": {
+        "wrapperPid": 94651,
+        "firstChildPid": 94655
+      },
+      "rootActualPinReview": {
+        "at": "2026-11-07T19:38:11.357684+00:00",
+        "readySHA256": "7aed54423dd0c03d8496b4248bc5e8a601906e9f0d2d6a23b1cff9da089a646c",
+        "pinSHA256": "e5b54339fb0c7c77888db020457bdcd574314516f6a3bf78a136fe4488026b93",
+        "inputRowsVerified": 186,
+        "installedFiles": 20240,
+        "actualNative6": {
+          "version": "0.1.1",
+          "platform": "darwin",
+          "arch": "arm64",
+          "sqlite": "passed",
+          "pty": "passed",
+          "voiceBridge": "passed",
+          "fileBroker": "passed",
+          "officeRenderer": "passed",
+          "fileWatcher": "passed"
+        },
+        "scope": "Actual01-06green and new installed startupinputs/currentpins independently verified;07notyet run"
+      },
+      "actualStartupSession": 57311,
+      "actualStartupTool": "53e693",
+      "completedAt": "2026-11-07T19:40:10.606925+00:00",
+      "outcome": "Actual036original9stages/8judgegreen;20240payloadinputDMGinstalledidentical/actualnative6/3stockCLI; Appnormal0/null/noSignals; 12PID5TCP1Unix1helperclear8b2184; final8phasePIDs/0mount/0App0d8dab;196sizeentriesindependentlymatched122cb5",
+      "formalIncrement": 0
+    },
+    "buildPhase01App038": {
+      "status": "complete/released",
+      "owner": "/root",
+      "privateRoot": "/private/tmp/willyou-m12-app038-installer-001",
+      "scope": "Original phase01 only: cp own App/baseline/cache and verify176pins; code inspected, no Node/native/App/OS/window/network/mount invocation",
+      "resources": [
+        "private filesystem I/O"
+      ],
+      "notBefore": "2026-11-08T02:51:47.156744+00:00",
+      "noUIOrNativeLeaseTransferred": true,
+      "currentUIOwner": "root D23 dark004 manual wait",
+      "next": "Must stop after phase01; phase02 DMG/native still needs exclusive later lease",
+      "actualSession": 77081,
+      "driverPid": 49646,
+      "exitCode": 0,
+      "completedAt": "2026-11-08T02:52:12.630262+00:00",
+      "resultSHA256": "98cfc52d6cb8a041ce8d7eee329cc8bf358860e63728f930687524f446e147c3"
     }
   },
   "groups": [
@@ -8099,12 +8159,23 @@
     "pushMergeRelease": false
   },
   "latestGoalState": {
-    "at": "2026-11-06T15:05:31.146850+00:00",
-    "source": "user reset and get_goal actualactive",
-    "status": "active",
-    "userPauseRequested": false,
-    "userAuthorizationStillValid": true,
-    "previousUsageLimitResolved": true
+    "status": "waiting-current-live-manual-step; not complete",
+    "formalAuthority": "验收/测试用例.md",
+    "liveSession": 36691,
+    "appPid": 44880,
+    "stage": "dark:WAIT-USER-COPY-PASTE-CLEAR",
+    "pendingHumanReply": "Actual copy/paste confirmation, then physical clearing and external target confirmation",
+    "doNotRestartLiveHandle": true,
+    "deferredByUser": [
+      "T083",
+      "T110",
+      "T127",
+      "T141",
+      "T145"
+    ],
+    "autonomousCompletedThisBatch": "Actual App038 S6 01-06, independent payload/native/size and cleanup; no UI conflict",
+    "nextAfterUIRelease": "Original App038 startup07/cleanup08/judge09; T130 original four-stage F01/shared SaveCopy user batch already prepared",
+    "leaseExpiryHandling": "Before any next automated input, check original004 expiresAt. Do not extend loaded lease or rearm guard; if elapsed preserve exact copy observations/actual user reply and continue only with a fresh remaining-step lease, not a fabricated automatic result."
   },
   "T132RootStaticReview": {
     "inputs": 1550,
@@ -11277,5 +11348,53 @@
     "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/F25-original-scope-closeout-001/manifest.json",
     "formalIncrement": 0,
     "remaining": "D23 dark manual copy/external; F01 HTML/PDF/root actual external; shared positive saveDialog check separate"
+  },
+  "App038S6Prepared": {
+    "privateRoot": "/private/tmp/willyou-m12-app038-installer-001",
+    "status": "Root257frozenInputsVerified; original9stagesnotexecuted",
+    "readySHA256": "7038c84aef114cf93d22be3811cb1cc0237b57f4635abcd3139ac0c2eedb9108",
+    "sourceBaseline": "source045 only macOS park-window menu exclusion; App038 original candidate bytes",
+    "lease": "not granted; dark004 current live manual step owns UI/native resources",
+    "preparedInputs": 257,
+    "installedStartupFinalReady": false,
+    "firstSixCommand": "WILLYOU_P127_ROOT_LEASE=Root-App038-exclusive WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app038-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app038-installer-001/run-first-six.py",
+    "next": "After current native/UI resource release, original01-06 then actual installed-pin review before07; independent08cleanup and09judge; no production rebuild",
+    "formalIncrement": 0
+  },
+  "App038S6Phase01Actual": {
+    "status": "private-copy-complete; original02-09notrun",
+    "session": 77081,
+    "pid": 49646,
+    "exit": 0,
+    "privatePins": 176,
+    "logicalAppBytes": 1548940623,
+    "result": "/private/tmp/willyou-m12-app038-installer-001/evidence/private-copy-result.json",
+    "resultSHA256": "98cfc52d6cb8a041ce8d7eee329cc8bf358860e63728f930687524f446e147c3",
+    "next": "Do not rerun first-six wrapper:01 output already exists. Run exact original commands02-06 after exclusive UI/native resource release; verifyactual06 before07; no production rebuild",
+    "formalIncrement": 0
+  },
+  "App038S6ActualPartial": {
+    "status": "original01-06complete;07-09unexecuted",
+    "root": "/private/tmp/willyou-m12-app038-installer-001",
+    "actualSessions": {
+      "01": 77081,
+      "02": 85995,
+      "04": 65012,
+      "05": 50001
+    },
+    "dmgBytes": 617154856,
+    "dmgSHA256": "d25bc289f275c651f2c0dfe9c6f58eca431571ea373e31bc811a97ef3c18e692",
+    "inputEqualsDMGEqualsInstalledEntries": 20240,
+    "native6Passed": true,
+    "actualStartupReadySHA256": "a484087799e930246eb5a97049dde6ff9011bb4951409c67ce2f31bfcda77b53",
+    "rootReadyReview": "/private/tmp/willyou-m12-app038-installer-001/root-installed-startup-ready-review.json",
+    "knownOwnPIDClear": 7,
+    "ownMounts": 0,
+    "installedAppProcesses": 0,
+    "next": "Run original07 only after D23 manual UI release; then independent08cleanup and original09judge; currentactual186inputsandallinstalledpinsalreadyreviewed",
+    "formalIncrement": 0,
+    "publicArchive": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app038-installer-001-partial-01-06/manifest.json",
+    "publicManifestSHA256": "d79e092ed45f794553ce84db8904e92a3203a57ba286abfca48017c643ddc089",
+    "nextExactCommand": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app038-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app038-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app038-installer-001/installed-startup-001/run.mjs --execute"
   }
 }
