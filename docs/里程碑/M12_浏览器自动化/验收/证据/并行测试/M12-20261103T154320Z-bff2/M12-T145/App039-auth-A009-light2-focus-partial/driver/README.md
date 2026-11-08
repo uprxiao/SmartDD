@@ -1,0 +1,1 @@
+T145 App039/source046 原4个1440组合B06-basic-auth-only候选。精确复用T026原HTTP401合成fixture与真实字段输入/登录，A008原setup/oncePID3s/single guard/同PTY/PID/run/nativepark及正常清场。只截空BasicAuth弹框后合成账号UI登录解除阻塞；不读真实认证/Keychain、不发模型或CLI业务。P4来自原full009真实basic-auth原图；source046两CSS仅profile-detail-mini，auth参考未受影响。permission/external-app无T026原刺激、B13来源数据前置不匹配，均pending；不阻塞本组也不冒已覆盖。原456及1920该状态4槽保留，机械绿非视觉验收。
