@@ -1,0 +1,10 @@
+P09 Home Mic user collaboration; not executed.
+
+Root purestatic: env WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t130-P09-voice-App037-user-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t130-P09-voice-App037-user-001/cache/static-node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-P09-voice-App037-user-001/static.mjs
+Root execute after exactlease: env WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t130-P09-voice-App037-user-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t130-P09-voice-App037-user-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-P09-voice-App037-user-001/run.mjs --execute
+Independently cleanup: env WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-P09-voice-App037-user-001/cleanup.mjs --verify
+Judge: python3 /private/tmp/willyou-m12-t130-P09-voice-App037-user-001/judge.py
+
+Lease needs statusgranted/coordinatorroot/privateRoot/executable/readySHA256/expiresAt; require_escalated actualexecution. No lease copied; runtime absent.
+Runtimewrites human-request.json/consolePID. UserclickHomeMic, speak only“文件语音验收完成”, finishbycurrentconfirmedmechanism; noEnter/send/manualtyping. Root writes human-response.json completed/userSpokeSyntheticPhrase/newTextReturnedToOriginalInput=true only from actualuserreply. Producer remainsopen up to10min waitingresponse, noUIinput afterhandoff/no refocus/rearm. DirectclipboardAPIs0; underlyingTypeless behaviour notclaimed unchangedGeneral. Failedtext only length/bool, notrawtranscript, noscreenshot.
+No server/listenerfixture, no project/task/health/CLI/modelauth, one App037 exactfirstPIDactivation/Native+DOM3s/oneguard. CurrentHome with no profile allowstextarea andMic; senddisabled. appSettings voice enabled/globaldisabled are onlyfreshprivateDBsetup, existingTypelessshortcutautodetect unchanged. Realvoice hardware/permission failing remainspending. RootactualAPIdelegation observer restored, normalquit/exactcleanup separate. This subsetnotwholeT130 or anynewT109result.

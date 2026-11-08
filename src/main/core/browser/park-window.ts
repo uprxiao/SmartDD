@@ -9,6 +9,7 @@ export class BrowserParkWindow {
     this.preparing ??= (async () => {
       const bounds = screen.getPrimaryDisplay().workArea;
       const window = new BrowserWindow({ x:bounds.x,y:bounds.y,width:Math.max(800,bounds.width),height:Math.max(600,bounds.height),show:false,opacity:0,focusable:false,skipTaskbar:true,hasShadow:false,title:'WillYou browser background',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false} });
+      if (process.platform === 'darwin') window.excludedFromShownWindowsMenu = true;
       window.setIgnoreMouseEvents(true);
       await window.loadURL('data:text/html,<title>WillYou browser background</title>');
       window.showInactive(); this.window=window; return window;

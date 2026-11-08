@@ -1,0 +1,39 @@
+{
+  "case": "M12-T109",
+  "layer": "S",
+  "sourceRequirement": {
+    "path": "docs/里程碑/M12_浏览器自动化/需求.md",
+    "lines": [
+      571,
+      574
+    ],
+    "rule": "R07.5"
+  },
+  "originalCase": {
+    "path": "docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "line": 163,
+    "precondition": "有页面处于停放状态",
+    "steps": "查看 Dock、⌘Tab、调度中心、窗口菜单；在停放窗口所在位置点击",
+    "expected": "用户看不到停放窗口，也点不到它；点击落在下层的窗口上"
+  },
+  "manualChecks": [
+    "dock",
+    "cmdTab",
+    "missionControl",
+    "windowMenu",
+    "physicalClickThrough"
+  ],
+  "setup": "One App037 main window; taskA real UI browser then taskB real UI browser. TaskA native page naturally parked; API only synthetic project/profile/tasks preconditions before one reload.",
+  "boundary": "No physical shortcut synthesis/CDP-click substitute; user performs actual system observations and mouse click. No other App automated operations, clipboard, model, authentication or production mutations.",
+  "hold": "No automatic timeout close after manual stage; Root records immediate live answer into user-response.json. No automated input after manual stage or guard rearm; user system focus transitions are recorded read-only.",
+  "userResponseSchema": {
+    "status": "complete or cancel",
+    "observedBy": "user-live",
+    "dock": true,
+    "cmdTab": true,
+    "missionControl": true,
+    "windowMenu": true,
+    "physicalClickThrough": true,
+    "notes": "Actual observations only, false if visible/blocked"
+  }
+}
