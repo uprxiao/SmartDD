@@ -1,0 +1,98 @@
+{
+  "schema": "m12-t127-existing-connection-readiness-v1",
+  "at": "2026-11-08T10:04:18.293053+00:00",
+  "formalCase": "M12-T127",
+  "formalStatusUnchanged": "待执行",
+  "wholeCasePassed": false,
+  "userInstruction": "Reuse locally saved ZenTao connection and load authorized Bug list, without re-entering credentials",
+  "found": {
+    "project": "AIS",
+    "connectionName": "禅道",
+    "enabled": true,
+    "authorization": "connected",
+    "savedEncryptedSecretPresent": true,
+    "historicallyAuthorizedBugIds": [
+      "79064",
+      "79291",
+      "79967"
+    ],
+    "currentAssignedListVerified": false
+  },
+  "isolation": {
+    "connectionRowsCopied": 1,
+    "encryptedSecretRowsCopied": 1,
+    "plaintextExtractedByDriver": false,
+    "dailyDatabaseModified": false,
+    "dailyProjectsOrTasksCopied": false,
+    "sourceAuthenticationInsideOriginalHost": true,
+    "productionAsarSHA256": "92265c973ba32f12b85078c5bfa1561df7bb5f9273603653930ec1160ce9c149"
+  },
+  "attempts": [
+    {
+      "root": "/private/tmp/willyou-m12-t127-real-entry-001",
+      "status": "failed-precondition",
+      "hostError": {
+        "code": "TRANSIENT_FAILURE",
+        "message": "无法完成服务请求；本次已尝试 3 次，读取预算已结束，请稍后明确重试"
+      },
+      "appExit": {
+        "pid": 21713,
+        "code": 0,
+        "signal": null
+      },
+      "driverSHA256": "e1e039dc3402b8a4ab7f13d883e4b49c7746dfb18f472a038b19ba0371bf5103"
+    },
+    {
+      "root": "/private/tmp/willyou-m12-t127-real-entry-002",
+      "status": "failed-precondition",
+      "hostError": {
+        "code": "TRANSIENT_FAILURE",
+        "message": "无法完成服务请求；本次已尝试 3 次，读取预算已结束，请稍后明确重试"
+      },
+      "appExit": {
+        "pid": 22553,
+        "code": 0,
+        "signal": null
+      },
+      "driverSHA256": "2c2fde36671df0889aca2df3ace3b122ec2161004e6857903361bf90e1165976"
+    }
+  ],
+  "networkObservation": [
+    {
+      "method": "POST",
+      "path": "/biz/api.php/v1/tokens",
+      "startedAt": "2026-11-08T10:02:13.262Z",
+      "errorCode": "ECONNRESET",
+      "syscall": "none",
+      "endedAt": "2026-11-08T10:02:18.335Z"
+    },
+    {
+      "method": "POST",
+      "path": "/biz/api.php/v1/tokens",
+      "startedAt": "2026-11-08T10:02:19.468Z",
+      "errorCode": "ECONNRESET",
+      "syscall": "none",
+      "endedAt": "2026-11-08T10:02:24.478Z"
+    },
+    {
+      "method": "POST",
+      "path": "/biz/api.php/v1/tokens",
+      "startedAt": "2026-11-08T10:02:27.691Z",
+      "errorCode": "ECONNRESET",
+      "syscall": "none",
+      "endedAt": "2026-11-08T10:02:32.701Z"
+    }
+  ],
+  "observationBoundary": "Own-process http.request observer records only method/path/status/errno; unchanged arguments/transport/timeouts/retries; restored before quit. No headers, auth bodies, tokens or response bytes exposed. Original host error diagnosis, not an alternate API entry.",
+  "networkConnectivity": {
+    "tcpHost": "192.168.106.185",
+    "tcpPort": 80,
+    "tcpConnected": true,
+    "tcpElapsedMs": 4,
+    "routeInterface": "utun1024",
+    "routeMTU": 1500,
+    "routeModified": false,
+    "finding": "Original auth POST resets in about five seconds; no successful assigned-self list. TCP connectivity does not prove API availability; VPN/proxy/server root cause unproved."
+  },
+  "next": "Confirm network prerequisite, then original host assigned-self list and current generated managed-Codex entry. No detail access by known IDs before scope list. No further retry without prerequisite change or new diagnostic."
+}

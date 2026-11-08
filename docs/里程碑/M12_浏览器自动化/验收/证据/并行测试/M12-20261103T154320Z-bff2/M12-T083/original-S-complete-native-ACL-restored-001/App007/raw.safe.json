@@ -1,0 +1,248 @@
+{
+  "case": "M12-T083",
+  "layer": "S",
+  "status": "remaining-three-original-S-branches-observed-unjudged",
+  "startedAt": "2026-11-08T09:12:28.709Z",
+  "finishedAt": "2026-11-08T09:19:27.703Z",
+  "driverPid": 4597,
+  "appPid": 4598,
+  "userData": "/private/tmp/willyou-m12-t083-real-keychain-prep-007/runtime-001/userdata",
+  "failure": null,
+  "checks": [
+    {
+      "family": "chrome",
+      "decision": "allow",
+      "realSystemUserConfirmed": true,
+      "noTargetWrite": null,
+      "realCookieEffective": true
+    },
+    {
+      "family": "edge",
+      "decision": "deny",
+      "realSystemUserConfirmed": true,
+      "noTargetWrite": true,
+      "realCookieEffective": null
+    },
+    {
+      "family": "edge",
+      "decision": "allow",
+      "realSystemUserConfirmed": true,
+      "noTargetWrite": null,
+      "realCookieEffective": true
+    }
+  ],
+  "appExit": {
+    "pid": 4598,
+    "code": 0,
+    "signal": null
+  },
+  "observedProcess": {
+    "pid": 4598,
+    "spawnedAtMs": 1794129148716,
+    "exit": {
+      "atMs": 1794129567702,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "inspectorCloseRequests": [
+      {
+        "atMs": 1794129567346
+      },
+      {
+        "atMs": 1794129567703
+      },
+      {
+        "atMs": 1794129567703
+      }
+    ],
+    "currentCode": 0,
+    "currentSignal": null
+  },
+  "cleanupErrors": [],
+  "hostEncryptionControl": {
+    "available": true,
+    "roundTripMatches": true,
+    "ciphertextBytes": 51,
+    "appName": "SmartDD",
+    "controlOnly": true,
+    "credentialValuesArchived": false
+  },
+  "sourceIsolation": {
+    "homeMatches": true,
+    "envHomeMatches": true,
+    "mockKeychainSwitch": false
+  },
+  "stockCLICommands": 0,
+  "models": 0,
+  "productionHooks": 0,
+  "originalPrivateRawSHA256": "a63a1371c59b55ef6dcb82e34ce0d6c2e3fc18178ddb550775744c3abd22ad9f",
+  "steps": [
+    {
+      "family": "chrome",
+      "decision": "allow",
+      "index": 1,
+      "startedAt": "2026-11-08T09:12:44.077Z",
+      "finishedAt": "2026-11-08T09:17:17.301Z",
+      "risk": {
+        "title": "确认导入",
+        "text": "确认导入\n将导入 Google Chrome · Profile 1794116533183 的全部 Cookie（Google 登录除外），写入「T083 chrome target」。导入站点按域名整体替换，其他站点不受影响。\nAgent 将能读取这些站点的会话令牌（cookie get 返回明文值），并可在不设域名护栏的情况下使用它们。\n导入期间，使用「T083 chrome target」的页面会暂时卸载，页面上未保存的内容会丢失；导入完成后自动重新加载。\nmacOS 会请求访问钥匙串中的「Chrome Safe Storage」。请只在你本人发起导入时允许。\n返回\n确认导入"
+      },
+      "before": {
+        "canonicalHash": "cde260579d8aa188d1cda4d02b840a3a1b2cfe5f65f78306dde3a5a40a3d6ad9",
+        "count": 1,
+        "names": [
+          "m12_t083_target_chrome"
+        ],
+        "controlledMatches": false,
+        "valuesArchived": false
+      },
+      "after": {
+        "canonicalHash": "739708ed4540f52c3d701a5ec2beac5c3daa0c195114f330935a447ba623e8e8",
+        "count": 1,
+        "names": [
+          "m12_t083_chrome"
+        ],
+        "controlledMatches": true,
+        "valuesArchived": false
+      },
+      "confirmedAt": "2026-11-08T09:14:56.739Z",
+      "confirmClickDispatchedAt": "2026-11-08T09:14:56.798Z",
+      "resultUI": {
+        "title": "导入完成",
+        "text": "导入完成\n\n登录态导入完成。\n\n总数\n1\n已导入\n1\n已跳过\n0\n其中 Google\n0\n因分区不可读而保留\n0\n目标原有保留\n0\n重新加载的页面\n1\n\n涉及站点：127.0.0.1\n\n完成"
+      },
+      "userDecision": {
+        "at": "2026-11-08T09:16:50.096357+00:00",
+        "observedBy": "user-live",
+        "promptShown": true,
+        "service": "Chrome Safe Storage",
+        "decision": "allow",
+        "statement": "在 Chrome Safe Storage 系统弹窗点了允许"
+      },
+      "noTargetWrite": null,
+      "realCookieEffective": true,
+      "serverCookieFact": {
+        "at": 1794129300.109907,
+        "path": "/app?target=chrome",
+        "chromePresent": true,
+        "edgePresent": false
+      },
+      "guardAtResult": {
+        "enabled": true,
+        "appPid": 4598,
+        "checkedInputs": 45
+      }
+    },
+    {
+      "family": "edge",
+      "decision": "deny",
+      "index": 2,
+      "startedAt": "2026-11-08T09:17:17.303Z",
+      "finishedAt": "2026-11-08T09:18:47.914Z",
+      "risk": {
+        "title": "确认导入",
+        "text": "确认导入\n将导入 Microsoft Edge · Profile 1794116534022 的全部 Cookie（Google 登录除外），写入「T083 edge target」。导入站点按域名整体替换，其他站点不受影响。\nAgent 将能读取这些站点的会话令牌（cookie get 返回明文值），并可在不设域名护栏的情况下使用它们。\n导入期间，使用「T083 edge target」的页面会暂时卸载，页面上未保存的内容会丢失；导入完成后自动重新加载。\nmacOS 会请求访问钥匙串中的「Microsoft Edge Safe Storage」。请只在你本人发起导入时允许。\n返回\n确认导入"
+      },
+      "before": {
+        "canonicalHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b",
+        "count": 1,
+        "names": [
+          "m12_t083_target_edge"
+        ],
+        "controlledMatches": false,
+        "valuesArchived": false
+      },
+      "after": {
+        "canonicalHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b",
+        "count": 1,
+        "names": [
+          "m12_t083_target_edge"
+        ],
+        "controlledMatches": false,
+        "valuesArchived": false
+      },
+      "confirmedAt": "2026-11-08T09:17:20.956Z",
+      "confirmClickDispatchedAt": "2026-11-08T09:17:20.997Z",
+      "resultUI": {
+        "title": "导入未完成",
+        "text": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成"
+      },
+      "userDecision": {
+        "at": "2026-11-08T09:17:52.525058+00:00",
+        "observedBy": "user-live",
+        "promptShown": true,
+        "service": "Microsoft Edge Safe Storage",
+        "decision": "deny",
+        "statement": "已经点了拒绝了",
+        "context": "Current actually-dispatched R007 Edge-deny request"
+      },
+      "noTargetWrite": true,
+      "realCookieEffective": null,
+      "serverCookieFact": null,
+      "guardAtResult": {
+        "enabled": true,
+        "appPid": 4598,
+        "checkedInputs": 85
+      }
+    },
+    {
+      "family": "edge",
+      "decision": "allow",
+      "index": 3,
+      "startedAt": "2026-11-08T09:18:47.916Z",
+      "finishedAt": "2026-11-08T09:19:26.839Z",
+      "risk": {
+        "title": "确认导入",
+        "text": "确认导入\n将导入 Microsoft Edge · Profile 1794116534022 的全部 Cookie（Google 登录除外），写入「T083 edge target」。导入站点按域名整体替换，其他站点不受影响。\nAgent 将能读取这些站点的会话令牌（cookie get 返回明文值），并可在不设域名护栏的情况下使用它们。\n导入期间，使用「T083 edge target」的页面会暂时卸载，页面上未保存的内容会丢失；导入完成后自动重新加载。\nmacOS 会请求访问钥匙串中的「Microsoft Edge Safe Storage」。请只在你本人发起导入时允许。\n返回\n确认导入"
+      },
+      "before": {
+        "canonicalHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b",
+        "count": 1,
+        "names": [
+          "m12_t083_target_edge"
+        ],
+        "controlledMatches": false,
+        "valuesArchived": false
+      },
+      "after": {
+        "canonicalHash": "c6067569e28a10b5bbd0d0581bbc37363d6fc22cadc209a06e3d6226650feed7",
+        "count": 1,
+        "names": [
+          "m12_t083_edge"
+        ],
+        "controlledMatches": true,
+        "valuesArchived": false
+      },
+      "confirmedAt": "2026-11-08T09:18:51.615Z",
+      "confirmClickDispatchedAt": "2026-11-08T09:18:51.650Z",
+      "resultUI": {
+        "title": "导入完成",
+        "text": "导入完成\n\n登录态导入完成。\n\n总数\n1\n已导入\n1\n已跳过\n0\n其中 Google\n0\n因分区不可读而保留\n0\n目标原有保留\n0\n重新加载的页面\n1\n\n涉及站点：127.0.0.1\n\n完成"
+      },
+      "userDecision": {
+        "at": "2026-11-08T09:19:23.228826+00:00",
+        "observedBy": "user-live",
+        "promptShown": true,
+        "service": "Microsoft Edge Safe Storage",
+        "decision": "allow",
+        "statement": "OK，允许点完了",
+        "context": "Current actually-dispatched R007 final Edge allow"
+      },
+      "noTargetWrite": null,
+      "realCookieEffective": true,
+      "serverCookieFact": {
+        "at": 1794129537.3961458,
+        "path": "/app?target=edge",
+        "chromePresent": false,
+        "edgePresent": true
+      },
+      "guardAtResult": {
+        "enabled": true,
+        "appPid": 4598,
+        "checkedInputs": 125
+      }
+    }
+  ],
+  "normalExitConfirmed": true
+}

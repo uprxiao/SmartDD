@@ -1,0 +1,121 @@
+{
+  "case": "M12-T083",
+  "reviewedAt": "2026-11-08T09:29:08.719583+00:00",
+  "scope": "Independent file-only original four S-branch review; no new test or system/Keychain access.",
+  "authority": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "row": "| M12-T083 | R05.4、D2 | S | 本机真实安装 Chrome 与 Edge，各有一个测试 profile；用户在场 | 分别从 Chrome、Edge 导入；在系统钥匙串弹窗中先拒绝一次，再允许 | 拒绝时导入失败且没有写入；允许后导入成功，测试站点 Cookie 生效。由用户操作钥匙串弹窗，记录为用户确认 | — | 待执行 | — |"
+  },
+  "roots": {
+    "R006": "/private/tmp/willyou-m12-t083-real-keychain-prep-006",
+    "R007": "/private/tmp/willyou-m12-t083-real-keychain-prep-007"
+  },
+  "composition": {
+    "fourOriginalBranchesSatisfied": true,
+    "allowed": true,
+    "basis": "Original row requires Chrome and Edge deny then allow; no same App/process/run constraint. R006 Chrome deny precedes R007 Chrome allow; R007 Edge deny precedes allow. Same frozen package/source pins and same owned source-profile identities; target partitions independently isolated.",
+    "frozenPinObjectsIdentical": true,
+    "sourceProfilesIdentical": true
+  },
+  "branches": [
+    {
+      "branch": "chrome-deny",
+      "source": "R006/raw.json#/steps/0",
+      "userConfirmedRealPrompt": true,
+      "service": "Chrome Safe Storage",
+      "uiResult": "导入未完成",
+      "dispatchedAt": "2026-11-08T09:02:50.965Z",
+      "fullTargetCanonicalUnchanged": true,
+      "reportedNoTargetWrite": true,
+      "acceptedWithinOriginalBranch": true
+    },
+    {
+      "branch": "chrome-allow",
+      "source": "R007/raw.json#/steps/0",
+      "userConfirmedRealPrompt": true,
+      "service": "Chrome Safe Storage",
+      "uiResult": "导入完成",
+      "dispatchedAt": "2026-11-08T09:14:56.798Z",
+      "controlledNativeCookieMatches": true,
+      "targetCanonicalChanged": true,
+      "realHTTPFamilyCookiePresent": true,
+      "reportedCookieEffective": true,
+      "acceptedWithinOriginalBranch": true
+    },
+    {
+      "branch": "edge-deny",
+      "source": "R007/raw.json#/steps/1",
+      "userConfirmedRealPrompt": true,
+      "service": "Microsoft Edge Safe Storage",
+      "uiResult": "导入未完成",
+      "dispatchedAt": "2026-11-08T09:17:20.997Z",
+      "fullTargetCanonicalUnchanged": true,
+      "reportedNoTargetWrite": true,
+      "acceptedWithinOriginalBranch": true
+    },
+    {
+      "branch": "edge-allow",
+      "source": "R007/raw.json#/steps/2",
+      "userConfirmedRealPrompt": true,
+      "service": "Microsoft Edge Safe Storage",
+      "uiResult": "导入完成",
+      "dispatchedAt": "2026-11-08T09:18:51.650Z",
+      "controlledNativeCookieMatches": true,
+      "targetCanonicalChanged": true,
+      "realHTTPFamilyCookiePresent": true,
+      "reportedCookieEffective": true,
+      "acceptedWithinOriginalBranch": true
+    }
+  ],
+  "preservedRed": {
+    "R006Status": "failed-or-partial",
+    "checks": 1,
+    "failure": {
+      "stage": "WAIT-SOURCE-FOCUS-02",
+      "name": "Error",
+      "message": "Bounded unique visible enabled hit-ready control timeout: [aria-label=浏览器菜单]",
+      "code": null
+    },
+    "chromeAllowDispatched": false,
+    "boundary": "R006 step2 has arm/focus preparation only, no confirm dispatch/result/user decision. Its unfinished branch is not counted. Original raw/checks/status remain unchanged."
+  },
+  "cleanup": {
+    "R006": {
+      "allClear": true,
+      "counts": {
+        "processes": 9,
+        "ports": 4,
+        "unix": 2,
+        "helpers": 2
+      },
+      "appExit": {
+        "pid": 99555,
+        "code": 0,
+        "signal": null
+      },
+      "signals": []
+    },
+    "R007": {
+      "allClear": true,
+      "counts": {
+        "processes": 9,
+        "ports": 4,
+        "unix": 2,
+        "helpers": 2
+      },
+      "appExit": {
+        "pid": 4598,
+        "code": 0,
+        "signal": null
+      },
+      "signals": []
+    }
+  },
+  "decision": {
+    "functionalEvidenceComposable": true,
+    "wholeCasePassNow": false,
+    "pending": "Root reports Chrome Safe Storage access list temporarily removed security from original security+Google Chrome. Await explicit restoration of original access-list state and Root restoration receipt; this review did not inspect or restore Keychain.",
+    "pendingSource": "Parent task statement, not a new system observation."
+  },
+  "boundary": "Native decisions are user-confirmed system-prompt receipts, not automatic prompt screenshots. SmartDD host-encryption control is separate and not counted as source-browser permission. Cookie values were not copied; raw whole-file hashes preserve provenance. No ledger or original result changed; resources 0."
+}

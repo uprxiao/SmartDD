@@ -1,0 +1,1 @@
+用户明确暂停。原T083未通过、未完整执行四个系统分支，正式账不变。App002原失败保持，目标Cookie哈希前后相同；原正常退出和独立9PID/4TCP/2Unix/2helper清场成立。source服务正常退出；两个排他新建Profile已核marker/inode/hash复制回私有目录并从真实浏览器根移除，3已知source PID及HTTP端口独立查空。日常profile/Local State/钥匙串未由清理脚本修改。宿主密钥取消日志不能冒充来源拒绝。App003是被中断的静态准备，未审完/未执行，恢复先核基线、源Cookie有效期、恢复自有profiles与setup独立宿主加密前置，不重放旧输入。加密Cookie库与任何钥匙串原件均不入库。
