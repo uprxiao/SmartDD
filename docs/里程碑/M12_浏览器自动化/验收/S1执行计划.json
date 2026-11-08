@@ -3,7 +3,7 @@
   "goal": "实现 M12 S1 并验证基础技术链路可行性",
   "authorization": "用户本轮明确要求先完成 S1 并验证可行；不进入 S2-S6",
   "branch": "feature/0.1.1",
-  "requirements": "R1.6",
+  "requirements": "R1.7",
   "createdAt": "2026-11-03T09:21:41.514478+00:00",
   "authority": "测试用例.md为唯一正式用例账；本文件只记录分组、原判据和调度，不维护第二份实际结果或通过率",
   "baseline": {
@@ -170,7 +170,7 @@
       "layerPolicy": "先完成S1要求的U/I与必要R；A/S按原用例保留并安排，不把部分层通过计整条通过"
     }
   ],
-  "updatedAt": "2026-11-08T11:16:34.122434+00:00",
+  "updatedAt": "2026-11-08T11:54:00.976441+00:00",
   "status": "user-resumed; T083 original S complete; remaining original system/service/device acceptance not complete",
   "resumeFrom": "docs/里程碑/M12_浏览器自动化/验收/并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json",
   "statusBeforePause": "开发中（用户恢复）",
@@ -5687,9 +5687,10 @@
       "countsAsPass": false
     },
     "T110": {
-      "status": "after-T145/extended-external-display-ready-to-coordinate",
+      "status": "external-extension-confirmed/after-current-visual-batch",
       "prerequisite": "外接一个显示器，扩展模式，两独立屏；WillYou全屏与跨屏切换",
-      "notYetExecuted": true
+      "notYetExecuted": true,
+      "actualReadiness": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T110/extended-display-readiness-001/manifest.json"
     },
     "next": "T145 currentApp039基本认证原四组合"
   },
@@ -5699,5 +5700,49 @@
     "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App039-auth4-root-composition/manifest.json",
     "remaining": "Originalotherstates/actual1920/UAfocusvisualdifference;sourceCookiefixturepending",
     "resourcesHeld": false
+  },
+  "latestT145ViewportDecision": {
+    "authority": "User explicitly accepts1920x1080 and asks change test, passT145whennewtestpasses",
+    "requirements": "R1.7",
+    "testRevision": "V1.5",
+    "currentWindows": [
+      [
+        1440,
+        900
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "rightWidths": [
+      480,
+      900
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "old1920x1200": "history-only/notrequiredforcurrentpass",
+    "remainingCriteria": "OtheroriginalT145visualstates+comparisonpreserved;new1080mustactuallyrun",
+    "actualExternalDisplay": "27E4 1920x1080,extension2screensconfirmed",
+    "oldDocumentSHA256": {
+      "需求.md": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+      "验收/测试用例.md": "fbb492c8070a6840ba997f26336525271996bcfaa8ab218ecfbaa7c939a33370",
+      "技研/技术方案.md": "a975bc9bc2452d062f923f17cc1390d3876de45d4fe9b52d243474240047566c",
+      "note": "历史整稿已适配相对链接，原字节可从05e4a85d恢复；现行尺寸为R1.7"
+    }
+  },
+  "latestT145New1080P": {
+    "status": "reference228captured/actualAppA-not-yet",
+    "evidence": "证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/manifest.json",
+    "next": "App041combined12actualfixregression;thenactual1080matrix/T110",
+    "formalIncrement": 0
+  },
+  "latestT145App041A012": {
+    "at": "2026-11-08T12:19:08.316864+00:00",
+    "evidence": "验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App041-auth-find-A012-reviewed12/manifest.json",
+    "actual12Reviewed": true,
+    "wholeCasePassed": false
   }
 }
