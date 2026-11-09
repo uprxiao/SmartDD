@@ -1,0 +1,3165 @@
+{
+  "schema": "private-independent-original-image-review",
+  "createdAt": "2026-11-08T15:59:31.620554+00:00",
+  "case": "M12-T145",
+  "attempt": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002",
+  "reviewer": "t145_download_visual_prep",
+  "scope": {
+    "states": [
+      "B12-recovery-failed",
+      "B12-recovery-clear-confirm"
+    ],
+    "pairs": 16,
+    "unchangedOriginalPNGsActuallyViewed": 32,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "rightWidths": [
+      480,
+      900
+    ],
+    "windows": [
+      "1440x900",
+      "1920x1080"
+    ],
+    "allAssignedPairsActuallyViewed": true,
+    "wholeT145Passed": false,
+    "formalIncrement": 0
+  },
+  "basis": {
+    "raw": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/raw.json",
+      "sha256": "48a36eb798a5585edbf7cc5d6bcd068ddff03bea44a727bbc8ff72ad18bae61f",
+      "bytes": 11310387
+    },
+    "references": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/references.json",
+      "sha256": "52ec166b375339ec4bd6380b3f9fea5cd9f2f4eab3943bbc02905b3c55127ea3",
+      "bytes": 9747
+    },
+    "READY": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/READY.json",
+      "sha256": "5032d294caf4ede4a147e52bb0d066b247578196ca9b1cfb9e943542471928f3",
+      "bytes": 91199
+    },
+    "packagePin": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/package-pin.json",
+      "sha256": "2a3e01eda0ba07ad546ec538032fd36bbf013d0aea942e3033f2650ea08fc842",
+      "bytes": 5730
+    },
+    "judge": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/judgement.json",
+      "sha256": "2c239e5f21f4a361b15828d2dca9c88ebaa04435d7a2aa5087dac5161463e2a2",
+      "bytes": 1041
+    },
+    "cleanup": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/cleanup.json",
+      "sha256": "349e0b704f15bc8b195bc46ce47045b3c7f03853cbd4adbcf529980e5486bd64",
+      "bytes": 6198
+    },
+    "App": "App046",
+    "source": "source055",
+    "asarSHA256": "bee5247b7f2a99d0840e3e323dbc1e579536d92af51971633dfacafdea1ad1ac",
+    "sourceManifestSHA256": "fe31e0b9e148fe7cc6dcbcfbe3f690256b69dc6c65f7c96f4789a37ae4ba745f",
+    "originalImagePathIndex": {
+      "path": "/private/tmp/willyou-m12-t145-recovery-review16-001/original-image-path-index.json",
+      "sha256": "9ebcb07454718f60cffbece4e17b797f48b392e686a686b97b008524a3797fd1",
+      "bytes": 19873
+    },
+    "sourceReferenceIndex": {
+      "path": "/private/tmp/willyou-m12-t145-recovery-review16-001/source-reference-index.json",
+      "sha256": "70ccb555bf445bcb1fa405e6a54a501da21c5a226cc39928fe3e8dc89ead80aa",
+      "bytes": 914
+    }
+  },
+  "summary": {
+    "reviewedPairs": 16,
+    "mechanicalResultReadOnly": "Existing Root actual 7/7 and 45clear independently read; not re-executed by reviewer and not promoted to visual pass.",
+    "visualStatus": "Differences remain in all16 (icon/action layout); additional clear-confirm button difference8; light warning-color difference4.",
+    "wholeCasePassed": false,
+    "publicLedgerChanged": false,
+    "productionOrDriverChanged": false,
+    "reviewerAppNativeHTTPJXANodeRuns": 0
+  },
+  "confirmedRendererOwnedControlDifferences": [
+    {
+      "id": "REC-ICON",
+      "indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "finding": "Original P displays a 15px ShieldAlert and dedicated icon column in amber attention box. Every actual A box has zero icons and text starts at ordinary12px padding. This is a manager-owned JSX/layout difference, not a missing Native pixel issue.",
+      "source": "Frozen055 BrowserPanels.jsx:140; browser.css:181–182 display:flex/gap10/icon style. App profile-site-states.tsx:26 omits icon and inner wrapper; workspace.css:122 is block attention."
+    },
+    {
+      "id": "REC-ACTION-ROW",
+      "indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "finding": "Original P retry/clear/confirmation controls sit in an inner bw-row-actions flex-wrap container with6px gap. Actual A renders bare adjacent buttons and a block warning paragraph. Actual wide buttons touch and warning sits below retry; narrow button rows can touch vertically. P gap/flow is visibly different.",
+      "source": "Frozen055 BrowserPanels.jsx:141–143 and browser.css:158; actual profile-site-states.tsx:26 has no inner bw-row-actions. Generic actual row-actions gap8 also differs from P6, recorded as shared source fact rather than waiving visible recovery gap0."
+    },
+    {
+      "id": "REC-CONFIRM-BUTTON",
+      "indices": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15
+      ],
+      "finding": "P confirmation is red text/red border; actual A is ordinary text/border in both themes.",
+      "source": "P BrowserPanels.jsx:142 adds bw-mini-danger, CSS82 #c0392b/#e6b0aa. Actual profile-site-states.tsx:26 confirm button className bw-mini only."
+    },
+    {
+      "id": "REC-LIGHT-WARNING",
+      "indices": [
+        1,
+        3,
+        9,
+        11
+      ],
+      "finding": "Actual light warning is rgb(112,112,112), P warning red. Dark A warning remains rgb(239,143,132), matching intended dark red.",
+      "source": "App warning uses p.bw-danger-text; workspace.css:123 .bw-attention p specificity overrides simple .bw-danger-text color at56 in light. .ydark .bw-danger-text wins in dark. Original P uses span.bw-danger-text (BrowserPanels.jsx:142), avoiding paragraph override."
+    }
+  ],
+  "copyAndBusinessDifferencesPendingCoordinatorAdjudication": [
+    {
+      "id": "REC-COPY",
+      "finding": "All16 actual alert explanations omit the original P Agent-browser-command/BROWSER_UNAVAILABLE clause and use different phrasing; failed-state clear button says 清空登录态 versus P 清空该登录态. This is a definite textual mismatch, not fixture URL/name data. Whether the current approved business copy permits it is not established by this scoped review. Shorter copy plus missing icon/action layout substantially changes card/dialog heights; those deltas cannot all be dismissed as shell4px."
+    },
+    {
+      "id": "REC-CLONE-POLICY",
+      "finding": "P prototype leaves 克隆 enabled in needs-attention; actual A disables it, consistently with actual renderer source guard importState!==ready. Do not enable a blocked operation merely to fit prototype. Root must reconcile current requirement/prototype applicability."
+    }
+  ],
+  "faultInjectionBoundary": {
+    "provenance": {
+      "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/fault-boundary.json",
+      "sha256": "bfcbae454a1bd45dd8888b9324835e30d16ae291545be1ed8b0707698b6c5aee",
+      "bytes": 1388
+    },
+    "actualConstructor": {
+      "pid": 77254,
+      "mainSHA256": "785be2caf631a87eb6043902d534e6b9ee3d44fafb5594169f1561ffe941f0df",
+      "bodyLine0": 7315,
+      "realKeychain": false,
+      "breakpointRemoved": true
+    },
+    "setup": "Owned BrowserService public constructor receives synthetic Chrome source DB/key provider/private AESGCM journal cipher. Existing process-local mock-keychain and MailWorker debugger-inheritance fixture explicit. Daily data/default credentials/system truststore untouched.",
+    "effect": "Exact current own profile NativeStore performs actual W write then loses acknowledgement; restoring original X throws before native write. Real production transaction creates needs-attention, encrypted journal and suspended blank page; no Hoststore/importState/RPC result synthesis. All eight actual13-event fault slices exhibit both effects.",
+    "testedUI": "Actual UI source/target/risk confirmation triggers import, actual manager and clear-confirm state captured; then fault mode none and actual UI confirm-clear returns ready and removes journal.",
+    "restorationReadOnly": {
+      "nativeStoreRestored": true,
+      "sourceRestored": true,
+      "listenersRemoved": true,
+      "gatesReleased": true,
+      "providerRevoked": true,
+      "keyZeroed": true,
+      "workerRestored": true,
+      "optionsRestored": true,
+      "globalDeleted": true
+    },
+    "processOutcomeReadOnly": {
+      "exit": {
+        "pid": 77254,
+        "code": 0,
+        "signal": null
+      },
+      "signals": [],
+      "cleanupAllClear": true,
+      "cleanupChecks": 45
+    },
+    "limits": "These results certify visual recovery controls in an explicitly altered fault environment. They do not establish real Keychain/Chrome import, unmodified environment or full T081 pass."
+  },
+  "separateBoundaries": [
+    "All manager controls are renderer-owned and visible; confirmed icon/color/button/flow differences are directly supported by actual PNG+metadata/frozen JSX/CSS.",
+    "Live Native page/background compositor pixels and full system screenshot parity are not certified by main-renderer PNG. Prototype synthetic page and recovery banner differ from actual blocked-page presentation; this review does not turn that backdrop into a separate confirmed compositor defect.",
+    "Original P profile label has WillYou prefix, actual service label 项目登录态; isolated task/sidebar/terminal/count/URL/title and absent prototype demo rows are fixture data differences.",
+    "P/A underlying pane/shell origin differs4px and actual bottom statusbar allocation differs. Dialog height changes also follow actual content/layout differences; no blanket geometry waiver.",
+    "No scrolling or new focus/OS interaction occurred in review. Narrow1440 clear-confirm lower content is scrollable; only originally visible controls were visually reviewed."
+  ],
+  "rows": [
+    {
+      "index": 0,
+      "key": "light-rw480-win1440x900|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "6875a90d4ac02c28b2de04dcc7e13659ff9f45fa56233e0b5dec6919373c8b39",
+          "bytes": 134881
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1440x900-B12-recovery-failed.json",
+          "sha256": "a4180a64225850b9eb5b93a3df217933922874cf96c693da7cd0771e7760eeed",
+          "bytes": 260534
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "683133f0f10d61555b79f6a9527090aa48c4149ed7c8e97b5ad19d90c3a59bc6",
+          "bytes": 161389
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-recovery-failed.json",
+          "sha256": "3d82488f2b6bb2ac253cbd32e81ceede5e405399ee34c22f9ddea5c559c2c5c3",
+          "bytes": 16235
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 973,
+          "y": 56,
+          "width": 447,
+          "height": 792,
+          "right": 1420,
+          "bottom": 848
+        },
+        "P": {
+          "x": 973,
+          "y": 60,
+          "width": 447,
+          "height": 820
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1252,
+          "y": 252,
+          "width": 145,
+          "height": 212,
+          "right": 1397,
+          "bottom": 464
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 635,
+        "bodyScrollHeight": 635,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 482,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 508
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 516,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 542
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 550,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 588
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-9e29126ec8e7c5e9e196b0cc",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "6d4b4b0f-eff1-4ca7-a9cc-46b86c6e5a31",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 1,
+      "key": "light-rw480-win1440x900|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "f342d18e5c8a12cbefe40ec57c93bd7d1da570989108bbc2987c511c67899d12",
+          "bytes": 142078
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "a6e47bc8df4627abf86ab6767c883d9bd5264855612d8b5614ef2ba6df2595d9",
+          "bytes": 267162
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "0ff1a16f25a71531096aace31beff3f9a56b1f463d93e580691b52ea12d3b1b5",
+          "bytes": 167090
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "b0fcc6b31c8a6e85dfacd9b0694864fb68866abca83449cd2691b4d7e3ea7c3f",
+          "bytes": 16552
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON",
+        "REC-LIGHT-WARNING"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 973,
+          "y": 56,
+          "width": 447,
+          "height": 792,
+          "right": 1420,
+          "bottom": 848
+        },
+        "P": {
+          "x": 973,
+          "y": 60,
+          "width": 447,
+          "height": 820
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 322,
+          "right": 1386,
+          "bottom": 574
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1265,
+          "y": 431,
+          "width": 108,
+          "height": 72,
+          "right": 1373,
+          "bottom": 503
+        },
+        "Acolor": "rgb(112, 112, 112)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1265,
+          "y": 511,
+          "width": 68,
+          "height": 26,
+          "right": 1333,
+          "bottom": 537
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 635,
+        "bodyScrollHeight": 745,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 592,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 618
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 626,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 652
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 660,
+              "width": 134,
+              "height": 38,
+              "right": 1386,
+              "bottom": 698
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-9e29126ec8e7c5e9e196b0cc",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "6d4b4b0f-eff1-4ca7-a9cc-46b86c6e5a31",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 2,
+      "key": "light-rw900-win1440x900|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "1486fe23845c27c04b84efe9531fcf2b4ec9ed027e0d069a5867705c8c44d403",
+          "bytes": 134511
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1440x900-B12-recovery-failed.json",
+          "sha256": "3358ba79bbc048970efe8c9ba161c64048c07cd60114466e6784a7744b85bbbd",
+          "bytes": 265207
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "ed975abd76737e731c7bba947a84b57b30feb4d9bdea10b5e8ef7d8b14135b3d",
+          "bytes": 196443
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-recovery-failed.json",
+          "sha256": "c06981e749c970909576c2088b5f130faa7543174ebaecc4ff7affc80f191e13",
+          "bytes": 16243
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 606.5,
+          "y": 147,
+          "width": 760,
+          "height": 610,
+          "right": 1366.5,
+          "bottom": 757
+        },
+        "P": {
+          "x": 606.5,
+          "y": 154.796875,
+          "width": 760,
+          "height": 630.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 885.5,
+          "y": 325,
+          "width": 458,
+          "height": 114,
+          "right": 1343.5,
+          "bottom": 439
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 471,
+        "bodyScrollHeight": 471,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 885.5,
+              "y": 457,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 483
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 985.5,
+              "y": 457,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 483
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1054.5,
+              "y": 457,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 483
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-548fc5313848b40bf929b010",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "c2d3f553-824b-422c-9f3e-1b8d72f1630b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 3,
+      "key": "light-rw900-win1440x900|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "67f06e9bbae2d49cfd06762b8b2386a05b9074a7bef2e5e6079d687887219094",
+          "bytes": 142783
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "71cffd46d12b0ed3c7638e86a8e7c26121900679f6771e838d6d9e94a5212eb0",
+          "bytes": 271845
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "32c3ab3cec3c731d56061c0e681f2318e72f0f8751cdc5fc8e50e2c7b14cbd50",
+          "bytes": 202943
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "efd8dea90bed6c595ce0f1239c071e95070b7390457532b719a985a323114c7c",
+          "bytes": 16560
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON",
+        "REC-LIGHT-WARNING"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 606.5,
+          "y": 119,
+          "width": 760,
+          "height": 666,
+          "right": 1366.5,
+          "bottom": 785
+        },
+        "P": {
+          "x": 606.5,
+          "y": 138.796875,
+          "width": 760,
+          "height": 662.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 885.5,
+          "y": 297,
+          "width": 458,
+          "height": 170,
+          "right": 1343.5,
+          "bottom": 467
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 898.5,
+          "y": 404,
+          "width": 432,
+          "height": 18,
+          "right": 1330.5,
+          "bottom": 422
+        },
+        "Acolor": "rgb(112, 112, 112)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 898.5,
+          "y": 430,
+          "width": 68,
+          "height": 26,
+          "right": 966.5,
+          "bottom": 456
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 527,
+        "bodyScrollHeight": 527,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 885.5,
+              "y": 485,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 511
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 985.5,
+              "y": 485,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 511
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1054.5,
+              "y": 485,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 511
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-548fc5313848b40bf929b010",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "c2d3f553-824b-422c-9f3e-1b8d72f1630b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 4,
+      "key": "dark-rw480-win1440x900|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "3ffc25ef7bb185a856af89527725e5a4a976e87f9ce5520d2fa9ddac67c4a1e0",
+          "bytes": 130272
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1440x900-B12-recovery-failed.json",
+          "sha256": "1df2074a5c0d6d2a284c971df2fa0558f4790163ce1ca4df9cf441e730220da1",
+          "bytes": 269456
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "4107dcf10994321cabd325733f1e055c8bec81554b7b8921ccc2d6428f958827",
+          "bytes": 161203
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-recovery-failed.json",
+          "sha256": "395b54e39448679c7ce0181ed86acc2a940f20189200a710cc4cc2404b4a5aa4",
+          "bytes": 16261
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 973,
+          "y": 56,
+          "width": 447,
+          "height": 792,
+          "right": 1420,
+          "bottom": 848
+        },
+        "P": {
+          "x": 973,
+          "y": 60,
+          "width": 447,
+          "height": 820
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1252,
+          "y": 252,
+          "width": 145,
+          "height": 212,
+          "right": 1397,
+          "bottom": 464
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 635,
+        "bodyScrollHeight": 635,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 482,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 508
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 516,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 542
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 550,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 588
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-6f3541c3b527acdedc5e7f3e",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "0b16e224-8869-4df0-8a19-1897870670a6",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 5,
+      "key": "dark-rw480-win1440x900|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "ad64e07e296ff2d4a9356516c4d245c7d6da702b1d06c754d0d9c4e286765392",
+          "bytes": 137611
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "af7d83d559d9e82ceec8bec3b3e100cb9eb1b4e86d0da2c7e978ff845b3ecb35",
+          "bytes": 276072
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "4e2c434057ce162614b3c0a090a705f12be67cf37e8843f0aaddd98481d8d07e",
+          "bytes": 166827
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "70f2a09e7af1f85acf60beb52d508a68dac999dd85fae4ef0370ef4c7f42bd86",
+          "bytes": 16578
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 973,
+          "y": 56,
+          "width": 447,
+          "height": 792,
+          "right": 1420,
+          "bottom": 848
+        },
+        "P": {
+          "x": 973,
+          "y": 60,
+          "width": 447,
+          "height": 820
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 322,
+          "right": 1386,
+          "bottom": 574
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1265,
+          "y": 431,
+          "width": 108,
+          "height": 72,
+          "right": 1373,
+          "bottom": 503
+        },
+        "Acolor": "rgb(239, 143, 132)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1265,
+          "y": 511,
+          "width": 68,
+          "height": 26,
+          "right": 1333,
+          "bottom": 537
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 635,
+        "bodyScrollHeight": 745,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 592,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 618
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 626,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 652
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 660,
+              "width": 134,
+              "height": 38,
+              "right": 1386,
+              "bottom": 698
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-6f3541c3b527acdedc5e7f3e",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "0b16e224-8869-4df0-8a19-1897870670a6",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 6,
+      "key": "dark-rw900-win1440x900|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "c2d8d392ffc18a34417c8ef6d5aa5ce418f249c531a97ad404b4c482cae09be2",
+          "bytes": 129148
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1440x900-B12-recovery-failed.json",
+          "sha256": "2d7a201751968733757f1644b405ca954e0bd3bb2b3f6f9c9e6aeb2793cbc85b",
+          "bytes": 274126
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "633e7ce1c08de0bd9c494f8f5631a2e0505cb2e25bbf93e1d287b3ea652f1c32",
+          "bytes": 197108
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-recovery-failed.json",
+          "sha256": "f1cb6d6e6f0f82d589b4fc6abe9d40c9a5cc1e623f8756bf47300c28c55ee96d",
+          "bytes": 16269
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 606.5,
+          "y": 147,
+          "width": 760,
+          "height": 610,
+          "right": 1366.5,
+          "bottom": 757
+        },
+        "P": {
+          "x": 606.5,
+          "y": 154.796875,
+          "width": 760,
+          "height": 630.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 885.5,
+          "y": 325,
+          "width": 458,
+          "height": 114,
+          "right": 1343.5,
+          "bottom": 439
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 471,
+        "bodyScrollHeight": 471,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 885.5,
+              "y": 457,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 483
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 985.5,
+              "y": 457,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 483
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1054.5,
+              "y": 457,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 483
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-61a608ffdf3554408b306f1b",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "94acf9e2-3b55-4c5e-90a9-2748ab8dc58b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 7,
+      "key": "dark-rw900-win1440x900|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "d575ac77d435dcc813505a11e8e52e25a6027d3b01dd04e5902c622674a2154a",
+          "bytes": 137075
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "d919239c1a1be414631750577a5beea0c4eb124582ce891c62c8c8cac0267cdb",
+          "bytes": 280752
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "f10f596ab8db03c3eb06ee6a5c9888f85186787f923f8b3226f59f4dd3b05c90",
+          "bytes": 202932
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "sha256": "990b0af57d74a98e56a1b3621ed84982f4391952161f76bda89b1b9e7c78848f",
+          "bytes": 16586
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 606.5,
+          "y": 119,
+          "width": 760,
+          "height": 666,
+          "right": 1366.5,
+          "bottom": 785
+        },
+        "P": {
+          "x": 606.5,
+          "y": 138.796875,
+          "width": 760,
+          "height": 662.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 885.5,
+          "y": 297,
+          "width": 458,
+          "height": 170,
+          "right": 1343.5,
+          "bottom": 467
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 898.5,
+          "y": 404,
+          "width": 432,
+          "height": 18,
+          "right": 1330.5,
+          "bottom": 422
+        },
+        "Acolor": "rgb(239, 143, 132)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 898.5,
+          "y": 430,
+          "width": 68,
+          "height": 26,
+          "right": 966.5,
+          "bottom": 456
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 527,
+        "bodyScrollHeight": 527,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 885.5,
+              "y": 485,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 511
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 985.5,
+              "y": 485,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 511
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1054.5,
+              "y": 485,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 511
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-61a608ffdf3554408b306f1b",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "94acf9e2-3b55-4c5e-90a9-2748ab8dc58b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 8,
+      "key": "light-rw480-win1920x1080|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "da9b0a43e2082733188fc2cdef4972e0bdf9f8812385af1c9d598692fee2c2f4",
+          "bytes": 147496
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1920x1080-B12-recovery-failed.json",
+          "sha256": "7739f9d0c51b5639212f4fff11aa108d7589c60cb4d420298c40a446569e2c05",
+          "bytes": 278675
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "06c6aaff856381143a912fd65d3573cff6fcf39e0dc747b8542a83acab327f0e",
+          "bytes": 178701
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-recovery-failed.json",
+          "sha256": "8f2d379f65149aea902da6a1af3dc67a03323c203ff643222f603278871358f6",
+          "bytes": 16354
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1453,
+          "y": 139,
+          "width": 447,
+          "height": 806,
+          "right": 1900,
+          "bottom": 945
+        },
+        "P": {
+          "x": 1453,
+          "y": 90.609375,
+          "width": 447,
+          "height": 938.78125
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1732,
+          "y": 335,
+          "width": 145,
+          "height": 212,
+          "right": 1877,
+          "bottom": 547
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 649,
+        "bodyScrollHeight": 649,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 565,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 591
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 599,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 625
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 633,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 671
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-72161f0348c309f4cee232b5",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "cf31d3ec-a1c7-495d-a5fe-33cf67293980",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 9,
+      "key": "light-rw480-win1920x1080|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "616d4a30bd0bf5ed8f143ebfe795cb2e8f35493bc5cbd9282c516bd7093a2eb9",
+          "bytes": 155877
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "a5573283a6fbc5eb1b4103cdcd4f59aa5d76a82c78fcd875da8cf63dcab743f3",
+          "bytes": 285303
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "de527857fe690878b8721ca0862271072b4499a2ccb757d486efd4da04ccdd57",
+          "bytes": 175982
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "7eb28df4447978d56d380c920800c88aa4d4da6291174ca74774643f3034e8a1",
+          "bytes": 16659
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON",
+        "REC-LIGHT-WARNING"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1453,
+          "y": 106,
+          "width": 447,
+          "height": 872,
+          "right": 1900,
+          "bottom": 978
+        },
+        "P": {
+          "x": 1453,
+          "y": 60,
+          "width": 447,
+          "height": 1000
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1732,
+          "y": 302,
+          "width": 145,
+          "height": 278,
+          "right": 1877,
+          "bottom": 580
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1745,
+          "y": 481,
+          "width": 119,
+          "height": 54,
+          "right": 1864,
+          "bottom": 535
+        },
+        "Acolor": "rgb(112, 112, 112)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1745,
+          "y": 543,
+          "width": 68,
+          "height": 26,
+          "right": 1813,
+          "bottom": 569
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 715,
+        "bodyScrollHeight": 715,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 598,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 624
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 632,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 658
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 666,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 704
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-72161f0348c309f4cee232b5",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "cf31d3ec-a1c7-495d-a5fe-33cf67293980",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 10,
+      "key": "light-rw900-win1920x1080|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "d08fbf056445e6898e8ff26e80865a0c2ee0545b874b1efe7cb1ccf1e4265781",
+          "bytes": 145923
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1920x1080-B12-recovery-failed.json",
+          "sha256": "69f9adc45cebdfb6c14e755f23c5f08e54ba0006eaebaff8ba7383eef615f326",
+          "bytes": 283441
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "f397fb7e040a46b4b0e5673caffba2e798e30bb9f5f2e4066f28ebc1487c9882",
+          "bytes": 204376
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-recovery-failed.json",
+          "sha256": "8669dda1ca13f00a3f3546d472dc357b5e5cf5682acfda2421cea1837f9de968",
+          "bytes": 16344
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1086.5,
+          "y": 237,
+          "width": 760,
+          "height": 610,
+          "right": 1846.5,
+          "bottom": 847
+        },
+        "P": {
+          "x": 1086.5,
+          "y": 244.796875,
+          "width": 760,
+          "height": 630.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1365.5,
+          "y": 415,
+          "width": 458,
+          "height": 114,
+          "right": 1823.5,
+          "bottom": 529
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 471,
+        "bodyScrollHeight": 471,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1365.5,
+              "y": 547,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 573
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1465.5,
+              "y": 547,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 573
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1534.5,
+              "y": 547,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 573
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-77c3d0435e2d0f75ed110c7e",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "9f7e8130-6074-480e-af67-ff3dcb3db71b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 11,
+      "key": "light-rw900-win1920x1080|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "f58a4f15216c5ba5bacd9be4b2a00b9ea75efff20b6fc8dc66a6e6c6d170936c",
+          "bytes": 154005
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-light-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "444368659a8f30e64b1a628f128f854b4b1550e11e3f5bfcc5fe9281fba88043",
+          "bytes": 290085
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "4c1ad190e7881b3bf161a10087f0cfe1a5071b870722bd4a481b4247c69bb0df",
+          "bytes": 211904
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "43f522a2ccece8d50446c18509d1552b2c8be8eb52dcd3ec55723fbb8c06351d",
+          "bytes": 16661
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON",
+        "REC-LIGHT-WARNING"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1086.5,
+          "y": 209,
+          "width": 760,
+          "height": 666,
+          "right": 1846.5,
+          "bottom": 875
+        },
+        "P": {
+          "x": 1086.5,
+          "y": 228.796875,
+          "width": 760,
+          "height": 662.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1365.5,
+          "y": 387,
+          "width": 458,
+          "height": 170,
+          "right": 1823.5,
+          "bottom": 557
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "color(srgb 0.98902 0.962745 0.903137)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1378.5,
+          "y": 494,
+          "width": 432,
+          "height": 18,
+          "right": 1810.5,
+          "bottom": 512
+        },
+        "Acolor": "rgb(112, 112, 112)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1378.5,
+          "y": 520,
+          "width": 68,
+          "height": 26,
+          "right": 1446.5,
+          "bottom": 546
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 527,
+        "bodyScrollHeight": 527,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1365.5,
+              "y": 575,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 601
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1465.5,
+              "y": 575,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 601
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1534.5,
+              "y": 575,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 601
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-77c3d0435e2d0f75ed110c7e",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "9f7e8130-6074-480e-af67-ff3dcb3db71b",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 12,
+      "key": "dark-rw480-win1920x1080|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "71ac785f0244942d3cd92d985638da73b858feefa56647d08f374133d0a2aab7",
+          "bytes": 141941
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1920x1080-B12-recovery-failed.json",
+          "sha256": "a0cebe5060cd72b14efd345e82c8182cd50eb93a155dbfa80a27969dac1b35f7",
+          "bytes": 287600
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "52190ec167d80e4a96892aab4cb3daf85f87276c33b0201978552213258264f3",
+          "bytes": 179006
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-recovery-failed.json",
+          "sha256": "c283d2a3976be16d43a73439fe1c2d9a7c277252f125b6224276ee10de9b159f",
+          "bytes": 16380
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1453,
+          "y": 139,
+          "width": 447,
+          "height": 806,
+          "right": 1900,
+          "bottom": 945
+        },
+        "P": {
+          "x": 1453,
+          "y": 90.609375,
+          "width": 447,
+          "height": 938.78125
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1732,
+          "y": 335,
+          "width": 145,
+          "height": 212,
+          "right": 1877,
+          "bottom": 547
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 649,
+        "bodyScrollHeight": 649,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 565,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 591
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 599,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 625
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 633,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 671
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-3850bc2458cbbd27d0749b05",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "c096bc56-47ad-41b7-93fc-ff3dc8ad09f5",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 13,
+      "key": "dark-rw480-win1920x1080|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "cc064094d138b7811222eeb1d0c91989f67a5b7eadea6cc33d616a9d5438bdc7",
+          "bytes": 150358
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "7fcde39c393cb1df6b97d97efd32e386187a3aa5da58315d990ae87b866e5488",
+          "bytes": 294216
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "410c57a64c8bd62f3eae388d2d5dad8b2f2b584e5efedcbe1d2518754cf8b35b",
+          "bytes": 175576
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "69617f79d01f7ae689e46bf5df0ad36cb52f92f7ac8bd05eeb6371fc72a90e24",
+          "bytes": 16685
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1453,
+          "y": 106,
+          "width": 447,
+          "height": 872,
+          "right": 1900,
+          "bottom": 978
+        },
+        "P": {
+          "x": 1453,
+          "y": 60,
+          "width": 447,
+          "height": 1000
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1732,
+          "y": 302,
+          "width": 145,
+          "height": 278,
+          "right": 1877,
+          "bottom": 580
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1745,
+          "y": 481,
+          "width": 119,
+          "height": 54,
+          "right": 1864,
+          "bottom": 535
+        },
+        "Acolor": "rgb(239, 143, 132)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1745,
+          "y": 543,
+          "width": 68,
+          "height": 26,
+          "right": 1813,
+          "bottom": 569
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 715,
+        "bodyScrollHeight": 715,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 598,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 624
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 632,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 658
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 666,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 704
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-3850bc2458cbbd27d0749b05",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "c096bc56-47ad-41b7-93fc-ff3dc8ad09f5",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 14,
+      "key": "dark-rw900-win1920x1080|B12-recovery-failed",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "f379a1db191273eb1c32997813007716b61b6ae642b40a8e71b9de0c545a1417",
+          "bytes": 140058
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1920x1080-B12-recovery-failed.json",
+          "sha256": "483579362bffd8f1086814e10f57a8931a3736c331056980f9600ab2608dcc05",
+          "bytes": 292364
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "f7a9a70942f1aa6e7dc61b599d11beadf6b491a7340df426af5dbc5076dc59d6",
+          "bytes": 204519
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-recovery-failed.json",
+          "sha256": "b984d1af0ba360992f5d4ffc6860f71fc67cbf8b64380ce05549b2fa4b030aec",
+          "bytes": 16370
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1086.5,
+          "y": 237,
+          "width": 760,
+          "height": 610,
+          "right": 1846.5,
+          "bottom": 847
+        },
+        "P": {
+          "x": 1086.5,
+          "y": 244.796875,
+          "width": 760,
+          "height": 630.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1365.5,
+          "y": 415,
+          "width": 458,
+          "height": 114,
+          "right": 1823.5,
+          "bottom": 529
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复清空登录态",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复清空该登录态用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": null,
+      "confirmButton": null,
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 471,
+        "bodyScrollHeight": 471,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1365.5,
+              "y": 547,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 573
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1465.5,
+              "y": 547,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 573
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1534.5,
+              "y": 547,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 573
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-cdc1ddab9f686751b4d27d00",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "09b127a8-7a45-46cd-a0a3-aac5da1dd680",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    },
+    {
+      "index": 15,
+      "key": "dark-rw900-win1920x1080|B12-recovery-clear-confirm",
+      "reviewed": true,
+      "originalPNGsViewed": 2,
+      "reviewMethod": "Full unchanged P and A PNGs individually opened with view_image; no crop/edit/mosaic/composite. Metadata and frozen source read separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "afbca5438986817ccc0caf920e7a86afc69169523316c77aef3cf39a987a0dd5",
+          "bytes": 148332
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App046-B12-recovery16-prep-002/A-dark-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "425207b318039958da6f2aa02770827c2e1c9dab24657dc7fa9ca8d64bdfbc0a",
+          "bytes": 298996
+        },
+        "P_png": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "1fbca86dac445450a9bcb20a202233c08e69a63f938fc0a661787f0173d35f65",
+          "bytes": 212067
+        },
+        "P_meta": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "sha256": "26ed9290c17de45ad005f15dd2b1e4594cbc49c822474cf4007049c3ababae0f",
+          "bytes": 16687
+        }
+      },
+      "metadataIntegrity": {
+        "A_equalsFrozenRawCapture": true,
+        "P_metaImageHashMatchesP": true
+      },
+      "visualConclusion": "Scoped visual differences remain; not a visual pass.",
+      "confirmedVisualDifferenceIds": [
+        "REC-ICON",
+        "REC-ACTION-ROW",
+        "REC-CONFIRM-BUTTON"
+      ],
+      "copyOrBusinessDifferenceIds": [
+        "REC-COPY",
+        "REC-CLONE-POLICY"
+      ],
+      "dialogGeometry": {
+        "A": {
+          "x": 1086.5,
+          "y": 209,
+          "width": 760,
+          "height": 666,
+          "right": 1846.5,
+          "bottom": 875
+        },
+        "P": {
+          "x": 1086.5,
+          "y": 228.796875,
+          "width": 760,
+          "height": 662.390625
+        },
+        "note": "Horizontal width/placement agree. Height/vertical centering differ with actual text, alert wrapper/action flow and viewport shell; no global pixel-shift equivalence asserted.",
+        "commonDialogStyleDeltas": {}
+      },
+      "attention": {
+        "Arect": {
+          "x": 1365.5,
+          "y": 387,
+          "width": 458,
+          "height": 170,
+          "right": 1823.5,
+          "bottom": 557
+        },
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "color(srgb 0.173726 0.147451 0.0878431)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(227, 160, 8)",
+          "borderRadius": "10px",
+          "padding": "10px 12px",
+          "gap": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "normal",
+          "display": "block",
+          "flexWrap": "nowrap"
+        },
+        "AiconCount": 0,
+        "PiconFromOriginalPNGAndFrozenJSX": {
+          "name": "ShieldAlert",
+          "size": 15
+        },
+        "Atext": "需要处理：上次导入的恢复没有完成使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消",
+        "PfullDialogText": "登录态管理每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。WillYou 项目登录态项目默认 · 当前页面使用中为「检查多平台安装包」新建独立登录态WillYou 项目登录态没有导入记录需要处理：上次导入的恢复没有完成使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 BROWSER_UNAVAILABLE。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。重试恢复将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。确认清空取消用于当前页面克隆导入 Chrome／Edge 登录态证书例外无站点权限无完成"
+      },
+      "warning": {
+        "Atext": "将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。",
+        "Arect": {
+          "x": 1378.5,
+          "y": 494,
+          "width": 432,
+          "height": 18,
+          "right": 1810.5,
+          "bottom": 512
+        },
+        "Acolor": "rgb(239, 143, 132)",
+        "PvisualColor": "red (P CSS #c0392b light; #ef8f84 dark)",
+        "note": "Light A gray is confirmed mismatch; dark A #ef8f84 remains red, not missing danger-text in dark."
+      },
+      "confirmButton": {
+        "Astyle": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderWidth": "1px",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderRadius": "7px",
+          "padding": "0px 9px",
+          "gap": "4px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "whiteSpace": "normal",
+          "overflowWrap": "anywhere",
+          "display": "inline-flex",
+          "flexWrap": "nowrap"
+        },
+        "Arect": {
+          "x": 1378.5,
+          "y": 520,
+          "width": 68,
+          "height": 26,
+          "right": 1446.5,
+          "bottom": 546
+        },
+        "Atext": "确认清空",
+        "Pvisual": "Red text and red border; frozen P uses bw-mini bw-mini-danger. A uses bw-mini only."
+      },
+      "actualContainment": {
+        "warningHorizontalClippingSeen": false,
+        "controlClippingOrTerminalOverlapSeen": false,
+        "bodyClientHeight": 527,
+        "bodyScrollHeight": 527,
+        "note": "1440 narrow confirmation body scrolls; warning/retry/confirm/cancel/close/footer visible. Scroll to offscreen lower sections was not performed by reviewer."
+      },
+      "actionState": {
+        "A": [
+          {
+            "text": "用于当前页面",
+            "disabled": true,
+            "rect": {
+              "x": 1365.5,
+              "y": 575,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 601
+            }
+          },
+          {
+            "text": "克隆",
+            "disabled": true,
+            "rect": {
+              "x": 1465.5,
+              "y": 575,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 601
+            }
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": true,
+            "rect": {
+              "x": 1534.5,
+              "y": 575,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 601
+            }
+          }
+        ],
+        "Pclone": "Enabled in original P, disabled in actual A; needs-attention policy applicability must be adjudicated by Root, not fixed by enabling unsafe action for image fit."
+      },
+      "faultEvidence": {
+        "profileId": "project-cdc1ddab9f686751b4d27d00",
+        "state": "needs-attention",
+        "journalExists": true,
+        "actualWriteThenLostACK": true,
+        "actualRestoreBeforeWriteFailure": true,
+        "profileNetworkSuspended": true,
+        "pageId": "09b127a8-7a45-46cd-a0a3-aac5da1dd680",
+        "pagePausedBlank": true,
+        "afterRealUIClear": "ready"
+      },
+      "boundaries": [
+        "Explicit synthetic source/key/journal/NativeStore fault environment; not unmodified production auth.",
+        "Only renderer-owned manager control pixels judged; liveNative compositor/background webpage pixels not certified.",
+        "Task/sidebar/terminal/URL/title/profile-prefix and prototype demo data differ; kept separate from actual manager visual differences."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "case": "M12-T145",
+  "requirements": {
+    "revision": "R1.7",
+    "original": "docs/里程碑/M12_浏览器自动化/需求.md",
+    "privateSnapshot": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/requirements-R1.7.md",
+    "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33"
+  },
+  "originalStates": [
+    {
+      "id": "B03-invalid-address",
+      "source": "B03",
+      "title": "无效地址提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "javascript:alert(1)",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "实际地址栏提交拒绝协议，不执行脚本"
+      }
+    },
+    {
+      "id": "B14-settings-clear-confirm",
+      "source": "B14/R1.1",
+      "title": "浏览器文件清理确认说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "浏览器设置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "清理全部浏览器文件"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI清理确认，仅合成自有文件统计，不点击确认删除"
+      }
+    }
+  ],
+  "commonVisualCriteria": [
+    "Original same-key P/A fullPNG comparison of layout/dimensions/spacing/alignment, icon/stroke/state, equivalent semantic text/type metrics, theme/color/opacity/border/radius/shadow",
+    "Long text contained/scrollable without browser pane overflow; backdrop/dialog only browser region, terminal unobscured",
+    "Fonts ready, exact dimensions1440x900/1920x1080, light/dark, right pane480/900; one original guard and bounded stable frames; no automatic visual pass"
+  ],
+  "invalidAddress8": {
+    "originalInput": "javascript:alert(1)",
+    "originalPExpected": ".bw-failure",
+    "actualMechanics": [
+      "Actual address click/selectAll/insertText/Enter",
+      "Exact R01.1 notice 请输入有效的 http(s) 或 localhost 地址",
+      "Original pageId/tab URL/native WC ID/live document fixture identity/timeOrigin unchanged, no script URL execution",
+      "Record current visible banner, address draft and failure DOM separately; no fabricated failure page"
+    ],
+    "presentationDivergence": "P route expects centered .bw-failure while actual production source retains page and sets notice banner. R1.7 disallows javascript/data opening and requires in-tab invalid notice/no white screen; exact presentation match remains unresolved for Root. No prototype/requirement changes or automatic visual green."
+  },
+  "settingsClearConfirm8": {
+    "precondition": "Only current runtime/userdata/browser/artifacts/<own actual task ID>/t145-settings-owned-precondition.txt, 1MiB each8files; no daily files or credentials. Plain synthetic non-accepted data preparation, no business result faked.",
+    "actualMechanics": [
+      "Real browser menu Settings then enabled 清理全部浏览器文件",
+      "Retain actual warning and visible enabled 确认清理/取消 buttons during capture",
+      "No click 确认清理, no browser.clearArtifacts RPC; real Cancel then Done",
+      "All8 artifact SHA/size/mode/dev/inode/mtime/ctime unchanged, Native view restored; originalAGENTS file identity unchanged"
+    ],
+    "originalSampleDifference": "Artifact usage numbers/data differ from P demo; preserve actual own bytes, never write store or set displayed value."
+  },
+  "originalRemaining48Scope": {
+    "thisPrepared": 16,
+    "keychainSystem": 8,
+    "certificate": 16,
+    "sites": 8,
+    "notShrunkTo16": true
+  },
+  "actualAppByPreparer": 0,
+  "formalIncrement": 0,
+  "retestAdjudication": {
+    "R01.1InputValidationNotR01.3NavigationFailure": "Root corrected prior review inference. normalize(null) sets notice and returns snapshot; no store.catch/actual navigation. Keep invalid selected text per confirmed P; do not restore prior URL on validation rejection.",
+    "B03Actual": "Real UI Enter calls production host navigate. Assert before snapshot.notice null then actual host notice exactly invalidNotice; same tabs/Native URI/timeOrigin while view parked. Renderer real same-name InvalidPage has no page snapshot overlay.",
+    "B14Actual": "Real clear request only, actionRow gap6px, no confirmation click or RPC clear; all own artifact and original file identities unchanged."
+  }
+}

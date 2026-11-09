@@ -2,11 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   BLANK_URL, AGENT_HOLD_MS, resolveAddress, resolvePage, securityState, hostLabel,
-  emptyTaskBrowser, openTab, closeTab, updateTab, navigateTab, goBack, goForward, canGoBack, canGoForward, currentUrl,
+  emptyTaskBrowser, openTab, closeTab, reopenTab, updateTab, navigateTab, goBack, goForward, canGoBack, canGoForward, currentUrl, tabTitle,
   agentCommandStart, agentCommandEnd, agentMarked, agentHoldRemaining, pauseAgent, resumeAgent, endRun, serialize, restore
 } from '../src/browser-prototype-model.mjs';
 
 const nav = (input, engine) => resolveAddress(input, engine);
+
+test('R01.3 failed navigation retains the last successful title through repeated failures', () => {
+  let tab = openTab(emptyTaskBrowser(), 'https://qa.example.test/orders/1024').tabs[0];
+  const title = tabTitle(tab);
+  for (const url of ['http://localhost:3000/', 'https://refused.example.test/', 'https://nxdomain.example.test/', 'https://timeout.example.test/', 'https://reset.example.test/', 'https://other.example.test/']) {
+    tab = navigateTab(tab, url);
+    assert.equal(resolvePage(currentUrl(tab)).kind, 'failure');
+    assert.equal(tabTitle(tab), title);
+  }
+  tab = navigateTab(tab, 'https://qa.example.test/');
+  assert.equal(tabTitle(tab), '登录 · 测试环境');
+  assert.equal(tabTitle(tab, { offline: true }), '登录 · 测试环境');
+  assert.equal(resolvePage(currentUrl(tab), { offline: true }).kind, 'failure');
+  assert.equal(tabTitle(navigateTab(openTab(emptyTaskBrowser()).tabs[0], 'https://nxdomain.example.test/')), '新标签页');
+});
 
 test('R01.1 empty and about:blank open the blank page', () => {
   assert.deepEqual(nav(''), { status: 'navigate', url: BLANK_URL });
@@ -95,6 +110,31 @@ test('tabs: open, navigate, back/forward, close selects a neighbour', () => {
   assert.equal(state.active, null);
 });
 
+test('R01.9 recent closed tabs are task-scoped, capped at ten and restore addresses without page state', () => {
+  let state = emptyTaskBrowser();
+  const other = openTab(emptyTaskBrowser(), 'https://other.example.test/');
+  for (let i = 0; i < 12; i++) {
+    state = openTab(state, `https://qa.example.test/orders/${i}`);
+    state = updateTab(state, state.active, tab => ({ ...tab, profile: 'task', invalid: { input: 'bad' }, formValue: 'never restore' }));
+    state = closeTab(state, state.active);
+  }
+  assert.equal(state.closed.length, 10);
+  assert.equal(currentUrl(state.closed[0]), 'https://qa.example.test/orders/2');
+  const saved = JSON.parse(JSON.stringify(serialize({ first: state, other })));
+  assert.equal(JSON.stringify(saved).includes('never restore'), false);
+  const restored = restore(saved), oldId = restored.first.closed.at(-1).id;
+  const reopened = reopenTab(restored.first);
+  assert.equal(reopened.closed.length, 9);
+  assert.notEqual(reopened.active, oldId);
+  assert.equal(currentUrl(reopened.tabs.at(-1)), 'https://qa.example.test/orders/11');
+  assert.equal(reopened.tabs.at(-1).profile, 'task');
+  assert.equal(reopened.tabs.at(-1).invalid, undefined);
+  assert.equal(reopened.tabs.at(-1).formValue, undefined);
+  assert.equal(restored.other.closed.length, 0);
+  assert.equal(currentUrl(restored.other.tabs[0]), 'https://other.example.test/');
+  assert.equal(reopenTab(other), other);
+});
+
 test('R07.2 agent mark lasts while running and for 20 s after the last command', () => {
   let state = openTab(emptyTaskBrowser());
   const tabId = state.active;
@@ -136,7 +176,7 @@ test('R01.9 persistence keeps only tab addresses and the active index', () => {
   state = openTab(state, 'http://localhost:5173/');
   ({ state } = agentCommandStart(pauseAgent(state).state, state.active, 1));
   const saved = serialize({ t1: state });
-  assert.deepEqual(saved, { t1: { tabs: [{ url: 'https://qa.example.test/', profile: 'project' }, { url: 'http://localhost:5173/', profile: 'project' }], active: 1 } });
+  assert.deepEqual(saved, { t1: { tabs: [{ url: 'https://qa.example.test/', profile: 'project' }, { url: 'http://localhost:5173/', profile: 'project' }], closed: [], active: 1 } });
   const restored = restore(JSON.parse(JSON.stringify(saved))).t1;
   assert.equal(restored.tabs.length, 2);
   assert.equal(currentUrl(restored.tabs[1]), 'http://localhost:5173/');

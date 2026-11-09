@@ -1,0 +1,336 @@
+{
+  "scope": "Independent readonly original T110 contract review; no originaljudge/raw change",
+  "at": "2026-11-08T15:11:35.012138+00:00",
+  "contract": {
+    "M12-T107": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "line": 161,
+      "layer": "I＋A",
+      "preconditions": "T1 有网页标签，Agent 已连接并正在使用；点击计数接口",
+      "steps": "Agent 先在前台执行 3 次点击；切换到 T2（页面移进停放窗口）；在后台执行 `click`、`screenshot`、`snapshot` 各 10 次；再切回 T1 执行 3 次点击",
+      "expected": "前台、后台、切回后的每次点击都实际生效（计数逐次加一）；后台 `click` 中位耗时低于 1 秒（review2 在透明停放窗口观察到约 5 秒，必须在 S1 定位）；`screenshot` 不卡住；切回后页面状态和尺寸不变；记录每次耗时"
+    },
+    "M12-T110": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "line": 164,
+      "layer": "S",
+      "preconditions": "双显示器；WillYou 全屏",
+      "steps": "在全屏空间和另一显示器之间切换，期间 Agent 在后台执行命令",
+      "expected": "停放窗口不可见；后台命令仍保持 T107 的耗时；切回不闪烁"
+    }
+  },
+  "requirement": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+    "lines": "573-576",
+    "R07.5": "任务后台时页面移入透明/不可聚焦/鼠标不可达的停放窗，保持原尺寸继续绘制；切回挂回右侧工作区。"
+  },
+  "decision": {
+    "mayCorrectIndependentT110JudgeWithoutAppRerun": true,
+    "originalJudgeFalseMustRemain": true,
+    "notAnExpectedResultChange": true,
+    "reason": "T110 explicitly borrows T107 performance, not every same-display DPR/viewport assertion of a reused private T107 driver. Parked size remains exact; current host layout on remount and actual display DPR are independent facts. No contract requires disabling an expired activity banner or retaining Retina2 on external scale1.",
+    "wholeT110FinalLedgerOwner": "Root; this is independent contract/evidence review, no public update",
+    "newT107WholePassClaim": false
+  },
+  "originalFailedPredicates": [
+    {
+      "id": "real-task-switch-preserves-run-PTY-caller",
+      "finding": "18 selector log rows include15control-readiness and3real-click. Restrict action count to kind===real-click, leaving exact T1→T2→T1 order and all3 actual same-PTY/run/caller bindings unchanged.",
+      "verifiedActualClicks": 3,
+      "verifiedBindings": 3
+    },
+    {
+      "id": "same-page-document-state-url-size-and-park",
+      "finding": "Copied all-stage sameviewport/DPR predicate rejects real host-layout and display changes; original T110 does not require that invariant across fullscreen and2screens. Retain exact parked invariant and current remount placement correctness.",
+      "base": {
+        "css": [
+          475,
+          742
+        ],
+        "dpr": 2,
+        "view": {
+          "x": 959,
+          "y": 120,
+          "width": 475,
+          "height": 742
+        }
+      },
+      "parked10rounds": {
+        "css": [
+          475,
+          742
+        ],
+        "dpr": 2,
+        "nativeSize": [
+          475,
+          742
+        ],
+        "exact": true
+      },
+      "remounted": {
+        "css": [
+          475,
+          776
+        ],
+        "dpr": 1,
+        "view": {
+          "x": 959,
+          "y": 86,
+          "width": 475,
+          "height": 776
+        }
+      },
+      "final": {
+        "css": [
+          475,
+          742
+        ],
+        "dpr": 1,
+        "view": {
+          "x": 959,
+          "y": 120,
+          "width": 475,
+          "height": 742
+        },
+        "sameCSSAndNativeBoundsAsBaseline": true
+      }
+    }
+  ],
+  "bannerLayoutEvidence": {
+    "P": [
+      "source054/prototypes/m6-codex/src/BrowserWorkspace.jsx:254 conditional marked banner is a sibling before frame:258",
+      "browser.css:7 flexcolumn;24 banner line18+verticalpadding14+top/bottomborder2=34CSSpx;32 pageflex1"
+    ],
+    "A": [
+      "source054/src/renderer/features/browser/workspace.tsx:163 conditional activity/paused banner beforeviewport169",
+      "workspace.css:25 line18/bottom1,122 padding7x14/top1; total34CSSpx",
+      "workspace.tsx:141-146 placement derived from current viewport rect, inset2"
+    ],
+    "actualArithmetic": {
+      "topDelta": -34,
+      "heightDelta": 34,
+      "bottomEqual": true,
+      "finalSameStateBoundsEqual": true
+    },
+    "limit": "Raw remounted pageState does not separately store banner DOM/computed rect. Expired hold plus exact34px redistribution is source/timing-consistent; do not present this inference as an independently captured remount-banner descriptor. Original T110 no-flicker is actual user confirmation, not inferred from size."
+  },
+  "verifiedEvidence": {
+    "rawSHA256": "6e491d73544ea50eed1e468a03e1acb3e853cd8bd74092a5308fb932af7c4b89",
+    "originalJudgeSHA256": "dbdb069a1e385be29c54e00d9313209eb338b7cc6fa874e99fd7e99c453f3cdb",
+    "cleanupSHA256": "b1bcd14f71461ba0b95ba487cd218dca772b04ffab06fd423d2b32b42b13463b",
+    "managedCLI": 39,
+    "trustedClicks": 16,
+    "counterSequence": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "backgroundMedianMs": 388.1177295,
+    "backgroundClickLimitMsExclusive": 1000,
+    "sameContentsDocumentStateURLAllObservedPhases": true,
+    "parkedCSSAndDPRExactAll10": true,
+    "pageViewportEqualsNativePlacementAtEverySavedObservation": true,
+    "systemInputCounterBeforeAfter": [
+      28,
+      28
+    ],
+    "guardYielded": false,
+    "returnDisplay": {
+      "id": 5,
+      "scaleFactor": 1,
+      "originalWindowContentSize": [
+        1440,
+        900
+      ]
+    },
+    "humanSystemSignals": {
+      "fullscreenSpace": {
+        "coordinator": "root",
+        "phase": "fullscreen-space",
+        "at": "2026-11-08T14:57:16.536077+00:00",
+        "userConfirmedFullScreenSpace": true,
+        "userConfirmedParkingInvisible": true,
+        "humanSource": "Current user explicitly confirmed actual fullscreen and no extra parkingwindow after matching manual-ready"
+      },
+      "otherDisplaySpace": {
+        "coordinator": "root",
+        "phase": "other-display-space",
+        "at": "2026-11-08T15:03:16.911886+00:00",
+        "userConfirmedOtherDisplayAndSpace": true,
+        "userConfirmedParkingInvisible": true,
+        "humanSource": "Current user actual confirmation after matching ready: switched Space and other display, no extra parking window"
+      },
+      "returnNoFlicker": {
+        "coordinator": "root",
+        "phase": "return-windowed",
+        "at": "2026-11-08T15:05:28.873899+00:00",
+        "userConfirmedParkingInvisible": true,
+        "userConfirmedReturnNoFlicker": true,
+        "humanSource": "Current user actual confirmation after matching ready: normal window restored without flicker or extra window; will click back own content to finish"
+      }
+    },
+    "backgroundPNGs": [
+      {
+        "index": 1,
+        "sha256": "68dc803f1459dfa78849a32a835168e9baa14a02f2ef7077098c724a35d94ab6",
+        "bytes": 20891,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 422.521542
+      },
+      {
+        "index": 2,
+        "sha256": "82c06962a3275e024a6cf9eaec2b7efdf4f46e37345e173603ad4e14d663e4cd",
+        "bytes": 21084,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 417.464708
+      },
+      {
+        "index": 3,
+        "sha256": "6d28e2bbd751168fb5737bb039f18aadd7ab348ab31d8497bed4457cbcfde389",
+        "bytes": 21233,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 428.887125
+      },
+      {
+        "index": 4,
+        "sha256": "98d07a7f35cb56685fefa0613db141710bafa72431fc7cf9b5c995a6563e48ba",
+        "bytes": 20914,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 401.056792
+      },
+      {
+        "index": 5,
+        "sha256": "c6f3d7b0b67a2c20a9c4dbd1a5b7c7bd531f71488ec02a6e031e050b942dd199",
+        "bytes": 21265,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 404.609708
+      },
+      {
+        "index": 6,
+        "sha256": "296b1782c99dbc60f9e40ba13504fcf453bc137a0f6cb55dd6ccd39e6e7d91a5",
+        "bytes": 21242,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 432.350083
+      },
+      {
+        "index": 7,
+        "sha256": "70d18e2ad84425cde97cbd2a3ca3dcb8e4b0851101ae311ca943f6d4aa7d5262",
+        "bytes": 21270,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 387.188208
+      },
+      {
+        "index": 8,
+        "sha256": "227d946edcacd26e260709cc95efbec5e4c33131b7252a6f167b97ac4f13f5df",
+        "bytes": 20844,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 392.745417
+      },
+      {
+        "index": 9,
+        "sha256": "e7ebe9b75dd64623f4ebd05b029979b887e34e26f654e49b543fa78c4d26bc03",
+        "bytes": 21215,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 402.131375
+      },
+      {
+        "index": 10,
+        "sha256": "6aef498243c864be66864e706537bf81c56dad87400ab656975d820b2e2de779",
+        "bytes": 21305,
+        "size": [
+          950,
+          1484
+        ],
+        "elapsedMs": 390.474625
+      }
+    ],
+    "normalAppExit": {
+      "pid": 56588,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "cleanupChecksAllClear": 59
+  },
+  "requiredCorrectedPredicateScope": [
+    "Exact3 sidebar kindreal-click order plus unchanged3 taskbindings; do not delete duplicate observation rows from raw.",
+    "Keep same original contentsId/document/state/url across all saved phases; counter advances1..16 with trusted events and exactsitehit evidence.",
+    "While parked: exact beforewidth/height/DPR and Nativeview width/height throughout10rounds, opacity0/nonfocusable; no DPR or size drift there.",
+    "When mounted: child innerWidth/Height exactly equal its realNativeview size and recorded placement in current main host; final equal-banner-state CSSsize/native bounds equal original.",
+    "DPR must agree with actual display/Nativecontext; record2→1 accurately, no artificial ratio or pixel normalization.",
+    "Keep3 genuine humanfullscreen/other-display/return-no-flicker receipts, original speed/screenshot/normalexit/59clear and guardconditions. No new App input or user rework needed for these two judge corrections."
+  ],
+  "sourceAndContractHashes": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "e8f8331ddad59adc98fa74f1db7a6d17545fc2164337cd22bceabacaaa1d515a"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+      "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/src/renderer/features/browser/workspace.tsx",
+      "sha256": "1b83a0acc21b93829743365bb1fe609189995affa4383e22d16aac5cdeefc8eb"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/src/renderer/features/browser/workspace.css",
+      "sha256": "0f56c826ec228fd33b4084eba6dee88bf0e02e5c5023d429d6f9a034aaa02a03"
+    }
+  ],
+  "resources": {
+    "Node": 0,
+    "Native": 0,
+    "App": 0,
+    "OS": 0,
+    "publicOrProductionWrites": 0
+  }
+}

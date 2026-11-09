@@ -157,6 +157,17 @@ export function currentUrl(tab) {
   return tab.history[tab.index];
 }
 
+/** R01.3: an error document does not replace the last successful tab title. */
+export function tabTitle(tab, options = {}) {
+  const page = resolvePage(currentUrl(tab), options);
+  if (page.kind !== 'failure') return page.title;
+  for (let index = tab.index; index >= 0; index--) {
+    const previous = resolvePage(tab.history[index], { ...options, offline: false });
+    if (previous.kind !== 'failure') return previous.title;
+  }
+  return '新标签页';
+}
+
 export function navigateTab(tab, url) {
   const history = tab.history.slice(0, tab.index + 1);
   if (history[history.length - 1] === url) return tab;
@@ -171,7 +182,7 @@ export const goForward = tab => (canGoForward(tab) ? { ...tab, index: tab.index 
 
 /** Per-task browser state. Tabs are task-scoped (D8); login profiles are project-scoped (O10). */
 export function emptyTaskBrowser() {
-  return { tabs: [], active: null, paused: false, agent: null };
+  return { tabs: [], closed: [], active: null, paused: false, agent: null };
 }
 
 export function openTab(state, url = BLANK_URL) {
@@ -186,7 +197,14 @@ export function closeTab(state, id) {
   let active = state.active;
   if (active === id) active = tabs.length ? tabs[Math.min(index, tabs.length - 1)].id : null;
   const agent = state.agent?.tabId === id ? null : state.agent;
-  return { ...state, tabs, active, agent };
+  return { ...state, tabs, closed: [...(state.closed ?? []), state.tabs[index]].slice(-10), active, agent };
+}
+
+export function reopenTab(state) {
+  const closed = [...(state.closed ?? [])], previous = closed.pop();
+  if (!previous) return state;
+  const tab = createTab(currentUrl(previous), previous.profile);
+  return { ...state, tabs: [...state.tabs, tab], active: tab.id, closed };
 }
 
 /** New-tab launcher "推荐" (R01.11): per-project visit log ordered by real visit time, one entry per host, newest first (review R09). */
@@ -254,7 +272,7 @@ export function endRun(state) {
 export function serialize(byTask) {
   const out = {};
   for (const [taskId, state] of Object.entries(byTask)) {
-    out[taskId] = { tabs: state.tabs.map(tab => ({ url: currentUrl(tab), profile: tab.profile })), active: state.tabs.findIndex(tab => tab.id === state.active) };
+    out[taskId] = { tabs: state.tabs.map(tab => ({ url: currentUrl(tab), profile: tab.profile })), closed: (state.closed ?? []).slice(-10).map(tab => ({ url: currentUrl(tab), profile: tab.profile })), active: state.tabs.findIndex(tab => tab.id === state.active) };
   }
   return out;
 }
@@ -264,10 +282,11 @@ export function restore(saved) {
   if (!saved || typeof saved !== 'object') return byTask;
   for (const [taskId, value] of Object.entries(saved)) {
     if (!value || !Array.isArray(value.tabs)) continue;
-    const tabs = value.tabs.filter(item => item && typeof item.url === 'string').map(item => createTab(item.url, typeof item.profile === 'string' && /^(project|task|profile-[a-z0-9-]{1,64})$/.test(item.profile) ? item.profile : 'project'));
+    const readTabs = items => (Array.isArray(items) ? items : []).filter(item => item && typeof item.url === 'string').map(item => createTab(item.url, typeof item.profile === 'string' && /^(project|task|profile-[a-z0-9-]{1,64})$/.test(item.profile) ? item.profile : 'project'));
+    const tabs = readTabs(value.tabs), closed = readTabs(value.closed).slice(-10);
     // Keep the saved profile ID; the view falls back to the project profile only if that ID no longer exists in the project (review R08).
     const active = tabs[value.active]?.id ?? tabs[0]?.id ?? null;
-    byTask[taskId] = { ...emptyTaskBrowser(), tabs, active };
+    byTask[taskId] = { ...emptyTaskBrowser(), tabs, closed, active };
   }
   return byTask;
 }
@@ -376,7 +395,7 @@ export function importOutcome(keychain) {
   if (keychain === 'missing') return { ok: false, reason: '找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。' };
   if (keychain === 'denied') return { ok: false, reason: '钥匙串访问被拒绝，没有写入任何 Cookie。' };
   if (keychain === 'timeout') return { ok: false, reason: '等待钥匙串授权超时（30 秒），没有写入任何 Cookie。' };
-  if (keychain === 'undecryptable') return { ok: true, summary: { totalCookies: 412, importedCookies: 0, skippedCookies: 412, googleCookiesSkipped: 0, partitionSkippedCookies: 0, domains: [], warning: '全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。' } };
+  if (keychain === 'undecryptable') return { ok: false, reason: '无法解密来源Cookie；目标登录态尚未写入' };
   return { ok: true, summary: { totalCookies: 412, importedCookies: 371, skippedCookies: 41, googleCookiesSkipped: 37, partitionSkippedCookies: 4, domains: ['qa.example.test', 'zentao.example.test', 'gitlab.example.test', 'wiki.example.test'], reloadedPages: 2 } };
 }
 export function recordImport(store, profileId, source, profileName, at) {

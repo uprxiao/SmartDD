@@ -1,0 +1,1051 @@
+{
+  "at": "2026-11-09T05:18:31.338671+00:00",
+  "scope": "Bounded originalAccess24 contract adjudication/current-source applicability; no new driver/test/PNG/App/Node/Native/HTTP/OS",
+  "existingReport": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App046-access-A040-A041-independent-original24-review/review.json",
+    "sha256": "9654a1b39e168bb32c7c2fd36118fc11b20b95c56391d39427467e6c4cf7757e",
+    "existing24OriginalViewsReused": 24,
+    "newOriginalViews": 0,
+    "newCaptures": 0
+  },
+  "requirements": [
+    {
+      "id": "R06.3",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "lines": [
+        521,
+        532
+      ],
+      "quotedFacts": [
+        "60 秒无人处理按拒绝处理。跨项目申请直接返回 `SCOPE_DENIED`，不弹窗。",
+        "授权范围：绑定当前运行，限定目标任务与模式；运行结束、终端退出、用户撤销时立即失效，不持久化，新运行不能沿用。"
+      ]
+    },
+    {
+      "id": "R05.1/R05.2/R05.3/R05.10",
+      "lines": [
+        448,
+        460,
+        497,
+        501
+      ],
+      "facts": [
+        "同项目默认共用项目profile，但账号不同时任务可用独立profile；页面绑定profile后该页面命令使用它的登录态",
+        "授权的其他任务profile属于可见范围；授权并不把两个任务profile合并成一个"
+      ]
+    },
+    {
+      "id": "T145/C9",
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "line": 209,
+      "facts": [
+        "同名状态逐项核布局/图标/文字/颜色/长文不溢出/区域contained；C9不承诺Codex浏览器逐像素",
+        "C9不能用来掩盖真实控件间距错误；合成数据和P-only外壳差异另列"
+      ]
+    }
+  ],
+  "source055to064": [
+    {
+      "path": "src/renderer/features/browser/access-dialog.tsx",
+      "source055SHA256": "97ad350bb6ee363cc142c919bd1c4477174a9fc3717a76539a7d7b7981bde7dc",
+      "source064SHA256": "97ad350bb6ee363cc142c919bd1c4477174a9fc3717a76539a7d7b7981bde7dc",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/renderer/features/browser/access-store.ts",
+      "source055SHA256": "b05cbdeb04baa25e6d88b2b335f15f1bce06ba817dee96cd1469a31d1ebc160e",
+      "source064SHA256": "b05cbdeb04baa25e6d88b2b335f15f1bce06ba817dee96cd1469a31d1ebc160e",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/shared/browser-access.ts",
+      "source055SHA256": "01ca473bc28e59ded88a46bb339c38ed81eb8273cda882a32a29f67fbc3539e3",
+      "source064SHA256": "01ca473bc28e59ded88a46bb339c38ed81eb8273cda882a32a29f67fbc3539e3",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/main/core/browser/access.ts",
+      "source055SHA256": "349f600c688541111e3fe00967ec02d32dca4afce2443af10b08528ab2dac6a8",
+      "source064SHA256": "349f600c688541111e3fe00967ec02d32dca4afce2443af10b08528ab2dac6a8",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/renderer/features/browser/workspace.css",
+      "source055SHA256": "e7984c074d29f07da6b1f85c278aa0b7eb2f0b6518ee734e601752871f248ffb",
+      "source064SHA256": "0ac4ace37adb9a7cccddb2d5b8be753a5c56ed2374f95bc6bd4a02e8fe3a3aa9",
+      "byteIdentical": false
+    },
+    {
+      "path": "src/renderer/index.css",
+      "source055SHA256": "0a4b3d5a969adc8601bac523f0dcbb8082c3702b3610a6231936c9434559d1e7",
+      "source064SHA256": "0a4b3d5a969adc8601bac523f0dcbb8082c3702b3610a6231936c9434559d1e7",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/renderer/features/files/workspace-panel.tsx",
+      "source055SHA256": "6d25bff750d9720eafc957c187437c20276576db1d295ae03e3db17c272e659d",
+      "source064SHA256": "090e85d59d15d0733f18f22368210897cd7c68e035941fef2f9a2fce143c97de",
+      "byteIdentical": false
+    }
+  ],
+  "commonAccessAndGrantCSSRules": [
+    {
+      "source055Line": 41,
+      "source064Line": 41,
+      "text": ".bw-dialog{background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(480px,calc(100% - 32px));padding:0;display:flex;flex-direction:column;max-height:calc(100% - 32px);min-width:0}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 42,
+      "source064Line": 42,
+      "text": ".bw-dialog p{color:var(--secondary);margin:12px 0 24px}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 43,
+      "source064Line": 43,
+      "text": ".bw-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 8px 22px}.bw-dialog-head h2{font-size:16px;line-height:22px;font-weight:600;margin:0;color:var(--text)}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 44,
+      "source064Line": 44,
+      "text": ".bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}.bw-dialog-actions{display:flex;justify-content:flex-end;gap:12px;padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}.bw-dialog-actions button{font-size:12px;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.bw-dialog-actions button:last-child{background:var(--primary);color:var(--on-primary)}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 45,
+      "source064Line": 45,
+      "text": ".bw-hint{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:18px;color:var(--secondary);margin:0}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 56,
+      "source064Line": 57,
+      "text": ".bw-row-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bw-mini{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg);color:var(--text);white-space:nowrap}.bw-mini:hover{background:var(--hover)}.bw-mini:disabled{opacity:.45;pointer-events:none}.bw-mini-danger{color:#c0392b;border-color:#e6b0aa}.bw-danger-text{color:#c0392b}.ydark .bw-danger-text{color:#ef8f84}.bw-danger-text{font-size:12px;line-height:18px;overflow-wrap:anywhere}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 59,
+      "source064Line": 60,
+      "text": ".bw-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 60,
+      "source064Line": 61,
+      "text": ".bw-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 62,
+      "source064Line": 63,
+      "text": ".bw-list strong{font-weight:500;font-size:12px;overflow-wrap:anywhere}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 63,
+      "source064Line": 64,
+      "text": ".bw-list small{font-size:11px;color:var(--secondary)}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 76,
+      "source064Line": 77,
+      "text": ".bw-profile-detail .bw-mini{max-width:100%;min-height:26px;height:auto;white-space:normal;overflow-wrap:anywhere}",
+      "unchanged": true
+    },
+    {
+      "source055Line": 116,
+      "source064Line": 117,
+      "text": ".bw-dialog-head p{margin:4px 0 0;font-size:12px;line-height:18px;color:var(--secondary)}",
+      "unchanged": true
+    }
+  ],
+  "decisions": [
+    {
+      "id": "request-countdown-layout",
+      "originalFinding": "review.json findings[id=request-countdown-layout], pairs[*].hintParagraphs and geometryDelta",
+      "oldEvidence": "原16请求图均P371/A439(+68)，A两hint实际margin12px 0 24px，段间空白50px；不能把整个68px都归为壳或都归为业务缺陷。",
+      "decision": "旧版本真实过大段落边距属于需修产品样式；该修复现已在064源码存在，无需再改同类CSS。保留真实倒数/队列提示，不删60秒或用旧P高度硬约束当前A。",
+      "currentSource": {
+        "path": "src/renderer/features/browser/workspace.css",
+        "lines": [
+          42,
+          44,
+          45,
+          170,
+          171
+        ],
+        "rule": "[data-browser-panel=access-request] .bw-dialog-body>.bw-hint{margin:0}",
+        "explanation": "作用域更高specificity覆盖.bw-dialog p的margin，两个hint均margin0，仍保留body14px gap/18px lineHeight。",
+        "byteUnchanged055to064": false
+      },
+      "remaining": "当前App055该请求面板未在本复核重拍；不能把旧439px或原+68写成当前残差，也不能仅凭CSS宣称已实际视觉通过。原16请求观察保留，待Root安排受影响验证。"
+    },
+    {
+      "id": "prototype-countdown-omission",
+      "decision": "P漏既有60秒自动拒绝/实际队列提示的可见说明，应最小补齐P合成演示；生产逻辑保持。",
+      "requirement": "R06.3:525要求60秒自动拒绝；可见动态倒数是当前既有产品说明，并非需求要求逐字或特定独立段高度。不能要求删掉。",
+      "currentSource": [
+        {
+          "path": "src/renderer/features/browser/access-dialog.tsx",
+          "lines": [
+            30,
+            33,
+            38,
+            39
+          ]
+        },
+        {
+          "path": "src/main/core/browser/access.ts",
+          "lines": [
+            47,
+            68
+          ]
+        }
+      ],
+      "prototypeFix": [
+        {
+          "path": "prototypes/m6-codex/src/BrowserWorkspace.jsx",
+          "line": 214,
+          "suggestion": "在既有合成cross request对象增加本次createdAt/expiresAt=+60000，不伪造真实App权威。"
+        },
+        {
+          "path": "prototypes/m6-codex/src/BrowserPanels.jsx",
+          "lines": [
+            103,
+            113
+          ],
+          "suggestion": "CrossTaskDialog用本次合成deadline显示剩余秒/必要队列提示，按0走原拒绝onDecide(null)且禁允许；保留现有radio/control/拒绝。使用既有.bw-hint与14gap，不引入独立页面/真实网络。"
+        }
+      ],
+      "notTested": "本次只读建议，未改或执行P。"
+    },
+    {
+      "id": "request-hint-copy",
+      "originalFinding": "review.json findings[id=request-hint-copy], pairs[*].appVisibleText/prototypeVisibleText",
+      "decision": "A缺“两个任务共用同一项目登录态”不裁为必须补产品。R05.3有独立profile例外，原P绝对句不普遍成立。",
+      "minimalFix": "P112删该绝对末句即可保持与当前A同名安全说明；如要解释，收窄为“默认使用项目登录态；独立登录态按页面绑定保留”，不得暗示授权会共享/合并所有登录态。",
+      "source": "prototypes/m6-codex/src/BrowserPanels.jsx:112；access-dialog.tsx:38；R05.3:458–460/R05.10:498–501",
+      "preservedSemantics": "同运行/终端退出/撤销立即失效及跨项目拒绝已有两边一致，不变。"
+    },
+    {
+      "id": "grant-format-and-data",
+      "originalFinding": "review.json findings[id=grant-format-and-data], grants pairs[*].appVisibleText/prototypeVisibleText",
+      "decision": "保留A请求方→目标、项目名、实际observe/control及仅本次运行；不裁为产品功能/布局缺陷。窄480多一行18px是更丰富真实标题换行，原逐图均contained无clipping，900等高。",
+      "requirement": "R06.3授权绑定run/目标/mode。主程access.state聚合多个run的grants(access.ts91–93)，来源信息有实际辨认价值；需求未规定必须用箭头或只许目标标题，不能从旧样例倒推禁用信息。",
+      "prototypeGap": "P GrantsDialog只有target title/mode sample，建议同步展示当前既有来源信息，避免把单任务局部demo当实际全局授权列表规范。",
+      "prototypeFix": [
+        {
+          "path": "prototypes/m6-codex/src/BrowserWorkspace.jsx",
+          "line": 291,
+          "suggestion": "既有grantCrossTask对象添加当前fromTitle/projectName字段；mode仍来自用户真实选择。"
+        },
+        {
+          "path": "prototypes/m6-codex/src/BrowserPanels.jsx",
+          "line": 118,
+          "suggestion": "现有strong改为requester→target，small显示project·实际mode·仅本次运行，保留撤销和完成；老合成数据缺字段可用当前任务上下文补，不造grant。"
+        }
+      ],
+      "reuseCandidate": "原8 grants scoped visuals可在Root认可此合同裁定及P补注后沿用055实看结果；相关JS/DOM/global index和列表规则均未变，不称当前App055重拍/整PNG一致。",
+      "doNotChange": "绝不为对照P的仅观察样例把已授权control改成observe；不截断所需标识只为压回213.5px高度。"
+    },
+    {
+      "id": "data-shell-and-background",
+      "decision": "按旧报告保留数据/外壳分层：18px可用高度中心差，真实HTTP fixture/HTTPS P、任务项目名/数量、标题长度、实际mode差异可解释。",
+      "limit": "这些不能替代真实hint边距修复或当前受影响验证；不translate面板凑绝对坐标、不改真实网页颜色/身份。"
+    }
+  ],
+  "reusedKeys": [
+    {
+      "key": "light-rw480-win1440x900::B11-access-observe",
+      "sourceReviewPairIndex": 0,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-access-observe.png",
+          "sha256": "2fbc5bbeb0a834aa8371258ddc8e49f895bf1556dd81d41bc101d06882ffe9d9"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-access-observe.json",
+          "sha256": "796f00d5474b525d1260799387e76f42a6938c10f7ac0532dd484f781ff77748"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-access-observe.png",
+          "sha256": "2fcca73705825b27d330a91eba70a264d801c643deabaa195131cd0683b7b739"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-access-observe.json",
+          "sha256": "1018513186a3d504f397fc3300fac2342ae303147a60bdf0ae68735434cdc523"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw480-win1440x900::B11-access-control",
+      "sourceReviewPairIndex": 1,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-access-control.png",
+          "sha256": "231a8115f943f3b5d6fd81634c168d9b91f06da534c6b730450a77946aa0ddd8"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-access-control.json",
+          "sha256": "beef347f18b0ff19f040cd0f26d3710c438d8b7336d25efbf26669f44cf56f08"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-access-control.png",
+          "sha256": "14c5fba1f1718bd2a0fccc2f391ede28ec360790216adb1a0c2f625a60bed6a5"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-access-control.json",
+          "sha256": "30067aa61515c86ed04c92bad60b2a9403856ea60d9b77da80ca23067bab915f"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw480-win1440x900::B11-grants-populated",
+      "sourceReviewPairIndex": 2,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-grants-populated.png",
+          "sha256": "845d2e64dddc8d8f0092da8b8ec17c3169a450cc89411065ca0682712e6b6499"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B11-grants-populated.json",
+          "sha256": "74652404d50357808f5afe60ad16d80a13d2d5bcf8d5e260668361ee9df4778d"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-grants-populated.png",
+          "sha256": "2fc6db86fd76cfc9c2b0489971c507f62d9ad9a1e64bf68599fc1d8446f96339"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1440x900-B11-grants-populated.json",
+          "sha256": "c7afdcb3bd2e8589cfacc7330e7a965b80d626a9a00bc04cb17b7239abc99858"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -27.0,
+        "width": 0,
+        "height": 18.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "light-rw900-win1440x900::B11-access-observe",
+      "sourceReviewPairIndex": 3,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-access-observe.png",
+          "sha256": "b5eb6d37bb7b3263a0fff037c26a04d2cb146830d346ff5c1d7509c7a34803ab"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-access-observe.json",
+          "sha256": "c029dce3f256dace43c03b273dc3fb47e6e4b6366fb5dfc65eb0d09f50a1a3d4"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-access-observe.png",
+          "sha256": "794ce737f317207e5732e9a49b4df213b1b8d28095dcece2141213196b7e1ce5"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-access-observe.json",
+          "sha256": "8210786e94f9808d36eaad1dabe35f27f8f7b2720b6bbfab7213a8a66521d9bb"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw900-win1440x900::B11-access-control",
+      "sourceReviewPairIndex": 4,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-access-control.png",
+          "sha256": "a445ec0110f85f8354f4e2e7a4e200500aa121832e15f76228c2322c4bd370e0"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-access-control.json",
+          "sha256": "51c72fdec9e3ec49503da456957cea836e47b8c4aa44c8fdbb2e60cc56554d5d"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-access-control.png",
+          "sha256": "3736434d8327f69fbbf7abc3d483a83774217a63175119af17566dee2504db6e"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-access-control.json",
+          "sha256": "bbe257219ed21354e09d7511cebb35d8bbc1329a4082b2a1b0842d7d345a0c93"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw900-win1440x900::B11-grants-populated",
+      "sourceReviewPairIndex": 5,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-grants-populated.png",
+          "sha256": "f9a600965af7ac1d1dccfc8f92a160caef7f4b06b6470f562c2cc24cd9b02f1d"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B11-grants-populated.json",
+          "sha256": "f97aff55e4b84886ba870769414fdea1700f448f7dd894ab6bd87267c8144927"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-grants-populated.png",
+          "sha256": "3f92bff576809053fbc09b58a3087ca1f8d7409e0b08a2302284620728d516c7"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1440x900-B11-grants-populated.json",
+          "sha256": "66b42ac92d5766c71dd7e1e1378df85cb30fa3a526cacab50d7b4cbde794ba08"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -18.0,
+        "width": 0,
+        "height": 0.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "dark-rw480-win1440x900::B11-access-observe",
+      "sourceReviewPairIndex": 6,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-access-observe.png",
+          "sha256": "26b24d5337fb91649baa950766c8bdfd3996bff0f4785f43e0a9aa81db0bc562"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-access-observe.json",
+          "sha256": "5bf412aa364e09d68d8ac7c521a73638a341130f0d40a0da584f9b79a0561fa5"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-access-observe.png",
+          "sha256": "0aba43378f3fe3f4a99876116459d324e6dc146264b6aa74960c609c5955a67b"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-access-observe.json",
+          "sha256": "a752136bf88c5f7d1809dca819bc52532c141f4d540439f081eb7b3b0e26e577"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw480-win1440x900::B11-access-control",
+      "sourceReviewPairIndex": 7,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-access-control.png",
+          "sha256": "dcdb37a80f716c9e16744119f090a93c643d86a9588a6b76c73ec55eb26450b7"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-access-control.json",
+          "sha256": "1e00080c7e214d650079848f49710ebcb2663df705506539b9d099a6bd227c0b"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-access-control.png",
+          "sha256": "24de0aed2931a0f227f16f21876b9eb7b076c320aa0d855c950f4e9cba199633"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-access-control.json",
+          "sha256": "a43dd268fc9622ab67351a14f44352f11984d1b34480e3012a8e3eebd0fe6352"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw480-win1440x900::B11-grants-populated",
+      "sourceReviewPairIndex": 8,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-grants-populated.png",
+          "sha256": "b3d6d94f732a2c08c5f7bac06a981457588220d6f5a3b514b42f6d291fc68999"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B11-grants-populated.json",
+          "sha256": "b923bfdb3f1eb2708afbf8337bbada43b9e3afef78896510af9fe5934a4cc971"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-grants-populated.png",
+          "sha256": "a45c9498215ac406afaa279f81069945ff796f8e65053e68cf71bb7d973148a1"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1440x900-B11-grants-populated.json",
+          "sha256": "9b1bf849893654abe01e55b05310f94b75fa51a096743c2411b3bbd3d59ef092"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -27.0,
+        "width": 0,
+        "height": 18.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "dark-rw900-win1440x900::B11-access-observe",
+      "sourceReviewPairIndex": 9,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-access-observe.png",
+          "sha256": "c206e6a4891353bf546dc14f1846734830d9d1de049d4262bf46d2b0d4eac2db"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-access-observe.json",
+          "sha256": "3c049efcf2fc00009e858ff4c529fbad31d2e324289932dce8d1e89672b25dfc"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-access-observe.png",
+          "sha256": "91e7cfaf60ef0e97dc6bb996eb8d0fc5f6b20e6d774fcba9996b848e70b20fcf"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-access-observe.json",
+          "sha256": "08b74ae416ff5d6fb7db6262ac4a45af88e72037d54be6681fd091aea465b039"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw900-win1440x900::B11-access-control",
+      "sourceReviewPairIndex": 10,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-access-control.png",
+          "sha256": "bd4789e86493f28542e7fb373967a95ae4271ee10dc6dcd299511934d69ef451"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-access-control.json",
+          "sha256": "332023c1761b7c806eedb8a55d4470c9b92fbb569caf1c776b1c2aac06b6f31b"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-access-control.png",
+          "sha256": "b1235ea471819d6d9bf22d7343e206d2aaa028ac63a6498f08b65689282ff3c2"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-access-control.json",
+          "sha256": "20af387e0e63cb35ad31d4391ff03bf020f637ccb4ec86ac6eee2d674e7432f9"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw900-win1440x900::B11-grants-populated",
+      "sourceReviewPairIndex": 11,
+      "originals": {
+        "prototypePNG": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-grants-populated.png",
+          "sha256": "69008af750a193d0993d6da8fa331874e6718237c92abecb110511f8acbf3d6c"
+        },
+        "prototypeMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B11-grants-populated.json",
+          "sha256": "3ca90832d8efa0d0fe71bbadb30b7f002e693e3a2fd8a212946957ff7160961d"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-grants-populated.png",
+          "sha256": "352dfa9a0eca532b6a9cda61f6f12e702c552a8bd05ccc0946413f3f01aef9f3"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw900-win1440x900-B11-grants-populated.json",
+          "sha256": "4a87f3329d39cc556bfd615ba309d2b826df96ec0dd3caf8d1d60c257ca5cdf6"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -18.0,
+        "width": 0,
+        "height": 0.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "light-rw480-win1920x1080::B11-access-observe",
+      "sourceReviewPairIndex": 12,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-access-observe.png",
+          "sha256": "a26223f9c289db46bef390e24776e7ee58bb8e5491349daa46dedf9d8e4c9b16"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-access-observe.json",
+          "sha256": "9ee29e65087fe3ccf4185bca798aac633a84f4beab3899eeadd9a47fd884bfd5"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-access-observe.png",
+          "sha256": "2a6d77197df6221f874ff477885efbf5dfa5f2f0148e3cb21943439b411c6e6e"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-access-observe.json",
+          "sha256": "3e83d93bb3ea420e86fdab573d0a107a698a3b13b7e5c8328574da5744eaa38c"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw480-win1920x1080::B11-access-control",
+      "sourceReviewPairIndex": 13,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-access-control.png",
+          "sha256": "137526376a13797bd42605c9c1e827a6c68ef4619d59ac46441a12b7a363a3a1"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-access-control.json",
+          "sha256": "92498027b90ca5787929fa1a7a4405408e8c1741805979c320f3f9dd2008d71a"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-access-control.png",
+          "sha256": "52c106653ec8968dc719d113bb6ca972bf53f7d55a4101f72e2358e50c86ffb4"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-access-control.json",
+          "sha256": "87c1a0abef8e0e5e2ea604a609413929a808d3c3692c51f6a690351987274dd6"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw480-win1920x1080::B11-grants-populated",
+      "sourceReviewPairIndex": 14,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-grants-populated.png",
+          "sha256": "b22af4c93facfd44bd5fab50427fe4ac7719aaec9d2b2dbf0b5a53958c67b29b"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B11-grants-populated.json",
+          "sha256": "184cb70a443ab5135b41cbefb0da86657bb22b1dcb29f35548ae97c843ebfb87"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-grants-populated.png",
+          "sha256": "ce83f47c8e50582dc6af081dc2f2aac627bf2a9adc04698d5bfd4f402ef16d44"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw480-win1920x1080-B11-grants-populated.json",
+          "sha256": "686c6bbd1f531546116d72b3151309b7cb4edb9b527dc5595376a3c5cfab5f6d"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -27.0,
+        "width": 0,
+        "height": 18.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "light-rw900-win1920x1080::B11-access-observe",
+      "sourceReviewPairIndex": 15,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-access-observe.png",
+          "sha256": "2190bc93956b4f9921d8dbc79b5b0acab6f514e700ae384351b58a0b31e9d19e"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-access-observe.json",
+          "sha256": "7a2465da512499149fd135c15f844d83acf7aace84935be7e8a9694c6e46926b"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-access-observe.png",
+          "sha256": "e35a2962ccf63e2d27fd95a6ee8258936e4abe7e5d65ec4509d4621ddcfffa46"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-access-observe.json",
+          "sha256": "b91c0ea654e505cc61358b3166835ba61aaaf20e42592a1a271c38e018e61f81"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw900-win1920x1080::B11-access-control",
+      "sourceReviewPairIndex": 16,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-access-control.png",
+          "sha256": "19a20e13a6d59e187e5d679bfbf10b8e0dff52a8b24a4ade02736c39cffdbf86"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-access-control.json",
+          "sha256": "1aa9337fa419517b4e96ff095db9cc7630e80dc03b12b62655be827b79c97000"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-access-control.png",
+          "sha256": "e6355612cbd8be39ec782042864d64438f4c4cbec13de8a70c87ae2977d885ec"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-access-control.json",
+          "sha256": "55f866e153e5b34cc430a83ae03b5ece0d6d7f2dd8769e3968eee6c7ca5da949"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "light-rw900-win1920x1080::B11-grants-populated",
+      "sourceReviewPairIndex": 17,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-grants-populated.png",
+          "sha256": "ec33339174f81f79f9fb79ccba9a192fb56880c3753dd6c05ee3a37712836aa1"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B11-grants-populated.json",
+          "sha256": "c3431761ad49de7b1abf91e66614d097511b29a33bb9ff1d55b71d8e67cbaf42"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-grants-populated.png",
+          "sha256": "11ec98d2098defdb0bb9216674e094f65e1bb3c65eef301c2d8cfc9bde811f13"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-light-rw900-win1920x1080-B11-grants-populated.json",
+          "sha256": "d38aab388ad8eca4f4e4df107ca800c5f5831b125ef70798b105a8fd2f4f76ac"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -18.0,
+        "width": 0,
+        "height": 0.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "dark-rw480-win1920x1080::B11-access-observe",
+      "sourceReviewPairIndex": 18,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-access-observe.png",
+          "sha256": "b3176704c4f01acf495e1d001b514fc3cce1cde3d41264d856f64f79af0cb82c"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-access-observe.json",
+          "sha256": "d07155b35a99b4b3d4c7dc24afe76fc15df3fd0a1aa1b215fe72ca6aedd5de09"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-access-observe.png",
+          "sha256": "cea71fc465525de3a87c517d7e390fb2fb3863e0162ecbe0a60cceb619639ae6"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-access-observe.json",
+          "sha256": "c3acb6dc44a51e72fe694d2b7e64cd99a66e954f50bffd86ee5248744e61c265"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw480-win1920x1080::B11-access-control",
+      "sourceReviewPairIndex": 19,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-access-control.png",
+          "sha256": "2f2bf0862034e3112ed4bf40b714df2fb1300ff78cf6af547f350b7781f59a7c"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-access-control.json",
+          "sha256": "530a18360f849c2383ef354a7fe3d77ca57af884a69379c6616e86372e09ef8d"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-access-control.png",
+          "sha256": "a60339194a342a2a28dafb572759f424d91b17aad92135eae1608eb655705170"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-access-control.json",
+          "sha256": "fd47802c4ea98a93beea816e227019ca823e4f2704d79697cb153dbca9a38aeb"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw480-win1920x1080::B11-grants-populated",
+      "sourceReviewPairIndex": 20,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-grants-populated.png",
+          "sha256": "543231af92a66335ab66b6cabf3d211f311edbb2c3b865f35f37953068cd8da3"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B11-grants-populated.json",
+          "sha256": "a326914ca66009b90021d5e42ec5b498693d5a35fd3f9abbae5ff76205648182"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-grants-populated.png",
+          "sha256": "de18f812b6dc248947324c06bf3a5f966860eecacced610be44d7762e46a6df8"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-040/A-dark-rw480-win1920x1080-B11-grants-populated.json",
+          "sha256": "ebea9d0f909500b4fdbb82e45f59d8946846f706223ce91e6e1e0a2fda654ded"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0,
+        "y": -27.0,
+        "width": 0,
+        "height": 18.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    },
+    {
+      "key": "dark-rw900-win1920x1080::B11-access-observe",
+      "sourceReviewPairIndex": 21,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-access-observe.png",
+          "sha256": "8da17bbdaa3363f0cc408f0a154e589503e0accb17ce6e9d0864cad44d285003"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-access-observe.json",
+          "sha256": "a27c95cc91d990b31e6cfe494e07260f59ee3adfb59377baf52b3e3aa875ed96"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-access-observe.png",
+          "sha256": "d0622a72701b0447155d2c8951515c9303188cc11e1cf352f89b198d4d3a69d3"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-access-observe.json",
+          "sha256": "e571d61332b7c463e16df3e14cdee7434eb60649e270bd1c4de7e984170386cf"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw900-win1920x1080::B11-access-control",
+      "sourceReviewPairIndex": 22,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-access-control.png",
+          "sha256": "353d368aaf782633b9cbc098a7122829457e20732aee0391d6538de4f173f543"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-access-control.json",
+          "sha256": "7ef094264478fa518eeaa96a9387e363193b07e2d08f6e42e5a581ea5f928d55"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-access-control.png",
+          "sha256": "1a9e4e34713eeb19787f0b6bf344417bac48d1afc364d628306d0c9766822f1c"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-access-control.json",
+          "sha256": "82f9766ec890bb0c8945b06b37ba5e4e445904a88a3fd67c9b9bfb11d21dc643"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -52.0,
+        "width": 0,
+        "height": 68
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "old visual evidence retained, current request margin rule changed; do not call current geometry retested"
+    },
+    {
+      "key": "dark-rw900-win1920x1080::B11-grants-populated",
+      "sourceReviewPairIndex": 23,
+      "originals": {
+        "prototypePNG": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-grants-populated.png",
+          "sha256": "8ecefd2c78f6eaf95f5b8df34da0570350d07768002313507efa86e1940a9dfa"
+        },
+        "prototypeMetadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B11-grants-populated.json",
+          "sha256": "39cc255a1b9ccf1f5f35ee286ea1e8c49ef955507fcba6227fce80f3f60dc982"
+        },
+        "appPNG": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-grants-populated.png",
+          "sha256": "592204a0023fc9c01681bc177f09795ca8c88640d68dc31ef6003a360ac63b99"
+        },
+        "appMetadata": {
+          "path": "/private/tmp/willyou-m12-t145-App046-access-A-041/A-dark-rw900-win1920x1080-B11-grants-populated.json",
+          "sha256": "73d5513e7305244bd71a1eb7bc61bcca89fb6d60a8c4e67e42639e8e6f9804e8"
+        }
+      },
+      "oldReviewed": true,
+      "newOriginalView": false,
+      "observedGeometryDelta": {
+        "x": 0.0,
+        "y": -18.0,
+        "width": 0,
+        "height": 0.0
+      },
+      "reportedControlOverflow": false,
+      "reuseDecision": "grants8 candidate scoped reuse; richer identity/mode/sample wrapping accepted with P reconciliation"
+    }
+  ],
+  "sharedToolbarTabstripSeparate": {
+    "currentActualProof": "/private/tmp/willyou-m12-t145-App055-import-source-success-R001-review7-001/review-original7.json",
+    "sha256": "012a9a7f0da82b8f8433e26122bf5d8400658a2249b695efa7b704290d56cf05",
+    "scope": "App055/source064 original7 source-success images at1440, separately viewed/reviewed; exact.fw-tabs metadata Globle14/1.7 fallback/X14 close and four17/1.65 Tool including new-webGlobe. These are not access24 retakes.",
+    "oldAccessGraphics": "Source055 App046 old toolbar/tabstrip cannot be called current App055. Current0551440 proof is compositional shared-control evidence only; this report adds no1080 or AccessSurface current screenshot proof."
+  },
+  "minimalRootNextSteps": [
+    "无需重复修改已存在064:171请求hint边距规则；保留真实60秒/control及所有拒绝门槛。",
+    "P仅补既有deadline/来源标识，删除或限定不普遍成立的共用登录态绝对句；不删当前A功能。",
+    "原8 grants可按本报告限定范围作复用候选，原16请求的当前margin修复需Root受影响复验；本报告不代替公共归账或声称全24已收口。"
+  ],
+  "resources": {
+    "App": 0,
+    "Native": 0,
+    "UI": 0,
+    "HTTP": 0,
+    "OS": 0,
+    "backgroundProcess": 0
+  },
+  "formalIncrement": 0,
+  "wholeT145Passed": false
+}

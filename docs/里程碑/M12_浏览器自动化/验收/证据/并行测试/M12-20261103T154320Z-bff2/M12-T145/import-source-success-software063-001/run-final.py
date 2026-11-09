@@ -1,0 +1,7 @@
+from pathlib import Path
+import json,hashlib,datetime,subprocess,os,time
+root=Path('/Users/liubu/hx/4.uprxiao/SmartDD');b=Path('/private/tmp/willyou-m12-import-source-success-fix-063');files=['src/renderer/features/browser/cookie-import-dialog.tsx','src/renderer/features/browser/cookie-import-dialog.test.tsx','src/renderer/features/browser/workspace.css','prototypes/m6-codex/src/BrowserPanels.jsx','prototypes/m6-codex/src/browser.css','vitest.config.ts'];sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();before={n:sha(root/n) for n in files}
+env=dict(os.environ);env.update(NODE_COMPILE_CACHE=str(b/'cache/node'),WILLYOU_TEST_CACHE_DIR=str(b/'cache/vitest'),TMPDIR=str(b/'tmp')+'/');cmd=['/Users/liubu/.hermes/node/bin/node','scripts/run-tests.mjs','src/renderer/features/browser/cookie-import-dialog.test.tsx','--maxWorkers=1','--no-file-parallelism'];start=time.monotonic()
+with (b/'existing3-final.log').open('wb') as log:r=subprocess.run(cmd,cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT,timeout=90)
+after={n:sha(root/n) for n in files};assert before==after
+out={'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':cmd,'exitCode':r.returncode,'seconds':time.monotonic()-start,'sourceHashesBeforeAfter':before,'sourceIdentityMatched':True,'scope':'Existing focused3 behavior tests only; not screenshot/App/System layer.'};(b/'final-test-result.json').write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out));raise SystemExit(r.returncode)

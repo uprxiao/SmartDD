@@ -1,0 +1,1787 @@
+{
+  "case": "M12-T145",
+  "group": "B13 recovery-disabled8",
+  "reviewedAt": "2026-11-08T23:33:59.387836+00:00",
+  "currentApp": "App047",
+  "frozenSource": "source056",
+  "sourceManifestSHA256": "a6e32780c93c3d6509a3ef9f5d625952398397dc77de991ed976a93694300132",
+  "asarSHA256": "0eaca6a27b3ff995765fe9d69efda6828716125d7382bddd102a9e9973bf1a42",
+  "pairsActuallyViewed": 8,
+  "imagesActuallyViewed": 16,
+  "wholeT145VisualPass": false,
+  "formalCountIncrement": 0,
+  "result": "8/8导入菜单禁用灰化及可读性在限定范围内通过；恢复状态整体呈现与P不等价，缺可见needs-attention横幅/去处理入口，不能完整视觉绿。",
+  "confirmedDifferences": [
+    {
+      "id": "RECOVERY-NOTICE-NOT-VISIBLE",
+      "keys": [
+        "light-rw480-win1440x900|B13-import-recovery-disabled",
+        "light-rw900-win1440x900|B13-import-recovery-disabled",
+        "dark-rw480-win1440x900|B13-import-recovery-disabled",
+        "dark-rw900-win1440x900|B13-import-recovery-disabled",
+        "light-rw480-win1920x1080|B13-import-recovery-disabled",
+        "light-rw900-win1920x1080|B13-import-recovery-disabled",
+        "dark-rw480-win1920x1080|B13-import-recovery-disabled",
+        "dark-rw900-win1920x1080|B13-import-recovery-disabled"
+      ],
+      "fact": "P顶部警示条与去处理入口可见；A原PNG全8在菜单外空白，未出现对应可见警示。A snapshot needs-attention且菜单disabled；A全文metadata有页内提示DOM，不能误写完全未实现提示。",
+      "sourceFacts": [
+        "frozen056 production workspace.tsx171 renders needs-attention as page-local .bw-failure; unlike P BrowserWorkspace.jsx252 separate .bw-attention-banner",
+        "production workspace.tsx170 renders pageImage/titleOverlay.image as absolute .bw-page-snapshot before this failure; CSS34 absolute inset0. This is only a possible paint/covering path; actual image-element/style evidence was not captured."
+      ],
+      "causeStatus": "UNKNOWN. 当前原图和文本证明可见差异，不能据此确定snapshot覆盖为唯一原因。"
+    },
+    {
+      "id": "RECOVERY-MENU-STRUCTURE",
+      "keys": [
+        "light-rw480-win1440x900|B13-import-recovery-disabled",
+        "light-rw900-win1440x900|B13-import-recovery-disabled",
+        "dark-rw480-win1440x900|B13-import-recovery-disabled",
+        "dark-rw900-win1440x900|B13-import-recovery-disabled",
+        "light-rw480-win1920x1080|B13-import-recovery-disabled",
+        "light-rw900-win1920x1080|B13-import-recovery-disabled",
+        "dark-rw480-win1920x1080|B13-import-recovery-disabled",
+        "dark-rw900-win1920x1080|B13-import-recovery-disabled"
+      ],
+      "fact": "P6菜单项，导入为KeyRound；A7项，导入为UserRound并多强制刷新/重开关闭标签。P有下载(0)，A没有。",
+      "dataAndPolicyBoundary": "A snapshot downloads=[]；production workspace.tsx161只在downloads.length>0显示下载。该项包含数据/当前显示策略差异，不从截图推定下载功能失效。"
+    }
+  ],
+  "boundaries": [
+    "原P/A各8原图全部单张detail=original查看，未用P或机械8/8代替A视觉。",
+    "Native已被停放，截图为renderer host/menu；不以白色/深色空白占位冒网站完整Native内容视觉。",
+    "此状态采用显式lost-ACK/rollback refusal注入；不是无人为故障的系统钥匙串失败。原故障恢复和真实UI清空步骤由原执行证据负责，本review不重跑也不新增通过。",
+    "P metadata没有单独menu/banner rect/computed采样，不伪造与A computed等价；A实际menu几何及styles保留。",
+    "App048共同图标修复尚不能证明旧App047图绿；本组独立导入UserRound/KeyRound差异按本组原PNG记录。",
+    "prep004原8图有效、old-label收尾红保留；prep005机械8/8/clear不是视觉总通过。",
+    "未改原raw/judge/driver/P/A/frozen source/public ledger。未执行Node/App/Native/HTTP/JXA或新测试。"
+  ],
+  "sourceReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/cookie-import-dialog.tsx",
+      "sha256": "d1b92ffe3f2eda8b7ae755878061c32ad53fb6085d157c812ef6c6e704e12917"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/workspace.css",
+      "sha256": "b83484042a6febc61846bd3d80e68bcbe44892682b64d0a79d528a3e7934dd7a"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+      "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/workspace.tsx",
+      "sha256": "d8f71484efd8c47d9c4a5ff600197c33ee435f0d8e204f914c26be1c0222bde9"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+      "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536"
+    }
+  ],
+  "originalFaultBoundary": {
+    "path": "/private/tmp/willyou-m12-t145-import72-prep-005/fault-boundary.json",
+    "sha256": "12b9a184c2781fd0b95e4e23b8ec91570486d7e9487524083325762aa8d009b2"
+  },
+  "items": [
+    {
+      "attempt": "004",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-004",
+      "key": "light-rw480-win1440x900|B13-import-recovery-disabled",
+      "combo": "light-rw480-win1440x900",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "de46f7a900d41a18e3a9a48fa7745ca741b4d30633c81581b9d5158485405188"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "5e2619f635b26094215c13549864758bc9753f9bb133f704f085c2468c7cab37"
+      },
+      "Asha": "de46f7a900d41a18e3a9a48fa7745ca741b4d30633c81581b9d5158485405188",
+      "Psha": "5e2619f635b26094215c13549864758bc9753f9bb133f704f085c2468c7cab37",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-recovery-disabled.json",
+      "AmetaSHA": "0b9e824d4772fc6f942c2bdbfe5457c5f4fc2630af4ee0977b3d1611d382798b",
+      "PmetaSHA": "82e685299cb70b067f63464f84b5ed8586e9444ffc56ee1d5eca4388fe9c333d",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1204,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1424,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1211,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.07) 0px 12px 44px 0px, rgba(0, 0, 0, 0.03) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1440x900|B13-import-recovery-disabled",
+      "combo": "light-rw900-win1440x900",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "ac3c01d3f13ccf4bcd59acce2d5e62e7cf2af6f2c6b1d3fbe86e2f6f56b526e2"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "7db11c80255d99c85fe241311644b3d062f3659d6a1027a4789a10950b846269"
+      },
+      "Asha": "ac3c01d3f13ccf4bcd59acce2d5e62e7cf2af6f2c6b1d3fbe86e2f6f56b526e2",
+      "Psha": "7db11c80255d99c85fe241311644b3d062f3659d6a1027a4789a10950b846269",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-recovery-disabled.json",
+      "AmetaSHA": "44042e30b0f0fc09d84f0d7aa58bd8ff56a26f726472a11054fe2fc73c834657",
+      "PmetaSHA": "e99973b91b02edcaefd2c6ad2e0dd5cffd37a6e3751064e401192b2a62344178",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1204,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1424,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1211,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.07) 0px 12px 44px 0px, rgba(0, 0, 0, 0.03) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1440x900|B13-import-recovery-disabled",
+      "combo": "dark-rw480-win1440x900",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "edcfe35356c0a89a0fa96e665180d111197bdd9eabf6898eedf232e0ab3eea09"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "a927b3d736a09600696cfcbb50f29b534e0d4470f9eca17f1344cab969a39b4d"
+      },
+      "Asha": "edcfe35356c0a89a0fa96e665180d111197bdd9eabf6898eedf232e0ab3eea09",
+      "Psha": "a927b3d736a09600696cfcbb50f29b534e0d4470f9eca17f1344cab969a39b4d",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-recovery-disabled.json",
+      "AmetaSHA": "3c7f198fef7c85e120392caf9dd051d68123967a3ad2e75a2ffe8ddf67a71741",
+      "PmetaSHA": "724baf6b29de6fcded0d7603aaa9239c257b92218b7a0652b50ab3860e41ada4",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1204,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1424,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1211,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgba(29, 29, 29, 0.96)",
+            "borderColor": "rgb(83, 83, 83)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.267) 0px 12px 44px 0px, rgba(0, 0, 0, 0.133) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1440x900|B13-import-recovery-disabled",
+      "combo": "dark-rw900-win1440x900",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "f806c5ae0dcbd69d377f02ab3b51f823810f523a549825f224debe4aa5cccf53"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-recovery-disabled.png",
+        "sha256": "ada28c97f6cbed51a8731183f6be5452bd7cf8bb494ae2172a9892fe6c027d07"
+      },
+      "Asha": "f806c5ae0dcbd69d377f02ab3b51f823810f523a549825f224debe4aa5cccf53",
+      "Psha": "ada28c97f6cbed51a8731183f6be5452bd7cf8bb494ae2172a9892fe6c027d07",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-recovery-disabled.json",
+      "AmetaSHA": "8d8aa0cd6b97408052e8e7bd66394b9bbdd558f7be6ddf47c776f0b61ef22d08",
+      "PmetaSHA": "51a619f91c4d87daa07171d94553d7205493cbcec88f74201e6ee3ad33234295",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1204,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1424,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1211,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1211,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1417,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgba(29, 29, 29, 0.96)",
+            "borderColor": "rgb(83, 83, 83)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.267) 0px 12px 44px 0px, rgba(0, 0, 0, 0.133) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw480-win1920x1080|B13-import-recovery-disabled",
+      "combo": "light-rw480-win1920x1080",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "52a92d370a5f4087d505c84325d18aa198ed080139f62b8391054b10949e1bd9"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "d40b8487beb7e21a6f236607ea9214c391aa67b1a58b5f8702983475aac6623e"
+      },
+      "Asha": "52a92d370a5f4087d505c84325d18aa198ed080139f62b8391054b10949e1bd9",
+      "Psha": "d40b8487beb7e21a6f236607ea9214c391aa67b1a58b5f8702983475aac6623e",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-recovery-disabled.json",
+      "AmetaSHA": "47a8f24fb72b623da61b00b0b9c3f52e55fbb79f9e772a3f3cd26a109378a106",
+      "PmetaSHA": "4d1994c2bb14ec8953232b0a039170b06571308f4cd4fc79d708b2a4e64c6097",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1684,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1904,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1691,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.07) 0px 12px 44px 0px, rgba(0, 0, 0, 0.03) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1920x1080|B13-import-recovery-disabled",
+      "combo": "light-rw900-win1920x1080",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "5faa35ec20ccf5ab42769ec867382d7d2e90e702d99943f7f12b65f9cdcd46c9"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "1ffc87cd12264acb544333624395e11d5d2b30c8099c23ce56a05b1cd070726a"
+      },
+      "Asha": "5faa35ec20ccf5ab42769ec867382d7d2e90e702d99943f7f12b65f9cdcd46c9",
+      "Psha": "1ffc87cd12264acb544333624395e11d5d2b30c8099c23ce56a05b1cd070726a",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-recovery-disabled.json",
+      "AmetaSHA": "e278a1b1a2430073b626fced864ae75621adee04af56ff455fedc79d14bda0f8",
+      "PmetaSHA": "1f0395793d2c3fcd936937d34b8341a6e6463a5e5a002c968736441292be06f3",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1684,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1904,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1691,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.07) 0px 12px 44px 0px, rgba(0, 0, 0, 0.03) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1920x1080|B13-import-recovery-disabled",
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "6816a73d3b0deff31d9226bd51a032d6151ba7eb07e36a7cbd7b751092f14ff9"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "6e532ee8698becf77f4fff8d130c0beecf645f5086091d3da07f910de26b7f3a"
+      },
+      "Asha": "6816a73d3b0deff31d9226bd51a032d6151ba7eb07e36a7cbd7b751092f14ff9",
+      "Psha": "6e532ee8698becf77f4fff8d130c0beecf645f5086091d3da07f910de26b7f3a",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-recovery-disabled.json",
+      "AmetaSHA": "384c4325cb8b2e9724c8737f71bb3e808f97773d97d9f7d5bd31cc67c901e6a1",
+      "PmetaSHA": "ee60e806f6ae12e010778b6dc67dba482f31804580cc40a6998d5dc54e6130d4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1684,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1904,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1691,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgba(29, 29, 29, 0.96)",
+            "borderColor": "rgb(83, 83, 83)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.267) 0px 12px 44px 0px, rgba(0, 0, 0, 0.133) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1920x1080|B13-import-recovery-disabled",
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B13-import-recovery-disabled",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "c94d28b345ae3f2b69f249c00bff6a8d66e80346e66dc5e29427fb801499ed31"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-recovery-disabled.png",
+        "sha256": "27799fd21f6f98b0402094b1a3c031450c55d7f5d515a1e7a13f67e4246992e4"
+      },
+      "Asha": "c94d28b345ae3f2b69f249c00bff6a8d66e80346e66dc5e29427fb801499ed31",
+      "Psha": "27799fd21f6f98b0402094b1a3c031450c55d7f5d515a1e7a13f67e4246992e4",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-recovery-disabled.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-recovery-disabled.json",
+      "AmetaSHA": "a31133edf01379584a5e6272f7fe316d221a3e1d236fffe2fb440698cf726d06",
+      "PmetaSHA": "d8bfa76f732722f71db26d4c3a8fe904d647e43e2904b4359e86fff4f94e15e0",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "scopeResult": "DISABLED_IMPORT_VISUAL_PASS; RECOVERY_SURFACE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "A导入项真实disabled=true、灰化可见；其余菜单文字可读",
+        "7个actual菜单controls均在菜单rect内、metadata无水平溢出",
+        "浅/深主题菜单分别可辨、菜单未被Native画面遮挡"
+      ],
+      "confirmedDifferences": [
+        "P顶部needs-attention警示横幅及去处理按钮可见；A截图菜单外为纯空白、没有该横幅",
+        "P导入图标KeyRound；A导入图标UserRound",
+        "P菜单6行并有下载(0)；A7行：无下载行、另有强制刷新/重开关闭的标签"
+      ],
+      "notClaimed": [
+        "A缺少任何needs-attention DOM：此说法不成立，全文metadata存在对应页内说明",
+        "未确定A页内说明为何未在PNG绘出；未将候选snapshot覆盖原因写成已证事实",
+        "页面登录表单是不同fixture，不当作需恢复到P真实站点的要求"
+      ],
+      "metadataFacts": {
+        "actualActiveImportState": "needs-attention",
+        "actualNeedsAttentionTextExistsInWorkspace": true,
+        "actualNeedsAttentionHeading": "登录态需要处理",
+        "actualNeedsAttentionCopy": "上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。",
+        "actualMenu": {
+          "rect": {
+            "x": 1684,
+            "y": 91,
+            "width": 220,
+            "height": 238,
+            "right": 1904,
+            "bottom": 329
+          },
+          "text": "页内查找\n⌘F\n登录态管理\n导入 Chrome／Edge 登录态\n跨任务授权（0）\n浏览器设置\n强制刷新\n重开关闭的标签",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "页内查找⌘F",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 98,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 130
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "登录态管理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 130,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 162
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "导入 Chrome／Edge 登录态",
+              "label": null,
+              "disabled": true,
+              "rect": {
+                "x": 1691,
+                "y": 162,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 194
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "跨任务授权（0）",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 194,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 226
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "浏览器设置",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 226,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 258
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "强制刷新",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 258,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 290
+              }
+            },
+            {
+              "tag": "BUTTON",
+              "text": "重开关闭的标签",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1691,
+                "y": 290,
+                "width": 206,
+                "height": 32,
+                "right": 1897,
+                "bottom": 322
+              }
+            }
+          ],
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "13px",
+            "fontWeight": "430",
+            "lineHeight": "19.5px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgba(29, 29, 29, 0.96)",
+            "borderColor": "rgb(83, 83, 83)",
+            "borderWidth": "1px",
+            "borderRadius": "12px",
+            "boxShadow": "rgba(0, 0, 0, 0.267) 0px 12px 44px 0px, rgba(0, 0, 0, 0.133) 0px 2px 8px 0px",
+            "display": "block",
+            "alignItems": "normal",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "6px",
+            "gap": "normal",
+            "textOverflow": "clip",
+            "whiteSpace": "normal",
+            "overflowX": "auto",
+            "overflowY": "auto"
+          },
+          "clientWidth": 218,
+          "scrollWidth": 218,
+          "controlsContained": true
+        },
+        "actualImportItemIconHTML": [
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5\"></circle><path d=\"M20 21a8 8 0 0 0-16 0\"></path></svg>"
+        ],
+        "actualDownloadsCount": 0,
+        "actualNative": {
+          "destroyed": false,
+          "urlIsAboutBlank": true,
+          "placements": [
+            {
+              "mainParent": false,
+              "visible": true,
+              "parentVisible": true,
+              "parentOpacity": 0,
+              "parentFocusable": false,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "PRecoveryBannerTextExistsInFrozenMetadata": true,
+        "PMenuElementComputedCaptured": false
+      },
+      "faultBoundary": "production NativeStore W-new set fulfilled then lost ACK injected; rollback X-old set refused before native write; production needs-attention and disabled menu actual. Original fault boundary and cleanup references retained, not unmodified system Keychain proof."
+    }
+  ],
+  "resources": {
+    "Native": 0,
+    "UI": 0,
+    "HTTP": 0,
+    "JXA": 0,
+    "App": 0,
+    "persistentChildProcesses": 0
+  }
+}

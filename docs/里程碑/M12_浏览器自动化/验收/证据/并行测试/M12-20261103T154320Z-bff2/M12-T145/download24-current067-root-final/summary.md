@@ -1,0 +1,5 @@
+原download24的下载宿主局部视觉判据可复用至App056/source067。24键均回链Root首3对＋执行者余21对原图review，96个PNG/metadata成员重算SHA与原报告一致。下载panel/store、40个浏览器主进程文件及依赖、24条App相关CSS和19条P相关CSS规则不变；DownloadBar原型函数不变。
+
+共享导航/更多/安全/tabstrip图标与旧App046不同，以App055八组合真实metadata补证，相关064→067源码字节/mode相同。旧图不标成App056重拍。保留failed移除按钮hover与P默认态、合成文件路径/进度、P外壳4px、Native页面像素及系统title tooltip未认证边界；不据此声明全截图或T145整条通过。未发现要求24张整体重跑的目标分支变化。
+
+已记录旧source-proof.json中sourceManifest残留052字段，原件不改；本次以原package-pin055和实际055文件/manifest校验纠正适用依据。资源0；未看新图、未执行App/Native/Node/OS/HTTP/JXA，未改公共账/生产。

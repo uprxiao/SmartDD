@@ -1,0 +1,18 @@
+// @vitest-environment jsdom
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {BrowserCookieImportDialog} from './cookie-import-dialog';
+import type {ProfileSiteStates} from './profile-site-states';
+const api=vi.hoisted(()=>({importCookieSources:vi.fn(),importCookies:vi.fn()}));vi.mock('@renderer/lib/ipc',()=>({rpc:{browser:api}}));
+const records:ProfileSiteStates=[{profile:{id:'project-p1',scope:'project',label:'项目登录态',partition:'persist:wy-browser-project-p1',owner:{kind:'project',id:'p1'},source:null},state:{schemaVersion:1,certificates:[],permissions:[]},importState:'ready'}];
+beforeEach(()=>{vi.resetAllMocks();api.importCookieSources.mockResolvedValue({browsers:[{family:'chrome',label:'Google Chrome',installed:true,profiles:[{id:'a'.repeat(64),family:'chrome',browserLabel:'Google Chrome',profileName:'QA',profileDirectory:'Default',hasCookies:true}]},{family:'edge',label:'Microsoft Edge',installed:false,profiles:[]}]});});afterEach(cleanup);
+it('reads source metadata without import, requires the full risk confirmation and submits exactly once on explicit confirmation',async()=>{
+  let complete!:(value:unknown)=>void;api.importCookies.mockImplementation(()=>new Promise(resolve=>{complete=resolve;}));const close=vi.fn();render(<BrowserCookieImportDialog taskId="t1" records={records} initialTarget="project-p1" onClose={close}/>);await screen.findByLabelText('QA · Default');expect(api.importCookies).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'下一步'}));expect(screen.getByText('Agent 将能读取这些站点的会话令牌')).toBeTruthy();expect(screen.getByText(/页面上未保存的内容会丢失/)).toBeTruthy();expect(screen.getByText(/Chrome Safe Storage/)).toBeTruthy();expect(api.importCookies).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'确认导入'}));await screen.findByRole('status');expect(api.importCookies).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1',sourceId:'a'.repeat(64),confirmed:true});fireEvent.keyDown(screen.getByRole('dialog'),{key:'Escape'});expect(close).not.toHaveBeenCalled();
+  complete({totalCookies:4,importedCookies:2,skippedCookies:2,googleCookiesSkipped:1,partitionSkippedCookies:1,preservedTargetCookies:1,domains:['qa.example.test'],reloadedPages:3});await screen.findByRole('dialog',{name:'导入完成'});expect(screen.getByText('重新加载的页面')).toBeTruthy();expect(api.importCookies).toHaveBeenCalledTimes(1);
+});
+it('cannot proceed into confirmation for a target that needs recovery',async()=>{
+  render(<BrowserCookieImportDialog taskId="t1" records={[{...records[0],importState:'needs-attention'}]} initialTarget="project-p1" onClose={()=>{}}/>);await screen.findByLabelText('QA · Default');expect((screen.getByRole('button',{name:'下一步'}) as HTMLButtonElement).disabled).toBe(true);fireEvent.click(screen.getByRole('button',{name:'下一步'}));expect(api.importCookies).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toBeTruthy();
+});
+it('shows host failure without reporting a successful import or automatically retrying',async()=>{
+  api.importCookies.mockRejectedValueOnce(Error("Error invoking remote method 'browser.importCookies': Error: 钥匙串授权被拒绝；未写入Cookie"));render(<BrowserCookieImportDialog taskId="t1" records={records} initialTarget="project-p1" onClose={()=>{}}/>);await screen.findByLabelText('QA · Default');fireEvent.click(screen.getByRole('button',{name:'下一步'}));fireEvent.click(screen.getByRole('button',{name:'确认导入'}));await screen.findByRole('dialog',{name:'导入未完成'});expect(screen.getByRole('alert').textContent).toBe('钥匙串授权被拒绝；未写入Cookie');expect(screen.queryByText('登录态导入完成。')).toBeNull();await waitFor(()=>expect(api.importCookies).toHaveBeenCalledTimes(1));
+});

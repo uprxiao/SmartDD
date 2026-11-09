@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-09T01:32:40.916938+00:00",
+  "scope": "Current R01.1/P pre-validation rejection vs R01.3 true failed navigation",
+  "evidence": {
+    "host": "src/main/core/browser/workspace.ts navigate normalizer null sets notice and returns snapshot, does not throw/start navigation",
+    "prototype": "BrowserWorkspace.jsx105-112 explicitly retains/selects invalid draft; InvalidPage is a renderer surface",
+    "R01.3": "Actual failed navigation rollback already covered by T010; do not extend it indiscriminately to input validation"
+  },
+  "correction": "Earlier rollback inference and newly drafted rejecting-RPC unit test were wrong for this host path. Their source/logs retained as superseded inference, not product red. Current-P tests use resolved notice path, fail first on lost focus, then pass.",
+  "actualChange": [
+    "Keep invalid input focused and selected using shared validator, host call and validation retained",
+    "Show confirmed P invalid error surface, park but do not destroy/navigate original Native document",
+    "Do not hide importing/needs-attention safety surfaces; discard stale input error if host commits another URL",
+    "Settings-only row gap8→6; long invalid address wraps"
+  ],
+  "software": {
+    "exactSourceComponentTests": 21,
+    "webTypecheckExit": 0
+  },
+  "notProven": [
+    "App051 actual UI/visual",
+    "recovery narrow wrap actual UI",
+    "final installed S6"
+  ],
+  "formalIncrement": 0
+}

@@ -1,0 +1,1 @@
+P-only: B13-import-undecryptable ×8 original combinations. Preserve original57×8=456 contract. Only frozen model changes from source048 P closure to source058 pre-write failure ok:false/no summary. Headless original UI steps, all data synthetic; not App/S/Keychain or wholeT145 proof. Static and run await Root resource grant. Old raw/PNG/results not copied.

@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-08T15:10:47.327062+00:00",
+  "requirementsSHA256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33",
+  "testCasesBeforeResultSHA256": "e8f8331ddad59adc98fa74f1db7a6d17545fc2164337cd22bceabacaaa1d515a",
+  "R07.5": "R07.5 切换任务与后台页面**\n- 页面由主进程持有，按任务常驻。切换任务、收起工作区、关闭文件面板都不销毁页面，也不中断在途命令。\n- 任务切到后台时，页面移入停放窗口：已显示但完全透明、不可聚焦、不接收鼠标、不出现在任务栏和窗口菜单。页面保持原尺寸继续绘制，切回时再挂回右侧工作区。这样做是因为页面不绘制时点击会变慢、截图会卡住。\n- 用户看不到、也点不到停放窗口。Agent 只能看到目标页面，看不到停放窗口和 WillYou 界面。\n\n",
+  "originalT110Row": "| M12-T110 | R07.5 停放窗口 | S | 双显示器；WillYou 全屏 | 在全屏空间和另一显示器之间切换，期间 Agent 在后台执行命令 | 停放窗口不可见；后台命令仍保持 T107 的耗时；切回不闪烁 | S002实际6条CLI／3次前台点击后等待系统观察，未获全屏／跨屏确认，协调者正常退出释放资源；未执行后台阶段，未计通过。 | 待执行 | [原始结果及暂停位置](证据/并行测试/M12-20261103T154320Z-bff2/M12-T110/App041-S002-system-observation-deferred/manifest.json) |",
+  "originalJudgeSHA256": "289b4de909e62754be8b0904380774425912be1ab7a8bad7e21f0841c11e9886",
+  "originalJudgeResultSHA256": "dbdb069a1e385be29c54e00d9313209eb338b7cc6fa874e99fd7e99c453f3cdb",
+  "rawSHA256": "6e491d73544ea50eed1e468a03e1acb3e853cd8bd74092a5308fb932af7c4b89",
+  "correctedJudgeSHA256": "a7974212fad7f4b884d8b0cfda66bc5c0ffa6d945a989b983ee4ae059dcc9106",
+  "noAppRerun": true,
+  "noRequirementsOrExpectedChange": true,
+  "reason": "Original copied T107 offline check counted control readiness as clicks and demanded unchangedDPR across actual displays. T110 inherits T107 timing, R07.5 size constancy applies parked period; actual final same activebar geometry still required. Original red retained."
+}

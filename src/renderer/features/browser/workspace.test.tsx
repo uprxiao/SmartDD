@@ -4,20 +4,59 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import type {BrowserWorkspaceState} from '@shared/browser-workspace';
 import {TaskBrowserWorkspace} from './workspace';
 import {browserAccess} from './access-store';
-const f=vi.hoisted(()=>({value:null as unknown as {state:BrowserWorkspaceState;error:string},api:{profileSiteStates:vi.fn(),continueCertificate:vi.fn(),focusChrome:vi.fn(),placement:vi.fn(),overlay:vi.fn(),find:vi.fn(),pause:vi.fn(),accessState:vi.fn()},store:{subscribe:()=>()=>{},snapshot:()=>f.value,refresh:vi.fn(),run:async(work:()=>Promise<unknown>)=>work()}}));
+const f=vi.hoisted(()=>({value:null as unknown as {state:BrowserWorkspaceState;error:string},api:{navigate:vi.fn(),profileSiteStates:vi.fn(),continueCertificate:vi.fn(),focusChrome:vi.fn(),placement:vi.fn(),overlay:vi.fn(),find:vi.fn(),pause:vi.fn(),accessState:vi.fn()},store:{subscribe:()=>()=>{},snapshot:()=>f.value,refresh:vi.fn(),run:async(work:()=>Promise<unknown>)=>work()}}));
 vi.mock('@renderer/lib/ipc',()=>({events:{on:()=>()=>{}},rpc:{browser:f.api}}));
 vi.mock('./store',()=>({browserWorkspaceFor:()=>f.store,openNewBrowserTab:vi.fn()}));
 vi.mock('@renderer/features/files/workspace-panel',()=>({FileWorkspacePanel:({web}:{web:{view:unknown}})=>web.view}));
 vi.mock('@renderer/core/navigation',()=>({navigation:{}}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{}}));
 beforeEach(()=>{vi.clearAllMocks();f.api.profileSiteStates.mockResolvedValue([{importState:"ready",profile:{id:"project-p1",scope:"project",label:"项目登录态",source:null,owner:{kind:"project",id:"p1"},partition:"persist:wy-browser-project-p1"},state:{schemaVersion:1,certificates:[],permissions:[]}}]);f.api.placement.mockResolvedValue(null);f.api.overlay.mockResolvedValue(null);f.api.focusChrome.mockResolvedValue(null);f.value={error:'',state:{taskId:'t1',projectId:'p1',activeId:'page1',recent:[],notice:null,external:null,find:{active:0,total:0},tabs:[{id:'page1',url:'about:blank',title:'新标签页',profileId:'project-p1',favicon:null,loading:false,canGoBack:false,canGoForward:false,failure:{kind:'other',url:'https://outside.example.test/',host:'outside.example.test',title:'无法访问 outside.example.test',errorName:'ERR_CERT_AUTHORITY_INVALID',recovery:null},certificate:{url:'https://outside.example.test/',host:'outside.example.test',error:'ERR_CERT_AUTHORITY_INVALID',challengeId:'nonce1'}}]}};});
-afterEach(async()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();f.api.accessState.mockResolvedValue({requests:[],grants:[]});await browserAccess.refresh();browserAccess.closeGrants();});
+afterEach(async()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks();f.api.accessState.mockResolvedValue({requests:[],grants:[]});await browserAccess.refresh();browserAccess.closeGrants();});
 it('shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce',async()=>{
   render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.queryByRole('heading',{name:'新标签页'})).toBeNull();expect(screen.getByRole('heading',{name:'此连接不受信任'})).toBeTruthy();expect((screen.getByLabelText('网页地址') as HTMLInputElement).value).toBe('https://outside.example.test/');
   fireEvent.click(screen.getByRole('button',{name:'我了解风险，继续访问'}));await waitFor(()=>expect(f.api.continueCertificate).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',challengeId:'nonce1'}));expect(f.api.placement).not.toHaveBeenCalledWith(expect.objectContaining({rect:expect.any(Object)}));
 });
 it('offers no certificate approval for an ordinary failed navigation',()=>{
   f.value.state.tabs[0].certificate=null;render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.queryByRole('button',{name:'我了解风险，继续访问'})).toBeNull();expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();
+});
+it('restores the last committed address after an ordinary failed navigation, while retaining the failure explanation',()=>{
+  f.value.state.tabs[0].certificate=null;f.value.state.tabs[0].url='https://previous.example.test/committed';
+  render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.getByRole('heading',{name:'无法访问 outside.example.test'})).toBeTruthy();
+  expect((screen.getByLabelText('网页地址') as HTMLInputElement).value).toBe('https://previous.example.test/committed');
+  expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();
+});
+it.each(['javascript:alert(1)','data:text/html,not-a-navigation'])('keeps invalid input selected with an error surface, without replacing the current document: %s',async address=>{
+  vi.stubGlobal('ResizeObserver',class{observe(){}disconnect(){}});
+  const url='https://previous.example.test/committed';
+  f.value.state.tabs[0]={...f.value.state.tabs[0],url,failure:null,certificate:null};
+  f.api.navigate.mockResolvedValue({...f.value.state,notice:'请输入有效的 http(s) 或 localhost 地址'});
+  f.api.overlay.mockResolvedValue('data:image/png;base64,parked-old-page');
+  render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  const input=screen.getByLabelText('网页地址') as HTMLInputElement;input.focus();
+  fireEvent.change(input,{target:{value:address}});fireEvent.submit(input.form!);
+  expect(input.value).toBe(address);expect(document.activeElement).toBe(input);
+  expect(input.selectionStart).toBe(0);expect(input.selectionEnd).toBe(address.length);
+  expect(screen.getByRole('heading',{name:'请输入有效的 http(s) 或 localhost 地址'})).toBeTruthy();
+  expect(f.value.state.tabs[0].url).toBe(url);
+  await waitFor(()=>expect(f.api.navigate).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',address}));
+  expect(f.api.placement.mock.calls.every(([request])=>request.rect===null)).toBe(true);
+  fireEvent.click(screen.getByRole('button',{name:'浏览器菜单'}));
+  await screen.findByRole('menuitem',{name:'浏览器设置'});
+  expect(screen.queryByAltText('网页预览')).toBeNull();
+});
+it('dismisses an old input error when the host commits a different URL',async()=>{
+  vi.stubGlobal('ResizeObserver',class{observe(){}disconnect(){}});
+  f.value.state.tabs[0]={...f.value.state.tabs[0],url:'https://previous.example.test/',failure:null,certificate:null};
+  f.api.navigate.mockResolvedValue(f.value.state);
+  const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  const input=screen.getByLabelText('网页地址') as HTMLInputElement;
+  fireEvent.change(input,{target:{value:'javascript:alert(1)'}});fireEvent.submit(input.form!);
+  expect(screen.getByRole('heading',{name:'请输入有效的 http(s) 或 localhost 地址'})).toBeTruthy();
+  f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],url:'https://next.example.test/committed'}]}};
+  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.queryByRole('heading',{name:'请输入有效的 http(s) 或 localhost 地址'})).toBeNull();
+  expect(input.value).toBe('https://next.example.test/committed');
 });
 it('closes downloads with Escape after the focused menu item is removed, without moving focus',async()=>{
   f.value.state.downloads=[{id:'d1',taskId:'t1',pageId:'page1',url:'https://fixture.example/orders',name:'订单.csv',path:'/synthetic/Downloads/订单.csv',destination:'downloads',state:'done',receivedBytes:24,totalBytes:24,updatedAt:Date.now(),error:null}];
@@ -34,6 +73,29 @@ it('closes downloads with Escape after the focused menu item is removed, without
 it('renders activity and routes pause/resume as trusted user actions without blocking manual navigation',async()=>{
   f.value.state.tabs[0].agentActive=true;f.value.state.tabs[0].agentRunning=true;const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText('Agent 正在操作此页面')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'暂停 Agent'}));expect(f.api.pause).toHaveBeenCalledWith({taskId:'t1',paused:true});
   f.value={...f.value,state:{...f.value.state,paused:true}};view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText(/已暂停 Agent 的浏览器操作/)).toBeTruthy();expect(screen.queryByRole('button',{name:'暂停 Agent'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'恢复 Agent'}));expect(f.api.pause).toHaveBeenLastCalledWith({taskId:'t1',paused:false});expect((screen.getByLabelText('网页地址') as HTMLInputElement).disabled).toBe(false);
+});
+it('displays the host activity deadline across remounts and tab switches without extending its lifetime',async()=>{
+  vi.useFakeTimers();vi.setSystemTime(10000);
+  f.value.state.tabs[0]={...f.value.state.tabs[0],agentActive:true,agentRunning:false,agentHoldUntil:30000};
+  let view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.getByText('Agent 最近操作过此页面 · 20 秒后清除标记')).toBeTruthy();
+  await act(async()=>vi.advanceTimersByTime(7400));
+  expect(screen.getByText('Agent 最近操作过此页面 · 13 秒后清除标记')).toBeTruthy();
+  view.unmount();await act(async()=>vi.advanceTimersByTime(3000));
+  view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.getByText('Agent 最近操作过此页面 · 10 秒后清除标记')).toBeTruthy();
+  f.value={...f.value,state:{...f.value.state,activeId:'page2',tabs:[...f.value.state.tabs,{...f.value.state.tabs[0],id:'page2',agentHoldUntil:60000}]}};
+  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.getByText('Agent 最近操作过此页面 · 40 秒后清除标记')).toBeTruthy();
+  f.value={...f.value,state:{...f.value.state,activeId:'page1'}};
+  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.getByText('Agent 最近操作过此页面 · 10 秒后清除标记')).toBeTruthy();
+  await act(async()=>vi.advanceTimersByTime(10000));
+  expect(screen.getByText('Agent 最近操作过此页面 · 0 秒后清除标记')).toBeTruthy();
+  expect(f.value.state.tabs[0].agentActive).toBe(true);
+  f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],agentActive:false,agentHoldUntil:null}]}};
+  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  expect(screen.queryByText(/Agent 最近操作过此页面/)).toBeNull();
 });
 it('waits for native overlay parking acknowledgement before exposing a scoped authorization dialog',async()=>{
   render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);let parked!:(value:null)=>void;f.api.overlay.mockImplementationOnce(()=>new Promise(resolve=>{parked=resolve;}));f.api.accessState.mockResolvedValue({requests:[{id:'r1',runId:'run1',projectId:'p1',requesterTaskId:'t2',targetTaskId:'t1',requesterTitle:'Caller',targetTitle:'Target',projectName:'Project',mode:'observe',requestedMode:'observe',createdAt:Date.now(),expiresAt:Date.now()+60000}],grants:[]});
@@ -62,4 +124,16 @@ it('keeps an unavailable profile unknown and recovers through explicit managemen
   f.api.profileSiteStates.mockRejectedValueOnce(Error('temporarily unavailable'));render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
   const badge=await screen.findByTitle('无法读取当前登录态，点击管理');expect(badge.textContent).toBe('登录态');expect(screen.queryByRole('button',{name:'项目登录态'})).toBeNull();
   fireEvent.click(badge);await waitFor(()=>expect(f.api.overlay).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',open:true}));
+});
+it.each(['importing','needs-attention'] as const)('keeps the %s recovery explanation visible when a menu captures the parked page',async importState=>{
+  f.value.state.tabs[0]={...f.value.state.tabs[0],url:'https://fixture.example/',failure:null,certificate:null,importState};
+  f.api.overlay.mockResolvedValue('data:image/png;base64,parked-old-page');
+  render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
+  fireEvent.click(screen.getByRole('button',{name:'浏览器菜单'}));
+  await screen.findByRole('menuitem',{name:'导入 Chrome／Edge 登录态'});
+  expect(screen.queryByAltText('网页预览')).toBeNull();
+  if(importState==='importing')expect(screen.getByRole('heading',{name:'正在导入登录态'})).toBeTruthy();
+  else expect(screen.getByText(/当前登录态需要处理/)).toBeTruthy();
+  expect(screen.getByRole('menuitem',{name:'导入 Chrome／Edge 登录态'}).hasAttribute('disabled')).toBe(true);
+  if(importState==='needs-attention')expect(screen.getByRole('button',{name:'去处理'})).toBeTruthy();
 });

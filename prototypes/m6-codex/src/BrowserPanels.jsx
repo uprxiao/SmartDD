@@ -5,11 +5,11 @@ import {
 import { IMPORT_SOURCES, SEARCH_ENGINES, importOutcome } from './browser-prototype-model.mjs';
 
 /** Shared modal shell; reuses the M9 right-workspace dialog classes. */
-export function PanelDialog({ title, subtitle, onClose, children, footer, wide, dismissOnBackdrop = true, closeDisabled = false }) {
+export function PanelDialog({ title, subtitle, onClose, children, footer, wide, panel, dismissOnBackdrop = true, closeDisabled = false }) {
   const ref = useRef(null);
   useEffect(() => { ref.current?.querySelector('input, button:not([aria-label="关闭"])')?.focus(); }, []);
   return <div className="fw-modal-scrim bw-scrim" onMouseDown={event => { if (dismissOnBackdrop && event.target === event.currentTarget) onClose(); }}>
-    <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={'fw-dialog bw-dialog' + (wide ? ' bw-dialog-wide' : '')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={title} data-browser-panel={panel} className={'fw-dialog bw-dialog' + (wide ? ' bw-dialog-wide' : '')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
       <div className="bw-dialog-head"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button type="button" className="fw-icon" aria-label="关闭" disabled={closeDisabled} onClick={onClose}><X size={16} /></button></div>
       <div className="bw-dialog-body">{children}</div>
       {footer && <div className="fw-dialog-actions bw-dialog-actions">{footer}</div>}
@@ -102,20 +102,38 @@ export function HttpAuthDialog({ host, onSubmit, onCancel }) {
 /** B11 cross-task authorization (P4): same project only, per run, user decides. */
 export function CrossTaskDialog({ request, onDecide }) {
   const [mode, setMode] = useState(request.mode);
-  return <PanelDialog title="Agent 请求访问其他任务的网页" subtitle={`当前运行：${request.fromTitle}`} onClose={() => onDecide(null)}
-    footer={<><button type="button" onClick={() => onDecide(null)}>拒绝</button><button type="button" onClick={() => onDecide(mode)}>允许本次运行</button></>}>
+  const [expiresAt] = useState(() => request.expiresAt ?? Date.now() + 60000), [now, setNow] = useState(Date.now);
+  const decision = useRef(onDecide), settled = useRef(false);
+  useEffect(() => { decision.current = onDecide; }, [onDecide]);
+  useEffect(() => {
+    const tick = () => {
+      const value = Date.now(); setNow(value);
+      if (value >= expiresAt && !settled.current) { settled.current = true; decision.current(null); }
+    };
+    const timer = setInterval(tick, 1000); tick();
+    return () => clearInterval(timer);
+  }, [expiresAt]);
+  const seconds = Math.max(0, Math.ceil((expiresAt - now) / 1000));
+  const decide = value => {
+    if (settled.current) return;
+    settled.current = true;
+    decision.current(Date.now() < expiresAt ? value : null);
+  };
+  return <PanelDialog panel="access-request" title="Agent 请求访问其他任务的网页" subtitle={`当前运行：${request.fromTitle}`} onClose={() => decide(null)}
+    footer={<><button type="button" onClick={() => decide(null)}>拒绝</button><button type="button" disabled={seconds === 0} onClick={() => decide(mode)}>允许本次运行</button></>}>
     <div className="bw-kv"><span>目标任务</span><strong>{request.targetTitle}</strong><span>所属项目</span><strong>{request.projectName}（与当前任务相同）</strong></div>
     <fieldset className="bw-radios"><legend>允许的范围</legend>
       <label><input type="radio" name="cross-mode" checked={mode === 'observe'} onChange={() => setMode('observe')} />仅观察（快照、截图、读取）</label>
       <label><input type="radio" name="cross-mode" checked={mode === 'control'} onChange={() => setMode('control')} />可以操作（点击、输入、导航）</label>
     </fieldset>
-    <p className="bw-hint"><ShieldAlert size={13} />授权只在本次运行内有效，运行结束、终端退出或你撤销后立即失效；跨项目请求一律拒绝。两个任务共用同一项目登录态。</p>
+    <p className="bw-hint"><ShieldAlert size={13} />授权只在本次运行内有效，运行结束、终端退出或你撤销后立即失效；跨项目请求一律拒绝。</p>
+    <p className="bw-hint" role="status">{seconds} 秒内未处理将自动拒绝。{request.remaining > 0 ? `另有 ${request.remaining} 项请求等待处理。` : ''}</p>
   </PanelDialog>;
 }
 
-export function GrantsDialog({ grants, onRevoke, onClose }) {
+export function GrantsDialog({ grants, requesterTitle, projectName, onRevoke, onClose }) {
   return <PanelDialog title="跨任务授权" subtitle="本次运行中你已允许的访问" onClose={onClose} footer={<button type="button" onClick={onClose}>完成</button>}>
-    {grants.length ? <ul className="bw-list">{grants.map(item => <li key={item.taskId}><span><strong>{item.title}</strong><small>{item.mode === 'control' ? '可以操作' : '仅观察'} · 仅本次运行</small></span><button type="button" className="bw-mini" onClick={() => onRevoke(item.taskId)}>撤销</button></li>)}</ul> : <p className="bw-empty-note">本次运行没有授予任何跨任务访问。</p>}
+    {grants.length ? <ul className="bw-list">{grants.map(item => <li key={item.taskId}><span><strong>{item.requesterTitle ?? requesterTitle} → {item.title}</strong><small>{item.projectName ?? projectName} · {item.mode === 'control' ? '可以操作' : '仅观察'} · 仅本次运行</small></span><button type="button" className="bw-mini" onClick={() => onRevoke(item.taskId)}>撤销</button></li>)}</ul> : <p className="bw-empty-note">本次运行没有授予任何跨任务访问。</p>}
   </PanelDialog>;
 }
 
@@ -142,12 +160,12 @@ export function ProfilesDialog({ store, currentProfile, taskTitle, onUse, onCrea
           {confirmClear === profile.id ? <><span className="bw-danger-text">将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。</span><button type="button" className="bw-mini bw-mini-danger" onClick={() => { onClearLogin(profile.id); setConfirmClear(null); }}>确认清空</button><button type="button" className="bw-mini" onClick={() => setConfirmClear(null)}>取消</button></>
             : <button type="button" className="bw-mini" onClick={() => setConfirmClear(profile.id)}>清空该登录态</button>}</div></div></div>}
         <div className="bw-row-actions">
-          <button type="button" className="bw-mini" disabled={profile.id === currentProfile} onClick={() => onUse(profile.id)}>用于当前页面</button>
-          <button type="button" className="bw-mini" onClick={() => onClone(profile.id)}><Copy size={13} />克隆</button>
+          <button type="button" className="bw-mini" disabled={profile.id === currentProfile || Boolean(store.attention?.[profile.id])} onClick={() => onUse(profile.id)}>用于当前页面</button>
+          <button type="button" className="bw-mini" disabled={Boolean(store.attention?.[profile.id])} onClick={() => onClone(profile.id)}><Copy size={13} />克隆</button>
           <button type="button" className="bw-mini" disabled={Boolean(store.attention?.[profile.id])} title={store.attention?.[profile.id] ? '处理完“需要处理”后才能再次导入' : undefined} onClick={() => onImport(profile.id)}>导入 Chrome／Edge 登录态</button>
           {profile.scope !== 'project' && (confirmDelete === profile.id
             ? <><span className="bw-danger-text">删除后其登录态一并清除，使用它的页面改用项目登录态。</span><button type="button" className="bw-mini bw-mini-danger" onClick={() => { onDelete(profile.id); setSelected('project'); setConfirmDelete(null); }}>确认删除</button><button type="button" className="bw-mini" onClick={() => setConfirmDelete(null)}>取消</button></>
-            : <button type="button" className="bw-mini" onClick={() => setConfirmDelete(profile.id)}><Trash2 size={13} />删除</button>)}
+            : <button type="button" className="bw-mini" disabled={Boolean(store.attention?.[profile.id])} onClick={() => setConfirmDelete(profile.id)}><Trash2 size={13} />删除</button>)}
         </div>
         <h4>证书例外</h4>
         {certs.length ? <ul className="bw-list">{certs.map(host => <li key={host}><span><strong>{host}</strong><small>你曾选择继续访问</small></span><button type="button" className="bw-mini" onClick={() => onRevokeCert(profile.id, host)}>撤销</button></li>)}</ul> : <p className="bw-empty-note">无</p>}
@@ -178,7 +196,7 @@ export function ImportDialog({ store, targetProfile, onImported, onClose, source
   if (step === 'source') return <PanelDialog title="导入 Chrome／Edge 登录态" subtitle="只能由你在这里发起；Agent 没有导入命令。" onClose={onClose} footer={<><button type="button" onClick={onClose}>取消</button><button type="button" disabled={blocked} onClick={() => setStep('confirm')}>下一步</button></>}>
     {blocked && <p className="bw-danger-text" role="alert">「{targetLabel}」上次导入的恢复没有完成，需要先在登录态管理里处理，才能再次导入。</p>}
     <fieldset className="bw-radios"><legend>来源（本机已安装的浏览器，合成）</legend>
-      {IMPORT_SOURCES.flatMap(item => item.profiles.map(name => <label key={item.family + name}><input type="radio" name="import-source" checked={source === item.family + ':' + name} onChange={() => setSource(item.family + ':' + name)} />{item.label} · {name}</label>))}
+      {IMPORT_SOURCES.map(item => <div className="bw-import-browser-group" key={item.family}><strong>{item.label}</strong>{item.profiles.map(name => <label key={item.family + name}><input type="radio" name="import-source" checked={source === item.family + ':' + name} onChange={() => setSource(item.family + ':' + name)} />{item.label} · {name}</label>)}</div>)}
     </fieldset>
     <fieldset className="bw-radios"><legend>导入到</legend>
       {store.profiles.map(item => <label key={item.id}><input type="radio" name="import-target" checked={target === item.id} onChange={() => setTarget(item.id)} />{item.label}</label>)}
@@ -186,7 +204,7 @@ export function ImportDialog({ store, targetProfile, onImported, onClose, source
   </PanelDialog>;
   if (step === 'confirm') return <PanelDialog title="确认导入" onClose={onClose} footer={<><button type="button" onClick={() => setStep('source')}>返回</button><button type="button" disabled={blocked} onClick={() => setStep('keychain')}>确认导入</button></>}>
     <ul className="bw-warn-list">
-      <li>将导入 <strong>{browser.label} · {profileName}</strong> 的<strong>全部 Cookie</strong>（Google 登录除外），写入「{targetLabel}」；只替换导入中出现的站点，其他站点的登录不受影响。</li>
+      <li>将导入 <strong>{browser.label} · {profileName}</strong> 的<strong>全部 Cookie</strong>（Google 登录除外），写入「{targetLabel}」。导入站点按域名整体替换，其他站点不受影响。</li>
       <li><strong>Agent 将能读取这些站点的会话令牌</strong>（<code>cookie get</code> 返回明文值），并可在不设域名护栏的情况下使用它们。</li>
       <li><strong>导入期间，使用「{targetLabel}」的页面会暂时卸载</strong>，页面上未保存的内容会丢失；导入完成后自动重新加载。</li>
       <li>macOS 会请求访问钥匙串中的「{browser.keychain}」。请只在你本人发起导入时允许。</li>
@@ -198,7 +216,7 @@ export function ImportDialog({ store, targetProfile, onImported, onClose, source
   </PanelDialog>;
   return <PanelDialog title={outcome.ok && outcome.summary.importedCookies > 0 ? '导入完成' : '导入未完成'} onClose={onClose} footer={<button type="button" onClick={onClose}>完成</button>}>
     {!outcome.ok ? <p className="bw-danger-text" role="alert">{outcome.reason}</p>
-      : <><div className="bw-kv"><span>总数</span><strong>{outcome.summary.totalCookies}</strong><span>已导入</span><strong>{outcome.summary.importedCookies}</strong><span>已跳过</span><strong>{outcome.summary.skippedCookies}</strong><span>其中 Google</span><strong>{outcome.summary.googleCookiesSkipped}</strong><span>因分区不可读而保留</span><strong>{outcome.summary.partitionSkippedCookies}</strong><span>重新加载的页面</span><strong>{outcome.summary.reloadedPages ?? 0}</strong></div>
+      : <><div className="bw-kv"><span>总数</span><strong>{outcome.summary.totalCookies}</strong><span>已导入</span><strong>{outcome.summary.importedCookies}</strong><span>已跳过</span><strong>{outcome.summary.skippedCookies}</strong><span>其中 Google</span><strong>{outcome.summary.googleCookiesSkipped}</strong><span>因分区不可读而保留</span><strong>{outcome.summary.partitionSkippedCookies}</strong><span>目标原有保留</span><strong>{outcome.summary.preservedTargetCookies ?? 0}</strong><span>重新加载的页面</span><strong>{outcome.summary.reloadedPages ?? 0}</strong></div>
         {outcome.summary.warning && <p className="bw-danger-text" role="alert">{outcome.summary.warning}</p>}
         {outcome.summary.domains.length > 0 && <p className="bw-hint">涉及站点：{outcome.summary.domains.join('、')}</p>}</>}
   </PanelDialog>;

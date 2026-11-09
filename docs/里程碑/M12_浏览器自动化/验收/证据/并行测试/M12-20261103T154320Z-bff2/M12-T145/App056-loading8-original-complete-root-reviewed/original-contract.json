@@ -1,0 +1,61 @@
+{
+  "case": "M12-T145",
+  "originalMatrix": 456,
+  "states": [
+    {
+      "id": "B02-loading-stop",
+      "source": "B02",
+      "title": "加载中进度与停止",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "http://localhost:5173/",
+            "waitLoaded": false
+          },
+          {
+            "kind": "wait",
+            "selector": "[aria-label=\"停止加载\"]"
+          }
+        ],
+        "expect": "[aria-label=\"停止加载\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机慢响应连接保持，真实停止/刷新按钮切换"
+      },
+      "ephemeral": true
+    }
+  ],
+  "criteria": [
+    "布局/尺寸/间距/对齐",
+    "图标形状/描边及状态",
+    "同语义文字/字体/字号/字重/行高",
+    "主题颜色/透明度/边框/圆角/阴影",
+    "长标题/地址/说明截断与滚动且不溢出",
+    "每个弹框/遮罩在浏览器区域内且左终端不遮挡",
+    "逐同名P/A原图对照，未审阅不判一致"
+  ],
+  "selectedKeys": [
+    "dark-rw480-win1920x1080|B01-tabs-entry",
+    "dark-rw480-win1920x1080|B02-loading-stop",
+    "dark-rw480-win1920x1080|B02-toolbar-ready",
+    "dark-rw480-win1920x1080|R01-11-launcher-recent",
+    "dark-rw900-win1920x1080|B01-tabs-entry",
+    "dark-rw900-win1920x1080|B02-loading-stop",
+    "dark-rw900-win1920x1080|B02-toolbar-ready",
+    "dark-rw900-win1920x1080|R01-11-launcher-recent",
+    "light-rw480-win1920x1080|B02-loading-stop",
+    "light-rw900-win1920x1080|B01-tabs-entry",
+    "light-rw900-win1920x1080|B02-loading-stop",
+    "light-rw900-win1920x1080|B02-toolbar-ready",
+    "light-rw900-win1920x1080|R01-11-launcher-recent"
+  ],
+  "originalFrozenDriver": "/private/tmp/willyou-m12-t145-App041-navigation-A-015",
+  "actualOldDriverReadonlySourceSHA256": "dc296e9fd112c57f6c78830d2130977fb08bc7955592a2b33bba1abc659a2cdd",
+  "minimalAdaptation": "Exact original body, original completed criteria/guard/doubleclick/Normalcleanup. Only missing1080 keys/current App047/source056/root and mature A016 actual externalfullscreen. Navigation omits unrelated external block and skips known light480 first3 captures.",
+  "nonTestedSetup": "Synthetic real task/profile/local HTTP before exactly one setup reload; actual UI operations/Native trusted input and current production behavior retained.",
+  "NativePixelsBoundary": "Host renderer captures do not certify live Native page pixels. No systematic OS/native keyboard shortcut claim.",
+  "AppRuntimeExecutedHere": false
+}

@@ -20,3 +20,10 @@ it('keeps old completed downloads available for six seconds after reopening',()=
 it('routes cancel and completed-file actions with the record identity, and closes on Escape',async()=>{
   const close=vi.fn(),action=vi.fn(async()=>{}),row=item(),view=render(<BrowserDownloadPanel items={[row]} onAction={action} onClose={close}/>);expect(screen.queryByRole('button',{name:'打开'})).toBeNull();await act(async()=>fireEvent.click(screen.getByRole('button',{name:'取消'})));expect(action).toHaveBeenLastCalledWith('d1','cancel');view.rerender(<BrowserDownloadPanel items={[{...row,state:'done'}]} onAction={action} onClose={close}/>);await act(async()=>fireEvent.click(screen.getByRole('button',{name:'打开'})));expect(action).toHaveBeenLastCalledWith('d1','open');await act(async()=>fireEvent.click(screen.getByRole('button',{name:'在文件夹中显示'})));expect(action).toHaveBeenLastCalledWith('d1','reveal');await act(async()=>fireEvent.click(screen.getByRole('button',{name:'移除下载记录 订单.csv'})));expect(action).toHaveBeenLastCalledWith('d1','remove');fireEvent.keyDown(screen.getByRole('region',{name:'下载'}),{key:'Escape'});expect(close).toHaveBeenCalledOnce();
 });
+it('keeps the full saved path and failure detail available when the compact row truncates them',()=>{
+  const path='/synthetic/Downloads/很长的目录与文件名/订单导出.csv',row={...item(),state:'done' as const,path};
+  const view=render(<BrowserDownloadPanel items={[row]} onAction={vi.fn()} onClose={vi.fn()}/>);
+  expect(screen.getByTitle(path).textContent).toBe('已保存到 '+path);
+  const error='连接被中断，请稍后重新下载';view.rerender(<BrowserDownloadPanel items={[{...row,state:'failed',error}]} onAction={vi.fn()} onClose={vi.fn()}/>);
+  expect(screen.getByTitle(error).textContent).toBe('下载失败：'+error);
+});

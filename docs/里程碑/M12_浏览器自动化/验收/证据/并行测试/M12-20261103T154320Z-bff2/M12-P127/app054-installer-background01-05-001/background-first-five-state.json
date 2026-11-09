@@ -1,0 +1,59 @@
+{
+  "scope": "Root actual existing P127 phases01-05 only; no source rebuild/publish/model; stop on first failure. Stage06 installed-startup pin binding and07-09 are explicitly deferred.",
+  "driverPid": 13130,
+  "startedAt": "2026-11-09T03:53:18.878860+00:00",
+  "phases": [
+    {
+      "id": "P127-01-private-copy",
+      "command": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app054-installer-001/cache WILLYOU_P111_PREPARED_SHA=eb45dfed827c84421ec3700df88cc3278a31e3f622a359a5150bd8c55f35bf02 /usr/bin/python3 /private/tmp/willyou-m12-app054-installer-001/prepare-native-input.py --execute",
+      "startedAt": "2026-11-09T03:53:18.879353+00:00",
+      "pid": 13136,
+      "exitCode": 0,
+      "finishedAt": "2026-11-09T03:53:27.685056+00:00",
+      "stdout": "/private/tmp/willyou-m12-app054-installer-001/P127-01-private-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app054-installer-001/P127-01-private-copy.stderr.log"
+    },
+    {
+      "id": "P127-02-prepackaged-dmg",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app054-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app054-installer-001/build-installer-002.py --execute",
+      "startedAt": "2026-11-09T03:53:27.685319+00:00",
+      "pid": 13192,
+      "exitCode": 0,
+      "finishedAt": "2026-11-09T03:54:06.461159+00:00",
+      "stdout": "/private/tmp/willyou-m12-app054-installer-001/P127-02-prepackaged-dmg.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app054-installer-001/P127-02-prepackaged-dmg.stderr.log"
+    },
+    {
+      "id": "P127-03-existing-gate-path-copy",
+      "command": "/bin/cp -p /private/tmp/willyou-m12-app054-installer-001/evidence/attempt-002/candidate-installer.json /private/tmp/willyou-m12-app054-installer-001/evidence/candidate-installer.json",
+      "startedAt": "2026-11-09T03:54:06.461717+00:00",
+      "pid": 13482,
+      "exitCode": 0,
+      "finishedAt": "2026-11-09T03:54:06.477095+00:00",
+      "stdout": "/private/tmp/willyou-m12-app054-installer-001/P127-03-existing-gate-path-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app054-installer-001/P127-03-existing-gate-path-copy.stderr.log"
+    },
+    {
+      "id": "P127-04-install-payload-size",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app054-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app054-installer-001/install-and-compare.py --execute",
+      "startedAt": "2026-11-09T03:54:06.477412+00:00",
+      "pid": 13484,
+      "exitCode": 0,
+      "finishedAt": "2026-11-09T03:54:41.532821+00:00",
+      "stdout": "/private/tmp/willyou-m12-app054-installer-001/P127-04-install-payload-size.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app054-installer-001/P127-04-install-payload-size.stderr.log"
+    },
+    {
+      "id": "P127-05-actual-installed-native",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app054-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app054-installer-001/check-installed-native.py --execute",
+      "startedAt": "2026-11-09T03:54:41.533094+00:00",
+      "pid": 13660,
+      "exitCode": 0,
+      "finishedAt": "2026-11-09T03:54:44.733438+00:00",
+      "stdout": "/private/tmp/willyou-m12-app054-installer-001/P127-05-actual-installed-native.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app054-installer-001/P127-05-actual-installed-native.stderr.log"
+    }
+  ],
+  "status": "background-first-five-complete-not-S6-complete",
+  "finishedAt": "2026-11-09T03:54:44.733733+00:00"
+}

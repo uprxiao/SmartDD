@@ -1,8 +1,8 @@
 # M12 浏览器自动化
 
-更新：2026-11-08。来源：[需求池 F25](../../需求池.md)（并入原 F22-B）。
+更新：2026-11-09。来源：[需求池 F25](../../需求池.md)（并入原 F22-B）。
 
-**状态：S1技术门槛已完成，S2–S5继续收口原验收，当前视觉候选App042已补外部应用提示修复，相关新包复验及剩余视觉检查继续；App038安装回归、T130、T083及T127原允许分支已收口，其余视觉／设备验收仍待。完整M12仍未交付。** 用户已授权完成S2–S6剩余开发、全部约定验收及缺陷修复；同范围授权持续有效。当前分支为`feature/0.1.1`，没有合并main、打tag或发布。
+**状态：当前本机 macOS arm64 已具备条件的原约定开发与验收完成；T145 已按原合同收口。Intel 真机 T141 按用户决定暂缓、未计通过，完整 M12 平台验收尚未完成。当前候选 App058/source069，分支 `feature/0.1.1`，未合并 main、打 tag 或发布。** 结果以[唯一正式用例账](验收/测试用例.md)、[最终 T145 核验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/original-T145-final-456-closeout-001/root-adjudication.json)及[交付说明](交付说明.md)为准。
 
 用户已于2026-11-08明确恢复测试；原暂停交接保留，T083已按原四系统分支与恢复清场收口，继续其余原系统／真实服务／设备缺项，见[当前轮次](验收/并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json)与[执行记录](验收/执行与缺陷记录.md)。
 
@@ -10,14 +10,16 @@
 
 T127已完成原用例允许的“真实读取后缺信息→按T122询问”分支，见[Root原合同判定](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T127/real-R001-root-final/manifest.json)。没有执行真实业务网页复现，用户已暂缓这项额外操作；当前继续原视觉验收。
 
+T110 已按原合同完成双屏、全屏、桌面切换及后台操作验收，见[实际完整系统证据](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T110/App045-S005-original-S-complete/manifest.json)与[协调者独立归账](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T110/coordinator-original-S005-final/manifest.json)。剩余 T145 视觉及用户暂缓的 T141 真机项继续按唯一正式账登记。
+
 ## 唯一依据与入口
 
 | 产物 | 当前依据 |
 | --- | --- |
-| 需求 | [需求R1.7及授权记录](需求.md) |
-| 技研与开发顺序 | [技术方案V1.8 §11](技研/技术方案.md#11-开发顺序)；[命令映射生成器](技研/命令映射/README.md) |
+| 需求 | [需求R1.8及授权记录](需求.md) |
+| 技研与开发顺序 | [技术方案V1.9 §11](技研/技术方案.md#11-开发顺序)；[命令映射生成器](技研/命令映射/README.md) |
 | 原型 | [原型说明与变更](原型/原型说明与变更.md)；共享工程`prototypes/m6-codex`，入口`?preview=m12` |
-| 正式结果 | [原测试用例V1.5](验收/测试用例.md)为唯一正式账；[执行与缺陷记录](验收/执行与缺陷记录.md)记录原红及复验 |
+| 正式结果 | [原测试用例V1.6](验收/测试用例.md)为唯一正式账；[执行与缺陷记录](验收/执行与缺陷记录.md)记录原红及复验 |
 | 执行与资源 | [既有计划continuation](验收/S1执行计划.json)；[当前轮次](验收/并行测试/轮次/M12-20261103T154320Z-bff2/轮次记录.json) |
 | 交付 | [交付说明](交付说明.md)，尚未正式交付 |
 | 调研与历史 | [调研入口](调研/README.md)；[历史](历史/README.md) |
@@ -26,9 +28,39 @@ T127已完成原用例允许的“真实读取后缺信息→按T122询问”分
 
 ## 当前生产与验收候选
 
-- 当前候选为App042/source050，[官方构建与范围内软件检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/external-prompt-engineering-App042-001/manifest.json)完成；外部应用提示实际复验已完成，活动暂停样式缺陷及最终安装回归仍待。下列App041及更早结果保留各自构建身份，按未受影响范围复用。
+- 当前候选 App058/source069：[深色浏览器菜单局部修复构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/dark-menu-engineering-App058-001/root-adjudication.json)及[实际两组合复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App058-dark-menu2-internal003-original-complete-root-reviewed/root-adjudication.json)通过；本包[原安装九阶段及真实 CLI 回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app058-installed-startup06-09-001/root-adjudication.json)已完成，原外屏缺项已补齐；正式结论见[最终 T145 核验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/original-T145-final-456-closeout-001/root-adjudication.json)。
 
-- 当前视觉候选为App041/source049，[官方构建及软件检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/auth-find-engineering-App041-001/manifest.json)与[认证／查找定点复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App041-auth-find-A012-reviewed12/manifest.json)完成，完整视觉及最终安装回归仍待。此前App039/source046，修复登录态详情窄按钮越界，[当前原型回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/source046-B12-P8-complete/manifest.json)、[实际App039回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App039-B12-A008-complete/manifest.json)及[Root逐图核对](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/source046-root-affected-review/manifest.json)已完成；完整视觉矩阵及App039安装回归尚未完成。下面App038及更早构建保留原时点身份和适用边界。
+- 既有候选 App057/source068：[菜单样式修复正式构建及原生检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/menu-style-engineering-App057-001/root-adjudication.json)已完成；本包[原arm64安装九阶段及实际受管CLI回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app057-installed-startup06-09-001/root-adjudication.json)已完成；剩余视觉实际复验继续，详见唯一执行计划和执行记录。
+
+- 既有候选 App056/source067：[证书警告样式修复正式构建与原生检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/certificate-style-engineering-App056-001/manifest.json)完成；当前包[本机arm64安装、启动及受管CLI回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app056-installed-startup06-09-001/root-adjudication.json)已完成；T145原错误页及其余受影响状态继续复验，详见[当前执行记录](验收/执行与缺陷记录.md)。此前包的结论保留各自身份与适用边界。
+
+- 既有候选 App055/source064：[标签栏图标修复与原型菜单同步构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/tabstrip-menu-engineering-App055-001/manifest.json)已完成，相关[焦点、模型及类型检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/tabstrip-menu-software064-001/manifest.json)通过；实际受影响界面复验仍待；当前包[本机arm64完整安装与受管CLI回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app055-installed-startup06-09-001/root-adjudication.json)已完成。App054旧结果保留其包身份。
+
+- 既有候选 App054/source063：[来源／成功态集中修复正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/import-source-success-engineering-App054-001/manifest.json)已通过，当前原型已核，实际受影响App复验仍待；本机arm64[安装原九阶段及实际受管CLI回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app054-installed-startup06-09-001/root-adjudication.json)已完成；实际受影响UI、完整S6及T145仍待。
+
+- 后续来源／成功态的[同范围布局修复及软件检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/import-source-success-software063-001/manifest.json)已完成软件检查并进入当前App054目录包，当前原型参考已实际验证，真实App复验仍待。
+
+- 上一候选 App053/source062：[恢复／确认差异集中修复与正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/profile-visual-engineering-App053-001/manifest.json)已通过，实际受影响界面与最终安装验收仍待。原登录态与设置确认的状态视觉判据收口见执行记录，不扩大为完整T145通过。
+
+- 上一候选 App052/source061：[输入错误页样式与导入图标修复／正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/invalid-style-engineering-App052-001/manifest.json)已完成，当前实际界面复验与最终安装验收待完成。
+
+- 上一候选 App051/source060：[输入校验原型对齐与设置间距修复／正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/address-validation-engineering-App051-001/manifest.json)已完成软件及原生检查，继承恢复窄区换行修复；实际界面／视觉及最终安装验收尚待。
+
+- 上一候选 App050/source059 的[正式构建与原生检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/recovery-wrap-engineering-App050-001/manifest.json)已通过。针对App049实测窄区溢出的CSS修复，尚待实际界面复验；最终安装验收仍待。
+
+- 上一候选 App049/source058 已完成[正式构建与原生检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/cookie-recovery-engineering-App049-001/manifest.json)。B13 恢复提示及导入确认样式修复的软件检查已通过，[source058 草修与证据](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/cookie-recovery-visual-source058-software-001/archive-manifest.json)。App049 真实界面／视觉及最终安装验收尚待；App048 历史结果只按未受影响的冻结范围复用。
+
+- 当前目录包候选App048/source057，[导航回退与共用工具栏修复／正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/address-toolbar-engineering-App048-001/manifest.json)完成。T010已通过当前App048真实回退／重试及301／标题／图标补验并合并归账；T145按原同名状态分批采集与逐图对照，尚未整条通过。前台批次已清场释放，现后台准备剩余系统／证书前置及原图复核。
+
+- 上一目录包候选App047/source056，[本批集中修复及正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/profile-failure-visual-engineering-App047-001/manifest.json)完成，正复验修复并连续补原视觉矩阵。[导航缺项实际采集](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App047-navigation-A043-captured13/manifest.json)、[交互缺项实际采集](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App047-interactions-A044-captured28/manifest.json)、[权限提示缺项实际采集](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App047-permission-A045-captured4/manifest.json)已保存，均待逐图判定；当前候选最终安装回归仍待。
+
+- 上一目录包候选App046/source055，[下载工程与正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/download-visual-engineering-App046-001/manifest.json)及[下载实际定点复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App046-download-A031-scoped-reviewed24/manifest.json)已完成。当前连续执行剩余视觉矩阵：[登录态管理实际采集](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App046-profiles-A039-captured24/manifest.json)、[恢复警告实际采集](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App046-recovery-prep002-captured16/manifest.json)、[授权弹框实际部分结果与原超时](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App046-access-A040-valid21-binding-timeout/manifest.json)均已保存；视觉差异仍需集中修复复验，不能由采集成功推定整条通过。当前候选最终安装回归仍待。
+
+- 此前目录包候选为App045/source054，[截止时间接线与正式构建](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/activity-deadline-engineering-App045-001/manifest.json)已完成；[首组实际倒数、切标签与到期验证](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App045-countdown-A029-valid3-focus-yield/manifest.json)有效，随后失焦已正常收尾，剩余组合接续。下载原图发现的同类样式差异及未受测矩阵仍待，详见执行记录；未完成最终安装回归或完整视觉验收。
+
+- 此前候选为App042/source050，[官方构建与范围内软件检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/external-prompt-engineering-App042-001/manifest.json)完成；外部应用提示实际复验已完成，活动暂停样式缺陷及最终安装回归仍待。下列App041及更早结果保留各自构建身份，按未受影响范围复用。
+
+- 此前视觉候选为App041/source049，[官方构建及软件检查](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/auth-find-engineering-App041-001/manifest.json)与[认证／查找定点复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App041-auth-find-A012-reviewed12/manifest.json)完成，完整视觉及最终安装回归仍待。此前App039/source046，修复登录态详情窄按钮越界，[当前原型回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/source046-B12-P8-complete/manifest.json)、[实际App039回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App039-B12-A008-complete/manifest.json)及[Root逐图核对](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/source046-root-affected-review/manifest.json)已完成；完整视觉矩阵及App039安装回归尚未完成。下面App038及更早构建保留原时点身份和适用边界。
 
 
 - 上一生产候选为App038/source045，停放窗菜单修复已按[T109当前S组合复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T109/App038-menu-S002-complete/manifest.json)收口；[App037完整安装回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app037-installer-001/manifest.json)已完成。[App038 arm64完整安装回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P127/app038-installer-001-complete-07-09/manifest.json)已完成，包含实际启动、受管CLI与最终判定；[原T130 U＋A回归](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P107/T130-final-original-UA-composition/manifest.json)已收口；后续遵照用户安排补原系统／真实服务／设备缺项。
@@ -179,3 +211,8 @@ S1与既有批次的原证据、评审和逐批时间线均见执行记录及历
 
 
 App042[外部应用提示实际原八组合复验](验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/App042-external-A024-reviewed8/manifest.json)已完成，Root逐图确认本次宿主样式修复有效，原红与夹具差异保留。当前自有资源已收尾；暂停样式、原矩阵其它缺项及最终安装回归继续，T145仍待整条验收。
+
+
+暂停接续：[本次暂停交接与部分产物](验收/证据/并行测试/M12-20261103T154320Z-bff2/pause-20261109-after-App048/manifest.json)。不自动恢复或重放旧输入。
+
+恢复记录：2026-11-09用户将目标置active并要求继续；原暂停交接保留，未重放旧输入。

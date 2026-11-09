@@ -1,0 +1,25 @@
+{
+  "previousRunSHA256": "5cdb2d65d7e36cac611aa485ae7f63e6646f806de32c0e97b2c7d1b35bd19e28",
+  "currentRunSHA256": "e6dfbe1086d8bf99477d8a559b05a00d8f9013233d29f69d5783c645d9d0778f",
+  "substitutions": [
+    {
+      "before": "return x[0]?.state===state?x[0]:null});",
+      "after": "return x[0]?.state===state&&(state!=='progress'||x[0].receivedBytes>0&&x[0].totalBytes===totalBytes)?x[0]:null},20000);"
+    },
+    {
+      "before": "  await pageClick('normal');row.progress=",
+      "after": "  stage=combo.id+':download-progress';await pageClick('normal');row.progress="
+    },
+    {
+      "before": "if(app){try{r.finalDownloadObserverRestore=await own(restoreDownloadsBody,'restore-t145-final-download-observer')}",
+      "after": "if(app){try{r.finalDownloadObservation=await own(readDownloadsBody,'readonly-t145-final-download-events');await save();r.finalDownloadObserverRestore=await own(restoreDownloadsBody,'restore-t145-final-download-observer')}"
+    }
+  ],
+  "normalizedOtherRunBytesIdentical": true,
+  "helperSHA256": "0ec652d8247961036633c3738415267389609749319e8b29b18afaa4d4685358",
+  "helperThirdParameterFixPreserved": true,
+  "originalAssertPreserved": true,
+  "timeoutMs": 20000,
+  "fixtureGateBytes": 1024,
+  "fixtureUnchangedExceptAttemptNamespace": true
+}

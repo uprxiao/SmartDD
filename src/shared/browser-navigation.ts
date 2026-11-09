@@ -60,6 +60,6 @@ export function describeBrowserLoadFailure(code:number,description:string,url:st
   let host='',localHost=false;
   try{const u=new URL(url);host=u.host;localHost=u.hostname==='localhost'||u.hostname.endsWith('.localhost')||/^127\./.test(u.hostname)||['[::1]','0.0.0.0','[::]'].includes(u.hostname);}catch{/* Invalid destinations use a generic message. */}
   const kind:BrowserFailureKind=code===-102?(localHost?'not-running':'refused'):code===-106?'offline':[-105,-137].includes(code)?'dns':[-7,-118].includes(code)?'timeout':[-100,-101,-103,-324].includes(code)?'reset':'other';
-  const titles:Record<BrowserFailureKind,string>={'not-running':`${host} 上还没有服务在运行`,refused:`${host} 拒绝连接`,dns:`找不到 ${host}`,offline:'当前处于离线',timeout:`${host} 响应太久`,reset:`${host} 连接被中断`,other:host?`无法访问 ${host}`:'无法加载此页面'};
+  const titles:Record<BrowserFailureKind,string>={'not-running':`${host} 上还没有服务在运行`,refused:`${host} 拒绝连接`,dns:`找不到 ${host}`,offline:'当前处于离线状态',timeout:`${host} 响应时间过长`,reset:`与 ${host} 的连接被中断`,other:host?`无法访问 ${host}`:'无法加载此页面'};
   return{kind,url,host,title:titles[kind],errorName:/^(?:net::)?(ERR_[A-Z0-9_]+)$/.exec(description)?.[1]??description,recovery:kind==='not-running'?'poll':kind==='offline'?'online':null};
 }

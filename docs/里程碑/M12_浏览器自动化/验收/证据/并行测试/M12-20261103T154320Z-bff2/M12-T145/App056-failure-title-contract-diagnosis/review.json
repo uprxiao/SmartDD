@@ -1,0 +1,701 @@
+{
+  "at": "2026-11-09T07:18:11.006796+00:00",
+  "scope": "Only App056 failures56 R002 first capture/title oracle diagnosis, no App/Native execution or test modification",
+  "conclusion": {
+    "notProvenRace": true,
+    "notConfirmedProductionBug": true,
+    "privateAssertionStrongerThanExplicitOriginalContract": true,
+    "PDoesNotUniversallyKeepCommittedTitle": true,
+    "oldRawAndFalseJudgeUnmodified": true,
+    "noNewAttemptPrepared": true
+  },
+  "actualFacts": {
+    "raw": {
+      "path": "/private/tmp/willyou-m12-t145-App056-failures56-R002/raw.json",
+      "sha256": "9c435903bfcd43f0e37cfc8ff9d0bc422ff512e5995afcf4bd2daaf7ae78749b",
+      "bytes": 453106
+    },
+    "captureMetadata": {
+      "path": "/private/tmp/willyou-m12-t145-App056-failures56-R002/A-light-rw480-win1440x900-B04-not-running.json",
+      "sha256": "e674a4ad756c0d9e0cb9a6bc5fff48f3baa7f9c2009269fdd6ea335156aa7f5a",
+      "bytes": 170393
+    },
+    "captureImage": {
+      "path": "/private/tmp/willyou-m12-t145-App056-failures56-R002/A-light-rw480-win1440x900-B04-not-running.png",
+      "sha256": "4b060160612ed378967cb17694b8433baf7d9140326c4f0ebe66f18f47f6593b",
+      "bytes": 97080
+    },
+    "captureAt": "2026-11-09T07:10:46.501Z",
+    "failureObservedAt": "2026-11-09T07:10:46.429Z",
+    "perReadTimestampsRecorded": false,
+    "snapshotTitle": "T145 own failure fixture",
+    "visibleTabText": "T145 own failure fixture",
+    "nativeGetTitle": "notrunning.localhost/case?combo=light-rw480-win1440x900",
+    "snapshotURLIsCommitted": true,
+    "addressIsCommitted": true,
+    "failureURLIsAttempt": true,
+    "nativeWCUnchanged": true,
+    "finalDBReadonly": {
+      "databaseHashOnly": {
+        "path": "/private/tmp/willyou-m12-t145-App056-failures56-R002/runtime-001/userdata/smartdd.db",
+        "sha256": "c39d56bd8e922f7113f92b95fc7ac85241eb6dd322023002b3e94a6ed14488c8",
+        "bytes": 1990656
+      },
+      "sidecarsPresent": [],
+      "exactOwnWorkspaceKey": "browserWorkspace.v1:c239e311-db7a-43f9-bc05-96ab6b67ba12",
+      "savedTitle": "T145 own failure fixture",
+      "urlIsCommitted": true,
+      "rowUpdatedAt": "2026-11-09T07:10:45.931000+00:00",
+      "noDatabaseWritesByReview": true
+    },
+    "limits": [
+      "Final Native getTitle was not sampled at shutdown, so final DB alone cannot prove a persistent Native-vs-host mismatch through exit.",
+      "No page-title-updated/explicitSet event trace exists; cannot assert missing event or its cause.",
+      "Item.at is recorded after screenshot bytes, not individual metadata/native/snapshot read timestamps."
+    ]
+  },
+  "productionCodeFacts": {
+    "source": {
+      "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/src/main/core/browser/workspace.ts",
+      "sha256": "5c8d0672ce4232f41543727fb5e820e5d1413804b4b6dd4ff0c16ef7d21e93d8",
+      "bytes": 28859
+    },
+    "lines": {
+      "save56_61": "Title event save is synchronous SQLite+changed notification.",
+      "committed233_238": "Successful navigation commits URL and getTitle; page-title-updated copies event title and saves.",
+      "failed240": "did-fail-load sets runtime failure/loading and schedules recovery; does not rewrite persisted tab title.",
+      "recovery221_223": "poll recovery2000ms/other recovery5000ms remains active; no disabled timer in this review."
+    },
+    "noTestTitleHookOnNativeWC": "Driver fixed-title listener is on own main renderer; captured Native page has a different contentsId."
+  },
+  "authority": {
+    "requirements": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33",
+      "bytes": 70042
+    },
+    "R01.3Lines183_186": [
+      "标题、图标、地址随跳转和重定向同步更新。",
+      "导航失败时，地址栏不保留失败的目标地址。"
+    ],
+    "testCases": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "68afc83ea861507840e45fb6d1793ccf994fced79f4b34310f6352841139f70f",
+      "bytes": 213450
+    },
+    "T010Line48": "Redirect/page title+favicon updates and failed target address rollback; no explicit failed Chromium error-document fallback-title equality.",
+    "T145Line209": "Same-state layout/icons/text/colors, containment and no overflow; C9 no whole-image pixel equivalence. Does not specify Native getTitle equality on failed documents.",
+    "originalContract": {
+      "path": "/private/tmp/willyou-m12-t145-App056-failures56-R002/original-contract.json",
+      "sha256": "70054d506abd90b072e9fb0d4a03c2b9eb178324612365951ce965aeaafa9fed",
+      "bytes": 8162
+    }
+  },
+  "prototypeFacts": {
+    "all56MetadataReadAndHashesChecked": true,
+    "newImagesViewed": 0,
+    "byStateTabText": {
+      "B04-not-running": [
+        "localhost:3000 上还没有服务在运行"
+      ],
+      "B04-refused": [
+        "refused.example.test 拒绝连接"
+      ],
+      "B04-dns": [
+        "找不到 nxdomain.example.test"
+      ],
+      "B04-timeout": [
+        "timeout.example.test 响应时间过长"
+      ],
+      "B04-reset": [
+        "与 reset.example.test 的连接被中断"
+      ],
+      "B04-other": [
+        "无法访问 other.example.test"
+      ],
+      "B04-offline": [
+        "登录 · 测试环境"
+      ]
+    },
+    "rows": [
+      {
+        "key": "light-rw480-win1440x900|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-not-running.json",
+          "sha256": "bdf1ec9467259f9f1aa18fbfea6fd95cdec44d3ddec12797919f2beee1e0d10a",
+          "bytes": 11284
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-refused.json",
+          "sha256": "732081c987de8485d233f83574026ce921b23f8a61faf72cb6819bf1bcaf0c12",
+          "bytes": 11105
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-dns.json",
+          "sha256": "8f4bcb693650aec9155f5329bdac26bd0d2684458d5e432b5b4988f06925c0d4",
+          "bytes": 11047
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-timeout.json",
+          "sha256": "a31e70141755b82858340e52734f297f84146cbaf7a2ed9bb959e07243de21b3",
+          "bytes": 11027
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-reset.json",
+          "sha256": "364454d6835bccdf2f876ae31103bf70aba5ce6c7b724c4c8d1db4c504d433bd",
+          "bytes": 11049
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-other.json",
+          "sha256": "340afaea8d4d118f2e9eff857369adf00b4e7037d48ac6c7eacaecd5f6b92a50",
+          "bytes": 10979
+        }
+      },
+      {
+        "key": "light-rw480-win1440x900|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B04-offline.json",
+          "sha256": "045251ca9a478bfac0ff4985b1e70666117585bac92b4358813b37753b0b5051",
+          "bytes": 11097
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-not-running.json",
+          "sha256": "7661cdbf9836a87d40b63539b83bc49cf58c79bf2f60baffaeeea394b92ac63d",
+          "bytes": 11275
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-refused.json",
+          "sha256": "0cf7e2cd504e266af32eae5c0a8d82753757b6afac1159de5fed644f194a51a4",
+          "bytes": 11096
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-dns.json",
+          "sha256": "f5c225754f8b65505125bc941532744cda608eb219c3cde459f90cb53b00d68a",
+          "bytes": 11038
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-timeout.json",
+          "sha256": "9c80ddc45cebefcc2940dca16525a8cd333c40ba91f50aa24ec0c581c555e166",
+          "bytes": 11018
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-reset.json",
+          "sha256": "4d1d945e0f4d6772d4d00765eb19ad1ba3f141de05e027f4e313610d5d88bab4",
+          "bytes": 11040
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-other.json",
+          "sha256": "e660f760c6aee97cd900bfb4236544ca613477f2140bd570bfe58ecaef4ec486",
+          "bytes": 10970
+        }
+      },
+      {
+        "key": "light-rw900-win1440x900|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B04-offline.json",
+          "sha256": "85c65b8f301dfc76a874dff20fbbf14112f6477be84cd0246efa6a7e85b5ca10",
+          "bytes": 11088
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-not-running.json",
+          "sha256": "66fe7481077ff79fa1e02bee38dccef8edd81018bde55dedd19302ca12d9dae3",
+          "bytes": 11305
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-refused.json",
+          "sha256": "ad78c74efe625e3f37be2b62607dff5c49d6551349ce0a540b8f37a74e4bf039",
+          "bytes": 11126
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-dns.json",
+          "sha256": "edea12967e168df5a1ce8cb27c9ae03c2132ac0624ec54812d38d98e3fccf817",
+          "bytes": 11068
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-timeout.json",
+          "sha256": "130daf9179ba51208120944e99805d54e2ce62ca3c1c2d6dc97b13803bc3ffc6",
+          "bytes": 11048
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-reset.json",
+          "sha256": "431dabb78c232479cd6b164efa056fd7f4431518687bdf41d6ee8709f7c8515c",
+          "bytes": 11070
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-other.json",
+          "sha256": "8bd2082ad6a2d60355104eb140c56bdd754edd743e7de54be43d23e8bde74301",
+          "bytes": 11000
+        }
+      },
+      {
+        "key": "dark-rw480-win1440x900|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B04-offline.json",
+          "sha256": "d4d710a1cc0020a9120a1048082015453375b6df4c7973086d39c01f88afa9b5",
+          "bytes": 11118
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-not-running.json",
+          "sha256": "71016414a49cfe055f6b316caafcbbde7fd4b132c47a95b33ca5da96f8b04681",
+          "bytes": 11296
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-refused.json",
+          "sha256": "9b8fc81797927c220054196374f5471f72a1ec61fcff3656bdf6c01e0090187d",
+          "bytes": 11117
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-dns.json",
+          "sha256": "4f4cadbdc31068dea5246d55b5d04343b0bed99b55392c9d3b74e03708125d4e",
+          "bytes": 11059
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-timeout.json",
+          "sha256": "fbd55504e3274916611da120eaaf696bdf665f7f135b0e9aebf72d5ac8a6d5c3",
+          "bytes": 11039
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-reset.json",
+          "sha256": "d02a7a0d78659459fca431ddd140a97a448924e51ed0edb76de74c673f709ddf",
+          "bytes": 11061
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-other.json",
+          "sha256": "2def8a2f2a1963911652cf665cda1dd70b0ec49e4982e0d8e0033c9e4b58a854",
+          "bytes": 10991
+        }
+      },
+      {
+        "key": "dark-rw900-win1440x900|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B04-offline.json",
+          "sha256": "3c0cfefb7e293798fed2f3a5c29cda9b67231975b1cf445c16c7a1e9f848596d",
+          "bytes": 11109
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-not-running.json",
+          "sha256": "a2a30a8857e0b5dcc12131ff6e12d47e7921d2db3c115a2ba100558bd7a1abbc",
+          "bytes": 11385
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-refused.json",
+          "sha256": "3ef06f1f6881c5da25310fed5fe8627cb7f9f1407944ae06d555323fc9e3b417",
+          "bytes": 11206
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-dns.json",
+          "sha256": "d17544ba018eaa52d2d5086a2de31c3491a081041dbee90f9f4a0b97439e7f07",
+          "bytes": 11148
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-timeout.json",
+          "sha256": "ea9303efebb0798f60763cdcf8b98e2beccadcb646a53bb6bc8939c4581085e7",
+          "bytes": 11128
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-reset.json",
+          "sha256": "c68de358eec029c33bfdcfcab95e6242a040ff615c93bff6d4236c476fea80c1",
+          "bytes": 11150
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-other.json",
+          "sha256": "93c5dfaa8462660b03dbd4a2ae688bb76cf7af0510156a4134f4356c74675f93",
+          "bytes": 11080
+        }
+      },
+      {
+        "key": "light-rw480-win1920x1080|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B04-offline.json",
+          "sha256": "62f682d736bc4afbd11e305db5da72328784d391298880aef21e0a84bce4343d",
+          "bytes": 11198
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-not-running.json",
+          "sha256": "89dd9d6fc9ba97007a7b35a383f979267526b8aade15d1bf2927144156beeb0e",
+          "bytes": 11371
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-refused.json",
+          "sha256": "7bd25ff5ce710256210b1fe8c61f92407ce9b421d9521d31346c519d8c108fc6",
+          "bytes": 11192
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-dns.json",
+          "sha256": "65939e011a0b6658f699a556cd6cb34699026b885fb14b56bfc8f3014f3a5f53",
+          "bytes": 11134
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-timeout.json",
+          "sha256": "b3f32873d550dac332589fee468f229be639b69aa5bb17a35aff4336f98594b5",
+          "bytes": 11114
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-reset.json",
+          "sha256": "0fc074cbfcc674ef2902ed9738a45486cb7d6315ed90d1007518985cb610bf3b",
+          "bytes": 11136
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-other.json",
+          "sha256": "0510c7c8341df4eebc6c9fcc218f74a023fc328a1208e9dc91123ecd8b7a3217",
+          "bytes": 11066
+        }
+      },
+      {
+        "key": "light-rw900-win1920x1080|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B04-offline.json",
+          "sha256": "7c8f1853870ffeaf319fe09db12462c0599c5f515afdce4861177bf87d9a8e07",
+          "bytes": 11184
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-not-running.json",
+          "sha256": "161d19c59e3270f1bf3d40555eadc571cd476cac6330cf00fe6476c7e42f1e72",
+          "bytes": 11406
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-refused.json",
+          "sha256": "71812a3eb099b97c805aba48a4bf0b1c271f16d87e25ac77e91cd58f0cdaa896",
+          "bytes": 11227
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-dns.json",
+          "sha256": "6c350178609ba780aec1215fb8e8b6421d15c087691511f59e75830d448b33d9",
+          "bytes": 11169
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-timeout.json",
+          "sha256": "cc83bd168c62eab0d431eca7d4b528bec4a831d1bc62a8af4c2c5bed83458955",
+          "bytes": 11149
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-reset.json",
+          "sha256": "e664f8e8558c980c31c58a4613d5935e0c49b4068b471d1c75bee3c3a64547da",
+          "bytes": 11171
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-other.json",
+          "sha256": "002ef4bafe768f137a7bddea9af93751ab4115733f645ba4009e7c3dd71c6432",
+          "bytes": 11101
+        }
+      },
+      {
+        "key": "dark-rw480-win1920x1080|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B04-offline.json",
+          "sha256": "3c6dcc7c638983e55ce2f6ed7d0a29b4d410674e6e8e1f99b7fb19684de15af0",
+          "bytes": 11219
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-not-running",
+        "tabText": "localhost:3000 上还没有服务在运行",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-not-running.json",
+          "sha256": "01f94325efd6679cf6cdcd74e860fce2a56547bd6b691a88acd4a10cc96f9ffd",
+          "bytes": 11392
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-refused",
+        "tabText": "refused.example.test 拒绝连接",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-refused.json",
+          "sha256": "7f7d8a7e62a1a4710bf89fb1adc5e98da2363c872d2223928f47a2a07c673dc5",
+          "bytes": 11213
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-dns",
+        "tabText": "找不到 nxdomain.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-dns.json",
+          "sha256": "2156d630e67537d13a04a6fe95547861c0e782baabc15d71d4e074db5669598b",
+          "bytes": 11155
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-timeout",
+        "tabText": "timeout.example.test 响应时间过长",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-timeout.json",
+          "sha256": "99151c184b843aee1dbd28303745a5201e906c8438a30067d60107d160f13469",
+          "bytes": 11135
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-reset",
+        "tabText": "与 reset.example.test 的连接被中断",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-reset.json",
+          "sha256": "edcefd107bd55599dbaf29c8e7ccf805a33d67cec1848323f540f31d06638c40",
+          "bytes": 11157
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-other",
+        "tabText": "无法访问 other.example.test",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-other.json",
+          "sha256": "58f4951f6303f38ecfe96552a29a07e44f3af64b7b1346a79d75a79f57e660e4",
+          "bytes": 11087
+        }
+      },
+      {
+        "key": "dark-rw900-win1920x1080|B04-offline",
+        "tabText": "登录 · 测试环境",
+        "metadata": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B04-offline.json",
+          "sha256": "35bde32875db706db9000898ffc42da454047769dbe0ee9a0e4f73ce9165c704",
+          "bytes": 11205
+        }
+      }
+    ],
+    "interpretation": "Six failure-navigation groups use synthesized failure headings in tab, offline group retains login-page title. P is not an actual Native navigation/title-event oracle.",
+    "codeReferences": [
+      {
+        "file": {
+          "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/prototypes/m6-codex/src/App.jsx",
+          "sha256": "c1d7a57b4c8680cfe5e37f634b50e8eecdc5f5864df8f5e40eac3ef1432fb183",
+          "bytes": 79213
+        },
+        "line": 376,
+        "fact": "Web tab title derives directly from resolveWebPage(currentUrl(tab)).title, without the child offline state."
+      },
+      {
+        "file": {
+          "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/prototypes/m6-codex/src/browser-prototype-model.mjs",
+          "sha256": "54b99decae2c4b3adc8ad84924cf59c6a9cbe30b1c172f226243f6e771104a1e",
+          "bytes": 21348
+        },
+        "lines": "111,118,160-164",
+        "fact": "Failure destinations resolve to failure heading and mock navigation pushes target into history."
+      },
+      {
+        "file": {
+          "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+          "sha256": "ede468f91ab92c7748446c69021b9911819cdef8b5cbdc11cff9e07d3db018e6",
+          "bytes": 34901
+        },
+        "line": 276,
+        "fact": "Offline checkbox changes local offline state; parent tab-title resolver does not receive it."
+      }
+    ]
+  },
+  "assertionOrigin": {
+    "originalA036": {
+      "file": {
+        "path": "/private/tmp/willyou-m12-t145-App046-failures-A-036/failure-evidence.mjs",
+        "sha256": "92eeaf76cb9bd6d3c47adfa5d1b3b343fd5777a8c6c2b2586f5f5a8f5c8901ce",
+        "bytes": 2431
+      },
+      "nativeTitleEqualityPresent": false
+    },
+    "earliestLocatedOnExactApp051Failures56Chain": {
+      "root": "/private/tmp/willyou-m12-t145-App051-failures56-R002",
+      "file": {
+        "path": "/private/tmp/willyou-m12-t145-App051-failures56-R002/failure-evidence.mjs",
+        "sha256": "c5c6abe3df00a5929884ca5e4090db597778bf632b1bcade190df9af8cec073d",
+        "bytes": 3113
+      },
+      "ready": {
+        "path": "/private/tmp/willyou-m12-t145-App051-failures56-R002/READY.json",
+        "sha256": "2d13b8ed5d21335fb5f2d3647156ed9b65a51a0fcf638df3c4bc301b4141319d",
+        "bytes": 65182
+      },
+      "preparedAt": "2026-11-09T02:00:36.921737+00:00",
+      "nativeTitleEqualityPresent": true,
+      "privateREADYInterpretation": "tab.title follows real native document title"
+    },
+    "limits": "Known R001 pathname absent; only exact App051-failures56 prefix inspected (R002/R003/R004). No claim to a broader historical first introduction.",
+    "finding": "Equality to failed error-document URL placeholder is a private driver strengthening, not an explicit original T010/T145 oracle."
+  },
+  "proposalAwaitRootDecision": {
+    "doNotChangeProductionForErrorURLPlaceholder": true,
+    "doNotCallOldFailureRaceOrGreen": true,
+    "contractProposal": "For a failed attempt with no successful new-document commit, retain exact committed URL and committed title; hostFailure title/error/attempt URL remain exact; Native error-document getTitle is preserved as diagnostic. This is a Root contract interpretation to approve, not a claim that P already displays that title.",
+    "mustKeep": [
+      "Same tab/task/run/WC identity.",
+      "Exact committed address rollback and failure.target.",
+      "Chinese failure heading/errorName and all original containment/Native-parking/transport-restore assertions.",
+      "Original false raw/judge and all P56 bytes."
+    ],
+    "boundedSamplerIfOriginalNativeEqualityIsRetained": "Use snapshotBefore -> readonly Native title/url/isLoading -> snapshotAfter + visible-tab text, requiring same page/failure/error/address and two successive stable title samples within original20s bound. Preserve the original exact equality assertion; if it never converges, stop with full samples. Current evidence does not prove this will converge.",
+    "PComparisonBoundary": "P failed-navigation tab heading is mock-document data, distinct from actual committed website title. Root must record this semantic difference; do not silently claim full same-text equality or rewrite P to fit A."
+  },
+  "resourcesHeld": [],
+  "AppNativeOSNodeHTTPExecuted": 0,
+  "formalIncrement": 0
+}

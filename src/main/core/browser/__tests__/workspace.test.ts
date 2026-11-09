@@ -14,6 +14,19 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
   it('retains exactly the last ten closed tabs and refuses tasks without projects',async()=>{
     const f=fixture();for(let i=0;i<12;i++)f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(t=>t.id);for(const id of ids)await f.workspace.close('t1',id);for(let i=0;i<11;i++)f.workspace.reopen('t1');expect(f.workspace.snapshot('t1').tabs).toHaveLength(10);expect(f.create).not.toHaveBeenCalled();expect(()=>f.workspace.create('no-project')).toThrow('项目');f.workspace.dispose();
   });
+  it('publishes each live activity deadline once per snapshot and never restores it from persisted tabs',async()=>{
+    const f=fixture(),activity=vi.fn(()=>({active:true,running:false,holdUntil:42000})),live=new BrowserWorkspace({...f.options,activity});
+    try{
+      live.create('t1');activity.mockClear();
+      expect(live.snapshot('t1').tabs[0]).toMatchObject({agentActive:true,agentRunning:false,agentHoldUntil:42000});
+      expect(activity).toHaveBeenCalledTimes(1);
+      const saved=f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1') as {value:string};
+      expect(JSON.parse(saved.value).tabs[0]).not.toHaveProperty('agentHoldUntil');
+      expect(JSON.parse(saved.value).tabs[0]).not.toHaveProperty('agentActive');
+      await live.dispose();const restored=new BrowserWorkspace(f.options);
+      try{expect(restored.snapshot('t1').tabs[0].agentHoldUntil).toBeUndefined();expect(f.create).not.toHaveBeenCalled();}finally{await restored.dispose();}
+    }finally{await live.dispose();await f.workspace.dispose();}
+  });
   it('changes unloaded bindings without allocating an engine and removes deleted profiles from reopen/restart records',async()=>{
     const f=fixture();try{
       f.workspace.create('t1');f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(tab=>tab.id),profile='11111111-1111-4111-8111-111111111111';let writes=0;

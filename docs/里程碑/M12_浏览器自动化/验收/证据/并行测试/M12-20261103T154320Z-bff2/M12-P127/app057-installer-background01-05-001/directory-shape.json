@@ -1,0 +1,21 @@
+{
+  "requiredAbsent": [
+    "Installed Applications",
+    "mounts/baseline",
+    "mounts/candidate",
+    "installer-input/WillYou.app",
+    "installer-output-002",
+    "installed-startup-001/execution-started.json",
+    "cache/native-home",
+    "cache/native-tmp",
+    "background-first-five-state.json"
+  ],
+  "precreatedParentsOnly": [
+    "mounts",
+    "installer-input",
+    "baseline-download/stored-auth-attempt-002",
+    "cache",
+    "evidence/attempt-002"
+  ],
+  "reason": "Original04 creates InstalledApplications and its own two mountpoints with mkdir exist_okFalse; do not precreate these destinations. Original05 also creates native-home/tmp."
+}

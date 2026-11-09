@@ -1,0 +1,2598 @@
+{
+  "case": "T145 App051 host retest partial actual12",
+  "reviewedAt": "2026-11-09T01:49:46.797017+00:00",
+  "actualOriginalPairsViewed": 12,
+  "actualOriginalPNGsViewed": 24,
+  "package": {
+    "App": "051",
+    "source": "060",
+    "asar": "c5af03b8c9903acbbf5ad54088b429277ca2a157a948956049930a87aec64f7f",
+    "sourceManifestSHA256": "1cce3ad0e647d6c20e9d73ed0dd9378035a3a95d2eb994dcdb00e1a7ef8d4f34"
+  },
+  "scope": "Only completed first6 combinations12; dark480/dark9001920x1080 four slots absent and excluded, no duplicate retry of12.",
+  "result": {
+    "invalidCoreFixesVerified": 6,
+    "settingsGapLayoutFixesVerified": 6,
+    "invalidFullVisualParity": false,
+    "wholeT145": false,
+    "formalIncrement": 0
+  },
+  "openFindings": [
+    {
+      "id": "INVALID-TYPOGRAPHY-SCOPED",
+      "classification": "确定子控件样式产品差异，不能归为shell",
+      "keys": [
+        "light-rw480-win1440x900|B03-invalid-address",
+        "light-rw900-win1440x900|B03-invalid-address",
+        "dark-rw480-win1440x900|B03-invalid-address",
+        "dark-rw900-win1440x900|B03-invalid-address",
+        "light-rw480-win1920x1080|B03-invalid-address",
+        "light-rw900-win1920x1080|B03-invalid-address"
+      ],
+      "evidence": "source060 workspace.css:24 h2无margin-top4、p没有P20px规则、code11px；原P实际冻结browser.css:38-40分别margin4px0 0、p13px/20px、code font12px var(--mono)。A本轮metadata直接证明11px/19.5px/margin0；原图实际可见输入回显更小/短和内部间距更紧。",
+      "minimalAction": "只在.bw-invalid-address h2/p/code补原P规则，保留独立安全长文本wrap与当前Native parking；避免修改通用其他failure。",
+      "PChildComputedBoundary": "旧P元数据未抓h2/p/code computed，P期望来自与其PNG绑定的冻结CSS/JSX及实际原图，不编造P子节点尺寸。"
+    },
+    {
+      "id": "SELECTED-INPUT-FILL-BOUNDARY",
+      "classification": "确定原图选区颜色不同，样式与浏览器默认/宿主边界待Root裁定，不擅改全主题",
+      "keys": [
+        "dark-rw480-win1440x900|B03-invalid-address",
+        "dark-rw900-win1440x900|B03-invalid-address"
+      ],
+      "evidence": "深色A原图绿灰选区/P蓝；A source060 index.css213-214/239-241全局::selection使用green --selection，P地址输入无对应全局规则（仅编辑器textarea有selection）。",
+      "action": "保留焦点/selection已正确的证据，若要求地址选区精确蓝色，可独立地址输入scope；当前未采两边::selection computed或系统默认色。"
+    }
+  ],
+  "knownDifferences": [
+    {
+      "id": "TAB-TITLE-RETAINED-PAGE",
+      "classification": "P无效地址标签文字 vs A原订单标题，显示差异保留，原Native/tab身份保持已明确",
+      "decision": "不据此改原host snapshot或伪造导航；是否需renderer标题覆盖由Root归账裁定。"
+    },
+    {
+      "id": "P-DEMO-FOOTER-SHELL",
+      "classification": "原P有不同换行高度的底部演示区、4pxshell；A真实RuntimeBar不同，中央surface绝对y不可直接像素等同。"
+    },
+    {
+      "id": "SETTINGS-OWNED-FIXTURE-DATA",
+      "classification": "统计容量/下载路径/背景样例差异，无本次溢出。"
+    }
+  ],
+  "items": [
+    {
+      "index": 0,
+      "key": "light-rw480-win1440x900|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B03-invalid-address.png",
+        "sha256": "8e9324dd2eb72c8dbb77a9e6e1a693b8677955f2b56b726c2cd2f7f8169c6d39",
+        "bytes": 129970,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-006-images/P-light-rw480-win1440x900-B03-invalid-address.json",
+          "sha256": "75623c7fcca466580c7b6f57a30e279842059fd3eaac70232aa5ee56599bbcc6",
+          "bytes": 11017
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1440x900-B03-invalid-address.png",
+        "sha256": "79bc7f2a38866a8c0e1ae02cd8d06ba9afecc2c0dabe320db3dca1bebfd917b0",
+        "bytes": 88423,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1440x900-B03-invalid-address.json",
+          "sha256": "ee43aae58b9eaabce6c2ae0e40b01b3632132a489204dc251b54b1e3a753a99d",
+          "bytes": 179337
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 1099,
+            "y": 48,
+            "width": 201,
+            "height": 28,
+            "right": 1300,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 959,
+            "y": 86,
+            "width": 475,
+            "height": 776,
+            "right": 1434,
+            "bottom": 862
+          },
+          "clientWidth": 475,
+          "scrollWidth": 475,
+          "clientHeight": 776,
+          "scrollHeight": 776,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(112, 112, 112)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 1183.5,
+                "y": 429.25,
+                "width": 26,
+                "height": 26,
+                "right": 1209.5,
+                "bottom": 455.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 2,
+          "url": "http://127.0.0.1:53101/orders?combo=light-rw480-win1440x900",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 1040.3125,
+              "y": 465.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1352.6875,
+              "bottom": 489.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(41, 41, 41)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 1094.578125,
+              "y": 499.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1298.421875,
+              "bottom": 518.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 1172.578125,
+              "y": 503.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1298.421875,
+              "bottom": 516.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "浅色两图都可见选中底色和蓝色焦点边框；选区computed未独立采集，不宣称逐像素等值。"
+      ]
+    },
+    {
+      "index": 1,
+      "key": "light-rw480-win1440x900|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "68f21ac40a2d3f13eb1acd96481c1261e7eafa17447263af3eab896e20834665",
+        "bytes": 174264,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "c831ebd4ceec4e1e5376fe5658a61461fd10ebb21b184e48e70eff38b45258d4",
+          "bytes": 15327
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "6fb09f5263048b6df08a8ec5ff85b742d27c8ffba447910fbae35fd2c8947191",
+        "bytes": 156039,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "b26ba9f379a6b9a38e8cb7efbcaa1e73cd85859670c7230241486298d4d2dc9d",
+          "bytes": 216084
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 973,
+          "y": 202,
+          "width": 447,
+          "height": 500,
+          "right": 1420,
+          "bottom": 702
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 261,
+            "width": 445,
+            "height": 373,
+            "right": 1419,
+            "bottom": 634
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 445,
+          "clientWidth": 445,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 973,
+            "y": 202,
+            "width": 447,
+            "height": 500,
+            "right": 1420,
+            "bottom": 702
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 996,
+              "y": 552,
+              "width": 401,
+              "height": 68,
+              "right": 1397,
+              "bottom": 620
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(41, 41, 41)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1369,
+                "y": 221,
+                "width": 32,
+                "height": 32,
+                "right": 1401,
+                "bottom": 253
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 996,
+                "y": 594,
+                "width": 68,
+                "height": 26,
+                "right": 1064,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1070,
+                "y": 594,
+                "width": 44,
+                "height": 26,
+                "right": 1114,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1351,
+                "y": 647,
+                "width": 50,
+                "height": 36,
+                "right": 1401,
+                "bottom": 683
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 973,
+        "y": 220,
+        "width": 447,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    },
+    {
+      "index": 2,
+      "key": "light-rw900-win1440x900|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B03-invalid-address.png",
+        "sha256": "e6b1358ebaee6ecf47e79ea3fd5ea4097c0f23c373bf93501e1b8a2d4dbf75bf",
+        "bytes": 129711,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B03-invalid-address.json",
+          "sha256": "a4e923a3c682ddfa3fabff5746f3f9c3db6fade5be253fab6f123ee67911097a",
+          "bytes": 11008
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1440x900-B03-invalid-address.png",
+        "sha256": "7cff63a6ced55a566d9eaa340f32555e8d5f58705482835d078a79308e9d0d17",
+        "bytes": 84305,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1440x900-B03-invalid-address.json",
+          "sha256": "819a44ee1094fa3abf50a577c26105f17c4e3f713fecebcd084af34a4ace741e",
+          "bytes": 178981
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 679,
+            "y": 48,
+            "width": 621,
+            "height": 28,
+            "right": 1300,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 539,
+            "y": 86,
+            "width": 895,
+            "height": 776,
+            "right": 1434,
+            "bottom": 862
+          },
+          "clientWidth": 895,
+          "scrollWidth": 895,
+          "clientHeight": 776,
+          "scrollHeight": 776,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(112, 112, 112)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 973.5,
+                "y": 429.25,
+                "width": 26,
+                "height": 26,
+                "right": 999.5,
+                "bottom": 455.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 4,
+          "url": "http://127.0.0.1:53101/orders?combo=light-rw900-win1440x900",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 830.3125,
+              "y": 465.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1142.6875,
+              "bottom": 489.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(41, 41, 41)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 884.578125,
+              "y": 499.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1088.421875,
+              "bottom": 518.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 962.578125,
+              "y": 503.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1088.421875,
+              "bottom": 516.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "浅色两图都可见选中底色和蓝色焦点边框；选区computed未独立采集，不宣称逐像素等值。"
+      ]
+    },
+    {
+      "index": 3,
+      "key": "light-rw900-win1440x900|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "ff24d5304bd0856a046f6f8cb9fb83fd1ec7fe5b394b17f489eb7db7f6eeb54c",
+        "bytes": 174603,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "2464cb2895e5a8167b2eb82d4b6d52af9e5851cfc01fe7124650cd274d518352",
+          "bytes": 15320
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "80278bd0e04d359caad9a2caca87ded86fec8f1da7a3973510a7068a4732d56f",
+        "bytes": 161398,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "837c5dc04e580edffeaa3c988451277eb5302a7fa0143a739c55e385c01f24fa",
+          "bytes": 216050
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 746.5,
+          "y": 202,
+          "width": 480,
+          "height": 500,
+          "right": 1226.5,
+          "bottom": 702
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 261,
+            "width": 478,
+            "height": 373,
+            "right": 1225.5,
+            "bottom": 634
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 478,
+          "clientWidth": 478,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 746.5,
+            "y": 202,
+            "width": 480,
+            "height": 500,
+            "right": 1226.5,
+            "bottom": 702
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 769.5,
+              "y": 552,
+              "width": 434,
+              "height": 68,
+              "right": 1203.5,
+              "bottom": 620
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(41, 41, 41)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1175.5,
+                "y": 221,
+                "width": 32,
+                "height": 32,
+                "right": 1207.5,
+                "bottom": 253
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 769.5,
+                "y": 594,
+                "width": 68,
+                "height": 26,
+                "right": 837.5,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 843.5,
+                "y": 594,
+                "width": 44,
+                "height": 26,
+                "right": 887.5,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1157.5,
+                "y": 647,
+                "width": 50,
+                "height": 36,
+                "right": 1207.5,
+                "bottom": 683
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 746.5,
+        "y": 220,
+        "width": 480,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0.0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    },
+    {
+      "index": 4,
+      "key": "dark-rw480-win1440x900|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B03-invalid-address.png",
+        "sha256": "328b82f4245fc4ecca80d53bd2843752228f5ff025c3dd95a4fe2a020a8df798",
+        "bytes": 129027,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B03-invalid-address.json",
+          "sha256": "b583e74394c3774eba0647ea37a293178a653222d11b94545914f5d00bf6f83f",
+          "bytes": 11038
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw480-win1440x900-B03-invalid-address.png",
+        "sha256": "79d8d87df19745f3a2f2ce1446f40d48c7d6d5170bc883ccfef453f93156c6b4",
+        "bytes": 85431,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw480-win1440x900-B03-invalid-address.json",
+          "sha256": "867618690e13687e9bc4abbe8a76c7e378fe0af7d42e0cb289db9ad0790213a9",
+          "bytes": 179130
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 1099,
+            "y": 48,
+            "width": 201,
+            "height": 28,
+            "right": 1300,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 959,
+            "y": 86,
+            "width": 475,
+            "height": 776,
+            "right": 1434,
+            "bottom": 862
+          },
+          "clientWidth": 475,
+          "scrollWidth": 475,
+          "clientHeight": 776,
+          "scrollHeight": 776,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(204, 204, 204)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 1183.5,
+                "y": 429.25,
+                "width": 26,
+                "height": 26,
+                "right": 1209.5,
+                "bottom": 455.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 5,
+          "url": "http://127.0.0.1:53101/orders?combo=dark-rw480-win1440x900",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 1040.3125,
+              "y": 465.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1352.6875,
+              "bottom": 489.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(241, 241, 241)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 1094.578125,
+              "y": 499.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1298.421875,
+              "bottom": 518.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(204, 204, 204)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 1172.578125,
+              "y": 503.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1298.421875,
+              "bottom": 516.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(204, 204, 204)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "深色A选区为绿灰，P原图为蓝色；A全局自定义::selection/P输入使用浏览器默认，记录样式差异，未判定系统默认色的精确匹配。"
+      ]
+    },
+    {
+      "index": 5,
+      "key": "dark-rw480-win1440x900|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "ccf8d019f5e2c224e7b2683c6db5dd24c3ea32536412bd46a66b79c6732ae837",
+        "bytes": 173557,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "505c9a5b7633d2a3121e9d337b01feabae80c4b3c0352ae416e72f0ab714d5f0",
+          "bytes": 15353
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw480-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "439b1195cd7a13bc1c07d0c4a740174ecff15dd8a5e37a574eba2921cb86c1b2",
+        "bytes": 152881,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw480-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "7a88c3d368060f9fd6872a4bbaff5d8c88ad71e561bee1ccc274b596c1a8e888",
+          "bytes": 216043
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 973,
+          "y": 202,
+          "width": 447,
+          "height": 500,
+          "right": 1420,
+          "bottom": 702
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 261,
+            "width": 445,
+            "height": 373,
+            "right": 1419,
+            "bottom": 634
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 445,
+          "clientWidth": 445,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 973,
+            "y": 202,
+            "width": 447,
+            "height": 500,
+            "right": 1420,
+            "bottom": 702
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 996,
+              "y": 552,
+              "width": 401,
+              "height": 68,
+              "right": 1397,
+              "bottom": 620
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(241, 241, 241)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1369,
+                "y": 221,
+                "width": 32,
+                "height": 32,
+                "right": 1401,
+                "bottom": 253
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 996,
+                "y": 594,
+                "width": 68,
+                "height": 26,
+                "right": 1064,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1070,
+                "y": 594,
+                "width": 44,
+                "height": 26,
+                "right": 1114,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1351,
+                "y": 647,
+                "width": 50,
+                "height": 36,
+                "right": 1401,
+                "bottom": 683
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 973,
+        "y": 220,
+        "width": 447,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    },
+    {
+      "index": 6,
+      "key": "dark-rw900-win1440x900|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B03-invalid-address.png",
+        "sha256": "e40d40062afefb2894d40717658093e9a727815738e88e3f068c54688a643f7c",
+        "bytes": 128301,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B03-invalid-address.json",
+          "sha256": "09753f0dfb2de097a211ede41c155c6c906ce27e0e858ceecac702fce5b9cc9a",
+          "bytes": 11029
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw900-win1440x900-B03-invalid-address.png",
+        "sha256": "5ac34e347f0d6d1afbc16f1d76583ecee0f9ee931b87fcfd073a6f3201fe0282",
+        "bytes": 81380,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw900-win1440x900-B03-invalid-address.json",
+          "sha256": "f9f7421f294ff8ee3045b47f656a97e32bd2f6b13c61201e5056efd6990a8bf7",
+          "bytes": 178936
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 679,
+            "y": 48,
+            "width": 621,
+            "height": 28,
+            "right": 1300,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 539,
+            "y": 86,
+            "width": 895,
+            "height": 776,
+            "right": 1434,
+            "bottom": 862
+          },
+          "clientWidth": 895,
+          "scrollWidth": 895,
+          "clientHeight": 776,
+          "scrollHeight": 776,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(204, 204, 204)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 973.5,
+                "y": 429.25,
+                "width": 26,
+                "height": 26,
+                "right": 999.5,
+                "bottom": 455.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 6,
+          "url": "http://127.0.0.1:53101/orders?combo=dark-rw900-win1440x900",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 776
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 830.3125,
+              "y": 465.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1142.6875,
+              "bottom": 489.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(241, 241, 241)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 884.578125,
+              "y": 499.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1088.421875,
+              "bottom": 518.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(204, 204, 204)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 962.578125,
+              "y": 503.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1088.421875,
+              "bottom": 516.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(204, 204, 204)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(48, 48, 48)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "深色A选区为绿灰，P原图为蓝色；A全局自定义::selection/P输入使用浏览器默认，记录样式差异，未判定系统默认色的精确匹配。"
+      ]
+    },
+    {
+      "index": 7,
+      "key": "dark-rw900-win1440x900|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "c9ebc49dc6e38ecc75f4ca2969b2cc8f228a24a6d055653abd5fd4629f041237",
+        "bytes": 173641,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "182fe0e82aad5c70441291c600ac9a9cbced494bf816d77d3ab85cb17410d9aa",
+          "bytes": 15346
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw900-win1440x900-B14-settings-clear-confirm.png",
+        "sha256": "8e3278993cd719f7ac93440c182a7d960297c6faa4cf75a334b3c035745df0a3",
+        "bytes": 158907,
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-dark-rw900-win1440x900-B14-settings-clear-confirm.json",
+          "sha256": "f0af8b130d9b8432e4a0f81f13affe9963bad581947a1a91a0b466bfaf5c9e50",
+          "bytes": 216007
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 746.5,
+          "y": 202,
+          "width": 480,
+          "height": 500,
+          "right": 1226.5,
+          "bottom": 702
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 261,
+            "width": 478,
+            "height": 373,
+            "right": 1225.5,
+            "bottom": 634
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 478,
+          "clientWidth": 478,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 746.5,
+            "y": 202,
+            "width": 480,
+            "height": 500,
+            "right": 1226.5,
+            "bottom": 702
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 769.5,
+              "y": 552,
+              "width": 434,
+              "height": 68,
+              "right": 1203.5,
+              "bottom": 620
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(241, 241, 241)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1175.5,
+                "y": 221,
+                "width": 32,
+                "height": 32,
+                "right": 1207.5,
+                "bottom": 253
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 769.5,
+                "y": 594,
+                "width": 68,
+                "height": 26,
+                "right": 837.5,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 843.5,
+                "y": 594,
+                "width": 44,
+                "height": 26,
+                "right": 887.5,
+                "bottom": 620
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1157.5,
+                "y": 647,
+                "width": 50,
+                "height": 36,
+                "right": 1207.5,
+                "bottom": 683
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 746.5,
+        "y": 220,
+        "width": 480,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0.0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    },
+    {
+      "index": 8,
+      "key": "light-rw480-win1920x1080|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B03-invalid-address.png",
+        "sha256": "f9b213b08551cbe387f296cbefd8ce9139c1023a0e1899832aef826136903e69",
+        "bytes": 138413,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B03-invalid-address.json",
+          "sha256": "e32cefad9d9efd77bd8112ad9c07b4d4e56597daf0a34ea28780df7085be6559",
+          "bytes": 11118
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1920x1080-B03-invalid-address.png",
+        "sha256": "f437a536f82f286f65b1ea64dccb01ef5dbabd7c6a3b57fe46da9d1e43f80b5a",
+        "bytes": 96730,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1920x1080-B03-invalid-address.json",
+          "sha256": "719796ff3d2dcf50e747ec9019bc7178cb42bfbec545d63a7b69ec5632a3dead",
+          "bytes": 179257
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 1579,
+            "y": 48,
+            "width": 201,
+            "height": 28,
+            "right": 1780,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 1439,
+            "y": 86,
+            "width": 475,
+            "height": 956,
+            "right": 1914,
+            "bottom": 1042
+          },
+          "clientWidth": 475,
+          "scrollWidth": 475,
+          "clientHeight": 956,
+          "scrollHeight": 956,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(112, 112, 112)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 1663.5,
+                "y": 519.25,
+                "width": 26,
+                "height": 26,
+                "right": 1689.5,
+                "bottom": 545.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 7,
+          "url": "http://127.0.0.1:53101/orders?combo=light-rw480-win1920x1080",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 475,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 1520.3125,
+              "y": 555.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1832.6875,
+              "bottom": 579.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(41, 41, 41)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 1574.578125,
+              "y": 589.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1778.421875,
+              "bottom": 608.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 1652.578125,
+              "y": 593.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1778.421875,
+              "bottom": 606.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "浅色两图都可见选中底色和蓝色焦点边框；选区computed未独立采集，不宣称逐像素等值。"
+      ]
+    },
+    {
+      "index": 9,
+      "key": "light-rw480-win1920x1080|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B14-settings-clear-confirm.png",
+        "sha256": "5f31f9996aaea69509ec0de17eaaa6e8dfe2856fba1b44131d0ed9e3b58766a6",
+        "bytes": 187093,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B14-settings-clear-confirm.json",
+          "sha256": "95ba898aa8b34ce75408570f3acc95717d730888f1e52e1fb1ae7a3917e4ceae",
+          "bytes": 15433
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1920x1080-B14-settings-clear-confirm.png",
+        "sha256": "b29970c56868dc0624a90716890050951bf6d4b8f02777c2d32a9bcc61635665",
+        "bytes": 173118,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw480-win1920x1080-B14-settings-clear-confirm.json",
+          "sha256": "00183f84316011e99cc32b04626e93595ba05d4816f10a92f4ba8a0a8161f552",
+          "bytes": 216207
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 1453,
+          "y": 292,
+          "width": 447,
+          "height": 500,
+          "right": 1900,
+          "bottom": 792
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 351,
+            "width": 445,
+            "height": 373,
+            "right": 1899,
+            "bottom": 724
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 445,
+          "clientWidth": 445,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 1453,
+            "y": 292,
+            "width": 447,
+            "height": 500,
+            "right": 1900,
+            "bottom": 792
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 1476,
+              "y": 642,
+              "width": 401,
+              "height": 68,
+              "right": 1877,
+              "bottom": 710
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(41, 41, 41)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1849,
+                "y": 311,
+                "width": 32,
+                "height": 32,
+                "right": 1881,
+                "bottom": 343
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1476,
+                "y": 684,
+                "width": 68,
+                "height": 26,
+                "right": 1544,
+                "bottom": 710
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1550,
+                "y": 684,
+                "width": 44,
+                "height": 26,
+                "right": 1594,
+                "bottom": 710
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1831,
+                "y": 737,
+                "width": 50,
+                "height": 36,
+                "right": 1881,
+                "bottom": 773
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 1453,
+        "y": 310,
+        "width": 447,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    },
+    {
+      "index": 10,
+      "key": "light-rw900-win1920x1080|B03-invalid-address",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B03-invalid-address.png",
+        "sha256": "13e1e59a6a918cb5c4aaf509687fc1982400430c4d9f452b17b9689fe05bbcbf",
+        "bytes": 135826,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B03-invalid-address.json",
+          "sha256": "284a03b90cdd3da873a0524a7e02c75005a81f8d82d41bc1a0c3e0a374300160",
+          "bytes": 11104
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1920x1080-B03-invalid-address.png",
+        "sha256": "c593d3ee2fd64e3a0abab047aabb0b284e502cdcce102c8bd836c9e220329a1e",
+        "bytes": 97327,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1920x1080-B03-invalid-address.json",
+          "sha256": "0bb435d036935566434775e7ae9bf4820c9ceb8506042d72c2f33a030e54b0b1",
+          "bytes": 179089
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "selected-input-and-real-invalid-surface-fixes-verified-residual-typography-open",
+      "verified": [
+        "原图可见地址蓝色焦点环/保留输入选中、中央三角警告/中文标题/输入回显；原meta focused=true selection0..19。",
+        "没有旧banner或网页snapshot覆盖错误surface；没有文字/图标截断。",
+        "真实host notice由null到确切invalidNotice，原tab/WC/URI/document/timeOrigin身份保持且Native已park，不能误读为导航或原页销毁。"
+      ],
+      "AActualEvidence": {
+        "input": {
+          "value": "javascript:alert(1)",
+          "focused": true,
+          "selectionStart": 0,
+          "selectionEnd": 19,
+          "selectionDirection": "none",
+          "rect": {
+            "x": 1159,
+            "y": 48,
+            "width": 621,
+            "height": 28,
+            "right": 1780,
+            "bottom": 76
+          }
+        },
+        "failure": {
+          "text": "请输入有效的 http(s) 或 localhost 地址你输入的是：javascript:alert(1)",
+          "title": "请输入有效的 http(s) 或 localhost 地址",
+          "detail": "你输入的是：javascript:alert(1)",
+          "code": "javascript:alert(1)",
+          "role": "alert",
+          "rect": {
+            "x": 1019,
+            "y": 86,
+            "width": 895,
+            "height": 956,
+            "right": 1914,
+            "bottom": 1042
+          },
+          "clientWidth": 895,
+          "scrollWidth": 895,
+          "clientHeight": 956,
+          "scrollHeight": 956,
+          "style": {
+            "fontSize": "13px",
+            "lineHeight": "19.5px",
+            "color": "rgb(112, 112, 112)",
+            "gap": "10px",
+            "display": "flex",
+            "visibility": "visible"
+          },
+          "centerOwned": true,
+          "icons": [
+            {
+              "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-triangle-alert\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
+              "rect": {
+                "x": 1453.5,
+                "y": 519.25,
+                "width": 26,
+                "height": 26,
+                "right": 1479.5,
+                "bottom": 545.25
+              }
+            }
+          ]
+        },
+        "preservation": {
+          "pageIdUnchanged": true,
+          "tabSnapshotUnchanged": true,
+          "urlUnchanged": true,
+          "nativeIdentityUnchanged": true,
+          "documentIdentityAndTimeOriginUnchanged": true,
+          "scriptURLRejectedWithNoDialog": true,
+          "nativeParkedOrDetachedWithoutDestruction": true,
+          "realHostNavigateNoticeChangedFromNull": true
+        },
+        "native": {
+          "contentsId": 8,
+          "url": "http://127.0.0.1:53101/orders?combo=light-rw900-win1920x1080",
+          "destroyed": false,
+          "placements": [
+            {
+              "parentId": 2,
+              "mainParent": false,
+              "visible": true,
+              "bounds": {
+                "x": 0,
+                "y": 0,
+                "width": 895,
+                "height": 956
+              }
+            }
+          ]
+        },
+        "typography": {
+          ".bw-invalid-address h2": {
+            "rect": {
+              "x": 1310.3125,
+              "y": 555.25,
+              "width": 312.375,
+              "height": 24,
+              "right": 1622.6875,
+              "bottom": 579.25
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "18px",
+              "fontWeight": "550",
+              "lineHeight": "24px",
+              "letterSpacing": "normal",
+              "color": "rgb(41, 41, 41)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address p": {
+            "rect": {
+              "x": 1364.578125,
+              "y": 589.25,
+              "width": 203.84375,
+              "height": 19.5,
+              "right": 1568.421875,
+              "bottom": 608.75
+            },
+            "style": {
+              "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+              "fontSize": "13px",
+              "fontWeight": "430",
+              "lineHeight": "19.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "block",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          },
+          ".bw-invalid-address code": {
+            "rect": {
+              "x": 1442.578125,
+              "y": 593.25,
+              "width": 125.84375,
+              "height": 13,
+              "right": 1568.421875,
+              "bottom": 606.25
+            },
+            "style": {
+              "fontFamily": "Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              "fontSize": "11px",
+              "fontWeight": "430",
+              "lineHeight": "16.5px",
+              "letterSpacing": "normal",
+              "color": "rgb(112, 112, 112)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(233, 233, 233)",
+              "borderWidth": "0px",
+              "borderRadius": "0px",
+              "boxShadow": "none",
+              "display": "inline",
+              "alignItems": "normal",
+              "flexDirection": "row",
+              "margin": "0px",
+              "padding": "0px",
+              "gap": "normal",
+              "textOverflow": "clip",
+              "whiteSpace": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible"
+            }
+          }
+        }
+      },
+      "differences": [
+        "INVALID-TYPOGRAPHY-SCOPED",
+        "SELECTED-INPUT-FILL-BOUNDARY",
+        "P-DEMO-FOOTER-SHELL",
+        "TAB-TITLE-RETAINED-PAGE"
+      ],
+      "visualNotes": [
+        "P输入回显code12px；A原图回显更短/小，实际11px。P图标→标题含h2 margin-top4px；A没有该4px，内部间距更紧。P p行高20px；A19.5px。",
+        "P演示footer按480/900换行占不同高度，A无该演示区；绝对中央内容y不同。未把全部位置差异归为产品间距问题，亦未用shell差异掩盖上述明确子控件样式。",
+        "原P标签标题无效地址；A仍保留原真实页订单标题。属于保留原tab身份/展示差异，本组未改标题，Root裁定是否需要renderer标题覆盖。",
+        "浅色两图都可见选中底色和蓝色焦点边框；选区computed未独立采集，不宣称逐像素等值。"
+      ]
+    },
+    {
+      "index": 11,
+      "key": "light-rw900-win1920x1080|B14-settings-clear-confirm",
+      "reviewed": true,
+      "PAndAActuallyViewed": true,
+      "method": "tools.view_image detail=original, one original P/A pair per call; no edits/crops/mosaics",
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B14-settings-clear-confirm.png",
+        "sha256": "0625958fddb10c18cc841055bfece92620a20d3439483c3ce006f671f99f2732",
+        "bytes": 185576,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B14-settings-clear-confirm.json",
+          "sha256": "b486cf07c53ef76219c9f50db191c1510612760e5443ef7b263b5ef18d3202a3",
+          "bytes": 15421
+        }
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1920x1080-B14-settings-clear-confirm.png",
+        "sha256": "208fc4de7f540af76c2b72bc1c3af6aae9199c43e12c5fd3247af551f519c83d",
+        "bytes": 175861,
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadata": {
+          "path": "/private/tmp/willyou-m12-t145-final-host16-App051-retest-prep-001/A-light-rw900-win1920x1080-B14-settings-clear-confirm.json",
+          "sha256": "b1960d11c7dc2500e0b2756d16f18f3894f0d0f392332199bd6d33b039db5acb",
+          "bytes": 216193
+        }
+      },
+      "App": "App051/source060",
+      "verdict": "settings-gap-and-scoped-controls-layout-verified-with-fixture-shell-differences",
+      "verified": [
+        "实际逐图所见搜索引擎/浏览器身份选项、红色危险说明、确认清理/取消/完成与关闭X均完整可见，无正文或控件裁切。",
+        "确认/取消间隔6px，警告换行到按钮间隔6px；row68px，dialog500px与原P相同，旧gap8/height502差异已修。",
+        "原文件和owned artifacts未删除，实际保留确认状态，未宣称清理完成。"
+      ],
+      "AActualEvidence": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 292,
+          "width": 480,
+          "height": 500,
+          "right": 1706.5,
+          "bottom": 792
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 351,
+            "width": 478,
+            "height": 373,
+            "right": 1705.5,
+            "bottom": 724
+          },
+          "scrollTop": 0,
+          "scrollHeight": 373,
+          "clientHeight": 373,
+          "scrollWidth": 478,
+          "clientWidth": 478,
+          "overflowY": "auto"
+        },
+        "settings": {
+          "text": "浏览器设置\n默认搜索引擎（地址栏输入非网址时使用）\nBing\nGoogle\nDuckDuckGo\nKagi\n浏览器身份（整个应用生效，重启后生效）\n清理后的身份（兼容导入的登录态）\nElectron 原生身份（部分站点需要；Google 登录不可用）\n下载位置\n系统下载目录（/Users/liubu/Downloads），不弹保存对话框\n浏览器文件\n8.0 MB（截图、PDF、HAR 与超限结果）\n将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。\n确认清理\n取消\n完成",
+          "rect": {
+            "x": 1226.5,
+            "y": 292,
+            "width": 480,
+            "height": 500,
+            "right": 1706.5,
+            "bottom": 792
+          },
+          "warning": "将删除所有任务的浏览器截图、PDF、HAR 与超限结果文件；系统“下载”目录不受影响。",
+          "artifactUsage": "8.0 MB（截图、PDF、HAR 与超限结果）",
+          "actionRow": {
+            "rect": {
+              "x": 1249.5,
+              "y": 642,
+              "width": 434,
+              "height": 68,
+              "right": 1683.5,
+              "bottom": 710
+            },
+            "style": {
+              "fontSize": "13px",
+              "lineHeight": "19.5px",
+              "color": "rgb(41, 41, 41)",
+              "gap": "6px",
+              "display": "flex",
+              "visibility": "visible"
+            }
+          },
+          "controls": [
+            {
+              "text": "",
+              "label": "关闭",
+              "disabled": false,
+              "rect": {
+                "x": 1655.5,
+                "y": 311,
+                "width": 32,
+                "height": 32,
+                "right": 1687.5,
+                "bottom": 343
+              }
+            },
+            {
+              "text": "确认清理",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1249.5,
+                "y": 684,
+                "width": 68,
+                "height": 26,
+                "right": 1317.5,
+                "bottom": 710
+              }
+            },
+            {
+              "text": "取消",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1323.5,
+                "y": 684,
+                "width": 44,
+                "height": 26,
+                "right": 1367.5,
+                "bottom": 710
+              }
+            },
+            {
+              "text": "完成",
+              "label": null,
+              "disabled": false,
+              "rect": {
+                "x": 1637.5,
+                "y": 737,
+                "width": 50,
+                "height": 36,
+                "right": 1687.5,
+                "bottom": 773
+              }
+            }
+          ]
+        },
+        "artifactsUnchanged": true
+      },
+      "PDialogRect": {
+        "x": 1226.5,
+        "y": 310,
+        "width": 480,
+        "height": 500
+      },
+      "geometryDeltaAminusP": {
+        "x": 0.0,
+        "y": -18,
+        "height": 0,
+        "width": 0
+      },
+      "differences": [
+        "SETTINGS-OWNED-FIXTURE-DATA",
+        "P-DEMO-FOOTER-SHELL"
+      ],
+      "visualNotes": [
+        "8.0MB对P12.4MB和真实/Users/liubu/Downloads对~/Downloads为实际数据/演示说明差异；当前样例均完整，P合成尾注不搬入产品。",
+        "A/P同名modal宽高相同，绝对y=-18为宿主shell可用区域差异；背景P登录页/Aowned订单页不同。"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-address-validation-source-060/source/src/renderer/features/browser/workspace.css",
+      "sha256": "3b419eec54aa746df33bdf2696e3b5372eba88e6b42d5915c189408978599a83",
+      "bytes": 17200
+    },
+    {
+      "path": "/private/tmp/willyou-m12-address-validation-source-060/source/src/renderer/features/browser/workspace.tsx",
+      "sha256": "1d3cd3eeef8cad2ed5a9beff96e93f752e35d1e21de29ccdf69fa51558b27427",
+      "bytes": 29366
+    },
+    {
+      "path": "/private/tmp/willyou-m12-address-validation-source-060/source/src/renderer/index.css",
+      "sha256": "0a4b3d5a969adc8601bac523f0dcbb8082c3702b3610a6231936c9434559d1e7",
+      "bytes": 8227
+    }
+  ],
+  "oldReviewCorrection": "旧host16-review-001关于normalize(null)抛错/store.catch/R01.3必须回退非法输入的推断已由Root纠正；当前沿确认P保留输入选中，原历史不改写。",
+  "rawTerminal": {
+    "status": "failed-or-deferred",
+    "failure": {
+      "stage": "dark-rw480-win1920x1080:real-ui-binding",
+      "name": "Error",
+      "message": "This isolated App lost focus; yield the M10 UI batch for the other test.",
+      "code": "APP_FOCUS_YIELDED"
+    },
+    "captured": 12,
+    "appExit": {
+      "pid": 92078,
+      "code": 0,
+      "signal": null
+    },
+    "cleanupAllClear": true
+  },
+  "boundary": "仅host原PNG/JSON视觉复核，Native停车身份读据保留，不代表live系统compositor完整视觉。原focus-yield失败与未取得4槽保留。",
+  "resources": {
+    "App": 0,
+    "Native": 0,
+    "UI": 0,
+    "HTTP": 0,
+    "OS": 0,
+    "ownedRunningProcesses": 0
+  },
+  "originalsUnchanged": true
+}

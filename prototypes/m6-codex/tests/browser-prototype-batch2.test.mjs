@@ -83,7 +83,10 @@ test('B13 import outcomes: keychain denied/timeout write nothing; success exclud
   const ok = importOutcome('allow');
   assert.equal(ok.summary.importedCookies + ok.summary.skippedCookies, ok.summary.totalCookies);
   assert.ok(ok.summary.googleCookiesSkipped > 0);
-  assert.equal(importOutcome('undecryptable').summary.importedCookies, 0);
+  const undecryptable = importOutcome('undecryptable');
+  assert.equal(undecryptable.ok, false);
+  assert.equal(undecryptable.summary, undefined);
+  assert.match(undecryptable.reason, /无法解密.*尚未写入/);
   const store = recordImport(projectProfiles('WillYou'), 'project', 'Google Chrome', 'Default', 1);
   assert.deepEqual(store.sources.project, { browser: 'Google Chrome', profileName: 'Default', importedAt: 1 });
 });

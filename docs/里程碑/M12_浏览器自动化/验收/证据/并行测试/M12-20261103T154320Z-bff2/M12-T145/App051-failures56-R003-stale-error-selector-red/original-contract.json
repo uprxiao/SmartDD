@@ -1,0 +1,254 @@
+{
+  "case": "M12-T145",
+  "selectedStates": [
+    {
+      "id": "B04-not-running",
+      "source": "B04",
+      "title": "加载失败：not-running",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "http://localhost:3000/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "not-running"
+    },
+    {
+      "id": "B04-refused",
+      "source": "B04",
+      "title": "加载失败：refused",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://refused.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "refused"
+    },
+    {
+      "id": "B04-dns",
+      "source": "B04",
+      "title": "加载失败：dns",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://nxdomain.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "dns"
+    },
+    {
+      "id": "B04-timeout",
+      "source": "B04",
+      "title": "加载失败：timeout",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://timeout.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "timeout"
+    },
+    {
+      "id": "B04-reset",
+      "source": "B04",
+      "title": "加载失败：reset",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://reset.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "reset"
+    },
+    {
+      "id": "B04-other",
+      "source": "B04",
+      "title": "加载失败：other",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://other.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "other"
+    },
+    {
+      "id": "B04-offline",
+      "source": "B04",
+      "title": "加载失败：离线",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo input[type=checkbox]"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2",
+            "text": "当前处于离线状态"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "受控本页session离线条件后真实导航；不能替换DOM/store"
+      },
+      "failureKind": "offline"
+    }
+  ],
+  "comparisonCriteria": [
+    "布局/尺寸/间距/对齐",
+    "图标形状/描边及状态",
+    "同语义文字/字体/字号/字重/行高",
+    "主题颜色/透明度/边框/圆角/阴影",
+    "长标题/地址/说明截断与滚动且不溢出",
+    "每个弹框/遮罩在浏览器区域内且左终端不遮挡",
+    "逐同名P/A原图对照，未审阅不判一致"
+  ],
+  "keys": [
+    "light-rw480-win1440x900|B04-not-running",
+    "light-rw480-win1440x900|B04-refused",
+    "light-rw480-win1440x900|B04-dns",
+    "light-rw480-win1440x900|B04-timeout",
+    "light-rw480-win1440x900|B04-reset",
+    "light-rw480-win1440x900|B04-other",
+    "light-rw480-win1440x900|B04-offline",
+    "light-rw900-win1440x900|B04-not-running",
+    "light-rw900-win1440x900|B04-refused",
+    "light-rw900-win1440x900|B04-dns",
+    "light-rw900-win1440x900|B04-timeout",
+    "light-rw900-win1440x900|B04-reset",
+    "light-rw900-win1440x900|B04-other",
+    "light-rw900-win1440x900|B04-offline",
+    "dark-rw480-win1440x900|B04-not-running",
+    "dark-rw480-win1440x900|B04-refused",
+    "dark-rw480-win1440x900|B04-dns",
+    "dark-rw480-win1440x900|B04-timeout",
+    "dark-rw480-win1440x900|B04-reset",
+    "dark-rw480-win1440x900|B04-other",
+    "dark-rw480-win1440x900|B04-offline",
+    "dark-rw900-win1440x900|B04-not-running",
+    "dark-rw900-win1440x900|B04-refused",
+    "dark-rw900-win1440x900|B04-dns",
+    "dark-rw900-win1440x900|B04-timeout",
+    "dark-rw900-win1440x900|B04-reset",
+    "dark-rw900-win1440x900|B04-other",
+    "dark-rw900-win1440x900|B04-offline",
+    "light-rw480-win1920x1080|B04-not-running",
+    "light-rw480-win1920x1080|B04-refused",
+    "light-rw480-win1920x1080|B04-dns",
+    "light-rw480-win1920x1080|B04-timeout",
+    "light-rw480-win1920x1080|B04-reset",
+    "light-rw480-win1920x1080|B04-other",
+    "light-rw480-win1920x1080|B04-offline",
+    "light-rw900-win1920x1080|B04-not-running",
+    "light-rw900-win1920x1080|B04-refused",
+    "light-rw900-win1920x1080|B04-dns",
+    "light-rw900-win1920x1080|B04-timeout",
+    "light-rw900-win1920x1080|B04-reset",
+    "light-rw900-win1920x1080|B04-other",
+    "light-rw900-win1920x1080|B04-offline",
+    "dark-rw480-win1920x1080|B04-not-running",
+    "dark-rw480-win1920x1080|B04-refused",
+    "dark-rw480-win1920x1080|B04-dns",
+    "dark-rw480-win1920x1080|B04-timeout",
+    "dark-rw480-win1920x1080|B04-reset",
+    "dark-rw480-win1920x1080|B04-other",
+    "dark-rw480-win1920x1080|B04-offline",
+    "dark-rw900-win1920x1080|B04-not-running",
+    "dark-rw900-win1920x1080|B04-refused",
+    "dark-rw900-win1920x1080|B04-dns",
+    "dark-rw900-win1920x1080|B04-timeout",
+    "dark-rw900-win1920x1080|B04-reset",
+    "dark-rw900-win1920x1080|B04-other",
+    "dark-rw900-win1920x1080|B04-offline"
+  ],
+  "originalMatrix": 456,
+  "current56Only": true,
+  "injectionBoundary": "Explicit own Native CDP failure transport injection copied from original S2 technique, real UI address navigation and unchanged production failure mapping. not-running is synthetic ConnectionRefused on .localhost, not genuine absent-service-network proof; no T011 new green, no model/credentials/system permission.",
+  "source": "source055 frozen original S2 failures technique and current production failure classification; all requested navigation is actual UI",
+  "normalExitAndIndependentCleanupRequired": true,
+  "visualReview": "Root originalP56/A56 review required; mechanical capture is not visual acceptance",
+  "noSystemPermissionOrModels": true
+}

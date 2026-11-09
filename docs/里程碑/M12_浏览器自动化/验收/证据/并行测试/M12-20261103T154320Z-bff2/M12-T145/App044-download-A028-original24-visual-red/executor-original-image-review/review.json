@@ -1,0 +1,1206 @@
+{
+  "at": "2026-11-08T14:20:02.688768+00:00",
+  "reviewer": "/root/t145_download_visual_prep",
+  "case": "M12-T145",
+  "scope": "A028 original download images indices4–23 only",
+  "indicesActuallyViewed": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "pairsActuallyReviewed": 20,
+  "originalImagesActuallyViewed": 40,
+  "indicesNotReviewedByThisAgent": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "sourcePairsSHA256": "384ab8ec45c955236e15bfd2e66724d85861a3b418d8685fda3e088a05076412",
+  "rawSHA256Unmodified": "caec24fd28c7d2388a1e77bfbe312c84c840621ffd964993ab93fc048c3b6468",
+  "AppNativeNodeOSHTTPExecuted": 0,
+  "screenshotModifications": 0,
+  "formalIncrement": 0,
+  "visualPassedSlots": 0,
+  "status": "review-complete-differences-found-no-full-visual-pass",
+  "confirmedProductDifferences": [
+    {
+      "id": "DOWNLOAD-FAILED-COLOR",
+      "scope": "all failed states among reviewed20: indices5,8,11,14,17,20,23",
+      "cause": "Missing P .bw-download-failed .bw-download-text span{color:#c0392b}; App falls back to secondarygrey.",
+      "confidence": "original images plus frozen production CSS"
+    },
+    {
+      "id": "DOWNLOAD-MINI-ICON-SIZE",
+      "scope": "all20 reviewed slots",
+      "cause": "App missing .bw-mini-icon{width:26px;height:26px}; fallback fw-icon32px makes header34px instead of28px and non-path overlay6px taller.",
+      "confidence": "original images, actual metadata, source rule differential"
+    }
+  ],
+  "pending": [
+    {
+      "id": "DONE-SAVE-PATH-PRESENTATION",
+      "scope": "indices4,7,10,13,16,19,22",
+      "observation": "Actual long absolute path differs from prototype synthetic~/Downloads. Actual wraps5lines, layout remains within overlay;66px content delta plus6px known mini-icon delta.",
+      "classification": "fixture text/path difference is certain; compact formatting/long-text acceptance not accepted here; Root decision needed before visual green. Do not change contract or call whole layout identical."
+    }
+  ],
+  "sampleDifferences": [
+    "Local test HTML is deliberately simple and stays white in dark mode; browser webpage theme is fixture-owned, not a host dark-mode failure.",
+    "Synthetic scheme/host/file name, original left task data and prototype-only controls are different; not full-page pixel parity claims."
+  ],
+  "unverified": [
+    "No hover/pressed/focus lifecycle newly tested by this static review.",
+    "No independent exact pixel matching or global Codex parity claim.",
+    "Dynamic Open/Reveal/Cancel functions are not validated by these screenshots; original T015 coverage remains separate.",
+    "Done path compact presentation remains pending."
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-agent-pause-source-052/source/src/renderer/features/browser/workspace.css",
+      "lines": [
+        98,
+        99,
+        102,
+        106,
+        107,
+        108
+      ],
+      "finding": "App044 frozen production B07 rules: failure-specific red and bw-mini-icon size rule absent.",
+      "sha256": "3f16463db3d31860a7f9b559b2a7fe88cad258ff64c28475d9fdf6744766ec4f"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-pause-source-052/source/src/renderer/features/browser/download-panel.tsx",
+      "lines": [
+        12,
+        14,
+        16,
+        17
+      ],
+      "finding": "Header/record X class fw-icon bw-mini-icon; done displays full item.path; no summary/tooltip path presentation split.",
+      "sha256": "11863beef02926d7cc331343582aaa5f10452c26440562c3bcd7e79e192c87ae"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-pause-source-052/source/src/renderer/features/files/workspace-baseline.css",
+      "lines": [
+        5
+      ],
+      "finding": "Fallback fw-icon32x32.",
+      "sha256": "f13d1bd043860f78319d8d8a206e6cf7ad7d977a534de73800bd617171a2587a"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/src/browser.css",
+      "lines": [
+        83,
+        94,
+        95,
+        103,
+        104,
+        105
+      ],
+      "finding": "P source has bw-mini-icon26x26, failure span#c0392b. This is readonly current source supporting savedP image; screenshot originals remain authoritative.",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd"
+    }
+  ],
+  "items": [
+    {
+      "index": 4,
+      "key": "light-rw900-win1440x900|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw900-win1440x900-B07-download-done.png",
+        "sha256": "6f0ddf03a0a493772cdb3f06e57c321ea46ebf890f4cb0c5453143f952e9c6c7",
+        "metadataSHA256": "1f9623a44045928c0e1ab5d68dd39491aba00e760d8c27a2069c635325603713"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B07-download-done.png",
+        "sha256": "3c9fb1aeedef4f5cf566097885712594148fe6af238fc71df0d4764b4d1bba3a",
+        "metadataSHA256": "a9759adb0c8229d5dd284e4b0181712ef62d1fe8debc2f0ff4f63b1f0de39b5c"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1426,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 5,
+      "key": "light-rw900-win1440x900|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw900-win1440x900-B07-download-failed.png",
+        "sha256": "ffd382045e764d1f5dd825407f65c6bed508de93aee88bb480065625f5a9f5b8",
+        "metadataSHA256": "f1b2dd03eb19ee5df6880d14f3d401ce445b5e09bb30d36245be1769394e5575"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B07-download-failed.png",
+        "sha256": "d0b753c295e7e333f1ec976d10c18ba3c633dac63907785e8d65312ae42adde0",
+        "metadataSHA256": "84bf96c30bc34229c4ba4c98c150e8f45cf319d5da2711e3c7eee649b0654d15"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1426,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 6,
+      "key": "dark-rw480-win1440x900|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1440x900-B07-download-progress.png",
+        "sha256": "7f40b386e15b74aa0d77b941a4bfa6077a95f32d863777a3fd7ea09c2896f19d",
+        "metadataSHA256": "cdd4df7c54b97167ffc1593d8d47dd55698dd322df297824fbd7cc8c4d77c878"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B07-download-progress.png",
+        "sha256": "9c3cb95663654f835e24f85fb31cad3e67350a672e7831ca98f1bb54b6ac4058",
+        "metadataSHA256": "d3859f75c7b593e1732c402ddd4e0669a80894bc46f3cbdb99c83abd44038d78"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1426,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 7,
+      "key": "dark-rw480-win1440x900|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1440x900-B07-download-done.png",
+        "sha256": "e56d9012221a36c51df6be4a818eeacf45a0ced8c7039bf73a20167bdf49a1be",
+        "metadataSHA256": "ac5de48fb8327dec51b9bc345a2ff1ed340b86281573f1e3b7d2ddff640a6ad6"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B07-download-done.png",
+        "sha256": "58e3ea4b97d42e855c82e75cfe3e1f52d680d9dcc56dbee5b695010ec13ec9f2",
+        "metadataSHA256": "b8e602e45b55efed44bc93cc2bdfaadbb85acb7e239d24a7429d1ae516478269"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1426,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 8,
+      "key": "dark-rw480-win1440x900|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1440x900-B07-download-failed.png",
+        "sha256": "ae5d422b4662af0c9074c0cfaf9873bf6ed2a027c0b5508f5ae1e6531c8156ec",
+        "metadataSHA256": "fa4dcdf944c25ee553c4d6524bb8abe5d3e31de0323e39ac96cedd5eccb5539e"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B07-download-failed.png",
+        "sha256": "a175ff0ad57840b12f4ed025a622d80d5eba2df14621d222a127103e6da85fe1",
+        "metadataSHA256": "fd6e1ecd4dc71cf3e6585dd9d6e2c774f000826f5017c577014f60336da0c1e3"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1426,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 9,
+      "key": "dark-rw900-win1440x900|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1440x900-B07-download-progress.png",
+        "sha256": "0cccebaba75639e78f0dfb449ed4e81467c4c886970c66283c792ac665736bda",
+        "metadataSHA256": "cee2d7b52af286ac5d8f6661ad672500f2f8511a9a2627197794eb1ca691a2f1"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B07-download-progress.png",
+        "sha256": "8e6debd8cd8ce520d393c1884446e8f2d80c75f14d9828a9f6e253e5a67c6b35",
+        "metadataSHA256": "bf19f2e1c5528e3a5a46d25f63e080795415306ef962e6f4269f9459b8757527"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1426,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 10,
+      "key": "dark-rw900-win1440x900|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1440x900-B07-download-done.png",
+        "sha256": "ac51a7a8f6a55ca60d8b391deb6d02ed671e7901200a2c9cb1585fb5d319ba8f",
+        "metadataSHA256": "36b96fe2e8576939deac3b54173b362812d3f84360f921432cb987e3f6b6dce8"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B07-download-done.png",
+        "sha256": "15d54439d3c33622de08a18090238730818d50090a3b6d6b2d3030da39a4a87b",
+        "metadataSHA256": "95d8956d4fc557bd58fab2776e62e6e73be51a16c67b5d2424d2996eee8663cc"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1426,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 11,
+      "key": "dark-rw900-win1440x900|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1440x900-B07-download-failed.png",
+        "sha256": "08741b6a920b9272d6034c5247ecbf9332e63728adb5bd116bd9bbf70ab8f9d7",
+        "metadataSHA256": "2bd5b3fde2bc03e0210098449819a4c7dac5b405de10008b9b993df8f3466eb9"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B07-download-failed.png",
+        "sha256": "f78be6ca8162ea5e3235fd70fe21ce3c405755651bc815fce5281c7712b79d26",
+        "metadataSHA256": "9162feae9192f6883cd81e16f8b43b2f8f19d0a92724adff270e80e002b1937c"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1026,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1426,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1026,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 12,
+      "key": "light-rw480-win1920x1080|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw480-win1920x1080-B07-download-progress.png",
+        "sha256": "d80abce26b4c913cde60b243e49961ecf75385d02441695b7b1620189f7f4554",
+        "metadataSHA256": "8ee12514a40796184a1003795c65e126830f8fdba09c4b44e45cfb7ad4b499fa"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B07-download-progress.png",
+        "sha256": "3efe5bb286636c9821e1893801aaeaebb1dd1c33850355ee930c887744e55bad",
+        "metadataSHA256": "f51ead62f32b4d5543dccc082729e65384626ef4c8db4b2f4b90baf376d3b4f9"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1906,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 13,
+      "key": "light-rw480-win1920x1080|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw480-win1920x1080-B07-download-done.png",
+        "sha256": "76ad29f0e67f065cd6346818675ed8d2189fecd696853677df93b9a0473d48c2",
+        "metadataSHA256": "e81fc77599056f7d8e83575afcdf7876fb897c69fe29d86c50e5c3303f59ee6c"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B07-download-done.png",
+        "sha256": "354b61173873b57ef556a237ee4043ad8e1b7ae902daf20155965730964ea78f",
+        "metadataSHA256": "5ffdd244be0118acfd09a9c325b335adb3cce82f70756b8f14aee5635015fa4a"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1906,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 14,
+      "key": "light-rw480-win1920x1080|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw480-win1920x1080-B07-download-failed.png",
+        "sha256": "7f34a5780f840b767bf1fd37574376846ef5efa55057f2e8063bdacd633195d0",
+        "metadataSHA256": "1ba2c924564381a0ad6c02caa3c10ff68c2174f8854dacbd42172cc84c916dae"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B07-download-failed.png",
+        "sha256": "febaa27203953770a83626f7a4f914b0cdfc7b9fca750c8ec32d3f1cd6be7895",
+        "metadataSHA256": "456bbbbb589f17fe2e235eff1d9c55a169300ee4c03dc64a14c8afcce2a3a540"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1906,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 15,
+      "key": "light-rw900-win1920x1080|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw900-win1920x1080-B07-download-progress.png",
+        "sha256": "935b4bbab1a4601e27430b72217d52b2f3ddd76f358b6ff721a0c63c73589872",
+        "metadataSHA256": "f2fd71875a530274877a77c1bfd0656a89f92deb1b3aabe4af8a887c11d3374f"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B07-download-progress.png",
+        "sha256": "280b65193d459e0a45c99e2eb6474b7c7de5c185bbfd3cd8d164343d8b8e56fb",
+        "metadataSHA256": "7af61b2581c31ec4a3b90183e364a920516c8c531404e0baab6c1d5ee13094d7"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1906,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 16,
+      "key": "light-rw900-win1920x1080|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw900-win1920x1080-B07-download-done.png",
+        "sha256": "d7732baf5155eb73e70355f64c67d4d9460cef542db500c68660f36f4c2193b2",
+        "metadataSHA256": "4e6093743e92a03a595ca58fcd4743fa908f23891b3374f37f02672adaa98ebb"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B07-download-done.png",
+        "sha256": "b2a5b7a97ed161d5e65ff8fca5414c64aae2f010964fe58e65968e26f103c142",
+        "metadataSHA256": "47e52a34651ca4bce7b03e124136c3b3b5169756b9d45b56ef7b123f27badb12"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1906,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 17,
+      "key": "light-rw900-win1920x1080|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-light-rw900-win1920x1080-B07-download-failed.png",
+        "sha256": "86b91bc4e79e4ddd1c59250adad6963842b851d8f252a6009b9b8cf47c13e6ba",
+        "metadataSHA256": "dc6eabca3c1a54f829674ab3099de6694bfe326f9f72812c51dae55a5a44f3c6"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B07-download-failed.png",
+        "sha256": "c6e25631f554c18f3a92af2cd7b2bfcddb4dfcf3bb4d1062d8fc5c75a837c8fa",
+        "metadataSHA256": "4b5fe2c81142394db2f53c753b9ef3eaca22d86749ea658d740987f72ad19fc1"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1906,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 18,
+      "key": "dark-rw480-win1920x1080|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1920x1080-B07-download-progress.png",
+        "sha256": "1b4205ce63f72dd1a51a5712e0fd27b62944bf012bb8b8159d2cc25f5e2e3dbc",
+        "metadataSHA256": "218f45e7b097be7f618864a0cd9f63b2377a197b8b68b3eff21643603f1ae9eb"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B07-download-progress.png",
+        "sha256": "227967a0177e4dbe63a101201a33929b3ac18968003aa06e0a0a9f1175f2787b",
+        "metadataSHA256": "8ab80aa338c9d6dba5b9642a755a17629842cd005ac4cb57691608c6d50e6e77"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1906,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 19,
+      "key": "dark-rw480-win1920x1080|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1920x1080-B07-download-done.png",
+        "sha256": "6c2f63bb4d56f958dcae43e4a5a7d8fa3247e52d1fb0621eba1f48e229325e8a",
+        "metadataSHA256": "156ef78327b7bb4e374d3c3d74e598e9c3e436a866da5ac7913a4d417d119792"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B07-download-done.png",
+        "sha256": "c88beef143ff61a6522d6cc28d572bbfdd9d787da6d05d8860c687bb50809b3d",
+        "metadataSHA256": "e9cc361f4c0d43354a34448f5919138651daaef8926cce7dd4bdfc1cbe6ebfa7"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1906,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 20,
+      "key": "dark-rw480-win1920x1080|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw480-win1920x1080-B07-download-failed.png",
+        "sha256": "da5ea825bc2b92fc3807dcb9143a616681cba2c3087e754d186ab409426dec3d",
+        "metadataSHA256": "6d749c2c344d7b131f5d57dc4fe6e8889c62598e75419ff19b66b9b86fd934c5"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B07-download-failed.png",
+        "sha256": "58c4cb28506b2fdab91ae571ac4c0d0f08b84cadaf503aa28a56b35f2da7d83d",
+        "metadataSHA256": "b518f8c04d80057bf045ae25dd3835d58f13a65efcf5c123dfb16c5b01f00c8b"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1906,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    },
+    {
+      "index": 21,
+      "key": "dark-rw900-win1920x1080|B07-download-progress",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1920x1080-B07-download-progress.png",
+        "sha256": "0b6abd8076f7ac2c9f49ed44cb51f48f675492fb9a5e8c64c22275bd7781ccc7",
+        "metadataSHA256": "d3527336b0a8629996762f25ae4ec5d4cb01ca9348b746fd85ed4852a55b621a"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B07-download-progress.png",
+        "sha256": "a6905725b392a454f97c81a3277847d4f2c013e619a53232029d01ab721de4e7",
+        "metadataSHA256": "4b0ba522be40f0eb251de972933f62fa29e3108fb763a12de371536ce4050e67"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 101.5,
+          "right": 1906,
+          "bottom": 189.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 95.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "0% label and thin grey meter track visible; long unique filename ellipsized to preserve Cancel. Cancel icon/label/order visually agree. Tiny actual progress fraction is controlled fixture data."
+      ]
+    },
+    {
+      "index": 22,
+      "key": "dark-rw900-win1920x1080|B07-download-done",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1920x1080-B07-download-done.png",
+        "sha256": "4ca717f21d70e421aa8b379d28d0a20028f9c29eff7f9df4534b890e19d09112",
+        "metadataSHA256": "74ca64a2ee5d0969435d183db61ca9ff8537135c6d3c5d3fb28e700a80072454"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B07-download-done.png",
+        "sha256": "ad1f59a2cff9626547db0674ad8bfefb9ce13638e81eee5b0b90a9aa726e3415",
+        "metadataSHA256": "c491ae904683dc77833b2893e14491bfa68f1ac80408376bfd896b3e7532eba2"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE"
+      ],
+      "pendingClassification": [
+        "DONE-SAVE-PATH-PRESENTATION"
+      ],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos",
+        "actual absolute filename path vs prototype synthetic ~/Downloads"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 161.5,
+          "right": 1906,
+          "bottom": 249.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 72.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Filename ellipsized correctly; order FileDown, text, Open, Reveal, Remove matches P.",
+        "Actual full absolute save path wraps to5lines in117px text column. It does not bleed across controls, but moves icon/actions downward and makes overlay161.5px vs89.5px. Fixed6px icon-size defect plus66px content difference; compact path format/layout remains unaccepted pending Root disposition."
+      ]
+    },
+    {
+      "index": 23,
+      "key": "dark-rw900-win1920x1080|B07-download-failed",
+      "reviewed": true,
+      "actualOriginalImagesViewed": true,
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App044-download-A-028/A-dark-rw900-win1920x1080-B07-download-failed.png",
+        "sha256": "9f3404adf68dea8f8ebc68ea3952f1561142bc0d0bb611e791d89b0e797b43c4",
+        "metadataSHA256": "6c2ef6455e42b485477e1035f5aab0188d448febcb76deb097a2e94aa5424f27"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B07-download-failed.png",
+        "sha256": "80111a4477254a30e52a40960c31519cf9a4d47cbb39448ae65af0ffdbd96c7d",
+        "metadataSHA256": "401c0bf4d77d2c43903e4af3bb6fa9a08f66448d0737e5bfad34949162598e46"
+      },
+      "status": "reviewed-differences-not-visually-passed",
+      "visualPass": false,
+      "confirmedProductDifferences": [
+        "DOWNLOAD-MINI-ICON-SIZE",
+        "DOWNLOAD-FAILED-COLOR"
+      ],
+      "pendingClassification": [],
+      "sampleDifferences": [
+        "unique ASCII actual filename vs order.csv/log.zip",
+        "synthetic localhost page/address and left real task/PTY fixtures differ from prototype demos"
+      ],
+      "observedOverlay": {
+        "A": {
+          "x": 1506,
+          "y": 88,
+          "width": 400,
+          "height": 95.5,
+          "right": 1906,
+          "bottom": 183.5
+        },
+        "P": {
+          "x": 1506,
+          "y": 92,
+          "width": 400,
+          "height": 89.5
+        },
+        "heightDelta": 6.0,
+        "sameComparedSavedOverlayStyles": true
+      },
+      "notes": [
+        "Original full A and same-name P PNG actually viewed via view_image, no crop/edit/composite.",
+        "Overlay remains wholly inside right browser pane; no terminal coverage; all displayed close/remove/action controls visible and no text over controls observed.",
+        "400px overlay width, same padding8/10/10, gap6, radius12, border/shadow/background/text theme properties match saved overlay metadata.",
+        "A overlay y88 vs P92 is the already recorded4px shell origin difference; not classified as new download offset defect.",
+        "All displayed download X controls use32px App fw-icon vs26px approved P bw-mini-icon; header/overlay non-path height grows6px and icon centers shift3px.",
+        "Confirmed App failure explanation is secondary grey (light112 or dark204); original P is visibly red. Must not mark visual pass.",
+        "Actual error repeats 下载 compared with P generic text; actual error string and unique filename are fixture/error-data differences, distinct from missing red state CSS."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+[
+  {
+    "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/src/renderer/features/browser/cookie-import-dialog.tsx",
+    "sha256": "023fb667e761d70eecdac6b57399b4812fb41a6fd1be194eb6039c4b4691fc14",
+    "bytes": 6271,
+    "relevantLines": [
+      {
+        "line": 20,
+        "text": "      {step==='confirm'&&<ul className=\"bw-warn-list\"><li>将导入 <strong>{source?.browserLabel} · {source?.profileName}</strong> 的<strong>全部 Cookie</strong>（Google 登录除外），写入「{profile?.profile.label}」。导入站点按域名整体替换，其他站点不受影响。</li><li><strong>Agent 将能读取这些站点的会话令牌</strong>（<code>cookie get</code> 返回明文值），并可在不设域名护栏的情况下使用它们。</li><li><strong>导入期间，使用「{profile?.profile.label}」的页面会暂时卸载</strong>，页面上未保存的内容会丢失；导入完成后自动重新加载。</li><li>macOS 会请求访问钥匙串中的「{source?.family==='edge'?'Microsoft Edge Safe Storage':'Chrome Safe Storage'}」。请只在你本人发起导入时允许。</li></ul>}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/src/renderer/features/browser/workspace.tsx",
+    "sha256": "840c038d04033438b8a9f0323757fd0c0da73af7a5b1b0c570f41e44c9f4d6d5",
+    "bytes": 29365,
+    "relevantLines": [
+      {
+        "line": 172,
+        "text": "      <>{!!state.downloads?.length&&<button className={'fw-icon bw-download-trigger'+(downloadsOpen?' active':'')} aria-label=\"下载\" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={17} strokeWidth={1.65}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label=\"下载进行中\"/>}</button>}</><button className=\"fw-icon\" aria-label=\"浏览器菜单\" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={17} strokeWidth={1.65}/></button>"
+      },
+      {
+        "line": 175,
+        "text": "    {menu&&<><button className=\"bw-dismiss\" aria-label=\"关闭菜单\" tabIndex={-1} onClick={()=>closeMenu()}/><div className=\"bw-menu\" role=\"menu\"><button role=\"menuitem\" onClick={()=>closeMenu(()=>setFind(true))}><Search size={14}/>页内查找<kbd>⌘F</kbd></button><>{!!state.downloads?.length&&<button role=\"menuitem\" onClick={showDownloads}><Download size={14}/>下载</button>}</><button role=\"menuitem\" onClick={()=>showProfiles()}><UserRound size={14}/>登录态管理</button><button role=\"menuitem\" disabled={tab.importState==='importing'||tab.importState==='needs-attention'} onClick={()=>showProfiles(true)}><KeyRound size={14}/>导入 Chrome／Edge 登录态</button><button role=\"menuitem\" onClick={()=>closeMenu(browserAccess.openGrants)}><ShieldAlert size={14}/>跨任务授权（{access.state.grants.length}）</button><button role=\"menuitem\" onClick={showSettings}><Info size={14}/>浏览器设置</button><button role=\"menuitem\" onClick={()=>closeMenu(()=>action('hard-reload'))}><RotateCw size={14}/>强制刷新</button><button role=\"menuitem\" onClick={()=>closeMenu(()=>{void store.reopen();})}>重开关闭的标签</button></div></>}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/src/renderer/features/browser/workspace.css",
+    "sha256": "2895d0fd6f1a38e97e7d2e33954b716504e202757576b64e784417919b47faa8",
+    "bytes": 18240,
+    "relevantLines": [
+      {
+        "line": 35,
+        "text": ".bw-dismiss{position:absolute;inset:0;z-index:58;background:transparent}.bw-menu{position:absolute;top:51px;right:12px;max-height:min(65vh,520px);overflow:auto;z-index:59;background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:12px;min-width:220px;max-width:90%;padding:6px}.bw-menu button{display:flex;align-items:center;gap:8px;min-height:32px;width:100%;padding:6px 9px;font-size:12px;text-align:left;border-radius:6px;word-break:break-all}.bw-menu button:hover{background:var(--hover)}.bw-menu kbd{margin-left:auto;font:11px var(--mono);color:var(--muted)}"
+      },
+      {
+        "line": 47,
+        "text": ".bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}"
+      },
+      {
+        "line": 48,
+        "text": ".bw-warn-list code{color:var(--secondary)}"
+      },
+      {
+        "line": 122,
+        "text": ".bw-warn-list{margin:0;padding-left:18px;list-style:disc;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-certificate-style-source-067/source/src/renderer/features/files/workspace.css",
+    "sha256": "c6d551793a957a87945cc0302a0da87baa7411ca8c84f1d846f098f0b347a6df",
+    "bytes": 12692,
+    "relevantLines": [
+      {
+        "line": 7,
+        "text": ".fw-production button:disabled { opacity:.45; cursor:default; }"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-access-prototype-source-066/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+    "sha256": "ede468f91ab92c7748446c69021b9911819cdef8b5cbdc11cff9e07d3db018e6",
+    "bytes": 34901,
+    "relevantLines": [
+      {
+        "line": 251,
+        "text": "      {downloads.length > 0 && <button role=\"menuitem\" onClick={() => setDownloadsOpen(true)}><Download size={14} />下载</button>}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-access-prototype-source-066/source/prototypes/m6-codex/src/browser.css",
+    "sha256": "54e4ff1da09f58efa36b4272388046641cb079ca9880f37134b0c3e718e41fce",
+    "bytes": 16936,
+    "relevantLines": [
+      {
+        "line": 21,
+        "text": ".bw-menu{top:86px}"
+      },
+      {
+        "line": 22,
+        "text": ".bw-menu button:disabled{color:var(--muted);cursor:default}"
+      },
+      {
+        "line": 23,
+        "text": ".bw-menu button:disabled:hover{background:none}"
+      },
+      {
+        "line": 144,
+        "text": ".bw-warn-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}"
+      },
+      {
+        "line": 160,
+        "text": ".bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-access-prototype-source-066/source/prototypes/m6-codex/src/file-workspace.css",
+    "sha256": "b1c8ff3a8e73eb13f25beb034fb2d85822f612a179f22913c6b9ebea1fab8253",
+    "bytes": 29154,
+    "relevantLines": [
+      {
+        "line": 21,
+        "text": ".fw-tree{padding:0 4px}.fw-tree-region{position:relative;flex:1;min-height:0;overflow:hidden}.fw-tree-region>.fw-tree-scroll{height:100%;padding-bottom:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.fw-tree-virtual{position:relative;min-width:100%}.fw-tree-virtual-row{position:absolute;left:0;height:28px;margin:0}.fw-tree-status{position:absolute;left:0;right:0;height:28px;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;white-space:nowrap}.fw-tree-status.error{color:var(--secondary)}.fw-tree-status button,.fw-no-results button,.fw-search-results p button{color:var(--accent);text-decoration:underline;padding:2px 4px;font-size:11px}.fw-sticky-folders{position:absolute;top:0;left:0;right:12px;z-index:3;background:var(--bg);box-shadow:0 1px 0 var(--border)}.fw-sticky-folders>.fw-tree-row{background:var(--bg);border-radius:0}.fw-sticky-folders>.fw-tree-row:hover{background:var(--hover)}.fw-path-tooltip{pointer-events:auto;max-height:104px;overflow:auto;line-height:18px}.fw-tree-row>.fw-git-state{padding:0 4px}.fw-menu>small,.fw-menu>p{display:block;padding:6px 9px;color:var(--secondary);font-size:11px;line-height:17px;max-width:300px}.fw-menu button:disabled{opacity:.45;cursor:default}.fw-menu button:disabled:hover{background:transparent}.fw-breadcrumb{max-width:100%;scrollbar-width:none}.fw-breadcrumb button{user-select:text}.fw-breadcrumb:focus-within{scroll-behavior:auto}@media(prefers-reduced-motion:reduce){.file-workspace *{scroll-behavior:auto!important}.fw-loading{animation:none}}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/reference/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+    "sha256": "b794fcbb8cc9e16ad5a3f2e6743687f5e878b27d2a4029fcc2a109b8cf2ccf03",
+    "bytes": 23985,
+    "relevantLines": [
+      {
+        "line": 188,
+        "text": "    <ul className=\"bw-warn-list\">"
+      },
+      {
+        "line": 191,
+        "text": "      <li><strong>导入期间，使用「{targetLabel}」的页面会暂时卸载</strong>，页面上未保存的内容会丢失；导入完成后自动重新加载。</li>"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/reference/source/prototypes/m6-codex/src/styles.css",
+    "sha256": "8a05f4f3ba7dd74427257edbc9cf4c5dc248c749d83c7c91a443087c73303cc4",
+    "bytes": 34002,
+    "relevantLines": [
+      {
+        "line": 4,
+        "text": "  font-size: 14px; font-weight: 430; color-scheme: light;"
+      }
+    ]
+  }
+]

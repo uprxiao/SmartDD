@@ -1,0 +1,156 @@
+{
+  "case": "M12-T145",
+  "originalStates": [
+    {
+      "id": "B05-certificate",
+      "source": "B05",
+      "title": "证书不受信任及继续风险提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-cert"
+          }
+        ],
+        "expect": ".bw-cert"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "既有T012本机TLS+固定非本机hostname夹具，真实证书页"
+      }
+    },
+    {
+      "id": "B05-certificate-exception",
+      "source": "B05",
+      "title": "已记住证书例外/非安全标识",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-danger-link",
+            "text": "我了解风险，继续访问"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-head",
+            "text": "内部系统"
+          }
+        ],
+        "expect": ".bw-security"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI继续本机合成证书例外，再读实际标识，不由Agent/API放行"
+      }
+    },
+    {
+      "id": "B12-profiles-sites",
+      "source": "B12",
+      "title": "站点权限与证书例外列表",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-danger-link",
+            "text": "我了解风险，继续访问"
+          },
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟站点申请位置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-prompt button",
+            "text": "允许"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机合成站点的真实UI例外与权限记忆，仅本profile"
+      }
+    }
+  ],
+  "slots": 24,
+  "autonomousBlocked8": {
+    "operation": "One fresh own project/task/profile/Native page. Actual address input of local selfsigned TLS URL; original production certificate error. Rotate all8 theme/pane/window combinations without continue.",
+    "assertions": [
+      "Actual challengeId/error ERR_CERT and 此连接不受信任 warning/continue affordance",
+      "No same-profile certificate exception, no GET/tls response accepted before manual continue",
+      "Same task/PTY/run/profile/page/native WC; exact browser pane and loaded fonts; no Node/App/OS activity by preparer"
+    ],
+    "output": "blocked8-raw.json + original8 A PNG/meta; driver then writes manual-ready.json and keeps App open"
+  },
+  "manualContinue": {
+    "automaticInputForbidden": "Never automatically click 我了解风险，继续访问 or grant exception via RPC/debugger/ignore flag",
+    "whenToAskUser": "Only after actual manual-ready.json and live local warning are confirmed by Root, never from static preparation",
+    "waiting": "No timeout/lease-expiry automatic window shutdown; read-only hold. Root may stop by explicit manual-stop receipt. After user click, Root writes user-action receipt; exact fresh valid lease + true loaded same-profile exception jointly required before new automated inputs. Original focus guard stays armed, no rearm/activation."
+  },
+  "exception8": {
+    "operation": "Same page/profile after user actual continue, all8 combinations reverse order for efficient geometry",
+    "assertions": [
+      "Same original Native contentsId and TLS URL loaded without certificate challenge/failure",
+      "Actual red certificate security icon, title/aria, ShieldAlert13 in App048; saved same-profile host exception",
+      "No system trust-store or restart/persistence/revoke claim beyond existing T012 evidence"
+    ]
+  },
+  "sites8": {
+    "operation": "Same own TLS page sends navigator.geolocation via actual trusted native button click. Explicit own-page CDP Emulation coordinates only; App actual permission prompt/Allow, then real success callback and saved record; all8 profile manager captures.",
+    "assertions": [
+      "Actual production certificate and geolocation allow entries under same project profile",
+      "Real callback status ok and trusted click plus expected synthetic coordinates; error/OS/provider rejection or insecure context remains unverified and prevents sites captures",
+      "No Browser.grantPermissions/respondPermission RPC/store/DOM permission synthesis; no OS permission grant or actual device-location proof",
+      "Original Native preview/manager containment and text/icon/style recorded; geolocation override explicitly cleared in finally"
+    ],
+    "unknowns": [
+      "Actual packaged App secure-context/OS/provider interaction not yet executed; cannot preclaim success",
+      "Original P shows selfsigned.example.test certificate and qa.example.test permission demo origins; actual local fixture uses same m12-cert.test HTTPS origin for both. Fixture identity/data difference is explicit; no cross-origin isolation claim or original P edit"
+    ]
+  },
+  "TLSBoundary": {
+    "origin": "Original T012 App025 selfsigned OpenSSL+hostresolver recipe",
+    "host": "m12-cert.test",
+    "route": "MAP m12-cert.test 127.0.0.1 + no-proxy-server for only own test process",
+    "forbidden": [
+      "ignore-certificate-errors",
+      "allow-insecure-localhost",
+      "disable-web-security",
+      "system trust-store edits",
+      "real daily browser/credentials"
+    ]
+  },
+  "originalKeychain8Separate": true,
+  "source": "App048/source057 frozen actual package, old main unchanged fea680…",
+  "actualAppByPreparer": 0,
+  "formalIncrement": 0,
+  "visualPassed": false
+}

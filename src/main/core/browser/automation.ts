@@ -31,7 +31,7 @@ export class BrowserAutomation {
     }
     this.changed(taskId);
   }
-  activity(pageId:string){const value=this.activities.get(pageId);return{active:!!value&&(value.running.size>0||Date.now()-value.endedAt<20000),running:!!value?.running.size};}
+  activity(pageId:string){const value=this.activities.get(pageId);return{active:!!value&&(value.running.size>0||Date.now()-value.endedAt<20000),running:!!value?.running.size,holdUntil:value&&!value.running.size?value.endedAt+20000:null};}
   begin(runId:string,taskId:string,pageId:string):()=>void{
     if(this.closed)return()=>{};this.target(runId,taskId);
     let value=this.activities.get(pageId);if(value&&value.taskId!==taskId)throw new ApplicationError('RESOURCE_STATE_CHANGED','页面活动归属不符');

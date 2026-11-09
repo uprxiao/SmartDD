@@ -1,0 +1,1 @@
+App056 installed S6 original06 file-only binding followed by07 hidden ownApp/three stock nativeCLI,08 independent exactcleanup,09 original8judge. No UI activation/focus/input/screenshot or realmodel request. Original05601-05 gates are actual. Do not execute07 until06 file binding and freshpurestatic pass, then Root grants resources. No oldruntime/actualresult copied.

@@ -6,7 +6,7 @@ import {
 import { DownloadBar, FindBar, PromptBar, HttpAuthDialog, CrossTaskDialog, GrantsDialog, ProfilesDialog, ImportDialog, SettingsDialog, JavascriptDialog } from './BrowserPanels';
 import {
   BLANK_URL, AGENT_HOLD_MS, LOAD_FAILURES, RECOVERY_TEXT, resolveAddress, resolvePage, securityState, hostLabel,
-  currentUrl, navigateTab, goBack, goForward, canGoBack, canGoForward, updateTab,
+  currentUrl, navigateTab, goBack, goForward, canGoBack, canGoForward, updateTab, reopenTab,
   agentCommandStart, agentCommandEnd, agentMarked, agentHoldRemaining, pauseAgent, resumeAgent, endRun,
   uniqueDownloadName, addCertException, removeCertException, permissionDecision, rememberPermission, revokePermission,
   crossTaskDecision, grantCrossTask, revokeCrossTask, createTaskProfile, cloneProfile, recordImport, projectProfiles, markRecoveryFailed, needsAttention, resolveRecovery, clearProfileLogin
@@ -121,6 +121,11 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
     if (tab.invalid) { onChange(current => updateTab(current, tab.id, item => ({ ...item, invalid: null }))); }
     startLoad();
   }
+  function hardReload() {
+    if (tab.invalid) onChange(current => updateTab(current, tab.id, item => ({ ...item, invalid: null })));
+    startLoad();
+    setStatus('演示：已强制重新加载（合成页面不使用网络缓存）');
+  }
   function history(step) {
     onChange(current => updateTab(current, tab.id, item => ({ ...(step < 0 ? goBack(item) : goForward(item)), invalid: null })));
     startLoad();
@@ -206,7 +211,7 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
   function crossRequest(kind) {
     if (kind === 'other-project') { const d = crossTaskDecision({ sameProject: false, unattended: false }); setStatus(`演示：跨项目请求被拒绝，返回 ${d.code}（${d.reason}），不弹窗`); return; }
     if (kind === 'unattended') { const d = crossTaskDecision({ sameProject: true, unattended: true }); setStatus(`演示：无人值守运行的跨任务请求被拒绝，返回 ${d.code}（${d.reason}）`); return; }
-    setDialog({ type: 'cross', fromTitle: taskTitle, targetTitle: peerTask?.title ?? '复现 Bug #1025（同项目示例任务，合成）', targetId: peerTask?.id ?? 'peer-demo', projectName, mode: 'observe' });
+    setDialog({ type: 'cross', fromTitle: taskTitle, targetTitle: peerTask?.title ?? '复现 Bug #1025（同项目示例任务，合成）', targetId: peerTask?.id ?? 'peer-demo', projectName, mode: 'observe', expiresAt: Date.now() + 60000 });
   }
 
   // A page reached through (or blocked by) a certificate problem is never shown as a secure connection.
@@ -243,11 +248,13 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
     </div>
     {menu && <><button className="fw-dismiss" aria-label="关闭菜单" tabIndex={-1} onClick={() => setMenu(false)} /><div className="fw-menu bw-menu" role="menu" onClick={() => setMenu(false)}>
       <button role="menuitem" onClick={() => setFindOpen(true)}><Search size={14} />页内查找<kbd>⌘F</kbd></button>
-      <button role="menuitem" onClick={() => setDownloadsOpen(true)}><Download size={14} />下载（{downloads.length}）</button>
+      {downloads.length > 0 && <button role="menuitem" onClick={() => setDownloadsOpen(true)}><Download size={14} />下载</button>}
       <button role="menuitem" onClick={() => setDialog('profiles')}><UserRound size={14} />登录态管理</button>
       <button role="menuitem" disabled={needsAttention(store, profileId)} title={needsAttention(store, profileId) ? '当前登录态需要处理，处理完后才能再次导入' : undefined} onClick={() => { setImportTarget(profileId); setDialog('import'); }}><KeyRound size={14} />导入 Chrome／Edge 登录态</button>
       <button role="menuitem" onClick={() => setDialog('grants')}><ShieldAlert size={14} />跨任务授权（{grants.length}）</button>
       <button role="menuitem" onClick={() => setDialog('settings')}><Info size={14} />浏览器设置</button>
+      <button role="menuitem" onClick={hardReload}><RotateCw size={14} />强制刷新</button>
+      <button role="menuitem" onClick={() => onChange(reopenTab)}>重开关闭的标签</button>
     </div></>}
     {needsAttention(store, profileId) && <div className="bw-banner bw-attention-banner" role="alert"><ShieldAlert size={14} /><span>当前登录态需要处理：上次导入的恢复没有完成，页面暂时不可用，Agent 的浏览器命令返回 <code>BROWSER_UNAVAILABLE</code>。</span><button type="button" className="bw-mini" onClick={() => setDialog('profiles')}>去处理</button></div>}
     {state.paused && <div className="bw-banner bw-paused" role="status"><Pause size={14} /><span>已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 <code>BROWSER_PAUSED</code>；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。</span></div>}
@@ -281,8 +288,8 @@ export function BrowserWorkspace({ state, onChange, projectName = '示例项目'
     </div>}
     {javascriptDialog && <JavascriptDialog key={javascriptDialog.id} dialog={javascriptDialog} onRespond={async (accept, value) => { if (javascriptDialog.fail && accept) throw new Error('演示：原提示已失效，请取消后重新打开。'); setJavascriptDialog(null); setStatus(accept ? '演示：JS 对话框已接受' + (value === undefined ? '' : ' · ' + JSON.stringify(value)) : '演示：JS 对话框已取消'); }} />}
     {page?.kind === 'http-auth' && !authCancelled.includes(page.host) && <HttpAuthDialog host={page.host} onCancel={() => { setAuthCancelled(list => [...list, page.host]); setStatus('已取消基本认证'); }} onSubmit={() => { setAuthed(list => [...list, page.host]); startLoad(); setStatus('已提交基本认证（演示，未保存账号密码）'); }} />}
-    {dialog?.type === 'cross' && <CrossTaskDialog request={dialog} onDecide={mode => { if (mode) { onChange(current => grantCrossTask(current, { taskId: dialog.targetId, title: dialog.targetTitle, mode })); setStatus(`已允许本次运行${mode === 'control' ? '操作' : '观察'}「${dialog.targetTitle}」的网页`); } else setStatus('已拒绝跨任务请求，Agent 收到 SCOPE_DENIED'); setDialog(null); }} />}
-    {dialog === 'grants' && <GrantsDialog grants={grants} onRevoke={taskId => { onChange(current => revokeCrossTask(current, taskId)); setStatus('已撤销跨任务授权'); }} onClose={() => setDialog(null)} />}
+    {dialog?.type === 'cross' && <CrossTaskDialog key={dialog.expiresAt} request={dialog} onDecide={mode => { if (mode) { onChange(current => grantCrossTask(current, { taskId: dialog.targetId, title: dialog.targetTitle, requesterTitle: dialog.fromTitle, projectName: dialog.projectName, mode })); setStatus(`已允许本次运行${mode === 'control' ? '操作' : '观察'}「${dialog.targetTitle}」的网页`); } else setStatus('已拒绝跨任务请求，Agent 收到 SCOPE_DENIED'); setDialog(null); }} />}
+    {dialog === 'grants' && <GrantsDialog grants={grants} requesterTitle={taskTitle} projectName={projectName} onRevoke={taskId => { onChange(current => revokeCrossTask(current, taskId)); setStatus('已撤销跨任务授权'); }} onClose={() => setDialog(null)} />}
     {dialog === 'profiles' && <ProfilesDialog store={store} currentProfile={profileId} taskTitle={taskTitle}
       onUse={id => { onChange(current => updateTab(current, tab.id, item => ({ ...item, profile: id }))); startLoad(); setStatus('当前页面已改用「' + (store.profiles.find(item => item.id === id)?.label ?? '') + '」'); }}
       onCreate={() => { const created = createTaskProfile(store, taskTitle); setStore(() => created.store); setStatus('已新建本任务的独立登录态（C1）'); }}

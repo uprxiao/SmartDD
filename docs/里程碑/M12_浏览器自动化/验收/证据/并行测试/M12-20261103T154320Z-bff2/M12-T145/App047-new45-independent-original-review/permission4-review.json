@@ -1,0 +1,917 @@
+{
+  "case": "M12-T145",
+  "currentApp": "App047",
+  "source": "source056",
+  "asarSHA256": "0eaca6a27b3ff995765fe9d69efda6828716125d7382bddd102a9e9973bf1a42",
+  "sourceManifestSHA256": "a6e32780c93c3d6509a3ef9f5d625952398397dc77de991ed976a93694300132",
+  "wholeT145": false,
+  "formalIncrement": 0,
+  "resourcesUsed": {
+    "Node": 0,
+    "App": 0,
+    "Native": 0,
+    "HTTP": 0,
+    "JXA": 0
+  },
+  "group": "A045 permission4",
+  "reviewedAt": "2026-11-08T16:49:59.346099+00:00",
+  "pairsActuallyViewed": 4,
+  "imagesActuallyViewed": 8,
+  "result": "All4 permission host states directly reviewed. Prompt local styling/theme/icon/buttons/containment PASS. Copy/origin+narrow wrapping difference and common toolbar icon difference retained. Not wholeT145.",
+  "determinatePass": [
+    "All4 real host permission banners with blue15pxMapPin, neutral拒绝 then blue允许",
+    "All4 prompt font12px/18px padding7px14px/gap8/themebackgroundtext/shadow/bottomborderwidth match P collected fields",
+    "Actual44x26px buttons inside prompt; both themes narrow479/wide899px, scrollWidth==clientWidth",
+    "Original trusted geolocation request and realUI拒绝 only; no directOSlocationAPI, not an OSpermission acceptance test"
+  ],
+  "differences": [
+    {
+      "id": "PERMISSION-COPY",
+      "classification": "CONFIRMED_COPY_PARITY_DIFFERENCE",
+      "keys": [
+        "light-rw480-win1920x1080|B06-permission",
+        "light-rw900-win1920x1080|B06-permission",
+        "dark-rw480-win1920x1080|B06-permission",
+        "dark-rw900-win1920x1080|B06-permission"
+      ],
+      "A": "prompt.origin plus 想要使用你的位置",
+      "P": "host label plus 想要获取你的位置",
+      "evidence": "frozen056 browser/permission-bar.tsx8 vsprototype BrowserPanels.jsx81; visible strings retained perkey",
+      "decision": "Semantic position request present in both; exact approved-copy parity is not declared. Root may align copy/host presentation; longerlocalhostorigin alone is not a clipping bug."
+    },
+    {
+      "id": "PERMISSION-NARROW-WRAP",
+      "classification": "DATA_AND_COPY_DEPENDENT_GEOMETRY_DIFFERENCE",
+      "keys": [
+        "light-rw480-win1920x1080|B06-permission",
+        "dark-rw480-win1920x1080|B06-permission"
+      ],
+      "A": "69px high,3textlines",
+      "P": "51px high,2textlines",
+      "decision": "Preserve height difference; same font/padding/gap with longer fullHTTPorigin/copy, no horizontaloverflow/buttonclipping. Not an independent provenCSSlayoutbug."
+    },
+    {
+      "id": "NAV-ICON",
+      "keys": [
+        "light-rw480-win1920x1080|B06-permission",
+        "light-rw900-win1920x1080|B06-permission",
+        "dark-rw480-win1920x1080|B06-permission",
+        "dark-rw900-win1920x1080|B06-permission"
+      ],
+      "actual": "Navigation/refresh/stop/menu icons 16px stroke2",
+      "P": "ToolButton17px stroke1.65",
+      "evidence": "Actual toolbar icons SVG metadata; original P images and frozen source056 prototypes/m6-codex/src/BrowserWorkspace.jsx17–18,221–223,241; actual workspace.tsx155,158.",
+      "sameFindingAs": "navigation13-review.json NAV-ICON; copied finding wording, keys here restricted to this4permission group"
+    }
+  ],
+  "boundaries": [
+    "Host renderer screenshot omits successful Native WebContentsView pixels; host Chrome controls and launcher remain directly reviewable.",
+    "P flask button and bottom demo/example catalog are explicit prototype demonstration controls; absence in App is not missing feature.",
+    "P 4px outer shell and footer differ from App y0 pane/RuntimeBar; local positions are compared, not full screenshot pixels.",
+    "HTTP local fixture URL/title vs P HTTPS/qa/demo title/security icon are explicit data differences.",
+    "Original1440 A023 tooltip timing and other old results not overwritten or extrapolated here.",
+    "Mechanical judge unchanged; no visual pass inferred solely from mechanical output.",
+    "Original A045 judgement scope says permission1440, while actual combo keys/PNGs/metadata are all1920x1080. Original output preserved; this review uses actual4keys.",
+    "P button/icon-specific computed metadata not separately captured; original PNG and actual metadata/frozen source support bounded conclusions."
+  ],
+  "originalEvidence": [
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/raw.json",
+      "sha256": "21bb99705ded5580f409047a1c423f5eb49a243cc9b63a8788c461e0f63fc5f3"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/references.json",
+      "sha256": "7ba2009383c1c96216f1d7c801036910fb0d986eb5651aa2545fd92e69c0c166"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/READY.json",
+      "sha256": "6994f25c47a46667caa8d31b5c31d0bcc6aea44cf6963b0cefa483cf5f62fda5"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/package-pin.json",
+      "sha256": "dd77603c34ba8d408da8b974c0ff1396efda9b288c406afb76a1051d2274989d"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/judgement.json",
+      "sha256": "6d3031500a1a2180f517c88c3ed5a6f52c442ae16c5558dd45d83e25da9613b3"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App047-permission4-A045/cleanup.json",
+      "sha256": "0ffd4af7dfc590b6d9d53b4ff45a75509b26d86ae0b1df6ad520e502e61bd2dd"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/permission-bar.tsx",
+      "sha256": "0fbde7cfcfeb1605e14c51c5e7fd3257a27143f824d80b29b8f06cbef8f92b09"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+      "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e"
+    }
+  ],
+  "pairs": [
+    {
+      "group": "permission4-A045",
+      "index": 0,
+      "key": "light-rw480-win1920x1080|B06-permission",
+      "A": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-light-rw480-win1920x1080-B06-permission.png",
+      "P": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B06-permission.png",
+      "Asha": "5b040d1fcf4a380cdf29fbc33ab45a2c57877b29e610ac74be50113131441271",
+      "Psha": "8d414975fa152e7c7ad8f8659a82868817c8fa03444a005177fa05605d1e7874",
+      "Ameta": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-light-rw480-win1920x1080-B06-permission.json",
+      "Pmeta": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B06-permission.json",
+      "AmetaSHA": "15a15050697b6b68062823ebb65b38adb635fe4a816b71275af07523452e8afb",
+      "PmetaSHA": "b6d474af4fa4f9fee42a7bfb0cf852fe775f55c4b0edd3faaae272c34a40b72d",
+      "originalPairActuallyViewed": true,
+      "viewMethod": "Each original P and A PNG separately viewed via view_image(detail=original); original image and metadata SHA verified",
+      "PNGDimensions": {
+        "P": [
+          1920,
+          1080
+        ],
+        "A": [
+          1920,
+          1080
+        ]
+      },
+      "scopeVerdict": "PERMISSION_HOST_STYLE_LAYOUT_PASS_WITH_COPY_AND_ORIGIN_WRAP_DIFFERENCE",
+      "fullHostVisualParity": false,
+      "criteria": {
+        "realHostPermissionState": "PASS",
+        "promptFontPaddingGapThemeShadow": "PASS",
+        "MapPinBlue15px": "PASS_IMAGE_AND_FROZEN_SOURCE",
+        "buttonOrderWhiteRejectBlueAllow": "PASS",
+        "buttonsInsidePromptNoHorizontalOverflow": "PASS",
+        "exactCopyAndPromptHeight": "DIFFERENCE",
+        "toolbarIconSizeStroke": "DIFFERENCE",
+        "nativeFullPagePixels": "NOT_CERTIFIED"
+      },
+      "actualPrompt": {
+        "rect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 69,
+          "right": 1916,
+          "bottom": 153
+        },
+        "text": "http://127.0.0.1:64701 想要使用你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 479,
+        "scrollWidth": 479,
+        "clientHeight": 68,
+        "scrollHeight": 68,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "PPrompt": {
+        "rect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 51
+        },
+        "text": "qa.example.test 想要获取你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 479,
+        "scrollWidth": 479,
+        "clientHeight": 50,
+        "scrollHeight": 50,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(41, 41, 41) rgb(41, 41, 41) rgb(233, 233, 233)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "promptStyleEquality": {
+        "fontFamily": true,
+        "fontSize": true,
+        "fontWeight": true,
+        "lineHeight": true,
+        "letterSpacing": true,
+        "color": true,
+        "backgroundColor": true,
+        "borderWidth": true,
+        "borderRadius": true,
+        "boxShadow": true,
+        "padding": true,
+        "gap": true
+      },
+      "actualButtons": [
+        {
+          "rect": {
+            "x": 1806,
+            "y": 105,
+            "width": 44,
+            "height": 26,
+            "right": 1850,
+            "bottom": 131
+          },
+          "text": "拒绝",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        },
+        {
+          "rect": {
+            "x": 1858,
+            "y": 105,
+            "width": 44,
+            "height": 26,
+            "right": 1902,
+            "bottom": 131
+          },
+          "text": "允许",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(255, 255, 255)",
+            "backgroundColor": "rgb(51, 133, 255)",
+            "borderColor": "rgb(51, 133, 255)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        }
+      ],
+      "PButtonComputedMetadata": "not separately captured; P colors/order/containment directly viewed, numeric computed values not fabricated",
+      "stateSpecificObservation": "Full-width below toolbar; blue MapPin, neutral拒绝 then blue允许, no clipping. Narrow A wraps3 lines/69px vsP2 lines/51px; wide both41px. FullHTTPorigin plus使用 vsP host+获取 are retained copy/data differences, not exact-height parity.",
+      "functionalTraceBoundary": {
+        "trustedRequest": true,
+        "realUIDenial": true,
+        "allowInvoked": false,
+        "noDirectOSLocationAPI": true,
+        "deniedErrorCode1": true
+      },
+      "rendererCaptureBoundary": "Actual renderer-owned site permission prompt and Native page placement; main-renderer PNG does not certify native page pixels. Real geolocation request pending in host; no Allow or OS-location request is performed by test."
+    },
+    {
+      "group": "permission4-A045",
+      "index": 1,
+      "key": "light-rw900-win1920x1080|B06-permission",
+      "A": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-light-rw900-win1920x1080-B06-permission.png",
+      "P": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B06-permission.png",
+      "Asha": "0fb9f02ba9535d58cfd6254c27f3597a74ae9d9bc235c82eaa6426b0c2e10427",
+      "Psha": "2fa2e9b7d61f0780b545999f5bf487e0534341a49b6e3e71854878f46943e964",
+      "Ameta": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-light-rw900-win1920x1080-B06-permission.json",
+      "Pmeta": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B06-permission.json",
+      "AmetaSHA": "71e42f3727d822e19f07410ae2e395feda06e3efb6ca4655a7264121357ca488",
+      "PmetaSHA": "3d6e2ce355e1a9710cfd678451de3b4df392360a2882a91078afd908d494a41f",
+      "originalPairActuallyViewed": true,
+      "viewMethod": "Each original P and A PNG separately viewed via view_image(detail=original); original image and metadata SHA verified",
+      "PNGDimensions": {
+        "P": [
+          1920,
+          1080
+        ],
+        "A": [
+          1920,
+          1080
+        ]
+      },
+      "scopeVerdict": "PERMISSION_HOST_STYLE_LAYOUT_PASS_WITH_COPY_AND_ORIGIN_WRAP_DIFFERENCE",
+      "fullHostVisualParity": false,
+      "criteria": {
+        "realHostPermissionState": "PASS",
+        "promptFontPaddingGapThemeShadow": "PASS",
+        "MapPinBlue15px": "PASS_IMAGE_AND_FROZEN_SOURCE",
+        "buttonOrderWhiteRejectBlueAllow": "PASS",
+        "buttonsInsidePromptNoHorizontalOverflow": "PASS",
+        "exactCopyAndPromptHeight": "COPY_DIFFERENCE_HEIGHT_MATCHES",
+        "toolbarIconSizeStroke": "DIFFERENCE",
+        "nativeFullPagePixels": "NOT_CERTIFIED"
+      },
+      "actualPrompt": {
+        "rect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 41,
+          "right": 1916,
+          "bottom": 125
+        },
+        "text": "http://127.0.0.1:64701 想要使用你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 899,
+        "scrollWidth": 899,
+        "clientHeight": 40,
+        "scrollHeight": 40,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "PPrompt": {
+        "rect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 41
+        },
+        "text": "qa.example.test 想要获取你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 899,
+        "scrollWidth": 899,
+        "clientHeight": 40,
+        "scrollHeight": 40,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(41, 41, 41) rgb(41, 41, 41) rgb(233, 233, 233)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "promptStyleEquality": {
+        "fontFamily": true,
+        "fontSize": true,
+        "fontWeight": true,
+        "lineHeight": true,
+        "letterSpacing": true,
+        "color": true,
+        "backgroundColor": true,
+        "borderWidth": true,
+        "borderRadius": true,
+        "boxShadow": true,
+        "padding": true,
+        "gap": true
+      },
+      "actualButtons": [
+        {
+          "rect": {
+            "x": 1806,
+            "y": 91,
+            "width": 44,
+            "height": 26,
+            "right": 1850,
+            "bottom": 117
+          },
+          "text": "拒绝",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(41, 41, 41)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "borderColor": "rgb(233, 233, 233)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        },
+        {
+          "rect": {
+            "x": 1858,
+            "y": 91,
+            "width": 44,
+            "height": 26,
+            "right": 1902,
+            "bottom": 117
+          },
+          "text": "允许",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(255, 255, 255)",
+            "backgroundColor": "rgb(51, 133, 255)",
+            "borderColor": "rgb(51, 133, 255)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        }
+      ],
+      "PButtonComputedMetadata": "not separately captured; P colors/order/containment directly viewed, numeric computed values not fabricated",
+      "stateSpecificObservation": "Full-width below toolbar; blue MapPin, neutral拒绝 then blue允许, no clipping. Narrow A wraps3 lines/69px vsP2 lines/51px; wide both41px. FullHTTPorigin plus使用 vsP host+获取 are retained copy/data differences, not exact-height parity.",
+      "functionalTraceBoundary": {
+        "trustedRequest": true,
+        "realUIDenial": true,
+        "allowInvoked": false,
+        "noDirectOSLocationAPI": true,
+        "deniedErrorCode1": true
+      },
+      "rendererCaptureBoundary": "Actual renderer-owned site permission prompt and Native page placement; main-renderer PNG does not certify native page pixels. Real geolocation request pending in host; no Allow or OS-location request is performed by test."
+    },
+    {
+      "group": "permission4-A045",
+      "index": 2,
+      "key": "dark-rw480-win1920x1080|B06-permission",
+      "A": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-dark-rw480-win1920x1080-B06-permission.png",
+      "P": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B06-permission.png",
+      "Asha": "c3cbbae6576746cd43ee2c0adaf5b18c2975fa43aaa529346da0e53158768bad",
+      "Psha": "cf95bf7577a6def990ca54bad8664fc9eb039d6784d9bd6f4472e4f20d75436d",
+      "Ameta": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-dark-rw480-win1920x1080-B06-permission.json",
+      "Pmeta": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B06-permission.json",
+      "AmetaSHA": "c19fabac2dc7d710961f3badf3da04379f53545522e99a20088857083c8b1c47",
+      "PmetaSHA": "c30c18df28c21c934e5e1d192aacacd512ad525a2ce2b9c69c62a327cc553ddb",
+      "originalPairActuallyViewed": true,
+      "viewMethod": "Each original P and A PNG separately viewed via view_image(detail=original); original image and metadata SHA verified",
+      "PNGDimensions": {
+        "P": [
+          1920,
+          1080
+        ],
+        "A": [
+          1920,
+          1080
+        ]
+      },
+      "scopeVerdict": "PERMISSION_HOST_STYLE_LAYOUT_PASS_WITH_COPY_AND_ORIGIN_WRAP_DIFFERENCE",
+      "fullHostVisualParity": false,
+      "criteria": {
+        "realHostPermissionState": "PASS",
+        "promptFontPaddingGapThemeShadow": "PASS",
+        "MapPinBlue15px": "PASS_IMAGE_AND_FROZEN_SOURCE",
+        "buttonOrderWhiteRejectBlueAllow": "PASS",
+        "buttonsInsidePromptNoHorizontalOverflow": "PASS",
+        "exactCopyAndPromptHeight": "DIFFERENCE",
+        "toolbarIconSizeStroke": "DIFFERENCE",
+        "nativeFullPagePixels": "NOT_CERTIFIED"
+      },
+      "actualPrompt": {
+        "rect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 69,
+          "right": 1916,
+          "bottom": 153
+        },
+        "text": "http://127.0.0.1:64701 想要使用你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 479,
+        "scrollWidth": 479,
+        "clientHeight": 68,
+        "scrollHeight": 68,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "PPrompt": {
+        "rect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 51
+        },
+        "text": "qa.example.test 想要获取你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 479,
+        "scrollWidth": 479,
+        "clientHeight": 50,
+        "scrollHeight": 50,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderColor": "rgb(241, 241, 241) rgb(241, 241, 241) rgb(48, 48, 48)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "promptStyleEquality": {
+        "fontFamily": true,
+        "fontSize": true,
+        "fontWeight": true,
+        "lineHeight": true,
+        "letterSpacing": true,
+        "color": true,
+        "backgroundColor": true,
+        "borderWidth": true,
+        "borderRadius": true,
+        "boxShadow": true,
+        "padding": true,
+        "gap": true
+      },
+      "actualButtons": [
+        {
+          "rect": {
+            "x": 1806,
+            "y": 105,
+            "width": 44,
+            "height": 26,
+            "right": 1850,
+            "bottom": 131
+          },
+          "text": "拒绝",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgb(24, 24, 24)",
+            "borderColor": "rgb(48, 48, 48)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        },
+        {
+          "rect": {
+            "x": 1858,
+            "y": 105,
+            "width": 44,
+            "height": 26,
+            "right": 1902,
+            "bottom": 131
+          },
+          "text": "允许",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(255, 255, 255)",
+            "backgroundColor": "rgb(51, 133, 255)",
+            "borderColor": "rgb(51, 133, 255)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        }
+      ],
+      "PButtonComputedMetadata": "not separately captured; P colors/order/containment directly viewed, numeric computed values not fabricated",
+      "stateSpecificObservation": "Full-width below toolbar; blue MapPin, neutral拒绝 then blue允许, no clipping. Narrow A wraps3 lines/69px vsP2 lines/51px; wide both41px. FullHTTPorigin plus使用 vsP host+获取 are retained copy/data differences, not exact-height parity.",
+      "functionalTraceBoundary": {
+        "trustedRequest": true,
+        "realUIDenial": true,
+        "allowInvoked": false,
+        "noDirectOSLocationAPI": true,
+        "deniedErrorCode1": true
+      },
+      "rendererCaptureBoundary": "Actual renderer-owned site permission prompt and Native page placement; main-renderer PNG does not certify native page pixels. Real geolocation request pending in host; no Allow or OS-location request is performed by test."
+    },
+    {
+      "group": "permission4-A045",
+      "index": 3,
+      "key": "dark-rw900-win1920x1080|B06-permission",
+      "A": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-dark-rw900-win1920x1080-B06-permission.png",
+      "P": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B06-permission.png",
+      "Asha": "fa49511dd790c0590b00ababa3b7becdd2c2ee57b9fd770e08a0a238a74a84b0",
+      "Psha": "e11147f1184fb5fd916e142bebb7674ceac12128d0b04597cc12534069925aa2",
+      "Ameta": "/private/tmp/willyou-m12-t145-App047-permission4-A045/A-dark-rw900-win1920x1080-B06-permission.json",
+      "Pmeta": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B06-permission.json",
+      "AmetaSHA": "2efb5de7b9e14528bc833ef2f06e0cc0a492175b8b519572bbc845c0d3563272",
+      "PmetaSHA": "7fb66ff1b571749155062aea748c8e1fe09c86f5480572c6a5e20b9e14bd2291",
+      "originalPairActuallyViewed": true,
+      "viewMethod": "Each original P and A PNG separately viewed via view_image(detail=original); original image and metadata SHA verified",
+      "PNGDimensions": {
+        "P": [
+          1920,
+          1080
+        ],
+        "A": [
+          1920,
+          1080
+        ]
+      },
+      "scopeVerdict": "PERMISSION_HOST_STYLE_LAYOUT_PASS_WITH_COPY_AND_ORIGIN_WRAP_DIFFERENCE",
+      "fullHostVisualParity": false,
+      "criteria": {
+        "realHostPermissionState": "PASS",
+        "promptFontPaddingGapThemeShadow": "PASS",
+        "MapPinBlue15px": "PASS_IMAGE_AND_FROZEN_SOURCE",
+        "buttonOrderWhiteRejectBlueAllow": "PASS",
+        "buttonsInsidePromptNoHorizontalOverflow": "PASS",
+        "exactCopyAndPromptHeight": "COPY_DIFFERENCE_HEIGHT_MATCHES",
+        "toolbarIconSizeStroke": "DIFFERENCE",
+        "nativeFullPagePixels": "NOT_CERTIFIED"
+      },
+      "actualPrompt": {
+        "rect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 41,
+          "right": 1916,
+          "bottom": 125
+        },
+        "text": "http://127.0.0.1:64701 想要使用你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 899,
+        "scrollWidth": 899,
+        "clientHeight": 40,
+        "scrollHeight": 40,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "PPrompt": {
+        "rect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 41
+        },
+        "text": "qa.example.test 想要获取你的位置。你的选择会记在当前登录态中，可在登录态管理里撤销；Agent 无法代你允许。拒绝允许",
+        "clientWidth": 899,
+        "scrollWidth": 899,
+        "clientHeight": 40,
+        "scrollHeight": 40,
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(24, 24, 24)",
+          "borderColor": "rgb(241, 241, 241) rgb(241, 241, 241) rgb(48, 48, 48)",
+          "borderWidth": "0px 0px 1px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.06) 0px 2px 8px 0px",
+          "padding": "7px 14px",
+          "gap": "8px",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "promptStyleEquality": {
+        "fontFamily": true,
+        "fontSize": true,
+        "fontWeight": true,
+        "lineHeight": true,
+        "letterSpacing": true,
+        "color": true,
+        "backgroundColor": true,
+        "borderWidth": true,
+        "borderRadius": true,
+        "boxShadow": true,
+        "padding": true,
+        "gap": true
+      },
+      "actualButtons": [
+        {
+          "rect": {
+            "x": 1806,
+            "y": 91,
+            "width": 44,
+            "height": 26,
+            "right": 1850,
+            "bottom": 117
+          },
+          "text": "拒绝",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(241, 241, 241)",
+            "backgroundColor": "rgb(24, 24, 24)",
+            "borderColor": "rgb(48, 48, 48)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        },
+        {
+          "rect": {
+            "x": 1858,
+            "y": 91,
+            "width": 44,
+            "height": 26,
+            "right": 1902,
+            "bottom": 117
+          },
+          "text": "允许",
+          "style": {
+            "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+            "fontSize": "12px",
+            "fontWeight": "430",
+            "lineHeight": "18px",
+            "letterSpacing": "normal",
+            "color": "rgb(255, 255, 255)",
+            "backgroundColor": "rgb(51, 133, 255)",
+            "borderColor": "rgb(51, 133, 255)",
+            "borderWidth": "1px",
+            "borderRadius": "7px",
+            "boxShadow": "none",
+            "display": "flex",
+            "alignItems": "center",
+            "flexDirection": "row",
+            "margin": "0px",
+            "padding": "0px 9px",
+            "gap": "4px",
+            "textOverflow": "clip",
+            "whiteSpace": "nowrap",
+            "overflowX": "visible",
+            "overflowY": "visible"
+          }
+        }
+      ],
+      "PButtonComputedMetadata": "not separately captured; P colors/order/containment directly viewed, numeric computed values not fabricated",
+      "stateSpecificObservation": "Full-width below toolbar; blue MapPin, neutral拒绝 then blue允许, no clipping. Narrow A wraps3 lines/69px vsP2 lines/51px; wide both41px. FullHTTPorigin plus使用 vsP host+获取 are retained copy/data differences, not exact-height parity.",
+      "functionalTraceBoundary": {
+        "trustedRequest": true,
+        "realUIDenial": true,
+        "allowInvoked": false,
+        "noDirectOSLocationAPI": true,
+        "deniedErrorCode1": true
+      },
+      "rendererCaptureBoundary": "Actual renderer-owned site permission prompt and Native page placement; main-renderer PNG does not certify native page pixels. Real geolocation request pending in host; no Allow or OS-location request is performed by test."
+    }
+  ]
+}

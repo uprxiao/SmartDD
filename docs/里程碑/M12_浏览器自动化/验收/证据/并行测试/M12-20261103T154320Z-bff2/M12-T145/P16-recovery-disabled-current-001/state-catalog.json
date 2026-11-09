@@ -1,0 +1,1749 @@
+{
+  "case": "M12-T145",
+  "layer": "P-reference-and-future-A",
+  "contractSource": "contract/测试用例.md",
+  "original8Combinations": [
+    {
+      "id": "light-rw480-win1440x900",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw480-win1920x1080",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1440x900",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1920x1080",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1440x900",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1440x900",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    }
+  ],
+  "states": [
+    {
+      "id": "B01-tabs-entry",
+      "source": "B01/R01.11",
+      "title": "网页标签、当前/非当前及两个新建入口",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": "[aria-label=\"新建网页标签\"]"
+          },
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-card h2",
+            "text": "登录"
+          }
+        ],
+        "expect": ".fw-web-tab"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实打开文件与两网页；保留任务标题/工作区新建入口与单一选中"
+      }
+    },
+    {
+      "id": "B01-long-title-url",
+      "source": "B01/B02/R01.11",
+      "title": "超长完整标题与地址截断/可查看",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test/long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-head"
+          }
+        ],
+        "expect": ".fw-web-tab"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机fixture真实title与长URL，经地址栏导航；保留完整值/可见溢出/截断"
+      },
+      "longText": {
+        "title": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test",
+        "url": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test/long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-"
+      }
+    },
+    {
+      "id": "R01-11-launcher-empty",
+      "source": "R01.11",
+      "title": "启动页工具与无推荐提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": "[aria-label=\"新建网页标签\"]"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-launcher-empty"
+          }
+        ],
+        "expect": ".bw-launcher"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "新隔离项目新建网页，系统无历史推荐"
+      }
+    },
+    {
+      "id": "R01-11-launcher-recent",
+      "source": "R01.11",
+      "title": "启动页本项目推荐",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": "[aria-label=\"新建网页标签\"]"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-launcher-site"
+          }
+        ],
+        "expect": ".bw-launcher"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实访问本机站点后新建网页，按项目推荐"
+      }
+    },
+    {
+      "id": "B02-toolbar-ready",
+      "source": "B02/B03",
+      "title": "工具栏、地址、安全与登录态",
+      "required": true,
+      "P": {
+        "steps": [],
+        "expect": ".bw-toolbar"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实页面加载完成；地址/导航按钮/安全状态/项目登录态"
+      }
+    },
+    {
+      "id": "B02-loading-stop",
+      "source": "B02",
+      "title": "加载中进度与停止",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "http://localhost:5173/",
+            "waitLoaded": false
+          },
+          {
+            "kind": "wait",
+            "selector": "[aria-label=\"停止加载\"]"
+          }
+        ],
+        "expect": "[aria-label=\"停止加载\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机慢响应连接保持，真实停止/刷新按钮切换"
+      },
+      "ephemeral": true
+    },
+    {
+      "id": "B03-address-edit",
+      "source": "B03",
+      "title": "地址栏聚焦/选择与长输入",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": "[aria-label=\"地址栏\"]"
+          },
+          {
+            "kind": "fill",
+            "selector": "[aria-label=\"地址栏\"]",
+            "value": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test/long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-long-visual-text-"
+          }
+        ],
+        "expect": ".bw-toolbar"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实地址栏输入未提交，核选区/水平滚动/完整值"
+      }
+    },
+    {
+      "id": "B04-not-running",
+      "source": "B04",
+      "title": "加载失败：not-running",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "http://localhost:3000/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "not-running"
+    },
+    {
+      "id": "B04-refused",
+      "source": "B04",
+      "title": "加载失败：refused",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://refused.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "refused"
+    },
+    {
+      "id": "B04-dns",
+      "source": "B04",
+      "title": "加载失败：dns",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://nxdomain.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "dns"
+    },
+    {
+      "id": "B04-timeout",
+      "source": "B04",
+      "title": "加载失败：timeout",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://timeout.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "timeout"
+    },
+    {
+      "id": "B04-reset",
+      "source": "B04",
+      "title": "加载失败：reset",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://reset.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "reset"
+    },
+    {
+      "id": "B04-other",
+      "source": "B04",
+      "title": "加载失败：other",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://other.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实本机受控网络失败；对应生产native错误映射，不直接改失败store"
+      },
+      "failureKind": "other"
+    },
+    {
+      "id": "B04-offline",
+      "source": "B04",
+      "title": "加载失败：离线",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo input[type=checkbox]"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure h2",
+            "text": "当前处于离线状态"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "受控本页session离线条件后真实导航；不能替换DOM/store"
+      },
+      "failureKind": "offline"
+    },
+    {
+      "id": "B03-invalid-address",
+      "source": "B03",
+      "title": "无效地址提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "javascript:alert(1)",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-failure"
+          }
+        ],
+        "expect": ".bw-failure"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "实际地址栏提交拒绝协议，不执行脚本"
+      }
+    },
+    {
+      "id": "B05-certificate",
+      "source": "B05",
+      "title": "证书不受信任及继续风险提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-cert"
+          }
+        ],
+        "expect": ".bw-cert"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "既有T012本机TLS+固定非本机hostname夹具，真实证书页"
+      }
+    },
+    {
+      "id": "B05-certificate-exception",
+      "source": "B05",
+      "title": "已记住证书例外/非安全标识",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-danger-link",
+            "text": "我了解风险，继续访问"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-head",
+            "text": "内部系统"
+          }
+        ],
+        "expect": ".bw-security"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI继续本机合成证书例外，再读实际标识，不由Agent/API放行"
+      }
+    },
+    {
+      "id": "B06-basic-auth",
+      "source": "B06/R01.12",
+      "title": "基本认证弹框",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://auth.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实401 Basic fixture；仅本机合成realm/账号"
+      }
+    },
+    {
+      "id": "B06-permission",
+      "source": "B06",
+      "title": "站点权限提示条",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟站点申请位置"
+          },
+          {
+            "kind": "wait",
+            "selector": "[aria-label=\"站点权限请求\"]"
+          }
+        ],
+        "expect": "[aria-label=\"站点权限请求\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "页面真实navigator.geolocation请求，仅截图/拒绝，不授系统定位"
+      }
+    },
+    {
+      "id": "B06-external-app",
+      "source": "B06",
+      "title": "外部应用打开提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟外部应用链接"
+          },
+          {
+            "kind": "wait",
+            "selector": "[aria-label=\"外部应用请求\"]"
+          }
+        ],
+        "expect": "[aria-label=\"外部应用请求\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机页面真实自定义scheme跳转；截图后取消，不打开外部程序"
+      }
+    },
+    {
+      "id": "B07-download-progress",
+      "source": "B07",
+      "title": "下载按钮/浮层：progress",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-card h2",
+            "text": "订单 #1024"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-site-link",
+            "text": "导出订单 CSV"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-downloads"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-downloads button",
+            "text": "取消"
+          }
+        ],
+        "expect": ".bw-downloads"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用最小下载HTTP夹具；保存真实app.getPath(downloads)，仅记录拥有路径，不使用TMP替身"
+      },
+      "downloadState": "progress"
+    },
+    {
+      "id": "B07-download-done",
+      "source": "B07",
+      "title": "下载按钮/浮层：done",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-site-card h2",
+            "text": "订单 #1024"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-site-link",
+            "text": "导出订单 CSV"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-downloads"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-downloads button",
+            "text": "打开"
+          }
+        ],
+        "expect": ".bw-downloads"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用最小下载HTTP夹具；保存真实app.getPath(downloads)，仅记录拥有路径，不使用TMP替身"
+      },
+      "downloadState": "done"
+    },
+    {
+      "id": "B07-download-failed",
+      "source": "B07",
+      "title": "下载失败浮层",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟下载失败"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-downloads",
+            "text": "失败"
+          }
+        ],
+        "expect": ".bw-downloads"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机受控下载中断，真实失败状态"
+      }
+    },
+    {
+      "id": "B08-find-matches",
+      "source": "B08",
+      "title": "页内查找：matches",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "menu",
+            "text": "页内查找"
+          },
+          {
+            "kind": "fill",
+            "selector": "[aria-label=\"查找内容\"]",
+            "value": "订单"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-find-count",
+            "text": "第 "
+          }
+        ],
+        "expect": ".bw-find"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实页面find入口/输入，匹配计数/无结果"
+      }
+    },
+    {
+      "id": "B08-find-zero",
+      "source": "B08",
+      "title": "页内查找：zero",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "menu",
+            "text": "页内查找"
+          },
+          {
+            "kind": "fill",
+            "selector": "[aria-label=\"查找内容\"]",
+            "value": "不存在的搜索词"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-find-count",
+            "text": "无结果"
+          }
+        ],
+        "expect": ".bw-find"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实页面find入口/输入，匹配计数/无结果"
+      }
+    },
+    {
+      "id": "B09-agent-active",
+      "source": "B09",
+      "title": "Agent在途标签点/边框",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟 Agent 只读等待"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-agent",
+            "text": "正在操作"
+          }
+        ],
+        "expect": ".bw-agent"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用真实Host/stockCLI受控只读等待；无真实模型"
+      },
+      "agentState": "inflight"
+    },
+    {
+      "id": "B09-agent-hold",
+      "source": "B09",
+      "title": "Agent结束后活动保持",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟 Agent 写命令"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-agent",
+            "text": "最近操作"
+          }
+        ],
+        "expect": ".bw-agent"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "一次真实Host命令完成，在20秒保持窗截图，固定计时依据"
+      },
+      "agentState": "hold"
+    },
+    {
+      "id": "B10-paused",
+      "source": "B10",
+      "title": "暂停横幅/恢复按钮",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟 Agent 只读等待"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-pause",
+            "text": "暂停 Agent"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-paused"
+          }
+        ],
+        "expect": ".bw-paused"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI暂停受控调用所属task，再截图"
+      }
+    },
+    {
+      "id": "B10-resumed",
+      "source": "B10",
+      "title": "恢复后状态",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟 Agent 只读等待"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-pause",
+            "text": "暂停 Agent"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-resume",
+            "text": "恢复 Agent"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-agent"
+          }
+        ],
+        "expect": ".bw-toolbar"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI恢复；保持同task/run/pages"
+      }
+    },
+    {
+      "id": "B11-access-observe",
+      "source": "B11/R01.12",
+      "title": "跨任务授权申请：observe",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟跨任务请求（同项目）"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实synthetic receiver+stockCLI access request，同项目第二任务，真实UI选择权限"
+      },
+      "mode": "observe"
+    },
+    {
+      "id": "B11-access-control",
+      "source": "B11/R01.12",
+      "title": "跨任务授权申请：control",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟跨任务请求（同项目）"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog label",
+            "text": "可以操作",
+            "contains": true
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实synthetic receiver+stockCLI access request，同项目第二任务，真实UI选择权限"
+      },
+      "mode": "control"
+    },
+    {
+      "id": "B11-grants-empty",
+      "source": "B11",
+      "title": "有效授权列表为空",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "跨任务授权（0）"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实菜单打开当前run授权列表"
+      }
+    },
+    {
+      "id": "B11-grants-populated",
+      "source": "B11",
+      "title": "有效授权列表/撤销动作",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟跨任务请求（同项目）"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "允许本次运行"
+          },
+          {
+            "kind": "menu",
+            "text": "跨任务授权（1）"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-list"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI批准一次同run请求，再从菜单打开真实列表"
+      }
+    },
+    {
+      "id": "B12-profiles-default",
+      "source": "B12/R01.12",
+      "title": "登录态管理项目默认",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实UI登录态管理，不读Cookie/auth值"
+      }
+    },
+    {
+      "id": "B12-profiles-independent",
+      "source": "B12",
+      "title": "任务独立登录态",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "新建独立登录态",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-profile-list [role=option]",
+            "text": "任务独立",
+            "contains": true
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "可信UI创建本次合成独立profile，真实列表/选中"
+      }
+    },
+    {
+      "id": "B12-profiles-clone",
+      "source": "B12",
+      "title": "克隆后登录态列表",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "克隆"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "可信UI克隆本次合成profile，真实列表"
+      }
+    },
+    {
+      "id": "B12-profiles-delete-confirm",
+      "source": "B12",
+      "title": "删除确认/长说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "新建独立登录态",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-profile-list [role=option]",
+            "text": "任务独立",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "删除"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI独立profile删除确认，不碰日常"
+      }
+    },
+    {
+      "id": "B12-profiles-sites",
+      "source": "B12",
+      "title": "站点权限与证书例外列表",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-danger-link",
+            "text": "我了解风险，继续访问"
+          },
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟站点申请位置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-prompt button",
+            "text": "允许"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机合成站点的真实UI例外与权限记忆，仅本profile"
+      }
+    },
+    {
+      "id": "B12-recovery-failed",
+      "source": "B12/R1.1",
+      "title": "登录态恢复失败提示/处理入口",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟导入恢复失败"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "受控自有profile恢复失败故障前置；真实UI展示，原I隔离边界明示"
+      }
+    },
+    {
+      "id": "B12-recovery-clear-confirm",
+      "source": "B12/R1.1",
+      "title": "清空登录态确认长说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟导入恢复失败"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "清空该登录态"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI清空确认，仅自有合成profile"
+      }
+    },
+    {
+      "id": "B13-import-source",
+      "source": "B13/R01.12",
+      "title": "Cookie导入：source",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "P010仅表单可复用；后续步骤须绑定原合成browser/keychain受控夹具，绝不发现/读取日常浏览器或auth"
+      },
+      "layerBoundary": "browser-form"
+    },
+    {
+      "id": "B13-import-confirm",
+      "source": "B13/R01.12",
+      "title": "Cookie导入：confirm",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "P010仅表单可复用；后续步骤须绑定原合成browser/keychain受控夹具，绝不发现/读取日常浏览器或auth"
+      },
+      "layerBoundary": "browser-confirm"
+    },
+    {
+      "id": "B13-import-keychain-simulated",
+      "source": "B13/R01.12",
+      "title": "Cookie导入：keychain-simulated",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "P010仅表单可复用；后续步骤须绑定原合成browser/keychain受控夹具，绝不发现/读取日常浏览器或auth"
+      },
+      "layerBoundary": "P-only-simulated-system"
+    },
+    {
+      "id": "B13-import-success",
+      "source": "B13",
+      "title": "Cookie导入结果：success",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "模拟允许"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI结果必须来自自有合成browser数据与声明故障，不以store/API替代；真实OS授权另S层"
+      }
+    },
+    {
+      "id": "B13-import-denied",
+      "source": "B13",
+      "title": "Cookie导入结果：denied",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "模拟拒绝"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI结果必须来自自有合成browser数据与声明故障，不以store/API替代；真实OS授权另S层"
+      }
+    },
+    {
+      "id": "B13-import-timeout",
+      "source": "B13",
+      "title": "Cookie导入结果：timeout",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "模拟超时"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI结果必须来自自有合成browser数据与声明故障，不以store/API替代；真实OS授权另S层"
+      }
+    },
+    {
+      "id": "B13-import-undecryptable",
+      "source": "B13",
+      "title": "Cookie导入结果：undecryptable",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "模拟无法解密"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI结果必须来自自有合成browser数据与声明故障，不以store/API替代；真实OS授权另S层"
+      }
+    },
+    {
+      "id": "B13-import-missing-browser",
+      "source": "B13",
+      "title": "找不到浏览器",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟找不到浏览器"
+          },
+          {
+            "kind": "wait",
+            "selector": ".bw-dialog [role=alert]",
+            "text": "找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。"
+          }
+        ],
+        "expect": ".bw-dialog[aria-label=\"导入未完成\"] [role=alert]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "需要真实产品缺来源状态与参考；不从App反推原型"
+      },
+      "historicalReferenceGap": "BrowserPanels ImportDialog固定Chrome/Edge来源；仅有模拟拒绝/超时/无法解密/允许，没有missing-browser UI触发。原说明列出此状态但实际入口缺失。",
+      "routeEvidence": "/private/tmp/willyou-m12-t145-missing-source-P-004/result.json"
+    },
+    {
+      "id": "B13-import-recovery-disabled",
+      "source": "B13/R1.2",
+      "title": "恢复失败时导入入口禁用",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟导入恢复失败"
+          },
+          {
+            "kind": "click",
+            "selector": "[aria-label=\"浏览器菜单\"]"
+          }
+        ],
+        "expect": ".bw-menu"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实受控恢复失败后菜单导入不可用"
+      }
+    },
+    {
+      "id": "B14-settings",
+      "source": "B14/R01.12",
+      "title": "浏览器设置完整表单",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "浏览器设置"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实UI设置，完整搜索/身份/下载位置/文件说明"
+      }
+    },
+    {
+      "id": "B14-settings-restart",
+      "source": "B14",
+      "title": "身份切换需重启提示",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "浏览器设置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog label",
+            "text": "Electron 原生身份",
+            "contains": true
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实设置身份单选后的待重启提示；不重启/不变模型"
+      }
+    },
+    {
+      "id": "B14-settings-clear-confirm",
+      "source": "B14/R1.1",
+      "title": "浏览器文件清理确认说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "浏览器设置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "清理全部浏览器文件"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI清理确认，仅合成自有文件统计，不点击确认删除"
+      }
+    },
+    {
+      "id": "B01-02-tab-hover",
+      "source": "B01/B02/2026-11-05已确认范围修复",
+      "title": "悬停/真实按下/键盘焦点：tab-hover",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "hover",
+            "selector": ".fw-web-tab [role=tab]"
+          }
+        ],
+        "expect": ".fw-web-tab [role=tab]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用原T147真实Tab/focus-visible/pressed逻辑，不能用DOMfocus或aria/title冒充实际视觉"
+      },
+      "pointerState": "hover"
+    },
+    {
+      "id": "B01-02-tab-pressed",
+      "source": "B01/B02/2026-11-05已确认范围修复",
+      "title": "悬停/真实按下/键盘焦点：tab-pressed",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "hold",
+            "selector": ".fw-web-tab [role=tab]"
+          }
+        ],
+        "expect": ".fw-web-tab [role=tab]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用原T147真实Tab/focus-visible/pressed逻辑，不能用DOMfocus或aria/title冒充实际视觉"
+      },
+      "pointerState": "hold"
+    },
+    {
+      "id": "B01-02-tab-keyboard",
+      "source": "B01/B02/2026-11-05已确认范围修复",
+      "title": "悬停/真实按下/键盘焦点：tab-keyboard",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "focusByTab",
+            "selector": ".fw-web-tab [role=tab]"
+          }
+        ],
+        "expect": ".fw-web-tab [role=tab]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用原T147真实Tab/focus-visible/pressed逻辑，不能用DOMfocus或aria/title冒充实际视觉"
+      },
+      "pointerState": "focusByTab"
+    },
+    {
+      "id": "B01-02-toolbar-keyboard",
+      "source": "B01/B02/2026-11-05已确认范围修复",
+      "title": "悬停/真实按下/键盘焦点：toolbar-keyboard",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "focusByTab",
+            "selector": "[aria-label=\"后退\"]"
+          }
+        ],
+        "expect": "[aria-label=\"后退\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用原T147真实Tab/focus-visible/pressed逻辑，不能用DOMfocus或aria/title冒充实际视觉"
+      },
+      "pointerState": "focusByTab"
+    },
+    {
+      "id": "B01-02-toolbar-pressed",
+      "source": "B01/B02/2026-11-05已确认范围修复",
+      "title": "悬停/真实按下/键盘焦点：toolbar-pressed",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/orders/1024",
+            "waitLoaded": true
+          },
+          {
+            "kind": "hold",
+            "selector": "[aria-label=\"刷新\"]"
+          }
+        ],
+        "expect": "[aria-label=\"刷新\"]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用原T147真实Tab/focus-visible/pressed逻辑，不能用DOMfocus或aria/title冒充实际视觉"
+      },
+      "pointerState": "hold"
+    }
+  ],
+  "requiredPairCount": 456,
+  "matrixNotSubset": true,
+  "PReferenceGapCount": 0,
+  "App026PinPending": true,
+  "noOld1600ImagesReusedAsMatrix": true,
+  "imageNames": {
+    "P": "P-{combo.id}-{state.id}.png",
+    "A": "A-{combo.id}-{state.id}.png",
+    "metadata": "{layer}-{combo.id}-{state.id}.json"
+  },
+  "comparisonCriteria": [
+    "布局/尺寸/间距/对齐",
+    "图标形状/描边及状态",
+    "同语义文字/字体/字号/字重/行高",
+    "主题颜色/透明度/边框/圆角/阴影",
+    "长标题/地址/说明截断与滚动且不溢出",
+    "每个弹框/遮罩在浏览器区域内且左终端不遮挡",
+    "逐同名P/A原图对照，未审阅不判一致"
+  ],
+  "referenceOnlyAffordanceBoundary": "原型演示条/Flask控件与合成站点说明保留原图，明确标为P-only，不把合成操作记A；不修改CSS/DOM隐藏或修图冒充产品。",
+  "C9": "不宣称Codex浏览器逐像素一致；无Codex浏览器参考图，差异按已确认例外记录。",
+  "selectedCombinations": [
+    {
+      "id": "light-rw480-win1440x900",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw480-win1920x1080",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1440x900",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1920x1080",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1440x900",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1440x900",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    }
+  ],
+  "selectedRequiredPairCount": 16,
+  "contractDimensionRevision": "User-approved1920x1080 replaces1920x1200; old captures preserved historical, no scaling.",
+  "selectedStateIds": [
+    "B12-recovery-failed",
+    "B12-recovery-clear-confirm"
+  ],
+  "selectedOnlyOriginalState": true
+}

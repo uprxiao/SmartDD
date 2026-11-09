@@ -1,0 +1,404 @@
+{
+  "scope": "Bounded original B13 keychain8 contract-layer diagnosis only; no new tests/drivers/expectation edits",
+  "at": "2026-11-09T03:13:44.865841+00:00",
+  "originalCatalog": {
+    "file": {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-001/original-state-catalog.json",
+      "sha256": "3ae717146f103aa75af209f1314795451af94bb1f58a38ac8a5cfa1446e47f65",
+      "bytes": 49272,
+      "mode": 384
+    },
+    "entireStateEntry": {
+      "id": "B13-import-keychain-simulated",
+      "source": "B13/R01.12",
+      "title": "Cookie导入：keychain-simulated",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "导入 Chrome／Edge 登录态"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "下一步"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "确认导入"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "P010仅表单可复用；后续步骤须绑定原合成browser/keychain受控夹具，绝不发现/读取日常浏览器或auth"
+      },
+      "layerBoundary": "P-only-simulated-system"
+    },
+    "wholeCatalogLayer": "P-reference-and-future-A",
+    "comparisonCriteria": [
+      "布局/尺寸/间距/对齐",
+      "图标形状/描边及状态",
+      "同语义文字/字体/字号/字重/行高",
+      "主题颜色/透明度/边框/圆角/阴影",
+      "长标题/地址/说明截断与滚动且不溢出",
+      "每个弹框/遮罩在浏览器区域内且左终端不遮挡",
+      "逐同名P/A原图对照，未审阅不判一致"
+    ],
+    "referenceOnlyAffordanceBoundary": "原型演示条/Flask控件与合成站点说明保留原图，明确标为P-only，不把合成操作记A；不修改CSS/DOM隐藏或修图冒充产品。",
+    "requiredPairCountUnchanged": 456
+  },
+  "preciseACatalogReading": {
+    "A_stepsPresent": false,
+    "A_expectPresent": false,
+    "A_status": "UNBOUND_PENDING_APP026_DRIVER",
+    "P_stepsAndExpectOnly": true,
+    "P_only_marker": "P-only-simulated-system",
+    "decision": "Original catalog leaves A binding unresolved; it does not itself prescribe the four P simulator buttons in product or an8-combination OS screenshot. It also does not mark these8 as deleted/not-required: required remains true. No inferred contract mapping is finalized here."
+  },
+  "priorDiagnosticClarification": "The initial diagnostic cited derived assigned72 criteria that adds S-real-OS-consent and called it an original requirement. More precisely: the raw original catalog labels P-only-simulated-system with A UNBOUND; the assigned72 preparation criteria independently preserved a system evidence gap. Their evidence layers must remain distinguished. T083 real S is now already complete, so no broad claim that system consent itself remains wholly untested is valid.",
+  "originalT145AndT083Contract": {
+    "currentFile": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "a2d1a0be37fd295510b6b40b1c8d33cfa8f5cb3f21891e1423f203b97d5109d2",
+      "bytes": 208288,
+      "mode": 420
+    },
+    "rows": [
+      {
+        "case": "M12-T145",
+        "line": 209,
+        "originalContractColumns": {
+          "case": "M12-T145",
+          "requirements": "B01–B15、R01.11、R01.12、C9",
+          "layer": "A",
+          "precondition": "浅色与深色；右侧工作区宽度 480px（窄）与 900px（宽）两档；窗口 1440×900 与 1920×1080 两档",
+          "steps": "对每个组合截图：网页标签与新建入口、启动页、工具栏与地址栏、加载失败页、证书页、Agent 活动边框、暂停横幅、下载按钮与浮层、页内查找、权限提示条、五种浏览器弹框；与已确认原型的同名截图逐张对照",
+          "expected": "每张的布局、图标、文字、颜色与原型一致，长文本截断不溢出，弹框不超出浏览器区域；与 Codex 浏览器的差异按 C9 记录，不宣称逐像素一致"
+        },
+        "currentResultColumn": "Not repeated: mutable current T145 result retained in hashed full document; no statistics changed."
+      },
+      {
+        "case": "M12-T083",
+        "line": 133,
+        "originalContractColumns": {
+          "case": "M12-T083",
+          "requirements": "R05.4、D2",
+          "layer": "S",
+          "precondition": "本机真实安装 Chrome 与 Edge，各有一个测试 profile；用户在场",
+          "steps": "分别从 Chrome、Edge 导入；在系统钥匙串弹窗中先拒绝一次，再允许",
+          "expected": "拒绝时导入失败且没有写入；允许后导入成功，测试站点 Cookie 生效。由用户操作钥匙串弹窗，记录为用户确认"
+        },
+        "currentResultColumn": "App038/source045原真实系统S已完整通过：复用R006已完成的Chrome拒绝（后续父层登录态管理遮挡的驱动红保留），R007仅补Chrome允许、Edge拒绝／允许。用户实际操作四个来源访问弹窗；两拒绝均明确钥匙串拒绝且目标Cookie完整哈希不变，两允许均原生Cookie匹配、真实HTTP请求生效。真实Chrome及微软签名Edge生成持久v10合成源，无来源／密钥／cipher替身。宿主原生加密前置独立验证；Chrome原有security自动许可曾临时移除，测试后由用户恢复，fresh Native AX核名单及原选项一致、保存完成。两轮正常0/null、各9PID/4TCP/2Unix/2helper独立全清；源服务及仅自有Profile已收尾。独立归档判定12项通过；原预检、隔离和交接失败均保留，不把子分支重复计数。"
+      }
+    ],
+    "frozenT145Row": {
+      "file": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/contract/测试用例.md",
+        "sha256": "fd08cfebbb562454fd25c7752f152c159b11b411721d31743ebaa1a03df0eebe",
+        "bytes": 140500,
+        "mode": 420
+      },
+      "line": 209,
+      "text": "| M12-T145 | B01–B15、R01.11、R01.12、C9 | A | 浅色与深色；右侧工作区宽度 480px（窄）与 900px（宽）两档；窗口 1440×900 与 1920×1200 两档 | 对每个组合截图：网页标签与新建入口、启动页、工具栏与地址栏、加载失败页、证书页、Agent 活动边框、暂停横幅、下载按钮与浮层、页内查找、权限提示条、五种浏览器弹框；与已确认原型的同名截图逐张对照 | 每张的布局、图标、文字、颜色与原型一致，长文本截断不溢出，弹框不超出浏览器区域；与 Codex 浏览器的差异按 C9 记录，不宣称逐像素一致 "
+    }
+  },
+  "prototypeExplanationExact": {
+    "file": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/原型/原型说明与变更.md",
+      "sha256": "2763d7466b7ca913ab9cd910097650fc6d431b9a5e966d51ed98760a10fe1d43",
+      "bytes": 49454,
+      "mode": 420
+    },
+    "quotes": [
+      {
+        "lines": "50-50",
+        "text": "| B13 | Cookie 导入流程：选 Chrome／Edge 及其 profile → 风险确认对话框 → 模拟钥匙串授权 → 结果摘要；失败示例（钥匙串被拒、找不到浏览器、解密失败） | R06.4、D2、O11 |"
+      },
+      {
+        "lines": "102-102",
+        "text": "- B13 Cookie 导入：选 Chrome／Edge 及其 profile 与目标登录态 → 风险确认（全部 Cookie 除 Google、Agent 可读会话令牌、钥匙串授权）→ 模拟钥匙串（允许／拒绝／超时／无法解密）→ 结果摘要；拒绝和超时不写入任何 Cookie。Agent 没有入口。"
+      },
+      {
+        "lines": "113-113",
+        "text": "**未覆盖／边界**：同第一批（无 Codex 浏览器视觉对照、单一尺寸、非打包 App、无系统层）。另外：页内查找只计数、不高亮匹配位置；下载、钥匙串、外部应用都是模拟；跨任务授权使用合成的“同项目示例任务”，因为原型示例数据中当前项目只有一个任务。"
+      }
+    ]
+  },
+  "currentRequirementExact": {
+    "file": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33",
+      "bytes": 70042,
+      "mode": 420
+    },
+    "quotes": [
+      {
+        "lines": "459-464",
+        "text": "- 任务需要的账号与项目登录态不同时，Agent 为该任务新建独立 profile 登录，不改动项目登录态（C1）。\n- `use-default` 把页面切回当前项目的 profile。\n\n**R05.4 Cookie 导入的来源与范围**\n- 来源只支持 Chrome 与 Edge。读取方式：经 macOS 钥匙串（`Chrome Safe Storage`／`Microsoft Edge Safe Storage`，会弹授权窗，30 秒超时）取得口令，再解密 Cookie 库。\n- 导入所选浏览器 profile 的全部 Cookie，只排除 Google（`google.com` 及子域，以及设备绑定的会话 Cookie）。没有域名选择。"
+      },
+      {
+        "lines": "532-545",
+        "text": "- 无人值守（M13）时无法弹窗，默认拒绝，见 R08.4。\n\n**R06.4 Cookie 导入流程**（只在界面中进行，Agent 没有入口）\n1. 入口：浏览器菜单或登录态管理，选择目标 profile，默认当前项目的 profile。\n2. 选择来源：本机已安装的 Chrome、Edge，以及其中的某个 profile。\n3. 风险确认（必须）：说明将导入全部 Cookie（Google 除外）、Agent 能读取这些站点的会话令牌、系统会请求钥匙串授权，用户点确认后才继续。\n4. 系统钥匙串弹窗，30 秒超时。拒绝或超时即失败，不写入任何 Cookie。\n5. 导入与恢复：\n   - 先把来源全部读出、解密、逐条校验，任何一步失败都不开始写入；\n   - 写入前生成完整变更集：导入范围内将被移除的每个现有 Cookie 的原值，每个将写入的 (name, domain, path) 的原值或“原本不存在”，以及新值；用 `safeStorage` 加密后写日志，文件权限 0600，先写临时文件、`fsync` 后改名；\n   - **导入期间暂停使用该登录态的页面（R1.2 规则变更，用户 2026-11-03 确认）**：开始写入前，宿主记下使用该 profile 的全部页面（含子窗口）的地址，把它们卸载为占位页，并取消该 profile 的全部网络请求；导入与恢复结束后，按原地址重新加载这些页面。这段时间这些页面显示“正在导入登录态”，Agent 对它们的命令返回 `BROWSER_UNAVAILABLE`。这样整个写入与恢复过程中没有页面代码在运行，也不会有服务器下发 Cookie，恢复无需区分写入来源（review4 G02）。页面上未保存的内容会丢失，导入确认对话框里明确提示。\n   - 写入中途失败当场恢复；进程中断则在下次启动、任何页面加载该 profile 之前恢复。恢复规则：被移除的原 Cookie 写回，新写入的撤销（原本不存在的删除，原有的恢复原值）；\n   - 恢复失败时，该 profile 标为“需要处理”，使用它的页面显示提示，Agent 命令返回 `BROWSER_UNAVAILABLE`，日志保留。用户在登录态管理里可以：**重试恢复**；或**清空该 profile 的登录态**（需确认，清空 Cookie、存储与缓存后恢复可用，项目 profile 也可清空但不能删除）。处理完成前，该 profile 不能再次导入；\n   - 同一 profile 同时只允许一次导入；导入期间不能删除该 profile，`tab profile delete` 返回 `RESOURCE_BUSY`。处于“需要处理”的 profile，所有导入入口（浏览器菜单、登录态管理）都不可用，Agent 对使用它的页面的命令一律返回 `BROWSER_UNAVAILABLE`。"
+      }
+    ]
+  },
+  "frozenRequirementExact": {
+    "file": {
+      "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/contract/需求.md",
+      "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+      "bytes": 69375,
+      "mode": 420
+    },
+    "quotes": [
+      {
+        "lines": "459-464",
+        "text": "\n**R05.4 Cookie 导入的来源与范围**\n- 来源只支持 Chrome 与 Edge。读取方式：经 macOS 钥匙串（`Chrome Safe Storage`／`Microsoft Edge Safe Storage`，会弹授权窗，30 秒超时）取得口令，再解密 Cookie 库。\n- 导入所选浏览器 profile 的全部 Cookie，只排除 Google（`google.com` 及子域，以及设备绑定的会话 Cookie）。没有域名选择。\n- **按域名整体替换**（对标 Orca `browser-cookie-import-clear.ts`）：目标 profile 中，属于导入范围内域名的现有 Cookie 先全部移除，再写入导入的 Cookie；同一域名下目标原有、来源没有的 Cookie 也会被移除。不在导入范围内的站点不受影响。R1.0 曾误写为“只替换出现的 Cookie”，按源码更正。\n- 导入默认进入当前项目的 profile。流程与失败恢复见 R06.4。"
+      },
+      {
+        "lines": "532-545",
+        "text": "**R06.4 Cookie 导入流程**（只在界面中进行，Agent 没有入口）\n1. 入口：浏览器菜单或登录态管理，选择目标 profile，默认当前项目的 profile。\n2. 选择来源：本机已安装的 Chrome、Edge，以及其中的某个 profile。\n3. 风险确认（必须）：说明将导入全部 Cookie（Google 除外）、Agent 能读取这些站点的会话令牌、系统会请求钥匙串授权，用户点确认后才继续。\n4. 系统钥匙串弹窗，30 秒超时。拒绝或超时即失败，不写入任何 Cookie。\n5. 导入与恢复：\n   - 先把来源全部读出、解密、逐条校验，任何一步失败都不开始写入；\n   - 写入前生成完整变更集：导入范围内将被移除的每个现有 Cookie 的原值，每个将写入的 (name, domain, path) 的原值或“原本不存在”，以及新值；用 `safeStorage` 加密后写日志，文件权限 0600，先写临时文件、`fsync` 后改名；\n   - **导入期间暂停使用该登录态的页面（R1.2 规则变更，用户 2026-11-03 确认）**：开始写入前，宿主记下使用该 profile 的全部页面（含子窗口）的地址，把它们卸载为占位页，并取消该 profile 的全部网络请求；导入与恢复结束后，按原地址重新加载这些页面。这段时间这些页面显示“正在导入登录态”，Agent 对它们的命令返回 `BROWSER_UNAVAILABLE`。这样整个写入与恢复过程中没有页面代码在运行，也不会有服务器下发 Cookie，恢复无需区分写入来源（review4 G02）。页面上未保存的内容会丢失，导入确认对话框里明确提示。\n   - 写入中途失败当场恢复；进程中断则在下次启动、任何页面加载该 profile 之前恢复。恢复规则：被移除的原 Cookie 写回，新写入的撤销（原本不存在的删除，原有的恢复原值）；\n   - 恢复失败时，该 profile 标为“需要处理”，使用它的页面显示提示，Agent 命令返回 `BROWSER_UNAVAILABLE`，日志保留。用户在登录态管理里可以：**重试恢复**；或**清空该 profile 的登录态**（需确认，清空 Cookie、存储与缓存后恢复可用，项目 profile 也可清空但不能删除）。处理完成前，该 profile 不能再次导入；\n   - 同一 profile 同时只允许一次导入；导入期间不能删除该 profile，`tab profile delete` 返回 `RESOURCE_BUSY`。处于“需要处理”的 profile，所有导入入口（浏览器菜单、登录态管理）都不可用，Agent 对使用它的页面的命令一律返回 `BROWSER_UNAVAILABLE`。\n6. 结果摘要：总数、已导入、已跳过、跳过的 Google 数、保留数、涉及域名、重新加载的页面数。\n7. 失败原因分为：钥匙串被拒、超时、找不到浏览器或其 profile、Cookie 库无法读取、无法解密（`cookies-undecryptable`）、其他。"
+      }
+    ]
+  },
+  "T083ExistingSystemEvidence": {
+    "finalDecisionPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/final-original-S-decision.json",
+    "independentJudgePath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-independent-archived-judge-001/adjudication.json",
+    "archiveHashesVerified": [
+      {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/final-original-S-decision.json",
+        "sha256": "707c834389b98295d0c54086e7eebbe6a5a20931e75cdbe6603d949baa0f0aaf",
+        "originalManifestVerified": true
+      },
+      {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/App006/raw.safe.json",
+        "sha256": "8910bce8ee20fefb76287404f801dedcacb553eda6cbfcc0c3deb8c935970e89",
+        "originalManifestVerified": true
+      },
+      {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/App007/raw.safe.json",
+        "sha256": "195f2c4f39979e2aae3c5613daecb1a19082f963f5281e003e26c486f58e65a6",
+        "originalManifestVerified": true
+      },
+      {
+        "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-independent-archived-judge-001/adjudication.json",
+        "sha256": "02a9f5c2c9f44a298f13b8abc72f49a3995ca1835f2e2d5a34038fa565cb4f9d",
+        "originalManifestVerified": true
+      }
+    ],
+    "originalLayer": "S",
+    "allFourPassed": true,
+    "packageSource": {
+      "sourceManifestSHA256": "226e75149302ef748c2bbed5b97dc26183d5dd93dfc291b21e8c0b6331714cb6",
+      "asarSHA256": "92265c973ba32f12b85078c5bfa1561df7bb5f9273603653930ec1160ce9c149"
+    },
+    "independentChecks": {
+      "App006NormalAndIndependentClear": true,
+      "App007NormalAndIndependentClear": true,
+      "sameSourceAndPackage": true,
+      "fourOriginalSystemBranches": true,
+      "actualNativeUserDecisions": true,
+      "bothDenialsNoWrite": true,
+      "bothAllowsNativeAndHTTP": true,
+      "realBrowserEncryptedSources": true,
+      "productionSourceAndHostCipherUnmocked": true,
+      "originalLaterDriverFailurePreserved": true,
+      "originalACLRestoredByUserAndNativeAXVerified": true,
+      "sourceResourcesCleared": true
+    },
+    "branches": [
+      {
+        "family": "chrome",
+        "decision": "deny",
+        "runRoot": "/private/tmp/willyou-m12-t083-real-keychain-prep-006",
+        "realUserReceipt": {
+          "at": "2026-11-08T09:03:37.727588+00:00",
+          "observedBy": "user-live",
+          "promptShown": true,
+          "service": "Chrome Safe Storage",
+          "decision": "deny",
+          "statement": "已在 Chrome Safe Storage 点拒绝"
+        },
+        "actualUITitle": "导入未完成",
+        "noTargetWrite": true,
+        "realCookieEffective": null,
+        "targetBeforeHash": "3cc08222e118da958457f4973d0902307c685a9d9901698ec877081e51e006c3",
+        "targetAfterHash": "3cc08222e118da958457f4973d0902307c685a9d9901698ec877081e51e006c3"
+      },
+      {
+        "family": "chrome",
+        "decision": "allow",
+        "runRoot": "/private/tmp/willyou-m12-t083-real-keychain-prep-007",
+        "realUserReceipt": {
+          "at": "2026-11-08T09:16:50.096357+00:00",
+          "observedBy": "user-live",
+          "promptShown": true,
+          "service": "Chrome Safe Storage",
+          "decision": "allow",
+          "statement": "在 Chrome Safe Storage 系统弹窗点了允许"
+        },
+        "actualUITitle": "导入完成",
+        "noTargetWrite": null,
+        "realCookieEffective": true,
+        "targetBeforeHash": "cde260579d8aa188d1cda4d02b840a3a1b2cfe5f65f78306dde3a5a40a3d6ad9",
+        "targetAfterHash": "739708ed4540f52c3d701a5ec2beac5c3daa0c195114f330935a447ba623e8e8"
+      },
+      {
+        "family": "edge",
+        "decision": "deny",
+        "runRoot": "/private/tmp/willyou-m12-t083-real-keychain-prep-007",
+        "realUserReceipt": {
+          "at": "2026-11-08T09:17:52.525058+00:00",
+          "observedBy": "user-live",
+          "promptShown": true,
+          "service": "Microsoft Edge Safe Storage",
+          "decision": "deny",
+          "statement": "已经点了拒绝了",
+          "context": "Current actually-dispatched R007 Edge-deny request"
+        },
+        "actualUITitle": "导入未完成",
+        "noTargetWrite": true,
+        "realCookieEffective": null,
+        "targetBeforeHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b",
+        "targetAfterHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b"
+      },
+      {
+        "family": "edge",
+        "decision": "allow",
+        "runRoot": "/private/tmp/willyou-m12-t083-real-keychain-prep-007",
+        "realUserReceipt": {
+          "at": "2026-11-08T09:19:23.228826+00:00",
+          "observedBy": "user-live",
+          "promptShown": true,
+          "service": "Microsoft Edge Safe Storage",
+          "decision": "allow",
+          "statement": "OK，允许点完了",
+          "context": "Current actually-dispatched R007 final Edge allow"
+        },
+        "actualUITitle": "导入完成",
+        "noTargetWrite": null,
+        "realCookieEffective": true,
+        "targetBeforeHash": "32a9e9aae557761a307144f93de353887b513c8ba645c4dc12d0924e8e65034b",
+        "targetAfterHash": "c6067569e28a10b5bbd0d0581bbc37363d6fc22cadc209a06e3d6226650feed7"
+      }
+    ],
+    "covers": [
+      "Original T083 S real Chrome and Edge native Keychain prompts with user actual deny/allow; both denials exact target cookie hash unchanged; both allows native cookies and genuine HTTP effects.",
+      "Original true source/key/cipher path unmocked, original ACL restored by user with fresh NativeAX verification, normal exits and independent resource cleanup.",
+      "Can be referenced for the system-consent business layer rather than repeated merely to manufacture eight synthetic-OS theme images; Root must adjudicate compatibility and mapping."
+    ],
+    "doesNotCover": [
+      "No eight same-key actualApp052/053 running-state P/A PNG visual matrix is asserted by these archived decisions. The inspected manifests contain no prompt PNG matrices.",
+      "Does not create actual product simulator buttons, prove exact native OS dialog styling against P mocked PanelDialog, or fill eight visual keys automatically.",
+      "Does not prove actual30second timeout, or new App053 execution; original S package/source identity remains explicit."
+    ],
+    "testEnvironment": {
+      "realBrowserNativeKeychain": true,
+      "hostSafeStorageControlActual": true,
+      "temporaryChromeSourceACLExplicitlyRecorded": true,
+      "sourceACLRestoredByUserAndFreshNativeAXVerified": true,
+      "sourceProfilesCopiedFromRealPrivateBrowserRuns": true,
+      "noMockKeyOrCipher": true,
+      "systemGeneralClipboardUsed": false,
+      "masterKeyValuesExposedToAgentOrArchived": false,
+      "dailyBrowserCookieValuesReadOrImported": false
+    },
+    "allOwnResourcesCleared": true
+  },
+  "adjudicationOptionsNotDecisions": [
+    "Keep original P8 and456 contract untouched while Root documents P-only simulator versus realApp busy/OS mapping; do not require product to add fakeOS controls.",
+    "If Root maps original pending keychain page to production busy, actual keyProvider gate can sample true before-write running UI with DI boundary and separate existing S evidence; no execution or READY under that mapping has been prepared.",
+    "If original S evidence is reused, cite exact original package/decisions/coverage only; no duplicate formal increment or wholeT145 pass."
+  ],
+  "inputs": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/原型/原型说明与变更.md",
+      "sha256": "2763d7466b7ca913ab9cd910097650fc6d431b9a5e966d51ed98760a10fe1d43",
+      "bytes": 49454,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33",
+      "bytes": 70042,
+      "mode": 420
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/contract/需求.md",
+      "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+      "bytes": 69375,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "a2d1a0be37fd295510b6b40b1c8d33cfa8f5cb3f21891e1423f203b97d5109d2",
+      "bytes": 208288,
+      "mode": 420
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/contract/测试用例.md",
+      "sha256": "fd08cfebbb562454fd25c7752f152c159b11b411721d31743ebaa1a03df0eebe",
+      "bytes": 140500,
+      "mode": 420
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-001/original-state-catalog.json",
+      "sha256": "3ae717146f103aa75af209f1314795451af94bb1f58a38ac8a5cfa1446e47f65",
+      "bytes": 49272,
+      "mode": 384
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-001/assigned72-original-criteria.json",
+      "sha256": "86ce232382df239fd17d9a9e067c845d6e3fdfff487075efa7fb8f510e912414",
+      "bytes": 18898,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/manifest.json",
+      "sha256": "e1ebe63397e32ab74e0ec4ceb49662489fd55b9bbae9062e26f448ac5ba7b27d",
+      "bytes": 45975,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/final-original-S-decision.json",
+      "sha256": "707c834389b98295d0c54086e7eebbe6a5a20931e75cdbe6603d949baa0f0aaf",
+      "bytes": 8160,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/App006/raw.safe.json",
+      "sha256": "8910bce8ee20fefb76287404f801dedcacb553eda6cbfcc0c3deb8c935970e89",
+      "bytes": 4356,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-complete-native-ACL-restored-001/App007/raw.safe.json",
+      "sha256": "195f2c4f39979e2aae3c5613daecb1a19082f963f5281e003e26c486f58e65a6",
+      "bytes": 9097,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-independent-archived-judge-001/manifest.json",
+      "sha256": "7473606a6036af0b21904e0f85b0a49d875af17809d862b1010f7d455bf9106d",
+      "bytes": 1032,
+      "mode": 420
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T083/original-S-independent-archived-judge-001/adjudication.json",
+      "sha256": "02a9f5c2c9f44a298f13b8abc72f49a3995ca1835f2e2d5a34038fa565cb4f9d",
+      "bytes": 878,
+      "mode": 420
+    }
+  ],
+  "actualNewTests": 0,
+  "PNGReview": 0,
+  "resources": {
+    "activeOwnedPIDs": [],
+    "held": []
+  },
+  "formalIncrement": 0,
+  "wholeCasePassed": false
+}
