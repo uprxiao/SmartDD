@@ -12,7 +12,7 @@ function mount(){
 }
 it('keeps the prototype menu-to-body Escape path aligned with the App',()=>{
   mount();fireEvent.click(screen.getByRole('button',{name:'浏览器菜单'}));
-  const item=screen.getByRole('menuitem',{name:'下载（1）'});item.focus();fireEvent.click(item);
+  const item=screen.getByRole('menuitem',{name:'下载'});item.focus();fireEvent.click(item);
   expect(screen.getByRole('region',{name:'下载'})).toBeTruthy();expect(document.activeElement).toBe(document.body);
   fireEvent.keyDown(document.body,{key:'Escape',code:'Escape'});
   expect(screen.queryByRole('region',{name:'下载'})).toBeNull();expect(document.activeElement).toBe(document.body);
