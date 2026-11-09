@@ -22,3 +22,7 @@ M12 原验收见阶段权威记录；T141 Intel 真机由用户明确暂缓，�
 ## 过程证据
 
 本轮原始日志暂存 `/private/tmp/willyou-m12-release-0.1.3/`；交付前归档适合入库的结论、失败与复验及哈希，凭据和包不入库。
+
+## 发布链预检补正
+
+M12的源码固定Helper要求SOURCE.json声明的Rust版本，而原setup-build没有安装该版本。macOS CI现在从同一SOURCE读取版本，安装minimal toolchain并只在当前job设置RUSTUP_TOOLCHAIN；Windows/Linux不增加浏览器编译要求。未降低Helper源码、补丁、锁或版本校验。

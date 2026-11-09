@@ -12,6 +12,13 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+    - name: Install pinned browser Rust toolchain (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        rust_version="$(node -p "JSON.parse(require('fs').readFileSync('resources/agent-browser/SOURCE.json','utf8')).build.rustVersion")"
+        rustup toolchain install "$rust_version" --profile minimal
+        echo "RUSTUP_TOOLCHAIN=$rust_version" >> "$GITHUB_ENV"
     - name: Install Python build tools
       shell: bash
       run: python -m pip install --upgrade pip setuptools wheel
